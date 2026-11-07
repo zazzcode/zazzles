@@ -49,6 +49,15 @@ func New(provider, model, key string) (*Client, error) {
 	return c, nil
 }
 
+// UseEndpoint redirects requests to a local stub server. It exists for offline
+// verification; production code never calls it and no key is sent elsewhere.
+func (c *Client) UseEndpoint(url string, h *http.Client) {
+	c.endpoint = url
+	if h != nil {
+		c.http = h
+	}
+}
+
 type question struct{ name, instructions string }
 
 var questions = componentQuestions(analysispacks.BaseQuestions())

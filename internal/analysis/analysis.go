@@ -82,6 +82,9 @@ type AnalysisReport struct {
 	Files               []Evidence          `json:"files"`
 	Limitations         []string            `json:"limitations"`
 	AnalysisGuidelines  []GuidelinesRef     `json:"analysis_guidelines,omitempty"`
+	// SkippedFamilies lists analyzer families deliberately not judged in this run
+	// (--skip-family). Their records stay in the report as not_run Review.
+	SkippedFamilies []string `json:"skipped_families,omitempty"`
 }
 
 // GuidelinesRef identifies the embedded language analysis guidelines used for a report.

@@ -34,8 +34,8 @@ type CommandFacts struct {
 	// string (Node argv calls with shell enabled); false when only the shell_command
 	// slot is shell text (os.*, Python shell=True sequences, literal sh -c).
 	JoinedShellText bool             `json:"joined_shell_text,omitempty"`
-	Operands  []CommandOperand `json:"operands"`
-	Paths     []CommandPath    `json:"paths"`
+	Operands        []CommandOperand `json:"operands"`
+	Paths           []CommandPath    `json:"paths"`
 }
 
 // CommandOperand is one effective operand slot of the invocation.

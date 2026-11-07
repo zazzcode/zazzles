@@ -105,6 +105,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		f.Uncertainty += " Semantic assessment failed: " + a.Reason
 	} else if a.Status == "not_run" || a.Status == "" {
 		f.Uncertainty += " Semantic assessment was not run."
+		if strings.Contains(a.Reason, "analyzer not used for this run") {
+			f.Uncertainty += " " + a.Reason + "."
+		}
 	}
 	if a.Status == "completed" {
 		if answer := a.Answers["validation"]; answer != "" {

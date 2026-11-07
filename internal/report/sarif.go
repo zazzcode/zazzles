@@ -153,6 +153,9 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 		artifacts = append(artifacts, map[string]any{"location": map[string]string{"uri": relativeURI(e.Span.File)}, "hashes": map[string]string{"sha-256": e.SHA256}})
 	}
 	run := map[string]any{"tool": map[string]any{"driver": map[string]any{"name": "scan", "informationUri": "https://github.com/zazzcode/zazzles", "rules": rules}}, "results": results, "artifacts": artifacts, "invocations": []any{invocation}, "properties": map[string]any{"scan.findingTypes": report.FindingTypes, "scan.limitations": report.Limitations, "scan.selectedRoute": report.SelectedRoute, "scan.selectedScope": report.SelectedScope, "scan.checkMatches": report.CheckMatches, "scan.identityPolicy": "snapshot-local use IDs; edit-stable baseline identity is not implemented"}}
+	if len(report.SkippedFamilies) > 0 {
+		run["properties"].(map[string]any)["scan.skippedFamilies"] = report.SkippedFamilies
+	}
 	return map[string]any{"$schema": SchemaURI, "version": "2.1.0", "runs": []any{run}}
 }
 

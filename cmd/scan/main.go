@@ -52,6 +52,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		judgeModel    = flags.String("judge-model", "", "judge model; required for jev")
 		judgeLimit    = flags.Int("judge-limit", 10, "maximum judge requests per run, no retries")
 		asSARIF       = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
+		skipFamily    = flags.String("skip-family", "", "comma-separated analyzer families not to judge in this run; supported: input-validation (records stay not_run and the report states the family was not used)")
 		asJSON        = flags.Bool("json", false, "emit machine-readable JSON instead of text")
 	)
 	flags.BoolVar(analyzeMode, "strings", false, "compatibility alias for --analyze")
@@ -98,12 +99,17 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 
+	skipped, err := parseSkipFamilies(*skipFamily)
+	if err != nil || (len(skipped) > 0 && (!*analyzeMode || *judgeProvider == "")) {
+		fmt.Fprintln(stderr, "scan: --skip-family requires --analyze with --judge and supports: input-validation")
+		return exitUsage
+	}
 	if *entryKind != "" && !analysis.KnownEntryKind(*entryKind) {
 		fmt.Fprintln(stderr, "scan: invalid entry kind")
 		return exitUsage
 	}
 	if *analyzeMode {
-		return runAnalysis(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID})
+		return runAnalysis(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID})
 	}
 	if *routes {
 		return runRoutes(flags.Arg(0), *asJSON, stdout, stderr)

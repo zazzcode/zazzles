@@ -101,10 +101,14 @@ A protected claim applies to the stated operation and scope, not the entire entr
 
 ### Analyzers, analysis packs and reusable components
 
-An **Analyzer** identifies and assesses a named security concern. Examples are the **SQL Injection
-Analyzer**, **NoSQL Injection Analyzer**, **XSS Analyzer**, **Input Validation Analyzer** and
-**Sensitive Data Logging Analyzer**. The next planned capability is the **Command Injection Analyzer**.
-The XSS Analyzer includes reflected, stored and client-side/DOM/framework analysis.
+An **Analyzer** identifies and assesses a named security concern. Examples include:
+
+- **SQL Injection Analyzer**
+- **NoSQL Injection Analyzer**
+- **XSS Analyzer** — reflected, stored and client-side/DOM/framework analysis
+- **Input Validation Analyzer**
+- **Sensitive Data Logging Analyzer**
+- **Command Injection Analyzer** — the next planned capability
 
 An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
 questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use

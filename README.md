@@ -13,7 +13,8 @@ and agents repair issues before tests and reassessment. Teams should be able to 
 coding and architecture standards without adopting Zazz methodology.
 
 **Available today:** bounded Scan analysis for JavaScript, TypeScript and Python, including
-input-validation judgments and selected construction-practice checks. **Planned:** a distinct Inspect
+input-validation judgments and selected construction-practice checks. 
+**Planned:** a distinct Inspect
 capability, dependency Audit and automated Fix. Supported checks and limits are described below.
 
 <a id="project-goals-scan-audit-and-fix"></a>

@@ -80,8 +80,9 @@ func TestCommandCLI(t *testing.T) {
 		t.Cleanup(func() { newJudgeClient = old })
 		t.Setenv("OPENAI_API_KEY", "synthetic-key")
 		outDir := t.TempDir()
+		traces := filepath.Join(t.TempDir(), "traces")
 		var out, errOut bytes.Buffer
-		code := run([]string{"--analyze", "--judge", "openai", "--judge-model", "gpt-6-luna", "--judge-limit", "20", "--skip-family", "input-validation", "--output-dir", outDir, root}, &out, &errOut)
+		code := run([]string{"--analyze", "--judge", "openai", "--judge-model", "gpt-6-luna", "--judge-limit", "20", "--skip-family", "input-validation", "--output-dir", outDir, "--trace-dir", traces, root}, &out, &errOut)
 		if code != exitOK {
 			t.Fatalf("exit %d: %s", code, errOut.String())
 		}
@@ -122,6 +123,9 @@ func TestCommandCLI(t *testing.T) {
 		}
 		if requests != len(r.Uses)-skipped {
 			t.Fatalf("requests %d for %d judged uses", requests, len(r.Uses)-skipped)
+		}
+		if files, _ := filepath.Glob(filepath.Join(traces, "*.json")); len(files) != requests {
+			t.Fatalf("saved traces %d for %d requests", len(files), requests)
 		}
 		limited := false
 		for _, l := range r.Limitations {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -15,7 +16,7 @@ import (
 	reportpkg "github.com/zazzcode/zazzles/internal/report"
 )
 
-func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection) int {
+func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection) int {
 	var client *judge.Client
 	if provider != "" {
 		key := ""
@@ -72,7 +73,16 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 				failed = true
 				continue
 			}
-			report.Uses[i].Assessment = client.Assess(context.Background(), report.Uses[i])
+			if traceDir != "" {
+				var trace judge.DecisionTrace
+				report.Uses[i].Assessment, trace = client.AssessTrace(context.Background(), report.Uses[i])
+				if err := writeTrace(traceDir, report.Uses[i].ID, trace); err != nil {
+					fmt.Fprintf(stderr, "scan: trace not saved: %v\n", err)
+					failed = true
+				}
+			} else {
+				report.Uses[i].Assessment = client.Assess(context.Background(), report.Uses[i])
+			}
 			if report.Uses[i].Assessment.Status != "completed" {
 				failed = true
 			}
@@ -155,3 +165,17 @@ func familySkipped(use analysis.CandidateUse, skipped []string) bool {
 
 // newJudgeClient builds the selected provider client; tests replace it with a stub.
 var newJudgeClient = judge.New
+
+// writeTrace saves one exact request/response trace. Traces contain the
+// transmitted source and no credentials; the directory is private.
+func writeTrace(dir, id string, trace judge.DecisionTrace) error {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return err
+	}
+	safe := strings.NewReplacer(":", "_", "/", "_", "\\", "_").Replace(id)
+	data, err := json.Marshal(trace)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, safe+".json"), data, 0o600)
+}

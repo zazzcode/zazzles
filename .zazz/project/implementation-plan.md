@@ -180,21 +180,23 @@ three; Python is no longer an additional-language milestone.
 | Analyzer / supporting capability | JavaScript | TypeScript | Python | Evidence and remaining limits |
 |---|---|---|---|---|
 | Input Validation | [x] | [x] | [x] | Source-backed field-policy and enforcing-guard claims; missing business requirements remain Review |
-| SQL Injection | [x] | [x] | [x] | Verified operation/operand models and source traces; Python DB-API support is bounded |
+| SQL Injection | [x] | [x] | [x] | Verified operation/operand models and source traces, including Sequelize and sql.js; Python DB-API support is bounded |
 | NoSQL Injection | [x] | [x] | [ ] | Bounded JS/TS selector/expression analysis; Python driver/model coverage remains pending |
 | Sensitive Data Logging | [x] | [x] | [x] | Sensitive-content emission and redaction judgments; whole containers/unknown sensitivity remain Review |
-| XSS — Reflected/server output | [x] | [x] | [x] | Verified response/template context and encoding; unsupported engines/configuration remain gaps |
-| XSS — Stored | [x] | [x] | [x] | Bounded source/write/read/render links; exact origin/row identity is not universally resolved |
+| XSS — Reflected/server output | [x] | [x] | [x] | Verified response/template context and encoding, including Python HTML responses across 11 adapters and Jinja environments; unsupported engines/configuration remain gaps |
+| XSS — Stored | [x] | [x] | [x] | Bounded source/write/read/render links, including sql.js, Sequelize setters and finale-rest resources; exact origin/row identity is not universally resolved |
 | XSS — Client-side/DOM/framework | [x] | [x] | [x] | JS/TS browser analysis also handles selected inline scripts in Python templates; not every browser framework |
 | XSS — API-to-browser linkage (supporting coverage) | [x] | [x] | [ ] | Bounded JS/TS cross-tier evidence; general Python linkage remains pending |
 | Python language adapter | — | — | [x] | Delivered bounded adapter; dynamic registration/dispatch and framework parity remain explicit gaps |
 
 References: [query/validation results](../evaluation/query-validation-comparison.md),
 [logging contract](../specifications/sensitive-data-logging.md),
-[XSS scope](xss-detection-scope.md), [XSS results](../evaluation/xss-implementation-results.md), and
+[XSS scope](xss-detection-scope.md), [XSS results](../evaluation/xss-implementation-results.md),
+[XSS hardening results](../evaluation/xss-hardening-results.md), [sample applications](vulnerable-sample-apps.md), and
 [Python contract/results](../evaluation/python-support-results.md). The original three Python apps
 have 29 passing case checks. VulnPy adds six known SQL/XSS positive misses and four passing coverage
-warning controls; those misses are not passed findings or a claim of complete Python coverage.
+warning controls; those misses are not passed findings or a claim of complete Python coverage. XSS hardening
+later confirmed VulnPy's XSS across all adapters and Jinja; 15 of its 78 SQL contexts remain Review.
 
 ### Common entry/dispatch foundation
 
@@ -203,7 +205,7 @@ milestone and merged through PR #8 on 2026-11-05. It supplies common entry, regi
 callable and invocation identities, with bounded browser-event, dynamic HTTP, Node.js GraphQL and
 unary gRPC support. Its [acceptance evidence](../evaluation/common-entry-dispatch-results.md)
 retains unsupported subsets and explicit gaps. The merged foundation is the baseline for the
-separate analysis pack MVP; the Command Injection Analyzer is now delivered and Harden XSS analyzers is the next analyzer task.
+separate analysis pack MVP; the Command Injection Analyzer and XSS hardening are now delivered.
 
 ### Analysis pack MVP initiative
 
@@ -261,14 +263,13 @@ unchanged. Completed verification does not authorize additional paid calls or sa
 
 ### Complete delivery list
 
-This punch list uses short analyzer names in the table. **Command Injection** is delivered; **Harden XSS analyzers** is the next analyzer task, covering for the existing reflected, stored and client-side
-capabilities. Shared infrastructure and coverage-completion work are identified separately; their
+This punch list uses short analyzer names in the table. **Command Injection** and **Harden XSS analyzers** are delivered. Shared infrastructure and coverage-completion work are identified separately; their
 rows do not represent additional vulnerability analyzers.
 
 **Sequence decision, 2026-11-02; pack initiative added by the user on 2026-11-05:** common
 entry/dispatch with bounded dynamic-route, GraphQL and gRPC support follows Python support. Both
-that foundation and the component MVP/migration sessions are implemented. Command injection is delivered; separately scoped XSS
-hardening is the next task.
+that foundation and the component MVP/migration sessions are implemented. Command injection and separately scoped XSS
+hardening are delivered.
 Keep the other planned classes. Complete Python NoSQL and API-to-browser XSS
 linkage coverage immediately before dependency vulnerability scanning (SCA), after the other planned
 vulnerability-type work. Secret scanning follows SCA. Language expansion has no fixed position
@@ -289,7 +290,7 @@ contract and implementation assignment; this plan does not authorize them. Prese
 | [x] | Common entry/dispatch (shared infrastructure) | `common-entry-dispatch` | Shared entry/registration/dispatch/callable model; migrate HTTP/browser consumers and add bounded dynamic-route, GraphQL resolver and gRPC handler adapters with explicit unknown controls |
 | [x] | Analysis-pack catalog (shared knowledge infrastructure) | `analysis-pack-mvp` | SQL-first embedded selection, bounded judge composition, report provenance and exact-request replay; [contract](../specifications/analysis-pack-mvp.md), [architecture/ledger](../architecture/analysis-packs.md) |
 | [x] | Command Injection | `command-injection` | Delivered: verified Node/Python process contracts, shell/executable/argument facets, 11 Python framework adapters, GraphQL/gRPC contexts; four full judged scans with every independent positive confirmed ([results](../evaluation/command-injection-results.md)) |
-| [ ] | Harden XSS analyzers | `xss-hardening` | General renderer/configuration, factory/helper and cross-tier coverage; retain raw/escaped/unknown controls, including VulnPy's Jinja Environment/template case |
+| [x] | Harden XSS analyzers | `xss-hardening` | Delivered: all 28 source-reviewed XSS cases confirmed across five apps with every control held, including VulnPy's Jinja case and sql.js SQL injection; [contract](../specifications/xss-hardening.md), [results](../evaluation/xss-hardening-results.md), [sample applications](vulnerable-sample-apps.md) |
 | [ ] | Path Traversal | `path-traversal` | Request-influenced file paths, starting with `/api/files`; include JS/TS/Python containment controls |
 | [ ] | Code Injection | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |
 | [ ] | XXE | `xxe` | Request-to-XML parsing and verified parser configuration across supported languages |

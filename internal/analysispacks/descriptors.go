@@ -137,7 +137,7 @@ func descriptors() ([]Component, error) {
 			}
 			if f.Name == "sql" {
 				v.Tests = append(v.Tests, "TestSQLComponentPipelineParity")
-				if model.Library != "sequelize" {
+				if !JavaScriptSQLLibrary(model.Library) {
 					v.Tests = append(v.Tests, "TestSQLPythonComponentPipeline")
 				}
 			} else {

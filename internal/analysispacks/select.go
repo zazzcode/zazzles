@@ -42,7 +42,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if contract == nil || !reflect.DeepEqual(contract, use.APIModel) {
 			return nil, fmt.Errorf("unsupported or conflicting verified %s API contract", family.Label)
 		}
-		if family.Name == "sql" && (language == lang.Python) != (contract.Library != "sequelize") {
+		if family.Name == "sql" && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
 			return nil, fmt.Errorf("%s language and API capability conflict", family.Label)
 		}
 	}

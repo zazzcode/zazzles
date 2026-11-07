@@ -34,6 +34,9 @@ func (f *flow) storedProperty(n *sitter.Node) (value, bool) {
 	if field == "length" {
 		return value{}, false
 	}
+	if field == "dataValues" {
+		return v, true // Sequelize's plain row view has the same columns.
+	}
 	source := f.module.evidence("storage_read", n)
 	return value{deps: []analysis.Dependency{{StorageKey: v.model + "." + field, Source: source, Transfers: []analysis.Evidence{*v.read}}}}, true
 }
@@ -109,14 +112,20 @@ func (f *flow) modelCallValue(call, fn *sitter.Node, receiver value) (value, boo
 	return value{}, false
 }
 
-func (f *flow) modelCallback(fn *sitter.Node, v value, method string) {
+// modelCallback follows a storage callback and returns the values it returned.
+func (f *flow) modelCallback(fn *sitter.Node, v value, method string) value {
 	if f.depth >= 4 {
 		f.gaps = append(f.gaps, f.gap("callback_limit", "storage callback nesting exceeds four levels", fn))
-		return
+		return value{}
 	}
 	params, ok := functionParameters(fn, f.module.src)
 	if !ok {
-		return
+		// `.then(([rows]) => ...)`: a raw Sequelize query resolves to [rows, metadata].
+		first := firstArrayParameter(fn, f.module.src)
+		if first == nil {
+			return value{}
+		}
+		params = []boundParam{*first}
 	}
 	child := *f
 	child.env = copyValues(f.env)
@@ -141,6 +150,26 @@ func (f *flow) modelCallback(fn *sitter.Node, v value, method string) {
 	}
 	child.statements(fn.ChildByFieldName("body"))
 	f.uses = append(f.uses, child.uses...)
+	var out value
+	for _, r := range child.returns {
+		out = combine(out, r)
+	}
+	return out
+}
+
+func firstArrayParameter(fn *sitter.Node, src []byte) *boundParam {
+	params := fn.ChildByFieldName("parameters")
+	if params == nil || params.NamedChildCount() != 1 {
+		return nil
+	}
+	p := params.NamedChild(0)
+	if p.Kind() == "required_parameter" {
+		p = p.ChildByFieldName("pattern")
+	}
+	if p == nil || p.Kind() != "array_pattern" || p.NamedChildCount() == 0 || p.NamedChild(0).Kind() != "identifier" {
+		return nil
+	}
+	return &boundParam{name: p.NamedChild(0).Utf8Text(src), node: p.NamedChild(0)}
 }
 
 func (f *flow) recordStorageWrite(call, fn, args *sitter.Node, values []value, receiver value) {
@@ -167,6 +196,7 @@ func (f *flow) recordStorageWrite(call, fn, args *sitter.Node, values []value, r
 			continue
 		}
 		key := receiver.model + "." + field
+		v = f.applyModelSetter(receiver.model, field, v)
 		f.set.storageWrites[key] = append(f.set.storageWrites[key], storageWrite{f.entry.ID, v, f.module.evidence("storage_write", call)})
 	}
 }

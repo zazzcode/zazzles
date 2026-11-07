@@ -27,7 +27,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 		"javascript/dynamic-dispatch": {4, "e0424db9e36013a6ecf84c4d8026dbb29ef92503666c205bf47908ab1752dea3"},
 		"typescript/dynamic-dispatch": {4, "d3c570ca16b55796754ecec6876571e76ac4de98c29c2760943453cc11b78b43"},
 		"python/routes":               {5, "c4ab83af8da35abce5bf61b3961bd27c8ea8b58a6d0d7f7c1c8409d8a6bd6e40"},
-		"python/dynamic-vulnpy":       {31, "7861d772b7f3271c186ca93e9cf5d240857f393b9d65c592dbb30e6ff8718cb9"},
+		"python/dynamic-vulnpy":       {31, "c679955d3a3676a570c8a2f9281bf54638d05b0beb679c5716a3978a38a3f58a"},
 		"javascript/xss-fetch":        {5, "cd41f16976985b7ab9b8fa2b9cc8ee247f1384cf330d22221868508f97221743"},
 		"javascript/outbound":         {5, "6723d63a902d3864956e8349eb61bb047c3c59e2f766b00fd3642aff8a7ada1c"},
 	}

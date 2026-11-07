@@ -109,6 +109,7 @@ func (f *flow) clientAssignment(n, left *sitter.Node, v value) bool {
 			f.clientRecord(n, v, context, escaped, f.clientClassEvidence(obj))
 		}
 	}
+	f.noteTrustedField(method, v)
 	// Exact source properties are tracked for component/template linkage. Array
 	// indexes are normalized only within the same named collection; aliasing stays bounded.
 	f.env[clientKey(left.Utf8Text(f.module.src))] = v

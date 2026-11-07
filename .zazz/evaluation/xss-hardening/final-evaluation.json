@@ -1,0 +1,330 @@
+{
+ "required_red": [
+  {
+   "id": "DEMO-XSS-01",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "DEMO-XSS-02",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "DEMO-XSS-03",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "DEMO-XSS-04",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "DEMO-XSS-05",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "TS-XSS-01",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "GOOF-XSS-01",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "GOOF-XSS-02/03",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-01",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-02",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-03",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-04",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-05a",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-05b",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-06",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "JS-XSS-07",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-JINJA",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-FLASK",
+   "pass": true,
+   "expected": 6,
+   "records": 6,
+   "confirmed": 6,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-FASTAPI",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-QUART",
+   "pass": true,
+   "expected": 2,
+   "records": 2,
+   "confirmed": 2,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-DJANGO",
+   "pass": true,
+   "expected": 4,
+   "records": 4,
+   "confirmed": 4,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-DJANGO-ASGI",
+   "pass": true,
+   "expected": 4,
+   "records": 4,
+   "confirmed": 4,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-FALCON",
+   "pass": true,
+   "expected": 1,
+   "records": 2,
+   "confirmed": 2,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-FALCON-ASGI",
+   "pass": true,
+   "expected": 1,
+   "records": 2,
+   "confirmed": 2,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-BOTTLE",
+   "pass": true,
+   "expected": 2,
+   "records": 2,
+   "confirmed": 2,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-PYRAMID",
+   "pass": true,
+   "expected": 4,
+   "records": 4,
+   "confirmed": 4,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-AIOHTTP",
+   "pass": true,
+   "expected": 2,
+   "records": 2,
+   "confirmed": 2,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  },
+  {
+   "id": "VP-XSS-WSGI",
+   "pass": true,
+   "expected": 1,
+   "records": 1,
+   "confirmed": 1,
+   "statuses": [
+    "confirmed_vulnerability"
+   ]
+  }
+ ],
+ "not_red": [
+  {
+   "id": "DEMO-XSS-N01/N02",
+   "pass": true,
+   "confirmed": 0
+  },
+  {
+   "id": "JS-XSS-08 (Review per key: configured file, attacker control unresolved)",
+   "pass": true,
+   "confirmed": 0
+  },
+  {
+   "id": "JS-XSS-N04",
+   "pass": true,
+   "confirmed": 0
+  },
+  {
+   "id": "JS-XSS-N03",
+   "pass": true,
+   "confirmed": 0
+  },
+  {
+   "id": "GOOF-XSS-N01/N02",
+   "pass": true,
+   "confirmed": 0
+  },
+  {
+   "id": "GOOF-XSS-N03 (Review)",
+   "pass": true,
+   "confirmed": 0
+  },
+  {
+   "id": "GOOF-XSS-N04",
+   "pass": true,
+   "confirmed": 0
+  }
+ ],
+ "unadjudicated": [
+  {
+   "target": "juice-shop",
+   "file": "frontend/src/app/administration/administration.component.html",
+   "line": 113,
+   "context": "html_text",
+   "type": "cross_tier"
+  }
+ ]
+}

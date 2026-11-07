@@ -46,6 +46,17 @@ func controlContext(m *sourceModule, body *sitter.Node) ([]analysis.ControlEdge,
 			}
 			return condition
 		}
+		if n.Kind() == "try_statement" && n.ChildByFieldName("finalizer") == nil {
+			// A try body runs unconditionally up to a throw, so it does not guard its
+			// statements; catch is a separate exceptional successor. finally stays a gap.
+			head := statement(n.ChildByFieldName("body"), next)
+			if handler := n.ChildByFieldName("handler"); handler != nil {
+				if caught := statement(handler.ChildByFieldName("body"), next); caught != nil && head != nil {
+					edges = append(edges, analysis.ControlEdge{From: m.evidence("statement", head), To: m.evidence("statement", caught), Kind: "EXCEPTION"})
+				}
+			}
+			return head
+		}
 		switch n.Kind() {
 		case "return_statement", "throw_statement":
 			return n

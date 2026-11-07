@@ -64,8 +64,11 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 					use.Completeness.Evidence["control_flow"] = []analysis.Evidence{e}
 				}
 				binding := s.queryBinding(use)
+				sqlContract := "sequelize-raw-query-v1"
 				if check.Kind == "nosql_query" {
 					binding = s.collectionBinding(use)
+				} else if sqlJS := s.sqlJSBinding(use); len(sqlJS) > 0 {
+					binding, sqlContract = sqlJS, "sqljs-statement-v1"
 				}
 				if len(binding) > 0 {
 					if check.Kind == "nosql_query" {
@@ -83,7 +86,7 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 							}
 						}
 					} else {
-						use.APIModel = analysispacks.SQLContract("sequelize-raw-query-v1")
+						use.APIModel = analysispacks.SQLContract(sqlContract)
 					}
 					use.Context = append(use.Context, binding...)
 					use.Completeness.Evidence["sink_binding"] = binding

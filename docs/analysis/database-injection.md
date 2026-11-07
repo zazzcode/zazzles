@@ -16,8 +16,10 @@ library/API, relevant guard and middleware behavior, and a supported source-to-o
 Names such as `query` or `find` alone MUST NOT establish a database API. An array's `find` is not a
 NoSQL sink. Unresolved applicable checks, dynamic bindings, or missing helper bodies remain blockers.
 
-The bounded automatic adapters currently include verified Sequelize raw-query usage and MarsDB
-collection construction/imports. MarsDB has Mongo-style matching semantics; this does not make it
+The bounded automatic adapters currently include verified Sequelize raw-query usage, sql.js statements
+and MarsDB collection construction/imports. A sql.js claim needs a verified `sql.js` import and a receiver
+assigned from `new <module>.Database(...)`, with request data in the SQL text argument of `run`, `exec` or
+`prepare`, directly or through a local helper. Values in a bound array are not a claim. MarsDB has Mongo-style matching semantics; this does not make it
 a MongoDB server or establish support for every MongoDB driver. Unsupported bindings remain Review.
 
 ## SQL rules
@@ -26,6 +28,7 @@ a MongoDB server or establish support for every MongoDB driver. Unsupported bind
 - Actual query argument roles matter. Binding parameters or replacements preserve data separately
   from SQL structure; `model` or `plain` options do not protect an already-built SQL string.
 - Interpolated ORM search values are not automatically executable SQL. Verify the library slot.
+- A `try` body does not guard its query; `catch` is an exceptional successor. `finally` stays unresolved.
 - A string merely constructed or logged without a database call is not an executed SQL sink.
 - A vulnerability verdict requires request-controlled syntax on a supported path, independently of
   the construction-practice answer. Missing field validation alone does not prove SQL injection.

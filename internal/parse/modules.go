@@ -40,6 +40,10 @@ type moduleSet struct {
 	grpcRecords    int
 	grpcProtos     map[string]grpcProtoResult
 	storageWrites  map[string][]storageWrite
+	tableModels    map[string]string
+	restResources  []restResource
+	signedTokens   []signedToken
+	angularUnits   []*angularUnit
 	producers      []jsonProducer
 	modelEvidence  map[string][]analysis.Evidence
 	mountedOrigins map[string]bool
@@ -97,6 +101,9 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 		m.readCommonJSExport(n)
 		exported := n.Kind() == "export_statement"
 		if exported {
+			if v := n.ChildByFieldName("value"); v != nil && isFunction(v) {
+				m.exports["default"] = v // export default () => ...
+			}
 			n = n.ChildByFieldName("declaration")
 			if n == nil {
 				continue

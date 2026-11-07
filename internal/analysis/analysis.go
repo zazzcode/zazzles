@@ -19,6 +19,11 @@ type Dependency struct {
 	StorageKey string     `json:"storage_key,omitempty"`
 	Source     Evidence   `json:"source"`
 	Transfers  []Evidence `json:"transfers"`
+	// OutputContext and ResponseField are extraction-only path facts: the HTML
+	// context a server template gave this value, and the JSON or token field a
+	// browser value was read from. Neither is serialized or sent to a model.
+	OutputContext string `json:"-"`
+	ResponseField string `json:"-"`
 }
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.

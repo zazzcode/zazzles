@@ -17,6 +17,8 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
+- [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
+
 - [Node.js input/acquisition refactor](node-http-input-refactor.md) — transport-neutral value facts, bounded Express/Fastify/Hapi adapters, shared sink contracts and opt-in provisional model discovery; Python migration proposed separately at project root.
 
 - [Command Injection Analyzer](command-injection.md) — JS/TS/Python process and shell analysis using the shared analysis-pack structure; full judged Juice Shop, VulnPy, nodejs-goof and vulnerable-typescript-app acceptance with refreshed GitHub HTML/JSON/SARIF samples; implemented and source-reviewed, with later bounded follow-ups recorded in evaluation docs.

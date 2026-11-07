@@ -18,15 +18,20 @@ type clientInjection struct {
 }
 
 type clientContext struct {
-	events   *browserEvents
-	entry    analysis.EntryPoint
-	injected map[string]clientInjection
-	methods  map[string]*sitter.Node
-	fields   map[string]*sitter.Node
-	template *analysis.Evidence
-	bindings []analysis.Evidence
-	angular  bool
-	react    bool
+	// trustedFields holds values passed through a trust bypass, by the object field
+	// they were assigned to. A template iteration variable renders them by that field.
+	trustedFields map[string]value
+	// invocationID is set once the entry is in the report, for uses linked after its own pass.
+	invocationID string
+	events       *browserEvents
+	entry        analysis.EntryPoint
+	injected     map[string]clientInjection
+	methods      map[string]*sitter.Node
+	fields       map[string]*sitter.Node
+	template     *analysis.Evidence
+	bindings     []analysis.Evidence
+	angular      bool
+	react        bool
 }
 
 func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
@@ -132,9 +137,13 @@ func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
 			}
 			s.angularOutputs(&flow)
 			addClientUses(report, context, flow.uses)
+			if context.angular {
+				s.angularUnits = append(s.angularUnits, &angularUnit{module: m, class: class, context: context})
+			}
 		}
 		base.events.unvisited(m)
 	}
+	s.linkAngularDialogs(report)
 	return nil
 }
 
@@ -148,11 +157,19 @@ func addClientUses(report *analysis.AnalysisReport, client *clientContext, uses 
 		return
 	}
 	merged := mergeClientUses(uses)
+	if client.invocationID != "" {
+		for i := range merged {
+			merged[i].EntryID, merged[i].InvocationContextID, merged[i].EntryKind = client.entry.ID, client.invocationID, "browser"
+		}
+		report.Uses = append(report.Uses, merged...)
+		return
+	}
 
 	report.Uses = append(report.Uses, merged...)
 	if len(merged) > 0 {
 		e := client.entry.Location
 		ctx := registerInvocation(report, client.entry, &e, "browser_source_slice", nil, nil)
+		client.invocationID = ctx.ID
 		gap := analysis.Gap{Kind: "browser_exposure_unresolved", Detail: "Source slice analysis does not establish runtime event/component exposure", At: e.Span}
 		report.DispatchBindings[len(report.DispatchBindings)-1].Resolution = "partial"
 		report.DispatchBindings[len(report.DispatchBindings)-1].Gaps = []analysis.Gap{gap}

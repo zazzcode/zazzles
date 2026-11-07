@@ -29,7 +29,7 @@ func (f *pythonFlow) stmt(n *sitter.Node) bool {
 			expr := n.NamedChild(0)
 			v := f.eval(expr)
 			f.returns = pyCombine(f.returns, v)
-			if f.depth == 0 && !v.rendered && f.route.html {
+			if f.depth == 0 && !v.rendered && f.returnsHTML() {
 
 				if len(v.deps) > 0 && v.binding != "json" && v.binding != "non_html" {
 					f.recordXSS(f.module.evidence("html_return", expr), v, "html_text", nil)

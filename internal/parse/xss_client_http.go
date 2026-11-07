@@ -69,13 +69,43 @@ func (f *flow) clientServiceCall(call *sitter.Node, object, method string) (valu
 			if binding.module != "@angular/common/http" || binding.name != "HttpClient" || (verb != "GET" && verb != "POST" && verb != "PUT" && verb != "DELETE" && verb != "PATCH") {
 				return
 			}
-			result = combine(result, f.clientHTTPValue(m, http, args.NamedChild(0), verb, context.fields))
+			response := f.clientHTTPValue(m, http, args.NamedChild(0), verb, context.fields)
+			if field := responseProjection(m, fn); field != "" {
+				response.responseField = field
+				response.deps = fieldDeps(response.deps, field)
+			}
+			result = combine(result, response)
 			f.context = append(f.context, m.evidence("http_client_binding", binding.node), f.module.evidence("http_consumer", call))
 			found = true
 		})
 		return result, found
 	}
 	return value{}, false
+}
+
+// responseProjection reads map((response) => response.field) from a service method.
+func responseProjection(m *sourceModule, method *sitter.Node) string {
+	field := ""
+	walkCalls(method.ChildByFieldName("body"), func(call *sitter.Node) {
+		fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
+		if fn == nil || args == nil || fn.Utf8Text(m.src) != "map" || args.NamedChildCount() != 1 || !isFunction(args.NamedChild(0)) {
+			return
+		}
+		if module := m.imports["map"].module; module != "rxjs" && module != "rxjs/operators" {
+			return
+		}
+		callback := args.NamedChild(0)
+		params, ok := functionParameters(callback, m.src)
+		body := callback.ChildByFieldName("body")
+		if !ok || len(params) != 1 || body == nil || body.Kind() != "member_expression" {
+			return
+		}
+		obj, prop := body.ChildByFieldName("object"), body.ChildByFieldName("property")
+		if obj != nil && prop != nil && obj.Utf8Text(m.src) == params[0].name {
+			field = prop.Utf8Text(m.src)
+		}
+	})
+	return field
 }
 
 func (s *moduleSet) clientURL(m *sourceModule, n *sitter.Node, fields map[string]*sitter.Node, depth int) string {

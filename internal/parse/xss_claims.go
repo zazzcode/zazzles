@@ -42,6 +42,13 @@ func assembleXSSClaims(report *analysis.AnalysisReport) {
 			}
 		}
 		c.ModelFacts = []string{"output_context=" + u.XSS.OutputContext, "protection=" + u.XSS.Protection, fmt.Sprintf("origin_resolved=%t", u.XSS.OriginResolved)}
+		if u.Sink.Kind == "html_response" {
+			for _, e := range u.Context {
+				if e.Kind == "render_markup_context" {
+					c.ModelFacts = append(c.ModelFacts, "claim_output="+e.Text)
+				}
+			}
+		}
 		u.Completeness = c
 	}
 }

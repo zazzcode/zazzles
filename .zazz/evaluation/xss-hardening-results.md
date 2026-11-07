@@ -96,7 +96,7 @@ sent identical request bytes, so their agreement shows the answers repeat, not t
 **Correction:** the earlier note that pass 1 and the final scan agreed on every case held only for identical
 requests. Changed evidence changed an answer here, so single-sample results remain a stated limit.
 
-## Follow-up: general sanitizer rules (offline)
+## Follow-up: general sanitizer rules
 
 The sanitizer rules were broadened for novel applications, with no sample-specific conditions. Advisories now come
 from a cited table with half-open version ranges: marked before 0.3.6 (CVE-2016-10531), sanitize-html before 1.4.3
@@ -106,8 +106,9 @@ covers 23 inputs absent from the sample apps.
 
 Offline output for all five sample apps is byte-identical to the previous binary, except that each split vuln-demo-app
 claim now carries only its innermost `claim_output` line, not the `layout()` wrapper's line. Those two records'
-request bytes changed, so their saved judgments do not replay until vuln-demo-app is rescanned. This change has no
-paid judgment.
+request bytes changed, so vuln-demo-app was rescanned on commit `4d51fd7` (binary SHA-256
+`d9181ddd48524b8eb52b8bad4660af307b1c91a27a5a414f55a1bdd15a566372`): all five XSS cases, its control and all five
+`DEMO-SQL-*` cases are confirmed, including both split claims.
 
 ## Usage
 
@@ -119,7 +120,8 @@ paid judgment.
 | Final | 339 | 2,690,784 |
 | sql.js follow-up: Juice Shop and vuln-demo-app | 147 | 519,380 |
 | vuln-demo-app runs A and B | 30 | 205,736 |
-| **Total** | **1,178** | **8,643,916** |
+| vuln-demo-app after the sanitizer rules | 15 | 102,579 |
+| **Total** | **1,193** | **8,746,495** |
 
 Pass 1 confirmed 27 of 28; `JS-XSS-07` exceeded the 64 KiB request limit, which led to stored-path compaction.
 Raw reports and traces are under `_test-findings/xss-hardening/`. Target checkouts stayed clean at their pins.

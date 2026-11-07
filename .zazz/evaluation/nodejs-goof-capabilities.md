@@ -60,3 +60,37 @@ and runtime confirmation remain unmeasured.
 
 The [XSS scope](../project/xss-detection-scope.md) owns delivery order. The
 [sample README](../../docs/samples/nodejs-goof/README.md) owns saved baseline links and provenance.
+
+## Command injection: source-reviewed acceptance case
+
+**Re-reviewed 2026-11-07 at the same pin.** `GOOF-CMDI-CREATE` is an expected positive for the planned
+Command Injection Analyzer. `app.js:60` registers POST `/create` to `routes.create`.
+`routes/index.js:11` binds `exec` from `require('child_process').exec`; the handler at165 reads
+`req.body.content` at168, tests its string type and regex match at169–170, takes match capture1
+at171, and constructs `exec('identify ' + url, callback)` at174.
+
+The regex's `(http.*)` capture preserves attacker-controlled text after the `http` prefix; it is
+neither a URL parser nor shell quoting. The string/type and match-success conditions establish a
+feasible invocation, not command syntax protection. `stdout`/`stderr` and the error logging in the
+callback do not sanitize the command before execution. The sibling `parse(item)` branch at182
+is not on the shell-executing branch and cannot protect it. Model the capture projection as a
+source-backed transfer; an unknown `match` helper must not cause this known positive to pass as Review.
+
+Expected trace: POST `/create` → request body content → regex capture1 → URL variable → concatenated
+shell-command operand of the verified `exec`. This is one shell sink source location. Mongoose query
+`.exec(callback)` calls in the same repository are negative binding controls, not process execution.
+The source contains no second imported child_process command call; confirm this inventory again at
+implementation time. The older comparator miss at this sink is historical, not a safety judgment.
+
+Full judged acceptance MUST detect this case with its actual source/entry association and preserve
+negative/protected controls. Keep the answer key and comparison output outside scanner/model inputs;
+use the complete pinned checkout for the new full-scan acceptance, recording default exclusions.
+The historical 22-file comparator snapshot is not a substitute for that full scan. No target code,
+commands, tests or scanner were executed for this source review.
+
+Source hashes for the command-entry review:
+
+| File | SHA-256 |
+| --- | --- |
+| `app.js` | `f84d3889f5bfafb0fc5906e5d7c948ae125a4643b6a39f2677f45ed9c1c56bcd` |
+| `routes/index.js` | `a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22` |

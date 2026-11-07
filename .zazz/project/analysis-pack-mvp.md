@@ -12,6 +12,14 @@ foundation and the subsequent component contracts are complete implementations, 
 to create another worktree or repeat the migrations. The remaining proposal sections explain design
 principles and future goals; they do not independently authorize implementation.
 
+## Analyzer terminology
+
+Use the [current architecture vocabulary](../architecture.md#analyzer-terminology): **Analyzer** names
+the assessment capability (for example, SQL Injection Analyzer or XSS Analyzer), **analysis pack**
+names its supporting versioned knowledge, and **analysis component** names a reusable catalog item.
+The **shared analysis engine** supplies common infrastructure. This proposal retains the historical
+initiative name “analysis pack MVP”; its completed specifications and recorded results are unchanged.
+
 ## Purpose and architectural distinction
 
 > Zazzles establishes supported code relationships through static analysis, then uses a decision

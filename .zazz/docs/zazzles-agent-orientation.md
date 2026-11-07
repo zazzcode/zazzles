@@ -16,6 +16,19 @@ when to load supporting guides. Keep this document under 400 lines; link to deta
 
 ## Current work
 
+**Command Injection Analyzer documentation checkpoint, 2026-11-07:** use the assigned
+`command-injection` worktree and [implementation contract](../specifications/command-injection.md).
+Implementation remains pending a user implementation instruction. The contract requires creating
+all missing analysis-pack components, command-specific coverage prerequisites, and final full
+OpenAI Decisions `gpt-6-luna` scans/fix iterations on Juice Shop, VulnPy and nodejs-goof, with
+HTML/JSON/SARIF reports for review. The user explicitly authorized those source-transmitting
+acceptance scans as part of implementation; no paid scan or target execution occurs at this
+planning checkpoint. The contract's later direction supersedes older checkpoint restrictions for
+that acceptance scope. Independent command examples are in the
+[VulnPy guide](../evaluation/vulnpy-detection-guide.md#command-injection-source-reviewed-acceptance-cases)
+and [Goof inventory](../evaluation/nodejs-goof-capabilities.md#command-injection-source-reviewed-acceptance-case).
+Keep sample checkouts read-only and locked predecessor specifications unchanged.
+
 **Component refactor, 2026-11-06:** SQL, NoSQL, standalone validation, XSS and outbound observations
 are implemented and offline-verified in the assigned `analysis-pack-mvp` worktree/branch. Outbound
 was committed at `c169a79` from clean `dc309cd`, preserving runtime `4e0be3e` and XSS migration `30fada9`. Read the

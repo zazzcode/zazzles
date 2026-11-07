@@ -217,10 +217,17 @@ established product promises.
 
 ## Analysis pack initiative
 
-The scanner uses embedded analysis components for SQL, JS/TS NoSQL, standalone validation,
-XSS and [outbound observations](specifications/components-03-outbound.md). This implements the
+The **SQL Injection Analyzer**, **NoSQL Injection Analyzer** (JS/TS), **Input Validation Analyzer**
+and **XSS Analyzer** use embedded analysis packs and reusable components. **Sensitive Data Logging
+Analyzer** is implemented on its existing path; its catalog migration remains pending. **Command
+Injection Analyzer** is the next planned analyzer. XSS includes reflected, stored and client-side/DOM
+capabilities rather than separate engines. The
+[architecture terminology](architecture.md#analyzer-terminology) distinguishes analyzer capabilities,
+analysis-pack knowledge and the shared analysis engine.
+
+The catalog also supports [outbound observations](specifications/components-03-outbound.md), without
+implementing the planned SSRF Analyzer's security assessment. This implements the
 SQL-first MVP and migration sessions 01–03 from the [analysis-pack design](project/analysis-pack-mvp.md).
-Logging remains on its working runtime path and requires a separate component migration.
 
 Static source/report comparisons and fresh paid OpenAI Decisions scans of Juice Shop and VulnPy
 verify this organization. All 944 eligible paid judgments passed exact replay against freshly parsed
@@ -236,7 +243,7 @@ not SSRF protection: requested assessments return `not_run` with zero model call
 incomplete. The judge receives
 only relevant interpretation material alongside the source trace; executable adapters and mandatory
 Go evidence gates remain in the scanner. The goal is reusable, auditable analysis knowledge as new
-vulnerability families arrive. Downloadable packs, executable plugins and a new rule language remain
+analyzers are added. Downloadable packs, executable plugins and a new rule language remain
 deferred. The [implementation plan](project/implementation-plan.md#analysis-pack-mvp-initiative)
 owns sequencing; the [technical approach](../docs/technical-approach.md#analysis-knowledge-and-components)
 owns the public explanation and evaluation limits.

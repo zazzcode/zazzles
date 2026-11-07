@@ -97,11 +97,20 @@ A protected claim applies to the stated operation and scope, not the entire entr
 
 <a id="analysis-components"></a>
 
-### Analysis packs and reusable components
+<a id="analysis-packs-and-reusable-components"></a>
 
-An **analysis pack** groups reusable knowledge for a type of assessment, such as SQL injection or
-cross-site scripting (XSS). Each pack combines smaller components rather than repeating the same
-knowledge for every language and framework.
+### Analyzers, analysis packs and reusable components
+
+An **Analyzer** identifies and assesses a named security concern. Examples are the **SQL Injection
+Analyzer**, **NoSQL Injection Analyzer**, **XSS Analyzer**, **Input Validation Analyzer** and
+**Sensitive Data Logging Analyzer**. The next planned capability is the **Command Injection Analyzer**.
+The XSS Analyzer includes reflected, stored and client-side/DOM/framework analysis.
+
+An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
+questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use
+the **shared analysis engine** for parsing, flow tracing, evidence, judgment and reporting; each
+analyzer does not require a separate engine or package. The
+[architecture terminology](.zazz/architecture.md#analyzer-terminology) defines these boundaries.
 
 | Component | What it contributes |
 |---|---|
@@ -121,10 +130,11 @@ requirement without needing a database contract. SQL protection and field valida
 Reports record component versions and content digests so a judgment can be traced to the knowledge
 used. Saved answers can be replayed only when the exact model request still matches.
 
-SQL, JS/TS NoSQL, standalone validation and supported XSS analyses use this design. Outbound
+The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and
+supported XSS Analyzer capabilities use this design. Outbound
 observations also select components, but do not yet receive a server-side request forgery (SSRF)
-judgment; they remain Review. Logging analysis works through its existing path and is the remaining
-component migration.
+judgment; they remain Review. The Sensitive Data Logging Analyzer works through its existing path
+and is the remaining component migration.
 
 Packs ship inside the binary; downloadable packs and arbitrary project standards remain planned.
 See the [technical approach](docs/technical-approach.md#analysis-knowledge-and-components) for
@@ -228,27 +238,35 @@ there is a tested subset, not complete coverage of every framework or path.
 The [project plan](.zazz/project/implementation-plan.md#future-capability-branches) owns the detailed
 per-language checklist and delivery order.
 
-### Implemented subsets
+<a id="implemented-subsets"></a>
 
-- Input validation and SQL injection analysis for supported JS/TS/Python cases.
-- NoSQL injection analysis for supported JavaScript/TypeScript cases.
-- Sensitive-data logging analysis.
-- Reflected, stored and client-side/framework XSS analysis.
-- Selected JS/TS API-to-browser XSS links and Python inline-script analysis.
+### Implemented analyzers and supporting coverage
+
+- **Input Validation Analyzer** and **SQL Injection Analyzer:** supported JS/TS/Python cases.
+- **NoSQL Injection Analyzer:** supported JavaScript/TypeScript cases; Python remains pending.
+- **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
+- **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
+  JS/TS API-to-browser links and Python inline-script analysis.
+
+Supporting infrastructure and knowledge:
+
 - Common entry/dispatch records, browser events, finite dynamic routes, GraphQL and unary gRPC.
 - SQL analysis component selection, bounded judge composition and auditable report/replay provenance.
 - NoSQL, standalone-validation and XSS component selection with independent claim protocols and replay provenance.
 - Outbound observation components, with request/body/response limits preserved and security assessment left explicit as future work.
 
-### Next and planned work
+<a id="next-and-planned-work"></a>
 
-- **Command injection:** assess process and shell execution across JS/TS/Python.
-- **XSS hardening:** expand renderer, helper, stored-origin and cross-tier coverage.
-- **Additional security families:** path traversal, code injection, XXE, open redirects, weak
-  randomness, cookie/session/header configuration, complete SSRF assessment and JS/TS prototype pollution.
+### Planned analyzers and other work
+
+- **Command Injection Analyzer:** assess process and shell execution across JS/TS/Python.
+- **Harden XSS analyzers:** expand renderer, helper, stored-origin and cross-tier coverage.
+- **Additional planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
+  Open Redirect Analyzer, Weak Randomness Analyzer, Cookie/Session/Header Configuration Analyzer,
+  SSRF Analyzer and JS/TS Prototype Pollution Analyzer.
 - **Python coverage completion:** add NoSQL and API-to-browser linkage before dependency auditing.
 - **Audit:** dependency/advisory reporting and SBOM artifacts.
-- **Secret scanning:** distinguish private material from public keys and placeholders.
+- **Secret Scanning Analyzer:** distinguish private material from public keys and placeholders.
 - **Fix:** agent-driven remediation of Scan, Inspect and Audit issues, with verification and review.
 - **Inspect capability:** separately present standards and quality assessments using shared analysis
   components. Broader checks, report separation and their delivery priority remain to be scoped.
@@ -294,7 +312,8 @@ versioned language guidance for security assessment. Broader quality baselines a
 profiles are planned. Findings about standards need an identifiable requirement and source evidence,
 not only a model's preference.
 
-The SQL, NoSQL, standalone-validation and XSS [analysis components](docs/technical-approach.md#analysis-knowledge-and-components)
+The SQL Injection, NoSQL Injection, Input Validation and XSS Analyzers use
+[analysis packs and components](docs/technical-approach.md#analysis-knowledge-and-components) to
 organize existing knowledge with explicit versions and applicability. Broader team-standard
 components remain planned under the [standards-workflow design](.zazz/project/analysis-pack-mvp.md#standards-driven-agent-workflow).
 Deterministic checks can handle mechanical requirements. Semantic judgment can assess contextual

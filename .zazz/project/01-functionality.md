@@ -37,8 +37,9 @@ clear assessment domains. Linked claims must avoid duplicate issue counts.
 Review remains the unresolved-evidence report category. Independent Findings Review remains a
 planned verification stage, not the name of the quality capability. This documentation changes no
 current command, output schema, classification or detector. Broader Inspect and Fix need separate
-contracts. The [analysis component architecture](../architecture/analysis-packs.md) organizes SQL,
-NoSQL, standalone validation, XSS and outbound observations. Logging remains a separate migration;
+contracts. The [analyzer and pack architecture](../architecture/analysis-packs.md) organizes knowledge
+for the SQL Injection Analyzer, NoSQL Injection Analyzer, Input Validation Analyzer and XSS Analyzer,
+plus outbound observations. The Sensitive Data Logging Analyzer remains a separate catalog migration;
 this internal organization does not implement general Inspect or Fix capabilities.
 
 ### Independent use and optional composition
@@ -51,6 +52,15 @@ of all assessment capabilities merely to begin a repair.
 Each capability still needs its own valid inputs, supported evidence and verification. Independent
 use does not waive tests or scoped reassessment of a repair. Current commands remain unchanged.
 Future command/API details require their own contracts.
+
+## Analyzer vocabulary
+
+Use the [canonical terminology](../architecture.md#analyzer-terminology): an **Analyzer** is an
+assessment capability; an **analysis pack** supplies its versioned interpretation knowledge;
+**analysis components** are reusable knowledge items; the **shared analysis engine** supplies common
+infrastructure. The XSS Analyzer includes reflected, stored and client-side/DOM/framework capabilities.
+The Command Injection Analyzer is planned. Names do not imply complete language/framework coverage.
+The [capability checklist](implementation-plan.md#supported-capability-checklist) owns delivered status.
 
 ## Detection modes
 
@@ -90,18 +100,20 @@ Decision Assessments, and reviewer conclusions separately. A skipped/failed revi
 Optional name/pattern-based sensitive-data tags may inform prioritization later. They are heuristic
 signals and are not proof of sensitive runtime data.
 
-## Initial rule families and coverage
+<a id="initial-rule-families-and-coverage"></a>
+
+## Initial analyzer capabilities and coverage
 
 The first feasibility slice focuses on a few JS/TS source-to-sink families. Expand only after measuring
 safe/vulnerable pairs and unsupported constructs.
 
-| Family | Candidate evidence | Mitigation distinctions to test |
+| Analyzer / capability | Candidate evidence | Mitigation distinctions to test |
 |---|---|---|
-| SQL injection | Source-derived query fragments, query API, parameter positions | Bound values versus dynamic identifiers or SQL fragments |
-| NoSQL operator injection | Untrusted values/objects entering database filters | Scalar coercion, schema enforcement, operator/object allow-lists |
-| Command injection | Shell command construction and execution mode | Shell interpolation versus argument-vector execution; executable/option control |
-| Path traversal | Untrusted path parts reaching filesystem operations | Normalization versus enforced base-directory containment |
-| SSRF | Untrusted input affecting an outbound request target | Host/scheme restrictions, redirects, unresolved runtime/network behavior |
+| SQL Injection Analyzer | Source-derived query fragments, query API, parameter positions | Bound values versus dynamic identifiers or SQL fragments |
+| NoSQL Injection Analyzer | Untrusted values/objects entering database filters | Scalar coercion, schema enforcement, operator/object allow-lists |
+| Command Injection Analyzer | Shell command construction and execution mode | Shell interpolation versus argument-vector execution; executable/option control |
+| Path Traversal Analyzer | Untrusted path parts reaching filesystem operations | Normalization versus enforced base-directory containment |
+| SSRF Analyzer | Untrusted input affecting an outbound request target | Host/scheme restrictions, redirects, unresolved runtime/network behavior |
 | Unsafe deserialization / HTML injection | Input reaching a relevant API or output context | Type- and context-specific protection |
 | Pattern-only configuration / crypto | Explicit risky API/configuration use | Precisely documented rule preconditions and counterexamples |
 

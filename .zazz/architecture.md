@@ -1,9 +1,40 @@
 # Architecture
 
-**Implemented architecture, updated 2026-11-06.** This document owns package responsibilities,
+**Implemented architecture, updated 2026-11-07.** This document owns package responsibilities,
 terminology and pipeline boundaries. Planned components are labeled explicitly. Product direction
 lives in [project.md](project.md), decisions in the [proposal](project/03-jev-design-proposal.md),
 and delivery order in the [implementation plan](project/implementation-plan.md).
+
+## Analyzer terminology
+
+An **Analyzer** is the capability that identifies and assesses a named security concern using
+source evidence, applicable interpretation knowledge, semantic judgment and mandatory Go policy.
+Use **Command Injection Analyzer**, **SQL Injection Analyzer**, **NoSQL Injection Analyzer**,
+**XSS Analyzer**, **Input Validation Analyzer** and **Sensitive Data Logging Analyzer** for these
+capabilities. The Command Injection Analyzer is planned; the others have bounded implementations.
+Use the specific injection class in analyzer names; “Injection Analyzer” alone is ambiguous.
+
+| Term | Architectural meaning |
+| --- | --- |
+| Analyzer | A named assessment capability spanning extraction, interpretation, judgment and reporting |
+| Analysis pack | Versioned knowledge supporting an analyzer: applicable API contracts, guidance, questions and evidence requirements |
+| Analysis component | A reusable item selected from the embedded catalog to compose an analysis pack's applicable knowledge |
+| Shared analysis engine | The common parsing, binding/flow tracing, evidence, judgment and reporting infrastructure used by analyzers |
+| Analysis family | The internal registration/grouping for related candidate kinds, contracts and protocols |
+
+An analyzer is a capability, not necessarily a standalone Go package, engine or one-to-one pack.
+Language/framework adapters supply facts to analyzers; they are not vulnerability-class analyzers.
+The **XSS Analyzer** includes reflected, stored and client-side/DOM/framework capabilities. **Stored
+XSS Analyzer** may name that subcapability in focused discussion; use **XSS Analyzer — Stored XSS**
+in inventories so it is not counted as a separate engine. API-to-browser linkage is shared XSS
+coverage, not another analyzer. Outbound observations support a future **SSRF Analyzer**; observation
+pack selection alone does not implement that analyzer's security assessment.
+
+These documentation names do not rename packages, catalog IDs, candidate kinds, protocols, CLI
+flags or finding-type labels. A report's **SQL Injection** type describes the concern being assessed;
+**SQL Injection Analyzer** names the capability. Historical specifications and evaluation records
+retain their original wording and contracts. The [analyzer and pack ledger](architecture/analysis-packs.md#current-implementation-status)
+and [capability checklist](project/implementation-plan.md#supported-capability-checklist) own current status.
 
 ## Current provider decision
 
@@ -38,7 +69,7 @@ novel-repository generalization remain hypotheses until matched independent eval
 - [Reporting and SARIF](architecture/reporting-and-sarif.md): report records and implemented bounded SARIF export.
 - [Standalone HTML](architecture/html-reporting.md): human-facing report and disclosure rows.
 - [SCA follow-on](architecture/sca-design.md): planned dependency auditing.
-- [Analysis components](architecture/analysis-packs.md): SQL/NoSQL/validation/XSS and outbound-observation ownership, selection, bounds,
+- [Analyzers and analysis packs](architecture/analysis-packs.md): SQL/NoSQL/validation/XSS and outbound-observation ownership, selection, bounds,
   provenance, compatibility and incremental migration ledger; [original proposal](project/analysis-pack-mvp.md).
 
 ## Product boundaries and shared engine
@@ -97,7 +128,7 @@ flowchart TD
     Repo["Target source files"] --> Walk["walk and lang: selected manifest"]
     Walk --> Parse["parse: Tree-sitter and language/framework adapters"]
     Parse --> Evidence["analysis: entries, candidate uses, evidence and gaps"]
-    Guidelines["guidelines: embedded Analysis Guidelines"] --> Catalog["analysispacks: registered family selection and bounded material"]
+    Guidelines["guidelines: embedded Analysis Guidelines"] --> Catalog["analysispacks: analyzer knowledge selection and bounded material"]
     Parse -->|"Verified applicability facts"| Catalog
     Catalog -->|"Selection provenance"| Evidence
     Catalog -->|"Selected interpretation and questions"| Judge

@@ -1,4 +1,11 @@
-# Embedded analysis components
+# Analyzers and embedded analysis packs
+
+<a id="embedded-analysis-components"></a>
+
+The [architecture terminology](../architecture.md#analyzer-terminology) distinguishes an **Analyzer**
+(the assessment capability), its supporting **analysis pack** (versioned knowledge), reusable
+**analysis components**, and the **shared analysis engine**. Internal family registrations group
+related candidate kinds and protocols; they do not require separate engines or packages.
 
 This document owns the implemented component responsibilities, source inventory, compatibility,
 migration status and verification evidence. `internal/analysispacks` provides the shared catalog used
@@ -12,16 +19,19 @@ work. The [database guide](../../docs/analysis/database-injection.md#query-compo
 
 ## Current implementation status
 
-SQL, JS/TS NoSQL, standalone validation, XSS and outbound observations use the shared embedded
-catalog, deterministic selection and schema-4 provenance. Static adapters establish source facts;
+The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and XSS
+Analyzer use the shared embedded catalog, deterministic selection and schema-4 provenance. Outbound
+observations also select catalog components, without implementing SSRF security assessment.
+Static adapters establish source facts;
 components select relevant guidance, contracts, questions and evidence obligations; Go judgment
 retains mandatory completeness and consistency gates. Outbound is observation-only, with no model
 questionnaire, model calls or SSRF verdict.
 
-The SQL-first MVP and migration sessions 01–03 are implemented. Logging still uses its working
-judge-owned questions and `log-use-v1` protocol outside component selection. It is the remaining
-migration of an existing family. Command injection is a new family; complete SSRF assessment,
-general Inspect, public pack loading and executable plugins remain future capabilities.
+The SQL-first MVP and migration sessions 01–03 are implemented. The Sensitive Data Logging
+Analyzer still uses its working judge-owned questions and `log-use-v1` protocol outside component selection. It is the remaining
+migration of an existing analyzer. The Command Injection Analyzer is planned as a new capability;
+complete SSRF assessment, general Inspect, public pack loading and executable plugins remain future
+capabilities.
 
 The [fresh paid verification](#fresh-paid-component-e2e-2026-11-06) and
 [static baseline comparison](#merge-readiness-recheck-2026-11-06) record actual results and limits.
@@ -229,15 +239,15 @@ issue counts and status semantics, including a construction-practice concern bes
 
 ## Migration ledger
 
-| Family | Status | Next bounded task and acceptance controls |
+| Analyzer / supporting observations | Status | Next bounded task and acceptance controls |
 | --- | --- | --- |
-| SQL injection with query validation/construction facets | Migrated / offline verification passed | Catalog/selection, request composition, provenance and actual JS/TS/Python pipeline parity; raw, bound, constrained, unknown and context-isolation controls; `sql-components-v2` provenance after family generalization with frozen discovery hashes and outcomes |
-| Command injection | Separate next new family | Add verified process/shell contracts and command-specific questions through accepted components; positive/protected/unknown controls and unchanged other families |
-| XSS | Migrated / offline verification passed | Selected rendering/context/protection/storage/browser/response material; five unchanged named questions, mandatory origin/context/path gates, JSON-only observations, exact replay and separate bounded fetch-method correction |
-| Standalone validation | Migrated / offline verification passed | Requirement/enforcement questions and field-policy guidance selected per claim; established/absent policies, enforced/bypassed/missing guards, client-only policy, unknown helpers, API-less claims, JS/Python parity and claim isolation; no invented standards |
-| Logging | Inventoried / not migrated | Move sensitive-content/emission/redaction contracts and questions; paired leaks, metadata/constants, redaction and unknowns |
-| JS/TS NoSQL | Migrated / offline verification passed | MarsDB/Mongoose contracts, selector/`$where` guidance and all-path/coverage questions selected per claim; raw selector, constrained scalar, conditional alternatives, Mongoose schema/version, unknown helper/API, shared-caller isolation and replay controls; Python NoSQL stays unsupported |
-| Outbound requests | Migrated / offline verification passed | Scoped observation components, unchanged source/report projections and Python operand contract; explicit zero-call not_run and incomplete requested scan; no SSRF verdict |
+| SQL Injection Analyzer with query validation/construction facets | Migrated / offline verification passed | Catalog/selection, request composition, provenance and actual JS/TS/Python pipeline parity; raw, bound, constrained, unknown and context-isolation controls; `sql-components-v2` provenance after family generalization with frozen discovery hashes and outcomes |
+| Command Injection Analyzer | Planned next analyzer | Add verified process/shell contracts and command-specific questions through accepted components; positive/protected/unknown controls and unchanged other families |
+| XSS Analyzer (reflected, stored and client-side/DOM/framework) | Migrated / offline verification passed | Selected rendering/context/protection/storage/browser/response material; five unchanged named questions, mandatory origin/context/path gates, JSON-only observations, exact replay and separate bounded fetch-method correction |
+| Input Validation Analyzer | Migrated / offline verification passed | Requirement/enforcement questions and field-policy guidance selected per claim; established/absent policies, enforced/bypassed/missing guards, client-only policy, unknown helpers, API-less claims, JS/Python parity and claim isolation; no invented standards |
+| Sensitive Data Logging Analyzer | Implemented; catalog migration pending | Move sensitive-content/emission/redaction contracts and questions; paired leaks, metadata/constants, redaction and unknowns |
+| NoSQL Injection Analyzer (JS/TS) | Migrated / offline verification passed | MarsDB/Mongoose contracts, selector/`$where` guidance and all-path/coverage questions selected per claim; raw selector, constrained scalar, conditional alternatives, Mongoose schema/version, unknown helper/API, shared-caller isolation and replay controls; Python NoSQL stays unsupported |
+| Outbound observations (supporting future SSRF Analyzer) | Migrated / offline verification passed | Scoped observation components, unchanged source/report projections and Python operand contract; explicit zero-call not_run and incomplete requested scan; no SSRF verdict |
 
 The user revised session grouping on 2026-11-05. Implementation order is
 [01 NoSQL plus standalone validation](../specifications/components-01-nosql-validation.md),
@@ -245,7 +255,7 @@ The user revised session grouping on 2026-11-05. Implementation order is
 [03 outbound observations](../specifications/components-03-outbound.md). Logging remains separate.
 Sessions 01–03 are implemented and offline-verified; human review remains pending.
 XSS uses coordinated server/template, stored and browser/cross-tier checkpoints. The plan tracks
-actual future sequencing; command injection remains the next new vulnerability family.
+actual future sequencing; the Command Injection Analyzer remains the next new analyzer.
 
 ### Extension risks recorded by source review
 

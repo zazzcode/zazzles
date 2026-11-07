@@ -16,6 +16,13 @@ Automatic reference/line matches are navigation aids, not correctness decisions.
 [Summary counts](inventory-summary.json) and [explicit review decisions](review-decisions.json) are
 versioned separately from the ignored raw reports.
 
+## Command-execution classification
+
+The [command-injection reference](command-injection-review.md) distinguishes direct process-API
+command injection from the documented SSTi/JavaScript-execution challenges and records a constant
+packaging-command control. It supplies independent classification for the planned full judged
+Command Injection Analyzer acceptance; no new detector or scan result is claimed by that review.
+
 ## External exercise report
 
 [Corisco pentest summary](coriscope-pentest-summary.md) summarizes all eleven categories in the

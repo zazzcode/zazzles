@@ -24,7 +24,12 @@ type pythonRoute struct {
 	fn, decorator *sitter.Node
 	receiver      pythonReceiver
 	html          bool
-	gaps          []analysis.Gap
+	// methods resolves self.<name> calls inside a class-based handler.
+	methods map[string]*pythonBoundCallable
+	// dispatch is the registry callable a request-path-selected call resolves to
+	// in this finite-registry context (WSGI path routing).
+	dispatch *pythonBoundCallable
+	gaps     []analysis.Gap
 }
 
 func (s *pythonSet) receiver(m *pythonModule, name string, depth int) pythonReceiver {

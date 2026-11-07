@@ -196,7 +196,7 @@ func (f *pythonFlow) project(n *sitter.Node) pythonValue {
 		key := pyText(m, n.ChildByFieldName("attribute"))
 		if f.qualified(pyText(m, obj)) == "flask.request" {
 			switch key {
-			case "args", "form", "values", "json", "cookies", "headers", "data", "files", "GET", "POST", "META":
+			case "args", "form", "values", "json", "cookies", "headers", "data", "files", "GET", "POST", "META", "_params":
 				return f.source(n, key, "")
 			}
 		}
@@ -220,6 +220,9 @@ func (f *pythonFlow) project(n *sitter.Node) pythonValue {
 	index := n.ChildByFieldName("subscript")
 	key, _ := pyLiteral(m, index)
 	v := f.eval(obj)
+	if f.route.route.Framework == "wsgi" && f.qualified(pyText(m, obj)) == "flask.request" && (key == "QUERY_STRING" || key == "PATH_INFO") {
+		return f.source(n, "environ", key)
+	}
 	if f.qualified(pyText(m, obj)) == "flask.session" {
 		return f.source(n, "session", key)
 	}

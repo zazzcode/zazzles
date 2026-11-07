@@ -338,6 +338,13 @@ func (f *pythonFlow) commandCall(call, fn *sitter.Node) (pythonValue, bool) {
 	if !b.request {
 		return pythonValue{}, true
 	}
+	id := fmt.Sprintf("use:%s:%s:%d:%s", f.invocation.ID, f.module.file, call.StartByte(), "command_execution_candidate")
+	for _, existing := range f.report.Uses {
+		if existing.ID == id {
+			// Several syntactic paths reach one process call in one invocation; one record.
+			return pythonValue{}, true
+		}
+	}
 	var all pythonValue
 	for _, d := range b.deps {
 		all.deps = append(all.deps, d)
@@ -418,6 +425,11 @@ func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitte
 			coverage = append(coverage, g)
 			continue
 		}
+		if (g.Kind == "python_call_unresolved" || g.Kind == "python_value_unresolved" || g.Kind == "python_dispatch_unresolved") && !touchesCommandDependency(g, u.Dependencies) {
+			// A call or value elsewhere in the path that never touches an operand dependency.
+			coverage = append(coverage, g)
+			continue
+		}
 		if evidence, ok := f.supportedCommandGap(g, names); ok {
 			coverage = append(coverage, g)
 			transfers = append(transfers, evidence)
@@ -454,11 +466,15 @@ func (f *pythonFlow) supportedCommandGap(g analysis.Gap, names map[string]bool) 
 		return analysis.Evidence{}, false
 	}
 	switch g.Kind {
-	case "python_call_unresolved":
+	case "python_call_unresolved", "python_dispatch_unresolved":
 		if node.Kind() != "call" {
 			return analysis.Evidence{}, false
 		}
 		fn := node.ChildByFieldName("function")
+		switch f.set.qualified(m, pyText(m, fn)) {
+		case "urllib.parse.parse_qs", "urllib.parse.parse_qsl":
+			return m.evidence("query_string_parse", node), true
+		}
 		if fn == nil || fn.Kind() != "attribute" {
 			return analysis.Evidence{}, false
 		}
@@ -507,6 +523,42 @@ func (f *pythonFlow) supportedCommandGap(g analysis.Gap, names map[string]bool) 
 func pythonGapTouches(g analysis.Gap, d analysis.Dependency) bool {
 	for _, e := range d.Transfers {
 		if g.At.File == e.Span.File && g.At.StartByte >= e.Span.StartByte && g.At.EndByte <= e.Span.EndByte && e.Kind == "call_argument_dependency" {
+			return true
+		}
+	}
+	return false
+}
+
+// threadValue models threading.Thread(target=fn, args=(...)): start() runs the
+// target with the argument values, a transfer from the request thread.
+func (f *pythonFlow) threadValue(n *sitter.Node) pythonValue {
+	m := f.module
+	target := pyKeywordIn(m, n, "target")
+	if target == nil || target.Kind() != "identifier" {
+		return pythonValue{}
+	}
+	name := pyText(m, target)
+	if _, local := f.env[name]; local {
+		return pythonValue{}
+	}
+	module, key := f.set.resolve(m, name, 0)
+	if module == nil || module.funcs[key] == nil || f.set.staticInvalid[module.file+":"+key] {
+		return pythonValue{}
+	}
+	t := &pythonThread{callable: &pythonBoundCallable{module: module, fn: module.funcs[key], evidence: []analysis.Evidence{m.evidence("thread_target", target)}}, node: n}
+	if argsNode := pyKeywordIn(m, n, "args"); argsNode != nil && (argsNode.Kind() == "tuple" || argsNode.Kind() == "list") {
+		for i := uint(0); i < argsNode.NamedChildCount(); i++ {
+			t.args = append(t.args, pyTransfer(f.eval(argsNode.NamedChild(i)), m.evidence("thread_argument", argsNode.NamedChild(i))))
+		}
+	} else if argsNode != nil {
+		return pythonValue{}
+	}
+	return pythonValue{thread: t}
+}
+
+func touchesCommandDependency(g analysis.Gap, deps []analysis.Dependency) bool {
+	for _, d := range deps {
+		if gapTouchesDependency(g, d) || pythonGapTouches(g, d) {
 			return true
 		}
 	}

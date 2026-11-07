@@ -59,6 +59,27 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		v.binding = ""
 		return v
 	}
+	if receiver.binding == "flask_request" && (method == "get_param" || method == "get_param_as_bool") && len(nodes) > 0 {
+		key, _ := pyLiteral(m, nodes[0])
+		v := f.source(n, "query", key)
+		if method == "get_param_as_bool" {
+			v = pyProtect(v, "non_content")
+		}
+		return v
+	}
+	if callable := receiver.methods[method]; callable != nil && object != nil && object.Kind() == "identifier" {
+		// self.<method>(...) in a class-based handler resolves to the registered class's method.
+		return f.boundHelper(n, callable, append([]pythonValue{{}}, values...))
+	}
+	if q == "threading.Thread" {
+		return f.threadValue(n)
+	}
+	if method == "start" && receiver.thread != nil {
+		t := receiver.thread
+		v := f.boundHelper(n, t.callable, t.args)
+		_ = v
+		return pythonValue{}
+	}
 	if method == "get" && len(values) > 0 {
 		key, _ := pyLiteral(m, nodes[0])
 		if len(receiver.deps) > 0 || receiver.fields != nil {
@@ -102,6 +123,13 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	}
 	if v, ok := f.env[name]; ok && v.callable != nil {
 		return f.boundHelper(n, v.callable, values)
+	}
+	if v, ok := f.env[name]; ok && f.route.dispatch != nil && len(v.deps) > 0 && len(v.methods) == 0 && !strings.Contains(name, ".") {
+		// A callable selected by request path from a finite registry: this context
+		// is one registry item, so the call resolves to that item's callable.
+		bound := *f.route.dispatch
+		bound.evidence = append(append([]analysis.Evidence{}, bound.evidence...), m.evidence("registry_dispatch", n))
+		return f.boundHelper(n, &bound, values)
 	}
 	if target, key := f.set.resolve(m, name, 0); target != nil && target.funcs[key] != nil {
 		// Local assignments/parameters override helper declarations and imported helpers.

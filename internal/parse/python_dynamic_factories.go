@@ -68,6 +68,8 @@ func (f *pythonStatic) stmt(n *sitter.Node) bool {
 				f.eval(c)
 			}
 		}
+	case "class_definition":
+		f.env[pyText(f.module, n.ChildByFieldName("name"))] = f.classValue(n)
 	case "function_definition":
 		f.env[pyText(f.module, n.ChildByFieldName("name"))] = &pythonStaticValue{module: f.module, fn: n, closure: staticEnv(f.env)}
 	case "decorated_definition":
@@ -186,6 +188,11 @@ func (f *pythonStatic) call(n *sitter.Node) *pythonStaticValue {
 			q = "getattr"
 		}
 	}
+	if name == "setattr" {
+		if _, shadow := f.env[name]; !shadow {
+			q = "setattr"
+		}
+	}
 	nodes := pyArgs(n)
 	args := make([]*pythonStaticValue, len(nodes))
 	for i, a := range nodes {
@@ -226,6 +233,9 @@ func (f *pythonStatic) call(n *sitter.Node) *pythonStaticValue {
 		return &copy
 	}
 	callee := f.eval(fn)
+	if callee.class != nil {
+		return &pythonStaticValue{known: true, instance: callee.class}
+	}
 	if callee.fn != nil {
 		return f.invoke(n, callee, args)
 	}

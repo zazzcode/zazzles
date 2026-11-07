@@ -33,6 +33,15 @@ type pythonValue struct {
 	evidence        []analysis.Evidence
 	built, rendered bool
 	unknown         bool
+	// methods resolves self.<name>() for a class-based resource handler.
+	methods map[string]*pythonBoundCallable
+	// thread is a threading.Thread whose target runs on start().
+	thread *pythonThread
+}
+type pythonThread struct {
+	callable *pythonBoundCallable
+	args     []pythonValue
+	node     *sitter.Node
 }
 type pythonWrite struct {
 	value    pythonValue
@@ -175,6 +184,9 @@ func (f *pythonFlow) parameters(fn *sitter.Node) {
 		}
 		key := pyText(f.module, name)
 		if key == "self" || key == "cls" {
+			if len(f.route.methods) > 0 {
+				f.env[key] = pythonValue{methods: f.route.methods}
+			}
 			continue
 		}
 		if f.route.route.Framework == "fastapi" || strings.Contains(f.route.route.PathPattern, "<"+key+">") || strings.Contains(f.route.route.PathPattern, ":"+key+">") {
@@ -193,7 +205,7 @@ func (f *pythonFlow) parameters(fn *sitter.Node) {
 				v = pyProtect(v, "numeric")
 			}
 			f.env[key] = v
-		} else if i == 0 && (f.route.route.Framework == "django" || f.route.route.Framework == "pyramid" || f.route.route.Framework == "aiohttp") {
+		} else if i == 0 && (f.route.route.Framework == "django" || f.route.route.Framework == "pyramid" || f.route.route.Framework == "aiohttp" || f.route.route.Framework == "wsgi") {
 			// The view's request argument carries the framework request object.
 			f.env[key] = pythonValue{binding: "flask_request"}
 		} else if i == 1 && f.route.route.Framework == "falcon" {

@@ -28,9 +28,11 @@ type pythonStaticValue struct {
 	// routes holds Pyramid route names bound to their patterns.
 	routes map[string]string
 	// route is a route definition awaiting registration by its consumer.
-	route    *staticRoute
-	closure  map[string]*pythonStaticValue
-	evidence []analysis.Evidence
+	route *staticRoute
+	// class is a statically defined class; instance an instance of one.
+	class, instance *staticClass
+	closure         map[string]*pythonStaticValue
+	evidence        []analysis.Evidence
 }
 type pythonStatic struct {
 	set        *pythonSet
@@ -68,6 +70,7 @@ func (s *pythonSet) dynamicRouteEntries() []pythonRoute {
 		f.block(m.tree.RootNode())
 	}
 	s.adapterEntries(&out, sites)
+	s.wsgiEntries(&out, sites)
 	return out
 }
 func (f *pythonStatic) evidence(kind string, n *sitter.Node) analysis.Evidence {

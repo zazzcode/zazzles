@@ -96,6 +96,57 @@ func TestSQLBackedStoredXSS(t *testing.T) {
 	})
 }
 
+func TestSQLJSInjectionCandidates(t *testing.T) {
+	helper := "function queryOne(sql){const r=queryAll(sql);return r[0]}\n"
+	for _, tt := range []struct {
+		name, handler string
+		want          int
+	}{
+		{"built text through two helpers", "app.post('/l',(req,res)=>{const {email}=req.body;const q=`SELECT * FROM users WHERE email = '${email}'`;const u=queryOne(q);res.json(u)});", 1},
+		{"route parameter in run", "app.delete('/u/:id',(req,res)=>{db.run(`DELETE FROM users WHERE id = ${req.params.id}`);res.json({})});", 1},
+		{"try does not guard its query", "app.get('/s',(req,res)=>{try{const r=queryAll(`SELECT * FROM notes WHERE t = '${req.query.q}'`);res.json(r)}catch(err){res.status(500).json({})}});", 1},
+		{"bound values are not a claim", "app.post('/n',(req,res)=>{db.run('INSERT INTO notes (body) VALUES (?)',[req.body.b]);res.json({})});", 0},
+		{"literal SQL is not a claim", "app.get('/n',(_req,res)=>{res.json(queryAll('SELECT body FROM notes'))});", 0},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			r := analyzeFiles(t, map[string]string{"app.js": sqlJSPrelude + helper + "app.use(express.json());" + tt.handler})
+			count := 0
+			for _, u := range r.Uses {
+				if u.Kind != "sql_query_candidate" {
+					continue
+				}
+				count++
+				if u.APIModel == nil || u.APIModel.ID != "sqljs-statement-v1" || len(u.Completeness.Evidence["sink_binding"]) == 0 {
+					t.Fatalf("sql.js contract or binding missing: %+v", u)
+				}
+				if len(u.Completeness.Blockers) != 0 {
+					t.Fatalf("unexpected blockers: %+v", u.Completeness.Blockers)
+				}
+			}
+			if count != tt.want {
+				t.Fatalf("want %d SQL candidates, got %d", tt.want, count)
+			}
+		})
+	}
+	t.Run("finally stays a control gap", func(t *testing.T) {
+		r := analyzeFiles(t, map[string]string{"app.js": sqlJSPrelude + "app.get('/s',(req,res)=>{try{res.json(queryAll(`SELECT * FROM notes WHERE t = '${req.query.q}'`))}finally{res.end()}});"})
+		for _, u := range r.Uses {
+			if u.Kind == "sql_query_candidate" && len(u.Completeness.Blockers) == 0 {
+				t.Fatalf("finally must keep a blocker: %+v", u)
+			}
+		}
+	})
+	t.Run("an unverified receiver is not a sink", func(t *testing.T) {
+		source := strings.ReplaceAll(sqlJSPrelude, "require('sql.js')", "require('./fake')")
+		r := analyzeFiles(t, map[string]string{"app.js": source + "app.delete('/u/:id',(req,res)=>{db.run(`DELETE FROM users WHERE id = ${req.params.id}`);res.json({})});", "fake.js": "module.exports=()=>({})"})
+		for _, u := range r.Uses {
+			if u.Kind == "sql_query_candidate" {
+				t.Fatalf("fake database became a SQL sink: %+v", u)
+			}
+		}
+	})
+}
+
 func sequelizeFixture(setter, sanitizerVersion string) map[string]string {
 	return map[string]string{
 		"package.json": `{"dependencies":{"sanitize-html":"` + sanitizerVersion + `"}}`,

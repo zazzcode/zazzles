@@ -62,6 +62,28 @@ func sqlJSCall(m *sourceModule, fn *sitter.Node) (string, bool) {
 	return "", false
 }
 
+// sqlJSBinding returns the import and statement call that verify a sql.js sink.
+func (s *moduleSet) sqlJSBinding(use analysis.CandidateUse) []analysis.Evidence {
+	m := s.modules[use.Sink.Span.File]
+	if m == nil {
+		return nil
+	}
+	call := nodeAt(m.tree.RootNode(), use.Sink.Span.StartByte, use.Sink.Span.EndByte)
+	if call == nil || call.Kind() != "call_expression" {
+		return nil
+	}
+	if _, ok := sqlJSCall(m, call.ChildByFieldName("function")); !ok {
+		return nil
+	}
+	out := []analysis.Evidence{m.evidence("sink_binding", call)}
+	for _, imp := range m.imports {
+		if imp.module == "sql.js" {
+			out = append(out, m.evidence("sink_binding", imp.declaration))
+		}
+	}
+	return out
+}
+
 // sqlHelper reports a local function that passes its first parameter to a verified
 // statement call, directly or through one more local helper.
 func (s *moduleSet) sqlHelper(m *sourceModule, call *sitter.Node, depth int) bool {

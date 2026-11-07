@@ -694,6 +694,12 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			kind = "nosql_query_candidate"
 		}
 	}
+	if kind == "" && f.client == nil && len(values) > 0 && len(values[0].deps) > 0 {
+		// Only request data in the SQL text slot is a claim; a bound values array is not.
+		if _, ok := sqlJSCall(f.module, fn); ok {
+			kind = "sql_query_candidate"
+		}
+	}
 	if name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") {
 		kind = "outbound_http_candidate"
 	}

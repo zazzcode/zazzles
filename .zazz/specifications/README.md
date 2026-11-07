@@ -17,7 +17,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
-- [Command Injection Analyzer](command-injection.md) — JS/TS/Python process and shell analysis using the shared analysis-pack structure; full judged Juice Shop, VulnPy and nodejs-goof acceptance with HTML/JSON/SARIF reports; implementation pending.
+- [Command Injection Analyzer](command-injection.md) — JS/TS/Python process and shell analysis using the shared analysis-pack structure; full judged Juice Shop, VulnPy, nodejs-goof and vulnerable-typescript-app acceptance with refreshed GitHub HTML/JSON/SARIF samples; implementation pending.
 
 Use the assigned feature worktree for related contract, design, implementation and tests. Explicit
 user implementation requests authorize work under [AGENTS.md](../../AGENTS.md#authorization-and-delivery).

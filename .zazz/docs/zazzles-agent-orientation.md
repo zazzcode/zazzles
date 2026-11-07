@@ -20,8 +20,8 @@ when to load supporting guides. Keep this document under 400 lines; link to deta
 `command-injection` worktree and [implementation contract](../specifications/command-injection.md).
 Implementation remains pending a user implementation instruction. The contract requires creating
 all missing analysis-pack components, command-specific coverage prerequisites, and final full
-OpenAI Decisions `gpt-6-luna` scans/fix iterations on Juice Shop, VulnPy and nodejs-goof, with
-HTML/JSON/SARIF reports for review. The user explicitly authorized those source-transmitting
+OpenAI Decisions `gpt-6-luna` scans/fix iterations on Juice Shop, VulnPy, nodejs-goof and vulnerable-typescript-app, with twelve
+HTML/JSON/SARIF reports, refreshed GitHub samples and final implemented-state documentation. The user explicitly authorized those source-transmitting
 acceptance scans as part of implementation; no paid scan or target execution occurs at this
 planning checkpoint. The contract's later direction supersedes older checkpoint restrictions for
 that acceptance scope. Independent command examples are in the

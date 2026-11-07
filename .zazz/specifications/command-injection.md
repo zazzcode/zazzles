@@ -9,9 +9,9 @@ and SARIF.
 
 The implementation includes **creating every missing command analysis-pack component**, not just wiring a detector to
 existing packs. TypeScript `/api/ping`, Erlik and portable controls establish the first slice. Final acceptance is an
-iterative full, live judged scan of **Juice Shop, VulnPy and nodejs-goof**, detecting every independently documented
-command-injection positive and producing three-format reports for human review. §8 defines the independent references
-and §9 the fix loop.
+iterative full, live judged scan of **Juice Shop, VulnPy, nodejs-goof and vulnerable-typescript-app**, detecting every
+independently documented command-injection positive and producing three-format reports for human review. §8 defines the
+independent references and §9 the fix loop.
 
 This session prepares documentation; implementation starts when the user instructs a new session to implement this
 contract. One deliverable uses the existing `command-injection` worktree/branch; one future draft PR targets `stage`,
@@ -34,6 +34,7 @@ backlog are **not implementation prerequisites**.
 | Before catalog work | [Pack ownership](../architecture/analysis-packs.md#boundary-and-ownership), [selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) | Same runtime integration and provenance as other analyzers; dated verification ledgers need not be read in full |
 | Before evidence/policy work | [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates), [input-validation rules](../../docs/analysis/input-validation.md) | Value/control evidence, claim-specific blockers and independent field policy |
 | Before source evaluation | App references in §8; [sample policy](../../docs/samples/reference-policy.md) | Independent labels, pins, target integrity and separation from model inputs |
+| Before final sample/doc delivery | [Sample and implemented-state delivery](../evaluation/command-injection-sample-delivery.md) | Twelve final reports, curated GitHub samples, README links and delivered analyzer documentation |
 | Before verification/live calls | [Contributor checks](../../docs/contributing.md#contributing), [decision-model guide](../../docs/decision-models.md), [toolchain guidance](../docs/worktree-setup.md#linked-computer-agent-toolchain) only when applicable to the execution host | Correct CLI, credentials, explicit provider/caps and native versus linked Go setup |
 | Before changing files | [Standards index](../standards/index.yaml); matched [code structure](../standards/code-structure.md), [testing](../standards/testing.md), [docs hygiene](../standards/docs-hygiene.md) | Load only matched standards; use `doc-check` for documentation and `spec-hygiene` when revising this contract |
 
@@ -92,8 +93,9 @@ file groups, not a general rewrite.
 | `internal/report/command*.go`; `{findings,finding_types,guidance,scoped_guidance,sarif}.go` and tests | New / modified | Command classification, scoped guidance, CWE and three-format parity |
 | `cmd/scan/*command*test.go`, CLI scheduling helpers only if required | New / modified | Full-scan eligibility, limits, incompleteness and bundle verification |
 | `docs/analysis/command-injection.md`, `docs/analysis/README.md` | New / modified | Public implemented rules and guidance |
-| `.zazz/evaluation/{command-injection-results.md,vulnpy-detection-guide.md,vulnpy-command-injection-sources.json,nodejs-goof-capabilities.md,juice-shop/}` plus command case/evaluator files | New / modified | Independent reference matrix, reproducible comparisons and acceptance evidence |
-| `.zazz/architecture.md`, `.zazz/architecture/{analysis-packs,evidence-and-claims,trace-judgment}.md`, `.zazz/project/{implementation-plan,01-functionality}.md`, README/index | Modified as needed | Synchronize delivered capability/limits after verification; not extra required reading for code work |
+| `docs/samples/{juice-shop,vulnpy,nodejs-goof,vulnerable-typescript-app}/`, sample README/index and refresh tooling only as needed | Modified / new artifacts | Final canonical samples, metadata, attribution and links |
+| `.zazz/evaluation/{command-injection-sample-delivery.md,vulnerable-typescript-app-detection-guide.md,command-injection-results.md,vulnpy-detection-guide.md,vulnpy-command-injection-sources.json,nodejs-goof-capabilities.md,juice-shop/}` plus command case/evaluator files | New / modified | Independent reference matrix, reproducible comparisons and acceptance evidence |
+| `.zazz/project.md`, `.zazz/architecture.md`, `.zazz/architecture/{analysis-packs,evidence-and-claims,trace-judgment}.md`, `.zazz/project/{implementation-plan,01-functionality}.md`, README/index | Modified as needed | Synchronize delivered capability/limits after verification; not extra required reading for code work |
 
 Identify exact prerequisite files and tests in the run log before editing. The user's full-corpus acceptance instruction
 includes bounded command-relevant entry/dispatch/flow repairs necessary for all §8 positives. It supersedes the earlier
@@ -264,7 +266,7 @@ stop. Preserve existing user work.
 
 Use declared Go toolchain (go.mod currently 1.27.2), cgo, native/shared cached dependencies and ignored local GOCACHE.
 Ordinary tests use only fixtures/local HTTP stubs. The user's 2026-11-07 direction explicitly authorizes the final full
-source-transmitting OpenAI Decisions gpt-6-luna evaluations on all three pinned targets and necessary corrected rescans
+source-transmitting OpenAI Decisions gpt-6-luna evaluations on all four pinned targets and necessary corrected rescans
 during implementation; it does not authorize live calls during this documentation checkpoint, provider/model fallback or
 target execution. Pass only the selected provider key to scanner children; never print keys or .env content.
 
@@ -310,11 +312,12 @@ remain human actions.
 - **AC10 — Engineering checks:** scoped tests, `go test -race ./...`, `go vet ./...`, `go build ./...`,
   changed-Go formatting, scoped doc/link checks and `git diff --check` pass with the declared toolchain;
   source/target-integrity and scope checks pass. Public docs describe actual implemented limits.
-- **AC11 — Final full judged scans and fix loop:** execute §9 on all three full pinned checkouts,
+- **AC11 — Final full judged scans and fix loop:** execute §9 on all four full pinned checkouts,
   compare independently documented expected command vulnerabilities and controls, and iterate fixes
   until all required positives have completed gated command findings and controls are correct.
   Deliver findings.html, findings.json and findings.sarif per app plus comparison/usage evidence and
-  clickable final artifact links. Review/unassessed/binding warnings do not pass a known positive.
+  clickable final artifact links. Refresh GitHub samples/README links and final implemented-state docs
+  per the delivery guide; Review/unassessed/binding warnings do not pass a known positive.
 
 ## 8. Test strategy and independent references
 
@@ -326,15 +329,16 @@ labels/comparators/reference documents never enter model bundles.
 
 Resolve `<DEV_ROOT>` using the [workspace
 convention](../docs/zazzles-agent-orientation.md#portable-workspace-and-dev_root). The current local checkouts are
-`<DEV_ROOT>/juice-shop`, `<DEV_ROOT>/vulnpy`, and `<DEV_ROOT>/nodejs-goof`; on the current workstation DEV_ROOT is the
-user's `Dev` directory.
+`<DEV_ROOT>/juice-shop`, `<DEV_ROOT>/vulnpy`, `<DEV_ROOT>/nodejs-goof` and `<DEV_ROOT>/vulnerable-typescript-app`; on
+the current workstation DEV_ROOT is the user's `Dev` directory.
 
 | Acceptance target / pin | Known-vulnerability analysis documents and source basis |
 | --- | --- |
 | Juice Shop `f189f521266f42c6bd05884468292000cee852ed` | [Command classification reference](../evaluation/juice-shop/command-injection-review.md), [evaluation index](../evaluation/juice-shop/README.md), [documented challenge registry](../evaluation/juice-shop/expected-challenges.jsonl), [review decisions](../evaluation/juice-shop/review-decisions.json), [sample provenance](../../docs/samples/juice-shop/README.md); check actual challenge source/tests before defining expected command findings |
 | VulnPy `b81885e58283a3449b578d20c20557aff637e5ea` | [Command-injection source review](../evaluation/vulnpy-detection-guide.md#command-injection-source-reviewed-acceptance-cases), [review hashes](../evaluation/vulnpy-command-injection-sources.json), [existing source reference](../../docs/samples/vulnpy/reference.md) |
 | nodejs-goof `add14ba59e98240d9e00a235dd7d42cd61ae9912` | [Command-injection case](../evaluation/nodejs-goof-capabilities.md#command-injection-source-reviewed-acceptance-case), [earlier results](../evaluation/nodejs-goof-results.md), [sample provenance](../../docs/samples/nodejs-goof/README.md); POST /create → routes/index.js:174 exec |
-| Initial TypeScript/Erlik fixtures | [TypeScript provenance](../../docs/samples/vulnerable-typescript-app/README.md), pin `7f8b240a2f02beba099da3632d1ba679ff8bc32f`, src/server.ts:87–90; [Erlik source reference](../../docs/samples/vulnerable-flask-app/reference.md), pin `a67cbe590698dc4a0422f28e2495a40af559e257`, vulnerable-flask-app.py:53–58 /114–119 unsafe and64–68 constant control |
+| vulnerable-typescript-app `7f8b240a2f02beba099da3632d1ba679ff8bc32f` | [Expected vulnerabilities with exact file/line references](../evaluation/vulnerable-typescript-app-detection-guide.md), [sample provenance](../../docs/samples/vulnerable-typescript-app/README.md); mandatory TS-CMDI-01 at src/server.ts:90 |
+| Initial Erlik fixtures | [Source reference](../../docs/samples/vulnerable-flask-app/reference.md), pin `a67cbe590698dc4a0422f28e2495a40af559e257`; vulnerable-flask-app.py:53–58 /114–119 unsafe and64–68 constant control |
 
 VulnPy's reference covers both cmdi.py core sinks, generated request paths through Flask, FastAPI, Quart, Django
 sync/ASGI, Falcon sync/ASGI, Bottle, Pyramid, aiohttp and WSGI, plus direct loop, upload and conditional thread
@@ -381,14 +385,15 @@ import/contract, enabled effective shell, command operand and snapshot reference
    including required source-path prerequisites. Run AC1–AC5/AC9 and review generated golden diffs.
 3. Implement both provider paths/questions and Go policy, then findings/guidance/CLI exports. Run
    AC6–AC8 plus prerequisite regressions. Use stubs before paid requests. Synchronize implemented docs.
-4. Complete AC10 and a full offline inventory for each of the three targets. Check all required
+4. Complete AC10 and a full offline inventory for each of the four targets. Check all required
    command contexts are present and request construction fits limits before source transmission.
 5. Execute the full live judged scans below, compare every expected case and repair misses/false
    positives or wrong protection in the scanner. Add a failing regression before each fix; rerun
    scoped tests, affected regressions and AC10 as appropriate before another paid pass.
-6. Repeat corrected scans until AC11 passes on all three apps. The final retained judged reports
+6. Repeat corrected scans until AC11 passes on all four apps. The final retained judged reports
    MUST use the final scanner revision/source digest, not a mixture of earlier implementations.
-   Finish exact-source replay and report parity, preserve all runs, and deliver the review package.
+   Finish replay/parity, curate all four GitHub samples and final implemented-state docs per the
+   delivery guide, preserve all runs, and deliver the review package.
 
 The loop uses **OpenAI Decisions, gpt-6-luna only**, no fallback or automatic retry. Before each pass, record a finite
 request cap sufficient for the full current inventory (candidate-position scheduling can include ineligible
@@ -418,11 +423,11 @@ one, or hiding an unrelated regression. Assess all eligible families, compare no
 predecessor with source review of material changes, and keep unrelated coverage limits explicit. Saved historical
 answers are not fresh paid assessment. Exact-request replay verifies final responses offline without additional calls.
 
-Final review package: nine report artifacts (three formats × three apps), machine-readable expected/actual case
-mapping, missing/unexpected-case list (zero unresolved command positives), conditions and coverage notes, run/usage
-ledger and raw-trace locations, target integrity before/after, replay/parity results and checks. Verify HTML
-opens/renders, JSON parses and SARIF 2.1.0 preserves rule/location/status mappings. Link the final artifacts in the
-completion reply. Reports are for human review; no publishing/merging or verified runtime-exploit claim is implied.
+Final review package: twelve report artifacts (three formats × four apps), expected/actual mapping, zero unresolved
+command positives, conditions/coverage notes, ledger/trace locations, integrity and replay/parity checks. Validate HTML
+rendering, JSON and SARIF mappings. Complete the linked [sample and implemented-state delivery
+gate](../evaluation/command-injection-sample-delivery.md) and link final artifacts/GitHub sample files in the reply. No
+integration merge or runtime-exploit claim is implied.
 
 ## 10. Definition of done
 
@@ -430,14 +435,15 @@ completion reply. Reports are for human review; no publishing/merging or verifie
 - [ ] All command pack components and stage hooks exist and AC1–AC10 have reproducible evidence.
 - [ ] Every supported language has positive/protected/unknown controls; existing requests/history pass.
 - [ ] Independent expected matrix covers all reviewed command witnesses, including conditional paths.
-- [ ] AC11 live fix loop passed on all three complete pinned checkouts using the final scanner source.
-- [ ] Nine final HTML/JSON/SARIF files plus comparison, usage, integrity/replay evidence are linked.
+- [ ] AC11 live fix loop passed on all four complete pinned checkouts using the final scanner source.
+- [ ] Twelve final HTML/JSON/SARIF files plus comparison, usage, integrity/replay evidence are linked.
+- [ ] Final GitHub samples/README links and implemented-state docs pass the linked delivery guide.
 - [ ] Scope/docs and the append-only run log match actual implementation; human review is pending.
 
 ## 11. Open questions and autonomy
 
 No open product decision requires an intake interview before implementation. POSIX assumptions, conservative unmodeled
-semantics, pack integration, three-target live evaluation and report delivery are selected above. The broader acceptance
+semantics, pack integration, four-target live evaluation and report delivery are selected above. The broader acceptance
 requires command-specific discovery prerequisites; leaving those known positives as Review is not an approved scope
 shortcut. Missing external resources or provider access are execution blockers, not permission to self-mark acceptance
 complete.
@@ -468,17 +474,19 @@ selection/material/provenance path, and wire extraction, claim assembly, questio
 replay and reporting. Follow the first failing test and phases; fix command-specific entry/flow gaps
 needed for every independent positive. Do not edit locked specs, targets, or unrelated analyzers.
 The spec records the user's authorization for full source-transmitting judged scans and necessary
-corrected rescans of Juice Shop, VulnPy and nodejs-goof, using OpenAI Decisions gpt-6-luna only.
+corrected rescans of Juice Shop, VulnPy, nodejs-goof and vulnerable-typescript-app, using OpenAI Decisions gpt-6-luna only.
 Freeze independent expectations before new model results; run scoped/full offline checks first.
 Use explicit per-pass caps and a request/usage ledger, no fallback, no target execution and no repeated
 unchanged paid resampling. Iterate scanner fixes/regressions/full final scans until all required
 command positives and controls pass. Known misses, warnings or Review do not satisfy final acceptance.
-Complete AC1–AC11. Deliver HTML, JSON and SARIF for each app (nine files), expected/actual mapping,
-usage/trace, integrity/replay and validation evidence, with clickable final report links.
+Complete AC1–AC11. Deliver HTML, JSON and SARIF for each app (twelve files), expected/actual mapping,
+usage/trace, integrity/replay and validation evidence, with clickable final report links. Follow the
+linked sample-delivery guide: curate all four GitHub samples and update README/project/architecture
+docs to implemented Command Injection support and next-task XSS hardening before declaring ready.
 Keep working without routine confirmation; if access/funding or a material out-of-scope need blocks
 progress, record unfinished ACs and explain the exact blocker. Never weaken expected labels to finish.
-Commit/push only under current user authorization; the documentation checkpoint permission is not
-blanket future implementation publication approval. Never merge or push to stage/main.
+The user authorized updated GitHub sample findings as part of implementation: commit/push the
+feature branch artifacts under the linked delivery guide. Never merge or push to stage/main.
 ```
 
 ## 14. Implementation and review change log
@@ -497,3 +505,14 @@ actual provider envelope, deterministic statuses, command-only prerequisite scop
 unattended prompt. The earlier permission to leave VulnPy command misses unresolved and blanket live-call prohibition
 are superseded by this recorded direction. Verification now requires AC11 and the complete nine-artifact package; no
 implementation or paid scan has been performed by this documentation revision.
+
+
+
+### 2026-11-07 — Fourth target, GitHub samples and final documentation
+
+User added vulnerable-typescript-app to full final judged evaluation, requested its independent
+expected-vulnerability/file/line inventory, VulnPy in the README samples, refreshed GitHub sample artifacts, and
+documentation reflecting implemented Command Injection when merged. Sections1/2/4/ 6–13 now require four targets, twelve
+reports and the linked sample-delivery gate. Its instructions supersede earlier three-target/nine-artifact checkpoint
+requirements. All current-state README, architecture, project and orientation status text must be reconciled after
+actual implementation; this source-review checkpoint does not claim the analyzer or refreshed judged reports exist yet.

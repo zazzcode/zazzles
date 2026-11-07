@@ -1,7 +1,7 @@
 # Vulnerable TypeScript app sample
 
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
-[Source-reviewed reference](xss-answer-key.md) · [Provenance](metadata.json)
+[Expected vulnerabilities and file/line locations](../../../.zazz/evaluation/vulnerable-typescript-app-detection-guide.md) · [XSS/source controls](xss-answer-key.md) · [Provenance](metadata.json)
 
 Refreshed 2026-11-01 from the [upstream application](https://github.com/ryanmcmorrowsnyk/vulnerable-typescript-app), revision
 `7f8b240a2f02beba099da3632d1ba679ff8bc32f`, using the `xss-response` working sources and binary identified in metadata.

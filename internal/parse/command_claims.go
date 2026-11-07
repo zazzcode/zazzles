@@ -213,6 +213,14 @@ func finishCommandPaths(u *analysis.CandidateUse, c *analysis.Completeness, guar
 	if len(guards) > 0 {
 		c.Evidence["guard"] = append(c.Evidence["guard"], guards...)
 	}
+	// A per-path summary so one unresolved sibling is not mistaken for the state of every path.
+	summary := []string{}
+	for _, p := range f.Paths {
+		summary = append(summary, "dependency "+itoa(p.Dependency)+" ("+u.Dependencies[p.Dependency].Source.Text+") -> "+p.Operand+": "+p.Protection)
+	}
+	if len(summary) > 0 {
+		c.ModelFacts = append(c.ModelFacts, "Operand path facts: "+strings.Join(summary, "; ")+". A raw or guarded path is an independent source-to-operand witness; an unknown sibling path stays visible as a blocker for that path only and does not make a supported raw path unknown.")
+	}
 }
 
 // assembleCommandClaims completes every Node command candidate before catalog

@@ -114,8 +114,22 @@ func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (result *ana
 	set.linkStoredXSS(out)
 	set.linkCrossTierXSS(out)
 	assembleXSSClaims(out)
+	set.assembleCommandClaims(out)
+	// Check assembly rebuilds the use list for its own claim families; the
+	// command claim is independent of explicit check files and is kept whole.
+	var commandUses []analysis.CandidateUse
+	rest := out.Uses[:0:0]
+	for _, u := range out.Uses {
+		if u.Kind == "command_execution_candidate" {
+			commandUses = append(commandUses, u)
+		} else {
+			rest = append(rest, u)
+		}
+	}
 	if len(checks) > 0 {
+		out.Uses = rest
 		set.buildChecks(out, checks)
+		out.Uses = append(out.Uses, commandUses...)
 	} else {
 		set.automaticQueries(out)
 	}

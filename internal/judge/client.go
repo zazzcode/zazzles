@@ -201,6 +201,10 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the selected rendering contract and XSS questions to this source-to-sink claim in its output context. Supplied evidence is present, not necessarily complete or protective. Preserve independent source paths, origins, storage/response fields, control conditions and blockers. No model confidence may invent missing bindings, encoding, sanitizers, origins or coverage. JSON-only data has no rendering verdict."
 	}
+	if use.Kind == "command_execution_candidate" {
+		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
+		instruction = common + "Apply only the selected command contract and the four command questions to this source-to-process claim under the declared POSIX assumption. Shell syntax, executable selection, argument interpretation and protection coverage are separate facets: assess each from the effective operand slots in the command facts. Supplied evidence is present, not necessarily complete or protective; a guard or constraint protects only the operand, branch and invocation it dominates. Casts, annotations, length limits, blacklist replacement, exception handling and unrelated hashing are not protection. Unknown utility options are unknown, not unsafe. Do not claim runtime exploitation. No model confidence may invent missing bindings, operands, guards or coverage."
+	}
 	evidence, err := json.Marshal(struct {
 		Components         *analysis.ComponentSelection   `json:"analysis_components,omitempty"`
 		Instruction        string                         `json:"instruction"`

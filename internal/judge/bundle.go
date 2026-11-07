@@ -70,30 +70,31 @@ func wireBundle(use analysis.CandidateUse) any {
 	invocation := wireInvocation(use, ref)
 	wireTable, excerpts := sharedSourceExcerpts(table)
 	return struct {
-		Invocation      any                 `json:"invocation"`
-		EvidenceVersion int                 `json:"evidence_version"`
-		TraceGraph      traceGraph          `json:"trace_graph"`
-		CoverageLedger  []evidenceCoverage  `json:"evidence_coverage"`
-		ClaimKind       string              `json:"claim_kind"`
-		ID              string              `json:"candidate_id"`
-		Kind            string              `json:"kind"`
-		Check           *analysis.Check     `json:"declared_requirement,omitempty"`
-		Sink            string              `json:"sink_evidence"`
-		Context         []string            `json:"context_evidence"`
-		Dependencies    []map[string]any    `json:"dependencies"`
-		Required        []string            `json:"required_evidence"`
-		Roles           map[string][]string `json:"evidence_roles"`
-		Blockers        []analysis.Gap      `json:"blocking_gaps"`
-		Coverage        []analysis.Gap      `json:"coverage_gaps"`
-		Scope           string              `json:"scope"`
-		Evidence        []wireEvidence      `json:"evidence"`
-		SourceExcerpts  []analysis.Evidence `json:"source_excerpts"`
-		ControlEdges    []map[string]string `json:"control_edges"`
-		ModelFacts      []string            `json:"model_facts,omitempty"`
-		Resolved        []analysis.Gap      `json:"resolved_gaps,omitempty"`
-		APIModel        *analysis.APIModel  `json:"api_model,omitempty"`
-		XSS             *analysis.XSSFacts  `json:"xss,omitempty"`
-	}{invocation, 6, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, roles, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS}
+		Invocation      any                    `json:"invocation"`
+		EvidenceVersion int                    `json:"evidence_version"`
+		TraceGraph      traceGraph             `json:"trace_graph"`
+		CoverageLedger  []evidenceCoverage     `json:"evidence_coverage"`
+		ClaimKind       string                 `json:"claim_kind"`
+		ID              string                 `json:"candidate_id"`
+		Kind            string                 `json:"kind"`
+		Check           *analysis.Check        `json:"declared_requirement,omitempty"`
+		Sink            string                 `json:"sink_evidence"`
+		Context         []string               `json:"context_evidence"`
+		Dependencies    []map[string]any       `json:"dependencies"`
+		Required        []string               `json:"required_evidence"`
+		Roles           map[string][]string    `json:"evidence_roles"`
+		Blockers        []analysis.Gap         `json:"blocking_gaps"`
+		Coverage        []analysis.Gap         `json:"coverage_gaps"`
+		Scope           string                 `json:"scope"`
+		Evidence        []wireEvidence         `json:"evidence"`
+		SourceExcerpts  []analysis.Evidence    `json:"source_excerpts"`
+		ControlEdges    []map[string]string    `json:"control_edges"`
+		ModelFacts      []string               `json:"model_facts,omitempty"`
+		Resolved        []analysis.Gap         `json:"resolved_gaps,omitempty"`
+		APIModel        *analysis.APIModel     `json:"api_model,omitempty"`
+		XSS             *analysis.XSSFacts     `json:"xss,omitempty"`
+		Command         *analysis.CommandFacts `json:"command,omitempty"`
+	}{invocation, 6, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, roles, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, use.Command}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {

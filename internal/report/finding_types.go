@@ -20,6 +20,10 @@ var findingTypes = []analysis.FindingType{
 		Description:    "Untrusted input changes a NoSQL query's operators, selector structure, or executable expression rather than remaining an allowed data value.",
 		Interpretation: "Executable $where string construction is poor practice to refactor even without a proven exploit. An unmodeled document constraint alone is Review, not an established defect. Inspect actual value types, keys, transformations, library behavior, and the named status.",
 		Remediation:    "Prefer data-only query APIs, constrain scalar slots and permitted keys/operators, and avoid building executable $where strings from input."},
+	{ID: "command-injection", Label: "Command Injection", Coverage: "bounded Node child_process and Python os/subprocess analysis",
+		Description:    "Request-controlled values reach an operating-system process: shell command text, the executable, a separate argument or process shell configuration.",
+		Interpretation: "One record per process use, with separate shell-syntax, executable-selection and argument facets under a declared POSIX assumption. A confirmed record is a static source judgment, not runtime exploitation or independent Findings Review. Shell-disabled argument arrays do not by themselves establish protection; an unknown utility's options and unmodeled platform behavior remain Review.",
+		Remediation:    "Prefer eliminating process execution. Otherwise use a fixed trusted absolute executable, pass values as separate arguments with the shell disabled, and enforce utility-specific constraints such as a finite set of permitted values. Do not rely on stripping punctuation or on `--` as a universal option terminator."},
 	{ID: "input-validation", Label: "Input Validation", Coverage: "bounded analysis",
 		Description:    "Server-side checks enforce the business requirements for a field, such as required presence, runtime type, permitted format, range, or length.",
 		Interpretation: "Poor input validation means an applicable requirement is not adequately enforced. This neutral family label also covers unresolved checks and supported protection: no validator identified in an analyzed slice is not proof that every execution path lacks validation. Free-text punctuation is not itself a defect.",
@@ -71,6 +75,8 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		ids = append(ids, "sql-injection")
 	case "nosql_query", "nosql_query_candidate":
 		ids = append(ids, "nosql-injection")
+	case "command_execution_candidate":
+		return append(ids, "command-injection")
 	case "input_validation", "input_validation_candidate":
 		ids = append(ids, "input-validation")
 	case "account_creation", "account_creation_candidate":

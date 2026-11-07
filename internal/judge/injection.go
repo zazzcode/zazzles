@@ -16,6 +16,8 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return componentQuestions(analysispacks.NoSQLQuestions())
 		case "input_validation_candidate":
 			return componentQuestions(analysispacks.ValidationQuestions())
+		case "command_execution_candidate":
+			return componentQuestions(analysispacks.CommandQuestions())
 		}
 	}
 	if use.Kind == "xss_candidate" {
@@ -29,6 +31,9 @@ func questionsFor(use analysis.CandidateUse) []question {
 
 func questionChoices(q question) []map[string]string {
 	if c := analysispacks.ValidationChoices(q.name); c != nil {
+		return c
+	}
+	if c := analysispacks.CommandChoices(q.name); c != nil {
 		return c
 	}
 	if c := xssChoices(q.name); c != nil {

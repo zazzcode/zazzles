@@ -623,6 +623,9 @@ func (f *flow) call(n *sitter.Node) value {
 	if f.responseCall(n, fn, args, values) {
 		return value{}
 	}
+	if f.commandCall(n, fn, args) {
+		return value{gaps: []analysis.Gap{f.gap("unknown_call_result", "process return value is not modeled", n)}}
+	}
 	if modelCall {
 		f.recordStorageWrite(n, fn, args, values, modelValue)
 	}

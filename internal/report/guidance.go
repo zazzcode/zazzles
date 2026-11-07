@@ -36,6 +36,8 @@ func guidance(use analysis.CandidateUse) Guidance {
 			"Do not concatenate or interpolate request values into $where strings.",
 			"Inspect numeric conversions and character filters on each actual path before judging their effect. Prefer data-only query APIs over executable $where strings.",
 		}, ExampleStatus: "not_generated; driver-specific adaptation and tests required"}
+	case "command_execution_candidate":
+		g = commandGuidance()
 	case "input_validation", "input_validation_candidate":
 		g = Guidance{Title: "Validate and sanitize each request input", Actions: []string{
 			"Define the server-side field policy, then enforce applicable type, presence, length, range, and format constraints before use. Free text must remain valid for its business purpose.",

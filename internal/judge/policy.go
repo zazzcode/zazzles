@@ -13,6 +13,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyXSSPolicy(use, a)
 		return
 	}
+	if use.Kind == "command_execution_candidate" {
+		applyCommandPolicy(use, a)
+		return
+	}
 	if logUse(use) {
 		applyLogPolicy(use, a)
 		return

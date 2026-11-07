@@ -32,10 +32,10 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			report.Enrich(r)
 			b, _ := json.Marshal(r)
 			want := map[string]string{
-				"javascript/outbound":  "71330eef9bc9630a0dd25f9c5c8da54e34047a97cd7d3797ada77087e0ae7cf2",
-				"typescript/outbound":  "ae7907d3a16328825e34217c9cfb567ff98a58ca12e97ed8d38bea258ed10d89",
-				"python/outbound":      "9f9bdb6989c5434f585615db777eca5aed01b02b1b08f0a2e5010603a4d2da63",
-				"javascript/xss-fetch": "6c11a461218ec70588e095651162eafeb90bafce18d3550e4e4675e6f1c84e95",
+				"javascript/outbound":  "c824eb0f4b304de03e5ead8efc64947a4c2789dedc6f2196d59692a00377fba2",
+				"typescript/outbound":  "4d3c9342df47c416b506d7297d4a579979f228807b1bf4a126a11b16ec1a36a3",
+				"python/outbound":      "48d92786838da8f6fcde462e773210aff4aa3591b4d04edc4bb277341b32e5c7",
+				"javascript/xss-fetch": "70b04cd46cd3a405cfe40856328f4c076ef06ce621f400612bed90bc006b6f7b",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)

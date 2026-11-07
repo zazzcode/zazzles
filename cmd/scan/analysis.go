@@ -105,5 +105,5 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 }
 
 func queryUse(use analysis.CandidateUse) bool {
-	return use.Kind == "sql_query_candidate" || use.Kind == "nosql_query_candidate"
+	return use.Kind == "sql_query_candidate" || use.Kind == "nosql_query_candidate" || use.Kind == "command_execution_candidate"
 }

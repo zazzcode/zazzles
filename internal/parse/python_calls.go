@@ -28,6 +28,9 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	if v, ok := f.frameworkCall(n, q, nodes, values, all); ok {
 		return v
 	}
+	if v, ok := f.commandCall(n, fn); ok {
+		return v
+	}
 
 	if receiver.binding == "db_connection" && method == "cursor" {
 		return pythonValue{binding: "db_cursor", driver: receiver.driver, evidence: append(receiver.evidence, m.evidence("sink_binding", n))}

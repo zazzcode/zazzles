@@ -25,6 +25,7 @@ type Dependency struct {
 type CandidateUse struct {
 	Components          *ComponentSelection `json:"analysis_components,omitempty"`
 	XSS                 *XSSFacts           `json:"xss,omitempty"`
+	Command             *CommandFacts       `json:"command,omitempty"`
 	APIModel            *APIModel           `json:"api_model,omitempty"`
 	ControlEdges        []ControlEdge       `json:"control_edges,omitempty"`
 	Check               *Check              `json:"check,omitempty"`

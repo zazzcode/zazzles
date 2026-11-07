@@ -17,6 +17,15 @@ func TestSQLDiscoveryBaseline(t *testing.T) {
 				t.Fatal(err)
 			}
 			r.SchemaVersion = 3
+			// Command-injection candidates are a later family: this baseline freezes the
+			// predecessor families, which must be byte-identical without them.
+			predecessors := r.Uses[:0:0]
+			for _, u := range r.Uses {
+				if u.Kind != "command_execution_candidate" {
+					predecessors = append(predecessors, u)
+				}
+			}
+			r.Uses = predecessors
 			for i := range r.Uses {
 				r.Uses[i].Components = nil
 			}

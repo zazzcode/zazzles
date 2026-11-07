@@ -130,6 +130,13 @@ func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
 		v = pyTransfer(v, m.evidence("assignment", n))
 		if left != nil && left.Kind() == "identifier" {
 			f.env[pyText(m, left)] = v
+		} else if left != nil && n.Kind() == "assignment" && (left.Kind() == "pattern_list" || left.Kind() == "tuple_pattern") {
+			// Tuple unpacking: each target conservatively inherits the whole value.
+			for i := uint(0); i < left.NamedChildCount(); i++ {
+				if target := left.NamedChild(i); target.Kind() == "identifier" {
+					f.env[pyText(m, target)] = pyTransfer(v, m.evidence("tuple_unpack", target))
+				}
+			}
 		}
 		return v
 	case "attribute", "subscript":

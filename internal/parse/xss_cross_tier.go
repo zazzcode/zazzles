@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -19,10 +20,6 @@ func (s *moduleSet) linkCrossTierXSS(report *analysis.AnalysisReport) {
 		if x.ResponseMethod == "" {
 			continue
 		}
-		if x.ResponseField == "" || x.ResponseField == "*" {
-			u.Gaps = append(u.Gaps, analysis.Gap{Kind: "response_field_unresolved", Detail: "The browser value's response field is not a single established JSON path.", At: u.Sink.Span})
-			continue
-		}
 		var matched []jsonProducer
 		routes := map[string]bool{}
 		for _, p := range s.producers {
@@ -31,7 +28,9 @@ func (s *moduleSet) linkCrossTierXSS(report *analysis.AnalysisReport) {
 				routes[p.route.ID] = true
 			}
 		}
-		if len(routes) != 1 {
+		_, restRoute := s.restOrigins(x.ResponsePath, "")
+		restRoute = restRoute && strings.EqualFold(x.ResponseMethod, "GET")
+		if len(routes) > 1 || (len(routes) == 0 && !restRoute) {
 			detail := "No server JSON response matches " + x.ResponseMethod + " " + x.ResponsePath + "."
 			if len(routes) > 1 {
 				detail = "More than one server route matches " + x.ResponseMethod + " " + x.ResponsePath + "."
@@ -39,52 +38,79 @@ func (s *moduleSet) linkCrossTierXSS(report *analysis.AnalysisReport) {
 			u.Gaps = append(u.Gaps, analysis.Gap{Kind: "response_producer_unresolved", Detail: detail, At: u.Sink.Span})
 			continue
 		}
-		var origins []analysis.Dependency
-		var sinks []analysis.Evidence
-		for _, p := range matched {
-			field, ok := fieldValue(p.value, x.ResponseField)
-			if !ok {
-				continue
-			}
-			for _, d := range field.deps {
-				origins = append(origins, d)
-				sinks = append(sinks, p.sink)
-			}
-		}
-		if len(origins) == 0 {
-			u.Gaps = append(u.Gaps, analysis.Gap{Kind: "response_field_unresolved", Detail: "The producing route does not establish request-derived data in response field " + x.ResponseField + ".", At: u.Sink.Span})
-			continue
-		}
-		var deps []analysis.Dependency
+		// Each browser path has its own field; one sink can read several from a response.
+		var resolved, unresolved []analysis.Dependency
 		for _, d := range u.Dependencies {
 			if d.Source.Kind != "api_response" {
-				deps = append(deps, d)
+				resolved = append(resolved, d)
 				continue
 			}
-			for j, o := range origins {
-				o.Transfers = append(append(append([]analysis.Evidence{}, o.Transfers...), sinks[j], d.Source), d.Transfers...)
-				deps = append(deps, o)
+			field := d.ResponseField
+			if field == "" {
+				field = x.ResponseField
+			}
+			var origins []analysis.Dependency
+			if field != "" && field != "*" {
+				for _, p := range matched {
+					for _, o := range s.fieldOrigins(p.value, field) {
+						o.Transfers = append(append([]analysis.Evidence{}, o.Transfers...), p.sink)
+						origins = append(origins, o)
+					}
+				}
+				if len(matched) == 0 && restRoute {
+					origins, _ = s.restOrigins(x.ResponsePath, field)
+				}
+			}
+			if len(origins) == 0 {
+				unresolved = append(unresolved, d)
+				continue
+			}
+			for _, o := range origins {
+				o.Transfers = append(append(append([]analysis.Evidence{}, o.Transfers...), d.Source), d.Transfers...)
+				resolved = append(resolved, o)
 			}
 		}
-		if len(deps) > 64 {
-			deps = deps[:64]
+		linked := 0
+		for _, d := range resolved {
+			if d.Source.Kind != "unresolved_source" {
+				linked++
+			}
+		}
+		if linked == 0 {
+			kind, detail := "response_field_unresolved", "The producing route does not establish request-derived data in response field "+x.ResponseField+"."
+			if x.ResponseField == "" || x.ResponseField == "*" {
+				detail = "The browser value's response field is not a single established JSON path."
+			}
+			u.Gaps = append(u.Gaps, analysis.Gap{Kind: kind, Detail: detail, At: u.Sink.Span})
+			continue
+		}
+		if len(resolved) > 64 {
+			resolved = resolved[:64]
 			u.Gaps = append(u.Gaps, analysis.Gap{Kind: "dependency_limit", Detail: "more than 64 linked cross-tier paths; remaining paths unexamined", At: u.Sink.Span})
 		}
-		u.Dependencies = deps
+		f := flow{set: s}
+		protection, reason, paths := x.Protection, x.ProtectionReason, x.Paths
+		if x.Protection != "encoded" && x.Protection != "sanitized" || u.Sink.Kind == "angular_output" {
+			if u.Sink.Kind == "angular_output" {
+				protection, reason, paths = f.angularPathProtection(value{deps: resolved}, x.OutputContext)
+			} else {
+				var protections []string
+				protection, reason, protections = f.xssPathProtection(value{deps: resolved}, x.OutputContext, false)
+				paths = xssPaths(protections, nil)
+			}
+		}
+		// An unlinked sibling field cannot be protected by, or hide, a linked unsafe path.
+		if len(unresolved) > 0 && protection != "raw" && protection != "ineffective" {
+			u.Gaps = append(u.Gaps, analysis.Gap{Kind: "response_field_unresolved", Detail: "A sibling response field has no established origin.", At: u.Sink.Span})
+			continue
+		}
+		u.Dependencies = append(resolved, unresolved...)
+		x.Protection, x.ProtectionReason, x.Paths = protection, reason, paths
 		x.OriginResolved = true
 		for id := range routes {
 			x.RelatedEntries = append(x.RelatedEntries, id)
 		}
-		f := flow{set: s}
-		if x.Protection != "encoded" && x.Protection != "sanitized" || u.Sink.Kind == "angular_output" {
-			if u.Sink.Kind == "angular_output" {
-				x.Protection, x.ProtectionReason, x.Paths = f.angularPathProtection(value{deps: deps}, x.OutputContext)
-			} else {
-				var protections []string
-				x.Protection, x.ProtectionReason, protections = f.xssPathProtection(value{deps: deps}, x.OutputContext, false)
-				x.Paths = xssPaths(protections, nil)
-			}
-		}
+		sort.Strings(x.RelatedEntries)
 	}
 }
 

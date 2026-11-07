@@ -123,8 +123,10 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	if err := set.browser(out); err != nil {
 		return nil, err
 	}
+	set.registerRESTResources()
 	set.linkStoredXSS(out)
 	set.linkCrossTierXSS(out)
+	set.linkTokenClaims(out)
 	assembleXSSClaims(out)
 	set.assembleCommandClaims(out)
 	// Check assembly rebuilds the use list for its own claim families; the
@@ -251,6 +253,12 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 		var returned *sitter.Node
 		if body != nil && isFunction(body) {
 			returned = body
+		}
+		// `() => handler` returns a named function of the same module.
+		if body != nil && body.Kind() == "identifier" {
+			if hm, fn := s.resolve(target, body.Utf8Text(target.src)); hm == target && fn != nil && supportedCallee(fn) {
+				returned = fn
+			}
 		}
 		if body != nil && !isFunction(body) {
 			for i := uint(0); i < body.NamedChildCount(); i++ {

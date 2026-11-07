@@ -48,6 +48,18 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		v.evidence = append(v.evidence, m.evidence("storage_read", n))
 		return v
 	}
+	if method == "get_template" && len(values) == 1 {
+		if v, ok := f.jinjaFileTemplate(object, nodes[0]); ok {
+			return v
+		}
+	}
+	if receiver.binding == "jinja_file" && method == "render" {
+		f.renderJinjaFile(n, receiver)
+		return pythonValue{rendered: true}
+	}
+	if method == "append" && len(values) == 1 && f.route.route.Framework == "wsgi" && len(values[0].deps) > 0 && f.wsgiHTML() && f.wsgiDispatchBranch(n) {
+		f.recordXSS(m.evidence("html_response", n), values[0], "html_text", nil)
+	}
 	if receiver.binding == "jinja_template" && method == "render" {
 		arguments := all
 		// Escaping affects substituted variables, never text compiled as template source.
@@ -142,7 +154,11 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	}
 	v := pyCombine(receiver, all)
 	if len(v.deps) > 0 {
-		v = pyTransfer(pyProtect(v, "unknown"), m.evidence("call_argument_dependency", n))
+		// parse_qs decodes a query string and keeps its content: no effect on protection.
+		if q != "urllib.parse.parse_qs" {
+			v = pyProtect(v, "unknown")
+		}
+		v = pyTransfer(v, m.evidence("call_argument_dependency", n))
 		v.gaps = append(v.gaps, f.gap("python_call_unresolved", "unmodeled return/content effect: "+name, n))
 		if f.route.generated {
 			f.gaps = append(f.gaps, f.gap("python_dispatch_unresolved", "Request-dependent call lacks a supported callable: "+name, n))

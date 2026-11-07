@@ -55,6 +55,19 @@ func (f *pythonFlow) frameworkCall(n *sitter.Node, q string, nodes []*sitter.Nod
 		f.recordXSS(m.evidence("html_response", n), v, "html_text", nil)
 		v.rendered = true
 		return v, true
+	case "django.http.HttpResponse", "pyramid.response.Response", "aiohttp.web.Response":
+		// Django and Pyramid default to text/html; aiohttp must state it.
+		v := all
+		if content := pyKeywordIn(m, n, "content_type"); content != nil || q == "aiohttp.web.Response" {
+			if literal, ok := pyLiteral(m, content); !ok || !strings.HasPrefix(literal, "text/html") {
+				v.rendered = true
+				v.binding = "non_html"
+				return v, true
+			}
+		}
+		f.recordXSS(m.evidence("html_response", n), v, "html_text", nil)
+		v.rendered = true
+		return v, true
 	case "fastapi.responses.JSONResponse", "starlette.responses.JSONResponse":
 		v := all
 		v.binding = "json"

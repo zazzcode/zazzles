@@ -91,10 +91,19 @@ func (f *flow) responseCall(call, fn, args *sitter.Node, values []value) bool {
 		f.recordXSSData(call, values[0], "api_json", "cross_tier")
 		return true
 	}
+	if method == "json" && len(values) > 0 && hasModelRows(values[0], 0) {
+		f.recordProducer(call, values[0])
+		return true
+	}
 	if method != "send" && method != "write" && method != "end" {
 		return method == "json" || method == "status" || method == "redirect" || method == "sendStatus"
 	}
 	if len(values) == 0 || len(values[0].deps) == 0 {
+		return true
+	}
+	// Express serializes an object argument as JSON, not HTML.
+	if method == "send" && args != nil && args.NamedChildCount() > 0 && args.NamedChild(0).Kind() == "object" {
+		f.recordXSSData(call, values[0], "api_json", "cross_tier")
 		return true
 	}
 	contentType := f.responseType
@@ -117,7 +126,19 @@ func (f *flow) responseCall(call, fn, args *sitter.Node, values []value) bool {
 	if contentType == "" || contentType == "unknown" {
 		context = "unknown"
 	}
-	f.recordXSS(f.module.evidence("html_response", call), values[0], context, contentType, false, nil)
+	sink := f.module.evidence("html_response", call)
+	if contentType == "" || contentType == "unknown" {
+		f.recordXSS(sink, values[0], context, contentType, false, nil)
+		return true
+	}
+	groups := outputGroups(values[0], context)
+	for _, g := range groups {
+		before := len(f.uses)
+		f.recordXSS(sink, g.value, g.context, contentType, false, nil)
+		if len(groups) > 1 && len(f.uses) > before {
+			f.uses[len(f.uses)-1].ID += ":" + g.context
+		}
+	}
 	return true
 }
 

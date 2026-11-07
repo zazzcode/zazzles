@@ -100,10 +100,14 @@ func (s *moduleSet) angularOutputs(f *flow) {
 			continue
 		}
 		kind, expression := file.Text[match[2]:match[3]], strings.TrimSpace(file.Text[match[6]:match[7]])
+		expression = strings.ReplaceAll(expression, "?.", ".")
 		if !simpleTemplateField.MatchString(expression) {
 			continue
 		}
 		v, ok := f.env[clientKey("this."+expression)]
+		if !ok {
+			v, ok = f.client.iterationField(file.Text, expression)
+		}
 		if !ok || len(v.deps) == 0 {
 			continue
 		}
@@ -111,25 +115,7 @@ func (s *moduleSet) angularOutputs(f *flow) {
 		if !strings.EqualFold(kind, "innerHTML") {
 			context = "url"
 		}
-		before := len(f.uses)
-		sink := textRange(file, match[0], match[1], "angular_output")
-		f.recordXSS(sink, v, context, "text/html", v.trustedContext == "", f.client.bindings)
-		if len(f.uses) == before {
-			continue
-		}
-		u := &f.uses[len(f.uses)-1]
-		u.XSS.Protection, u.XSS.ProtectionReason, u.XSS.Paths = f.angularPathProtection(v, context)
-		if v.apiPath != "" {
-			u.XSS.Type, u.XSS.OriginResolved = "cross_tier", false
-			u.XSS.ResponsePath, u.XSS.ResponseMethod, u.XSS.ResponseField = v.apiPath, v.apiMethod, v.responseField
-		}
-		for _, d := range v.deps {
-			for _, e := range d.Transfers {
-				if e.Kind == "trust_bypass" {
-					matchedBypass[e.Span.File+":"+e.Text] = true
-				}
-			}
-		}
+		f.angularRecord(textRange(file, match[0], match[1], "angular_output"), v, context, f.client.bindings, matchedBypass)
 	}
 	var uses []analysis.CandidateUse
 	for _, u := range f.uses {
@@ -138,6 +124,28 @@ func (s *moduleSet) angularOutputs(f *flow) {
 		}
 	}
 	f.uses = uses
+}
+
+// angularRecord records a template output and notes the trust bypasses it consumed.
+func (f *flow) angularRecord(sink analysis.Evidence, v value, context string, bindings []analysis.Evidence, matched map[string]bool) {
+	before := len(f.uses)
+	f.recordXSS(sink, v, context, "text/html", v.trustedContext == "", bindings)
+	if len(f.uses) == before {
+		return
+	}
+	u := &f.uses[len(f.uses)-1]
+	u.XSS.Protection, u.XSS.ProtectionReason, u.XSS.Paths = f.angularPathProtection(v, context)
+	if v.apiPath != "" {
+		u.XSS.Type, u.XSS.OriginResolved = "cross_tier", false
+		u.XSS.ResponsePath, u.XSS.ResponseMethod, u.XSS.ResponseField = v.apiPath, v.apiMethod, v.responseField
+	}
+	for _, d := range v.deps {
+		for _, e := range d.Transfers {
+			if e.Kind == "trust_bypass" {
+				matched[e.Span.File+":"+e.Text] = true
+			}
+		}
+	}
 }
 
 // angularPathProtection classifies each path to a one-way Angular binding. A

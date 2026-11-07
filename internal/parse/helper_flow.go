@@ -18,6 +18,8 @@ type helperExpansion struct {
 type boundParam struct {
 	name string
 	node *sitter.Node
+	// optional marks a parameter with a default value, so omitting it is not unknown.
+	optional bool
 }
 
 // enterHelper analyzes a same-file or relative-imported function body.
@@ -69,6 +71,10 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 		if i < len(args) {
 			// Bind on the callee flow so the parameter span stays in the callee file.
 			child.env[p.name] = child.transfer(args[i], "parameter_binding", p.node)
+			continue
+		}
+		if p.optional {
+			child.env[p.name] = value{}
 			continue
 		}
 		unbound = true
@@ -130,13 +136,16 @@ func functionParameters(fn *sitter.Node, src []byte) ([]boundParam, bool) {
 		if node.Kind() == "required_parameter" || node.Kind() == "optional_parameter" {
 			node = node.ChildByFieldName("pattern")
 		}
+		optional := false
 		if node != nil && node.Kind() == "assignment_pattern" {
-			node = node.ChildByFieldName("left")
+			node, optional = node.ChildByFieldName("left"), true
+		} else if outer := params.NamedChild(i); outer.ChildByFieldName("value") != nil {
+			optional = true
 		}
 		if node == nil || node.Kind() != "identifier" {
 			return nil, false
 		}
-		out = append(out, boundParam{name: node.Utf8Text(src), node: node})
+		out = append(out, boundParam{name: node.Utf8Text(src), node: node, optional: optional})
 	}
 	return out, true
 }

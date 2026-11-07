@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -72,7 +73,7 @@ func (f *flow) xssPathProtection(v value, context string, escaped bool) (string,
 	}
 	if hasRaw {
 		if hasIneffective {
-			return "ineffective", "A source path reaches raw HTML through marked 0.3.5, whose sanitize option has a documented entity/URL bypass (upstream marked PR 592).", paths
+			return "ineffective", "A source path reaches output through a transformation with an established bypass: marked 0.3.5's sanitize option (upstream marked PR 592), sanitize-html before 1.4.3, which is not applied recursively (CVE-2016-1000237), or single-pass tag stripping.", paths
 		}
 		return "raw", "A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence.", paths
 	}
@@ -100,10 +101,22 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 		if mode == "" {
 			mode = regexReplaceMode(m, call)
 		}
+		if mode == "" && neutralStringCall(m, call) {
+			mode = "neutral"
+		}
 		if mode == "neutral" {
 			continue
 		}
 		if mode == "markdown" && f.set.packageVersion("marked") == "0.3.5" {
+			mode = "ineffective"
+		}
+		if mode == "sanitize_html" {
+			mode = "sanitize"
+			if versionBefore(f.set.packageVersion("sanitize-html"), 1, 4, 3) {
+				mode = "ineffective"
+			}
+		}
+		if mode == "strip_tags" {
 			mode = "ineffective"
 		}
 		if mode == "sanitize_dom" {
@@ -197,7 +210,7 @@ func verifiedOutputProtection(m *sourceModule, call *sitter.Node) string {
 		}
 	case "sanitize-html":
 		if len(parts) == 1 {
-			return "sanitize"
+			return "sanitize_html"
 		}
 	case "dompurify":
 		// Without a DOM window (for example in Node) DOMPurify returns its input.
@@ -210,6 +223,41 @@ func verifiedOutputProtection(m *sourceModule, call *sitter.Node) string {
 		}
 	}
 	return ""
+}
+
+// neutralStringCall reports a call that keeps its string content: join, toString, trim.
+func neutralStringCall(m *sourceModule, call *sitter.Node) bool {
+	if call == nil || call.Kind() != "call_expression" {
+		return false
+	}
+	fn := call.ChildByFieldName("function")
+	if fn == nil || fn.Kind() != "member_expression" {
+		return false
+	}
+	prop := fn.ChildByFieldName("property")
+	if prop == nil {
+		return false
+	}
+	switch prop.Utf8Text(m.src) {
+	case "join", "toString", "trim":
+		return true
+	}
+	return false
+}
+
+// versionBefore compares an exact x.y.z version; a range establishes nothing.
+func versionBefore(version string, major, minor, patch int) bool {
+	var a, b, c int
+	if n, err := fmt.Sscanf(version, "%d.%d.%d", &a, &b, &c); n != 3 || err != nil || fmt.Sprintf("%d.%d.%d", a, b, c) != version {
+		return false
+	}
+	if a != major {
+		return a < major
+	}
+	if b != minor {
+		return b < minor
+	}
+	return c < patch
 }
 
 // handlebarsSafeString reports a verified Handlebars SafeString construction on a
@@ -269,6 +317,10 @@ func regexReplaceMode(m *sourceModule, call *sitter.Node) string {
 	}
 	if allowlistPattern.MatchString(pattern) && replacement == "" {
 		return "allowlist"
+	}
+	// Deleting matched tag fragments once can reassemble a tag from what remains.
+	if strings.HasPrefix(pattern, "<") && len(pattern) > 1 && replacement == "" {
+		return "strip_tags"
 	}
 	if lineBreakPattern.MatchString(pattern) {
 		return "neutral"

@@ -27,6 +27,9 @@ func (f *flow) clientCall(n, fn, args *sitter.Node) (value, bool) {
 			f.clientRecord(n, v, "script", false, f.clientClassEvidence(fn))
 			return value{}, true
 		}
+		if v, ok := f.tokenClaimCall(n, fn); ok {
+			return v, true
+		}
 		if name == "fetch" && browserGlobal(f.module, n, name) {
 			return f.clientHTTPValue(f.module, n, args.NamedChild(0), f.browserFetchMethod(args), nil), true
 		}

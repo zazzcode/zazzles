@@ -51,6 +51,8 @@ type flow struct {
 	facts        *inputFacts
 	// parts maps destructured request-parameter names (query, body, ...) to their container.
 	parts map[string]string
+	// setterValue, inside a model attribute setter, receives what the setter stores.
+	setterValue *value
 }
 
 func (f *flow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -140,6 +142,10 @@ func (f *flow) statement(n *sitter.Node) bool {
 		}
 		return n.Kind() == "throw_statement"
 	case "function_declaration", "comment", "empty_statement":
+	case "for_in_statement":
+		if !f.clientForOf(n) {
+			f.branches(n)
+		}
 	default:
 		f.branches(n)
 	}
@@ -343,6 +349,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		if base.apiPath != "" && base.responseField != "*" {
 			v.responseField = joinField(base.responseField, segment)
 		}
+		v.deps = fieldDeps(v.deps, segment)
 		return f.transfer(v, "property_read", n)
 	case "assignment_expression":
 		left := n.ChildByFieldName("left")
@@ -386,6 +393,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		return v
 	case "object":
 		v := value{fields: map[string]value{}}
+		var spread value
 		for i := uint(0); i < n.NamedChildCount(); i++ {
 			p := n.NamedChild(i)
 			key, child := p.ChildByFieldName("key"), p.ChildByFieldName("value")
@@ -394,13 +402,21 @@ func (f *flow) eval(n *sitter.Node) value {
 				v = combine(v, field)
 				v.model, v.read = "", nil
 				v.fields[key.Utf8Text(src)] = field
+				f.noteTrustedField(key.Utf8Text(src), field)
 			} else if p.Kind() == "shorthand_property_identifier" {
 				field := f.eval(p)
 				v = combine(v, field)
 				v.fields[p.Utf8Text(src)] = field
+			} else if p.Kind() == "spread_element" && p.NamedChildCount() == 1 {
+				spread = f.eval(p.NamedChild(0))
+				v = combine(v, spread)
 			}
 		}
+		// A spread row keeps its columns readable beside the listed overrides.
+		v.model, v.read = spread.model, spread.read
 		return v
+	case "template_string":
+		return f.templateString(n)
 	case "new_expression":
 		if f.client != nil {
 			if v, ok := f.clientConstructor(n); ok {
@@ -565,12 +581,34 @@ func combine(a, b value) value {
 		a.gaps = append(a.gaps, analysis.Gap{Kind: "dependency_limit", Detail: "more than 64 dependencies; remaining paths unexamined", At: a.deps[0].Source.Span})
 	}
 	if len(a.gaps) > 64 {
+		a.gaps = uniqueGaps(a.gaps)
+	}
+	if len(a.gaps) > 64 {
 		a.gaps = append(a.gaps[:63], analysis.Gap{Kind: "gap_limit", Detail: "additional uncertainty reasons omitted", At: a.gaps[0].At})
 	}
 	return a
 }
 
+// call adds the storage and token facts of a call to its ordinary value flow.
 func (f *flow) call(n *sitter.Node) value {
+	fn, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments")
+	if f.setterValue != nil && fn != nil && args != nil && fn.Utf8Text(f.module.src) == "this.setDataValue" && args.NamedChildCount() == 2 {
+		*f.setterValue = combine(*f.setterValue, f.eval(args.NamedChild(1)))
+		return value{}
+	}
+	v := f.evalCall(n)
+	if fn == nil || args == nil || f.client != nil {
+		return v
+	}
+	f.noteTokenSigning(fn, args)
+	f.sqlWrite(n, fn, args)
+	if model, read, ok := f.sqlRead(n, fn, args); ok {
+		v.model, v.read = model, read
+	}
+	return v
+}
+
+func (f *flow) evalCall(n *sitter.Node) value {
 	fn := n.ChildByFieldName("function")
 	args := n.ChildByFieldName("arguments")
 	if fn == nil {
@@ -606,19 +644,26 @@ func (f *flow) call(n *sitter.Node) value {
 	}
 	modelValue, modelCall := f.modelCallValue(n, fn, chained)
 	var values []value
+	var mapped *value
 	if args != nil {
 		for i := uint(0); i < args.NamedChildCount(); i++ {
 			arg := args.NamedChild(i)
 			if isFunction(arg) && modelCall {
-				f.modelCallback(arg, modelValue, name)
+				result := f.modelCallback(arg, modelValue, name)
+				if strings.HasSuffix(name, ".map") {
+					mapped = &result
+				}
 				values = append(values, value{})
-			} else if isFunction(arg) && f.client == nil && continuationCall(fn, f.module.src) {
+			} else if isFunction(arg) && f.client == nil && (continuationCall(fn, f.module.src) || f.respondsInCallback(arg)) {
 				f.enterContinuation(arg)
 				values = append(values, value{})
 			} else {
 				values = append(values, f.eval(arg))
 			}
 		}
+	}
+	if mapped != nil {
+		return f.transfer(*mapped, "collection_map", n)
 	}
 	if f.responseCall(n, fn, args, values) {
 		return value{}
@@ -764,7 +809,7 @@ func dependencyKey(d analysis.Dependency) string {
 	key := func(e analysis.Evidence) {
 		fmt.Fprintf(&b, "%s:%s:%d:%d;", e.Kind, e.Span.File, e.Span.StartByte, e.Span.EndByte)
 	}
-	b.WriteString(d.StorageKey + "|" + d.SinkSlot + "|")
+	b.WriteString(d.StorageKey + "|" + d.SinkSlot + "|" + d.OutputContext + "|" + d.ResponseField + "|")
 	key(d.Source)
 	for _, e := range d.Transfers {
 		key(e)

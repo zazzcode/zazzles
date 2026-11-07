@@ -121,6 +121,7 @@ func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
 	case "interpolation":
 		return pyTransfer(f.evalChildren(n), m.evidence("string_interpolation", n))
 	case "assignment", "augmented_assignment":
+		f.falconBody(n)
 		left, right := n.ChildByFieldName("left"), n.ChildByFieldName("right")
 		v := f.eval(right)
 		if n.Kind() == "augmented_assignment" {

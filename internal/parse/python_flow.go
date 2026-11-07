@@ -210,6 +210,8 @@ func (f *pythonFlow) parameters(fn *sitter.Node) {
 			f.env[key] = pythonValue{binding: "flask_request"}
 		} else if i == 1 && f.route.route.Framework == "falcon" {
 			f.env[key] = pythonValue{binding: "flask_request"}
+		} else if i == 2 && f.route.route.Framework == "falcon" {
+			f.env[key] = pythonValue{binding: "falcon_response"}
 		} else {
 			f.env[key] = pythonValue{}
 		}

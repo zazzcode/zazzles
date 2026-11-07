@@ -15,10 +15,14 @@ type jsonProducer struct {
 	sink  analysis.Evidence
 }
 
-func (f *flow) recordXSSData(node *sitter.Node, v value, context, kind string) {
+func (f *flow) recordProducer(node *sitter.Node, v value) {
 	if f.set != nil && f.entry.ID != "" {
 		f.set.producers = append(f.set.producers, jsonProducer{f.entry.HTTPRoute(), v, f.module.evidence("rendering_data", node)})
 	}
+}
+
+func (f *flow) recordXSSData(node *sitter.Node, v value, context, kind string) {
+	f.recordProducer(node, v)
 	f.uses = append(f.uses, analysis.CandidateUse{
 		ID:      fmt.Sprintf("render-data:%s:%s:%d", f.invocation.ID, f.module.file, node.StartByte()),
 		EntryID: f.entry.ID, InvocationContextID: f.invocation.ID, Kind: "xss_data_candidate", Sink: f.module.evidence("rendering_data", node),

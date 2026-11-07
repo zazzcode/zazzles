@@ -203,7 +203,7 @@ milestone and merged through PR #8 on 2026-11-05. It supplies common entry, regi
 callable and invocation identities, with bounded browser-event, dynamic HTTP, Node.js GraphQL and
 unary gRPC support. Its [acceptance evidence](../evaluation/common-entry-dispatch-results.md)
 retains unsupported subsets and explicit gaps. The merged foundation is the baseline for the
-separate analysis pack MVP; the Command Injection Analyzer remains the next new analyzer.
+separate analysis pack MVP; the Command Injection Analyzer is now delivered and Harden XSS analyzers is the next analyzer task.
 
 ### Analysis pack MVP initiative
 
@@ -223,8 +223,8 @@ remains the next existing-family migration rather than a completed catalog consu
 Public pack loading, executable plugins, new rule languages, standards ingestion, general
 Inspect/Audit/Fix and expanded detection remain separate work.
 
-The planned Command Injection Analyzer MUST use the accepted components under its
-[bounded contract](../specifications/command-injection.md).
+The Command Injection Analyzer uses the accepted components under its
+[bounded contract](../specifications/command-injection.md); its [acceptance results](../evaluation/command-injection-results.md) are recorded.
 The follow-on migrations have separate contracts; sessions 01–03 are now complete, while logging
 remains unassigned. None is hidden cleanup in the SQL MVP:
 
@@ -256,20 +256,19 @@ The three numbered migrations are implemented and verified; live model evidence 
 coverage limits are recorded in the component ledger.
 Later migrations require assignment and MUST converge on the shared architecture without a permanent
 alternate policy path. This ordering governs these migration
-sessions; the Command Injection Analyzer remains the next new analyzer and other roadmap scope is
+sessions; the Command Injection Analyzer is delivered and other roadmap scope is
 unchanged. Completed verification does not authorize additional paid calls or sample changes.
 
 ### Complete delivery list
 
-This punch list uses short analyzer names in the table. **Command Injection** is the next analyzer
-to implement, followed by **Harden XSS analyzers** for the existing reflected, stored and client-side
+This punch list uses short analyzer names in the table. **Command Injection** is delivered; **Harden XSS analyzers** is the next analyzer task, covering for the existing reflected, stored and client-side
 capabilities. Shared infrastructure and coverage-completion work are identified separately; their
 rows do not represent additional vulnerability analyzers.
 
 **Sequence decision, 2026-11-02; pack initiative added by the user on 2026-11-05:** common
 entry/dispatch with bounded dynamic-route, GraphQL and gRPC support follows Python support. Both
-that foundation and the component MVP/migration sessions are implemented. Command injection and
-separately scoped XSS hardening remain subsequent work.
+that foundation and the component MVP/migration sessions are implemented. Command injection is delivered; separately scoped XSS
+hardening is the next task.
 Keep the other planned classes. Complete Python NoSQL and API-to-browser XSS
 linkage coverage immediately before dependency vulnerability scanning (SCA), after the other planned
 vulnerability-type work. Secret scanning follows SCA. Language expansion has no fixed position
@@ -289,7 +288,7 @@ contract and implementation assignment; this plan does not authorize them. Prese
 | [x] | Python adapter (shared infrastructure) | `python-support` | Delivered adapter and shared trace/report guardrails; same claim architecture as JS/TS |
 | [x] | Common entry/dispatch (shared infrastructure) | `common-entry-dispatch` | Shared entry/registration/dispatch/callable model; migrate HTTP/browser consumers and add bounded dynamic-route, GraphQL resolver and gRPC handler adapters with explicit unknown controls |
 | [x] | Analysis-pack catalog (shared knowledge infrastructure) | `analysis-pack-mvp` | SQL-first embedded selection, bounded judge composition, report provenance and exact-request replay; [contract](../specifications/analysis-pack-mvp.md), [architecture/ledger](../architecture/analysis-packs.md) |
-| [ ] | Command Injection | `command-injection` | Request-to-process execution and protective patterns in JS/TS and Python; start with TypeScript `/api/ping` and source-reviewed Python sinks |
+| [x] | Command Injection | `command-injection` | Delivered: verified Node/Python process contracts, shell/executable/argument facets, 11 Python framework adapters, GraphQL/gRPC contexts; four full judged scans with every independent positive confirmed ([results](../evaluation/command-injection-results.md)) |
 | [ ] | Harden XSS analyzers | `xss-hardening` | General renderer/configuration, factory/helper and cross-tier coverage; retain raw/escaped/unknown controls, including VulnPy's Jinja Environment/template case |
 | [ ] | Path Traversal | `path-traversal` | Request-influenced file paths, starting with `/api/files`; include JS/TS/Python containment controls |
 | [ ] | Code Injection | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |

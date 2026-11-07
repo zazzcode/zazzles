@@ -221,7 +221,7 @@ URL/body/response roles. Browser HTTP remains distinct from server request evide
 assessments return `not_run` without model requests; Preview rejects them without a body/digest.
 Schema4 remains unchanged, with catalog compatibility `outbound-observation-v1` and no outbound
 model protocol. Historical generic answers remain unchanged on export. Logging remains a follow-on
-migration. Command injection is the next new family and will use this structure. Public pack loaders, registries, executable plugins and broad
+migration. Command injection is the first new family delivered on this structure. Public pack loaders, registries, executable plugins and broad
 standards ingestion remain outside the MVP.
 
 ## Evidence for the approach

@@ -1,5 +1,17 @@
 # OWASP Juice Shop sample
 
+## Command-injection acceptance scan (2026-11-07)
+
+The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner
+revision `6f5cb711fe06…` (no family filter; the target stayed clean at pin `f189f521266f…`). It has 167 entries
+and 208 records: 10 Findings, 198 Review and 0 Protected, from
+117 provider requests (926,572 input tokens). No direct command-injection positive is expected or reported: the source-reviewed boundaries (profile SSTI, b2bOrder `vm`/notevil RCE, the build-time `npm root -g` constant) produced no command record, and they are not reported as Protected ([review](../../../.zazz/evaluation/juice-shop/command-injection-review.md)).
+Observation-only and unsupported records remain visible and unassessed; no application is declared safe and no
+runtime exploitation is claimed. See the [acceptance results](../../../.zazz/evaluation/command-injection-results.md)
+and [metadata](metadata.json). Earlier sections below describe previous published snapshots and are superseded by the counts here.
+
+## Previous published snapshot
+
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
 [Source-reviewed reference](xss-answer-key.md) · [Provenance](metadata.json)
 

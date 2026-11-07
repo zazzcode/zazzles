@@ -11,7 +11,7 @@ An **Analyzer** is the capability that identifies and assesses a named security 
 source evidence, applicable interpretation knowledge, semantic judgment and mandatory Go policy.
 Use **Command Injection Analyzer**, **SQL Injection Analyzer**, **NoSQL Injection Analyzer**,
 **XSS Analyzer**, **Input Validation Analyzer** and **Sensitive Data Logging Analyzer** for these
-capabilities. The Command Injection Analyzer is planned; the others have bounded implementations.
+capabilities. All have bounded implementations; the Command Injection Analyzer (pack `pack.command`, protocol `command-components-v1`) is delivered with a declared POSIX assumption.
 Use the specific injection class in analyzer names; “Injection Analyzer” alone is ambiguous.
 
 | Term | Architectural meaning |

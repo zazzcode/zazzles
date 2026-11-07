@@ -29,7 +29,7 @@ questionnaire, model calls or SSRF verdict.
 
 The SQL-first MVP and migration sessions 01–03 are implemented. The Sensitive Data Logging
 Analyzer still uses its working judge-owned questions and `log-use-v1` protocol outside component selection. It is the remaining
-migration of an existing analyzer. The Command Injection Analyzer is planned as a new capability;
+migration of an existing analyzer. The Command Injection Analyzer is delivered as a new capability on this structure (see the command ledger below);
 complete SSRF assessment, general Inspect, public pack loading and executable plugins remain future
 capabilities.
 
@@ -242,7 +242,7 @@ issue counts and status semantics, including a construction-practice concern bes
 | Analyzer / supporting observations | Status | Next bounded task and acceptance controls |
 | --- | --- | --- |
 | SQL Injection Analyzer with query validation/construction facets | Migrated / offline verification passed | Catalog/selection, request composition, provenance and actual JS/TS/Python pipeline parity; raw, bound, constrained, unknown and context-isolation controls; `sql-components-v2` provenance after family generalization with frozen discovery hashes and outcomes |
-| Command Injection Analyzer | Planned next analyzer | Add verified process/shell contracts and command-specific questions through accepted components; positive/protected/unknown controls and unchanged other families |
+| Command Injection Analyzer | Implemented; offline checks and full judged scans passed | `pack.command`/`claim.command`/`evidence.command`/`flow.command`, `language.command.{javascript,python}` and four `api.*` operation contracts; four shell/executable/argument/coverage questions under `command-components-v1`; Go policy gates; predecessor requests and identities unchanged ([results](../evaluation/command-injection-results.md)) |
 | XSS Analyzer (reflected, stored and client-side/DOM/framework) | Migrated / offline verification passed | Selected rendering/context/protection/storage/browser/response material; five unchanged named questions, mandatory origin/context/path gates, JSON-only observations, exact replay and separate bounded fetch-method correction |
 | Input Validation Analyzer | Migrated / offline verification passed | Requirement/enforcement questions and field-policy guidance selected per claim; established/absent policies, enforced/bypassed/missing guards, client-only policy, unknown helpers, API-less claims, JS/Python parity and claim isolation; no invented standards |
 | Sensitive Data Logging Analyzer | Implemented; catalog migration pending | Move sensitive-content/emission/redaction contracts and questions; paired leaks, metadata/constants, redaction and unknowns |
@@ -255,7 +255,7 @@ The user revised session grouping on 2026-11-05. Implementation order is
 [03 outbound observations](../specifications/components-03-outbound.md). Logging remains separate.
 Sessions 01–03 are implemented and offline-verified; human review remains pending.
 XSS uses coordinated server/template, stored and browser/cross-tier checkpoints. The plan tracks
-actual future sequencing; the Command Injection Analyzer remains the next new analyzer.
+actual future sequencing; the Command Injection Analyzer is delivered and Harden XSS analyzers is the next unfinished analyzer task.
 
 ### Extension risks recorded by source review
 
@@ -561,3 +561,14 @@ execution scratch rather than adding external-checkout dependencies to normal un
 No paid provider call, target request/application execution, sample edit, extra agent/worktree,
 PR creation or integration merge was performed. Human review and broader accuracy/coverage work
 remain pending; all outbound migration criteria remain met.
+
+## Command execution components (2026-11-07)
+
+The command family adds components without touching existing descriptors: command-only embedded guidance
+(`internal/guidelines/command*.go`, never in default language selection), the catalog-owned operation contracts
+(Node shell and argv, Python `os`, Python `subprocess`) selected only after a verified binding, and reused
+`entry.http/graphql/grpc` descriptors. Parse attaches the same selection the judge revalidates with `ForUse`;
+`CommandFacts` (operation, shell modes, ordered operands, per-path protection and controls, with index-validated
+references into the deduplicated evidence table) travel in the wire bundle. Control-kind evidence in a command use is
+namespaced so invocation identity, and therefore every existing candidate ID, is unchanged. Limits: POSIX assumption,
+bounded transfers, adapter-specific entry models (see the [public guide](../../docs/analysis/command-injection.md)).

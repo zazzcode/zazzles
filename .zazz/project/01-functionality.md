@@ -59,7 +59,7 @@ Use the [canonical terminology](../architecture.md#analyzer-terminology): an **A
 assessment capability; an **analysis pack** supplies its versioned interpretation knowledge;
 **analysis components** are reusable knowledge items; the **shared analysis engine** supplies common
 infrastructure. The XSS Analyzer includes reflected, stored and client-side/DOM/framework capabilities.
-The Command Injection Analyzer is planned. Names do not imply complete language/framework coverage.
+The Command Injection Analyzer is implemented for Node `child_process` and Python `os`/`subprocess` under a declared POSIX assumption. Names do not imply complete language/framework coverage.
 The [capability checklist](implementation-plan.md#supported-capability-checklist) owns delivered status.
 
 ## Detection modes

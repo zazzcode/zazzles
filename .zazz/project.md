@@ -217,10 +217,11 @@ established product promises.
 
 ## Analysis pack initiative
 
-The **SQL Injection Analyzer**, **NoSQL Injection Analyzer** (JS/TS), **Input Validation Analyzer**
-and **XSS Analyzer** use embedded analysis packs and reusable components. **Sensitive Data Logging
-Analyzer** is implemented on its existing path; its catalog migration remains pending. **Command
-Injection Analyzer** is the next planned analyzer. XSS includes reflected, stored and client-side/DOM
+The **SQL Injection Analyzer**, **NoSQL Injection Analyzer** (JS/TS), **Input Validation Analyzer**,
+**XSS Analyzer** and **Command Injection Analyzer** use embedded analysis packs and reusable components. **Sensitive Data Logging
+Analyzer** is implemented on its existing path; its catalog migration remains pending. The **Command
+Injection Analyzer** is delivered ([results](evaluation/command-injection-results.md)); **Harden XSS
+analyzers** is the next analyzer task. XSS includes reflected, stored and client-side/DOM
 capabilities rather than separate engines. The
 [architecture terminology](architecture.md#analyzer-terminology) distinguishes analyzer capabilities,
 analysis-pack knowledge and the shared analysis engine.

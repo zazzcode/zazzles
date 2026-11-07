@@ -75,3 +75,8 @@ upstream attribution correct. No fresh findings are claimed by this documentatio
 | `src/server.ts` | `14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb` |
 | `package.json` | `654c071947aa9212caef62134222cce0de48a4fdf66423c58fd4b08b67e3d791` |
 | `README.md` | `5363098f3cdd18371ec87aac06da56c0671f70a7c3583d12d59c98f296512366` |
+
+
+## Command-injection result
+
+The final judged scan confirmed TS-CMDI-01 at `src/server.ts:90` as a completed, gated `confirmed_vulnerability` (see the [acceptance results](command-injection-results.md)). This guide remains the independent expectation, unchanged.

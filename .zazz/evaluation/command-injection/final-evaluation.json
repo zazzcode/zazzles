@@ -1,0 +1,350 @@
+{
+  "cases": [
+    {
+      "id": "EXPRESS-PING",
+      "target": "vulnerable-typescript-app",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "express",
+          "registration_file": "src/server.ts",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "GOOF-CREATE-EXEC",
+      "target": "nodejs-goof",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "express",
+          "registration_file": "app.js",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-OS-SYSTEM",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "flask",
+          "registration_file": "src/vulnpy/flask/blueprint.py",
+          "expected": 6,
+          "candidates": 6,
+          "complete": 6,
+          "confirmed": 6,
+          "pass": true
+        },
+        {
+          "framework": "fastapi",
+          "registration_file": "src/vulnpy/fastapi/vulnerable.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        },
+        {
+          "framework": "quart",
+          "registration_file": "src/vulnpy/quart/blueprint.py",
+          "expected": 2,
+          "candidates": 2,
+          "complete": 2,
+          "confirmed": 2,
+          "pass": true
+        },
+        {
+          "framework": "django",
+          "registration_file": "src/vulnpy/django/vulnerable.py",
+          "expected": 4,
+          "candidates": 4,
+          "complete": 4,
+          "confirmed": 4,
+          "pass": true
+        },
+        {
+          "framework": "django-asgi",
+          "registration_file": "src/vulnpy/django/vulnerable_asgi.py",
+          "expected": 4,
+          "candidates": 4,
+          "complete": 4,
+          "confirmed": 4,
+          "pass": true
+        },
+        {
+          "framework": "falcon",
+          "registration_file": "src/vulnpy/falcon/vulnerable.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        },
+        {
+          "framework": "falcon-asgi",
+          "registration_file": "src/vulnpy/falcon/vulnerable_asgi.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        },
+        {
+          "framework": "bottle",
+          "registration_file": "src/vulnpy/bottle/vulnerable_routes.py",
+          "expected": 2,
+          "candidates": 2,
+          "complete": 2,
+          "confirmed": 2,
+          "pass": true
+        },
+        {
+          "framework": "pyramid",
+          "registration_file": "src/vulnpy/pyramid/vulnerable_routes.py",
+          "expected": 4,
+          "candidates": 4,
+          "complete": 4,
+          "confirmed": 4,
+          "pass": true
+        },
+        {
+          "framework": "aiohttp",
+          "registration_file": "src/vulnpy/aiohttp/vulnerable_routes.py",
+          "expected": 2,
+          "candidates": 2,
+          "complete": 2,
+          "confirmed": 2,
+          "pass": true
+        },
+        {
+          "framework": "wsgi",
+          "registration_file": "src/vulnpy/wsgi/app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-SUBPROCESS-POPEN",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "flask",
+          "registration_file": "src/vulnpy/flask/blueprint.py",
+          "expected": 6,
+          "candidates": 6,
+          "complete": 6,
+          "confirmed": 6,
+          "pass": true
+        },
+        {
+          "framework": "fastapi",
+          "registration_file": "src/vulnpy/fastapi/vulnerable.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        },
+        {
+          "framework": "quart",
+          "registration_file": "src/vulnpy/quart/blueprint.py",
+          "expected": 2,
+          "candidates": 2,
+          "complete": 2,
+          "confirmed": 2,
+          "pass": true
+        },
+        {
+          "framework": "django",
+          "registration_file": "src/vulnpy/django/vulnerable.py",
+          "expected": 4,
+          "candidates": 4,
+          "complete": 4,
+          "confirmed": 4,
+          "pass": true
+        },
+        {
+          "framework": "django-asgi",
+          "registration_file": "src/vulnpy/django/vulnerable_asgi.py",
+          "expected": 4,
+          "candidates": 4,
+          "complete": 4,
+          "confirmed": 4,
+          "pass": true
+        },
+        {
+          "framework": "falcon",
+          "registration_file": "src/vulnpy/falcon/vulnerable.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        },
+        {
+          "framework": "falcon-asgi",
+          "registration_file": "src/vulnpy/falcon/vulnerable_asgi.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        },
+        {
+          "framework": "bottle",
+          "registration_file": "src/vulnpy/bottle/vulnerable_routes.py",
+          "expected": 2,
+          "candidates": 2,
+          "complete": 2,
+          "confirmed": 2,
+          "pass": true
+        },
+        {
+          "framework": "pyramid",
+          "registration_file": "src/vulnpy/pyramid/vulnerable_routes.py",
+          "expected": 4,
+          "candidates": 4,
+          "complete": 4,
+          "confirmed": 4,
+          "pass": true
+        },
+        {
+          "framework": "aiohttp",
+          "registration_file": "src/vulnpy/aiohttp/vulnerable_routes.py",
+          "expected": 2,
+          "candidates": 2,
+          "complete": 2,
+          "confirmed": 2,
+          "pass": true
+        },
+        {
+          "framework": "wsgi",
+          "registration_file": "src/vulnpy/wsgi/app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-FASTAPI-LOOP",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "fastapi",
+          "registration_file": "apps/fastapi_app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-FASTAPI-UPLOAD",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "fastapi",
+          "registration_file": "apps/fastapi_app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-QUART-UPLOAD",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "quart",
+          "registration_file": "apps/quart_app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-FALCON-UPLOAD",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "falcon",
+          "registration_file": "apps/falcon_app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "VP-CMDI-FALCON-THREAD",
+      "target": "vulnpy",
+      "pass": true,
+      "contexts": [
+        {
+          "framework": "falcon",
+          "registration_file": "apps/falcon_app.py",
+          "expected": 1,
+          "candidates": 1,
+          "complete": 1,
+          "confirmed": 1,
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "id": "JS-CMDI-SSTI-BOUNDARY",
+      "target": "juice-shop",
+      "pass": true,
+      "command_candidates": 0
+    },
+    {
+      "id": "JS-CMDI-RCE-DOS-BOUNDARY",
+      "target": "juice-shop",
+      "pass": true,
+      "command_candidates": 0
+    },
+    {
+      "id": "JS-CMDI-PACKAGING-CONSTANT",
+      "target": "juice-shop",
+      "pass": true,
+      "command_candidates": 0
+    }
+  ],
+  "unexpected": [],
+  "pass": true
+}

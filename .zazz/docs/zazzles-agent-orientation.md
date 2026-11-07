@@ -16,18 +16,16 @@ when to load supporting guides. Keep this document under 400 lines; link to deta
 
 ## Current work
 
-**Command Injection Analyzer documentation checkpoint, 2026-11-07:** use the assigned
-`command-injection` worktree and [implementation contract](../specifications/command-injection.md).
-Implementation remains pending a user implementation instruction. The contract requires creating
-all missing analysis-pack components, command-specific coverage prerequisites, and final full
-OpenAI Decisions `gpt-6-luna` scans/fix iterations on Juice Shop, VulnPy, nodejs-goof and vulnerable-typescript-app, with twelve
-HTML/JSON/SARIF reports, refreshed GitHub samples and final implemented-state documentation. The user explicitly authorized those source-transmitting
-acceptance scans as part of implementation; no paid scan or target execution occurs at this
-planning checkpoint. The contract's later direction supersedes older checkpoint restrictions for
-that acceptance scope. Independent command examples are in the
-[VulnPy guide](../evaluation/vulnpy-detection-guide.md#command-injection-source-reviewed-acceptance-cases)
-and [Goof inventory](../evaluation/nodejs-goof-capabilities.md#command-injection-source-reviewed-acceptance-case).
-Keep sample checkouts read-only and locked predecessor specifications unchanged.
+**Command Injection Analyzer delivered, 2026-11-07:** implemented in the `command-injection` worktree under the
+[implementation contract](../specifications/command-injection.md); read the
+[acceptance results](../evaluation/command-injection-results.md), the independent
+[matrix](../evaluation/command-injection/matrix.json) and the [public guide](../../docs/analysis/command-injection.md).
+Four full judged scans (OpenAI Decisions `gpt-6-luna`) confirmed every required positive: the TypeScript `/api/ping`,
+Goof `POST /create`, both VulnPy core sinks in all 11 framework adapters and the five app witnesses; Juice Shop's
+source-reviewed zero-positive controls were clean. VulnPy ran with `--skip-family input-validation` (a standard option;
+the report states the analyzer was not used). Human review is pending; no merge or integration push is authorized.
+**Next analyzer task: Harden XSS analyzers** (use the XSS results/handoff below). The earlier paid-scan restrictions
+below apply to later work again: no new paid calls without explicit authorization.
 
 **Component refactor, 2026-11-06:** SQL, NoSQL, standalone validation, XSS and outbound observations
 are implemented and offline-verified in the assigned `analysis-pack-mvp` worktree/branch. Outbound

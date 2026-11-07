@@ -69,7 +69,7 @@ that output, but their ordinary marker is not itself a browser exploit test.
 ## Command injection: source-reviewed acceptance cases
 
 **Reviewed 2026-11-07 at the pinned revision above.** This is an independent expected-results
-reference for the planned **Command Injection Analyzer**, not a claim that Zazzles currently detects
+reference for the **Command Injection Analyzer**; the delivered scan results are in the [acceptance results](command-injection-results.md). Originally written before implementation, it is not a claim that Zazzles detects
 these cases. Source, templates and tests were inspected without imports, installation, test execution
 or vulnerable command execution. [Source hashes](vulnpy-command-injection-sources.json) bind this
 review to the original files. Paths and line numbers below are relative to the VulnPy checkout.

@@ -431,14 +431,14 @@ integration merge or runtime-exploit claim is implied.
 
 ## 10. Definition of done
 
-- [ ] Required reading, matched standards and start-state manifest recorded; log created/resumed.
-- [ ] All command pack components and stage hooks exist and AC1–AC10 have reproducible evidence.
-- [ ] Every supported language has positive/protected/unknown controls; existing requests/history pass.
-- [ ] Independent expected matrix covers all reviewed command witnesses, including conditional paths.
-- [ ] AC11 live fix loop passed on all four complete pinned checkouts using the final scanner source.
-- [ ] Twelve final HTML/JSON/SARIF files plus comparison, usage, integrity/replay evidence are linked.
-- [ ] Final GitHub samples/README links and implemented-state docs pass the linked delivery guide.
-- [ ] Scope/docs and the append-only run log match actual implementation; human review is pending.
+- [x] Required reading, matched standards and start-state manifest recorded; log created/resumed.
+- [x] All command pack components and stage hooks exist and AC1–AC10 have reproducible evidence.
+- [x] Every supported language has positive/protected/unknown controls; existing requests/history pass.
+- [x] Independent expected matrix covers all reviewed command witnesses, including conditional paths.
+- [x] AC11 live fix loop passed on all four complete pinned checkouts using the final scanner source (VulnPy with the user-directed input-validation skip, recorded as a departure).
+- [x] Twelve final HTML/JSON/SARIF files plus comparison, usage, integrity/replay evidence are linked.
+- [x] Final GitHub samples/README links and implemented-state docs pass the linked delivery guide.
+- [x] Scope/docs and the append-only run log match actual implementation; human review is pending.
 
 ## 11. Open questions and autonomy
 
@@ -516,3 +516,14 @@ documentation reflecting implemented Command Injection when merged. Sections1/2/
 reports and the linked sample-delivery gate. Its instructions supersede earlier three-target/nine-artifact checkpoint
 requirements. All current-state README, architecture, project and orientation status text must be reconciled after
 actual implementation; this source-review checkpoint does not claim the analyzer or refreshed judged reports exist yet.
+
+### 2026-11-07 — Implementation, scope direction and results
+
+Implemented per this contract; see the [acceptance results](../evaluation/command-injection-results.md). Accepted steering
+and deviations: (1) on explicit user direction VulnPy's final judged scan used `--skip-family input-validation` (a new
+standard option, with report callouts) instead of the contract's no-family-filter rule, because newly covered
+frameworks made a full pass about 3,000 requests; Juice Shop, goof and the TypeScript app ran unfiltered. (2) `--trace-dir`
+was added to retain exact request/response traces for offline replay. (3) The published VulnPy sample omits the
+unjudged records and their entries because the full report exceeds GitHub's file-size limit; the full report is retained.
+(4) Predecessor effects: command candidates and entry coverage are additive; the outbound golden hashes changed only by the
+new registry entry and presentation version 7.

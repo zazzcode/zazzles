@@ -108,7 +108,7 @@ An **Analyzer** identifies and assesses a named security concern. Examples inclu
 - **XSS Analyzer** — reflected, stored and client-side/DOM/framework analysis
 - **Input Validation Analyzer**
 - **Sensitive Data Logging Analyzer**
-- **Command Injection Analyzer** — the next planned capability
+- **Command Injection Analyzer** — Node `child_process` and Python `os`/`subprocess` calls: shell syntax, executable and argument facets across Express, GraphQL/gRPC and 11 Python frameworks
 
 An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
 questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use
@@ -198,10 +198,10 @@ to each saved scan, rather than automatically reflecting the latest scanner.
 
 | Application | Examples in the saved report | Output |
 |---|---|---|
-| **OWASP Juice Shop** | Browser and server XSS, query construction and access-log credentials | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [HTML](docs/samples/juice-shop/findings.html) · [JSON](docs/samples/juice-shop/findings.json) · [SARIF](docs/samples/juice-shop/findings.sarif) |
-| **Node.js Goof** | Login XSS, stored Markdown XSS and protected escaped outputs | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [HTML](docs/samples/nodejs-goof/findings.html) · [JSON](docs/samples/nodejs-goof/findings.json) · [SARIF](docs/samples/nodejs-goof/findings.sarif) |
-| **Vulnerable TypeScript app** | Search XSS and unresolved SQL/logging questions | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [HTML](docs/samples/vulnerable-typescript-app/findings.html) · [JSON](docs/samples/vulnerable-typescript-app/findings.json) · [SARIF](docs/samples/vulnerable-typescript-app/findings.sarif) |
-| **VulnPy** | Historical Python baseline with generated-route coverage warnings; see its source-reviewed follow-up | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [HTML](docs/samples/vulnpy/findings.html) · [JSON](docs/samples/vulnpy/findings.json) · [SARIF](docs/samples/vulnpy/findings.sarif) |
+| **OWASP Juice Shop** | Full judged scan: browser/server XSS, query construction, logging; no direct command-injection positive | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [HTML](docs/samples/juice-shop/findings.html) · [JSON](docs/samples/juice-shop/findings.json) · [SARIF](docs/samples/juice-shop/findings.sarif) |
+| **Node.js Goof** | Full judged scan: `POST /create` command injection (regex capture), XSS, NoSQL, validation and logging | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [HTML](docs/samples/nodejs-goof/findings.html) · [JSON](docs/samples/nodejs-goof/findings.json) · [SARIF](docs/samples/nodejs-goof/findings.sarif) |
+| **Vulnerable TypeScript app** | Full judged scan: `/api/ping` command injection, search XSS, logging and unresolved SQL questions | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [HTML](docs/samples/vulnerable-typescript-app/findings.html) · [JSON](docs/samples/vulnerable-typescript-app/findings.json) · [SARIF](docs/samples/vulnerable-typescript-app/findings.sarif) |
+| **VulnPy** | Command injection across 11 Python framework adapters (61 contexts) plus SQL and XSS; input validation not used for this run | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [HTML](docs/samples/vulnpy/findings.html) · [JSON](docs/samples/vulnpy/findings.json) · [SARIF](docs/samples/vulnpy/findings.sarif) |
 
 **View in browser** opens the GitHub Pages copy. You can also download an HTML file and open it
 locally. GitHub's file view displays the HTML source.
@@ -264,8 +264,7 @@ Supporting infrastructure and knowledge:
 
 ### Planned analyzers and other work
 
-- **Command Injection Analyzer:** assess process and shell execution across JS/TS/Python.
-- **Harden XSS analyzers:** expand renderer, helper, stored-origin and cross-tier coverage.
+- **Harden XSS analyzers (next analyzer task):** expand renderer, helper, stored-origin and cross-tier coverage.
 - **Additional planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
   Open Redirect Analyzer, Weak Randomness Analyzer, Cookie/Session/Header Configuration Analyzer,
   SSRF Analyzer and JS/TS Prototype Pollution Analyzer.

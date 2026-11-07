@@ -131,6 +131,10 @@ func descriptors() ([]Component, error) {
 			v := makeComponent("api."+id, "api_contract", "internal/analysispacks", []string{model.Library}, []string{familyProtocol(f.Name)}, encoded(model))
 			v.CompiledOwner = contractOwners[id]
 			v.Tests = []string{"TestFamilyComponentSelection"}
+			if id == "mongoose-path-id-objectid-v1" {
+				v.Required = []string{"selector_path_string"}
+				v.Tests = append(v.Tests, "TestMongoosePathIDFacts", "TestMongoosePathIDJudgment")
+			}
 			if f.Name == "sql" {
 				v.Tests = append(v.Tests, "TestSQLComponentPipelineParity")
 				if model.Library != "sequelize" {

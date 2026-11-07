@@ -7,8 +7,9 @@
 Recorded 2026-11-07 for the `command-injection` branch. Final scans used scanner revision
 `6f5cb711fe06c6d538f636aaea9aad9b5500cbc9` (binary SHA-256
 `0836b6e7e148ddff6b2c0e0a2dbfc5ae23dc95e239b4a25efd3e8abee16565be`), OpenAI Decisions `gpt-6-luna`, no
-provider/model fallback, no target execution. No scanner source changed after those scans (only tests, docs
-and curation scripts). Target checkouts stayed clean at their pins: Juice Shop `f189f521…`, VulnPy
+provider/model fallback, no target execution. At the original closeout, only tests, docs and curation
+scripts changed after those scans. A later [bounded NoSQL follow-up](nodejs-goof-findbyid-results.md)
+refreshed two Goof lookup judgments; command results are unchanged. Target checkouts stayed clean at their pins: Juice Shop `f189f521…`, VulnPy
 `b81885e5…`, nodejs-goof `add14ba5…`, vulnerable-typescript-app `7f8b240a…`.
 
 ## Result

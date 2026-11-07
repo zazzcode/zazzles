@@ -100,8 +100,8 @@ func TestFamilyComponentSelection(t *testing.T) {
 		}
 	}
 
-	// Both Mongoose contracts are distinct selectable operations.
-	for _, id := range []string{"mongoose-model-query-v1", "mongoose-model-query-v2"} {
+	// Mongoose query and path-ID contracts are distinct selectable operations.
+	for _, id := range []string{"mongoose-model-query-v1", "mongoose-model-query-v2", "mongoose-path-id-objectid-v1"} {
 		u := nosqlSelectionUse()
 		u.APIModel = NoSQLContract(id)
 		if _, err := Select(u); err != nil {

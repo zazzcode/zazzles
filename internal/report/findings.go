@@ -169,6 +169,11 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 				f.Status = "supported_potential"
 			}
 		case "protected_for_claim":
+			if u.Kind == "nosql_query_candidate" && u.APIModel != nil && u.APIModel.ID == "mongoose-path-id-objectid-v1" {
+				f.Title = "ObjectId lookup preserves the URL ID as data"
+				f.Summary = "The named URL parameter remains a primitive string. Under the pinned Mongoose 4.2.4 contract, findById casts it to ObjectId or raises a cast error without interpreting it as query operators. The source-backed assessment supports protection of this NoSQL-injection claim only."
+				f.Uncertainty = "This protection does not establish authorization or ownership checks, valid-ID error handling, business validation or safe rendering of stored content. It assumes the declared dependency and the supplied unmodified request/schema path."
+			}
 			if u.Kind == "command_execution_candidate" {
 				f.Title = "Process operands are constrained"
 				f.Summary = "Source-backed controls and a consistent command assessment support protection of every applicable facet of this process invocation for the stated claim. Preserve the controls; this does not assess other invocations."

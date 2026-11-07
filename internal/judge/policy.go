@@ -44,13 +44,16 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	}
 	blockers := append([]analysis.Gap{}, c.Blockers...)
 	if c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" {
-		for _, role := range []string{"sql_all_inputs_hex", "selector_type_guard"} {
+		for _, role := range []string{"sql_all_inputs_hex", "selector_type_guard", "selector_path_string"} {
 			if len(c.Evidence[role]) > 0 {
 				blockers = append(blockers, analysis.Gap{Kind: "injection_constraint_review", Detail: "Vulnerable answer requires independent review against supplied " + role + " evidence; no constraint bypass is established by this bounded policy", At: use.Sink.Span})
 			}
 		}
 	}
 	requiredRoles := append([]string{}, c.Required...)
+	if use.APIModel != nil && use.APIModel.ID == "mongoose-path-id-objectid-v1" {
+		requiredRoles = append(requiredRoles, "selector_path_string")
+	}
 	if use.Components != nil {
 		for _, role := range use.Components.Required {
 			found := false

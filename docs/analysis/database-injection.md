@@ -60,6 +60,18 @@ Its String paths retain recognized conditional operators such as `$ne`; persiste
 not force scalar equality in query filters. `findById` and ObjectId casting remain distinct from
 String selector fields. Declared dependency evidence does not verify an installed runtime.
 
+For a direct, unmodified Express named URL parameter passed to `findById`, the analyzer can select
+the separate `mongoose-path-id-objectid-v1` contract. It requires the exact 4.2.4 dependency pin,
+a verified literal schema with its default ObjectId `_id`, and complete handler/middleware evidence.
+Express supplies the URL segment as a decoded string; `findById` builds `{_id: value}` and casts
+that string to ObjectId or raises a cast error, without parsing it into query operators. The facts
+support an injection-specific Protected judgment through the usual model and policy gates; the
+extractor does not assign a verdict. A contradictory vulnerability answer remains Review.
+
+Body/query objects, parameter writes or aliases/escapes, `app.param` callbacks, custom schema IDs,
+schema options/hooks and unknown middleware do not inherit this contract. This protection says
+nothing about authorization, valid-ID business rules, error handling or stored-content rendering.
+
 A supplied `typeof` guard is evidence to assess against its enforcing branch and subsequent writes.
 The bounded policy conservatively keeps a vulnerable model answer in Review when a relevant selected
 field has preceding type-guard evidence that needs independent bypass review. It does not turn the

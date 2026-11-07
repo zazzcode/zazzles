@@ -61,6 +61,14 @@ and runtime confirmation remain unmeasured.
 The [XSS scope](../project/xss-detection-scope.md) owns delivery order. The
 [sample README](../../docs/samples/nodejs-goof/README.md) owns saved baseline links and provenance.
 
+## NoSQL URL-ID lookup follow-up
+
+The later [lookup follow-up](nodejs-goof-findbyid-results.md) adjudicates the
+`findById(req.params.id)` calls at `routes/index.js:204` and `:232`: both have source-backed
+protection from operator injection under the pinned default ObjectId contract. Missing
+authorization/ownership enforcement is a separate concern. The historical comparator's extra
+NoSQL records are not all confirmed injection vulnerabilities.
+
 ## Command injection: source-reviewed acceptance case
 
 **Re-reviewed 2026-11-07 at the same pin.** `GOOF-CMDI-CREATE` is an expected positive for the planned

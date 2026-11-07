@@ -555,24 +555,24 @@
         "nosql-injection",
         "input-validation"
       ],
-      "id": "finding:candidate:v1:dacddfb371e80f6c12024dbe4e912da1e4b4084acfced8b585a94e3b1b797db5",
-      "use_id": "candidate:v1:dacddfb371e80f6c12024dbe4e912da1e4b4084acfced8b585a94e3b1b797db5",
+      "id": "finding:candidate:v1:162d2c2450bd104eac9dbfc70081687469e7a6c5a9226466b7f33c4caad8e259",
+      "use_id": "candidate:v1:162d2c2450bd104eac9dbfc70081687469e7a6c5a9226466b7f33c4caad8e259",
       "entry_id": "entry:v1:5e5278ad1d5fc3dd313e67510beb3906dd6442b549cd8bc6550917b70240bb9b",
       "invocation_context_id": "invocation:v1:cb4ed3efa715c7379930bf0ea1386e110eb7be4613621f2cd96313dc82b05294",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "NoSQL document type constraints need review",
-      "summary": "A request value reaches a query, update, or insert document. Scan has not established the scalar type or permitted keys/operators for that slot. A structured document is not automatically unsafe; verify the driver and field constraints.",
-      "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id reaches a sensitive use with no validator call in the handler or applicable middleware Model validation answer: insufficient. This operation-level answer is not an independent field-policy finding.",
-      "use_protection": "Assessed injection/use protection: Inconclusive. Injection-specific assessment is missing or uncertain; construction-practice answers cannot establish injection.",
-      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
+      "record_type": "protection",
+      "status": "protected_for_claim",
+      "title": "ObjectId lookup preserves the URL ID as data",
+      "summary": "The named URL parameter remains a primitive string. Under the pinned Mongoose 4.2.4 contract, findById casts it to ObjectId or raises a cast error without interpreting it as query operators. The source-backed assessment supports protection of this NoSQL-injection claim only.",
+      "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id reaches a sensitive use with no validator call in the handler or applicable middleware Model validation answer: sufficient. This operation-level answer is not an independent field-policy finding.",
+      "use_protection": "Assessed injection/use protection: sufficient. Injection-specific assessment supports syntax protection for the supplied claim; field validation and construction practice remain separate.",
+      "uncertainty": "This protection does not establish authorization or ownership checks, valid-ID error handling, business validation or safe rendering of stored content. It assumes the declared dependency and the supplied unmodified request/schema path.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Preserve the verified protection",
         "actions": [
-          "Investigate the operation at routes/index.js:204: Todo.findById(req.params.id, function (err, todo) {\n\n    try {\n      todo.remove(function (err, todo) {\n        if (err) return next(err);\n        res.redirect('/');\n      });\n    } catch (e) {\n    }\n  }). Its current Review status does not establish a code defect.",
-          "Reconcile the semantic assessment with this exact source claim: Injection-specific assessment is missing or uncertain; construction-practice answers cannot establish injection."
+          "Preserve the demonstrated protection at routes/index.js:204 for this exact operation: Todo.findById(req.params.id, function (err, todo) {\n\n    try {\n      todo.remove(function (err, todo) {\n        if (err) return next(err);\n        res.redirect('/');\n      });\n    } catch (e) {\n    }\n  })",
+          "Keep a regression test with HTML-significant or SQL-significant input, as appropriate to this claim. Input-validation requirements are assessed separately."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": "no repair proposed for a protected claim"
       }
     },
     {
@@ -760,25 +760,24 @@
         "nosql-injection",
         "input-validation"
       ],
-      "id": "finding:candidate:v1:e95882ec16a33ad24c836f55c156bcaa2f69de773e5f42539581c75dce27c292",
-      "use_id": "candidate:v1:e95882ec16a33ad24c836f55c156bcaa2f69de773e5f42539581c75dce27c292",
+      "id": "finding:candidate:v1:642fcc35d0d9a7f7313861c9a1a69ddb6648833f1837a01df7a34c026bc7a7c6",
+      "use_id": "candidate:v1:642fcc35d0d9a7f7313861c9a1a69ddb6648833f1837a01df7a34c026bc7a7c6",
       "entry_id": "entry:v1:f54d064a9985f3f0ef4fad0403e99b6541da415537eae1a317ef5836f1db3f46",
       "invocation_context_id": "invocation:v1:45b2cba3c3f0cf4ce0211864de31598484ff230155c3d167f7a2ed671cf2362f",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "NoSQL document type constraints need review",
-      "summary": "A request value reaches a query, update, or insert document. Scan has not established the scalar type or permitted keys/operators for that slot. A structured document is not automatically unsafe; verify the driver and field constraints.",
-      "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id reaches a sensitive use with no validator call in the handler or applicable middleware Model validation answer: insufficient. This operation-level answer is not an independent field-policy finding.",
-      "use_protection": "Assessed injection/use protection: Inconclusive. claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained",
-      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
+      "record_type": "protection",
+      "status": "protected_for_claim",
+      "title": "ObjectId lookup preserves the URL ID as data",
+      "summary": "The named URL parameter remains a primitive string. Under the pinned Mongoose 4.2.4 contract, findById casts it to ObjectId or raises a cast error without interpreting it as query operators. The source-backed assessment supports protection of this NoSQL-injection claim only.",
+      "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id reaches a sensitive use with no validator call in the handler or applicable middleware Model validation answer: sufficient. This operation-level answer is not an independent field-policy finding.",
+      "use_protection": "Assessed injection/use protection: sufficient. Injection-specific assessment supports syntax protection for the supplied claim; field validation and construction practice remain separate.",
+      "uncertainty": "This protection does not establish authorization or ownership checks, valid-ID error handling, business validation or safe rendering of stored content. It assumes the declared dependency and the supplied unmodified request/schema path.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Preserve the verified protection",
         "actions": [
-          "Investigate the operation at routes/index.js:232: Todo.findById(req.params.id, function (err, todo) {\n\n    todo.content = req.body.content;\n    todo.updated_at = Date.now();\n    todo.save(function (err, todo, count) {\n      if (err) return next(err);\n\n      res.redirect('/');\n    });\n  }). Its current Review status does not establish a code defect.",
-          "Resolve injection_semantic_coverage at :0: source_coverage: unknown",
-          "Reconcile the semantic assessment with this exact source claim: claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained"
+          "Preserve the demonstrated protection at routes/index.js:232 for this exact operation: Todo.findById(req.params.id, function (err, todo) {\n\n    todo.content = req.body.content;\n    todo.updated_at = Date.now();\n    todo.save(function (err, todo, count) {\n      if (err) return next(err);\n\n      res.redirect('/');\n    });\n  })",
+          "Keep a regression test with HTML-significant or SQL-significant input, as appropriate to this claim. Input-validation requirements are assessed separately."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": "no repair proposed for a protected claim"
       }
     },
     {
@@ -1000,7 +999,6 @@
       }
     }
   ],
-  "selected_scope": {},
   "schema_version": 4,
   "root": "nodejs-goof",
   "registrations": [
@@ -21549,9 +21547,9 @@
         },
         "components": [
           {
-            "id": "api.mongoose-model-query-v2",
+            "id": "api.mongoose-path-id-objectid-v1",
             "version": "1",
-            "digest": "2cfb197a7649f00cdaf870c89158e053432ef9f88095b866bd6363b4f29e5d7d"
+            "digest": "3ab76c349579bd5e8c9a036381355c6d4f61e54945307dfaac6b13f600de380b"
           },
           {
             "id": "claim.nosql",
@@ -21584,7 +21582,7 @@
             "digest": "e44dd1a2f768a32cdf1224e73f916bcfe307eec5cf99ef43f68e2229990be89f"
           }
         ],
-        "digest": "291eb72f68219d06358263908f8df09a7487d87bf3875a6c4abf9b5e48c0873c",
+        "digest": "8c1360df6df25933244a11ce1842b5848118cf7f60d7b7f66ab9a99751420284",
         "required": [
           "control_flow",
           "dispatch_binding",
@@ -21594,6 +21592,7 @@
           "invoked_callable",
           "model_schema",
           "nosql_query_candidate",
+          "selector_path_string",
           "sink_binding"
         ],
         "limits": [
@@ -21603,10 +21602,10 @@
         ]
       },
       "api_model": {
-        "id": "mongoose-model-query-v2",
+        "id": "mongoose-path-id-objectid-v1",
         "library": "mongoose",
-        "semantics": "The selected-root manifest pins Mongoose4.2.4; installed runtime is not verified. Its query caster retains recognized $ operators in filter objects and casts their operands. SchemaString inherits $ne/$eq/$in/$nin conditional handlers, so a String schema path does not itself reject an operator object or force scalar equality. Persistence validation and schema types do not sanitize query filters. Inspect the actual schema, operation/slot and application guards; scalar guards, custom setters/hooks, casts and findById ObjectId behavior must not inherit a different field's conclusions.",
-        "reference": "https://github.com/Automattic/mongoose/blob/4.2.4/lib/cast.js"
+        "semantics": "The selected manifest pins Mongoose 4.2.4; installed runtime is not verified. This operation is findById(id), implemented as findOne({_id:id}), with the verified model's default ObjectId _id and no unresolved custom schema behavior. Its ObjectId query caster converts the primitive string to an ObjectId or throws a CastError; it does not JSON-parse string contents into selector operators (lib/schema/objectid.js, cast and castForQuery). The accompanying selector_path_string evidence identifies a direct, unmodified Express named URL parameter. Express's route matcher supplies that parameter as a decoded primitive string, not a parsed body/query object. JSON-looking text or $ne in that string cannot introduce query operators. For this exact input and operation, syntax/operator protection can be established without an application validator; externally controlled source coverage remains yes even though the value cannot control operators. Invalid IDs/error handling, business validation, authorization and stored-content rendering are separate claims. These facts must not be applied to body/query objects, modified parameters, custom _id schemas, unknown hooks or other operations.",
+        "reference": "https://github.com/Automattic/mongoose/blob/4.2.4/lib/model.js#L1179"
       },
       "check": {
         "id": "automatic-query",
@@ -21625,7 +21624,8 @@
           "Known express.json/body-parser parsing adapters parse request values and may admit nested JSON objects. They do not enforce an id/email/name field schema or remove query operators from nested fields. A parser call alone is not a validator.",
           "For this supported registration scope, the discovery-stage generic middleware_unresolved warning is superseded by the supplied route/middleware context. Judge guard effects from those bodies and actual input transformations; do not invent additional undisclosed middleware.",
           "Verified default method-override()/express-fileupload() or literal-data express-session options are transport/session adapters, not per-field database validators. Default method override changes request method, default upload handling concerns multipart bodies, and session handling supplies session/cookie state. They do not impose a scalar schema on fields of an already parsed JSON body. Custom callbacks, stores, dynamic options, mutated imports and unknown middleware are not covered by this contract.",
-          "For selector-value operator injection, distinguish an object from a primitive string: Mongo-style operators inside an object are interpreted, while text such as $ne inside a primitive string remains data. A dominating typeof field !== string rejection that returns/throws before the sink excludes object-valued input for that field on the continuing path, provided there is no intervening mutation or bypass. A mere type test without enforcing control flow does not constrain the sink. Evaluate every selector field and path independently; a guard on one field cannot protect another, and a string used as executable $where text has different semantics."
+          "For selector-value operator injection, distinguish an object from a primitive string: Mongo-style operators inside an object are interpreted, while text such as $ne inside a primitive string remains data. A dominating typeof field !== string rejection that returns/throws before the sink excludes object-valued input for that field on the continuing path, provided there is no intervening mutation or bypass. A mere type test without enforcing control flow does not constrain the sink. Evaluate every selector field and path independently; a guard on one field cannot protect another, and a string used as executable $where text has different semantics.",
+          "The exact findById input req.params.id is the named URL segment in /destroy/:id. It retains Express's decoded primitive string type in the supplied handler/middleware slice; no request/params write or object escape is modeled on this path. It remains externally controlled data, not an object-valued selector. Apply only the selected operation contract to this argument; authorization and business validation are separate."
         ],
         "resolved_gaps": [
           {
@@ -21648,6 +21648,7 @@
           "sink_binding",
           "model_schema",
           "control_flow",
+          "selector_path_string",
           "entry_registration",
           "dispatch_binding",
           "invocation_binding"
@@ -22127,6 +22128,20 @@
               "sha256": "f84d3889f5bfafb0fc5906e5d7c948ae125a4643b6a39f2677f45ed9c1c56bcd"
             }
           ],
+          "selector_path_string": [
+            {
+              "kind": "selector_path_string",
+              "text": "req.params.id",
+              "span": {
+                "file": "routes/index.js",
+                "start_line": 204,
+                "end_line": 204,
+                "start_byte": 5249,
+                "end_byte": 5262
+              },
+              "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+            }
+          ],
           "sink_binding": [
             {
               "kind": "sink_binding",
@@ -22220,7 +22235,7 @@
         ],
         "scope": "injection claim over the supplied route, relevant request values, verified operation contract and guard/transfer context"
       },
-      "id": "candidate:v1:dacddfb371e80f6c12024dbe4e912da1e4b4084acfced8b585a94e3b1b797db5",
+      "id": "candidate:v1:162d2c2450bd104eac9dbfc70081687469e7a6c5a9226466b7f33c4caad8e259",
       "entry_id": "entry:v1:5e5278ad1d5fc3dd313e67510beb3906dd6442b549cd8bc6550917b70240bb9b",
       "invocation_context_id": "invocation:v1:cb4ed3efa715c7379930bf0ea1386e110eb7be4613621f2cd96313dc82b05294",
       "kind": "nosql_query_candidate",
@@ -22649,6 +22664,18 @@
             "end_byte": 1151
           },
           "sha256": "d93de0d5af790ec763d4c62177d92f4fbed7b9d48f21d6dafaa7984bd8733c31"
+        },
+        {
+          "kind": "selector_path_string",
+          "text": "req.params.id",
+          "span": {
+            "file": "routes/index.js",
+            "start_line": 204,
+            "end_line": 204,
+            "start_byte": 5249,
+            "end_byte": 5262
+          },
+          "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
         }
       ],
       "gaps": [
@@ -22698,186 +22725,186 @@
         }
       ],
       "assessment": {
-        "request_digest": "bb97eb0cac086277da00fc6ef0cbd4cc0508386605c5792b573dcf53e2d3be10",
+        "request_digest": "caa296e9e6b5abe37726cd22cb22b01b538be146dae7b51fb859ccd19815e670",
         "answer_details": {
           "all_paths_protected": {
-            "choice": "unknown",
-            "confidence": 0.02,
+            "choice": "yes",
+            "confidence": 0.99,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.32
+                "probability": 0.99
               },
               {
                 "value": "no",
-                "probability": 0.33
+                "probability": 0.01
               },
               {
                 "value": "unknown",
-                "probability": 0.35
+                "probability": 0
               }
             ]
           },
           "guard_coverage": {
             "choice": "yes",
-            "confidence": 0.83,
+            "confidence": 0.97,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.89
+                "probability": 0.98
               },
               {
                 "value": "no",
-                "probability": 0.06
+                "probability": 0.01
               },
               {
                 "value": "unknown",
-                "probability": 0.05
+                "probability": 0.01
               }
             ]
           },
           "injection_protection": {
-            "choice": "unknown",
-            "confidence": 0.19,
+            "choice": "protected",
+            "confidence": 1,
             "probabilities": [
               {
                 "value": "vulnerable",
-                "probability": 0.29
+                "probability": 0
               },
               {
                 "value": "protected",
-                "probability": 0.3
+                "probability": 1
               },
               {
                 "value": "unknown",
-                "probability": 0.39
-              },
-              {
-                "value": "not_applicable",
-                "probability": 0.02
-              }
-            ]
-          },
-          "library_coverage": {
-            "choice": "yes",
-            "confidence": 0.85,
-            "probabilities": [
-              {
-                "value": "yes",
-                "probability": 0.9
-              },
-              {
-                "value": "no",
-                "probability": 0.02
-              },
-              {
-                "value": "unknown",
-                "probability": 0.08
-              }
-            ]
-          },
-          "path_coverage": {
-            "choice": "yes",
-            "confidence": 0.76,
-            "probabilities": [
-              {
-                "value": "yes",
-                "probability": 0.84
-              },
-              {
-                "value": "no",
-                "probability": 0.08
-              },
-              {
-                "value": "unknown",
-                "probability": 0.08
-              }
-            ]
-          },
-          "protection": {
-            "choice": "insufficient",
-            "confidence": 0.35,
-            "probabilities": [
-              {
-                "value": "sufficient",
-                "probability": 0.16
-              },
-              {
-                "value": "insufficient",
-                "probability": 0.51
-              },
-              {
-                "value": "uncertain",
-                "probability": 0.31
-              },
-              {
-                "value": "not_applicable",
-                "probability": 0.02
-              }
-            ]
-          },
-          "source_coverage": {
-            "choice": "yes",
-            "confidence": 0.37,
-            "probabilities": [
-              {
-                "value": "yes",
-                "probability": 0.58
-              },
-              {
-                "value": "no",
-                "probability": 0.1
-              },
-              {
-                "value": "unknown",
-                "probability": 0.32
-              }
-            ]
-          },
-          "validation": {
-            "choice": "insufficient",
-            "confidence": 0.6,
-            "probabilities": [
-              {
-                "value": "sufficient",
-                "probability": 0.01
-              },
-              {
-                "value": "insufficient",
-                "probability": 0.7
-              },
-              {
-                "value": "uncertain",
-                "probability": 0.29
+                "probability": 0
               },
               {
                 "value": "not_applicable",
                 "probability": 0
               }
             ]
+          },
+          "library_coverage": {
+            "choice": "yes",
+            "confidence": 0.99,
+            "probabilities": [
+              {
+                "value": "yes",
+                "probability": 0.99
+              },
+              {
+                "value": "no",
+                "probability": 0.01
+              },
+              {
+                "value": "unknown",
+                "probability": 0
+              }
+            ]
+          },
+          "path_coverage": {
+            "choice": "yes",
+            "confidence": 0.99,
+            "probabilities": [
+              {
+                "value": "yes",
+                "probability": 0.99
+              },
+              {
+                "value": "no",
+                "probability": 0.01
+              },
+              {
+                "value": "unknown",
+                "probability": 0
+              }
+            ]
+          },
+          "protection": {
+            "choice": "sufficient",
+            "confidence": 0.99,
+            "probabilities": [
+              {
+                "value": "sufficient",
+                "probability": 0.99
+              },
+              {
+                "value": "insufficient",
+                "probability": 0.01
+              },
+              {
+                "value": "uncertain",
+                "probability": 0
+              },
+              {
+                "value": "not_applicable",
+                "probability": 0
+              }
+            ]
+          },
+          "source_coverage": {
+            "choice": "yes",
+            "confidence": 0.89,
+            "probabilities": [
+              {
+                "value": "yes",
+                "probability": 0.93
+              },
+              {
+                "value": "no",
+                "probability": 0.05
+              },
+              {
+                "value": "unknown",
+                "probability": 0.02
+              }
+            ]
+          },
+          "validation": {
+            "choice": "sufficient",
+            "confidence": 0.69,
+            "probabilities": [
+              {
+                "value": "sufficient",
+                "probability": 0.77
+              },
+              {
+                "value": "insufficient",
+                "probability": 0.2
+              },
+              {
+                "value": "uncertain",
+                "probability": 0.02
+              },
+              {
+                "value": "not_applicable",
+                "probability": 0.01
+              }
+            ]
           }
         },
-        "finding_status": "needs_evidence",
+        "finding_status": "protected_for_claim",
         "answers": {
-          "all_paths_protected": "unknown",
+          "all_paths_protected": "yes",
           "guard_coverage": "yes",
-          "injection_protection": "unknown",
+          "injection_protection": "protected",
           "library_coverage": "yes",
           "path_coverage": "yes",
-          "protection": "insufficient",
+          "protection": "sufficient",
           "source_coverage": "yes",
-          "validation": "insufficient"
+          "validation": "sufficient"
         },
         "usage": {
-          "input_tokens": 12097,
+          "input_tokens": 12417,
           "output_tokens": 0
         },
         "status": "completed",
         "provider": "openai",
         "model": "gpt-6-luna",
         "question_version": "nosql-components-v1",
-        "protection": "uncertain",
-        "reason": "Injection-specific assessment is missing or uncertain; construction-practice answers cannot establish injection."
+        "protection": "sufficient",
+        "reason": "Injection-specific assessment supports syntax protection for the supplied claim; field validation and construction practice remain separate."
       }
     },
     {
@@ -30979,9 +31006,9 @@
         },
         "components": [
           {
-            "id": "api.mongoose-model-query-v2",
+            "id": "api.mongoose-path-id-objectid-v1",
             "version": "1",
-            "digest": "2cfb197a7649f00cdaf870c89158e053432ef9f88095b866bd6363b4f29e5d7d"
+            "digest": "3ab76c349579bd5e8c9a036381355c6d4f61e54945307dfaac6b13f600de380b"
           },
           {
             "id": "claim.nosql",
@@ -31014,7 +31041,7 @@
             "digest": "e44dd1a2f768a32cdf1224e73f916bcfe307eec5cf99ef43f68e2229990be89f"
           }
         ],
-        "digest": "291eb72f68219d06358263908f8df09a7487d87bf3875a6c4abf9b5e48c0873c",
+        "digest": "8c1360df6df25933244a11ce1842b5848118cf7f60d7b7f66ab9a99751420284",
         "required": [
           "control_flow",
           "dispatch_binding",
@@ -31024,6 +31051,7 @@
           "invoked_callable",
           "model_schema",
           "nosql_query_candidate",
+          "selector_path_string",
           "sink_binding"
         ],
         "limits": [
@@ -31033,10 +31061,10 @@
         ]
       },
       "api_model": {
-        "id": "mongoose-model-query-v2",
+        "id": "mongoose-path-id-objectid-v1",
         "library": "mongoose",
-        "semantics": "The selected-root manifest pins Mongoose4.2.4; installed runtime is not verified. Its query caster retains recognized $ operators in filter objects and casts their operands. SchemaString inherits $ne/$eq/$in/$nin conditional handlers, so a String schema path does not itself reject an operator object or force scalar equality. Persistence validation and schema types do not sanitize query filters. Inspect the actual schema, operation/slot and application guards; scalar guards, custom setters/hooks, casts and findById ObjectId behavior must not inherit a different field's conclusions.",
-        "reference": "https://github.com/Automattic/mongoose/blob/4.2.4/lib/cast.js"
+        "semantics": "The selected manifest pins Mongoose 4.2.4; installed runtime is not verified. This operation is findById(id), implemented as findOne({_id:id}), with the verified model's default ObjectId _id and no unresolved custom schema behavior. Its ObjectId query caster converts the primitive string to an ObjectId or throws a CastError; it does not JSON-parse string contents into selector operators (lib/schema/objectid.js, cast and castForQuery). The accompanying selector_path_string evidence identifies a direct, unmodified Express named URL parameter. Express's route matcher supplies that parameter as a decoded primitive string, not a parsed body/query object. JSON-looking text or $ne in that string cannot introduce query operators. For this exact input and operation, syntax/operator protection can be established without an application validator; externally controlled source coverage remains yes even though the value cannot control operators. Invalid IDs/error handling, business validation, authorization and stored-content rendering are separate claims. These facts must not be applied to body/query objects, modified parameters, custom _id schemas, unknown hooks or other operations.",
+        "reference": "https://github.com/Automattic/mongoose/blob/4.2.4/lib/model.js#L1179"
       },
       "check": {
         "id": "automatic-query",
@@ -31055,7 +31083,8 @@
           "Known express.json/body-parser parsing adapters parse request values and may admit nested JSON objects. They do not enforce an id/email/name field schema or remove query operators from nested fields. A parser call alone is not a validator.",
           "For this supported registration scope, the discovery-stage generic middleware_unresolved warning is superseded by the supplied route/middleware context. Judge guard effects from those bodies and actual input transformations; do not invent additional undisclosed middleware.",
           "Verified default method-override()/express-fileupload() or literal-data express-session options are transport/session adapters, not per-field database validators. Default method override changes request method, default upload handling concerns multipart bodies, and session handling supplies session/cookie state. They do not impose a scalar schema on fields of an already parsed JSON body. Custom callbacks, stores, dynamic options, mutated imports and unknown middleware are not covered by this contract.",
-          "For selector-value operator injection, distinguish an object from a primitive string: Mongo-style operators inside an object are interpreted, while text such as $ne inside a primitive string remains data. A dominating typeof field !== string rejection that returns/throws before the sink excludes object-valued input for that field on the continuing path, provided there is no intervening mutation or bypass. A mere type test without enforcing control flow does not constrain the sink. Evaluate every selector field and path independently; a guard on one field cannot protect another, and a string used as executable $where text has different semantics."
+          "For selector-value operator injection, distinguish an object from a primitive string: Mongo-style operators inside an object are interpreted, while text such as $ne inside a primitive string remains data. A dominating typeof field !== string rejection that returns/throws before the sink excludes object-valued input for that field on the continuing path, provided there is no intervening mutation or bypass. A mere type test without enforcing control flow does not constrain the sink. Evaluate every selector field and path independently; a guard on one field cannot protect another, and a string used as executable $where text has different semantics.",
+          "The exact findById input req.params.id is the named URL segment in /update/:id. It retains Express's decoded primitive string type in the supplied handler/middleware slice; no request/params write or object escape is modeled on this path. It remains externally controlled data, not an object-valued selector. Apply only the selected operation contract to this argument; authorization and business validation are separate."
         ],
         "resolved_gaps": [
           {
@@ -31078,6 +31107,7 @@
           "sink_binding",
           "model_schema",
           "control_flow",
+          "selector_path_string",
           "entry_registration",
           "dispatch_binding",
           "invocation_binding"
@@ -31557,6 +31587,20 @@
               "sha256": "f84d3889f5bfafb0fc5906e5d7c948ae125a4643b6a39f2677f45ed9c1c56bcd"
             }
           ],
+          "selector_path_string": [
+            {
+              "kind": "selector_path_string",
+              "text": "req.params.id",
+              "span": {
+                "file": "routes/index.js",
+                "start_line": 232,
+                "end_line": 232,
+                "start_byte": 5788,
+                "end_byte": 5801
+              },
+              "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+            }
+          ],
           "sink_binding": [
             {
               "kind": "sink_binding",
@@ -31650,7 +31694,7 @@
         ],
         "scope": "injection claim over the supplied route, relevant request values, verified operation contract and guard/transfer context"
       },
-      "id": "candidate:v1:e95882ec16a33ad24c836f55c156bcaa2f69de773e5f42539581c75dce27c292",
+      "id": "candidate:v1:642fcc35d0d9a7f7313861c9a1a69ddb6648833f1837a01df7a34c026bc7a7c6",
       "entry_id": "entry:v1:f54d064a9985f3f0ef4fad0403e99b6541da415537eae1a317ef5836f1db3f46",
       "invocation_context_id": "invocation:v1:45b2cba3c3f0cf4ce0211864de31598484ff230155c3d167f7a2ed671cf2362f",
       "kind": "nosql_query_candidate",
@@ -32079,6 +32123,18 @@
             "end_byte": 1151
           },
           "sha256": "d93de0d5af790ec763d4c62177d92f4fbed7b9d48f21d6dafaa7984bd8733c31"
+        },
+        {
+          "kind": "selector_path_string",
+          "text": "req.params.id",
+          "span": {
+            "file": "routes/index.js",
+            "start_line": 232,
+            "end_line": 232,
+            "start_byte": 5788,
+            "end_byte": 5801
+          },
+          "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
         }
       ],
       "gaps": [
@@ -32128,117 +32184,117 @@
         }
       ],
       "assessment": {
-        "request_digest": "2a16363f89e30ab36a5426bf277a192bdc780db3df972d1ad1bc4c8e98e39bc3",
+        "request_digest": "e12b93fe0f5898d48c6e5d6c7680039ee4c80d056d6ce6a4e490701ead473561",
         "answer_details": {
           "all_paths_protected": {
             "choice": "yes",
-            "confidence": 0.06,
+            "confidence": 0.99,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.37
+                "probability": 0.99
               },
               {
                 "value": "no",
-                "probability": 0.29
+                "probability": 0.01
               },
               {
                 "value": "unknown",
-                "probability": 0.34
+                "probability": 0
               }
             ]
           },
           "guard_coverage": {
             "choice": "yes",
-            "confidence": 0.89,
+            "confidence": 0.86,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.93
+                "probability": 0.91
               },
               {
                 "value": "no",
-                "probability": 0.04
+                "probability": 0.05
               },
               {
                 "value": "unknown",
-                "probability": 0.03
+                "probability": 0.04
               }
             ]
           },
           "injection_protection": {
-            "choice": "unknown",
-            "confidence": 0.24,
+            "choice": "protected",
+            "confidence": 1,
             "probabilities": [
               {
                 "value": "vulnerable",
-                "probability": 0.3
+                "probability": 0
               },
               {
                 "value": "protected",
-                "probability": 0.25
+                "probability": 1
               },
               {
                 "value": "unknown",
-                "probability": 0.43
+                "probability": 0
               },
               {
                 "value": "not_applicable",
-                "probability": 0.02
+                "probability": 0
               }
             ]
           },
           "library_coverage": {
             "choice": "yes",
-            "confidence": 0.85,
+            "confidence": 1,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.9
+                "probability": 1
               },
               {
                 "value": "no",
-                "probability": 0.03
+                "probability": 0
               },
               {
                 "value": "unknown",
-                "probability": 0.07
+                "probability": 0
               }
             ]
           },
           "path_coverage": {
             "choice": "yes",
-            "confidence": 0.24,
+            "confidence": 0.86,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.49
+                "probability": 0.91
               },
               {
                 "value": "no",
-                "probability": 0.25
+                "probability": 0.08
               },
               {
                 "value": "unknown",
-                "probability": 0.26
+                "probability": 0.01
               }
             ]
           },
           "protection": {
-            "choice": "insufficient",
-            "confidence": 0.48,
+            "choice": "sufficient",
+            "confidence": 0.97,
             "probabilities": [
               {
                 "value": "sufficient",
-                "probability": 0.08
+                "probability": 0.98
               },
               {
                 "value": "insufficient",
-                "probability": 0.61
+                "probability": 0.02
               },
               {
                 "value": "uncertain",
-                "probability": 0.31
+                "probability": 0
               },
               {
                 "value": "not_applicable",
@@ -32247,80 +32303,67 @@
             ]
           },
           "source_coverage": {
-            "choice": "unknown",
-            "confidence": 0.19,
+            "choice": "yes",
+            "confidence": 0.48,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.24
+                "probability": 0.65
               },
               {
                 "value": "no",
-                "probability": 0.3
+                "probability": 0.26
               },
               {
                 "value": "unknown",
-                "probability": 0.46
+                "probability": 0.09
               }
             ]
           },
           "validation": {
-            "choice": "insufficient",
-            "confidence": 0.6,
+            "choice": "sufficient",
+            "confidence": 0.68,
             "probabilities": [
               {
                 "value": "sufficient",
-                "probability": 0.01
+                "probability": 0.76
               },
               {
                 "value": "insufficient",
-                "probability": 0.7
+                "probability": 0.2
               },
               {
                 "value": "uncertain",
-                "probability": 0.29
+                "probability": 0.03
               },
               {
                 "value": "not_applicable",
-                "probability": 0
+                "probability": 0.01
               }
             ]
           }
         },
-        "finding_status": "needs_evidence",
-        "blocking_gaps": [
-          {
-            "kind": "injection_semantic_coverage",
-            "detail": "source_coverage: unknown",
-            "at": {
-              "file": "",
-              "start_line": 0,
-              "end_line": 0,
-              "start_byte": 0,
-              "end_byte": 0
-            }
-          }
-        ],
+        "finding_status": "protected_for_claim",
         "answers": {
           "all_paths_protected": "yes",
           "guard_coverage": "yes",
-          "injection_protection": "unknown",
+          "injection_protection": "protected",
           "library_coverage": "yes",
           "path_coverage": "yes",
-          "protection": "insufficient",
-          "source_coverage": "unknown",
-          "validation": "insufficient"
+          "protection": "sufficient",
+          "source_coverage": "yes",
+          "validation": "sufficient"
         },
         "usage": {
-          "input_tokens": 12104,
+          "input_tokens": 12430,
           "output_tokens": 0
         },
         "status": "completed",
         "provider": "openai",
         "model": "gpt-6-luna",
         "question_version": "nosql-components-v1",
-        "protection": "uncertain",
-        "reason": "claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained"
+        "protection": "sufficient",
+        "reason": "Injection-specific assessment supports syntax protection for the supplied claim; field validation and construction practice remain separate."
       }
     },
     {
@@ -34999,7 +35042,8 @@
     "ESM relative imports, literal CommonJS requires and direct exported handlers are resolved; dynamic imports, re-exports and mutated module bindings remain uncertain",
     "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
     "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
-    "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities"
+    "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
+    "Scoped findById follow-up: only POST /update/:id and GET /destroy/:id were freshly judged with new path-string/default-ObjectId facts; the other 32 assessments were exactly replayed from the retained final full Goof scan. This is not a new full paid scan."
   ],
   "analysis_guidelines": [
     {

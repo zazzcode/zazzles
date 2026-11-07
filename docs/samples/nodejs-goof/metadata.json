@@ -1,29 +1,28 @@
 {
   "date": "2026-11-07",
   "target_revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
-  "scanner_revision": "6f5cb711fe06c6d538f636aaea9aad9b5500cbc9",
-  "scanner_binary_sha256": "0836b6e7e148ddff6b2c0e0a2dbfc5ae23dc95e239b4a25efd3e8abee16565be",
-  "evaluation_mode": "full source-transmitting judged scan",
+  "scanner_revision": "919f3f95cf4ef79147af1fd9738b5bf17b8293b7 plus source manifest identified below",
+  "evaluation_mode": "scoped two-decision NoSQL follow-up; 32 exact replays from the retained full scan",
   "provider": "openai",
   "model": "gpt-6-luna",
   "protocols": "component protocols per family (command-components-v1 for command)",
   "positions": 34,
-  "provider_requests": 34,
-  "input_tokens": 255630,
+  "provider_requests": 2,
+  "input_tokens": 24847,
   "published_records": 34,
   "outcome_counts": {
-    "Review": 29,
+    "Review": 27,
     "Finding": 4,
-    "Protected": 1
+    "Protected": 3
   },
   "command_candidates": 1,
   "command_confirmed": 1,
   "skipped_families": [],
   "published_copy": "complete",
-  "retained_run": "run-723347687",
+  "retained_run": "run-3132504896 (offline re-render of run-1204339142)",
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "runtime_confirmation": "none; static source judgments only",
-  "evidence": ".zazz/evaluation/command-injection-results.md",
+  "evidence": ".zazz/evaluation/nodejs-goof-findbyid-results.md",
   "previous": {
     "date": "2026-11-01",
     "increment": "hardening-10",
@@ -178,5 +177,26 @@
     },
     "source_input_note": "Native original checkouts unchanged; Goof uses the pinned 22-file curated source snapshot.",
     "replay": "decisions/20261101-five-case-01"
-  }
+  },
+  "base_scan": {
+    "scanner_revision": "6f5cb711fe06c6d538f636aaea9aad9b5500cbc9",
+    "scanner_binary_sha256": "0836b6e7e148ddff6b2c0e0a2dbfc5ae23dc95e239b4a25efd3e8abee16565be",
+    "evaluation_mode": "full source-transmitting judged scan",
+    "provider_requests": 34,
+    "input_tokens": 255630,
+    "outcome_counts": {
+      "Review": 29,
+      "Finding": 4,
+      "Protected": 1
+    },
+    "retained_run": "run-723347687"
+  },
+  "assessment_harness_binary_sha256": "652bc9d9299531a9f7d459f30715fbe4803693be7da006ed4155066f8a5e227f",
+  "assessment_runtime_manifest_sha256": "8fcf3ae4146f46b2baaa05bd9366f7701755413cf7d1fe52bab42e45bb79ce45",
+  "exact_replayed_assessments": 32,
+  "followup_scope": [
+    "GET /destroy/:id NoSQL findById claim",
+    "POST /update/:id NoSQL findById claim"
+  ],
+  "final_runtime_manifest_sha256": "e5612661491d71ae0d9b30c9b22e6bf861cae4ca5eeef4f24808768c70bfa6d3"
 }

@@ -5,12 +5,14 @@ import "github.com/zazzcode/zazzles/internal/analysis"
 // noSQLContractIDs lists the verified NoSQL operation contracts. MarsDB has
 // Mongo-style matching semantics; this does not make it a MongoDB server or
 // establish support for any MongoDB driver. Python NoSQL stays unimplemented.
-var noSQLContractIDs = []string{"marsdb-collection-v1", "mongoose-model-query-v1", "mongoose-model-query-v2"}
+var noSQLContractIDs = []string{"marsdb-collection-v1", "mongoose-model-query-v1", "mongoose-model-query-v2", "mongoose-path-id-objectid-v1"}
 
 // NoSQLContract returns a copy of the supported operation contract by verified
 // model ID. It applies only after parse proved the collection/model binding.
 func NoSQLContract(id string) *analysis.APIModel {
 	switch id {
+	case "mongoose-path-id-objectid-v1":
+		return &analysis.APIModel{ID: id, Library: "mongoose", Reference: "https://github.com/Automattic/mongoose/blob/4.2.4/lib/model.js#L1179", Semantics: "The selected manifest pins Mongoose 4.2.4; installed runtime is not verified. This operation is findById(id), implemented as findOne({_id:id}), with the verified model's default ObjectId _id and no unresolved custom schema behavior. Its ObjectId query caster converts the primitive string to an ObjectId or throws a CastError; it does not JSON-parse string contents into selector operators (lib/schema/objectid.js, cast and castForQuery). The accompanying selector_path_string evidence identifies a direct, unmodified Express named URL parameter. Express's route matcher supplies that parameter as a decoded primitive string, not a parsed body/query object. JSON-looking text or $ne in that string cannot introduce query operators. For this exact input and operation, syntax/operator protection can be established without an application validator; externally controlled source coverage remains yes even though the value cannot control operators. Invalid IDs/error handling, business validation, authorization and stored-content rendering are separate claims. These facts must not be applied to body/query objects, modified parameters, custom _id schemas, unknown hooks or other operations."}
 	case "marsdb-collection-v1":
 		return &analysis.APIModel{ID: "marsdb-collection-v1", Library: "marsdb", Semantics: "MarsDB Collection uses Mongo-style selector matching. $where string values are executable JavaScript predicates, not bound data. A request object in a selector field can introduce matching operators such as $ne. Ordinary scalar values in document data slots are not executable expressions. Review each selector versus update-value slot and constraints separately.", Reference: "https://github.com/c58/marsdb/blob/master/lib/DocumentMatcher.js"}
 	case "mongoose-model-query-v1":

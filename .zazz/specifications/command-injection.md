@@ -442,6 +442,20 @@ integration merge or runtime-exploit claim is implied.
 
 ## 11. Open questions and autonomy
 
+### Accepted follow-up: Express path IDs and Mongoose findById
+
+User steering on 2026-11-07 authorizes bounded NoSQL evidence hardening in this worktree: identify an
+unmodified direct Express named path parameter as a primitive string, and select a separate catalog-owned
+Mongoose 4.2.4 `findById` contract only for a verified model with the default ObjectId `_id` schema.
+Changes are limited to the relevant `internal/parse`, `internal/analysispacks`, `internal/judge` and `internal/report` code/tests,
+public database analysis guide and Goof evaluation/sample artifacts. Unknown middleware, request mutation,
+custom IDs/schema behavior, unpinned dependencies and object-valued inputs cannot inherit this evidence.
+The existing semantic judgment and completeness gates decide protection; evidence extraction never
+rewrites an old answer or declares application-wide safety. Tests must exercise source facts, protected
+and unsafe controls, contradictory answers, replay invalidation and JSON/HTML/SARIF status parity.
+The user authorized at most two fresh OpenAI Decisions `gpt-6-luna` calls, after offline checks, for
+Goof `/update/:id` and `/destroy/:id` only. Preserve prior scans and record new request/response traces.
+
 No open product decision requires an intake interview before implementation. POSIX assumptions, conservative unmodeled
 semantics, pack integration, four-target live evaluation and report delivery are selected above. The broader acceptance
 requires command-specific discovery prerequisites; leaving those known positives as Review is not an approved scope
@@ -490,6 +504,13 @@ feature branch artifacts under the linked delivery guide. Never merge or push to
 ```
 
 ## 14. Implementation and review change log
+
+### 2026-11-07 — Source-backed findById protection follow-up
+
+User requested implementing the distinction between an Express URL ID and object-valued NoSQL selectors.
+Section 11 records the bounded follow-up and two-call limit. Verification must establish scalar provenance,
+default ObjectId casting, conservative exclusions and unchanged unrelated requests; saved judgments require
+fresh exact evidence before the Goof sample can be refreshed.
 
 ### 2026-11-07 — Consistent analyzer vocabulary
 

@@ -102,7 +102,7 @@ func outputGroups(v value, fallback string) []outputGroup {
 }
 
 // outputMarkup names where one claim's values sit when a response holds several
-// claims: the source line of each substitution. The shared sink alone cannot say
+// claims: the source line of each value's innermost substitution. The shared sink alone cannot say
 // which value a claim is about.
 func (f *flow) outputMarkup(v value) []analysis.Evidence {
 	var out []analysis.Evidence
@@ -126,6 +126,8 @@ func (f *flow) outputMarkup(v value) []analysis.Evidence {
 				e.Kind, e.Text, e.ModelText = "render_markup_context", line, line
 				out = append(out, e)
 			}
+			// The first substitution is where the value is written; later ones are wrappers.
+			break
 		}
 	}
 	return out

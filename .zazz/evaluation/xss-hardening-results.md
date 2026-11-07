@@ -96,6 +96,19 @@ sent identical request bytes, so their agreement shows the answers repeat, not t
 **Correction:** the earlier note that pass 1 and the final scan agreed on every case held only for identical
 requests. Changed evidence changed an answer here, so single-sample results remain a stated limit.
 
+## Follow-up: general sanitizer rules (offline)
+
+The sanitizer rules were broadened for novel applications, with no sample-specific conditions. Advisories now come
+from a cited table with half-open version ranges: marked before 0.3.6 (CVE-2016-10531), sanitize-html before 1.4.3
+(CVE-2016-1000237) and sanitize-html 2.17.3 (CVE-2026-44990). Deletions are classified by what they remove, not by a
+pattern's first character, and a deletion after an encoder no longer downgrades it. `TestSanitizerContractsOnNovelInputs`
+covers 23 inputs absent from the sample apps.
+
+Offline output for all five sample apps is byte-identical to the previous binary, except that each split vuln-demo-app
+claim now carries only its innermost `claim_output` line, not the `layout()` wrapper's line. Those two records'
+request bytes changed, so their saved judgments do not replay until vuln-demo-app is rescanned. This change has no
+paid judgment.
+
 ## Usage
 
 | Run | Provider requests | Input tokens |

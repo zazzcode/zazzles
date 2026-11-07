@@ -67,10 +67,21 @@ path. A finale-rest resource makes each string attribute writable by its collect
 `excludeAttributes`. Sinks with many stored paths keep one path per source, write and protection class,
 and record how many were omitted.
 The marked 0.3.5 sanitize-option bypass is a versioned unsafe-rendering contract, supported by
-[upstream PR 592](https://github.com/markedjs/marked/pull/592). sanitize-html before 1.4.3 is not applied
-recursively ([CVE-2016-1000237](https://advisories.gitlab.com/pkg/npm/sanitize-html/CVE-2016-1000237)), and is
-an ineffective contract for an exact pinned version; a version range establishes nothing. A single-pass
-regex that deletes tag fragments can reassemble a tag, so it is also ineffective. Unknown versions/configurations are
+[upstream PR 592](https://github.com/markedjs/marked/pull/592).
+
+Sanitizer bypasses come from a cited advisory table in `internal/parse/xss_versions.go`. An advisory applies only to
+an exact resolved version in its affected range, and only to a call with default options; a version range or
+custom options never match. It currently lists marked before 0.3.6
+([CVE-2016-10531](https://github.com/advisories/GHSA-vfvf-mqq8-rwqc)), sanitize-html before 1.4.3
+([CVE-2016-1000237](https://advisories.gitlab.com/pkg/npm/sanitize-html/CVE-2016-1000237)) and sanitize-html 2.17.3
+([CVE-2026-44990](https://github.com/advisories/GHSA-rpr9-rxv7-x643)). Advisories that need non-default options are
+not listed. An unlisted version keeps its ordinary contract, so this is not a dependency audit.
+
+`replace`/`replaceAll` deletions are classified by what they remove. Removing every `<`, or replacing every `<` with
+`&lt;`, protects HTML text; also removing both quote characters protects a quoted attribute. A deletion that can
+match a tag fragment, such as `/<[^>]*>/g`, `/(<…>)/`, an alternative starting with `<`, or a literal `'<script>'`,
+is ineffective, because one pass can reassemble a tag; so is any non-global deletion. A deletion after an encoder
+leaves the value encoded. Any other pattern or replacement is unknown. Unknown versions/configurations are
 not treated as protected. Each source path must retain its own transformations and blockers.
 Every branch body that can fall through is explored, including `else`, `catch` and `finally`; a
 branch-only path records its condition as a precondition. When paths at one sink differ, `xss.paths`

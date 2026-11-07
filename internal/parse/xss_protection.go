@@ -1,7 +1,6 @@
 package parse
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -99,7 +98,7 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 		call := nodeAt(m.tree.RootNode(), transfer.Span.StartByte, transfer.Span.EndByte)
 		mode := verifiedOutputProtection(m, call)
 		if mode == "" {
-			mode = regexReplaceMode(m, call)
+			mode = replacementMode(m, call)
 		}
 		if mode == "" && neutralStringCall(m, call) {
 			mode = "neutral"
@@ -107,17 +106,16 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 		if mode == "neutral" {
 			continue
 		}
-		if mode == "markdown" && f.set.packageVersion("marked") == "0.3.5" {
-			mode = "ineffective"
-		}
-		if mode == "sanitize_html" {
-			mode = "sanitize"
-			if versionBefore(f.set.packageVersion("sanitize-html"), 1, 4, 3) {
+		if mode == "markdown" {
+			if _, ok := f.set.bypassAdvisory("marked"); ok {
 				mode = "ineffective"
 			}
 		}
-		if mode == "strip_tags" {
-			mode = "ineffective"
+		if mode == "sanitize_html" {
+			mode = "sanitize"
+			if _, ok := f.set.bypassAdvisory("sanitize-html"); ok {
+				mode = "ineffective"
+			}
 		}
 		if mode == "sanitize_dom" {
 			mode = ""
@@ -147,6 +145,21 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 			// Bypassable rich-HTML conversion does not resolve an earlier unknown step.
 			if protection != "unknown" {
 				protection = "ineffective"
+			}
+		case "strip_tags":
+			// Deleting tag fragments cannot reopen text that was already encoded.
+			if protection == "raw" {
+				protection = "ineffective"
+			}
+		case "delete_angles", "delete_angles_quotes":
+			// Every < removed or encoded: no element can open in HTML text.
+			switch {
+			case context == "html_text", context == "html_attribute" && mode == "delete_angles_quotes":
+				if protection == "raw" {
+					protection = "sanitized"
+				}
+			default:
+				protection = "unknown"
 			}
 		default:
 			protection = "unknown"
@@ -245,21 +258,6 @@ func neutralStringCall(m *sourceModule, call *sitter.Node) bool {
 	return false
 }
 
-// versionBefore compares an exact x.y.z version; a range establishes nothing.
-func versionBefore(version string, major, minor, patch int) bool {
-	var a, b, c int
-	if n, err := fmt.Sscanf(version, "%d.%d.%d", &a, &b, &c); n != 3 || err != nil || fmt.Sprintf("%d.%d.%d", a, b, c) != version {
-		return false
-	}
-	if a != major {
-		return a < major
-	}
-	if b != minor {
-		return b < minor
-	}
-	return c < patch
-}
-
 // handlebarsSafeString reports a verified Handlebars SafeString construction on a
 // path. Handlebars emits SafeString content without escaping, even in {{...}}.
 func (f *flow) handlebarsSafeString(dependency analysis.Dependency) bool {
@@ -284,12 +282,18 @@ func (f *flow) handlebarsSafeString(dependency analysis.Dependency) bool {
 	return false
 }
 
-// regexReplaceMode classifies x.replace(/re/g, literal). "allowlist": a global
-// negated class whose kept characters are only word characters, digits, underscores or
-// hyphens, removing everything else. "neutral": the pattern can match only line
-// breaks/tabs and the replacement adds nothing HTML-significant, so markup is
-// preserved unchanged. Anything else is not modeled ("").
-func regexReplaceMode(m *sourceModule, call *sitter.Node) string {
+// replacementMode classifies x.replace / x.replaceAll by what the replacement removes:
+//
+//   - "allowlist": a global negated class keeping only word characters or hyphens.
+//   - "neutral": only line breaks or tabs are matched.
+//   - "delete_angles": every < is removed (or replaced by &lt;), so no element can
+//     open in HTML text; "delete_angles_quotes" also removes both quote characters.
+//   - "strip_tags": a deletion that can match a tag fragment but not every <. One pass
+//     can reassemble a tag from what remains, as can a non-global deletion of any kind.
+//
+// A replacement that is not an empty or &lt; literal, or a pattern not understood
+// here, is unknown (""): no protection is assumed and no bypass is claimed.
+func replacementMode(m *sourceModule, call *sitter.Node) string {
 	if call == nil || call.Kind() != "call_expression" {
 		return ""
 	}
@@ -297,35 +301,143 @@ func regexReplaceMode(m *sourceModule, call *sitter.Node) string {
 	if fn == nil || fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() != 2 {
 		return ""
 	}
-	if prop := fn.ChildByFieldName("property"); prop == nil || (prop.Utf8Text(m.src) != "replace" && prop.Utf8Text(m.src) != "replaceAll") {
+	method := ""
+	if prop := fn.ChildByFieldName("property"); prop != nil {
+		method = prop.Utf8Text(m.src)
+	}
+	if method != "replace" && method != "replaceAll" {
 		return ""
 	}
-	re, repl := args.NamedChild(0), args.NamedChild(1)
+	target, repl := args.NamedChild(0), args.NamedChild(1)
 	replacement, ok := stringLiteral(repl, m.src)
-	if re.Kind() != "regex" || !ok || strings.ContainsAny(replacement, htmlSignificant) {
+	if !ok {
 		return ""
 	}
-	pattern, flags := "", ""
-	if p := re.ChildByFieldName("pattern"); p != nil {
-		pattern = p.Utf8Text(m.src)
-	}
-	if fl := re.ChildByFieldName("flags"); fl != nil {
-		flags = fl.Utf8Text(m.src)
-	}
-	if !strings.Contains(flags, "g") {
+	encodesAngle := replacement == "&lt;"
+	if replacement != "" && !encodesAngle {
+		if strings.ContainsAny(replacement, htmlSignificant) {
+			return ""
+		}
+		if target.Kind() == "regex" && lineBreakPattern.MatchString(regexPart(m, target, "pattern")) && strings.Contains(regexPart(m, target, "flags"), "g") {
+			return "neutral"
+		}
 		return ""
 	}
-	if allowlistPattern.MatchString(pattern) && replacement == "" {
-		return "allowlist"
+	global := method == "replaceAll"
+	var removed charSet
+	tagFragment := false
+	if literal, ok := stringLiteral(target, m.src); ok {
+		removed, ok = literalChars(literal)
+		tagFragment = !ok && strings.Contains(literal, "<")
+	} else if target.Kind() == "regex" {
+		pattern, flags := regexPart(m, target, "pattern"), regexPart(m, target, "flags")
+		global = global || strings.Contains(flags, "g")
+		if global && replacement == "" && allowlistPattern.MatchString(pattern) {
+			return "allowlist"
+		}
+		if global && replacement == "" && lineBreakPattern.MatchString(pattern) {
+			return "neutral"
+		}
+		removed, ok = classChars(pattern)
+		tagFragment = !ok && canStartWithAngle(pattern)
+	} else {
+		return ""
 	}
-	// Deleting matched tag fragments once can reassemble a tag from what remains.
-	if strings.HasPrefix(pattern, "<") && len(pattern) > 1 && replacement == "" {
+	switch {
+	case removed.lt && global && removed.dq && removed.sq && !encodesAngle:
+		return "delete_angles_quotes"
+	case removed.lt && global:
+		return "delete_angles"
+	case removed.lt || tagFragment:
 		return "strip_tags"
 	}
-	if lineBreakPattern.MatchString(pattern) {
-		return "neutral"
+	return ""
+}
+
+type charSet struct{ lt, dq, sq bool }
+
+func regexPart(m *sourceModule, re *sitter.Node, field string) string {
+	if p := re.ChildByFieldName(field); p != nil {
+		return p.Utf8Text(m.src)
 	}
 	return ""
+}
+
+// literalChars reads a literal of one character, which a global deletion removes entirely.
+func literalChars(literal string) (charSet, bool) {
+	if literal != "<" {
+		return charSet{}, false
+	}
+	return charSet{lt: true}, true
+}
+
+// classChars reads a pattern that is a single character, or a non-negated class,
+// optionally repeated: [<>"']+ or <.
+func classChars(pattern string) (charSet, bool) {
+	body := strings.TrimRight(pattern, "+*")
+	if body == "<" || body == `\<` {
+		return charSet{lt: true}, true
+	}
+	if len(body) < 3 || body[0] != '[' || body[len(body)-1] != ']' || body[1] == '^' {
+		return charSet{}, false
+	}
+	inner := body[1 : len(body)-1]
+	var set charSet
+	for i := 0; i < len(inner); i++ {
+		c := inner[i]
+		if c == '\\' && i+1 < len(inner) {
+			i++
+			c = inner[i]
+		} else if i+2 < len(inner) && inner[i+1] == '-' {
+			return charSet{}, false // ranges are not interpreted
+		}
+		switch c {
+		case '<':
+			set.lt = true
+		case '"':
+			set.dq = true
+		case '\'':
+			set.sq = true
+		}
+	}
+	return set, true
+}
+
+// canStartWithAngle reports a pattern with a top-level alternative that begins with
+// a literal <, after leading anchors and group openers.
+func canStartWithAngle(pattern string) bool {
+	depth, start := 0, 0
+	alternatives := []string{}
+	for i := 0; i < len(pattern); i++ {
+		switch pattern[i] {
+		case '\\':
+			i++
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case '|':
+			if depth <= 1 {
+				alternatives = append(alternatives, pattern[start:i])
+				start = i + 1
+			}
+		}
+	}
+	alternatives = append(alternatives, pattern[start:])
+	for _, alt := range alternatives {
+		for {
+			trimmed := strings.TrimLeft(alt, "^(")
+			trimmed = strings.TrimPrefix(trimmed, "?:")
+			if trimmed == alt {
+				break
+			}
+			alt = trimmed
+		}
+		if strings.HasPrefix(alt, "<") || strings.HasPrefix(alt, `\<`) || strings.HasPrefix(alt, `\x3c`) || strings.HasPrefix(alt, `\u003c`) {
+			return true
+		}
+	}
+	return false
 }
 
 var (

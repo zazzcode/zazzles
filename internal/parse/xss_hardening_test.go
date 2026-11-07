@@ -61,6 +61,15 @@ func TestContextSplitUsesDistinctIdentities(t *testing.T) {
 		t.Fatalf("two distinct records required: %+v", uses)
 	}
 	for _, u := range uses {
+		facts := 0
+		for _, fact := range u.Completeness.ModelFacts {
+			if strings.HasPrefix(fact, "claim_output=") {
+				facts++
+			}
+		}
+		if facts != 1 {
+			t.Fatalf("one innermost output line per claim: %v", u.Completeness.ModelFacts)
+		}
 		found := false
 		want := "req.query.r"
 		if u.XSS.OutputContext == "html_attribute" {
@@ -226,6 +235,64 @@ func TestGeneratedIdentifierIsNotAStoredClaim(t *testing.T) {
 	}
 	if uses := xssUses(analyzeFiles(t, app("new Note({_id:req.body.t}).save()"))); len(uses) != 1 {
 		t.Fatalf("a request-written _id must stay a claim: %+v", uses)
+	}
+}
+
+func TestSanitizerContractsOnNovelInputs(t *testing.T) {
+	text, attribute := "<p>${v}</p>", `<a title="${v}">x</a>`
+	for _, tt := range []struct{ name, library, version, expression, output, want string }{
+		{"advisory version is bypassable", "sanitize-html", "1.4.2", "sanitizeHtml(req.query.q)", text, "ineffective"},
+		{"fixed version protects", "sanitize-html", "1.4.3", "sanitizeHtml(req.query.q)", text, "sanitized"},
+		{"a range matches no advisory", "sanitize-html", "^1.4.2", "sanitizeHtml(req.query.q)", text, "sanitized"},
+		{"custom options are not trusted", "sanitize-html", "1.4.2", "sanitizeHtml(req.query.q,{allowedTags:[]})", text, "unknown"},
+		{"default-config advisory inside a later line", "sanitize-html", "2.17.3", "sanitizeHtml(req.query.q)", text, "ineffective"},
+		{"its fixed release protects", "sanitize-html", "2.17.4", "sanitizeHtml(req.query.q)", text, "sanitized"},
+		{"marked before the fix", "marked", "0.3.4", "marked(req.query.q)", text, "ineffective"},
+		{"marked after the fix is not protection", "marked", "0.3.6", "marked(req.query.q)", text, "unknown"},
+		{"tag-stripping regex", "x", "1.0.0", "req.query.q.replace(/<[^>]*>/g,'')", text, "ineffective"},
+		{"grouped tag-stripping regex", "x", "1.0.0", "req.query.q.replace(/(<([^>]+)>)/gi,'')", text, "ineffective"},
+		{"script-tag stripping", "x", "1.0.0", "req.query.q.replace(/<\\/?script>/gi,'')", text, "ineffective"},
+		{"non-global stripping", "x", "1.0.0", "req.query.q.replace(/<[^>]*>/,'')", text, "ineffective"},
+		{"alternative that strips a tag", "x", "1.0.0", "req.query.q.replace(/javascript:|<script>/gi,'')", text, "ineffective"},
+		{"literal tag deleted by replaceAll", "x", "1.0.0", "req.query.q.replaceAll('<script>','')", text, "ineffective"},
+		{"every angle bracket deleted", "x", "1.0.0", "req.query.q.replace(/[<>]/g,'')", text, "sanitized"},
+		{"one angle bracket deleted", "x", "1.0.0", "req.query.q.replace(/[<>]/,'')", text, "ineffective"},
+		{"every < encoded", "x", "1.0.0", "req.query.q.replace(/</g,'&lt;')", text, "sanitized"},
+		{"every < deleted by replaceAll", "x", "1.0.0", "req.query.q.replaceAll('<','')", text, "sanitized"},
+		{"angle deletion does not protect an attribute", "x", "1.0.0", "req.query.q.replace(/[<>]/g,'')", attribute, "unknown"},
+		{"angle and quote deletion protects an attribute", "x", "1.0.0", "req.query.q.replace(/[<>\"']/g,'')", attribute, "sanitized"},
+		{"stripping after encoding keeps the encoding", "x", "1.0.0", "he.encode(req.query.q).replace(/<script>/g,'')", text, "sanitized"},
+		{"encoding after stripping protects", "x", "1.0.0", "he.encode(req.query.q.replace(/<script>/g,''))", text, "sanitized"},
+		{"an unrelated pattern claims nothing", "x", "1.0.0", "req.query.q.replace(/a+b/g,'')", text, "unknown"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			r := analyzeFiles(t, map[string]string{
+				"package.json": `{"dependencies":{"` + tt.library + `":"` + tt.version + `"}}`,
+				"app.js":       "const express=require('express');const sanitizeHtml=require('sanitize-html');const marked=require('marked');const he=require('he');const app=express();\napp.get('/a',(req,res)=>{const v=" + tt.expression + ";res.send(`" + tt.output + "`)})\n",
+			})
+			uses := xssUses(r)
+			if len(uses) != 1 || uses[0].XSS.Protection != tt.want {
+				t.Fatalf("want %s got %v", tt.want, summarize(uses))
+			}
+		})
+	}
+}
+
+func TestAdvisoryRangesAreHalfOpen(t *testing.T) {
+	for _, tt := range []struct {
+		version string
+		want    bool
+	}{{"2.17.2", false}, {"2.17.3", true}, {"2.17.4", false}, {"0.0.0", true}, {"1.4.3", false}, {"2.17.3-beta.1", false}, {"~2.17.3", false}} {
+		v, ok := exactVersion(tt.version)
+		hit := false
+		for _, a := range sanitizerAdvisories {
+			if ok && a.library == "sanitize-html" && !versionLess(v, a.introduced) && versionLess(v, a.fixed) {
+				hit = true
+			}
+		}
+		if hit != tt.want {
+			t.Fatalf("%s: want %v", tt.version, tt.want)
+		}
 	}
 }
 

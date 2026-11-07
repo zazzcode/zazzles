@@ -57,7 +57,7 @@ with every other answer protective. It is not a false positive, and the policy d
 - `DEMO-XSS-Q01`/`Q02` (`err.message` in `<pre>`) produce no record. Exception text is not modeled as a source.
 - SQL-backed storage covers sql.js and Sequelize raw queries only. Other clients stay unlinked.
 - Juice Shop's unsafe paths are branch-gated by `isChallengeEnabled`; the condition stays attached as a precondition.
-- Each case rests on one model sample per scan. Pass 1 and the final scan agreed on every case they both judged.
+- Each case rests on one model sample per scan. See the correction under the follow-up section.
 - Exit status 1 for three apps is the existing rule for observation-only records, not a failed XSS case.
 - Saved sample reports under `docs/samples/` were not refreshed.
 
@@ -68,17 +68,33 @@ final reports with `--require-judged`. Two pinned digests changed (`TestSQLDisco
 `TestCommandPredecessorRequests`, `python/dynamic-vulnpy` only). A record-level diff of that fixture showed only its
 Jinja XSS record changed; no SQL, command or logging record did.
 
-## Follow-up: sql.js SQL injection (offline)
+## Follow-up: sql.js SQL injection and rejudged records
 
-After the scans above, the SQL analyzer gained a `sqljs-statement-v1` contract and `try` control context. This was
-verified offline only; no paid judgment has been made. All five `DEMO-SQL-*` cases in the
-[reference](vuln-demo-app-detection-guide.md) are candidates with a verified binding and no blockers, and the bound
-`POST /notes` is not a candidate.
+After the scans above, the SQL analyzer gained a `sqljs-statement-v1` contract and `try` control context. A paid
+Juice Shop and vuln-demo-app scan then exposed two scanner faults, both fixed:
 
-A record-level diff against the final-scan binary shows no XSS record changed in Juice Shop, Goof or the TypeScript app,
-so the XSS results above still describe those records. Modeling `try` changed the evidence of 10 Juice Shop records
-(8 NoSQL, 2 SQL). Five NoSQL records lost blockers but keep at least one. Their saved answers no longer apply, and
-those 10 need a fresh judgment. The recorded binary hash predates this follow-up.
+- `POST /login` SQL was blocked although the model answered vulnerable: automatic field matching ignored
+  destructured sources such as `const { email } = req.body`. Destructuring projections now name the fields.
+- `DEMO-XSS-04` fell to Review: the model named `html_text` for the attribute claim, and the consistency gate
+  correctly refused it. When one response splits into several claims, both showed the same whole sink. Each now
+  carries its own substitution line as `render_markup_context` evidence and a `claim_output` fact.
+
+Final follow-up binary SHA-256 `e1dc998cbb43d8559d658ea1a73b3c61019d1141d161aa93a01f9138ca24f302`. Offline output for
+Juice Shop, Goof, the TypeScript app and VulnPy is byte-identical to the scanned sql.js binary, so the Juice Shop
+scan stands. vuln-demo-app was scanned twice on the final binary:
+
+| Check | Juice Shop | vuln-demo-app, run A | vuln-demo-app, run B |
+|---|---|---|---|
+| XSS matrix cases and controls | 8 cases, 3 controls pass | 5 cases, 1 control pass | 5 cases, 1 control pass |
+| `DEMO-SQL-01` to `05` | — | 5 of 5 confirmed | 5 of 5 confirmed |
+| SQL/NoSQL statuses | Unchanged: 2 SQL and 3 NoSQL confirmed, 10 Review, 1 not run | — | — |
+| `POST /notes` bound insert | — | No candidate | No candidate |
+
+The 10 Juice Shop records whose evidence `try` modeling changed were rejudged and kept their statuses. Runs A and B
+sent identical request bytes, so their agreement shows the answers repeat, not that varied evidence converges.
+
+**Correction:** the earlier note that pass 1 and the final scan agreed on every case held only for identical
+requests. Changed evidence changed an answer here, so single-sample results remain a stated limit.
 
 ## Usage
 
@@ -88,7 +104,9 @@ those 10 need a fresh judgment. The recorded binary hash predates this follow-up
 | Pass 1 | 345 | 2,733,353 |
 | `/profile` rejudge | 3 | 15,798 |
 | Final | 339 | 2,690,784 |
-| **Total** | **1,001** | **7,918,800** |
+| sql.js follow-up: Juice Shop and vuln-demo-app | 147 | 519,380 |
+| vuln-demo-app runs A and B | 30 | 205,736 |
+| **Total** | **1,178** | **8,643,916** |
 
 Pass 1 confirmed 27 of 28; `JS-XSS-07` exceeded the 64 KiB request limit, which led to stored-path compaction.
 Raw reports and traces are under `_test-findings/xss-hardening/`. Target checkouts stayed clean at their pins.

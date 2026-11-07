@@ -5,7 +5,7 @@ expects, and what the scanner reports. Applications are read-only scan targets, 
 
 **Expected** comes from source-reviewed references, never from scanner output. **Actual** comes from the
 [XSS hardening results](../evaluation/xss-hardening-results.md): OpenAI Decisions `gpt-6-luna` scans of 2026-11-07 with
-`--skip-family input-validation`. These are static judgments, not runtime exploits, and human review is pending.
+`--skip-family input-validation`, and the follow-up sql.js scans recorded there. These are static judgments, not runtime exploits, and human review is pending.
 The XSS rows are the only ones with a machine-checked [matrix](../evaluation/xss-hardening/matrix.json).
 
 Outcomes: **Confirmed** is a red `confirmed_vulnerability`. **Review** is an unresolved, blue record. **Not covered**
@@ -32,7 +32,7 @@ means Zazzles has no analyzer for that family yet, so no result says nothing abo
 | Stored XSS (`DEMO-XSS-03`) | `POST /notes` → `GET /search`, `:166` | Confirmed |
 | Reflected XSS, attribute (`DEMO-XSS-04`) | `GET /search`, `:166` | Confirmed |
 | Reflected XSS (`DEMO-XSS-05`) | `POST /fetch`, `:236` | Confirmed |
-| SQL injection (`DEMO-SQL-01` to `05`) | `/login`, `/search`, `/api/users/:id`, `/api/notes/:id`, `DELETE /admin/users/:id` | **Offline only:** five candidates with a verified binding and no blockers; no model judgment yet |
+| SQL injection (`DEMO-SQL-01` to `05`) | `/login`, `/search`, `/api/users/:id`, `/api/notes/:id`, `DELETE /admin/users/:id` | Confirmed, all five |
 | SSRF | `POST /fetch` | Not covered |
 | IDOR, missing admin authorization | `/api/*`, `/admin/users` | Not covered |
 

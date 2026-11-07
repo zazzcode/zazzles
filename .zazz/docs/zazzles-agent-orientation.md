@@ -19,8 +19,8 @@ when to load supporting guides. Keep this document under 400 lines; link to deta
 **XSS hardening, 2026-11-07:** implemented in the `xss-hardening` worktree under the
 [contract](../specifications/xss-hardening.md). All 28 required cases across five apps are confirmed and all controls
 hold; read the [results](../evaluation/xss-hardening-results.md) and [matrix](../evaluation/xss-hardening/matrix.json).
-sql.js SQL candidates are verified offline only; 10 Juice Shop SQL/NoSQL records need a fresh judgment after `try`
-control modeling. The paid-scan authorization covered the XSS loop only. Human review is pending; no merge or integration push is authorized.
+sql.js SQL injection is confirmed on vuln-demo-app, and the Juice Shop records changed by `try` modeling were rejudged.
+The paid-scan authorization covered that work only. Human review is pending; no merge or integration push is authorized.
 
 **Node input refactor, 2026-11-07:** bounded Express/Fastify/Hapi acquisitions now feed transport-neutral
 origin/type/transfer facts and a generic Mongoose lookup contract. Existing GraphQL/gRPC can carry the

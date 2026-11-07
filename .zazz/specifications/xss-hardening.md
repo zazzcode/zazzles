@@ -20,8 +20,8 @@ The user authorized paid OpenAI Decisions `gpt-6-luna` scans of all five applica
 `--skip-family input-validation`, repeated as needed for this loop. Every run sets an explicit
 `--judge-limit`. There is no provider or model fallback.
 
-A later user request added sql.js SQL injection for vuln-demo-app to this worktree. It is offline only:
-that request did not extend the paid authorization above.
+A later user request added sql.js SQL injection for vuln-demo-app to this worktree. The user then authorized paid
+judgments of vuln-demo-app and Juice Shop for it.
 
 ## Invariants
 

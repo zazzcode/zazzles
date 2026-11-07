@@ -36,6 +36,14 @@ func (s *moduleSet) automaticQueries(report *analysis.AnalysisReport) {
 			if len(parts) > 2 {
 				fields[parts[len(parts)-1]] = true
 			}
+			// const { email } = req.body: the field is the destructuring projection.
+			if len(parts) <= 2 {
+				for _, e := range d.Transfers {
+					if e.Kind == "field_projection" {
+						fields[e.Text] = true
+					}
+				}
+			}
 		}
 
 		names := []string{}

@@ -134,7 +134,11 @@ func (f *flow) responseCall(call, fn, args *sitter.Node, values []value) bool {
 	groups := outputGroups(values[0], context)
 	for _, g := range groups {
 		before := len(f.uses)
-		f.recordXSS(sink, g.value, g.context, contentType, false, nil)
+		var markup []analysis.Evidence
+		if len(groups) > 1 {
+			markup = f.outputMarkup(g.value)
+		}
+		f.recordXSS(sink, g.value, g.context, contentType, false, markup)
 		if len(groups) > 1 && len(f.uses) > before {
 			f.uses[len(f.uses)-1].ID += ":" + g.context
 		}

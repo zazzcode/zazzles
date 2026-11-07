@@ -101,6 +101,36 @@ func outputGroups(v value, fallback string) []outputGroup {
 	return out
 }
 
+// outputMarkup names where one claim's values sit when a response holds several
+// claims: the source line of each substitution. The shared sink alone cannot say
+// which value a claim is about.
+func (f *flow) outputMarkup(v value) []analysis.Evidence {
+	var out []analysis.Evidence
+	seen := map[string]bool{}
+	for _, d := range v.deps {
+		for _, e := range d.Transfers {
+			m := f.set.modules[e.Span.File]
+			if e.Kind != "expression" || m == nil || !strings.HasPrefix(e.Text, "${") {
+				continue
+			}
+			start, end := e.Span.StartByte, e.Span.EndByte
+			for start > 0 && m.src[start-1] != '\n' {
+				start--
+			}
+			for end < len(m.src) && m.src[end] != '\n' {
+				end++
+			}
+			line := strings.TrimSpace(string(m.src[start:end]))
+			if !seen[line] {
+				seen[line] = true
+				e.Kind, e.Text, e.ModelText = "render_markup_context", line, line
+				out = append(out, e)
+			}
+		}
+	}
+	return out
+}
+
 // fieldDeps extends the field path of browser API and token values.
 func fieldDeps(deps []analysis.Dependency, segment string) []analysis.Dependency {
 	out := append([]analysis.Dependency{}, deps...)

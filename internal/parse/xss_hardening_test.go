@@ -60,6 +60,19 @@ func TestContextSplitUsesDistinctIdentities(t *testing.T) {
 	if len(uses) != 2 || uses[0].ID == uses[1].ID {
 		t.Fatalf("two distinct records required: %+v", uses)
 	}
+	for _, u := range uses {
+		found := false
+		want := "req.query.r"
+		if u.XSS.OutputContext == "html_attribute" {
+			want = "req.query.q"
+		}
+		for _, fact := range u.Completeness.ModelFacts {
+			found = found || (strings.HasPrefix(fact, "claim_output=") && strings.Contains(fact, want))
+		}
+		if !found {
+			t.Fatalf("%s claim does not name its output: %v", u.XSS.OutputContext, u.Completeness.ModelFacts)
+		}
+	}
 }
 
 const sqlJSPrelude = "const express=require('express');const initSqlJs=require('sql.js');const app=express();let db;async function init(){const SQL=await initSqlJs();db=new SQL.Database()}\n" +
@@ -103,6 +116,7 @@ func TestSQLJSInjectionCandidates(t *testing.T) {
 		want          int
 	}{
 		{"built text through two helpers", "app.post('/l',(req,res)=>{const {email}=req.body;const q=`SELECT * FROM users WHERE email = '${email}'`;const u=queryOne(q);res.json(u)});", 1},
+		{"destructured fields are the source", "app.post('/l',(req,res)=>{const {email,password}=req.body;res.json(queryAll(`SELECT * FROM users WHERE email = '${email}' AND password = '${password}'`))});", 1},
 		{"route parameter in run", "app.delete('/u/:id',(req,res)=>{db.run(`DELETE FROM users WHERE id = ${req.params.id}`);res.json({})});", 1},
 		{"try does not guard its query", "app.get('/s',(req,res)=>{try{const r=queryAll(`SELECT * FROM notes WHERE t = '${req.query.q}'`);res.json(r)}catch(err){res.status(500).json({})}});", 1},
 		{"bound values are not a claim", "app.post('/n',(req,res)=>{db.run('INSERT INTO notes (body) VALUES (?)',[req.body.b]);res.json({})});", 0},
@@ -121,6 +135,9 @@ func TestSQLJSInjectionCandidates(t *testing.T) {
 				}
 				if len(u.Completeness.Blockers) != 0 {
 					t.Fatalf("unexpected blockers: %+v", u.Completeness.Blockers)
+				}
+				if len(u.Completeness.Evidence["input_source"]) == 0 {
+					t.Fatal("input_source evidence missing")
 				}
 			}
 			if count != tt.want {

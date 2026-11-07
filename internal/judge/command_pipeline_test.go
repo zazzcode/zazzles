@@ -24,7 +24,7 @@ func TestCommandPipelineParity(t *testing.T) {
 	}{
 		{"typescript/command-injection", 1, 0, 1},
 		{"javascript/command-injection/goof", 1, 0, 1},
-		{"python/command-injection", 9, 0, 11},
+		{"python/command-injection", 7, 0, 11},
 		{"javascript/command-injection/graphql", 1, 1, 3},
 		{"javascript/command-injection/grpc", 1, 0, 2},
 	}

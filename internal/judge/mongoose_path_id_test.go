@@ -54,7 +54,7 @@ func TestMongoosePathIDJudgment(t *testing.T) {
 				t.Fatal("missing query candidate")
 			}
 			if tc.removeEvidence {
-				delete(u.Completeness.Evidence, "selector_path_string")
+				u.InputFacts = nil
 				u.Completeness.Required = nil
 			}
 			answers := map[string]string{"validation": "uncertain", "protection": "uncertain", "injection_protection": tc.answer, "all_paths_protected": "yes", "source_coverage": "yes", "library_coverage": "yes", "guard_coverage": "yes", "path_coverage": "yes"}
@@ -80,7 +80,7 @@ func TestMongoosePathIDJudgment(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !bytes.Contains(p, []byte("selector_path_string")) || !bytes.Contains(p, []byte("ObjectId")) {
+			if !bytes.Contains(p, []byte("input_facts")) || !bytes.Contains(p, []byte("ObjectId")) {
 				t.Fatal("request omitted source/operation semantics")
 			}
 			changed := u

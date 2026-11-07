@@ -23,6 +23,7 @@ type Dependency struct {
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.
 type CandidateUse struct {
+	InputFacts          *InputFacts         `json:"input_facts,omitempty"`
 	Components          *ComponentSelection `json:"analysis_components,omitempty"`
 	XSS                 *XSSFacts           `json:"xss,omitempty"`
 	Command             *CommandFacts       `json:"command,omitempty"`
@@ -63,6 +64,7 @@ type Assessment struct {
 
 // AnalysisReport contains bounded security analysis, separate from the route inventory.
 type AnalysisReport struct {
+	Discovery           []DiscoveryProposal `json:"discovery_proposals,omitempty"`
 	FindingTypes        []FindingType       `json:"finding_types,omitempty"`
 	PresentationVersion int                 `json:"presentation_version,omitempty"`
 	Findings            []Finding           `json:"findings,omitempty"`

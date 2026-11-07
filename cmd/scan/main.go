@@ -37,24 +37,26 @@ func run(args []string, stdout, stderr io.Writer) int {
 	flags.SetOutput(stderr)
 
 	var (
-		outputDir     = flags.String("output-dir", os.Getenv("SCAN_FINDINGS_DIR"), "write JSON, HTML and SARIF in a fresh run folder; defaults to SCAN_FINDINGS_DIR")
-		exportHTML    = flags.String("export-html", "", "render saved evidence JSON as a standalone HTML report without API calls")
-		exportFile    = flags.String("export-sarif", "", "convert a saved canonical JSON report to SARIF without API calls")
-		list          = flags.Bool("list", false, "list the source files under the target path and exit")
-		routes        = flags.Bool("routes", false, "emit supported route inventories and exit")
-		analyzeMode   = flags.Bool("analyze", false, "analyze bounded route/browser security evidence; add --judge for model assessment")
-		entryKind     = flags.String("entry-kind", "", "select http, browser, graphql or grpc entries for --analyze")
-		entryID       = flags.String("entry-id", "", "select an exact snapshot entry ID for --analyze")
-		routeFilter   = flags.String("route", "", "optional exact route path pattern for --analyze")
-		checksFile    = flags.String("checks", "", "JSON file declaring route/method/field security requirements for --analyze")
-		entry         = flags.String("entry", "", "relative JS/TS/Python registration file for --analyze")
-		judgeProvider = flags.String("judge", "", "optional semantic judge: openai or jev (transmits bounded source evidence)")
-		judgeModel    = flags.String("judge-model", "", "judge model; required for jev")
-		judgeLimit    = flags.Int("judge-limit", 10, "maximum judge requests per run, no retries")
-		asSARIF       = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
-		skipFamily    = flags.String("skip-family", "", "comma-separated analyzer families not to judge in this run; supported: input-validation (records stay not_run and the report states the family was not used)")
-		traceDir      = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
-		asJSON        = flags.Bool("json", false, "emit machine-readable JSON instead of text")
+		outputDir      = flags.String("output-dir", os.Getenv("SCAN_FINDINGS_DIR"), "write JSON, HTML and SARIF in a fresh run folder; defaults to SCAN_FINDINGS_DIR")
+		exportHTML     = flags.String("export-html", "", "render saved evidence JSON as a standalone HTML report without API calls")
+		exportFile     = flags.String("export-sarif", "", "convert a saved canonical JSON report to SARIF without API calls")
+		list           = flags.Bool("list", false, "list the source files under the target path and exit")
+		routes         = flags.Bool("routes", false, "emit supported route inventories and exit")
+		analyzeMode    = flags.Bool("analyze", false, "analyze bounded route/browser security evidence; add --judge for model assessment")
+		entryKind      = flags.String("entry-kind", "", "select http, browser, graphql or grpc entries for --analyze")
+		entryID        = flags.String("entry-id", "", "select an exact snapshot entry ID for --analyze")
+		routeFilter    = flags.String("route", "", "optional exact route path pattern for --analyze")
+		checksFile     = flags.String("checks", "", "JSON file declaring route/method/field security requirements for --analyze")
+		entry          = flags.String("entry", "", "relative JS/TS/Python registration file for --analyze")
+		judgeProvider  = flags.String("judge", "", "optional semantic judge: openai or jev (transmits bounded source evidence)")
+		judgeModel     = flags.String("judge-model", "", "judge model; required for jev")
+		discoverRoutes = flags.Bool("discover-routes", false, "opt-in model-assisted Node route proposals; unverified bindings remain provisional")
+		discoveryLimit = flags.Int("discovery-limit", 3, "maximum additional model discovery requests with --discover-routes, no retries")
+		judgeLimit     = flags.Int("judge-limit", 10, "maximum judge requests per run, no retries")
+		asSARIF        = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
+		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families not to judge in this run; supported: input-validation (records stay not_run and the report states the family was not used)")
+		traceDir       = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
+		asJSON         = flags.Bool("json", false, "emit machine-readable JSON instead of text")
 	)
 	flags.BoolVar(analyzeMode, "strings", false, "compatibility alias for --analyze")
 	flags.Usage = func() {
@@ -70,7 +72,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	explicitOutputDir := false
+	explicitDiscoveryLimit := false
 	flags.Visit(func(f *flag.Flag) {
+		if f.Name == "discovery-limit" {
+			explicitDiscoveryLimit = true
+		}
 		if f.Name == "output-dir" {
 			explicitOutputDir = true
 		}
@@ -80,7 +86,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	if *exportFile != "" || *exportHTML != "" {
-		if (*exportFile != "" && *exportHTML != "") || flags.NArg() != 0 || *list || *routes || *analyzeMode || *asJSON || *asSARIF || *entry != "" || *routeFilter != "" || *entryKind != "" || *entryID != "" || *checksFile != "" || *judgeProvider != "" || *judgeModel != "" {
+		if *discoverRoutes || explicitDiscoveryLimit || (*exportFile != "" && *exportHTML != "") || flags.NArg() != 0 || *list || *routes || *analyzeMode || *asJSON || *asSARIF || *entry != "" || *routeFilter != "" || *entryKind != "" || *entryID != "" || *checksFile != "" || *judgeProvider != "" || *judgeModel != "" {
 			flags.Usage()
 			return exitUsage
 		}
@@ -100,6 +106,14 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 
+	if explicitDiscoveryLimit && !*discoverRoutes {
+		fmt.Fprintln(stderr, "scan: --discovery-limit requires --discover-routes")
+		return exitUsage
+	}
+	if *discoverRoutes && (!*analyzeMode || *judgeProvider == "" || *discoveryLimit < 1 || *discoveryLimit > 1000 || *routeFilter != "" || *entryKind != "" || *entryID != "" || *checksFile != "") {
+		fmt.Fprintln(stderr, "scan: --discover-routes requires unfiltered --analyze with --judge and --discovery-limit 1..1000")
+		return exitUsage
+	}
 	if *traceDir != "" && (!*analyzeMode || *judgeProvider == "") {
 		fmt.Fprintln(stderr, "scan: --trace-dir requires --analyze with --judge")
 		return exitUsage
@@ -114,7 +128,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	if *analyzeMode {
-		return runAnalysis(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID})
+		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit})
 	}
 	if *routes {
 		return runRoutes(flags.Arg(0), *asJSON, stdout, stderr)

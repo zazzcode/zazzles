@@ -6,8 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -100,43 +98,10 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 		a.Reason = "evidence payload exceeds 64 KiB limit"
 		return a
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(payload))
-	if err != nil {
-		a.Reason = "request construction failed"
+	data, reason := c.exchange(ctx, payload, trace)
+	if reason != "" {
+		a.Reason = reason
 		return a
-	}
-	req.Header.Set("Authorization", "Bearer "+c.key)
-	req.Header.Set("Content-Type", "application/json")
-	res, err := c.http.Do(req)
-	if err != nil {
-		a.Reason = "judge transport failed or deadline exceeded"
-		return a
-	}
-	defer res.Body.Close()
-	if trace != nil {
-		trace.HTTPStatus = res.StatusCode
-	}
-	if res.StatusCode != http.StatusOK {
-		if trace != nil {
-			body, _ := io.ReadAll(io.LimitReader(res.Body, 1<<20))
-			trace.ResponseBytes = len(body)
-			if json.Valid(body) {
-				trace.Response = append(json.RawMessage{}, body...)
-			}
-		}
-		a.Reason = fmt.Sprintf("judge HTTP %d", res.StatusCode)
-		return a
-	}
-	data, err := io.ReadAll(io.LimitReader(res.Body, (1<<20)+1))
-	if err != nil || len(data) > 1<<20 {
-		a.Reason = "response read failed or exceeded 1 MiB limit"
-		return a
-	}
-	if trace != nil {
-		trace.ResponseBytes = len(data)
-		if json.Valid(data) {
-			trace.Response = append(json.RawMessage{}, data...)
-		}
 	}
 	answers, model, usage, err := c.decodeQuestions(data, questionsFor(use))
 	if err != nil {

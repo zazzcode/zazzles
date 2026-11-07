@@ -298,7 +298,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		if v, ok := f.env[n.Utf8Text(src)]; ok {
 			return v
 		}
-		if f.parts[n.Utf8Text(src)] != "" {
+		if f.parts[n.Utf8Text(src)] != "" && f.nodeFieldAvailable(n) {
 			source := f.module.evidence("input_source", n)
 			f.rememberInput(source)
 			return value{deps: []analysis.Dependency{{Source: source, Transfers: []analysis.Evidence{}}}}
@@ -306,7 +306,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		return value{gaps: []analysis.Gap{f.gap("unknown_value", "unresolved local value: "+n.Utf8Text(src), n)}}
 	case "member_expression", "subscript_expression":
 		partField := f.partField(n)
-		if partField != nil || isRequestField(n, src, f.request) {
+		if (partField != nil || isRequestField(n, src, f.request) || f.hapiPayload(n)) && f.nodeFieldAvailable(n) {
 			sourceNode := n
 			if partField != nil {
 				sourceNode = partField

@@ -40,7 +40,9 @@ a MongoDB server or establish support for every MongoDB driver. Unsupported bind
 - A positively constrained scalar selector value can be protected from operator injection.
 - JSON/body parsing is transport handling. It does not establish a per-field scalar schema.
 
-## Bounded Express and Mongoose context
+<a id="bounded-express-and-mongoose-context"></a>
+
+## Node acquisition and Mongoose context
 
 Immutable direct imports of default method-override/upload adapters and literal-data session options
 can supply transport contracts. Custom callbacks/stores, dynamic options, mutation or escaped bindings
@@ -60,17 +62,19 @@ Its String paths retain recognized conditional operators such as `$ne`; persiste
 not force scalar equality in query filters. `findById` and ObjectId casting remain distinct from
 String selector fields. Declared dependency evidence does not verify an installed runtime.
 
-For a direct, unmodified Express named URL parameter passed to `findById`, the analyzer can select
-the separate `mongoose-path-id-objectid-v1` contract. It requires the exact 4.2.4 dependency pin,
-a verified literal schema with its default ObjectId `_id`, and complete handler/middleware evidence.
-Express supplies the URL segment as a decoded string; `findById` builds `{_id: value}` and casts
-that string to ObjectId or raises a cast error, without parsing it into query operators. The facts
-support an injection-specific Protected judgment through the usual model and policy gates; the
-extractor does not assign a verdict. A contradictory vulnerability answer remains Review.
+Fresh default-ObjectId lookups use the framework-independent `mongoose-find-by-id-objectid-v1`
+contract. It requires the exact 4.2.4 dependency pin and a verified literal schema with default
+ObjectId `_id`. `findById` builds `{_id: value}` and casts scalar strings to ObjectId or raises a
+cast error; object-valued operands can still carry recognized query operators. Source acquisition,
+initial type, transformations, supplied controls and type at the actual sink are separate
+[shared Node input facts](node-inputs.md), usable by HTTP, GraphQL and unary gRPC acquisitions.
 
-Body/query objects, parameter writes or aliases/escapes, `app.param` callbacks, custom schema IDs,
-schema options/hooks and unknown middleware do not inherit this contract. This protection says
-nothing about authorization, valid-ID business rules, error handling or stored-content rendering.
+The judge assesses the complete supplied path; policy requires consistent source/binding/coverage
+answers and positive scalar facts or source-present enforcing controls. Plain route/logging options
+are not value controls. A schema declaration alone never establishes protection, and unavailable
+hook/helper bodies remain blockers. The historical Express-coupled contract remains readable for
+saved reports, without being selected for fresh lookups. Protection says nothing about authorization,
+valid-ID error handling, business validation or stored-content rendering.
 
 A supplied `typeof` guard is evidence to assess against its enforcing branch and subsequent writes.
 The bounded policy conservatively keeps a vulnerable model answer in Review when a relevant selected

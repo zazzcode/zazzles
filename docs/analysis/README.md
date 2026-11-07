@@ -7,6 +7,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 
 | Guide | Scope |
 |---|---|
+| [Node input acquisition](node-inputs.md) | Transport-neutral value facts, bounded Express/Fastify/Hapi adapters and provisional model-assisted discovery |
 | [Database injection](database-injection.md) | SQL/NoSQL library contracts, source flow, branch constraints, and verdicts |
 | [Command injection](command-injection.md) | Verified Node/Python process APIs, shell/executable/argument facets, guards and outcomes |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |

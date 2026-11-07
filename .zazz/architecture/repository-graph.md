@@ -6,10 +6,24 @@ proposed semantic design; the current route-v1 artifact is only a syntax invento
 [architecture](../architecture.md) owns pipeline/provider contracts and the
 [implementation contract](../specifications/route-string-validation.md) declares the implemented subset.
 
+## Acquisition adapters and shared value facts
+
+Acquisition adapters establish registration, callable and external-input provenance. Shared value
+facts record initial type, transformations/control stages and sink type. Operation contracts define
+sink behavior independently of acquisition; the judge interprets supplied application logic and
+policy enforces completeness/consistency. This boundary applies equally to HTTP, RPC and future
+message consumers. Adding a framework or transport MUST NOT duplicate a security analyzer.
+
+The implemented Node slice uses this pattern for bounded Express/Fastify/Hapi HTTP contexts and
+existing GraphQL/gRPC records. Python adapters remain unchanged pending the root proposal. Optional
+model-assisted discovery produces source-referenced proposals outside the trusted graph. Verified
+source existence is not verified dispatch; unknown wrappers remain provisional, not new edges.
+
 ## Objective and analysis boundary
 
 Start at explicit analysis entry points. HTTP routes and browser entries are current forms;
-GraphQL fields, message consumers, commands and other roots are future adapters. Separate entry
+GraphQL fields and unary gRPC methods also have bounded implemented adapters; message consumers,
+commands and other roots remain future acquisition adapters. Separate entry
 identity, registration, dispatch binding and callable identity as described in the
 [entry/dispatch decision](../architecture.md#multiple-entry-and-dispatch-mechanisms).
 Follow supported internal control and value dependencies,

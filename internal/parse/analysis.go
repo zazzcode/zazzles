@@ -21,7 +21,15 @@ func Analyze(root, entry string) (*analysis.AnalysisReport, error) {
 }
 
 // AnalyzeWithChecks assembles security evidence with optional declared requirements.
-func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (result *analysis.AnalysisReport, resultErr error) {
+func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
+	return AnalyzeWithOptions(root, entry, checks, Options{})
+}
+
+// Options controls optional acquisition discovery without changing Python adapters.
+type Options struct{ DiscoverRoutes bool }
+
+// AnalyzeWithOptions shares the same parsed module set with optional discovery.
+func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Options) (result *analysis.AnalysisReport, resultErr error) {
 	defer func() {
 		if resultErr == nil && result != nil {
 			result.RecordCheckMatches(checks)
@@ -85,8 +93,12 @@ func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (result *ana
 			out.Gaps = append(out.Gaps, analysis.Gap{Kind: "parse_error", Detail: "registration file has syntax errors", At: spanOf(file, m.tree.RootNode())})
 			continue
 		}
+		if options.DiscoverRoutes {
+			out.Discovery = set.nodeDiscoveryAlternatives(m, out.Discovery, 1000)
+		}
 		set.graphqlEntries(out, m)
 		set.grpcEntries(out, m)
+		set.nodeFrameworkEntries(out, m)
 		locals := map[string]*sitter.Node{}
 		collectFuncs(m.tree.RootNode(), m.src, locals)
 		walkCalls(m.tree.RootNode(), func(call *sitter.Node) {
@@ -133,6 +145,7 @@ func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (result *ana
 	} else {
 		set.automaticQueries(out)
 	}
+	set.assembleNodeInputs(out)
 	keys := make([]string, 0, len(set.modules))
 	for k := range set.modules {
 		keys = append(keys, k)

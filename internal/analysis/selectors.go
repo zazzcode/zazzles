@@ -196,7 +196,7 @@ func (r *AnalysisReport) RecordCheckMatches(checks []Check) {
 // MatchesFields selects source-role evidence without asserting value transfer or trust.
 func MatchesFields(d Dependency, fields []string) bool {
 	for _, field := range fields {
-		if d.Source.Text == field || strings.HasPrefix(d.Source.Text, field+":") || strings.HasSuffix(d.Source.Text, ".body."+field) || strings.HasSuffix(d.Source.Text, ".query."+field) || strings.HasSuffix(d.Source.Text, ".params."+field) {
+		if d.Source.Text == field || strings.HasPrefix(d.Source.Text, field+":") || strings.HasSuffix(d.Source.Text, ".body."+field) || strings.HasSuffix(d.Source.Text, ".payload."+field) || strings.HasSuffix(d.Source.Text, ".query."+field) || strings.HasSuffix(d.Source.Text, ".params."+field) {
 			return true
 		}
 		for _, e := range d.Transfers {

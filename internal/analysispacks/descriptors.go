@@ -154,5 +154,6 @@ func descriptors() ([]Component, error) {
 	out = append(out, cmd...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
+	out = append(out, nodeInputComponent())
 	return out, nil
 }

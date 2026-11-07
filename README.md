@@ -95,6 +95,23 @@ A function call alone does not prove that an input reaches a sensitive operation
 handlers and entries with no discovered uses remain visible in coverage reporting.
 A protected claim applies to the stated operation and scope, not the entire entry or application.
 
+### Acquisition, value facts and sink contracts
+
+Input acquisition and sink security are separate layers. Node.js HTTP adapters for Express, Fastify
+and Hapi identify registrations and request inputs. Shared, transport-neutral facts record origin,
+initial type, type at the sink, transformations and supplied hooks/schema code. Existing GraphQL
+and unary gRPC entries can carry the same facts without assuming that declarations enforce types.
+The same Mongoose, SQL and process contracts consume the evidence; the judge assesses application
+controls and deterministic policy checks completeness and consistency. A schema's presence is not
+protection. Python keeps its existing adapters; its migration is [proposed separately](PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+
+Optional `--discover-routes --discovery-limit N`, used with `--analyze --judge`, asks the selected model
+to select source-backed Node route/handler alternatives. Discovery has a separate additional request
+cap and no retries. The engine checks the exact source and existing dispatch binding. Unfamiliar
+wrappers remain provisional coverage records in JSON, HTML and SARIF; suggestions do not create
+trusted reachability or vulnerability findings. Queue acquisition remains future work. See the
+[Node input guide](docs/analysis/node-inputs.md) for supported syntax, limits and usage.
+
 <a id="analysis-components"></a>
 
 <a id="analysis-packs-and-reusable-components"></a>
@@ -180,7 +197,7 @@ Real-application evaluation for those adapters is still deferred.
 
 | Entry type | Implemented support | Important limits |
 |---|---|---|
-| **HTTP** | Express in JS/TS, plus Flask/Blueprint, RESTX and FastAPI in Python | Framework and flow support covers selected patterns |
+| **HTTP** | Express, direct Fastify and Hapi registrations in JS/TS; existing Python framework adapters | Bounded constructors/handlers and supplied lifecycle/schema context; dynamic plugins and unresolved scopes remain gaps |
 | **Browser** | Supported script/component roots and explicit DOM/window event callbacks | Event targets, callbacks and value projections must be resolvable |
 | **Dynamic HTTP routes** | Finite registrations, literal factories and supported closure/callback flows in Express and Python | Runtime generation and unresolved alternatives remain gaps |
 | **GraphQL** | Node.js Apollo resolver maps and literal schemas, with resolver argument inputs | Dynamic composition, default resolvers and subscriptions remain unsupported |

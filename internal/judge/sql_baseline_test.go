@@ -27,6 +27,7 @@ func TestSQLDiscoveryBaseline(t *testing.T) {
 			}
 			r.Uses = predecessors
 			for i := range r.Uses {
+				r.Uses[i].InputFacts = nil
 				r.Uses[i].Components = nil
 			}
 			b, err := json.Marshal(r)

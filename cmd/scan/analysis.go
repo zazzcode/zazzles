@@ -17,6 +17,10 @@ import (
 )
 
 func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection) int {
+	return runAnalysisConfigured(root, entry, checksFile, provider, model, limit, asJSON, asSARIF, outputDir, traceDir, skipped, stdout, stderr, scope, discoveryOptions{})
+}
+
+func runAnalysisConfigured(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection, discovery discoveryOptions) int {
 	var client *judge.Client
 	if provider != "" {
 		key := ""
@@ -38,7 +42,7 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 		fmt.Fprintf(stderr, "scan: %v\n", err)
 		return exitError
 	}
-	report, err := parse.AnalyzeWithChecks(root, entry, checks)
+	report, err := parse.AnalyzeWithOptions(root, entry, checks, parse.Options{DiscoverRoutes: discovery.Enabled})
 	if err != nil {
 		fmt.Fprintf(stderr, "scan: %v\n", err)
 		return exitError
@@ -53,6 +57,9 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 	}
 	report.RecordCheckMatches(checks)
 	failed := false
+	if discovery.Enabled {
+		failed = runNodeDiscovery(root, entry, report, client, discovery.Limit, traceDir, stderr)
+	}
 	if client != nil {
 		order := make([]int, len(report.Uses))
 		for i := range order {

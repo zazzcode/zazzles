@@ -108,6 +108,12 @@ func (s *moduleSet) chainEvidence(report *analysis.AnalysisReport, check analysi
 		if r.Method != check.Method || r.PathPattern != check.Path {
 			continue
 		}
+		if c := s.nodeHTTP[entry.ID]; c != nil && r.Framework != "express" {
+			extra, missing := s.nativeHTTPChain(c)
+			context = append(context, extra...)
+			gaps = append(gaps, missing...)
+			continue
+		}
 		m := s.modules[r.Registration.File]
 		if m == nil {
 			continue

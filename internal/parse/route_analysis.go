@@ -11,6 +11,18 @@ func (s *moduleSet) analyzeRoute(out *analysis.AnalysisReport, m, owner *sourceM
 }
 
 func (s *moduleSet) analyzeSeededRoute(out *analysis.AnalysisReport, m, owner *sourceModule, r analysis.Route, call *sitter.Node, receiver string, context []analysis.Evidence, sourcePath, mount string, seeds registrationSeeds) {
+	args := call.ChildByFieldName("arguments")
+	var h *sitter.Node
+	if args != nil && args.NamedChildCount() > 1 {
+		h = args.NamedChild(args.NamedChildCount() - 1)
+	}
+	if h != nil && h.Kind() == "identifier" && seeds[h.Utf8Text(m.src)] != nil {
+		h = seeds[h.Utf8Text(m.src)]
+	}
+	s.analyzeHTTPHandler(out, m, owner, r, call, receiver, context, sourcePath, mount, seeds, h)
+}
+
+func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *sourceModule, r analysis.Route, call *sitter.Node, receiver string, context []analysis.Evidence, sourcePath, mount string, seeds registrationSeeds, h *sitter.Node) {
 	e := httpEntry(r, m.evidence("entry_registration", call), owner.file+":"+owner.hash+":"+receiver)
 	e.HTTP.Receiver = receiver
 	e.HTTP.SourcePath = sourcePath
@@ -21,14 +33,6 @@ func (s *moduleSet) analyzeSeededRoute(out *analysis.AnalysisReport, m, owner *s
 		registerInvocation(out, e, nil, "direct_registration", nil, e.Gaps)
 		noteHTTPDeclaration(out, r, context)
 		return
-	}
-	args := call.ChildByFieldName("arguments")
-	var h *sitter.Node
-	if args != nil && args.NamedChildCount() > 1 {
-		h = args.NamedChild(args.NamedChildCount() - 1)
-	}
-	if h != nil && h.Kind() == "identifier" && seeds[h.Utf8Text(m.src)] != nil {
-		h = seeds[h.Utf8Text(m.src)]
 	}
 	hm, body, req, gaps := s.handler(m, h)
 	mechanism := "direct_registration"
@@ -51,6 +55,7 @@ func (s *moduleSet) analyzeSeededRoute(out *analysis.AnalysisReport, m, owner *s
 			r.Handler = analysis.Symbol{Name: textNode(h, m.src), Kind: "function", Span: spanOf(hm.file, body.Parent())}
 		}
 		evidence := hm.evidence("handler", body)
+		s.rememberNodeHTTP(e, m, hm, call, body, req, receiver, context)
 		inputs := []analysis.InputBinding{}
 		if req != "" {
 			inputs = append(inputs, httpInput("http.request", req, parameterEvidence(hm, body, 0)))
@@ -78,7 +83,9 @@ func (s *moduleSet) analyzeSeededRoute(out *analysis.AnalysisReport, m, owner *s
 			f.env[name] = f.eval(node)
 		}
 		f.gaps = append(f.gaps, analysis.Gap{Kind: "middleware_unresolved", Detail: "effective middleware/guard chain is not modeled", At: r.Registration})
-		s.noteMiddlewareFields(&f, m, call)
+		if r.Framework == "express" {
+			s.noteMiddlewareFields(&f, m, call)
+		}
 		f.statements(body)
 		f.finishValidation()
 		s.requestLineLogs(&f, m, call, receiver)

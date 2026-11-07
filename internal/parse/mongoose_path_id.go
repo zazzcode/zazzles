@@ -8,12 +8,11 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
-// mongoosePathIDFacts selects a narrower operation contract only when the
-// actual findById argument retains Express's primitive path-parameter type.
-// It supplies evidence, never a verdict or an inherited historical answer.
+// mongoosePathIDFacts selects sink semantics independently of transport or
+// framework. Source acquisition and value constraints live in InputFacts.
 func (s *moduleSet) mongoosePathIDFacts(use *analysis.CandidateUse) {
 	c := use.Completeness
-	if use.APIModel == nil || use.APIModel.ID != "mongoose-model-query-v2" || c == nil || len(c.Blockers) != 0 || len(use.Dependencies) != 1 || use.Check == nil || use.Check.Selector != nil {
+	if use.APIModel == nil || use.APIModel.ID != "mongoose-model-query-v2" || c == nil || !s.defaultObjectIDSchema(c) {
 		return
 	}
 	m := s.modules[use.Sink.Span.File]
@@ -25,81 +24,17 @@ func (s *moduleSet) mongoosePathIDFacts(use *analysis.CandidateUse) {
 		return
 	}
 	fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
-	if fn == nil || args == nil || args.NamedChildCount() == 0 || args.NamedChildCount() > 2 {
+	if fn == nil || args == nil || args.NamedChildCount() == 0 {
 		return
 	}
-	prop := fn.ChildByFieldName("property")
-	model := fn.ChildByFieldName("object")
+	prop, model := fn.ChildByFieldName("property"), fn.ChildByFieldName("object")
 	if prop == nil || prop.Utf8Text(m.src) != "findById" || model == nil || model.Kind() != "identifier" || !contractBindingStable(m, model.Utf8Text(m.src)) {
 		return
 	}
-	if args.NamedChildCount() == 2 && !isFunction(args.NamedChild(1)) {
-		return
+	use.APIModel = analysispacks.NoSQLContract("mongoose-find-by-id-objectid-v1")
+	if ctx := s.nodeHTTP[use.EntryID]; ctx != nil {
+		s.nodeInputFacts(use, ctx)
 	}
-	arg := args.NamedChild(0)
-	if arg.Kind() != "member_expression" {
-		return
-	}
-	params, key := arg.ChildByFieldName("object"), arg.ChildByFieldName("property")
-	if params == nil || key == nil || params.Kind() != "member_expression" {
-		return
-	}
-	req, field := params.ChildByFieldName("object"), params.ChildByFieldName("property")
-	if req == nil || req.Kind() != "identifier" || field == nil || field.Utf8Text(m.src) != "params" {
-		return
-	}
-	if use.Dependencies[0].Source.Text != arg.Utf8Text(m.src) {
-		return
-	}
-	named := false
-	for _, segment := range strings.Split(use.Check.Path, "/") {
-		named = named || segment == ":"+key.Utf8Text(m.src)
-	}
-	if !named || !s.defaultObjectIDSchema(c) {
-		return
-	}
-	// Every supplied application handler/middleware must preserve the request
-	// object and its params. Unknown chains were rejected by completeness above.
-	handler := false
-	for _, e := range use.Context {
-		if e.Kind == "route_registration" {
-			module := s.modules[e.Span.File]
-			if module == nil || hasParamRegistration(module) {
-				return
-			}
-		}
-		if e.Kind != "handler" && e.Kind != "middleware_handler" {
-			continue
-		}
-		module := s.modules[e.Span.File]
-		if module == nil {
-			return
-		}
-		body := nodeAt(module.tree.RootNode(), e.Span.StartByte, e.Span.EndByte)
-		if body == nil {
-			return
-		}
-		owner := body.Parent()
-		if owner == nil || !isFunction(owner) {
-			return
-		}
-		parameters := parameterNames(owner, module.src)
-		if len(parameters) == 0 || !requestParamsStable(module, body, parameters[0]) {
-			return
-		}
-		if e.Kind == "handler" && e.Span.File == m.file && body.StartByte() <= call.StartByte() && body.EndByte() >= call.EndByte() && parameters[0] == req.Utf8Text(m.src) {
-			handler = true
-		}
-	}
-	if !handler {
-		return
-	}
-	e := m.evidence("selector_path_string", arg)
-	c.Evidence[e.Kind] = append(c.Evidence[e.Kind], e)
-	use.Context = append(use.Context, e)
-	c.Required = append(c.Required, e.Kind)
-	c.ModelFacts = append(c.ModelFacts, "The exact findById input "+arg.Utf8Text(m.src)+" is the named URL segment in "+use.Check.Path+". It retains Express's decoded primitive string type in the supplied handler/middleware slice; no request/params write or object escape is modeled on this path. It remains externally controlled data, not an object-valued selector. Apply only the selected operation contract to this argument; authorization and business validation are separate.")
-	use.APIModel = analysispacks.NoSQLContract("mongoose-path-id-objectid-v1")
 }
 
 // app.param callbacks run before route handlers and can replace a captured

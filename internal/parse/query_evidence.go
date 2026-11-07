@@ -26,6 +26,19 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 		c.ModelFacts = []string{"Scope is a verified Apollo schema field and its independently bound resolver invocation. Only args values have external provenance; parent/context/info and parent-result transitions remain unknown. SDL scalar/type/directive names establish neither database safety nor application validation policy."}
 	} else if use.Check != nil && use.Check.Selector != nil && use.Check.Selector.Kind == "grpc" {
 		c.ModelFacts = []string{"Scope is a verified grpc-js unary service/method with an independently bound handler invocation. Only call.request fields have external request provenance; metadata, context and callback roles remain distinct/unknown. Proto3 field types and decoding do not establish database protection or business validation policy."}
+	} else if ctx := s.nodeHTTP[use.EntryID]; ctx != nil && ctx.entry.HTTP.Framework != "express" {
+		c.ModelFacts = []string{"A verified " + ctx.entry.HTTP.Framework + " registration and handler are supplied. Input acquisition, hooks/schema configuration and value transfers are separate from sink semantics. Source-present controls may be judged; absent or unsupported bodies/scopes remain blockers. A schema declaration is not by itself protection."}
+		// Discovery's generic middleware warning is replaced only by the adapter's
+		// explicitly bounded lifecycle context, retaining every adapter gap.
+		kept := []analysis.Gap{}
+		for _, g := range c.Coverage {
+			if g.Kind == "middleware_unresolved" {
+				c.Resolved = append(c.Resolved, g)
+			} else {
+				kept = append(kept, g)
+			}
+		}
+		c.Coverage = kept
 	} else if chainSupplied && len(s.contextLimits) == 0 {
 		c.ModelFacts = []string{
 			"Scope is direct Express registrations with syntactically matched earlier middleware and same-route handlers. Matching source bodies or explicit transport/authentication adapter contracts are supplied; unsupported/dynamic chains remain blockers.",

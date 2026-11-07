@@ -68,6 +68,7 @@ func wireBundle(use analysis.CandidateUse) any {
 	}
 	augmentRoles(use, roles, ref)
 	invocation := wireInvocation(use, ref)
+	inputFacts := wireInputFacts(use.InputFacts, ref)
 	wireTable, excerpts := sharedSourceExcerpts(table)
 	return struct {
 		Invocation      any                    `json:"invocation"`
@@ -94,7 +95,8 @@ func wireBundle(use analysis.CandidateUse) any {
 		APIModel        *analysis.APIModel     `json:"api_model,omitempty"`
 		XSS             *analysis.XSSFacts     `json:"xss,omitempty"`
 		Command         *analysis.CommandFacts `json:"command,omitempty"`
-	}{invocation, 6, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, roles, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, use.Command}
+		InputFacts      any                    `json:"input_facts,omitempty"`
+	}{invocation, 6, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, roles, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, use.Command, inputFacts}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {

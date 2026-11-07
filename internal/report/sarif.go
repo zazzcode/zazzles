@@ -45,6 +45,9 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 		finding := report.Findings[i]
 		message := fmt.Sprintf("%s: %s [%s]. %s %s", route, finding.Title, finding.Status, finding.Summary, finding.Protection)
 		props := map[string]any{"scan.finding": report.Findings[i], "scan.useId": use.ID, "scan.kind": use.Kind, "scan.assessment": use.Assessment, "scan.reviewStatus": "not_run", "scan.runtimeConfirmation": "not_run", "scan.recommendations": g, "scan.coverageGaps": use.Gaps}
+		if use.InputFacts != nil {
+			props["scan.inputFacts"] = use.InputFacts
+		}
 		props["scan.entryKind"] = "unknown"
 		props["scan.entryId"] = use.EntryID
 		props["scan.invocationContextId"] = use.InvocationContextID
@@ -144,6 +147,12 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 		successful = false
 		notifications = append(notifications, map[string]any{"level": "warning", "message": map[string]string{"text": g.Kind + ": " + g.Detail}})
 	}
+	for _, p := range report.Discovery {
+		if p.State != "verified_existing" {
+			successful = false
+			notifications = append(notifications, map[string]any{"level": "warning", "message": map[string]string{"text": "Unverified route discovery: " + p.Reason}, "properties": map[string]any{"scan.discoveryProposal": p}})
+		}
+	}
 	invocation := map[string]any{"executionSuccessful": successful, "properties": map[string]any{"scan.entries": report.Entries, "scan.registrations": report.Registrations, "scan.dispatchBindings": report.DispatchBindings, "scan.invocationContexts": report.InvocationContexts}}
 	if len(notifications) > 0 {
 		invocation["toolExecutionNotifications"] = notifications
@@ -153,6 +162,9 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 		artifacts = append(artifacts, map[string]any{"location": map[string]string{"uri": relativeURI(e.Span.File)}, "hashes": map[string]string{"sha-256": e.SHA256}})
 	}
 	run := map[string]any{"tool": map[string]any{"driver": map[string]any{"name": "scan", "informationUri": "https://github.com/zazzcode/zazzles", "rules": rules}}, "results": results, "artifacts": artifacts, "invocations": []any{invocation}, "properties": map[string]any{"scan.findingTypes": report.FindingTypes, "scan.limitations": report.Limitations, "scan.selectedRoute": report.SelectedRoute, "scan.selectedScope": report.SelectedScope, "scan.checkMatches": report.CheckMatches, "scan.identityPolicy": "snapshot-local use IDs; edit-stable baseline identity is not implemented"}}
+	if len(report.Discovery) > 0 {
+		run["properties"].(map[string]any)["scan.discoveryProposals"] = report.Discovery
+	}
 	if len(report.SkippedFamilies) > 0 {
 		run["properties"].(map[string]any)["scan.skippedFamilies"] = report.SkippedFamilies
 	}

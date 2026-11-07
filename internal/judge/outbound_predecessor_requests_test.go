@@ -12,6 +12,7 @@ func TestOutboundPredecessorRequests(t *testing.T) {
 	_, xss := parsedXSS(t, map[string]string{"client.js": `document.body.innerHTML=location.hash`})
 	uses := map[string]analysis.CandidateUse{"sql": selectedSQLUse(t), "nosql": selectedNoSQLUse(t), "validation": selectedValidationUse(t), "xss": xss}
 	for family, u := range uses {
+		u = predecessorNodeUse(u)
 		for _, provider := range []string{"openai", "jev"} {
 			c, _ := New(provider, "fixture-model", "key")
 			p, err := c.payload(u)

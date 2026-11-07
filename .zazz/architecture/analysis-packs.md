@@ -17,6 +17,23 @@ The [original design](../project/analysis-pack-mvp.md) records rationale; the
 work. The [database guide](../../docs/analysis/database-injection.md#query-component-selection) and
 [XSS guide](../../docs/analysis/xss.md) own product interpretation rules.
 
+## Node input interpretation and generic sink contracts
+
+`source.node-input-v1` is selected only for Node candidates carrying versioned shared input facts.
+It interprets transport-neutral origin, initial/sink type, transformations, lifecycle stages and
+source-present controls. It does not supply source edges or security verdicts. Existing Python
+material remains unchanged. Fresh Mongoose lookups use `mongoose-find-by-id-objectid-v1` for the
+verified pinned default-ObjectId operation; the historical Express-coupled contract remains readable.
+Neither a framework name nor a schema declaration establishes protection.
+
+Acquisition adapters lower bounded syntax/configuration into common evidence. The judge reasons
+about supplied application logic; Go requires complete witnesses and consistent outcomes. The
+separate `node-route-discovery-v1` protocol selects source-backed binding proposals under an explicit
+additional cap. It is not a security pack or an alternate vulnerability pipeline. The engine checks
+source snapshots and dispatch; unknown suggestions remain provisional coverage. See the
+[Node input contract](../specifications/node-http-input-refactor.md) and
+[public guidance](../../docs/analysis/node-inputs.md).
+
 ## Current implementation status
 
 The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and XSS

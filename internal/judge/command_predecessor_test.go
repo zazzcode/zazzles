@@ -43,6 +43,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 				if u.Kind == "command_execution_candidate" {
 					continue
 				}
+				u = predecessorNodeUse(u)
 				p, err := c.payload(u)
 				if err != nil {
 					lines = append(lines, u.ID+" noreq")

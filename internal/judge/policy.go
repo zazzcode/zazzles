@@ -21,6 +21,14 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyLogPolicy(use, a)
 		return
 	}
+	if use.InputFacts != nil {
+		if err := use.InputFacts.Validate(use.Dependencies); err != nil {
+			a.FindingStatus = "needs_evidence"
+			a.Protection = "uncertain"
+			a.Reason = err.Error()
+			return
+		}
+	}
 	a.Protection = a.Answers["protection"]
 	if use.Completeness == nil {
 		if len(use.Gaps) > 0 {
@@ -87,6 +95,19 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 				if answer != "yes" {
 					blockers = append(blockers, analysis.Gap{Kind: "injection_semantic_coverage", Detail: name + ": " + answer})
 				}
+			}
+		}
+	}
+	if use.APIModel != nil && use.APIModel.ID == "mongoose-find-by-id-objectid-v1" {
+		if use.InputFacts == nil {
+			blockers = append(blockers, analysis.Gap{Kind: "input_facts_missing", Detail: "source/type/transfer facts are required"})
+		} else {
+			blockers = append(blockers, use.InputFacts.Gaps...)
+			if a.Answers["injection_protection"] == "vulnerable" && use.InputFacts.ScalarInputs() {
+				blockers = append(blockers, analysis.Gap{Kind: "injection_constraint_review", Detail: "scalar sink operands contradict operator injection; no bypass is established"})
+			}
+			if a.Answers["injection_protection"] == "protected" && !use.InputFacts.ScalarInputs() && !use.InputFacts.HasValueControls() && len(c.Evidence["selector_type_guard"]) == 0 {
+				blockers = append(blockers, analysis.Gap{Kind: "input_type_unresolved", Detail: "protection needs scalar sink facts or supplied enforcing controls"})
 			}
 		}
 	}

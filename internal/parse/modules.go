@@ -35,6 +35,7 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
+	nodeHTTP       map[string]*nodeHTTPContext
 	graphqlRecords int
 	grpcRecords    int
 	grpcProtos     map[string]grpcProtoResult

@@ -37,13 +37,11 @@ func TestMongoosePathIDFacts(t *testing.T) {
 				t.Fatal(err)
 			}
 			u := kindUse(t, r, "nosql_query_candidate")
-			got := u.APIModel != nil && u.APIModel.ID == "mongoose-path-id-objectid-v1"
+			got := u.InputFacts != nil && u.InputFacts.ScalarInputs() && u.APIModel != nil && u.APIModel.ID == "mongoose-find-by-id-objectid-v1"
 			if got != tc.want {
-				t.Fatalf("path ID contract=%v want %v; facts=%+v blockers=%+v", got, tc.want, u.Completeness.ModelFacts, u.Completeness.Blockers)
+				t.Fatalf("scalar/default-ID witness=%v want %v: %+v", got, tc.want, u.InputFacts)
 			}
-			if tc.want && len(u.Completeness.Evidence["selector_path_string"]) == 0 {
-				t.Fatal("missing source-backed path string evidence")
-			}
+
 		})
 	}
 }

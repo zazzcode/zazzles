@@ -16,6 +16,14 @@ when to load supporting guides. Keep this document under 400 lines; link to deta
 
 ## Current work
 
+**Node input refactor, 2026-11-07:** bounded Express/Fastify/Hapi acquisitions now feed transport-neutral
+origin/type/transfer facts and a generic Mongoose lookup contract. Existing GraphQL/gRPC can carry the
+same records. Optional model-assisted discovery remains outside trusted flow until independently
+verified. Read the [contract](../specifications/node-http-input-refactor.md) and
+[guide](../../docs/analysis/node-inputs.md). Python runtime behavior is unchanged; the root
+[Python proposal](../../PYTHON-INPUT-REFACTOR-PROPOSAL.md) is deferred. This slice uses offline/stub
+validation; saved real-app reports retain their prior scan provenance. No new paid calls are authorized.
+
 **Command Injection Analyzer delivered, 2026-11-07:** implemented in the `command-injection` worktree under the
 [implementation contract](../specifications/command-injection.md); read the
 [acceptance results](../evaluation/command-injection-results.md), the independent

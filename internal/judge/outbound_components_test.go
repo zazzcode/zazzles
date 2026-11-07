@@ -25,6 +25,7 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 				t.Fatal(err)
 			}
 			for i := range r.Uses {
+				r.Uses[i] = predecessorNodeUse(r.Uses[i])
 				if r.Uses[i].Kind == "outbound_http_candidate" {
 					r.Uses[i].Components = nil
 				}

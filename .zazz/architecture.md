@@ -161,6 +161,39 @@ without a security questionnaire; logging retains its existing active path pendi
 The [component design](architecture/analysis-packs.md#boundary-and-ownership) owns exact boundaries,
 limits, provenance and verification. Packs are embedded, not externally loaded plugins.
 
+### Acquisition and value facts
+
+Entry/dispatch identity, acquisition, value evolution, sink semantics and judgment MUST remain
+separate. Optional versioned `InputFacts` records acquisition kind/framework and source origin,
+initial runtime type, type at the sink, transformations, lifecycle stages and source-backed controls.
+A future queue adapter can emit the same records as HTTP or RPC; it MUST NOT require a new NoSQL,
+SQL or command analyzer. TypeScript, GraphQL or protobuf declarations alone are not runtime proof.
+
+```mermaid
+flowchart LR
+    A[Acquisition adapters: HTTP / RPC / future queues] --> V[Source-backed origin, types and transfers]
+    V --> J[Judge supplied application controls]
+    S[Reusable sink contracts] --> J
+    J --> P[Evidence and consistency policy]
+    P --> R[Finding / Protected / Review]
+    D[Opt-in model discovery] --> Q[Source-referenced proposals]
+    Q --> C[Independent source and dispatch checks]
+    C -->|Existing verified binding| A
+    C -->|Unresolved| U[Provisional coverage outside trusted flow]
+```
+
+The Node adapters lower bounded Express, Fastify and Hapi registration/configuration patterns into
+shared invocations and flow. Mongoose's fresh default-ObjectId `findById` contract is independent of
+HTTP and consumes separate operand/type evidence. Model interpretation assesses supplied validators
+and hook code; mandatory gates reject absent implementations and inconsistent conclusions. Python
+keeps its existing behavior pending the [root migration proposal](../PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+
+Model-assisted discovery is a separate opt-in acquisition phase with its own protocol/cap/traces.
+The model selects snapshot-bound alternatives; source and dispatch validation belongs to the engine.
+Only independently established bindings are trusted. Unverified proposals remain provisional coverage,
+never synthetic entry/flow edges or vulnerability findings. See [Node input guidance](../docs/analysis/node-inputs.md)
+and the [implementation contract](specifications/node-http-input-refactor.md).
+
 ## 3. Parsing and language adapters
 
 `internal/parse` owns Tree-sitter lifetimes, module resolution, framework bindings, bounded flow,

@@ -39,7 +39,8 @@ judgments of vuln-demo-app and Juice Shop for it.
 2. **SQL-backed storage:** sql.js bound writes and literal reads through local query helpers; Sequelize raw
    `SELECT` table reads; row iteration results.
 3. **Model semantics:** Sequelize attribute setters on writes; finale-rest resources as write and read
-   endpoints; versioned sanitize-html contract (before 1.4.3, CVE-2016-1000237); tag-stripping regex replacements.
+   endpoints; a cited sanitizer advisory table (marked, sanitize-html) and `replace`/`replaceAll` deletions classified by
+   what they remove.
 4. **Angular links:** service response projection, `for…of` aliases, trusted fields rendered through template
    iteration variables and gallery `args`, dialog data, verified JWT claims back to signed model fields.
 5. **Python:** HTML responses for aiohttp, Django, Pyramid, Bottle, Quart, Falcon and WSGI; Jinja environments.

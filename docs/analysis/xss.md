@@ -43,8 +43,8 @@ Verified imports for `entities`/`he` HTML encoders, `escape-html`, `sanitize-htm
 sanitization supply bounded protection contracts for appropriate contexts. Plain `dompurify` is trusted only in
 browser code (without a window it returns its input); a verified Handlebars `SafeString` disables
 `{{…}}` escaping. A global negated allow-list `replace` (for example `[^\w-]+` to `''`) is
-sanitization in text, attribute and URL contexts; removing only line breaks is neutral; other
-replacements are unknown. Unknown functions,
+sanitization in text, attribute and URL contexts; removing only line breaks is neutral. Other deletions
+follow the [replacement rules](#sanitizer-advisories-and-replacements) below. Unknown functions,
 same-name fake libraries, shadowed imports and custom sanitizer options are not trusted. Every
 modeled path must be protected; protection on one branch does not protect a raw sibling branch.
 
@@ -66,10 +66,10 @@ path. A finale-rest resource makes each string attribute writable by its collect
 `POST` is registered with `denyAll` in the same module, and returns rows from `GET` minus
 `excludeAttributes`. Sinks with many stored paths keep one path per source, write and protection class,
 and record how many were omitted.
-The marked 0.3.5 sanitize-option bypass is a versioned unsafe-rendering contract, supported by
-[upstream PR 592](https://github.com/markedjs/marked/pull/592).
+<a id="sanitizer-advisories-and-replacements"></a>
 
-Sanitizer bypasses come from a cited advisory table in `internal/parse/xss_versions.go`. An advisory applies only to
+Markdown with marked's `sanitize` option is an unsafe-rendering contract for versions with a listed advisory
+(see [upstream PR 592](https://github.com/markedjs/marked/pull/592)). Sanitizer bypasses come from a cited advisory table in `internal/parse/xss_versions.go`. An advisory applies only to
 an exact resolved version in its affected range, and only to a call with default options; a version range or
 custom options never match. It currently lists marked before 0.3.6
 ([CVE-2016-10531](https://github.com/advisories/GHSA-vfvf-mqq8-rwqc)), sanitize-html before 1.4.3

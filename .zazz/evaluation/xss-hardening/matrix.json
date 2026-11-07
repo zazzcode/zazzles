@@ -1,0 +1,275 @@
+{
+ "version": 1,
+ "reviewed": "2026-11-07",
+ "method": "Labels come from the linked source reviews and were fixed before hardening results were observed. A case passes only as a completed confirmed_vulnerability. Expectations are not edited to fit output; a correction keeps the old label and rationale in `corrections`. Never scanner or model input.",
+ "references": {
+  "vuln-demo-app": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+  "vulnerable-typescript-app": "docs/samples/vulnerable-typescript-app/xss-answer-key.md",
+  "nodejs-goof": "docs/samples/nodejs-goof/xss-answer-key.md",
+  "juice-shop": "docs/samples/juice-shop/xss-answer-key.md",
+  "vulnpy": ".zazz/evaluation/vulnpy-detection-guide.md"
+ },
+ "required_red": [
+  {
+   "id": "DEMO-XSS-01",
+   "target": "vuln-demo-app",
+   "file": "server.js",
+   "line": 180,
+   "contexts": 1,
+   "output_context": "html_text"
+  },
+  {
+   "id": "DEMO-XSS-02",
+   "target": "vuln-demo-app",
+   "file": "server.js",
+   "line": 190,
+   "contexts": 1,
+   "output_context": "html_text"
+  },
+  {
+   "id": "DEMO-XSS-03",
+   "target": "vuln-demo-app",
+   "file": "server.js",
+   "line": 166,
+   "contexts": 1,
+   "output_context": "html_text"
+  },
+  {
+   "id": "DEMO-XSS-04",
+   "target": "vuln-demo-app",
+   "file": "server.js",
+   "line": 166,
+   "contexts": 1,
+   "output_context": "html_attribute"
+  },
+  {
+   "id": "DEMO-XSS-05",
+   "target": "vuln-demo-app",
+   "file": "server.js",
+   "line": 236,
+   "contexts": 1,
+   "output_context": "html_text"
+  },
+  {
+   "id": "TS-XSS-01",
+   "target": "vulnerable-typescript-app",
+   "file": "src/server.ts",
+   "line": 117,
+   "contexts": 1
+  },
+  {
+   "id": "GOOF-XSS-01",
+   "target": "nodejs-goof",
+   "file": "views/admin.ejs",
+   "line": 17,
+   "contexts": 1
+  },
+  {
+   "id": "GOOF-XSS-02/03",
+   "target": "nodejs-goof",
+   "file": "views/index.ejs",
+   "line": 20,
+   "contexts": 1,
+   "output_context": "html_text"
+  },
+  {
+   "id": "JS-XSS-01",
+   "target": "juice-shop",
+   "file": "frontend/src/app/search-result/search-result.component.html",
+   "line": 11,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-02",
+   "target": "juice-shop",
+   "file": "frontend/src/app/track-result/track-result.component.html",
+   "line": 9,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-03",
+   "target": "juice-shop",
+   "file": "frontend/src/app/last-login-ip/last-login-ip.component.html",
+   "line": 10,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-04",
+   "target": "juice-shop",
+   "file": "frontend/src/app/administration/administration.component.html",
+   "line": 26,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-05a",
+   "target": "juice-shop",
+   "file": "frontend/src/app/administration/administration.component.html",
+   "line": 60,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-05b",
+   "target": "juice-shop",
+   "file": "frontend/src/app/about/about.component.html",
+   "line": 51,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-06",
+   "target": "juice-shop",
+   "file": "frontend/src/app/product-details/product-details.component.html",
+   "line": 18,
+   "contexts": 1
+  },
+  {
+   "id": "JS-XSS-07",
+   "target": "juice-shop",
+   "file": "routes/userProfile.ts",
+   "line": 101,
+   "contexts": 1
+  },
+  {
+   "id": "VP-XSS-JINJA",
+   "target": "vulnpy",
+   "file": "apps/templates/jinja/xss.html",
+   "line": null,
+   "contexts": 1
+  },
+  {
+   "id": "VP-XSS-FLASK",
+   "target": "vulnpy",
+   "file": "src/vulnpy/flask/blueprint.py",
+   "line": 57,
+   "contexts": 6
+  },
+  {
+   "id": "VP-XSS-FASTAPI",
+   "target": "vulnpy",
+   "file": "src/vulnpy/fastapi/vulnerable.py",
+   "line": 44,
+   "contexts": 1
+  },
+  {
+   "id": "VP-XSS-QUART",
+   "target": "vulnpy",
+   "file": "src/vulnpy/quart/blueprint.py",
+   "line": 55,
+   "contexts": 2
+  },
+  {
+   "id": "VP-XSS-DJANGO",
+   "target": "vulnpy",
+   "file": "src/vulnpy/django/vulnerable.py",
+   "line": 38,
+   "contexts": 4
+  },
+  {
+   "id": "VP-XSS-DJANGO-ASGI",
+   "target": "vulnpy",
+   "file": "src/vulnpy/django/vulnerable_asgi.py",
+   "line": 57,
+   "contexts": 4
+  },
+  {
+   "id": "VP-XSS-FALCON",
+   "target": "vulnpy",
+   "file": "src/vulnpy/falcon/vulnerable.py",
+   "line": 125,
+   "contexts": 1
+  },
+  {
+   "id": "VP-XSS-FALCON-ASGI",
+   "target": "vulnpy",
+   "file": "src/vulnpy/falcon/vulnerable_asgi.py",
+   "line": 125,
+   "contexts": 1
+  },
+  {
+   "id": "VP-XSS-BOTTLE",
+   "target": "vulnpy",
+   "file": "src/vulnpy/bottle/vulnerable_routes.py",
+   "line": 41,
+   "contexts": 2
+  },
+  {
+   "id": "VP-XSS-PYRAMID",
+   "target": "vulnpy",
+   "file": "src/vulnpy/pyramid/vulnerable_routes.py",
+   "line": 53,
+   "contexts": 4
+  },
+  {
+   "id": "VP-XSS-AIOHTTP",
+   "target": "vulnpy",
+   "file": "src/vulnpy/aiohttp/vulnerable_routes.py",
+   "line": 31,
+   "contexts": 2
+  },
+  {
+   "id": "VP-XSS-WSGI",
+   "target": "vulnpy",
+   "file": "src/vulnpy/wsgi/app.py",
+   "line": 26,
+   "contexts": 1
+  }
+ ],
+ "not_red": [
+  {
+   "id": "DEMO-XSS-N01/N02",
+   "target": "vuln-demo-app",
+   "file": "server.js",
+   "lines": [
+    280
+   ]
+  },
+  {
+   "id": "JS-XSS-08 (Review per key: configured file, attacker control unresolved)",
+   "target": "juice-shop",
+   "file": "routes/videoHandler.ts",
+   "lines": [
+    72
+   ]
+  },
+  {
+   "id": "JS-XSS-N04",
+   "target": "juice-shop",
+   "file": "frontend/src/app/data-export/data-export.component.html",
+   "lines": [
+    29
+   ]
+  },
+  {
+   "id": "JS-XSS-N03",
+   "target": "juice-shop",
+   "file": "frontend/src/app/track-result/track-result.component.html",
+   "lines": [
+    80
+   ]
+  },
+  {
+   "id": "GOOF-XSS-N01/N02",
+   "target": "nodejs-goof",
+   "file": "views/edit.ejs",
+   "lines": [
+    20,
+    23
+   ]
+  },
+  {
+   "id": "GOOF-XSS-N03 (Review)",
+   "target": "nodejs-goof",
+   "file": "views/account.hbs"
+  },
+  {
+   "id": "GOOF-XSS-N04",
+   "target": "nodejs-goof",
+   "file": "public/js/ga.js"
+  }
+ ],
+ "corrections": [
+  {
+   "case": "VP-XSS-*",
+   "note": "vulnpy-detection-guide.md listed only Flask, FastAPI and Jinja. Source review on 2026-11-07 found the same raw concatenation in the quart, django, django-asgi, falcon, falcon-asgi, bottle, pyramid, aiohttp and wsgi adapters. The set is widened; no old label changed. Context counts reuse the registration/method counts of the source-reviewed command matrix."
+  }
+ ]
+}

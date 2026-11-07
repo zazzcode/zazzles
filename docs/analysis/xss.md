@@ -13,7 +13,14 @@ and literal CommonJS requires/exported functions. Shadowed or reassigned binding
 Request fields reaching `res.send` with string HTML, or `res.write`/`res.end` with an established HTML
 content type, produce rendering claims. `res.json` and explicit non-HTML content types are negatives.
 An unresolved content type stays Review. Response parameter names are taken from the handler,
-rather than assumed to be `res`.
+rather than assumed to be `res`. `res.send` with an object literal is JSON, not HTML.
+
+A template literal gives each substitution an output context from the markup before it. That context
+follows the value through local wrappers such as `layout(title, body)`, and a helper that returns markup
+establishes an HTML response. One response with raw values in two contexts produces one claim per
+context. Inline callbacks that write the handler's response, such as `http.get(url, cb)` or
+`stream.on("end", cb)`, are followed with the handler's closure bindings; their parameters are external
+results, not request data.
 
 Static Express render configuration links render locals to EJS and Handlebars template outputs.
 Raw EJS `<%- … %>` and Handlebars `{{{…}}}` output is distinguished from escaped `<%= … %>` and
@@ -45,8 +52,25 @@ modeled path must be protected; protection on one branch does not protect a raw 
 
 Model-field writes/reads are linked for bounded Mongoose and Sequelize shapes. Storage identity,
 field, originating request and rendering evidence are retained; unresolved origins remain Review.
+A read with no write stays visible, but cannot hide a complete unsafe sibling path. A generated Mongoose
+`_id` with no request write is not a claim.
+
+SQL-backed storage covers sql.js connections and Sequelize raw queries. Bound `INSERT` and `UPDATE`
+columns of a verified sql.js connection are writes. Literal `SELECT` text, including through local query
+helpers, is a read; `.map` results keep their row fields. A Sequelize raw `SELECT` resolves through the
+model's literal `tableName`. Other SQL clients are not modeled, and a same-named receiver with no
+verified `sql.js` binding is not storage.
+
+A Sequelize attribute setter runs on written values, so its branches and sanitizers stay on the stored
+path. A finale-rest resource makes each string attribute writable by its collection `POST`, unless that
+`POST` is registered with `denyAll` in the same module, and returns rows from `GET` minus
+`excludeAttributes`. Sinks with many stored paths keep one path per source, write and protection class,
+and record how many were omitted.
 The marked 0.3.5 sanitize-option bypass is a versioned unsafe-rendering contract, supported by
-[upstream PR 592](https://github.com/markedjs/marked/pull/592). Unknown versions/configurations are
+[upstream PR 592](https://github.com/markedjs/marked/pull/592). sanitize-html before 1.4.3 is not applied
+recursively ([CVE-2016-1000237](https://advisories.gitlab.com/pkg/npm/sanitize-html/CVE-2016-1000237)), and is
+an ineffective contract for an exact pinned version; a version range establishes nothing. A single-pass
+regex that deletes tag fragments can reassemble a tag, so it is also ineffective. Unknown versions/configurations are
 not treated as protected. Each source path must retain its own transformations and blockers.
 Every branch body that can fall through is explored, including `else`, `catch` and `finally`; a
 branch-only path records its condition as a precondition. When paths at one sink differ, `xss.paths`
@@ -62,9 +86,16 @@ bounded patterns include location/URL parameters, explicit DOM/window events, ve
 text, URL and string-code sinks, imported jQuery, React JSX, Vue single-file script/template output,
 and Angular injected sources/trust APIs with template bindings. An unlinked trust bypass is Review.
 A browser output that reads an API response field is linked to its origin only when exactly one server
-route matches the request method and path pattern and its JSON response provides that field from request
-data, including writes inside promise continuations. Stored or token origins behind a producer, and
-collection/component/dialog aliases, are not yet linked; those records stay Review.
+route or finale-rest resource matches the request method and path pattern and provides that field, from
+request data or a storage column with an established write. Each browser path keeps its own field, and
+`map((r) => r.field)` in a service method projects the response.
+
+Angular links are bounded by source edges, never by field name alone. A trusted field reaches a template
+through an iteration variable only when the template declares it (`let row`), and also through gallery
+`args`. A dialog is linked only when its template renders `MAT_DIALOG_DATA` at that field, a component
+opens that dialog, and that component's selector appears in the template of the component that trusted
+the value. A verified `jwt-decode` claim links to a model field only when a verified `jsonwebtoken` sign
+call holds that model at the same claim path. Unmatched claims and fields stay Review.
 
 Literal `addEventListener` registrations for `click`, `input`, `change`, `submit` and
 `message` on verified DOM/window bindings have explicit event entries. Inline callbacks and
@@ -119,8 +150,8 @@ Unknown middleware and unsupported paths remain visible. No output or finding is
 HTML has separate Server/API and Browser/client headings. Hide protected results changes the view
 only; canonical JSON/SARIF retain all records. Reusable source-reviewed sample references belong in
 [the sample baseline documentation](../samples/reference-policy.md), outside detector/model inputs.
-The shared facts use language-neutral source/context/protection/storage/entry fields. The [Python adapter](../python-support.md) supplies those facts for bounded Flask/Jinja/FastAPI
-flows and literal inline browser scripts. Unresolved renderer settings, template constructs and
+The shared facts use language-neutral source/context/protection/storage/entry fields. The [Python adapter](../python-support.md) supplies those facts for bounded Flask, Quart, FastAPI,
+Django, Pyramid, Bottle, aiohttp, Falcon, WSGI and Jinja flows and literal inline browser scripts. Unresolved renderer settings, template constructs and
 storage origins remain Review.
 
 Finite Express table registrations and local literal-argument handler factories retain separate

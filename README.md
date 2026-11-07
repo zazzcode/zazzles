@@ -220,6 +220,9 @@ to each saved scan, rather than automatically reflecting the latest scanner.
 | **Vulnerable TypeScript app** | Full judged scan: `/api/ping` command injection, search XSS, logging and unresolved SQL questions | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [HTML](docs/samples/vulnerable-typescript-app/findings.html) · [JSON](docs/samples/vulnerable-typescript-app/findings.json) · [SARIF](docs/samples/vulnerable-typescript-app/findings.sarif) |
 | **VulnPy** | Command injection across 11 Python framework adapters (61 contexts) plus SQL and XSS; input validation not used for this run | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [HTML](docs/samples/vulnpy/findings.html) · [JSON](docs/samples/vulnpy/findings.json) · [SARIF](docs/samples/vulnpy/findings.sarif) |
 
+These saved reports predate the latest XSS hardening. The [sample application list](.zazz/project/vulnerable-sample-apps.md)
+has current results, including vuln-demo-app.
+
 **View in browser** opens the GitHub Pages copy. You can also download an HTML file and open it
 locally. GitHub's file view displays the HTML source.
 
@@ -236,15 +239,16 @@ at declared limits. Unresolved behavior remains visible.
 
 | Analysis area | Implemented coverage |
 |---|---|
-| **Cross-site scripting (XSS)** | Supported server responses and templates, stored-value traces, DOM/framework sinks and selected server-to-browser links |
-| **SQL injection** | Verified query construction and value binding, including Sequelize and selected Python DB-API patterns |
+| **Cross-site scripting (XSS)** | Supported server responses and templates, stored-value traces, DOM/framework sinks and selected server-to-browser links, including REST resources, Angular dialogs and JWT claims |
+| **SQL injection** | Verified query construction and value binding, including Sequelize, sql.js and selected Python DB-API patterns |
 | **NoSQL injection** | Supported JavaScript/TypeScript selectors and executable `$where` expressions |
 | **Input validation** | Source-backed field requirements and enforcing guards, assessed separately from operation protection |
 | **Sensitive-data logging** | Request data and credentials reaching verified loggers |
 | **Outbound requests** | Unverified JS/TS `fetch`/`axios` call observations and supported Python URL-operand tracking. Complete SSRF assessment is planned |
 | **Reports** | Source evidence, assessment state and claim results in JSON, standalone HTML and SARIF |
 
-XSS support includes selected EJS, Handlebars, Pug, Jinja, jQuery, React, Vue and Angular patterns.
+XSS support includes selected EJS, Handlebars, Pug, Jinja, jQuery, React, Vue and Angular patterns, and Python
+HTML responses for Flask, Quart, FastAPI, Django, Pyramid, Bottle, aiohttp, Falcon and WSGI.
 Protection depends on the output context and modeled paths. See the
 [XSS guide](docs/analysis/xss.md) and [Python coverage guide](docs/python-support.md) for details.
 
@@ -268,7 +272,9 @@ per-language checklist and delivery order.
 - **NoSQL Injection Analyzer:** supported JavaScript/TypeScript cases; Python remains pending.
 - **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
 - **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
-  JS/TS API-to-browser links and Python inline-script analysis.
+  JS/TS API-to-browser links and Python inline-script analysis. Every source-reviewed XSS in the five
+  [primary sample applications](.zazz/project/vulnerable-sample-apps.md) is a confirmed finding; see the
+  [results](.zazz/evaluation/xss-hardening-results.md).
 
 Supporting infrastructure and knowledge:
 
@@ -281,8 +287,7 @@ Supporting infrastructure and knowledge:
 
 ### Planned analyzers and other work
 
-- **Harden XSS analyzers (next analyzer task):** expand renderer, helper, stored-origin and cross-tier coverage.
-- **Additional planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
+- **Planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
   Open Redirect Analyzer, Weak Randomness Analyzer, Cookie/Session/Header Configuration Analyzer,
   SSRF Analyzer and JS/TS Prototype Pollution Analyzer.
 - **Python coverage completion:** add NoSQL and API-to-browser linkage before dependency auditing.
@@ -303,9 +308,10 @@ analysis, downloadable packs and an external plugin system remain separate work.
 
 Future capabilities need vulnerable, protected and unknown controls across applicable supported
 languages. Broader evaluation continues against independent source expectations and pinned comparison
-tools. VulnPy's generated Flask/FastAPI SQL and raw-HTML paths are now traced and assessed; its
-separate Jinja path remains a coverage gap. The [sample reference](docs/samples/vulnpy/reference.md)
-distinguishes those results from the preserved historical baseline.
+tools. VulnPy's generated SQL paths and its raw-HTML and Jinja paths are traced and assessed across its
+framework adapters. The [sample reference](docs/samples/vulnpy/reference.md) records the preserved historical
+baseline. The [sample application list](.zazz/project/vulnerable-sample-apps.md) gives each application's
+source, expected findings and current scanner results.
 
 ## Goal: an assessment and remediation loop for agents
 

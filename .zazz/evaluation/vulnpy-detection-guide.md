@@ -56,6 +56,10 @@ evidence than the mere word “sqli” in a filename. They were inspected, not e
 | VP-XSS-FASTAPI | user_input query parameter → generated xss/raw view → concatenation at fastapi/vulnerable.py:42 → HTMLResponse at 44 | Reflected XSS |
 | VP-XSS-JINJA | apps/flask_app.py query input at 20 → template.render at 19 → apps/templates/jinja/xss.html | Raw template-output XSS; the environment has no autoescape setting and the template explicitly uses safe |
 
+**Correction, 2026-11-07:** the same raw concatenation exists in the quart, django, django-asgi, falcon,
+falcon-asgi, bottle, pyramid, aiohttp and wsgi adapters. The [XSS matrix](xss-hardening/matrix.json) lists
+every adapter; the three cases above stay as written.
+
 `trigger/xss.py:do_raw` returns an empty string; it is not the actual HTML sink. The vulnerable
 markup is assembled by the framework adapter. The framework tests assert that input appears in
 that output, but their ordinary marker is not itself a browser exploit test.

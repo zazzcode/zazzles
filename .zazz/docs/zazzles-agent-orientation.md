@@ -16,6 +16,12 @@ when to load supporting guides. Keep this document under 400 lines; link to deta
 
 ## Current work
 
+**XSS hardening, 2026-11-07:** implemented in the `xss-hardening` worktree under the
+[contract](../specifications/xss-hardening.md). All 28 required cases across five apps are confirmed and all controls
+hold; read the [results](../evaluation/xss-hardening-results.md) and [matrix](../evaluation/xss-hardening/matrix.json).
+sql.js SQL candidates are verified offline only; 10 Juice Shop SQL/NoSQL records need a fresh judgment after `try`
+control modeling. The paid-scan authorization covered the XSS loop only. Human review is pending; no merge or integration push is authorized.
+
 **Node input refactor, 2026-11-07:** bounded Express/Fastify/Hapi acquisitions now feed transport-neutral
 origin/type/transfer facts and a generic Mongoose lookup contract. Existing GraphQL/gRPC can carry the
 same records. Optional model-assisted discovery remains outside trusted flow until independently
@@ -32,7 +38,7 @@ Four full judged scans (OpenAI Decisions `gpt-6-luna`) confirmed every required 
 Goof `POST /create`, both VulnPy core sinks in all 11 framework adapters and the five app witnesses; Juice Shop's
 source-reviewed zero-positive controls were clean. VulnPy ran with `--skip-family input-validation` (a standard option;
 the report states the analyzer was not used). Human review is pending; no merge or integration push is authorized.
-**Next analyzer task: Harden XSS analyzers** (use the XSS results/handoff below). The earlier paid-scan restrictions
+The earlier paid-scan restrictions
 below apply to later work again: no new paid calls without explicit authorization.
 
 **Component refactor, 2026-11-06:** SQL, NoSQL, standalone validation, XSS and outbound observations
@@ -227,6 +233,7 @@ in these files independently of chat attachments.
 | [Design proposal](../project/03-jev-design-proposal.md) | Rationale, supplied concepts, graph/library choices, decision register |
 | [Jev research](../project/04-jev-validation-research.md) | Capability evidence, limitations, evaluation protocol |
 | [Prior art and feasibility](../project/05-prior-art-and-feasibility.md) | Novelty assessment, pinned Bearer study, engineering risks |
+| [Vulnerable sample applications](../project/vulnerable-sample-apps.md) | Sample app sources, pins, expected findings and current scanner results |
 | [Implementation plan](../project/implementation-plan.md) | Near-term route/string sequence, then long-term phases and backlog |
 | [Route validation assessment](../project/06-route-validation-assessment.md) | Verified Juice Shop evidence, gaps, architecture review, bounded next scope |
 | [Registration validation case](../project/07-registration-validation-case.md) | Next field-constraint case: middleware/guard bypass, generated persistence, evidence and judge questions |

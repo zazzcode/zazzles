@@ -28,9 +28,9 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	if v, ok := f.frameworkCall(n, q, nodes, values, all); ok {
 		return v
 	}
-	if v, ok := f.commandCall(n, fn); ok {
-		return v
-	}
+	// Recording a process candidate is additive: the call is then handled exactly as
+	// before, so existing candidates, gaps and identities are unchanged.
+	f.commandCall(n, fn)
 
 	if receiver.binding == "db_connection" && method == "cursor" {
 		return pythonValue{binding: "db_cursor", driver: receiver.driver, evidence: append(receiver.evidence, m.evidence("sink_binding", n))}

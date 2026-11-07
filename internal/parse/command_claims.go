@@ -40,8 +40,28 @@ func commandFields(u analysis.CandidateUse, entry analysis.EntryPoint) []string 
 // language adapter. Language adapters supply blockers, guard evidence and
 // supported-transfer evidence they established from source.
 func commandCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
+	// Control-kind evidence in a command use must not become an applicable control
+	// of the shared invocation context: that would change the invocation identity
+	// and every existing sibling candidate ID. The kinds are namespaced here and
+	// restored as role names below.
+	for i, e := range u.Context {
+		switch e.Kind {
+		case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
+			u.Context[i].Kind = "command_" + e.Kind
+		}
+	}
+	roles := evidenceRoles(u.Context)
+	for kind, items := range roles {
+		if strings.HasPrefix(kind, "command_") {
+			switch strings.TrimPrefix(kind, "command_") {
+			case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
+				roles[strings.TrimPrefix(kind, "command_")] = append(roles[strings.TrimPrefix(kind, "command_")], items...)
+				delete(roles, kind)
+			}
+		}
+	}
 	c := &analysis.Completeness{ClaimKind: "command_execution", Required: append([]string{}, commandRequiredRoles...),
-		Evidence: evidenceRoles(u.Context), Blockers: blockers, Coverage: coverage, Scope: commandScope}
+		Evidence: roles, Blockers: blockers, Coverage: coverage, Scope: commandScope}
 	if c.Blockers == nil {
 		c.Blockers = []analysis.Gap{}
 	}

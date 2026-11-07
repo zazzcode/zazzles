@@ -2,9 +2,28 @@
 
 [Architecture](../architecture.md#7-evidence-bundle-contract) · [Evidence and claims](evidence-and-claims.md)
 
+## Acquisition and semantic reasoning boundary
+
+Node requests can additionally carry versioned transport-neutral input facts. Initial and sink types
+are distinct, and transformations, lifecycle stages and control source references share the existing
+deduplicated evidence table. The optional `source.node-input-v1` component supplies interpretation
+only to Node candidates carrying these facts, preserving unchanged Python request material. Mongoose
+operation semantics do not depend on Express, Fastify, Hapi or HTTP parameter syntax.
+
+The judge evaluates supplied application controls; policy still requires complete source/binding/path
+evidence and consistent per-path conclusions. An unknown effect with source present can be assessed;
+a missing implementation cannot be filled by confidence. Native coercions apply only to their exact
+outputs. Scalar operand evidence contradicts an unsupported ObjectId operator-injection answer.
+
+`node-route-discovery-v1` is a separate choice protocol, source inventory and budget, with exact-request
+replay and no fallback/retry. It proposes registration/handler relationships and attached middleware
+alternatives. Its answers cannot mutate the trusted graph. The engine validates snapshots and known
+dispatch independently; unresolved alternatives remain explicit provisional coverage in all reports.
+Historical responses remain bound to their exact old request; fresh Node input facts invalidate replay.
+
 ## Implemented evidence contract
 
-`internal/judge/bundle.go` emits `evidence_version: 3` for every language adapter. The
+`internal/judge/bundle.go` emits `evidence_version: 6` for every language adapter. The
 wire format contains a deduplicated source-evidence table, candidate/entry identity,
 explicit invocation identity, typed entry/dispatch metadata, actual input/control bindings,
 ordered dependency witnesses, an explicit trace graph, control edges, evidence-role

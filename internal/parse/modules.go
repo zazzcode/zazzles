@@ -17,21 +17,25 @@ type importBinding struct {
 }
 type sourceModule struct {
 	contractBindings map[string]bool
-	commentsReady    bool
-	comments         []sourceComment
-	browserGlobals   map[string]analysis.Evidence
-	file             string
-	src              []byte
-	hash             string
-	tree             *sitter.Tree
-	funcs            map[string]*sitter.Node
-	exports          map[string]*sitter.Node
-	imports          map[string]importBinding
-	express          map[string]bool
-	receivers        map[string]bool
+	// commandNames holds CommonJS destructured child_process members. They are
+	// kept apart from imports so no other analyzer's module resolution changes.
+	commandNames   map[string]importBinding
+	commentsReady  bool
+	comments       []sourceComment
+	browserGlobals map[string]analysis.Evidence
+	file           string
+	src            []byte
+	hash           string
+	tree           *sitter.Tree
+	funcs          map[string]*sitter.Node
+	exports        map[string]*sitter.Node
+	imports        map[string]importBinding
+	express        map[string]bool
+	receivers      map[string]bool
 }
 
 type moduleSet struct {
+	nodeHTTP       map[string]*nodeHTTPContext
 	graphqlRecords int
 	grpcRecords    int
 	grpcProtos     map[string]grpcProtoResult
@@ -81,7 +85,7 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 		return nil, fmt.Errorf("no syntax tree: %s", file)
 	}
 	m := &sourceModule{file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree,
-		funcs: map[string]*sitter.Node{}, exports: map[string]*sitter.Node{}, imports: map[string]importBinding{}, express: map[string]bool{}, receivers: map[string]bool{}}
+		funcs: map[string]*sitter.Node{}, exports: map[string]*sitter.Node{}, imports: map[string]importBinding{}, express: map[string]bool{}, receivers: map[string]bool{}, commandNames: map[string]importBinding{}}
 	s.modules[file] = m
 	top := tree.RootNode()
 	for i := uint(0); i < top.NamedChildCount(); i++ {
@@ -111,6 +115,9 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 				d := n.NamedChild(j)
 				name := d.ChildByFieldName("name")
 				v := d.ChildByFieldName("value")
+				if name != nil && v != nil && name.Kind() == "object_pattern" {
+					m.readCommandDestructuring(name, v, d)
+				}
 				if name == nil || v == nil || name.Kind() != "identifier" {
 					continue
 				}

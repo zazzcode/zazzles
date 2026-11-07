@@ -1,0 +1,8 @@
+syntax = "proto3";
+package fixtures.cmd;
+message Request { string host = 1; }
+message Reply { string result = 1; }
+service PingService {
+ rpc Ping(Request) returns (Reply);
+ rpc Fixed(Request) returns (Reply);
+}

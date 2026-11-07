@@ -40,9 +40,9 @@ func readsInput(n *sitter.Node, src []byte, names map[string]bool, fields []stri
 		// A request's different fields are separate dependencies. Whole-body access
 		// remains relevant, while a password-only operation cannot validate email.
 		for name := range names {
-			if strings.HasPrefix(text, name+".body.") || strings.HasPrefix(text, name+".query.") {
+			if strings.HasPrefix(text, name+".body.") || strings.HasPrefix(text, name+".payload.") || strings.HasPrefix(text, name+".query.") {
 				for _, field := range fields {
-					if text == name+".body."+field || text == name+".query."+field || strings.HasPrefix(text, name+".body."+field+".") {
+					if text == name+".body."+field || text == name+".query."+field || text == name+".payload."+field || strings.HasPrefix(text, name+".body."+field+".") {
 						return true
 					}
 				}

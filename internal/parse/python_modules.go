@@ -39,6 +39,10 @@ type pythonSet struct {
 	text          *moduleSet
 	writes        map[string][]pythonWrite
 	staticInvalid map[string]bool
+	// tampered caches command-API shadowing and monkey-patch facts.
+	tampered map[string]bool
+	// dynamicMembers records setattr(module, name, value) registrations.
+	dynamicMembers map[string]map[string]*pythonStaticValue
 }
 
 func newPythonSet(root string) (*pythonSet, error) {

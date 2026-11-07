@@ -15,6 +15,7 @@ const (
 	NoSQLProtocol      = "nosql-components-v1"
 	ValidationProtocol = "validation-components-v1"
 	XSSProtocol        = "xss-components-v1"
+	// CommandProtocol is declared in command.go.
 )
 
 // Family registers one claim family's selection contract. Registrations are
@@ -112,6 +113,15 @@ func Families() []Family {
 			PolicyOwner: "internal/judge/policy.go",
 		},
 		{
+			Name: "command", Label: "Command execution", Kinds: []string{"command_execution_candidate"}, QuestionNames: commandQuestionNames(),
+			Languages:      []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python},
+			Entries:        []string{"entry.http", "entry.graphql", "entry.grpc"},
+			RequiresAPI:    true,
+			PythonHTTPOnly: true,
+			Pack:           "pack.command", Claim: "claim.command", Evidence: "evidence.command",
+			PolicyOwner: "internal/judge/command.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python},
 			// A standalone field claim needs an explicit/source-backed
@@ -155,6 +165,8 @@ func familyProtocol(name string) string {
 		return NoSQLProtocol
 	case "validation":
 		return ValidationProtocol
+	case "command":
+		return CommandProtocol
 	}
 	return ""
 }
@@ -165,13 +177,18 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return SQLContract(id)
 	case "nosql":
 		return NoSQLContract(id)
+	case "command":
+		return CommandContract(id)
 	}
 	return nil
 }
 
 func contractIDs(f *Family) []string {
-	if f.Name == "sql" {
+	switch f.Name {
+	case "sql":
 		return sqlContractIDs
+	case "command":
+		return commandContractIDs
 	}
 	return noSQLContractIDs
 }
@@ -211,6 +228,9 @@ func flowID(f *Family) string {
 	}
 	if f.Name == "xss" {
 		return "flow.xss"
+	}
+	if f.Name == "command" {
+		return "flow.command"
 	}
 	return "flow.local"
 }

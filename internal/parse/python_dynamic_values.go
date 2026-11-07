@@ -11,6 +11,12 @@ import (
 
 func (f *pythonStatic) lookup(name string) *pythonStaticValue {
 	if f.set.staticInvalid[f.module.file+":"+name] {
+		// A framework receiver bound by an earlier statement is exact at this
+		// program point when every other assignment comes textually later
+		// (for example a conditional middleware wrapper).
+		if v, ok := f.env[name]; ok && v.receiver && v.kind != "" && f.laterAssignmentsOnly(name) {
+			return v
+		}
 		return staticUnknown()
 	}
 	if v, ok := f.env[name]; ok {
@@ -85,6 +91,8 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 			v.keys[k.text] = k.evidence
 		}
 		return v
+	case "class_definition":
+		return f.classValue(n)
 	case "call":
 		return f.call(n)
 	case "attribute":
@@ -94,10 +102,20 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 			h := *f
 			h.module = obj.module
 			h.env = map[string]*pythonStaticValue{}
-			return h.lookup(key)
+			v := h.lookup(key)
+			if !v.known && v.fn == nil && v.module == nil && strings.HasSuffix(obj.module.file, "__init__.py") {
+				// pkg.sub after `import pkg.sub`: the submodule is an attribute of its package.
+				if sub := f.set.importModule(obj.module, "."+key); sub != nil {
+					return &pythonStaticValue{module: sub, known: true}
+				}
+			}
+			return v
 		}
 		return staticUnknown()
 	case "subscript":
+		if pyText(m, n.ChildByFieldName("value")) == "sys.modules" && pyText(m, n.ChildByFieldName("subscript")) == "__name__" && f.set.qualified(m, "sys.modules") == "sys.modules" {
+			return &pythonStaticValue{module: m, known: true}
+		}
 		base := f.eval(n.ChildByFieldName("value"))
 		idx := n.ChildByFieldName("subscript")
 		if idx == nil {
@@ -186,6 +204,10 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 	case "binary_operator":
 		a, b := f.eval(n.ChildByFieldName("left")), f.eval(n.ChildByFieldName("right"))
 		if a.known && b.known && pyText(m, n.ChildByFieldName("operator")) == "+" {
+			if a.items != nil && b.items != nil {
+				out := &pythonStaticValue{known: true, tainted: new(bool), items: append(append([]*pythonStaticValue{}, a.items...), b.items...)}
+				return out
+			}
 			return staticText(a.text + b.text)
 		}
 	}
@@ -304,6 +326,8 @@ func (f *pythonStatic) method(n *sitter.Node, base *pythonStaticValue, method st
 	}
 	if base.known {
 		switch method {
+		case "title":
+			return staticText(pythonTitle(base.text)), true
 		case "format":
 			text := base.text
 			for _, a := range args {
@@ -342,8 +366,14 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 		return args[i].text, true
 	}
 	switch q {
-	case "flask.Flask", "flask.Blueprint", "fastapi.FastAPI", "fastapi.APIRouter":
+	case "falcon.API", "falcon.App", "falcon.asgi.App":
+		return &pythonStaticValue{receiver: true, kind: "falcon"}, true
+	case "flask.Flask", "flask.Blueprint", "fastapi.FastAPI", "fastapi.APIRouter", "quart.Quart", "quart.Blueprint":
 		return &pythonStaticValue{receiver: true}, true
+	case "bottle.Bottle":
+		return &pythonStaticValue{receiver: true, kind: "bottle"}, true
+	case "pyramid.config.Configurator":
+		return &pythonStaticValue{receiver: true, kind: "pyramid", routes: map[string]string{}}, true
 	case "os.path.dirname", "os.path.basename":
 		a, ok := arg(0)
 		if !ok {
@@ -396,6 +426,8 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 			return &pythonStaticValue{module: m, known: true}, true
 		}
 		return staticUnknown(), true
+	case "inspect.isclass":
+		return staticBool(len(args) == 1 && args[0].class != nil), true
 	case "inspect.getmembers":
 		if len(args) != 1 || args[0].module == nil {
 			return staticUnknown(), true
@@ -408,13 +440,36 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 		for name := range m.imports {
 			names = append(names, name)
 		}
+		for name, node := range m.vars {
+			if node != nil && node.Kind() == "class_definition" {
+				names = append(names, name)
+			}
+		}
+		for name := range f.set.dynamicMembers[m.file] {
+			names = append(names, name)
+		}
 		sort.Strings(names)
 		out := &pythonStaticValue{known: true, tainted: new(bool), items: []*pythonStaticValue{}}
 		for _, name := range names {
 			h := *f
 			h.module = m
 			h.env = map[string]*pythonStaticValue{}
-			v := h.lookup(name)
+			var v *pythonStaticValue
+			if m.imports[name].node != nil && m.funcs[name] == nil {
+				// An imported variable is not evaluated per enumeration (a registry such as
+				// TRIGGER_MAP is costly); imported functions and modules still resolve.
+				target, key := f.set.resolve(m, name, 0)
+				if target != nil && (key == "" || target.funcs[key] != nil) {
+					v = h.lookup(name)
+				} else {
+					v = staticUnknown()
+				}
+			} else {
+				v = h.lookup(name)
+			}
+			if dyn := f.set.dynamicMembers[m.file][name]; dyn != nil {
+				v = dyn
+			}
 			key := staticText(name)
 			if v.fn != nil {
 				key.evidence = []analysis.Evidence{v.module.evidence("registry_member", v.fn)}
@@ -422,6 +477,18 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 			out.items = append(out.items, &pythonStaticValue{known: true, items: []*pythonStaticValue{key, v}})
 		}
 		return out, true
+	}
+	if q == "setattr" && f.module.vars["setattr"] == nil && f.module.imports["setattr"].node == nil {
+		if len(args) == 3 && args[0].module != nil && args[1].known {
+			if f.set.dynamicMembers == nil {
+				f.set.dynamicMembers = map[string]map[string]*pythonStaticValue{}
+			}
+			if f.set.dynamicMembers[args[0].module.file] == nil {
+				f.set.dynamicMembers[args[0].module.file] = map[string]*pythonStaticValue{}
+			}
+			f.set.dynamicMembers[args[0].module.file][args[1].text] = args[2]
+		}
+		return staticUnknown(), true
 	}
 	if q == "getattr" && f.module.vars["getattr"] == nil && f.module.imports["getattr"].node == nil {
 		if len(args) == 2 && args[0].module != nil && args[1].known {
@@ -433,4 +500,52 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 		return staticUnknown(), true
 	}
 	return nil, false
+}
+
+// laterAssignmentsOnly reports that, apart from its first binding, every
+// assignment to name in the module starts after the statement being interpreted.
+func (f *pythonStatic) laterAssignmentsOnly(name string) bool {
+	first := true
+	ok := true
+	pyWalk(f.module.tree.RootNode(), func(n *sitter.Node) {
+		if n.Kind() != "assignment" && n.Kind() != "augmented_assignment" {
+			return
+		}
+		left := n.ChildByFieldName("left")
+		if left == nil || left.Kind() != "identifier" || pyText(f.module, left) != name {
+			return
+		}
+		if first {
+			first = false
+			return
+		}
+		if n.StartByte() <= f.pos {
+			ok = false
+		}
+	})
+	return ok
+}
+
+func (f *pythonStatic) classValue(n *sitter.Node) *pythonStaticValue {
+	c := &staticClass{module: f.module, node: n, closure: staticEnv(f.env)}
+	if supers := n.ChildByFieldName("superclasses"); supers != nil {
+		for i := uint(0); i < supers.NamedChildCount(); i++ {
+			c.bases = append(c.bases, f.eval(supers.NamedChild(i)))
+		}
+	}
+	return &pythonStaticValue{known: true, class: c}
+}
+
+// pythonTitle follows str.title: letters after a non-letter are capitalized.
+func pythonTitle(s string) string {
+	out := []rune(strings.ToLower(s))
+	boundary := true
+	for i, r := range out {
+		isLetter := r >= 'a' && r <= 'z'
+		if isLetter && boundary {
+			out[i] = r - 32
+		}
+		boundary = !isLetter
+	}
+	return string(out)
 }

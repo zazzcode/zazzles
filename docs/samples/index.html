@@ -3,9 +3,10 @@
 <h1>Explore scan findings</h1>
 <p>Expand routes for source evidence and remediation. These evolving examples include incomplete analysis; they are not complete security assessments.</p>
 <ul>
-<li><a href="juice-shop/findings.html">OWASP Juice Shop report</a> — server/API and browser/client sections, including the DOM/Angular XSS finding.</li>
-<li><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app report</a> — reflected search-response XSS plus validation, outbound and logging review.</li>
-<li><a href="nodejs-goof/findings.html">Node.js Goof report</a> — reflected/stored XSS, NoSQL, validation and logging; five saved Luna decisions.</li>
+<li><a href="juice-shop/findings.html">OWASP Juice Shop report</a> — full judged scan: server/API and browser/client sections, XSS, query and logging findings; no direct command-injection positive (source-reviewed).</li>
+<li><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app report</a> — full judged scan: the <code>/api/ping</code> command injection, reflected XSS and logging, plus validation and outbound review.</li>
+<li><a href="vulnpy/findings.html">VulnPy report</a> — command injection in all 11 framework adapters (61 contexts), SQL and XSS; input validation was not used for this run; published copy omits the unjudged records.</li>
+<li><a href="nodejs-goof/findings.html">Node.js Goof report</a> — full judged scan: the <code>POST /create</code> regex-capture command injection, XSS, NoSQL, validation and logging.</li>
 <li><a href="ThreatByte/findings.html">ThreatByte Python report</a> — Flask/RESTX, SQL, reflected/stored/DOM XSS and protected controls.</li>
 <li><a href="python-insecure-app/findings.html">Python insecure app report</a> — FastAPI HTML/template construction.</li>
 <li><a href="vulnerable-flask-app/findings.html">Erlik 2 Flask report</a> — SQL and raw responses, with logging and unknown-flow review.</li>

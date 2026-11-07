@@ -95,13 +95,43 @@ A function call alone does not prove that an input reaches a sensitive operation
 handlers and entries with no discovered uses remain visible in coverage reporting.
 A protected claim applies to the stated operation and scope, not the entire entry or application.
 
+### Acquisition, value facts and sink contracts
+
+Input acquisition and sink security are separate layers. Node.js HTTP adapters for Express, Fastify
+and Hapi identify registrations and request inputs. Shared, transport-neutral facts record origin,
+initial type, type at the sink, transformations and supplied hooks/schema code. Existing GraphQL
+and unary gRPC entries can carry the same facts without assuming that declarations enforce types.
+The same Mongoose, SQL and process contracts consume the evidence; the judge assesses application
+controls and deterministic policy checks completeness and consistency. A schema's presence is not
+protection. Python keeps its existing adapters; its migration is [proposed separately](PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+
+Optional `--discover-routes --discovery-limit N`, used with `--analyze --judge`, asks the selected model
+to select source-backed Node route/handler alternatives. Discovery has a separate additional request
+cap and no retries. The engine checks the exact source and existing dispatch binding. Unfamiliar
+wrappers remain provisional coverage records in JSON, HTML and SARIF; suggestions do not create
+trusted reachability or vulnerability findings. Queue acquisition remains future work. See the
+[Node input guide](docs/analysis/node-inputs.md) for supported syntax, limits and usage.
+
 <a id="analysis-components"></a>
 
-### Analysis packs and reusable components
+<a id="analysis-packs-and-reusable-components"></a>
 
-An **analysis pack** groups reusable knowledge for a type of assessment, such as SQL injection or
-cross-site scripting (XSS). Each pack combines smaller components rather than repeating the same
-knowledge for every language and framework.
+### Analyzers, analysis packs and reusable components
+
+An **Analyzer** identifies and assesses a named security concern. Examples include:
+
+- **SQL Injection Analyzer**
+- **NoSQL Injection Analyzer**
+- **XSS Analyzer** — reflected, stored and client-side/DOM/framework analysis
+- **Input Validation Analyzer**
+- **Sensitive Data Logging Analyzer**
+- **Command Injection Analyzer** — Node `child_process` and Python `os`/`subprocess` calls: shell syntax, executable and argument facets across Express, GraphQL/gRPC and 11 Python frameworks
+
+An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
+questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use
+the **shared analysis engine** for parsing, flow tracing, evidence, judgment and reporting; each
+analyzer does not require a separate engine or package. The
+[architecture terminology](.zazz/architecture.md#analyzer-terminology) defines these boundaries.
 
 | Component | What it contributes |
 |---|---|
@@ -121,10 +151,11 @@ requirement without needing a database contract. SQL protection and field valida
 Reports record component versions and content digests so a judgment can be traced to the knowledge
 used. Saved answers can be replayed only when the exact model request still matches.
 
-SQL, JS/TS NoSQL, standalone validation and supported XSS analyses use this design. Outbound
+The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and
+supported XSS Analyzer capabilities use this design. Outbound
 observations also select components, but do not yet receive a server-side request forgery (SSRF)
-judgment; they remain Review. Logging analysis works through its existing path and is the remaining
-component migration.
+judgment; they remain Review. The Sensitive Data Logging Analyzer works through its existing path
+and is the remaining component migration.
 
 Packs ship inside the binary; downloadable packs and arbitrary project standards remain planned.
 See the [technical approach](docs/technical-approach.md#analysis-knowledge-and-components) for
@@ -166,7 +197,7 @@ Real-application evaluation for those adapters is still deferred.
 
 | Entry type | Implemented support | Important limits |
 |---|---|---|
-| **HTTP** | Express in JS/TS, plus Flask/Blueprint, RESTX and FastAPI in Python | Framework and flow support covers selected patterns |
+| **HTTP** | Express, direct Fastify and Hapi registrations in JS/TS; existing Python framework adapters | Bounded constructors/handlers and supplied lifecycle/schema context; dynamic plugins and unresolved scopes remain gaps |
 | **Browser** | Supported script/component roots and explicit DOM/window event callbacks | Event targets, callbacks and value projections must be resolvable |
 | **Dynamic HTTP routes** | Finite registrations, literal factories and supported closure/callback flows in Express and Python | Runtime generation and unresolved alternatives remain gaps |
 | **GraphQL** | Node.js Apollo resolver maps and literal schemas, with resolver argument inputs | Dynamic composition, default resolvers and subscriptions remain unsupported |
@@ -184,9 +215,10 @@ to each saved scan, rather than automatically reflecting the latest scanner.
 
 | Application | Examples in the saved report | Output |
 |---|---|---|
-| **OWASP Juice Shop** | Browser and server XSS, query construction and access-log credentials | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [HTML](docs/samples/juice-shop/findings.html) · [JSON](docs/samples/juice-shop/findings.json) · [SARIF](docs/samples/juice-shop/findings.sarif) |
-| **Node.js Goof** | Login XSS, stored Markdown XSS and protected escaped outputs | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [HTML](docs/samples/nodejs-goof/findings.html) · [JSON](docs/samples/nodejs-goof/findings.json) · [SARIF](docs/samples/nodejs-goof/findings.sarif) |
-| **Vulnerable TypeScript app** | Search XSS and unresolved SQL/logging questions | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [HTML](docs/samples/vulnerable-typescript-app/findings.html) · [JSON](docs/samples/vulnerable-typescript-app/findings.json) · [SARIF](docs/samples/vulnerable-typescript-app/findings.sarif) |
+| **OWASP Juice Shop** | Full judged scan: browser/server XSS, query construction, logging; no direct command-injection positive | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [HTML](docs/samples/juice-shop/findings.html) · [JSON](docs/samples/juice-shop/findings.json) · [SARIF](docs/samples/juice-shop/findings.sarif) |
+| **Node.js Goof** | Full judged scan: `POST /create` command injection (regex capture), XSS, NoSQL, validation and logging | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [HTML](docs/samples/nodejs-goof/findings.html) · [JSON](docs/samples/nodejs-goof/findings.json) · [SARIF](docs/samples/nodejs-goof/findings.sarif) |
+| **Vulnerable TypeScript app** | Full judged scan: `/api/ping` command injection, search XSS, logging and unresolved SQL questions | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [HTML](docs/samples/vulnerable-typescript-app/findings.html) · [JSON](docs/samples/vulnerable-typescript-app/findings.json) · [SARIF](docs/samples/vulnerable-typescript-app/findings.sarif) |
+| **VulnPy** | Command injection across 11 Python framework adapters (61 contexts) plus SQL and XSS; input validation not used for this run | [View in browser](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [HTML](docs/samples/vulnpy/findings.html) · [JSON](docs/samples/vulnpy/findings.json) · [SARIF](docs/samples/vulnpy/findings.sarif) |
 
 **View in browser** opens the GitHub Pages copy. You can also download an HTML file and open it
 locally. GitHub's file view displays the HTML source.
@@ -228,27 +260,34 @@ there is a tested subset, not complete coverage of every framework or path.
 The [project plan](.zazz/project/implementation-plan.md#future-capability-branches) owns the detailed
 per-language checklist and delivery order.
 
-### Implemented subsets
+<a id="implemented-subsets"></a>
 
-- Input validation and SQL injection analysis for supported JS/TS/Python cases.
-- NoSQL injection analysis for supported JavaScript/TypeScript cases.
-- Sensitive-data logging analysis.
-- Reflected, stored and client-side/framework XSS analysis.
-- Selected JS/TS API-to-browser XSS links and Python inline-script analysis.
+### Implemented analyzers and supporting coverage
+
+- **Input Validation Analyzer** and **SQL Injection Analyzer:** supported JS/TS/Python cases.
+- **NoSQL Injection Analyzer:** supported JavaScript/TypeScript cases; Python remains pending.
+- **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
+- **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
+  JS/TS API-to-browser links and Python inline-script analysis.
+
+Supporting infrastructure and knowledge:
+
 - Common entry/dispatch records, browser events, finite dynamic routes, GraphQL and unary gRPC.
 - SQL analysis component selection, bounded judge composition and auditable report/replay provenance.
 - NoSQL, standalone-validation and XSS component selection with independent claim protocols and replay provenance.
 - Outbound observation components, with request/body/response limits preserved and security assessment left explicit as future work.
 
-### Next and planned work
+<a id="next-and-planned-work"></a>
 
-- **Command injection:** assess process and shell execution across JS/TS/Python.
-- **XSS hardening:** expand renderer, helper, stored-origin and cross-tier coverage.
-- **Additional security families:** path traversal, code injection, XXE, open redirects, weak
-  randomness, cookie/session/header configuration, complete SSRF assessment and JS/TS prototype pollution.
+### Planned analyzers and other work
+
+- **Harden XSS analyzers (next analyzer task):** expand renderer, helper, stored-origin and cross-tier coverage.
+- **Additional planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
+  Open Redirect Analyzer, Weak Randomness Analyzer, Cookie/Session/Header Configuration Analyzer,
+  SSRF Analyzer and JS/TS Prototype Pollution Analyzer.
 - **Python coverage completion:** add NoSQL and API-to-browser linkage before dependency auditing.
 - **Audit:** dependency/advisory reporting and SBOM artifacts.
-- **Secret scanning:** distinguish private material from public keys and placeholders.
+- **Secret Scanning Analyzer:** distinguish private material from public keys and placeholders.
 - **Fix:** agent-driven remediation of Scan, Inspect and Audit issues, with verification and review.
 - **Inspect capability:** separately present standards and quality assessments using shared analysis
   components. Broader checks, report separation and their delivery priority remain to be scoped.
@@ -294,7 +333,8 @@ versioned language guidance for security assessment. Broader quality baselines a
 profiles are planned. Findings about standards need an identifiable requirement and source evidence,
 not only a model's preference.
 
-The SQL, NoSQL, standalone-validation and XSS [analysis components](docs/technical-approach.md#analysis-knowledge-and-components)
+The SQL Injection, NoSQL Injection, Input Validation and XSS Analyzers use
+[analysis packs and components](docs/technical-approach.md#analysis-knowledge-and-components) to
 organize existing knowledge with explicit versions and applicability. Broader team-standard
 components remain planned under the [standards-workflow design](.zazz/project/analysis-pack-mvp.md#standards-driven-agent-workflow).
 Deterministic checks can handle mechanical requirements. Semantic judgment can assess contextual

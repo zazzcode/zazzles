@@ -81,7 +81,7 @@ func (c *catalog) material(family *Family, s *analysis.ComponentSelection) (*Mat
 			return nil, fmt.Errorf("%s interpretation material exceeds %d byte limit", family.Label, MaxMaterialBytes)
 		}
 		switch v.Kind {
-		case "rendering_contract", "xss_interpretation":
+		case "rendering_contract", "xss_interpretation", "input_interpretation":
 			rendering = append(rendering, v.Material)
 		case "claim_questions":
 			questions, choices, err := c.claimQuestions(family)

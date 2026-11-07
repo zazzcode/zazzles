@@ -6,8 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -47,6 +45,15 @@ func New(provider, model, key string) (*Client, error) {
 		return nil, errors.New("selected judge API key is missing")
 	}
 	return c, nil
+}
+
+// UseEndpoint redirects requests to a local stub server. It exists for offline
+// verification; production code never calls it and no key is sent elsewhere.
+func (c *Client) UseEndpoint(url string, h *http.Client) {
+	c.endpoint = url
+	if h != nil {
+		c.http = h
+	}
 }
 
 type question struct{ name, instructions string }
@@ -91,43 +98,10 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 		a.Reason = "evidence payload exceeds 64 KiB limit"
 		return a
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(payload))
-	if err != nil {
-		a.Reason = "request construction failed"
+	data, reason := c.exchange(ctx, payload, trace)
+	if reason != "" {
+		a.Reason = reason
 		return a
-	}
-	req.Header.Set("Authorization", "Bearer "+c.key)
-	req.Header.Set("Content-Type", "application/json")
-	res, err := c.http.Do(req)
-	if err != nil {
-		a.Reason = "judge transport failed or deadline exceeded"
-		return a
-	}
-	defer res.Body.Close()
-	if trace != nil {
-		trace.HTTPStatus = res.StatusCode
-	}
-	if res.StatusCode != http.StatusOK {
-		if trace != nil {
-			body, _ := io.ReadAll(io.LimitReader(res.Body, 1<<20))
-			trace.ResponseBytes = len(body)
-			if json.Valid(body) {
-				trace.Response = append(json.RawMessage{}, body...)
-			}
-		}
-		a.Reason = fmt.Sprintf("judge HTTP %d", res.StatusCode)
-		return a
-	}
-	data, err := io.ReadAll(io.LimitReader(res.Body, (1<<20)+1))
-	if err != nil || len(data) > 1<<20 {
-		a.Reason = "response read failed or exceeded 1 MiB limit"
-		return a
-	}
-	if trace != nil {
-		trace.ResponseBytes = len(data)
-		if json.Valid(data) {
-			trace.Response = append(json.RawMessage{}, data...)
-		}
 	}
 	answers, model, usage, err := c.decodeQuestions(data, questionsFor(use))
 	if err != nil {
@@ -200,6 +174,10 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 	if use.Kind == "xss_candidate" {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the selected rendering contract and XSS questions to this source-to-sink claim in its output context. Supplied evidence is present, not necessarily complete or protective. Preserve independent source paths, origins, storage/response fields, control conditions and blockers. No model confidence may invent missing bindings, encoding, sanitizers, origins or coverage. JSON-only data has no rendering verdict."
+	}
+	if use.Kind == "command_execution_candidate" {
+		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
+		instruction = common + "Apply only the selected command contract and the four command questions to this source-to-process claim under the declared POSIX assumption. Shell syntax, executable selection, argument interpretation and protection coverage are separate facets: assess each from the effective operand slots in the command facts. Supplied evidence is present, not necessarily complete or protective; a guard or constraint protects only the operand, branch and invocation it dominates. Casts, annotations, length limits, blacklist replacement, exception handling and unrelated hashing are not protection. Unknown utility options are unknown, not unsafe. Do not claim runtime exploitation. No model confidence may invent missing bindings, operands, guards or coverage."
 	}
 	evidence, err := json.Marshal(struct {
 		Components         *analysis.ComponentSelection   `json:"analysis_components,omitempty"`

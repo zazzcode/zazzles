@@ -4,6 +4,26 @@
 and claim-scoped results. [Repository graph design](repository-graph.md) owns the full graph; the
 [current contract](../specifications/route-string-validation.md) owns implemented scope and acceptance.
 
+## Transport-neutral input and value evidence
+
+A source binding establishes how an external value enters a callable. It does not establish its type
+at a later sink or the safety of that sink. Shared input facts MUST preserve these separate claims:
+source origin and initial type; supplied transformations/hooks/schema code and stage ordering; type
+at the actual operand; and remaining coverage gaps. Sink contracts consume these facts without
+HTTP-path or framework-specific protection flags. A constrained value on one path cannot protect a
+sibling operand, branch, registration or invocation.
+
+Node HTTP, GraphQL and unary gRPC acquisitions can populate `InputFacts` version 1. Python migration
+is deferred; absence of these optional records does not invent new facts on historical reports.
+Source-present validators can be semantically assessed; absent helper implementations remain blockers.
+Unknown sink type is distinct from missing code. Only positive scalar evidence or source-present
+controls with consistent complete judgments can support the bounded generic ObjectId lookup claim.
+
+Model-proposed acquisition bindings are separate `discovery_proposals`. The engine rechecks selected
+manifest paths, source spans/hashes and canonical source projections. Only a match to an independently
+established registration/callable binding is verified-existing. Provisional proposals MUST NOT create
+entries, input bindings, flow edges or Protected claims. See [Node guidance](../../docs/analysis/node-inputs.md).
+
 ## Product objective
 
 Present findings in terms of **inbound route → middleware/handlers → input definitions and

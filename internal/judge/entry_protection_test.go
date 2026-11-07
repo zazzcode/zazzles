@@ -65,7 +65,13 @@ func TestEntryProtectionCoverage(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(r.Entries) != 68 || len(r.Uses) != 53 {
+		predecessorUses := 0
+		for _, u := range r.Uses {
+			if u.Kind != "command_execution_candidate" {
+				predecessorUses++
+			}
+		}
+		if len(r.Entries) != 68 || predecessorUses != 53 {
 			t.Fatal("mixed source inventory changed")
 		}
 		counts := assessEntryControls(t, r, true)

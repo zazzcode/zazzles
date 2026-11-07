@@ -14,6 +14,9 @@ func scopedGuidance(u analysis.CandidateUse, f analysis.Finding) Guidance {
 		if u.Kind == "input_validation_candidate" && u.Check != nil {
 			return Guidance{Title: "Preserve the enforced field constraints", Actions: []string{"Preserve the rejecting guard and return behavior for " + strings.Join(u.Check.Fields, ", ") + " at " + at + ". Exact policy: " + u.Check.Validation, "Test direct HTTP requests for each declared constraint and assert rejection occurs before a sensitive side effect. Do not infer SQL/XSS protection or stronger unstated requirements from this field-policy result."}, ExampleStatus: "no repair proposed for a protected field-policy claim"}
 		}
+		if u.Kind == "command_execution_candidate" {
+			return Guidance{Title: "Preserve the constrained process invocation", Actions: []string{"Preserve at " + at + " the fixed trusted executable, the disabled shell and the rejecting guard that terminates before " + u.Sink.Text + ". Keep operands as separate arguments and keep the finite set of permitted values that cannot be option or shell syntax.", "Keep regression tests for every rejected value and for each branch or invocation that reaches this call; a constraint on one operand or branch never protects another."}, ExampleStatus: "no repair proposed for a protected claim"}
+		}
 		action := "Preserve the demonstrated protection at " + at + " for this exact operation: " + u.Sink.Text
 		if u.XSS != nil {
 			action = "Preserve escaping for " + u.Sink.Text + " at " + at + " in " + u.XSS.OutputContext + ". Do not add a trust bypass or disable the verified renderer's autoescape."
@@ -25,6 +28,9 @@ func scopedGuidance(u analysis.CandidateUse, f analysis.Finding) Guidance {
 	}
 	if f.RecordType != "finding" {
 		return investigationGuidance(u, at)
+	}
+	if u.Kind == "command_execution_candidate" {
+		return commandFindingGuidance(u, at)
 	}
 	if u.Kind == "input_validation_candidate" && u.Check != nil {
 		return Guidance{Title: "Enforce the declared field policy on the server", Actions: []string{

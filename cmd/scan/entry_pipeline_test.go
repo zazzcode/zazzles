@@ -83,6 +83,9 @@ func TestMixedEntryPipeline(t *testing.T) {
 			}
 		}
 		for _, u := range r.Uses {
+			if u.Kind == "command_execution_candidate" {
+				continue // later family; this inventory freezes the predecessor families
+			}
 			if strings.HasPrefix(u.Sink.Span.File, fixture.name+"/") || fixture.source == "python/dynamic-vulnpy" && strings.HasSuffix(u.Sink.Span.File, ".py") || fixture.source == "javascript/grpc" && u.EntryKind == "grpc" {
 				nu++
 			}
@@ -91,8 +94,14 @@ func TestMixedEntryPipeline(t *testing.T) {
 			t.Errorf("%s: entries/uses %d/%d want %d/%d", fixture.name, ne, nu, fixture.entries, fixture.uses)
 		}
 	}
-	if r.SchemaVersion != analysis.ReportSchemaVersion || len(r.Entries) != 68 || len(r.Uses) != 53 {
-		t.Fatalf("mixed inventory: schema=%d entries=%d uses=%d", r.SchemaVersion, len(r.Entries), len(r.Uses))
+	predecessorUses := 0
+	for _, u := range r.Uses {
+		if u.Kind != "command_execution_candidate" {
+			predecessorUses++
+		}
+	}
+	if r.SchemaVersion != analysis.ReportSchemaVersion || len(r.Entries) != 68 || predecessorUses != 53 {
+		t.Fatalf("mixed inventory: schema=%d entries=%d uses=%d", r.SchemaVersion, len(r.Entries), predecessorUses)
 	}
 	for _, u := range r.Uses {
 		c, ok := contexts[u.InvocationContextID]

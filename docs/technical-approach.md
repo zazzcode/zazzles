@@ -173,12 +173,20 @@ broader framework coverage, deeper flow models and production workflows that Zaz
 
 ## Analysis knowledge and components
 
+An **Analyzer** is a named assessment capability, such as the **SQL Injection Analyzer** or **XSS
+Analyzer**. Its **analysis pack** supplies applicable versioned knowledge, composed from reusable
+**analysis components**. The **shared analysis engine** supplies parsing, flow/evidence, judgment and
+reporting infrastructure. Reflected, stored and client-side/DOM XSS are capabilities within the XSS
+Analyzer. These terms describe responsibilities, not separate engines or Go packages. See the
+[architecture vocabulary](../.zazz/architecture.md#analyzer-terminology) for the canonical definitions.
+
 Analysis knowledge ships in the binary: compiled language/framework and flow adapters, verified API
 contracts, embedded Analysis Guidelines, claim questions and Go evidence policy. Application `--checks`
 files supply requirements and selection; they do not add a parser or vulnerability detector. Editing
 a public analysis guide alone does not change the running judge's instructions.
 
-SQL, NoSQL, standalone validation and XSS now consume the internal component catalog. Language
+The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and XSS
+Analyzer now consume the internal component catalog. Language
 guidance, entry/flow capability references, applicable operation/rendering contracts, family questions
 and evidence obligations have
 explicit identities, versions, digests, applicability and test references. Static assembly selects
@@ -213,7 +221,7 @@ URL/body/response roles. Browser HTTP remains distinct from server request evide
 assessments return `not_run` without model requests; Preview rejects them without a body/digest.
 Schema4 remains unchanged, with catalog compatibility `outbound-observation-v1` and no outbound
 model protocol. Historical generic answers remain unchanged on export. Logging remains a follow-on
-migration. Command injection is the next new family and will use this structure. Public pack loaders, registries, executable plugins and broad
+migration. Command injection is the first new family delivered on this structure. Public pack loaders, registries, executable plugins and broad
 standards ingestion remain outside the MVP.
 
 ## Evidence for the approach

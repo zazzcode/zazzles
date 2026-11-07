@@ -209,6 +209,106 @@
   ],
   "uses": [
     {
+      "input_facts": {
+        "version": 1,
+        "acquisition": "http",
+        "framework": "express",
+        "binding": {
+          "kind": "entry_registration",
+          "text": "app.post('/login', authenticate())",
+          "span": {
+            "file": "server.ts",
+            "start_line": 4,
+            "end_line": 4,
+            "start_byte": 102,
+            "end_byte": 136
+          },
+          "sha256": "7fc7eba69407c02911fec45c7110a35c520babcdea6f788890b08e9c991fec5d"
+        },
+        "values": [
+          {
+            "dependency": 0,
+            "origin": "http.body",
+            "initial_type": "unknown",
+            "sink_type": "unknown",
+            "source": {
+              "kind": "input_source",
+              "text": "req.body.email",
+              "span": {
+                "file": "handler.ts",
+                "start_line": 3,
+                "end_line": 3,
+                "start_byte": 88,
+                "end_byte": 102
+              },
+              "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+            },
+            "transfers": [
+              {
+                "kind": "assignment",
+                "text": "email = req.body.email",
+                "span": {
+                  "file": "handler.ts",
+                  "start_line": 3,
+                  "end_line": 3,
+                  "start_byte": 80,
+                  "end_byte": 102
+                },
+                "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+              },
+              {
+                "kind": "expression",
+                "text": "${email}",
+                "span": {
+                  "file": "handler.ts",
+                  "start_line": 4,
+                  "end_line": 4,
+                  "start_byte": 157,
+                  "end_byte": 165
+                },
+                "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+              },
+              {
+                "kind": "expression",
+                "text": "`SELECT * FROM users WHERE email = '${email}'`",
+                "span": {
+                  "file": "handler.ts",
+                  "start_line": 4,
+                  "end_line": 4,
+                  "start_byte": 121,
+                  "end_byte": 167
+                },
+                "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+              },
+              {
+                "kind": "assignment",
+                "text": "query = `SELECT * FROM users WHERE email = '${email}'`",
+                "span": {
+                  "file": "handler.ts",
+                  "start_line": 4,
+                  "end_line": 4,
+                  "start_byte": 113,
+                  "end_byte": 167
+                },
+                "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+              }
+            ]
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "sink_binding_unverified",
+            "detail": "candidate API shape; library binding/argument roles require review",
+            "at": {
+              "file": "handler.ts",
+              "start_line": 5,
+              "end_line": 5,
+              "start_byte": 172,
+              "end_byte": 193
+            }
+          }
+        ]
+      },
       "analysis_components": {
         "failure": "SQL component selection needs verified API binding"
       },

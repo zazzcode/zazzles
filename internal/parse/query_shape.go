@@ -150,7 +150,7 @@ func requestFieldNode(n *sitter.Node, src []byte, req string) *sitter.Node {
 			baseProp := obj.ChildByFieldName("property")
 			if base != nil && baseProp != nil && base.Kind() == "identifier" && base.Utf8Text(src) == req {
 				switch baseProp.Utf8Text(src) {
-				case "body", "query", "params", "headers", "cookies":
+				case "body", "payload", "query", "params", "headers", "cookies":
 					found = cur
 					return
 				}
@@ -253,7 +253,7 @@ func queryKind(name string, args *sitter.Node, src []byte, values []value) strin
 }
 
 func collectionWrite(name string) bool {
-	for _, suffix := range []string{".find", ".findOne", ".update", ".updateOne", ".updateMany", ".insert", ".insertOne", ".insertMany", ".deleteOne", ".deleteMany", ".remove", ".replaceOne"} {
+	for _, suffix := range []string{".find", ".findOne", ".findById", ".update", ".updateOne", ".updateMany", ".insert", ".insertOne", ".insertMany", ".deleteOne", ".deleteMany", ".remove", ".replaceOne"} {
 		if strings.HasSuffix(name, suffix) {
 			return true
 		}

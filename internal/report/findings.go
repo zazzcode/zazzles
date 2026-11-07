@@ -10,7 +10,7 @@ import (
 // Enrich adds deterministic display records while preserving raw evidence and assessments.
 // Rebuilding from uses also lets older saved reports use the current presentation guidelines.
 func Enrich(r *analysis.AnalysisReport) {
-	r.PresentationVersion = 6
+	r.PresentationVersion = 7
 	r.FindingTypes = append([]analysis.FindingType(nil), findingTypes...)
 	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
 	for _, u := range r.Uses {
@@ -91,6 +91,8 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		describeLog(u, &f)
 	case "xss_candidate", "xss_data_candidate":
 		describeXSS(u, &f)
+	case "command_execution_candidate":
+		describeCommand(u, &f)
 	case "outbound_http_candidate":
 		f.Title = "Outbound request needs destination review"
 		f.Summary = "Scan recorded a possible outbound HTTP use. Verify the destination, request-value handling, and applicable restrictions; this is not a confirmed SSRF finding."
@@ -103,6 +105,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		f.Uncertainty += " Semantic assessment failed: " + a.Reason
 	} else if a.Status == "not_run" || a.Status == "" {
 		f.Uncertainty += " Semantic assessment was not run."
+		if strings.Contains(a.Reason, "analyzer not used for this run") {
+			f.Uncertainty += " " + a.Reason + "."
+		}
 	}
 	if a.Status == "completed" {
 		if answer := a.Answers["validation"]; answer != "" {
@@ -113,6 +118,8 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		}
 		if u.Kind == "input_validation_candidate" && u.Completeness != nil && u.Completeness.ClaimKind == "validation" {
 			f.Protection = "Field-policy enforcement: " + displayLabel(a.Protection) + ". " + a.Reason
+		} else if u.Kind == "command_execution_candidate" {
+			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "xss_candidate" {
 			f.Protection = "Decision XSS exposure: " + displayLabel(a.Answers["xss_exposure"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "log_sink_candidate" {
@@ -132,6 +139,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 				f.Status = "confirmed_vulnerability"
 				f.Title = "Sensitive data written to logs, supported by source analysis"
 				f.Summary = "The supplied source and logging-specific assessment establish that credential or personal-data content reaches log output without effective redaction. Remove it from the log or log a non-revealing fact instead."
+			}
+			if u.Kind == "command_execution_candidate" && u.Command != nil && a.QuestionVersion == analysispacks.CommandProtocol && len(a.BlockingGaps) == 0 {
+				confirmCommand(u, &f)
 			}
 			if u.Completeness != nil && u.Completeness.ClaimKind == "injection" && len(a.BlockingGaps) == 0 && (a.Answers["injection_protection"] == "vulnerable" || a.Answers["injection_protection"] == "insufficient") {
 				f.RecordType = "finding"
@@ -159,6 +169,20 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 				f.Status = "supported_potential"
 			}
 		case "protected_for_claim":
+			if u.Kind == "nosql_query_candidate" && u.APIModel != nil && u.APIModel.ID == "mongoose-path-id-objectid-v1" {
+				f.Title = "ObjectId lookup preserves the URL ID as data"
+				f.Summary = "The named URL parameter remains a primitive string. Under the pinned Mongoose 4.2.4 contract, findById casts it to ObjectId or raises a cast error without interpreting it as query operators. The source-backed assessment supports protection of this NoSQL-injection claim only."
+				f.Uncertainty = "This protection does not establish authorization or ownership checks, valid-ID error handling, business validation or safe rendering of stored content. It assumes the declared dependency and the supplied unmodified request/schema path."
+			}
+			if u.Kind == "nosql_query_candidate" && u.APIModel != nil && u.APIModel.ID == "mongoose-find-by-id-objectid-v1" {
+				f.Title = "ObjectId lookup keeps the constrained identifier as data"
+				f.Summary = "The source, transformations and supplied controls support a constrained identifier at findById. The pinned default-ObjectId contract and consistent judgment support protection of this NoSQL-injection claim. Input acquisition is separate from sink semantics."
+				f.Uncertainty = "This protection does not establish authorization, ownership, valid-ID error handling, business validation or safe stored-content rendering. Inspect the separate source/type/transfer evidence and declared dependency assumptions."
+			}
+			if u.Kind == "command_execution_candidate" {
+				f.Title = "Process operands are constrained"
+				f.Summary = "Source-backed controls and a consistent command assessment support protection of every applicable facet of this process invocation for the stated claim. Preserve the controls; this does not assess other invocations."
+			}
 			if u.Kind == "input_validation_candidate" && u.Completeness != nil && u.Completeness.ClaimKind == "validation" {
 				f.Title = "Declared field policy is enforced"
 				f.Summary = "The supplied implementation and validation assessment support enforcement of the exact named field constraints. Downstream sink protection remains a separate claim."

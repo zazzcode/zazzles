@@ -21,7 +21,7 @@ func validationSelectionUse(file string, claim bool) analysis.CandidateUse {
 }
 
 func TestFamilyComponentSelection(t *testing.T) {
-	families := map[string][]string{"sql": nil, "nosql": nil, "validation": nil, "xss": nil, "outbound": nil}
+	families := map[string][]string{"sql": nil, "nosql": nil, "validation": nil, "xss": nil, "outbound": nil, "command": nil}
 	for _, fam := range Families() {
 		if _, ok := families[fam.Name]; !ok {
 			t.Fatalf("unexpected family %s", fam.Name)
@@ -100,8 +100,8 @@ func TestFamilyComponentSelection(t *testing.T) {
 		}
 	}
 
-	// Both Mongoose contracts are distinct selectable operations.
-	for _, id := range []string{"mongoose-model-query-v1", "mongoose-model-query-v2"} {
+	// Mongoose query and path-ID contracts are distinct selectable operations.
+	for _, id := range []string{"mongoose-model-query-v1", "mongoose-model-query-v2", "mongoose-path-id-objectid-v1"} {
 		u := nosqlSelectionUse()
 		u.APIModel = NoSQLContract(id)
 		if _, err := Select(u); err != nil {

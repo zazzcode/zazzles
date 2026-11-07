@@ -1,4 +1,11 @@
-# Embedded analysis components
+# Analyzers and embedded analysis packs
+
+<a id="embedded-analysis-components"></a>
+
+The [architecture terminology](../architecture.md#analyzer-terminology) distinguishes an **Analyzer**
+(the assessment capability), its supporting **analysis pack** (versioned knowledge), reusable
+**analysis components**, and the **shared analysis engine**. Internal family registrations group
+related candidate kinds and protocols; they do not require separate engines or packages.
 
 This document owns the implemented component responsibilities, source inventory, compatibility,
 migration status and verification evidence. `internal/analysispacks` provides the shared catalog used
@@ -10,18 +17,38 @@ The [original design](../project/analysis-pack-mvp.md) records rationale; the
 work. The [database guide](../../docs/analysis/database-injection.md#query-component-selection) and
 [XSS guide](../../docs/analysis/xss.md) own product interpretation rules.
 
+## Node input interpretation and generic sink contracts
+
+`source.node-input-v1` is selected only for Node candidates carrying versioned shared input facts.
+It interprets transport-neutral origin, initial/sink type, transformations, lifecycle stages and
+source-present controls. It does not supply source edges or security verdicts. Existing Python
+material remains unchanged. Fresh Mongoose lookups use `mongoose-find-by-id-objectid-v1` for the
+verified pinned default-ObjectId operation; the historical Express-coupled contract remains readable.
+Neither a framework name nor a schema declaration establishes protection.
+
+Acquisition adapters lower bounded syntax/configuration into common evidence. The judge reasons
+about supplied application logic; Go requires complete witnesses and consistent outcomes. The
+separate `node-route-discovery-v1` protocol selects source-backed binding proposals under an explicit
+additional cap. It is not a security pack or an alternate vulnerability pipeline. The engine checks
+source snapshots and dispatch; unknown suggestions remain provisional coverage. See the
+[Node input contract](../specifications/node-http-input-refactor.md) and
+[public guidance](../../docs/analysis/node-inputs.md).
+
 ## Current implementation status
 
-SQL, JS/TS NoSQL, standalone validation, XSS and outbound observations use the shared embedded
-catalog, deterministic selection and schema-4 provenance. Static adapters establish source facts;
+The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and XSS
+Analyzer use the shared embedded catalog, deterministic selection and schema-4 provenance. Outbound
+observations also select catalog components, without implementing SSRF security assessment.
+Static adapters establish source facts;
 components select relevant guidance, contracts, questions and evidence obligations; Go judgment
 retains mandatory completeness and consistency gates. Outbound is observation-only, with no model
 questionnaire, model calls or SSRF verdict.
 
-The SQL-first MVP and migration sessions 01–03 are implemented. Logging still uses its working
-judge-owned questions and `log-use-v1` protocol outside component selection. It is the remaining
-migration of an existing family. Command injection is a new family; complete SSRF assessment,
-general Inspect, public pack loading and executable plugins remain future capabilities.
+The SQL-first MVP and migration sessions 01–03 are implemented. The Sensitive Data Logging
+Analyzer still uses its working judge-owned questions and `log-use-v1` protocol outside component selection. It is the remaining
+migration of an existing analyzer. The Command Injection Analyzer is delivered as a new capability on this structure (see the command ledger below);
+complete SSRF assessment, general Inspect, public pack loading and executable plugins remain future
+capabilities.
 
 The [fresh paid verification](#fresh-paid-component-e2e-2026-11-06) and
 [static baseline comparison](#merge-readiness-recheck-2026-11-06) record actual results and limits.
@@ -229,15 +256,15 @@ issue counts and status semantics, including a construction-practice concern bes
 
 ## Migration ledger
 
-| Family | Status | Next bounded task and acceptance controls |
+| Analyzer / supporting observations | Status | Next bounded task and acceptance controls |
 | --- | --- | --- |
-| SQL injection with query validation/construction facets | Migrated / offline verification passed | Catalog/selection, request composition, provenance and actual JS/TS/Python pipeline parity; raw, bound, constrained, unknown and context-isolation controls; `sql-components-v2` provenance after family generalization with frozen discovery hashes and outcomes |
-| Command injection | Separate next new family | Add verified process/shell contracts and command-specific questions through accepted components; positive/protected/unknown controls and unchanged other families |
-| XSS | Migrated / offline verification passed | Selected rendering/context/protection/storage/browser/response material; five unchanged named questions, mandatory origin/context/path gates, JSON-only observations, exact replay and separate bounded fetch-method correction |
-| Standalone validation | Migrated / offline verification passed | Requirement/enforcement questions and field-policy guidance selected per claim; established/absent policies, enforced/bypassed/missing guards, client-only policy, unknown helpers, API-less claims, JS/Python parity and claim isolation; no invented standards |
-| Logging | Inventoried / not migrated | Move sensitive-content/emission/redaction contracts and questions; paired leaks, metadata/constants, redaction and unknowns |
-| JS/TS NoSQL | Migrated / offline verification passed | MarsDB/Mongoose contracts, selector/`$where` guidance and all-path/coverage questions selected per claim; raw selector, constrained scalar, conditional alternatives, Mongoose schema/version, unknown helper/API, shared-caller isolation and replay controls; Python NoSQL stays unsupported |
-| Outbound requests | Migrated / offline verification passed | Scoped observation components, unchanged source/report projections and Python operand contract; explicit zero-call not_run and incomplete requested scan; no SSRF verdict |
+| SQL Injection Analyzer with query validation/construction facets | Migrated / offline verification passed | Catalog/selection, request composition, provenance and actual JS/TS/Python pipeline parity; raw, bound, constrained, unknown and context-isolation controls; `sql-components-v2` provenance after family generalization with frozen discovery hashes and outcomes |
+| Command Injection Analyzer | Implemented; offline checks and full judged scans passed | `pack.command`/`claim.command`/`evidence.command`/`flow.command`, `language.command.{javascript,python}` and four `api.*` operation contracts; four shell/executable/argument/coverage questions under `command-components-v1`; Go policy gates; predecessor requests and identities unchanged ([results](../evaluation/command-injection-results.md)) |
+| XSS Analyzer (reflected, stored and client-side/DOM/framework) | Migrated / offline verification passed | Selected rendering/context/protection/storage/browser/response material; five unchanged named questions, mandatory origin/context/path gates, JSON-only observations, exact replay and separate bounded fetch-method correction |
+| Input Validation Analyzer | Migrated / offline verification passed | Requirement/enforcement questions and field-policy guidance selected per claim; established/absent policies, enforced/bypassed/missing guards, client-only policy, unknown helpers, API-less claims, JS/Python parity and claim isolation; no invented standards |
+| Sensitive Data Logging Analyzer | Implemented; catalog migration pending | Move sensitive-content/emission/redaction contracts and questions; paired leaks, metadata/constants, redaction and unknowns |
+| NoSQL Injection Analyzer (JS/TS) | Migrated / offline verification passed | MarsDB/Mongoose contracts, selector/`$where` guidance and all-path/coverage questions selected per claim; raw selector, constrained scalar, conditional alternatives, Mongoose schema/version, unknown helper/API, shared-caller isolation and replay controls; Python NoSQL stays unsupported |
+| Outbound observations (supporting future SSRF Analyzer) | Migrated / offline verification passed | Scoped observation components, unchanged source/report projections and Python operand contract; explicit zero-call not_run and incomplete requested scan; no SSRF verdict |
 
 The user revised session grouping on 2026-11-05. Implementation order is
 [01 NoSQL plus standalone validation](../specifications/components-01-nosql-validation.md),
@@ -245,7 +272,7 @@ The user revised session grouping on 2026-11-05. Implementation order is
 [03 outbound observations](../specifications/components-03-outbound.md). Logging remains separate.
 Sessions 01–03 are implemented and offline-verified; human review remains pending.
 XSS uses coordinated server/template, stored and browser/cross-tier checkpoints. The plan tracks
-actual future sequencing; command injection remains the next new vulnerability family.
+actual future sequencing; the Command Injection Analyzer is delivered and Harden XSS analyzers is the next unfinished analyzer task.
 
 ### Extension risks recorded by source review
 
@@ -551,3 +578,14 @@ execution scratch rather than adding external-checkout dependencies to normal un
 No paid provider call, target request/application execution, sample edit, extra agent/worktree,
 PR creation or integration merge was performed. Human review and broader accuracy/coverage work
 remain pending; all outbound migration criteria remain met.
+
+## Command execution components (2026-11-07)
+
+The command family adds components without touching existing descriptors: command-only embedded guidance
+(`internal/guidelines/command*.go`, never in default language selection), the catalog-owned operation contracts
+(Node shell and argv, Python `os`, Python `subprocess`) selected only after a verified binding, and reused
+`entry.http/graphql/grpc` descriptors. Parse attaches the same selection the judge revalidates with `ForUse`;
+`CommandFacts` (operation, shell modes, ordered operands, per-path protection and controls, with index-validated
+references into the deduplicated evidence table) travel in the wire bundle. Control-kind evidence in a command use is
+namespaced so invocation identity, and therefore every existing candidate ID, is unchanged. Limits: POSIX assumption,
+bounded transfers, adapter-specific entry models (see the [public guide](../../docs/analysis/command-injection.md)).

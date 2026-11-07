@@ -23,8 +23,10 @@ type Dependency struct {
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.
 type CandidateUse struct {
+	InputFacts          *InputFacts         `json:"input_facts,omitempty"`
 	Components          *ComponentSelection `json:"analysis_components,omitempty"`
 	XSS                 *XSSFacts           `json:"xss,omitempty"`
+	Command             *CommandFacts       `json:"command,omitempty"`
 	APIModel            *APIModel           `json:"api_model,omitempty"`
 	ControlEdges        []ControlEdge       `json:"control_edges,omitempty"`
 	Check               *Check              `json:"check,omitempty"`
@@ -62,6 +64,7 @@ type Assessment struct {
 
 // AnalysisReport contains bounded security analysis, separate from the route inventory.
 type AnalysisReport struct {
+	Discovery           []DiscoveryProposal `json:"discovery_proposals,omitempty"`
 	FindingTypes        []FindingType       `json:"finding_types,omitempty"`
 	PresentationVersion int                 `json:"presentation_version,omitempty"`
 	Findings            []Finding           `json:"findings,omitempty"`
@@ -81,6 +84,9 @@ type AnalysisReport struct {
 	Files               []Evidence          `json:"files"`
 	Limitations         []string            `json:"limitations"`
 	AnalysisGuidelines  []GuidelinesRef     `json:"analysis_guidelines,omitempty"`
+	// SkippedFamilies lists analyzer families deliberately not judged in this run
+	// (--skip-family). Their records stay in the report as not_run Review.
+	SkippedFamilies []string `json:"skipped_families,omitempty"`
 }
 
 // GuidelinesRef identifies the embedded language analysis guidelines used for a report.

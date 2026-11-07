@@ -1,0 +1,6 @@
+# Source-only Apollo v4 command fixture; never executed.
+type Query {
+ ping(host: String): String
+ safe(host: String): String
+ fixed(host: String): String
+}

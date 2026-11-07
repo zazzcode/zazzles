@@ -164,6 +164,12 @@ primary user introduction. No consumer skills are implemented by this planning u
 
 ### Supported capability checklist
 
+This is the implemented-analyzer checklist. Table rows use short names under the Analyzer header. **Analyzer** names a capability; **analysis pack** names
+its supporting knowledge. The [architecture terminology](../architecture.md#analyzer-terminology)
+owns definitions. XSS rows are subcapabilities of one XSS Analyzer; adapters and linkage are supporting
+coverage. The [delivery punch list](#future-capability-branches) includes planned analyzers and
+infrastructure with stable branch IDs. Naming changes do not change completion or coverage claims.
+
 **Status update, 2026-11-02 (user).** Keep the complete list, including delivered work. A checked
 cell means a bounded implementation exists with regression/evaluation evidence; it does not promise
 all frameworks, paths or vulnerability instances are covered. An unchecked cell remains explicit work.
@@ -171,16 +177,16 @@ JavaScript, TypeScript and Python are the supported source languages. Every futu
 include extraction/models, evidence/judgment, reporting and positive/protected/unknown tests for all
 three; Python is no longer an additional-language milestone.
 
-| Capability | JavaScript | TypeScript | Python | Evidence and remaining limits |
+| Analyzer / supporting capability | JavaScript | TypeScript | Python | Evidence and remaining limits |
 |---|---|---|---|---|
-| Input validation | [x] | [x] | [x] | Source-backed field-policy and enforcing-guard claims; missing business requirements remain Review |
-| SQL injection | [x] | [x] | [x] | Verified operation/operand models and source traces; Python DB-API support is bounded |
-| NoSQL injection | [x] | [x] | [ ] | Bounded JS/TS selector/expression analysis; Python driver/model coverage remains pending |
-| Logger leaks | [x] | [x] | [x] | Sensitive-content emission and redaction judgments; whole containers/unknown sensitivity remain Review |
-| Reflected/server-output XSS | [x] | [x] | [x] | Verified response/template context and encoding; unsupported engines/configuration remain gaps |
-| Stored XSS | [x] | [x] | [x] | Bounded source/write/read/render links; exact origin/row identity is not universally resolved |
-| Client-side/DOM/framework XSS | [x] | [x] | [x] | JS/TS browser analysis also handles selected inline scripts in Python templates; not every browser framework |
-| API-to-browser XSS linkage | [x] | [x] | [ ] | Bounded JS/TS cross-tier evidence; general Python linkage remains pending |
+| Input Validation | [x] | [x] | [x] | Source-backed field-policy and enforcing-guard claims; missing business requirements remain Review |
+| SQL Injection | [x] | [x] | [x] | Verified operation/operand models and source traces; Python DB-API support is bounded |
+| NoSQL Injection | [x] | [x] | [ ] | Bounded JS/TS selector/expression analysis; Python driver/model coverage remains pending |
+| Sensitive Data Logging | [x] | [x] | [x] | Sensitive-content emission and redaction judgments; whole containers/unknown sensitivity remain Review |
+| XSS — Reflected/server output | [x] | [x] | [x] | Verified response/template context and encoding; unsupported engines/configuration remain gaps |
+| XSS — Stored | [x] | [x] | [x] | Bounded source/write/read/render links; exact origin/row identity is not universally resolved |
+| XSS — Client-side/DOM/framework | [x] | [x] | [x] | JS/TS browser analysis also handles selected inline scripts in Python templates; not every browser framework |
+| XSS — API-to-browser linkage (supporting coverage) | [x] | [x] | [ ] | Bounded JS/TS cross-tier evidence; general Python linkage remains pending |
 | Python language adapter | — | — | [x] | Delivered bounded adapter; dynamic registration/dispatch and framework parity remain explicit gaps |
 
 References: [query/validation results](../evaluation/query-validation-comparison.md),
@@ -197,7 +203,7 @@ milestone and merged through PR #8 on 2026-11-05. It supplies common entry, regi
 callable and invocation identities, with bounded browser-event, dynamic HTTP, Node.js GraphQL and
 unary gRPC support. Its [acceptance evidence](../evaluation/common-entry-dispatch-results.md)
 retains unsupported subsets and explicit gaps. The merged foundation is the baseline for the
-separate analysis pack MVP; command injection remains the next new vulnerability family.
+separate analysis pack MVP; the Command Injection Analyzer is now delivered and Harden XSS analyzers is the next analyzer task.
 
 ### Analysis pack MVP initiative
 
@@ -217,7 +223,8 @@ remains the next existing-family migration rather than a completed catalog consu
 Public pack loading, executable plugins, new rule languages, standards ingestion, general
 Inspect/Audit/Fix and expanded detection remain separate work.
 
-New command-injection implementation MUST use the accepted components in a separate bounded contract.
+The Command Injection Analyzer uses the accepted components under its
+[bounded contract](../specifications/command-injection.md); its [acceptance results](../evaluation/command-injection-results.md) are recorded.
 The follow-on migrations have separate contracts; sessions 01–03 are now complete, while logging
 remains unassigned. None is hidden cleanup in the SQL MVP:
 
@@ -249,15 +256,19 @@ The three numbered migrations are implemented and verified; live model evidence 
 coverage limits are recorded in the component ledger.
 Later migrations require assignment and MUST converge on the shared architecture without a permanent
 alternate policy path. This ordering governs these migration
-sessions; command injection remains the next new vulnerability family and other roadmap scope is
+sessions; the Command Injection Analyzer is delivered and other roadmap scope is
 unchanged. Completed verification does not authorize additional paid calls or sample changes.
 
 ### Complete delivery list
 
+This punch list uses short analyzer names in the table. **Command Injection** is delivered; **Harden XSS analyzers** is the next analyzer task, covering for the existing reflected, stored and client-side
+capabilities. Shared infrastructure and coverage-completion work are identified separately; their
+rows do not represent additional vulnerability analyzers.
+
 **Sequence decision, 2026-11-02; pack initiative added by the user on 2026-11-05:** common
 entry/dispatch with bounded dynamic-route, GraphQL and gRPC support follows Python support. Both
-that foundation and the component MVP/migration sessions are implemented. Command injection and
-separately scoped XSS hardening remain subsequent work.
+that foundation and the component MVP/migration sessions are implemented. Command injection is delivered; separately scoped XSS
+hardening is the next task.
 Keep the other planned classes. Complete Python NoSQL and API-to-browser XSS
 linkage coverage immediately before dependency vulnerability scanning (SCA), after the other planned
 vulnerability-type work. Secret scanning follows SCA. Language expansion has no fixed position
@@ -267,29 +278,29 @@ This order supersedes earlier sequence notes and the historical language-phase d
 The analysis pack MVP is explicitly assigned above. Other unchecked rows require their own bounded
 contract and implementation assignment; this plan does not authorize them. Preserve current capabilities and their unresolved coverage while implementing new ones.
 
-| Status | Branch / capability | Acceptance target or delivered reference |
-|---|---|---|
-| [x] | `input-validation` | Bounded source-backed policy/enforcement judgments; retain separate destination protection |
-| [x] | `sql-injection` | Bounded SQL construction, binding and injection judgments on verified APIs |
-| Partial | `nosql-injection` | JS/TS delivered subset; Python support remains unchecked in the language matrix |
-| [x] | `logger-leak` | Explicit sensitive logger calls, access-log URL credentials and logging-specific judgment; see the contract |
-| [x] | `xss-response` | Delivered bounded reflected, stored, browser and cross-tier analysis; retain hardening gaps rather than claiming universal coverage |
-| [x] | `python-support` | Delivered adapter and shared trace/report guardrails; same claim architecture as JS/TS |
-| [x] | `common-entry-dispatch` | Shared entry/registration/dispatch/callable model; migrate HTTP/browser consumers and add bounded dynamic-route, GraphQL resolver and gRPC handler adapters with explicit unknown controls |
-| [x] | `analysis-pack-mvp` | SQL-first embedded selection, bounded judge composition, report provenance and exact-request replay; [contract](../specifications/analysis-pack-mvp.md), [architecture/ledger](../architecture/analysis-packs.md) |
-| [ ] | `command-injection` | Request-to-process execution and protective patterns in JS/TS and Python; start with TypeScript `/api/ping` and source-reviewed Python sinks |
-| [ ] | `xss-hardening` | General renderer/configuration, factory/helper and cross-tier coverage; retain raw/escaped/unknown controls, including VulnPy's Jinja Environment/template case |
-| [ ] | `path-traversal` | Request-influenced file paths, starting with `/api/files`; include JS/TS/Python containment controls |
-| [ ] | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |
-| [ ] | `xxe` | Request-to-XML parsing and verified parser configuration across supported languages |
-| [ ] | `open-redirect` | Request-influenced redirect targets and actual destination policy |
-| [ ] | `weak-randomness` | Randomness used for security-sensitive tokens; ordinary non-security randomness stays a negative |
-| [ ] | `cookie-session-headers` | httpOnly, secure, session configuration and source-backed baseline header requirements |
-| [ ] | `ssrf-destination` | Complete judgment of existing outbound candidates, including axios.default.get; verify URL slots and restrictions |
-| [ ] | `prototype-pollution` | JS/TS object/prototype operations such as _.merge; test Python's non-applicability rather than inventing equivalent prototype semantics |
-| [ ] | `python-coverage-completion` | Complete Python NoSQL and API-to-browser XSS linkage coverage immediately before SCA; retain separate binding, origin and rendering claims with paired controls |
-| [ ] | `sca-library-audit` | Resolved dependency/advisory auditing for JS/TS npm/pnpm and Python pip-audit, with failures and reachability separate |
-| [ ] | `hardcoded-secrets` / secret scanning | Private material in source; public verification keys and placeholders remain controls |
+| Status | Analyzer / supporting capability | Branch / capability ID | Acceptance target or delivered reference |
+|---|---|---|---|
+| [x] | Input Validation | `input-validation` | Bounded source-backed policy/enforcement judgments; retain separate destination protection |
+| [x] | SQL Injection | `sql-injection` | Bounded SQL construction, binding and injection judgments on verified APIs |
+| Partial | NoSQL Injection | `nosql-injection` | JS/TS delivered subset; Python support remains unchecked in the language matrix |
+| [x] | Sensitive Data Logging | `logger-leak` | Explicit sensitive logger calls, access-log URL credentials and logging-specific judgment; see the contract |
+| [x] | XSS | `xss-response` | Delivered bounded reflected, stored, browser and cross-tier analysis; retain hardening gaps rather than claiming universal coverage |
+| [x] | Python adapter (shared infrastructure) | `python-support` | Delivered adapter and shared trace/report guardrails; same claim architecture as JS/TS |
+| [x] | Common entry/dispatch (shared infrastructure) | `common-entry-dispatch` | Shared entry/registration/dispatch/callable model; migrate HTTP/browser consumers and add bounded dynamic-route, GraphQL resolver and gRPC handler adapters with explicit unknown controls |
+| [x] | Analysis-pack catalog (shared knowledge infrastructure) | `analysis-pack-mvp` | SQL-first embedded selection, bounded judge composition, report provenance and exact-request replay; [contract](../specifications/analysis-pack-mvp.md), [architecture/ledger](../architecture/analysis-packs.md) |
+| [x] | Command Injection | `command-injection` | Delivered: verified Node/Python process contracts, shell/executable/argument facets, 11 Python framework adapters, GraphQL/gRPC contexts; four full judged scans with every independent positive confirmed ([results](../evaluation/command-injection-results.md)) |
+| [ ] | Harden XSS analyzers | `xss-hardening` | General renderer/configuration, factory/helper and cross-tier coverage; retain raw/escaped/unknown controls, including VulnPy's Jinja Environment/template case |
+| [ ] | Path Traversal | `path-traversal` | Request-influenced file paths, starting with `/api/files`; include JS/TS/Python containment controls |
+| [ ] | Code Injection | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |
+| [ ] | XXE | `xxe` | Request-to-XML parsing and verified parser configuration across supported languages |
+| [ ] | Open Redirect | `open-redirect` | Request-influenced redirect targets and actual destination policy |
+| [ ] | Weak Randomness | `weak-randomness` | Randomness used for security-sensitive tokens; ordinary non-security randomness stays a negative |
+| [ ] | Cookie/Session/Header Configuration | `cookie-session-headers` | httpOnly, secure, session configuration and source-backed baseline header requirements |
+| [ ] | SSRF | `ssrf-destination` | Complete judgment of existing outbound candidates, including axios.default.get; verify URL slots and restrictions |
+| [ ] | Prototype Pollution | `prototype-pollution` | JS/TS object/prototype operations such as _.merge; test Python's non-applicability rather than inventing equivalent prototype semantics |
+| [ ] | Python analyzer coverage completion | `python-coverage-completion` | Complete Python NoSQL and API-to-browser XSS linkage coverage immediately before SCA; retain separate binding, origin and rendering claims with paired controls |
+| [ ] | Dependency Audit (planned Audit capability) | `sca-library-audit` | Resolved dependency/advisory auditing for JS/TS npm/pnpm and Python pip-audit, with failures and reachability separate |
+| [ ] | Secret Scanning | `hardcoded-secrets` / secret scanning | Private material in source; public verification keys and placeholders remain controls |
 
 Dynamic-route reporting must not turn an unresolved factory into a fabricated concrete endpoint.
 Static/dynamic describes registration origin, not vulnerability status; both kinds can be resolved,

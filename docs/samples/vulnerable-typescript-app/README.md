@@ -1,7 +1,19 @@
 # Vulnerable TypeScript app sample
 
+## Command-injection acceptance scan (2026-11-07)
+
+The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner
+revision `6f5cb711fe06…` (no family filter; the target stayed clean at pin `7f8b240a2f02…`). It has 19 entries
+and 21 records: 3 Findings, 18 Review and 0 Protected, from
+16 provider requests (65,808 input tokens). **Command injection:** `GET /api/ping` → `src/server.ts:90` `exec(`ping -c 3 ${host}`)` is a completed, gated `confirmed_vulnerability` (shell syntax, CWE-78; the documented TS-CMDI-01).
+Observation-only and unsupported records remain visible and unassessed; no application is declared safe and no
+runtime exploitation is claimed. See the [acceptance results](../../../.zazz/evaluation/command-injection-results.md)
+and [metadata](metadata.json). Earlier sections below describe previous published snapshots and are superseded by the counts here.
+
+## Previous published snapshot
+
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
-[Source-reviewed reference](xss-answer-key.md) · [Provenance](metadata.json)
+[Expected vulnerabilities and file/line locations](../../../.zazz/evaluation/vulnerable-typescript-app-detection-guide.md) · [XSS/source controls](xss-answer-key.md) · [Provenance](metadata.json)
 
 Refreshed 2026-11-01 from the [upstream application](https://github.com/ryanmcmorrowsnyk/vulnerable-typescript-app), revision
 `7f8b240a2f02beba099da3632d1ba679ff8bc32f`, using the `xss-response` working sources and binary identified in metadata.

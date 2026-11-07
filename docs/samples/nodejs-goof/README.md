@@ -11,7 +11,23 @@ The local reference checkout is `<DEV_ROOT>/nodejs-goof`; see the
 The checkout was clean when inspected. Its README, package manifest, route registrations,
 handlers and templates supplied the initial case inventory.
 
-## Current zazzles report
+## Command-injection acceptance scan (2026-11-07)
+
+The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner
+revision `6f5cb711fe06…` (no family filter; the target stayed clean at pin `add14ba59e98…`). It has 19 entries
+and 34 records. The original full pass used
+34 provider requests (255,630 input tokens). **Command injection:** `POST /create` → `routes/index.js:174` `exec('identify ' + url)`, where `url` is the capture group of a regex over `req.body.content`, is a completed, gated `confirmed_vulnerability` (shell syntax, CWE-78).
+Observation-only and unsupported records remain visible and unassessed; no application is declared safe and no
+runtime exploitation is claimed. See the [acceptance results](../../../.zazz/evaluation/command-injection-results.md)
+and [metadata](metadata.json). Earlier sections below describe previous published snapshots and are superseded by the counts here.
+
+A later scoped NoSQL follow-up established the unmodified Express URL ID and default ObjectId casting
+for `GET /destroy/:id` and `POST /update/:id`. Two fresh Luna judgments (24,847 input tokens) marked
+those injection claims Protected; the other 32 judgments replayed exactly, including the confirmed
+command case. The current report has **4 Findings, 27 Review and 3 Protected** records. This was not
+a new full paid scan. Protection of ID lookup does not establish authorization or ownership checks.
+
+## Previous published report
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 

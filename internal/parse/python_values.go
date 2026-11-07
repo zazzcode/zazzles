@@ -130,6 +130,13 @@ func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
 		v = pyTransfer(v, m.evidence("assignment", n))
 		if left != nil && left.Kind() == "identifier" {
 			f.env[pyText(m, left)] = v
+		} else if left != nil && n.Kind() == "assignment" && (left.Kind() == "pattern_list" || left.Kind() == "tuple_pattern") {
+			// Tuple unpacking: each target conservatively inherits the whole value.
+			for i := uint(0); i < left.NamedChildCount(); i++ {
+				if target := left.NamedChild(i); target.Kind() == "identifier" {
+					f.env[pyText(m, target)] = pyTransfer(v, m.evidence("tuple_unpack", target))
+				}
+			}
 		}
 		return v
 	case "attribute", "subscript":
@@ -196,12 +203,15 @@ func (f *pythonFlow) project(n *sitter.Node) pythonValue {
 		key := pyText(m, n.ChildByFieldName("attribute"))
 		if f.qualified(pyText(m, obj)) == "flask.request" {
 			switch key {
-			case "args", "form", "values", "json", "cookies", "headers", "data":
+			case "args", "form", "values", "json", "cookies", "headers", "data", "files", "GET", "POST", "META", "_params":
 				return f.source(n, key, "")
 			}
 		}
 		if f.qualified(pyText(m, obj)) == "flask.session" {
 			return f.source(n, "session", key)
+		}
+		if f.qualified(pyText(m, obj)) == "flask.request.rel_url" && key == "query" {
+			return f.source(n, "query", "")
 		}
 		if key == "payload" && f.set.receiver(m, pyText(m, obj), 0).kind == "flask_restx" {
 			return f.source(n, "json", "")
@@ -217,6 +227,9 @@ func (f *pythonFlow) project(n *sitter.Node) pythonValue {
 	index := n.ChildByFieldName("subscript")
 	key, _ := pyLiteral(m, index)
 	v := f.eval(obj)
+	if f.route.route.Framework == "wsgi" && f.qualified(pyText(m, obj)) == "flask.request" && (key == "QUERY_STRING" || key == "PATH_INFO") {
+		return f.source(n, "environ", key)
+	}
 	if f.qualified(pyText(m, obj)) == "flask.session" {
 		return f.source(n, "session", key)
 	}
@@ -246,7 +259,20 @@ func (f *pythonFlow) projectValue(v pythonValue, key string, n *sitter.Node) pyt
 	}
 	return v
 }
+
+// qualified resolves a name to its import-qualified form. Quart's request
+// proxy has the Flask request shape, so it shares that source model.
 func (f *pythonFlow) qualified(name string) string {
+	q := f.qualifiedRaw(name)
+	for _, proxy := range []string{"quart.request", "bottle.request"} {
+		if q == proxy || strings.HasPrefix(q, proxy+".") {
+			return "flask.request" + strings.TrimPrefix(q, proxy)
+		}
+	}
+	return q
+}
+
+func (f *pythonFlow) qualifiedRaw(name string) string {
 	root := strings.Split(name, ".")[0]
 	if value, shadow := f.env[root]; shadow {
 		if value.binding == "flask_request" {

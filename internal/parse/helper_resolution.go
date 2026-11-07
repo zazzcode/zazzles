@@ -76,7 +76,7 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 			if n.Kind() == "member_expression" {
 				text := n.Utf8Text(m.src)
 				for _, f := range fields {
-					if text == f || text == req+".body."+f || text == req+".query."+f {
+					if text == f || text == req+".body."+f || text == req+".query."+f || text == req+".payload."+f {
 						relevant = true
 					}
 				}

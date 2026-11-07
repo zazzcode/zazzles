@@ -249,6 +249,7 @@ func (s *moduleSet) assembleCommandClaims(report *analysis.AnalysisReport) {
 		s.contextLimits = nil
 		s.contextFields = fields
 		chain, chainGaps := s.chainEvidence(report, check)
+		chainGaps = s.withoutTransportOnlyGaps(chainGaps)
 		blockers := []analysis.Gap{}
 		for _, g := range append(append([]analysis.Gap{}, chainGaps...), s.contextLimits...) {
 			// The process call itself receives the request value; that is the claim, not a missing helper.
@@ -540,4 +541,31 @@ func alwaysExits(n *sitter.Node) bool {
 		}
 	}
 	return false
+}
+
+// commandTransportMiddleware are libraries whose middleware populate req.session,
+// req.cookies or response headers and never rewrite req.query or req.body. The
+// list extends the shared transport set for the command claim only, so no
+// existing analyzer's blockers change.
+var commandTransportMiddleware = map[string]bool{"express-session": true, "express-rate-limit": true}
+
+// withoutTransportOnlyGaps drops unresolved-middleware gaps for call factories
+// of transport-only libraries; every other unresolved middleware stays blocking.
+func (s *moduleSet) withoutTransportOnlyGaps(gaps []analysis.Gap) []analysis.Gap {
+	out := []analysis.Gap{}
+	for _, g := range gaps {
+		if g.Kind == "applicable_middleware_unresolved" {
+			if m := s.modules[g.At.File]; m != nil {
+				if n := nodeAt(m.tree.RootNode(), g.At.StartByte, g.At.EndByte); n != nil && n.Kind() == "call_expression" {
+					if fn := n.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" {
+						if imp, ok := m.imports[fn.Utf8Text(m.src)]; ok && commandTransportMiddleware[imp.module] {
+							continue
+						}
+					}
+				}
+			}
+		}
+		out = append(out, g)
+	}
+	return out
 }

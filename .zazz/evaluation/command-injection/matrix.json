@@ -1,0 +1,572 @@
+{
+  "version": 1,
+  "reviewed": "2026-11-07",
+  "method": "Cases derive from source review recorded in the linked reference documents (vulnpy-detection-guide, nodejs-goof-capabilities, vulnerable-typescript-app-detection-guide, juice-shop/command-injection-review, vulnerable-flask-app reference) before any new scanner or model result was observed. File hashes are of the pinned revisions. Expectations are not edited to fit output; a corrected expectation keeps the old label, rationale and evidence in `corrections`.",
+  "targets": {
+    "juice-shop": {
+      "revision": "f189f521266f42c6bd05884468292000cee852ed",
+      "sha256": {
+        "data/static/challenges.yml": "a37357f5d4daa0981f87fa3af9817de140d87777732bb1bbbd0fbf8b5bf7d218",
+        "server.ts": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1",
+        "routes/userProfile.ts": "07251f3d0dd9f4c530da60e3911091d8ff1bded650f72c31cbee499093979b39",
+        "routes/b2bOrder.ts": "5e4affbd4072fae7d98737ef2b78cabcd039b157fec879d59308e5c0fde32f48",
+        "scripts/package.mjs": "f17e74f818a0498aac3bc6f36dbdec35401d36c4a8b743eb97e12def66ff1676",
+        "test/cypress/e2e/profile.spec.ts": "de5a8399ce82ee380defcffaab6bfa18a1dff4c08a6e32e3f93fcfcd52cc6edd"
+      }
+    },
+    "vulnpy": {
+      "revision": "b81885e58283a3449b578d20c20557aff637e5ea",
+      "sha256": {
+        "src/vulnpy/trigger/cmdi.py": "4915765f669ec0426aaad82813d411ea737b4ff5e8020305351864b0f6a3393d",
+        "src/vulnpy/trigger/util.py": "ef38148eb9ade03915246c605aa0646e2f8dacb5ec47f46dad63097153c1cff4",
+        "src/vulnpy/flask/blueprint.py": "96b6b3d939009a3cd8c6ee42ce3aff662b4fb32793edd0626484897ee71cf180",
+        "src/vulnpy/fastapi/vulnerable.py": "cb148dfd6cccb85e67e036e97a0f59562bb3799fb9aed919bae84367fac69d70",
+        "src/vulnpy/quart/blueprint.py": "8f18eef389202ca6beb269438fb7d8762b8b78469d66730630fc1a46722128b5",
+        "src/vulnpy/django/vulnerable.py": "e70e2194d30e71dc8e72938da548aa4d4814117fba98912592f8956991b30c35",
+        "src/vulnpy/django/vulnerable_asgi.py": "118444c2ca9e24c9f436099623f9037b73c632707fc21b643c5d524ed90693c5",
+        "src/vulnpy/falcon/vulnerable.py": "b34cf2218d5030ad94c162f11d008bb803e83e371143f6962628126693d32343",
+        "src/vulnpy/falcon/vulnerable_asgi.py": "69eb6900749b4e0059ee76d6317c24654d7601a0352fd863ba080914228000b7",
+        "src/vulnpy/bottle/vulnerable_routes.py": "e5289717512a3b729e91863ee85a31e8c2e7a154fe10d8af97ca3568d182b07a",
+        "src/vulnpy/pyramid/vulnerable_routes.py": "3c20bf7162b1b7dc1a969f8fe17c224818e29dc45842a8d7390a1f67e8884660",
+        "src/vulnpy/aiohttp/vulnerable_routes.py": "d90f18c4343bb848ee61b5efb9df71c9d0b587508268cece0afa7c8c14082257",
+        "src/vulnpy/wsgi/app.py": "453be2fd672a21bb1449cb0ddcf970d944e9d5c91ac0dc659d51474dc546448e",
+        "apps/fastapi_app.py": "4302b50dc4c08dac14dc917424117c498bac9e22b17d4d682ea7f846794f4d51",
+        "apps/quart_app.py": "d4c8037ce0522e20270a63ac936e4d9896c8e18a7314d24581d1e11c5136490b",
+        "apps/falcon_app.py": "8928993f202a14808b7b243dcef73a26b5e983689b133b8f56490e5c54effc66",
+        "apps/falcon_asgi_app.py": "9074051758bb19c4248fb89e8b8476c9f60cf0c384475449aa7dc608b4eb8ba5",
+        "apps/flask_app.py": "05d02a3da636231b6bff09f36afc437a00b31d30ff21103b1f63e6efdb7cd5fc",
+        "apps/flask_two_apps.py": "51db4ad778845c27f91c6162ac794f1a3a5fe8c2374f6d7f4d13c66ad511b0cf",
+        "apps/django_app.py": "1a497185e77c5affd5399ef38c047d2ed16e11709590ca3ca0a5ca59d2e25f9b",
+        "apps/django_asgi_app.py": "b599ba739485427bbadd88a434ff7cbdff6b29aeaa2317e25aa09b483f763902",
+        "apps/bottle_app.py": "8d808221dc099b8dea8f1f2e6aaa82d09bfc8586cb13b5d06a5bd6918e084dfc",
+        "apps/pyramid_app.py": "a6cc80b6d4477c3a94532e3302eafff17599c3027dd64f0456f963309764e366",
+        "apps/aiohttp_app.py": "248246529cd13561276b1ee62b8145408c4c776f83e17380c30faad0df7681b9",
+        "apps/wsgi_app.py": "b43a3819641b40cd10cbd33cd7a0f200c154d84f4642d81604cc03acb03458e0"
+      }
+    },
+    "nodejs-goof": {
+      "revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "sha256": {
+        "routes/index.js": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22",
+        "app.js": "f84d3889f5bfafb0fc5906e5d7c948ae125a4643b6a39f2677f45ed9c1c56bcd"
+      }
+    },
+    "vulnerable-typescript-app": {
+      "revision": "7f8b240a2f02beba099da3632d1ba679ff8bc32f",
+      "sha256": {
+        "src/server.ts": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+      }
+    },
+    "vulnerable-flask-app": {
+      "revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
+      "sha256": {
+        "vulnerable-flask-app.py": "b5b577aeae87401dc0bde1cedb9fec8de1f63f2139b1f6de425857f5de66c4db"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "EXPRESS-PING",
+      "target": "vulnerable-typescript-app",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "src/server.ts",
+        "line": 90
+      },
+      "contexts": [
+        {
+          "framework": "express",
+          "registration_file": "src/server.ts",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/api/ping"
+        }
+      ],
+      "rationale": "GET /api/ping: req.query.host cast to string, interpolated into the shell command passed to imported child_process.exec (documented TS-CMDI-01)."
+    },
+    {
+      "id": "GOOF-CREATE-EXEC",
+      "target": "nodejs-goof",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "routes/index.js",
+        "line": 174
+      },
+      "contexts": [
+        {
+          "framework": "express",
+          "registration_file": "app.js",
+          "methods": [
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/create"
+        }
+      ],
+      "rationale": "POST /create: req.body.content matched by a regex whose capture group 1 (http.*) is concatenated into exec('identify ' + url). The capture does not restrict shell metacharacters."
+    },
+    {
+      "id": "ERLIK-GET-USERS",
+      "target": "vulnerable-flask-app",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "vulnerable-flask-app.py",
+        "line": 58
+      },
+      "contexts": [
+        {
+          "framework": "flask",
+          "registration_file": "vulnerable-flask-app.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/get_users"
+        }
+      ],
+      "rationale": "GET /get_users: hostname query value concatenated into a shell=True subprocess.check_output command (source lines 53-58).",
+      "portable_fixture": true
+    },
+    {
+      "id": "ERLIK-RUN-FILE",
+      "target": "vulnerable-flask-app",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "vulnerable-flask-app.py",
+        "line": 119
+      },
+      "contexts": [
+        {
+          "framework": "flask",
+          "registration_file": "vulnerable-flask-app.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/run_file"
+        }
+      ],
+      "rationale": "GET /run_file: filename query value concatenated into '/bin/bash ' + filename with shell=True (lines 114-119).",
+      "portable_fixture": true
+    },
+    {
+      "id": "VP-CMDI-OS-SYSTEM",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "src/vulnpy/trigger/cmdi.py",
+        "line": 6
+      },
+      "contexts": [
+        {
+          "framework": "flask",
+          "registration_file": "src/vulnpy/flask/blueprint.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 3,
+          "path": "/vulnpy/cmdi/os-system/"
+        },
+        {
+          "framework": "fastapi",
+          "registration_file": "src/vulnpy/fastapi/vulnerable.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "quart",
+          "registration_file": "src/vulnpy/quart/blueprint.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/os-system/"
+        },
+        {
+          "framework": "django",
+          "registration_file": "src/vulnpy/django/vulnerable.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "django-asgi",
+          "registration_file": "src/vulnpy/django/vulnerable_asgi.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "falcon",
+          "registration_file": "src/vulnpy/falcon/vulnerable.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "falcon-asgi",
+          "registration_file": "src/vulnpy/falcon/vulnerable_asgi.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "bottle",
+          "registration_file": "src/vulnpy/bottle/vulnerable_routes.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "pyramid",
+          "registration_file": "src/vulnpy/pyramid/vulnerable_routes.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "aiohttp",
+          "registration_file": "src/vulnpy/aiohttp/vulnerable_routes.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/os-system"
+        },
+        {
+          "framework": "wsgi",
+          "registration_file": "src/vulnpy/wsgi/app.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/os-system"
+        }
+      ],
+      "rationale": "do_os_system(command) passes its parameter to os.system; reached from every adapter's generated route with the framework's request input."
+    },
+    {
+      "id": "VP-CMDI-SUBPROCESS-POPEN",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "src/vulnpy/trigger/cmdi.py",
+        "line": 10
+      },
+      "contexts": [
+        {
+          "framework": "flask",
+          "registration_file": "src/vulnpy/flask/blueprint.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 3,
+          "path": "/vulnpy/cmdi/subprocess-popen/"
+        },
+        {
+          "framework": "fastapi",
+          "registration_file": "src/vulnpy/fastapi/vulnerable.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "quart",
+          "registration_file": "src/vulnpy/quart/blueprint.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/subprocess-popen/"
+        },
+        {
+          "framework": "django",
+          "registration_file": "src/vulnpy/django/vulnerable.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "django-asgi",
+          "registration_file": "src/vulnpy/django/vulnerable_asgi.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "falcon",
+          "registration_file": "src/vulnpy/falcon/vulnerable.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "falcon-asgi",
+          "registration_file": "src/vulnpy/falcon/vulnerable_asgi.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "bottle",
+          "registration_file": "src/vulnpy/bottle/vulnerable_routes.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "pyramid",
+          "registration_file": "src/vulnpy/pyramid/vulnerable_routes.py",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "aiohttp",
+          "registration_file": "src/vulnpy/aiohttp/vulnerable_routes.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 2,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        },
+        {
+          "framework": "wsgi",
+          "registration_file": "src/vulnpy/wsgi/app.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/vulnpy/cmdi/subprocess-popen"
+        }
+      ],
+      "rationale": "do_subprocess_popen(command) passes its parameter to subprocess.Popen with shell=True; PIPE/STDOUT/communicate change output handling only."
+    },
+    {
+      "id": "VP-CMDI-FASTAPI-LOOP",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "apps/fastapi_app.py",
+        "line": 43
+      },
+      "contexts": [
+        {
+          "framework": "fastapi",
+          "registration_file": "apps/fastapi_app.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/cmdi"
+        }
+      ],
+      "rationale": "GET /cmdi: user_input concatenated into an echo command executed by os.system inside a finite loop; the loop and sleeps do not sanitize input; one source sink."
+    },
+    {
+      "id": "VP-CMDI-FASTAPI-UPLOAD",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "src/vulnpy/trigger/cmdi.py",
+        "line": 6
+      },
+      "contexts": [
+        {
+          "framework": "fastapi",
+          "registration_file": "apps/fastapi_app.py",
+          "methods": [
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/files/upload"
+        }
+      ],
+      "rationale": "POST /files/upload: UploadFile.read() first 20 bytes passed to do_os_system; slicing is not shell protection."
+    },
+    {
+      "id": "VP-CMDI-QUART-UPLOAD",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "src/vulnpy/trigger/cmdi.py",
+        "line": 6
+      },
+      "contexts": [
+        {
+          "framework": "quart",
+          "registration_file": "apps/quart_app.py",
+          "methods": [
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/files/upload"
+        }
+      ],
+      "rationale": "POST /files/upload: awaited request.files file.read first 20 bytes to do_os_system; catching ValueError after the call does not prevent execution."
+    },
+    {
+      "id": "VP-CMDI-FALCON-UPLOAD",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "apps/falcon_app.py",
+        "line": 29
+      },
+      "contexts": [
+        {
+          "framework": "falcon",
+          "registration_file": "apps/falcon_app.py",
+          "methods": [
+            "POST"
+          ],
+          "registrations": 1,
+          "path": "/file-upload"
+        }
+      ],
+      "rationale": "POST /file-upload: req._params['upload'].file.read first 10 bytes via str() into an echo command run by os.system; conditional on multipart input; the md5 digest is a separate sibling.",
+      "conditions": [
+        "multipart input supplied"
+      ]
+    },
+    {
+      "id": "VP-CMDI-FALCON-THREAD",
+      "target": "vulnpy",
+      "expected": "positive",
+      "facet": "shell_syntax",
+      "expected_final_status": "confirmed_vulnerability",
+      "sink": {
+        "file": "apps/falcon_app.py",
+        "line": 64
+      },
+      "contexts": [
+        {
+          "framework": "falcon",
+          "registration_file": "apps/falcon_app.py",
+          "methods": [
+            "GET"
+          ],
+          "registrations": 1,
+          "path": "/thread"
+        }
+      ],
+      "rationale": "GET /thread: user_input passed as Thread args to thread_function, then echo command run by os.system; conditional on the contrast import succeeding and the guard at lines 45-61 not exiting.",
+      "conditions": [
+        "contrast import succeeds",
+        "protect guard does not exit before the sink"
+      ]
+    }
+  ],
+  "negative_controls": [
+    {
+      "id": "JS-CMDI-SSTI-BOUNDARY",
+      "target": "juice-shop",
+      "expected": "no command finding",
+      "files": [
+        "routes/userProfile.ts"
+      ],
+      "rationale": "Server-side template/code injection with a command-execution consequence; not a request-to-child_process operand in the application AST. Must not be reported as a command finding nor as Protected."
+    },
+    {
+      "id": "JS-CMDI-RCE-DOS-BOUNDARY",
+      "target": "juice-shop",
+      "expected": "no command finding",
+      "files": [
+        "routes/b2bOrder.ts"
+      ],
+      "rationale": "notevil/vm code-execution concern, not a shell-command construction."
+    },
+    {
+      "id": "JS-CMDI-PACKAGING-CONSTANT",
+      "target": "juice-shop",
+      "expected": "no command finding",
+      "files": [
+        "scripts/package.mjs"
+      ],
+      "rationale": "Build-time constant 'npm root -g'; not request-derived."
+    },
+    {
+      "id": "ERLIK-CAT-LOG-CONSTANT",
+      "target": "vulnerable-flask-app",
+      "expected": "no command candidate",
+      "sink": {
+        "file": "vulnerable-flask-app.py",
+        "line": 68
+      },
+      "rationale": "GET /get_log: constant command 'cat restapi.log'; no request data reaches the operand.",
+      "portable_fixture": true
+    },
+    {
+      "id": "VP-NO-HEADER-FIELD-SPLIT",
+      "target": "vulnpy",
+      "expected": "contexts keep distinct header/query sources",
+      "rationale": "Flask reads header User-Input and Quart reads User_Input; the two spellings are not interchangeable."
+    }
+  ],
+  "unadjudicated_leads": [],
+  "corrections": [],
+  "juice_shop_disposition": "Zero expected direct command positives, with source-reviewed reasoning (command-injection-review.md) and the three controls above as mandatory no-false-positive checks. The disposition is not inferred from scanner output."
+}

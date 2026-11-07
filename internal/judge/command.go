@@ -26,6 +26,10 @@ func (f commandFacet) any(protection string) bool {
 	return false
 }
 
+// reachable reports a path whose source-to-operand facts are resolved: raw, or
+// guarded by a control whose adequacy only the assessment can judge.
+func (f commandFacet) reachable() bool { return f.any("raw") || f.any("guarded") }
+
 func (f commandFacet) all(protection string) bool {
 	for _, p := range f.paths {
 		if p.Protection != protection {
@@ -114,8 +118,8 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	case "vulnerable":
 		if len(shell.paths) == 0 {
 			contradict("shell vulnerability claimed but no request-derived path reaches an effective shell command operand")
-		} else if !shell.any("raw") {
-			contradict("shell vulnerability claimed but every shell path is guarded or unknown")
+		} else if !shell.reachable() {
+			contradict("shell vulnerability claimed but every shell path has unresolved facts")
 		}
 	case "protected":
 		if len(shell.paths) == 0 || !shell.all("guarded") {
@@ -128,8 +132,8 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	}
 	switch ans["executable_control"] {
 	case "unsafe":
-		if !executable.any("raw") {
-			contradict("executable control unsafe without a raw request-derived executable, override or shell-configuration path")
+		if !executable.reachable() {
+			contradict("executable control unsafe without a resolved request-derived executable, override or shell-configuration path")
 		}
 	case "constrained":
 		if len(executable.paths) > 0 && !executable.all("guarded") {
@@ -141,7 +145,7 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	}
 	switch ans["argument_control"] {
 	case "unsafe":
-		if !argument.any("raw") || f.Interpreter == "" {
+		if !argument.reachable() || f.Interpreter == "" {
 			contradict("argument option control is not established: unknown utility options are Review, not a positive")
 		}
 	case "constrained":
@@ -179,11 +183,11 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	}
 	unsafeFacet := ""
 	switch {
-	case ans["shell_syntax_protection"] == "vulnerable" && shell.any("raw"):
+	case ans["shell_syntax_protection"] == "vulnerable" && shell.reachable():
 		unsafeFacet = "shell syntax (CWE-78)"
-	case ans["executable_control"] == "unsafe" && executable.any("raw"):
+	case ans["executable_control"] == "unsafe" && executable.reachable():
 		unsafeFacet = "executable selection"
-	case ans["argument_control"] == "unsafe" && argument.any("raw") && f.Interpreter != "":
+	case ans["argument_control"] == "unsafe" && argument.reachable() && f.Interpreter != "":
 		unsafeFacet = "option/interpreter control (CWE-88)"
 	}
 	scoped := append(append([]analysis.Gap{}, blockers...), global...)

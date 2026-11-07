@@ -196,12 +196,15 @@ func (f *pythonFlow) project(n *sitter.Node) pythonValue {
 		key := pyText(m, n.ChildByFieldName("attribute"))
 		if f.qualified(pyText(m, obj)) == "flask.request" {
 			switch key {
-			case "args", "form", "values", "json", "cookies", "headers", "data":
+			case "args", "form", "values", "json", "cookies", "headers", "data", "files", "GET", "POST", "META":
 				return f.source(n, key, "")
 			}
 		}
 		if f.qualified(pyText(m, obj)) == "flask.session" {
 			return f.source(n, "session", key)
+		}
+		if f.qualified(pyText(m, obj)) == "flask.request.rel_url" && key == "query" {
+			return f.source(n, "query", "")
 		}
 		if key == "payload" && f.set.receiver(m, pyText(m, obj), 0).kind == "flask_restx" {
 			return f.source(n, "json", "")
@@ -246,7 +249,20 @@ func (f *pythonFlow) projectValue(v pythonValue, key string, n *sitter.Node) pyt
 	}
 	return v
 }
+
+// qualified resolves a name to its import-qualified form. Quart's request
+// proxy has the Flask request shape, so it shares that source model.
 func (f *pythonFlow) qualified(name string) string {
+	q := f.qualifiedRaw(name)
+	for _, proxy := range []string{"quart.request", "bottle.request"} {
+		if q == proxy || strings.HasPrefix(q, proxy+".") {
+			return "flask.request" + strings.TrimPrefix(q, proxy)
+		}
+	}
+	return q
+}
+
+func (f *pythonFlow) qualifiedRaw(name string) string {
 	root := strings.Split(name, ".")[0]
 	if value, shadow := f.env[root]; shadow {
 		if value.binding == "flask_request" {

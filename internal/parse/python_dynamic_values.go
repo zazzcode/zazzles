@@ -11,6 +11,12 @@ import (
 
 func (f *pythonStatic) lookup(name string) *pythonStaticValue {
 	if f.set.staticInvalid[f.module.file+":"+name] {
+		// A framework receiver bound by an earlier statement is exact at this
+		// program point when every other assignment comes textually later
+		// (for example a conditional middleware wrapper).
+		if v, ok := f.env[name]; ok && v.receiver && v.kind != "" && f.laterAssignmentsOnly(name) {
+			return v
+		}
 		return staticUnknown()
 	}
 	if v, ok := f.env[name]; ok {
@@ -186,6 +192,10 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 	case "binary_operator":
 		a, b := f.eval(n.ChildByFieldName("left")), f.eval(n.ChildByFieldName("right"))
 		if a.known && b.known && pyText(m, n.ChildByFieldName("operator")) == "+" {
+			if a.items != nil && b.items != nil {
+				out := &pythonStaticValue{known: true, tainted: new(bool), items: append(append([]*pythonStaticValue{}, a.items...), b.items...)}
+				return out
+			}
 			return staticText(a.text + b.text)
 		}
 	}
@@ -342,8 +352,12 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 		return args[i].text, true
 	}
 	switch q {
-	case "flask.Flask", "flask.Blueprint", "fastapi.FastAPI", "fastapi.APIRouter":
+	case "flask.Flask", "flask.Blueprint", "fastapi.FastAPI", "fastapi.APIRouter", "quart.Quart", "quart.Blueprint":
 		return &pythonStaticValue{receiver: true}, true
+	case "bottle.Bottle":
+		return &pythonStaticValue{receiver: true, kind: "bottle"}, true
+	case "pyramid.config.Configurator":
+		return &pythonStaticValue{receiver: true, kind: "pyramid", routes: map[string]string{}}, true
 	case "os.path.dirname", "os.path.basename":
 		a, ok := arg(0)
 		if !ok {
@@ -433,4 +447,28 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 		return staticUnknown(), true
 	}
 	return nil, false
+}
+
+// laterAssignmentsOnly reports that, apart from its first binding, every
+// assignment to name in the module starts after the statement being interpreted.
+func (f *pythonStatic) laterAssignmentsOnly(name string) bool {
+	first := true
+	ok := true
+	pyWalk(f.module.tree.RootNode(), func(n *sitter.Node) {
+		if n.Kind() != "assignment" && n.Kind() != "augmented_assignment" {
+			return
+		}
+		left := n.ChildByFieldName("left")
+		if left == nil || left.Kind() != "identifier" || pyText(f.module, left) != name {
+			return
+		}
+		if first {
+			first = false
+			return
+		}
+		if n.StartByte() <= f.pos {
+			ok = false
+		}
+	})
+	return ok
 }

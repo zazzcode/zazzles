@@ -176,6 +176,9 @@ func (b *pyCommandBuilder) operand(slot string, n *sitter.Node, v pythonValue) {
 		b.request = true
 		b.names[d.container+"."+d.key] = true
 		b.names[d.dep.Source.Text] = true
+		for _, name := range commandDepNames(d.dep) {
+			b.names[name] = true
+		}
 	}
 	b.gaps = append(b.gaps, v.gaps...)
 	b.facts.Operands = append(b.facts.Operands, o)
@@ -353,7 +356,7 @@ func (f *pythonFlow) commandCall(call, fn *sitter.Node) (pythonValue, bool) {
 	base := len(u.Context) + len(binding)
 	u.Context = append(u.Context, binding...)
 	for _, e := range f.context {
-		if (e.Kind == "branch_precondition" || e.Kind == "branch_false_precondition") && b.mentions(e.Text) {
+		if (e.Kind == "branch_precondition" || e.Kind == "branch_false_precondition") && b.mentions(e.Text) && !b.presenceOnly(e.Text) {
 			guardIndex = append(guardIndex, len(u.Context))
 			u.Context = append(u.Context, e)
 			guards = append(guards, e)
@@ -366,7 +369,7 @@ func (f *pythonFlow) commandCall(call, fn *sitter.Node) (pythonValue, bool) {
 			u.Command.Operands[i].Context[j] += base
 		}
 	}
-	f.completePythonCommand(u, call, all, guards, guardIndex)
+	f.completePythonCommand(u, call, all, guards, guardIndex, b.names)
 	return pythonValue{}, true
 }
 
@@ -377,6 +380,14 @@ func (b *pyCommandBuilder) has(slot string) bool {
 		}
 	}
 	return false
+}
+
+func (b *pyCommandBuilder) presenceOnly(text string) bool {
+	names := make([]string, 0, len(b.names))
+	for name := range b.names {
+		names = append(names, name)
+	}
+	return presenceOnlyCondition(text, names)
 }
 
 func (b *pyCommandBuilder) mentions(text string) bool {
@@ -398,26 +409,98 @@ var pythonCommandBlockers = map[string]bool{
 
 // completePythonCommand assembles the claim-scoped completeness for a Python
 // use at the point where its flow, guards and operands are known.
-func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitter.Node, operands pythonValue, guards []analysis.Evidence, guardIndex []int) {
+func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitter.Node, operands pythonValue, guards []analysis.Evidence, guardIndex []int, names map[string]bool) {
 	blockers := []analysis.Gap{}
 	coverage := []analysis.Gap{}
+	transfers := []analysis.Evidence{}
 	for _, g := range append(append([]analysis.Gap{}, u.Gaps...), f.guardGaps(operands)...) {
-		if pythonCommandBlockers[g.Kind] && !(g.Kind == "python_call_unresolved" && g.At.StartByte == int(call.StartByte()) && g.At.File == f.module.file) {
-			blockers = append(blockers, g)
-		} else {
+		if !pythonCommandBlockers[g.Kind] || (g.Kind == "python_call_unresolved" && g.At.StartByte == int(call.StartByte()) && g.At.File == f.module.file) {
 			coverage = append(coverage, g)
+			continue
 		}
+		if evidence, ok := f.supportedCommandGap(g, names); ok {
+			coverage = append(coverage, g)
+			transfers = append(transfers, evidence)
+			continue
+		}
+		blockers = append(blockers, g)
 	}
 	extra := map[string][]analysis.Evidence{
 		"invoked_callable": {f.route.module.evidence("invoked_callable", f.route.fn)},
 		"control_flow":     append([]analysis.Evidence{f.module.evidence("operation", call)}, f.context...),
+		"transformation":   transfers,
 	}
 	c := commandCompleteness(u, extra, dedupeGaps(blockers), dedupeGaps(coverage))
+	for _, t := range transfers {
+		c.ModelFacts = append(c.ModelFacts, "Supported transfer "+t.Kind+" "+t.Text+" at "+t.Span.File+" carries its operand into the result without a modeled constraint; it is not a validator.")
+	}
 	finishCommandPaths(u, c, guards, guardIndex, func(g analysis.Gap, d analysis.Dependency) bool {
 		return gapTouchesDependency(g, d) || pythonGapTouches(g, d)
 	})
 	u.Completeness = c
 	u.Gaps = dedupeGaps(append(append([]analysis.Gap{}, u.Gaps...), blockers...))
+}
+
+// supportedCommandGap recognizes gaps that do not make a command operand
+// unknown: content-preserving stream reads/conversions and loops whose body
+// never reassigns an operand. Other analyzers keep their conservative gaps.
+func (f *pythonFlow) supportedCommandGap(g analysis.Gap, names map[string]bool) (analysis.Evidence, bool) {
+	m := f.set.modules[g.At.File]
+	if m == nil {
+		return analysis.Evidence{}, false
+	}
+	node := nodeAt(m.tree.RootNode(), g.At.StartByte, g.At.EndByte)
+	if node == nil {
+		return analysis.Evidence{}, false
+	}
+	switch g.Kind {
+	case "python_call_unresolved":
+		if node.Kind() != "call" {
+			return analysis.Evidence{}, false
+		}
+		fn := node.ChildByFieldName("function")
+		if fn == nil || fn.Kind() != "attribute" {
+			return analysis.Evidence{}, false
+		}
+		switch pyText(m, fn.ChildByFieldName("attribute")) {
+		case "read", "readline", "decode", "encode":
+			return m.evidence("content_preserving_transfer", node), true
+		}
+	case "python_loop_unresolved":
+		if node.Kind() != "for_statement" && node.Kind() != "while_statement" {
+			return analysis.Evidence{}, false
+		}
+		mutated := false
+		pyWalk(node.ChildByFieldName("body"), func(n *sitter.Node) {
+			switch n.Kind() {
+			case "assignment", "augmented_assignment":
+				if left := n.ChildByFieldName("left"); left != nil {
+					root := left
+					for root != nil && (root.Kind() == "attribute" || root.Kind() == "subscript") {
+						if root.Kind() == "attribute" {
+							root = root.ChildByFieldName("object")
+						} else {
+							root = root.ChildByFieldName("value")
+						}
+					}
+					if root != nil && names[pyText(m, root)] {
+						mutated = true
+					}
+				}
+			case "call":
+				// A method call on an operand may mutate it in place.
+				if fn := n.ChildByFieldName("function"); fn != nil && fn.Kind() == "attribute" {
+					if obj := fn.ChildByFieldName("object"); obj != nil && names[pyText(m, obj)] {
+						mutated = true
+					}
+				}
+			}
+		})
+		if !mutated {
+			return m.evidence("loop_without_operand_mutation", node), true
+		}
+	}
+	return analysis.Evidence{}, false
 }
 
 // pythonGapTouches reports a gap located inside any transfer of the dependency.

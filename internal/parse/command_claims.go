@@ -105,6 +105,36 @@ func commandDepNames(d analysis.Dependency) []string {
 	return names
 }
 
+var presenceWords = regexp.MustCompile(`\b(not|is|None|and|or|typeof|null|undefined|string|true|false|len)\b`)
+
+// environmentTests are request-method and framework-version comparisons: they
+// select a path but never constrain the content of an operand.
+var environmentTests = regexp.MustCompile(`[\w.]*\.(method|VERSION)[\w\[\]]*\s*(==|!=|<=|>=|<|>)\s*("[^"]*"|'[^']*'|\d+)`)
+
+// requestAccessors are keyed reads such as request.GET.get("x"): a read, not a constraint.
+var requestAccessors = regexp.MustCompile(`[\w.]+\.get\([^)]*\)`)
+var stringLiterals = regexp.MustCompile(`"[^"]*"|'[^']*'`)
+var presencePunct = regexp.MustCompile(`[\s()!=<>'"&|]`)
+
+// presenceOnlyCondition reports a condition that only tests whether the
+// operands exist, are non-empty or have a runtime type. Such a test does not
+// constrain content and is never recorded as a guard.
+func presenceOnlyCondition(condition string, names []string) bool {
+	rest := requestAccessors.ReplaceAllString(condition, "")
+	ordered := append([]string{}, names...)
+	// Longest names first so a container prefix never splits a projection.
+	sort.Slice(ordered, func(i, j int) bool { return len(ordered[i]) > len(ordered[j]) })
+	for _, name := range ordered {
+		if name != "" {
+			rest = strings.ReplaceAll(rest, name, "")
+		}
+	}
+	rest = environmentTests.ReplaceAllString(rest, "")
+	rest = presenceWords.ReplaceAllString(rest, "")
+	rest = presencePunct.ReplaceAllString(rest, "")
+	return rest == ""
+}
+
 var plainIdentifier = regexp.MustCompile(`^[A-Za-z_$][\w$]*$`)
 
 // mentionsAny matches identifiers by word boundary and expressions exactly.
@@ -114,6 +144,8 @@ func mentionsAny(text string, names []string) bool {
 			continue
 		}
 		if plainIdentifier.MatchString(name) {
+			// Text inside string literals is data, never a reference to the operand.
+			text := stringLiterals.ReplaceAllString(text, `""`)
 			if regexp.MustCompile(`(^|[^\w$.])` + regexp.QuoteMeta(name) + `($|[^\w$])`).MatchString(text) {
 				return true
 			}
@@ -407,7 +439,8 @@ func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms 
 		for name := range names {
 			list = append(list, name)
 		}
-		return mentionsAny(cond.Utf8Text(m.src), list)
+		text := cond.Utf8Text(m.src)
+		return mentionsAny(text, list) && !presenceOnlyCondition(text, list)
 	}
 	seen := map[int]bool{}
 	add := func(kind string, n *sitter.Node) {

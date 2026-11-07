@@ -193,6 +193,11 @@ func (f *pythonFlow) parameters(fn *sitter.Node) {
 				v = pyProtect(v, "numeric")
 			}
 			f.env[key] = v
+		} else if i == 0 && (f.route.route.Framework == "django" || f.route.route.Framework == "pyramid" || f.route.route.Framework == "aiohttp") {
+			// The view's request argument carries the framework request object.
+			f.env[key] = pythonValue{binding: "flask_request"}
+		} else if i == 1 && f.route.route.Framework == "falcon" {
+			f.env[key] = pythonValue{binding: "flask_request"}
 		} else {
 			f.env[key] = pythonValue{}
 		}

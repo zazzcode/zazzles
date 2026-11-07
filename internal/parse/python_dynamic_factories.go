@@ -44,6 +44,7 @@ func (f *pythonStatic) stmt(n *sitter.Node) bool {
 	if n == nil || !f.tick(n) {
 		return false
 	}
+	f.pos = n.StartByte()
 	switch n.Kind() {
 	case "expression_statement":
 		for i := uint(0); i < n.NamedChildCount(); i++ {
@@ -189,6 +190,9 @@ func (f *pythonStatic) call(n *sitter.Node) *pythonStaticValue {
 	args := make([]*pythonStaticValue, len(nodes))
 	for i, a := range nodes {
 		args[i] = f.eval(a)
+	}
+	if v, ok := f.adapterCall(n, q, fn, args); ok {
+		return v
 	}
 	if fn != nil && fn.Kind() == "attribute" {
 		method := pyText(f.module, fn.ChildByFieldName("attribute"))

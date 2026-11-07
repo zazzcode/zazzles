@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+// staticWorkLimit bounds one module's finite source interpretation.
+const staticWorkLimit = 40000
+
 // Static discovery interprets a finite syntax subset over selected source snapshots.
 // It never loads Python modules or invokes target code in a Python runtime.
 type pythonStaticValue struct {
@@ -20,6 +23,12 @@ type pythonStaticValue struct {
 	module   *pythonModule
 	fn       *sitter.Node
 	receiver bool
+	// kind names a framework receiver created by a verified constructor.
+	kind string
+	// routes holds Pyramid route names bound to their patterns.
+	routes map[string]string
+	// route is a route definition awaiting registration by its consumer.
+	route    *staticRoute
 	closure  map[string]*pythonStaticValue
 	evidence []analysis.Evidence
 }
@@ -33,6 +42,7 @@ type pythonStatic struct {
 	sites      map[string]int
 	routes     *[]pythonRoute
 	returned   *pythonStaticValue
+	pos        uint // start of the statement being interpreted
 	provenance []analysis.Evidence
 }
 
@@ -57,6 +67,7 @@ func (s *pythonSet) dynamicRouteEntries() []pythonRoute {
 		f := &pythonStatic{set: s, module: m, env: map[string]*pythonStaticValue{}, stack: map[string]bool{}, work: &count, routes: &out, sites: sites}
 		f.block(m.tree.RootNode())
 	}
+	s.adapterEntries(&out, sites)
 	return out
 }
 func (f *pythonStatic) evidence(kind string, n *sitter.Node) analysis.Evidence {
@@ -67,9 +78,9 @@ func (f *pythonStatic) gap(n *sitter.Node, detail string) {
 }
 func (f *pythonStatic) tick(n *sitter.Node) bool {
 	*f.work++
-	if *f.work > 10000 {
-		if *f.work == 10001 {
-			f.gap(n, "Finite source discovery work limit (10000) reached; remainder unexpanded")
+	if *f.work > staticWorkLimit {
+		if *f.work == staticWorkLimit+1 {
+			f.gap(n, "Finite source discovery work limit ("+strconv.Itoa(staticWorkLimit)+") reached; remainder unexpanded")
 		}
 		return false
 	}
@@ -90,7 +101,7 @@ func (f *pythonStatic) registration(call, handler, location *sitter.Node) {
 		return
 	}
 	recv := f.set.receiver(f.module, receiverName, 0)
-	if recv.kind != "flask" && recv.kind != "fastapi" {
+	if recv.kind != "flask" && recv.kind != "fastapi" && recv.kind != "quart" {
 		return
 	}
 	method := pyText(f.module, fn.ChildByFieldName("attribute"))

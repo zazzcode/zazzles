@@ -61,6 +61,13 @@ func (s *pythonSet) receiver(m *pythonModule, name string, depth int) pythonRece
 				r.uncertain = true
 			}
 		}
+	case "quart.Quart":
+		r.kind = "quart"
+	case "quart.Blueprint":
+		r.kind = "quart"
+		if v := pyKeywordIn(m, n, "url_prefix"); v != nil {
+			r.prefix, _ = pyLiteral(m, v)
+		}
 	case "flask.Blueprint":
 		r.kind = "flask"
 		if v := pyKeywordIn(m, n, "url_prefix"); v != nil {
@@ -229,7 +236,7 @@ func (s *pythonSet) mountPrefix(m *pythonModule, name string, r pythonReceiver) 
 		return r.prefix, ""
 	}
 	q := s.qualified(target, pyText(target, pyField(ctor, "function")))
-	if q != "flask.Blueprint" && q != "fastapi.APIRouter" {
+	if q != "flask.Blueprint" && q != "fastapi.APIRouter" && q != "quart.Blueprint" {
 		return r.prefix, ""
 	}
 	count := 0

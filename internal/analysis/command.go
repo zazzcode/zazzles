@@ -29,7 +29,11 @@ type CommandFacts struct {
 	EffectiveShellMode string `json:"effective_shell_mode"`
 	Interpreter        string `json:"interpreter,omitempty"`
 	// ArgvShape is none, literal_list or unknown.
-	ArgvShape string           `json:"argv_shape"`
+	ArgvShape string `json:"argv_shape"`
+	// JoinedShellText is true when every operand is joined into one shell command
+	// string (Node argv calls with shell enabled); false when only the shell_command
+	// slot is shell text (os.*, Python shell=True sequences, literal sh -c).
+	JoinedShellText bool             `json:"joined_shell_text,omitempty"`
 	Operands  []CommandOperand `json:"operands"`
 	Paths     []CommandPath    `json:"paths"`
 }

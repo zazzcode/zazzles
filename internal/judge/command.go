@@ -42,7 +42,7 @@ func (f commandFacet) all(protection string) bool {
 // commandFacets partitions the paths by effective operand semantics. Shell
 // syntax, executable choice and argument interpretation stay separate claims.
 func commandFacets(f *analysis.CommandFacts) (shell, executable, argument commandFacet) {
-	shellText := f.EffectiveShellMode == "enabled" && f.Interpreter == ""
+	shellText := f.JoinedShellText
 	for _, p := range f.Paths {
 		switch {
 		case p.Operand == analysis.CommandSlotShell || shellText:

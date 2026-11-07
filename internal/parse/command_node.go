@@ -275,6 +275,7 @@ func (f *flow) commandCall(call, fn, args *sitter.Node) bool {
 			b.gap("command_interpreter_unsupported", "Windows or PowerShell interpreter semantics are not modeled", nodes[0])
 		}
 	}
+	b.facts.JoinedShellText = !spec.shell && b.facts.EffectiveShellMode == "enabled" && b.facts.Interpreter == ""
 	b.operand(firstSlot, nodes[0], first)
 	switch {
 	case argvNode == nil:

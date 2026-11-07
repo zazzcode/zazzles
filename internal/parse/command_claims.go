@@ -248,7 +248,11 @@ func (s *moduleSet) assembleCommandClaims(report *analysis.AnalysisReport) {
 		}
 		s.contextLimits = nil
 		s.contextFields = fields
-		chain, chainGaps := s.chainEvidence(report, check)
+		// Only this invocation's entry supplies chain evidence: a sibling entry with an
+		// identical (empty) selector must not contribute its registration gaps.
+		scoped := *report
+		scoped.Entries = []analysis.EntryPoint{entry}
+		chain, chainGaps := s.chainEvidence(&scoped, check)
 		chainGaps = s.withoutTransportOnlyGaps(chainGaps)
 		blockers := []analysis.Gap{}
 		for _, g := range append(append([]analysis.Gap{}, chainGaps...), s.contextLimits...) {

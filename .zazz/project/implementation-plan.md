@@ -99,7 +99,7 @@ owns the later unattended analyzer implementation; do not launch that session un
 - [x] Configure `JUDGE_DECISION_MODEL`; reject conflicting CLI settings and model lists.
 - [x] Verify existing analyzers through HTTP stubs; preserve old provider/replay behavior.
 - [x] Run a small authorized Gemini sample scan, recording model, scope, calls and results.
-- [ ] Later implement path operands, containment evidence, selected components and Go policy.
+- [ ] Later implement path operands, containment evidence, selected components and evidence validation.
 - [ ] Verify JS/TS/Python positive/protected/unknown controls and three-format reports.
 - [ ] Run the [unattended correction loop](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop) across all eight sample apps after the user launches analyzer work.
 
@@ -111,7 +111,7 @@ owns user instructions; the spec owns the official Google references and Go REST
 
 The shared embedded catalog is implemented for SQL, JS/TS MongoDB-style NoSQL, standalone validation,
 XSS, command execution and outbound observations. Static adapters select versioned interpretation
-material; Go owns mandatory evidence gates. Logging migration, public pack loading, downloadable
+material; the engine enforces mandatory evidence validation checks. Logging migration, public pack loading, downloadable
 plugins and general standards ingestion remain separate work. See the
 [implementation ledger](../architecture/analysis-packs.md#current-implementation-status),
 [selection contract](../architecture/analysis-packs.md#descriptor-and-selection-contract) and

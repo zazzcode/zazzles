@@ -61,12 +61,14 @@ Scan reads application source and follows supported input values into security-s
 such as database queries or HTML output. It records the relevant code, value transfers, controls
 and analysis gaps. It does not execute the application.
 
-A large language model (LLM) assesses specific security questions using that evidence. Go policy
-then checks whether the evidence and answers support the conclusion. Missing facts remain explicit,
-even when the model gives a confident answer.
+A large language model (LLM) assesses specific security questions using that evidence.
+**Evidence validation** checks completeness and consistency before classification; missing or
+contradictory facts keep the affected claim in Review. See the
+[architecture definitions](.zazz/architecture.md#evidence-validation).
 
 Development and calibration have used OpenAI Decisions (`gpt-6-luna`). Google Gemini Decisions
-(`gemini-decision-1`) now supports the same shared judge and passed a bounded live sample scan.
+(`gemini-decision-1`) now supports the same shared judge and passed a
+[bounded live sample scan](.zazz/evaluation/gemini-decisions-results.md).
 The CLI also implements a stub-tested Jev transport. Provider support and one successful sample
 do not establish equivalent assessment accuracy; broader matched evaluation remains separate work.
 
@@ -91,7 +93,7 @@ flowchart LR
     A[Discover entries and handlers] --> B[Track supported values and controls]
     B --> C[Assemble source evidence]
     C --> D[Judge the named security claim]
-    D --> E[Apply evidence gates and report]
+    D --> E[Validate evidence and report]
 ```
 
 A function call alone does not prove that an input reaches a sensitive operation. Unresolved
@@ -105,7 +107,7 @@ and Hapi identify registrations and request inputs. Shared, transport-neutral fa
 initial type, type at the sink, transformations and supplied hooks/schema code. Existing GraphQL
 and unary gRPC entries can carry the same facts without assuming that declarations enforce types.
 The same Mongoose, SQL and process contracts consume the evidence; the judge assesses application
-controls and deterministic policy checks completeness and consistency. A schema's presence is not
+controls, and evidence validation checks completeness and consistency. A schema's presence is not
 protection. Python keeps its existing adapters; its migration is [proposed separately](PYTHON-INPUT-REFACTOR-PROPOSAL.md).
 
 Optional `--discover-routes --discovery-limit N`, used with `--analyze --judge`, asks the selected model
@@ -121,7 +123,8 @@ trusted reachability or vulnerability findings. Queue acquisition remains future
 
 ### Analyzers, analysis packs and reusable components
 
-An **Analyzer** identifies and assesses a named security concern. Examples include:
+An **Analyzer** spans extraction, interpretation, model assessment, evidence validation and reporting
+for a named security concern. Examples include:
 
 - **SQL Injection Analyzer**
 - **NoSQL Injection Analyzer** — initially bounded MongoDB/Mongoose and MarsDB-compatible operations
@@ -141,11 +144,10 @@ analyzer does not require a separate engine or package. The
 | Language guidance | How to interpret code and supported controls in JavaScript/TypeScript or Python |
 | Framework and flow capabilities | Which entry bindings and value transfers the compiled analyzer supports |
 | Library contracts | How a supported operation uses its arguments, such as SQL text versus bound values |
-| Claim questions and evidence requirements | What the model must assess and what source facts Go requires for the result |
+| Claim questions and evidence requirements | What the model must assess and what source facts are required for the result |
 
-For each potential issue, static analysis selects the relevant components. The Decision LLM receives
-that interpretation material together with the actual source evidence. Go checks the answers against
-mandatory evidence requirements. A missing binding or unresolved path remains a gap.
+For each potential issue, static analysis selects the relevant components. The decision model receives
+that interpretation material together with the actual source evidence.
 
 For example, Python SQLite and TypeScript Sequelize use different library contracts while sharing
 SQL assessment questions. A separate input-validation assessment can check an established field
@@ -154,8 +156,8 @@ requirement without needing a database contract. SQL protection and field valida
 Reports record component versions and content digests so a judgment can be traced to the knowledge
 used. Saved answers can be replayed only when the exact model request still matches.
 
-The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and
-supported XSS Analyzer capabilities use this design. Outbound
+The SQL Injection, JS/TS NoSQL Injection, Input Validation, XSS and Command Injection Analyzers
+use this design. Outbound
 observations also select components, but do not yet receive a server-side request forgery (SSRF)
 judgment; they remain Review. The Sensitive Data Logging Analyzer works through its existing path
 and is the remaining component migration.
@@ -165,10 +167,6 @@ See the [technical approach](docs/technical-approach.md#analysis-knowledge-and-c
 ownership, compatibility and coverage details.
 
 ### Technical approach: evidence and semantic judgment
-
-> **Zazzles establishes supported code relationships through static analysis, then uses a decision
-> model to evaluate whether the demonstrated controls satisfy a specific security requirement.
-> Explicit evidence gates constrain the resulting judgment.**
 
 The judge can consider a custom validation function's implementation, actual value transfers and
 relevant conditions. Within supported paths, this reduces the need to define a named sanitizer
@@ -279,9 +277,11 @@ per-language checklist and delivery order.
 - **Input Validation Analyzer** and **SQL Injection Analyzer:** supported JS/TS/Python cases.
 - **NoSQL Injection Analyzer:** bounded JavaScript/TypeScript MongoDB/Mongoose and MarsDB-compatible cases; Python and other engines remain pending.
 - **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
+- **Command Injection Analyzer:** verified Node/Python process operands, shell/executable/argument
+  assessments and source-reviewed sample acceptance.
 - **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
-  JS/TS API-to-browser links and Python inline-script analysis. Every source-reviewed XSS in the five
-  [primary sample applications](.zazz/project/vulnerable-sample-apps.md) is a confirmed finding; see the
+  JS/TS API-to-browser links and Python inline-script analysis. All 28 required positive cases across the five
+  [primary sample applications](.zazz/project/vulnerable-sample-apps.md) were confirmed, with controls preserved; see the
   [results](.zazz/evaluation/xss-hardening-results.md).
 
 Supporting infrastructure and knowledge:
@@ -400,14 +400,9 @@ load `.env`. The [setup guide](docs/getting-started.md) explains environment loa
 
 ### Required decision-model setup
 
-For a model-assessed security scan, choose OpenAI Luna or Google Gemini Decisions using the [decision-model guide](docs/decision-models.md).
-Set one `JUDGE_DECISION_MODEL` for every analyzer: `gpt-6-luna` with `--judge openai`, or
-`gemini-decision-1` with `--judge gemini`. Add `--judge-limit <count>` to bound requests.
-Conflicting CLI/environment models fail before scanning. Jev has a stub-tested adapter; no live
-Jev evaluation is claimed.
-The scanner reads the provider key from its process environment.
-
-Choose one provider block in your ignored `.env` (keep only one active model assignment):
+Choose one model in your ignored `.env`. It applies to every analyzer; keep only one active
+`JUDGE_DECISION_MODEL` assignment. Conflicting CLI/environment selections fail before scanning.
+The [decision-model guide](docs/decision-models.md) covers advanced setup and the stub-tested Jev adapter:
 
 | Provider | Model setting | Credential field |
 | --- | --- | --- |
@@ -439,10 +434,6 @@ Run only the command for the active model. When switching, edit the model settin
 fresh shell; commenting a line does not clear a value already exported in the current shell.
 Every analyzer uses this same model selection. Different candidate uses are separate requests;
 each request includes that analyzer's applicable questions over its evidence slice.
-
-Gemini's bounded `/api/ping` smoke scan completed both requests and confirmed the expected command
-injection; the separate unknown field-policy claim stayed Review. This verifies a small scan,
-not accuracy parity with OpenAI. [Evidence and limits](.zazz/evaluation/gemini-decisions-results.md).
 
 Model requests transmit source evidence and can incur charges. Authorize the target scope and
 request count before running them. A configured key does not authorize automatic paid calls.

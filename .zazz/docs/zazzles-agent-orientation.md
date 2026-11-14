@@ -22,13 +22,14 @@ Preserve concurrent user edits, especially local credentials. No live Jev evalua
 | `internal/parse/` | Tree-sitter bindings, imports/entries, bounded flow, source-backed candidate assembly | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
 | `internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
 | `internal/analysispacks/`, `internal/guidelines/` | Embedded contracts, selected guidance, questions and versions | [Selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) |
-| `internal/judge/` | Provider requests, decoding, replay and mandatory claim gates | [Judge boundary](../architecture.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
+| `internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
 | `internal/report/` | Findings, Review/Protected presentation, JSON/HTML/SARIF and bundles | [Reporting design](../architecture/reporting-and-sarif.md), [HTML design](../architecture/html-reporting.md) |
 | `internal/parse/testdata/` | Small JS/TS/Python regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
 | `docs/`, `.zazz/`, `.agents/skills/` | User docs; internal contracts/design/evaluation; development skills | [Document owners](#documentation-map) |
 
-Keep source-backed extraction separate from semantic interpretation. A model cannot invent missing
-flows or protection. [Code structure rules](../standards/code-structure.md#1-package-layout) govern changes.
+Each [analyzer](../architecture.md#analyzer-terminology) spans the shared engine's activities.
+Use the architecture's [evidence validation terminology](../architecture.md#evidence-validation)
+and follow the [code structure rules](../standards/code-structure.md#1-package-layout).
 
 ## Portable workspace and DEV_ROOT
 

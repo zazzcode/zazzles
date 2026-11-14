@@ -38,7 +38,8 @@ The selected `JUDGE_DECISION_MODEL` applies to every analyzer. No per-family pro
   A verified unsafe path may establish a scoped finding; unresolved siblings remain visible.
 - Only final protected_for_claim is green; model confidence does not close blockers. Do not claim
   runtime exploitation or independent Findings Review.
-- Reuse the catalog and mandatory Go gates rather than adding a separate detector engine/prompt.
+- Reuse the catalog and mandatory evidence validation checks rather than adding a separate detector
+  engine/prompt.
   Preserve existing-family request bytes and historical reports; changed evidence needs new answers.
 - Targets remain read-only. No dependency installs, app execution or remediation in pinned checkouts.
 
@@ -196,8 +197,8 @@ No contributor agents, new worktrees, application execution, sample fixes or int
    names or scanner output alone as truth. Keep answer keys out of model-bound evidence.
 4. Add vulnerable/protected/unknown JS/TS/Python regression pairs first. Implement extraction,
    operands, verified API models, flow/guard facts, versioned path components and guidance,
-   atomic judge questions, mandatory Go gates, and JSON/HTML/SARIF output. Extend shared flow
-   only with a generalizable path-relevant fixture; no target-name or answer-key exceptions.
+   atomic judge questions, mandatory evidence validation checks, and JSON/HTML/SARIF output. Extend
+   shared flow only with a generalizable path-relevant fixture; no target-name or answer-key exceptions.
 5. Run scoped offline tests after each change. Then scan the pinned apps structurally and evaluate
    their source-backed path candidates with Gemini. Use a Go evaluation harness when needed to
    select path candidates from the canonical scan without paying to rejudge every other analyzer.

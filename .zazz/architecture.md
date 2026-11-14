@@ -8,7 +8,7 @@ and delivery order in the [implementation plan](project/implementation-plan.md).
 ## Analyzer terminology
 
 An **Analyzer** is the capability that identifies and assesses a named security concern using
-source evidence, applicable interpretation knowledge, semantic judgment and mandatory Go policy.
+source evidence, applicable interpretation knowledge, semantic judgment and evidence validation.
 Use **Command Injection Analyzer**, **SQL Injection Analyzer**, **NoSQL Injection Analyzer**,
 **XSS Analyzer**, **Input Validation Analyzer** and **Sensitive Data Logging Analyzer** for these
 capabilities. All have bounded implementations; the Command Injection Analyzer (pack `pack.command`, protocol `command-components-v1`) is delivered with a declared POSIX assumption.
@@ -35,6 +35,19 @@ flags or finding-type labels. A report's **SQL Injection** type describes the co
 **SQL Injection Analyzer** names the capability. Historical specifications and evaluation records
 retain their original wording and contracts. The [analyzer and pack ledger](architecture/analysis-packs.md#current-implementation-status)
 and [capability checklist](project/implementation-plan.md#supported-capability-checklist) own current status.
+
+## Evidence validation
+
+**Evidence validation** names the deterministic checks that source facts and model answers meet
+claim-specific requirements: verified bindings, value/invocation identity, relevant path/guard
+coverage, unresolved blockers and answer consistency. Missing or contradictory evidence keeps the
+affected claim unresolved even when the model is confident. These checks apply across supported
+target languages; Go is the scanner's implementation language.
+
+This is an activity within each [analyzer](#analyzer-terminology), implemented by the shared engine.
+Findings classification uses the validated facts and answers to assign the supported outcome.
+Reserve **policy** for security rules, organizational requirements and scan configuration; internal
+symbols such as `applyPolicy` retain their existing names.
 
 ## Current provider decision
 
@@ -94,7 +107,7 @@ an unresolved-evidence outcome, not the quality capability.
 
 Tree-sitter extracts syntax. Go adapters resolve supported bindings and establish bounded value/control
 relationships. The semantic judge evaluates named claims using that evidence and the embedded
-Analysis Guidelines. Go policy prevents model answers from overriding missing source facts or blockers.
+Analysis Guidelines. Evidence validation checks prevent model answers from overriding missing source facts or blockers.
 The reporter preserves evidence and answers while producing Findings, Review and Protected records.
 
 The scanner and its language adapters are implemented in Go. Tree-sitter grammars and bindings
@@ -104,6 +117,7 @@ scanner binary. Analyzed applications are read as source, never executed by the 
 
 | Term | Meaning |
 |---|---|
+| Evidence validation | Deterministic checks of source facts and model answers for completeness, applicability and consistency |
 | Analysis Guidelines | Versioned language documents with secure coding guidance and evidence interpretation instructions |
 | Application requirement | A concrete field or behavior constraint supplied by source or an explicit scan check |
 | API model | A versioned library contract, applicable only with verified binding/provenance |
@@ -136,13 +150,14 @@ flowchart TD
     Catalog -->|"Selected interpretation and questions"| Judge
     Guidelines -->|"Legacy material for unmigrated families"| Judge
     Evidence --> Judge["judge: bounded model requests and typed answers"]
-    Judge --> Policy["judge: claim-specific policy gates"]
-    Policy --> Report["report: classification, guidance, JSON / HTML / SARIF"]
+    Judge --> Validation["judge: claim-specific evidence validation"]
+    Validation --> Report["report: classification, guidance, JSON / HTML / SARIF"]
     Evidence -->|"Offline inspection and deterministic construction findings"| Report
 ```
 
-`cmd/scan` wires these stages. The current request loop is sequential, explicitly capped and
-prioritizes SQL/NoSQL candidates. Failed or capped requests remain failed/unassessed; no retry or
+Each analyzer uses these stages through the shared engine; the diagram shows processing responsibilities,
+not a sequence of separate analyzers. `cmd/scan` wires these stages. The current request loop is
+sequential, explicitly capped and prioritizes database and command candidates. Failed or capped requests remain failed/unassessed; no retry or
 provider fallback is automatic. Source evidence and candidate ordering are deterministic for identical
 inputs; live model predictions have no assumed byte-stability guarantee.
 
@@ -318,7 +333,7 @@ under its stated conditions. Missing requirements remain uncertain rather than i
 Deterministic Go logic recognizes supported operations and construction defects. The semantic judge
 answers claim-specific questions about the supplied evidence. `internal/guidelines` holds Markdown
 Analysis Guidelines, not an executable pattern/rule engine. Current poor-practice findings and model
-verdicts are reconciled by Go judgment/reporting code, not by a separate rules-engine package.
+verdicts are reconciled by evidence validation and reporting code, not by a separate rules-engine package.
 
 Guidelines combine secure coding recommendations with instructions about evidence and uncertainty.
 They are embedded with `go:embed` and selected by language. Report metadata retains their ID/version;
@@ -406,7 +421,7 @@ incremental invalidation. There is no automatic runtime cache implied by saved e
 | `internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
 | `internal/guidelines` | Embedded versioned language Analysis Guidelines |
 | `internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |
-| `internal/judge` | Evidence requests, provider transports, typed answers, policy gates and explicit replay |
+| `internal/judge` | Evidence requests, provider transports, typed answers, evidence validation and explicit replay |
 | `internal/report` | Presentation classification, guidance and JSON/HTML/SARIF bundles |
 
 The diagram names responsibilities, not additional packages to scaffold. Future `ir`, `flow`, `trace`,
@@ -429,8 +444,8 @@ include snapshot/context/value witnesses and are not edit-stable finding fingerp
 ## 12. Validation and unresolved decisions
 
 Golden fixtures verify parsing, source spans and deterministic evidence. Paired controls exercise
-raw/protected/unknown paths and existing languages. Local HTTP stubs verify both transports, malformed
-answers, cancellation, payload limits, policy gates and replay identity. CLI tests cover analysis,
+raw/protected/unknown paths and existing languages. Local HTTP stubs verify provider transports, malformed
+answers, cancellation, payload limits, evidence validation and replay identity. CLI tests cover analysis,
 compatibility flags, schema-1/schema-2 exports and mixed-language bundles. Native Go test/race, vet,
 build and formatting checks follow the [contributor guide](../docs/contributing.md).
 

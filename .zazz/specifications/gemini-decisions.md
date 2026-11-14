@@ -37,7 +37,7 @@ attributed to the pinned requested model; a conflicting model is rejected.
   files, arguments or printed output. Preserve user-owned `.env` files.
 - No retries, redirects with credentials, or provider/model fallback. Retain cancellation,
   deadlines, 64 KiB requests, 1 MiB responses, caps and incomplete assessment semantics.
-- Static evidence/policy gates remain authoritative. Per-candidate question batching and legacy
+- Static evidence requirements and validation checks remain authoritative. Per-candidate question batching and legacy
   OpenAI/Jev payloads/replay stay unchanged. No live Jev tests.
 
 ## Scope and review shape

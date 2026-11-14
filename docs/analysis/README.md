@@ -39,8 +39,8 @@ document pending its component migration. Reports retain guideline identity/vers
 `analysis_guidelines` and selected component provenance under `analysis_components`. Outbound
 observations select static components but send no model request. See the
 [component organization](../technical-approach.md#analysis-knowledge-and-components).
-They do not implement detection or override missing evidence, application requirements or Go policy
-gates. Unlike the product guides on this page, their text is included in model requests.
+They do not implement detection or override missing evidence, application requirements or mandatory
+evidence validation checks. Unlike the product guides on this page, their text is included in model requests.
 
 “Poor practice” remains a finding classification for established defects. It is independent of the
 former `Practice` name for guideline documents. See the [architecture terminology](../../.zazz/architecture.md#1-architecture-premise).

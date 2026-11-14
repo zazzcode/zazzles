@@ -99,7 +99,7 @@ accepted implementation code, and their incomplete package URLs are replaced by 
   missing or insufficient validation, and dangerous use. Runtime attacker intent or fabricated facts
   cannot be established from source alone.
 - Jev cannot invent missing evidence or supply generated explanations. Use named evidence candidates
-  and Go policy; missing context remains explicit.
+  and evidence validation; missing context remains explicit.
 - The pasted client snippets and numerical thresholds are illustrative. Verify the chosen client's
   current API and calibrate policy before implementation; no blind copy of unchecked type assertions.
 - Sub-quarter-second latency, fractional-cent requests, and “98% filtered” are unverified hypotheses
@@ -210,5 +210,5 @@ A failed feasibility result can narrow scope or reopen the proposal with the Pro
 Diagnostic Jev-only/LLM-only baselines measure the chosen Jev Assessment → Findings Review pipeline; they do
 not make the selected model roles optional or imply a return to unrestricted LLM detection.
 
-Methodology refinements follow the [orientation guidance](../docs/zazzles-agent-orientation.md#methodology-refinement).
+Methodology refinements follow the [working protocol](../docs/zazzles-agent-orientation.md#working-protocol).
 Unrelated cleanup remains a separate change.

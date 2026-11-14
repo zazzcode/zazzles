@@ -11,6 +11,10 @@ dependencies, then use the evidence to make verified repairs. Its four product g
 Inspect, Audit and Fix. Scan has bounded implementations today. Inspect as a distinct capability,
 Audit and automated Fix remain planned. A completed run is not a security or quality certification.
 
+Each analyzer uses the shared engine for extraction, model assessment, evidence validation and
+reporting. The [architecture](architecture.md#evidence-validation) owns these definitions and the
+boundary between evidence validation and security policy.
+
 ## Shared decision-model support
 
 OpenAI Decisions (`gpt-6-luna`) and Google Gemini Decisions (`gemini-decision-1`) can assess every

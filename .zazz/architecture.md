@@ -203,7 +203,7 @@ The Node adapters lower bounded Express, Fastify and Hapi registration/configura
 shared invocations and flow. Mongoose's fresh default-ObjectId `findById` contract is independent of
 HTTP and consumes separate operand/type evidence. Model interpretation assesses supplied validators
 and hook code; mandatory gates reject absent implementations and inconsistent conclusions. Python
-keeps its existing behavior pending the [root migration proposal](../PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+keeps its existing behavior; migration to the shared input-fact model remains deferred.
 
 Model-assisted discovery is a separate opt-in acquisition phase with its own protocol/cap/traces.
 The model selects snapshot-bound alternatives; source and dispatch validation belongs to the engine.

@@ -1,8 +1,7 @@
 # Node acquisition and value-fact refactor: verification
 
 [Contract](../specifications/node-http-input-refactor.md) ·
-[Public guidance](../../docs/analysis/node-inputs.md) ·
-[Python proposal](../../PYTHON-INPUT-REFACTOR-PROPOSAL.md)
+[Public guidance](../../docs/analysis/node-inputs.md)
 
 Implemented in the existing `command-injection` worktree after baseline `63cb126`.
 Python implementation remains unchanged. No new paid model calls, target execution, target edits,

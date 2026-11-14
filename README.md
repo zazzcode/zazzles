@@ -108,7 +108,7 @@ initial type, type at the sink, transformations and supplied hooks/schema code. 
 and unary gRPC entries can carry the same facts without assuming that declarations enforce types.
 The same Mongoose, SQL and process contracts consume the evidence; the judge assesses application
 controls, and evidence validation checks completeness and consistency. A schema's presence is not
-protection. Python keeps its existing adapters; its migration is [proposed separately](PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+protection. Python keeps its existing adapters; migration to the shared input-fact model remains deferred.
 
 Optional `--discover-routes --discovery-limit N`, used with `--analyze --judge`, asks the selected model
 to select source-backed Node route/handler alternatives. Discovery has a separate additional request

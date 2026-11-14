@@ -3,8 +3,8 @@
 ## Authorized delivery
 
 User requested this refactor in the existing command-injection worktree and draft PR on 2026-11-07.
-Python implementation remains unchanged; save its migration proposal as `PYTHON-INPUT-REFACTOR-PROPOSAL.md`
-in the project root. Follow AGENTS.md, spec-driven, code-structure/testing standards and doc-check.
+Python implementation remains unchanged; migration planning is deferred and maintained outside this
+repository. Follow AGENTS.md, spec-driven, code-structure/testing standards and doc-check.
 
 Implement the pipeline: verified framework registration → shared input origin/initial type → supplied
 hooks, validators and transformations → framework-independent operation contract → semantic judge →

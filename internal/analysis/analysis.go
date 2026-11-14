@@ -54,18 +54,19 @@ type CandidateUse struct {
 
 // Assessment preserves the judge's result independently from structural evidence.
 type Assessment struct {
-	RequestDigest   string                  `json:"request_digest,omitempty"`
-	AnswerDetails   map[string]AnswerDetail `json:"answer_details,omitempty"`
-	FindingStatus   string                  `json:"finding_status,omitempty"`
-	BlockingGaps    []Gap                   `json:"blocking_gaps,omitempty"`
-	Answers         map[string]string       `json:"answers,omitempty"`
-	Usage           map[string]int64        `json:"usage,omitempty"`
-	Status          string                  `json:"status"`
-	Provider        string                  `json:"provider,omitempty"`
-	Model           string                  `json:"model,omitempty"`
-	QuestionVersion string                  `json:"question_version,omitempty"`
-	Protection      string                  `json:"protection,omitempty"`
-	Reason          string                  `json:"reason,omitempty"`
+	DeduplicatedFrom string                  `json:"deduplicated_from,omitempty"`
+	RequestDigest    string                  `json:"request_digest,omitempty"`
+	AnswerDetails    map[string]AnswerDetail `json:"answer_details,omitempty"`
+	FindingStatus    string                  `json:"finding_status,omitempty"`
+	BlockingGaps     []Gap                   `json:"blocking_gaps,omitempty"`
+	Answers          map[string]string       `json:"answers,omitempty"`
+	Usage            map[string]int64        `json:"usage,omitempty"`
+	Status           string                  `json:"status"`
+	Provider         string                  `json:"provider,omitempty"`
+	Model            string                  `json:"model,omitempty"`
+	QuestionVersion  string                  `json:"question_version,omitempty"`
+	Protection       string                  `json:"protection,omitempty"`
+	Reason           string                  `json:"reason,omitempty"`
 }
 
 // AnalysisReport contains bounded security analysis, separate from the route inventory.
@@ -92,6 +93,7 @@ type AnalysisReport struct {
 	AnalysisGuidelines  []GuidelinesRef     `json:"analysis_guidelines,omitempty"`
 	// SkippedFamilies lists analyzer families deliberately not judged in this run
 	// (--skip-family). Their records stay in the report as not_run Review.
+	OnlyFamilies    []string `json:"only_families,omitempty"`
 	SkippedFamilies []string `json:"skipped_families,omitempty"`
 }
 

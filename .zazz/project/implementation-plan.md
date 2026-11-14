@@ -1,198 +1,176 @@
 # Implementation plan
 
-Current capability and deliverable roadmap. A checked item means a bounded implementation exists;
-it does not establish universal coverage or integration status. Contracts and evaluation records own
-acceptance details. This plan is not blanket implementation or live-call authorization.
+**Reconciled: 2026-11-14.** This document owns the functionality roadmap. **Implemented** means
+bounded code and verification exist in this checkout; it does not mean complete ecosystem coverage,
+a released version, or a merged feature branch. Contracts and evaluation records own detailed
+acceptance evidence. This roadmap does not authorize implementation or live model calls.
 
 ## Product goals and capability boundaries
 
-**Scan** assesses source-code security. **Inspect** will assess correctness, maintainability and
-selected engineering standards. **Audit** will assess dependencies. **Fix** will support agent
-remediation with verification. Scan exists in bounded form; distinct Inspect/Audit/Fix workflows
-remain planned. They can eventually run independently; usage order does not dictate delivery order.
-The broader goal is to turn findings and applicable standards into verified changes and reviewable
-pull requests. See [product responsibilities](../project.md#four-product-capabilities).
+| Capability | Function | State |
+|---|---|---|
+| **Scan** | Assess source-code vulnerabilities, controls, and supported validation/construction practices | Implemented for bounded JavaScript, TypeScript, and Python cases |
+| **Inspect** | Assess correctness, maintainability, and selected engineering standards | Planned as a distinct workflow; existing practice checks provide a foundation |
+| **Audit** | Assess dependency vulnerabilities and retain advisory evidence | Planned |
+| **Fix** | Turn findings or a specified issue into tested repairs and reviewable pull requests | Planned |
+
+The capabilities are intended to work independently or in combination. Fix may start from an
+existing report or user-specified issue. Review is an unresolved report outcome, not an Inspect
+workflow or an independent review service. See [product responsibilities](../project.md#four-product-capabilities).
 
 ## Delivery priorities
 
-1. **Native Scan and Inspect:** strengthen source-code security assessment and develop code-quality/
-   standards assessment on the shared engine. Current Scan/analyzer work, including path traversal,
-   belongs here; a distinct Inspect workflow is still planned.
-2. **SCA Audit:** use per-language ecosystem tooling rather than building an advisory scanner from
-   scratch: npm/pnpm for JavaScript/TypeScript and pip-audit for Python, with separate adapters for
-   later languages. Preserve advisory provenance and dependency evidence.
-3. **Automation and Fix:** add on-demand and cron/scheduled-CI orchestration, scoped remediation
-   agents supplied with findings and standards, tests/reassessment, and focused pull requests.
-4. **External SAST findings:** add imports/adapters for other security and code-quality scanners,
-   preserving their provenance and limits within the established remediation workflow.
+1. Strengthen native Scan and build the distinct Inspect workflow on the shared engine.
+2. Add dependency Audit through ecosystem tooling: npm/pnpm for JS/TS and pip-audit for Python.
+3. Add on-demand and scheduled execution, agent-driven Fix, verification, and pull-request preparation.
+4. Import external SAST and code-quality findings while preserving their provenance.
 
-This is implementation order, not a required usage pipeline. Each capability remains independently
-usable once delivered. Ecosystem SCA adapters in stage 2 are distinct from external SAST finding
-integration in stage 4. The detailed branch checklist below retains existing delivered work and
-bounded follow-on contracts.
+These are delivery priorities, not a mandatory sequence for users. The tables below distinguish
+implemented functionality from planned work; proposed features still need bounded contracts.
 
-## Supported capability checklist
+<a id="supported-capability-checklist"></a>
+<a id="complete-delivery-list"></a>
+<a id="analysis-pack-mvp-initiative"></a>
 
-| Analyzer / infrastructure | JavaScript | TypeScript | Python | Key limits / evidence |
-| --- | --- | --- | --- | --- |
-| Input Validation | [x] | [x] | [x] | Source-backed requirements and enforcing guards; missing business policy stays Review |
-| SQL Injection | [x] | [x] | [x] | Verified SQL APIs, operand/binding and construction claims; [database rules](../../docs/analysis/database-injection.md#sql-rules) |
-| NoSQL Injection — MongoDB-style | [x] | [x] | [ ] | Bounded MongoDB/Mongoose and MarsDB-compatible selectors/expressions; other engines unsupported |
-| Sensitive Data Logging | [x] | [x] | [x] | Sensitive content, emission and redaction; unknown sensitivity stays Review |
-| XSS — server/template, stored, DOM/framework | [x] | [x] | [x] | Bounded render/origin contracts; Python includes selected inline template scripts |
-| XSS — API-to-browser linkage | [x] | [x] | [ ] | General Python linkage remains pending |
-| Command Injection | [x] | [x] | [x] | Process operands, shell/executable/argument claims; [results](../evaluation/command-injection-results.md) |
-| Path Traversal | [x] | [x] | [x] | Verified filesystem, `adm-zip`/`unzipper` Zip Slip and `hbs` layout operands, AST-polarity containment gates; [results](../evaluation/path-traversal-results.md) |
-| Decision-model rate/spend limits | [x] | [x] | [x] | Per-scan `--judge-budget-usd` pre-call reservation and `--judge-rpm`/`--judge-tpm` pacing; [contract](../specifications/decision-model-limits.md) |
-| Common entry/dispatch | [x] | [x] | [x] | HTTP/browser foundations; bounded dynamic HTTP, Node GraphQL/unary gRPC; [acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
-| Outbound observations | [x] | [x] | [x] | Observation only; requested security judgment stays not_run/Review, not SSRF support |
-| JSON / HTML / SARIF | [x] | [x] | [x] | Fresh schema4; schemas1–4 remain readable; [report contract](../architecture/reporting-and-sarif.md) |
+## Completed functionality
 
-NoSQL is an analyzer category intended to cover multiple database engines. MongoDB-style operations
-are the initial implementation, not a generic contract for all NoSQL databases. Each additional
-engine (for example DynamoDB) needs distinct verified API/operand models, rules, guidance and
-controls. Findings must identify the actual database/driver supported by source evidence: MongoDB
-through Mongoose, MarsDB for its compatible in-process operations, or an explicitly unknown engine.
-Do not label MarsDB as a MongoDB server or imply DynamoDB support. See
-[database-specific scope](../../docs/analysis/database-injection.md#database-specific-nosql-scope).
+Every row describes an implemented subset. A supported language or framework is not a claim that
+all its syntax, APIs, or vulnerable paths are covered.
 
-The [sample catalog](vulnerable-sample-apps.md#applications) and analyzer-specific evaluation records
-own exact pins, expected positives, controls and known misses. Historical counts do not imply that
-all later scans or providers achieved the same results. XSS hardening confirmed its 28 required
-cases; [results and controls](../evaluation/xss-hardening-results.md) retain the scope. Python's
-bounded adapter has known SQL coverage gaps; Python NoSQL and general browser linkage remain open.
+| Functionality | Implemented behavior and boundary | Owning reference |
+|---|---|---|
+| **SQL injection** | JS/TS and Python query construction, verified API operand/binding models, and separate injection judgments | [Database rules](../../docs/analysis/database-injection.md#sql-rules) |
+| **NoSQL injection** | JS/TS MongoDB/Mongoose and MarsDB-compatible selectors and executable expressions; Python and other engines remain planned | [Database-specific scope](../../docs/analysis/database-injection.md#database-specific-nosql-scope) |
+| **Input validation** | JS/TS/Python source-established field requirements and enforcing controls, separate from destination protection; missing business policy stays unresolved | [Validation rules](../../docs/analysis/input-validation.md) |
+| **Sensitive-data logging** | JS/TS/Python supported logger calls and access-log credential exposure; data class, content, and redaction assessed separately | [Logging contract](../specifications/sensitive-data-logging.md) |
+| **Cross-site scripting** | Supported server/template and stored-value claims, browser/DOM/framework sinks, and selected JS/TS API-to-browser links; general Python-to-browser linkage remains planned | [XSS rules](../../docs/analysis/xss.md), [hardening results](../evaluation/xss-hardening-results.md) |
+| **Command injection** | Node `child_process` and Python `os`/`subprocess` contracts; shell syntax, executable selection, arguments, and control coverage | [Command results](../evaluation/command-injection-results.md) |
+| **Path traversal** | Supported Node/Python file operands, file serving, archive opens/extraction, Zip Slip, and render-layout paths; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md) |
+| **Outbound observations** | JS/TS HTTP-call observations and supported Python URL-operand tracking; no SSRF judgment or outbound security verdict | [Outbound contract](../specifications/components-03-outbound.md) |
+| **Entry discovery and bounded flow** | Source inventory; shared entry/registration/dispatch/callable records; supported HTTP, browser events, finite dynamic routes, Node Apollo GraphQL, and Node unary gRPC | [Entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
+| **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins, types, transfers, controls, and lifecycle stages; Python remains on its existing adapters | [Node refactor results](../evaluation/node-input-refactor-results.md) |
+| **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
+| **Decision-model assessment** | OpenAI Luna Decisions is primary; optional Gemini and stub-tested Jev adapters use the shared evidence gates and one model selection per scan, without fallback | [Model setup](../../docs/decision-models.md) |
+| **Assessment scheduling and family selection** | Primary security sinks precede standalone validation; zero-call observations consume no request slots; canonical `--only-family` / `--skip-family` flags and environment defaults | [E1 contract](../specifications/analyzer-engine-hardening.md) |
+| **Equivalent-context reuse** | Scan-local reuse only for conservatively equivalent requests; retain each entry's finding, provenance, policy evaluation, and existing exact-request identity; derived records add no usage | [E1 contract and measured limits](../specifications/analyzer-engine-hardening.md#6-acceptance-criteria-slice-e1) |
+| **Request and rate controls** | Per-run assessment cap and optional shared RPM/TPM pacing; disabled pacing skips clock/window work. Spending is managed in the provider console; local dollar budgets/pricing are removed | [Limits contract](../specifications/decision-model-limits.md) |
+| **Embedded analysis knowledge** | Versioned catalog selection and provenance for SQL, NoSQL, validation, XSS, command, path, and outbound observations; logging still uses its existing judge-owned protocol | [Catalog architecture](../architecture/analysis-packs.md), [path contract](../specifications/path-traversal.md) |
+| **Evidence validation and exact replay** | Source-backed completeness/consistency gates, request traces, and exact-match offline replay; confidence cannot supply missing evidence | [Trace architecture](../architecture/trace-judgment.md), [report contract](../architecture/reporting-and-sarif.md) |
+| **Reports and artifacts** | Canonical JSON, standalone HTML, SARIF, entry selection, findings/Review/Protected presentation, saved-report export, and historical schema compatibility; artifacts can be retained in CI | [Running guide](../../docs/running-scans.md), [CI artifacts](../../docs/ci.md) |
 
-## Future capability branches
+## Active delivery: analyzer engine hardening
 
-### Complete delivery list
+E1 scheduling, family filters, and conservative context reuse are implemented and verified in
+`analyzer-engine-hardening`, pending human integration review. The same worktree includes the
+owner-requested removal of dollar budgeting, Luna-first configuration, user-focused README, and
+separate contributor setup. E2–E4 are planned, not completed by this delivery.
 
-Each new deliverable uses its named feature worktree/branch and a bounded tracked contract, then
-human-reviewed integration into `stage`. Completed rows retain their historical branch/capability
-IDs; verify actual Git history before resuming one. Related phases explicitly assigned to one
-worktree stay together, including shared Gemini support and later path analysis in `path-traversal`.
+The original shared-sink call-reduction forecast did not account for different framework inputs,
+transfers, controls, or route-dependent behavior. Reuse preserves those distinctions and has no
+fixed compression target. The [contract](../specifications/analyzer-engine-hardening.md) and local
+run log record the actual tests, external partition, performance checks, and verification outcomes.
 
-| Status | Analyzer / supporting capability | Branch / capability ID | Acceptance target or delivered reference |
-| --- | --- | --- | --- |
-| [x] | Input Validation | `input-validation` | Bounded source-backed policy/enforcement judgments; retain separate destination protection |
-| [x] | SQL Injection | `sql-injection` | Bounded SQL construction, binding and injection judgments on verified APIs |
-| Partial | NoSQL Injection — MongoDB-style | `nosql-injection` | Bounded MongoDB/Mongoose and MarsDB-compatible JS/TS operations; Python and other database engines pending |
-| [x] | Sensitive Data Logging | `logger-leak` | Explicit sensitive logger calls, access-log URL credentials and logging-specific judgment; see the contract |
-| [x] | XSS | `xss-response` | Delivered bounded reflected, stored, browser and cross-tier analysis; retain hardening gaps rather than claiming universal coverage |
-| [x] | Python adapter (shared infrastructure) | `python-support` | Delivered adapter and shared trace/report guardrails; same claim architecture as JS/TS |
-| [x] | Common entry/dispatch (shared infrastructure) | `common-entry-dispatch` | Shared entry/registration/dispatch/callable model; migrate HTTP/browser consumers and add bounded dynamic-route, GraphQL resolver and gRPC handler adapters with explicit unknown controls |
-| [x] | Analysis-pack catalog (shared knowledge infrastructure) | `analysis-pack-mvp` | SQL-first embedded selection, bounded judge composition, report provenance and exact-request replay; [contract](../specifications/analysis-pack-mvp.md), [architecture/ledger](../architecture/analysis-packs.md) |
-| [x] | Command Injection | `command-injection` | Delivered: verified Node/Python process contracts, shell/executable/argument facets, 11 Python framework adapters, GraphQL/gRPC contexts; four full judged scans with every independent positive confirmed ([results](../evaluation/command-injection-results.md)) |
-| [x] | Harden XSS analyzers | `xss-hardening` | Delivered: all 28 source-reviewed XSS cases confirmed across five apps with every control held, including VulnPy's Jinja case and sql.js SQL injection; [contract](../specifications/xss-hardening.md), [results](../evaluation/xss-hardening-results.md), [sample applications](vulnerable-sample-apps.md) |
-| [x] | Shared Gemini Decisions provider | `path-traversal` (interactive prerequisite) | [Provider contract](../specifications/gemini-decisions.md); [verified two-request live sample](../evaluation/gemini-decisions-results.md), shared protocols and single-model selection |
-| [x] | Path Traversal | `path-traversal` | Delivered (human review pending): 11 verified contracts across Node `fs`/Express send/`adm-zip`/`unzipper`/`hbs` layout and Python `open`/`pathlib`/`os.remove`/archive opens/Flask/werkzeug, Tier-1 AST polarity/false-protection hardening, and shared rate/spend controls; all 204 positive sample contexts confirmed, 4/4 sample protected controls held, 78/78 portable controls matched (including 16/16 protected), 11/11 live adversarial controls passed, and 360/360 exact replays verified ([results](../evaluation/path-traversal-results.md), [hardening spec](../specifications/path-traversal-hardening.md)) |
-| [ ] | Code Injection | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |
-| [ ] | XXE | `xxe` | Request-to-XML parsing and verified parser configuration across supported languages |
-| [ ] | Open Redirect | `open-redirect` | Request-influenced redirect targets and actual destination policy |
-| [ ] | Weak Randomness | `weak-randomness` | Randomness used for security-sensitive tokens; ordinary non-security randomness stays a negative |
-| [ ] | Cookie/Session/Header Configuration | `cookie-session-headers` | httpOnly, secure, session configuration and source-backed baseline header requirements |
-| [ ] | SSRF | `ssrf-destination` | Complete judgment of existing outbound candidates, including axios.default.get; verify URL slots and restrictions |
-| [ ] | Prototype Pollution | `prototype-pollution` | JS/TS object/prototype operations such as _.merge; test Python's non-applicability rather than inventing equivalent prototype semantics |
-| [ ] | Python analyzer coverage completion | `python-coverage-completion` | Complete Python NoSQL and API-to-browser XSS linkage coverage immediately before SCA; retain separate binding, origin and rendering claims with paired controls |
-| [ ] | Dependency Audit (planned Audit capability) | `sca-library-audit` | Resolved dependency/advisory auditing for JS/TS npm/pnpm and Python pip-audit, with failures and reachability separate |
-| [ ] | Secret Scanning | `hardcoded-secrets` / secret scanning | Private material in source; public verification keys and placeholders remain controls |
+<a id="future-capability-branches"></a>
+<a id="ordered-specification-backlog"></a>
 
+## Planned functionality
 
-Additional follow-on deliverables require bounded contracts; their placement follows the delivery
-priorities above:
+### Sequenced engine follow-ons
 
-| Status | Deliverable | Proposed worktree/branch | Outcome |
-| --- | --- | --- | --- |
-| [ ] | NoSQL engine expansion | `nosql-engine-<database>` | Separate MongoDB coverage expansion and each new engine's API models/guidance; database identity in findings |
-| [ ] | Logging component migration | `logging-components` | Move existing logger knowledge into catalog without claiming broader detection |
-| [ ] | Stronger claim evidence | `analysis-certainty` | [Targeted plan](analysis-certainty-improvements.md); helper/guard/API evidence and false-protection controls |
-| [ ] | Cross-analyzer scheduling, context dedupe & Wire Bundle v7 | `analyzer-engine-hardening` | [Milestone spec (`E1` ready)](../specifications/analyzer-engine-hardening.md) + [Proposal](analyzer-hardening-and-wire-efficiency-proposal.md): `--only-family`/`--skip-family`, `--judge-limit` XSS/Logging slot fix, default-on Context Deduplication (`-96.9%` multi-adapter calls), shared JS/Python AST guard engine for Command/Path/Validation, monorepo `packageVersion`, and Wire Bundle v7 (`-25–35%` tokens/request) |
-| [ ] | Independent Findings Review | `findings-review` | Separate reviewer, disagreements and completion state; not the judge or Review report category |
-| [ ] | Inspect workflow | `inspect-workflow` | Selected standards, applicability and presentation separate from vulnerability counts |
-| [ ] | Automation, Fix workflow and user-agent skills | `agent-remediation` | Stage 3: scheduled assessments, scoped agents, verified repairs and focused PRs; [workflow proposal](user-agent-skills.md) |
-| [ ] | External SAST/code-quality finding integrations | `external-scanner-findings` | Stage 4: scanner-specific imports, source/provenance retention and reuse of the remediation workflow |
-| [ ] | Baselines, CI severity gate, incremental analysis | `scan-baselines` | Stable identity, invalidation correctness and explicit severity gating |
-| [ ] | Additional source languages | `language-<name>` | Separate language contract; no fixed position or automatic framework parity |
+The [hardening milestone](../specifications/analyzer-engine-hardening.md#0-capability--milestone-roadmap)
+sets the dependency order. Each remaining slice requires its dedicated executable contract before coding.
 
-## Active delivery: shared Gemini, then path traversal
+| Slice | Planned outcome | State |
+|---|---|---|
+| **E2 — Shared guards and workspace manifests** | Reuse AST polarity/termination logic across analyzers; improve command guard coverage; resolve nearest package manifests and workspace lockfiles | Planned blueprint |
+| **E3 — Wire bundle and catalog consolidation** | Coordinate the wire/protocol update, compact repeated material, use direct evidence references for command/path facts, synchronize contract prose, and migrate logging into the catalog | Planned blueprint |
+| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage | Planned blueprint |
 
-The [provider contract](../specifications/gemini-decisions.md#capability-and-boundary) owns interactive
-Gemini setup and verification. The separate [path contract](../specifications/path-traversal.md#1-capability-and-prerequisite)
-owns analyzer implementation and its remaining coverage improvements. The shared provider prerequisite is verified.
+The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
+boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.
 
-- [x] Add `gemini` as one scan-wide provider using only `gemini-decision-1` and v1beta Decisions.
-- [x] Configure `JUDGE_DECISION_MODEL`; reject conflicting CLI settings and model lists.
-- [x] Verify existing analyzers through HTTP stubs; preserve old provider/replay behavior.
-- [x] Run a small authorized Gemini sample scan, recording model, scope, calls and results.
-- [x] Implement path operands, containment evidence, selected components and evidence validation.
-- [x] Close the live protected-control discrepancy: Python `/p/prefix-boundary` now passes live (`protected_for_claim`) after supplying verified module `ROOT`/import excerpts; all 78/78 portable controls (49/49 vulnerable, 16/16 protected, 13/13 unknown/weak) and 11/11 live adversarial controls match.
-- [x] Run the [unattended correction loop](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop) across all eight sample apps; see the [results](../evaluation/path-traversal-results.md).
-- [x] Widen scope (user-approved) to the source-documented traversals in the eight samples: send wrappers, `req.path`, upload save, archive opens, adm-zip extraction, delete.
-- [x] Live verification of general chain/export/mount/immediate-invocation, `unzipper` entry-name (`JS-ZIPSLIP-JUICE`) and `hbs` layout (`JS-LFR-RENDER-JUICE` both call sites) models, plus [Tier-1 hardening](../specifications/path-traversal-hardening.md).
-- [x] Judge all VulnPy contexts: 196 file-open contexts confirmed and all 64 WSGI templates Review; all 260 VulnPy contexts verified via exact replay (`360` total exact replays across all 11 bundles).
-- [x] Implement [shared decision-model controls](../specifications/decision-model-limits.md): per-scan dollar budget with explicit pricing/pre-call reservation, RPM/TPM pacing and flag/environment configuration covering discovery and assessment; update README/setup/output docs.
-- [ ] Further archive libraries, Tier-2 [cross-analyzer architecture & wire-efficiency slices](analyzer-hardening-and-wire-efficiency-proposal.md) and dynamic entry/engine contracts beyond those explicitly modeled remain future coverage.
-- [x] Final full 9-package `-race`, source matrix, exact replay, 3-format parity and checkpoint-compatibility verification passed; human PR review remains next.
+### Analyzer expansion and product workflows
 
-No live Jev evaluation is included. Credentials stay in ignored local `.env` files; all analyzers
-use the same selected provider/model, with no fallback. [Setup](../../docs/decision-models.md#credentials-and-local-environment)
-owns user instructions; the spec owns the official Google references and Go REST decision.
+The following work remains planned; rows are functional goals rather than reserved branches or
+approved implementation assignments.
 
-## Analysis pack MVP initiative
+| Planned functionality | Intended outcome / remaining boundary |
+|---|---|
+| **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; shared Python input facts remain a separate migration |
+| **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases; no implied DynamoDB or universal NoSQL support |
+| **Code injection and XXE** | Request-to-evaluation/code-generation and request-to-XML paths with verified operation/configuration contracts |
+| **Open redirect and SSRF** | Destination policies, verified URL slots, and complete security judgments beyond current outbound observations |
+| **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with appropriate negative controls |
+| **Prototype pollution** | JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
+| **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
+| **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
+| **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |
+| **Inspect workflow** | Select applicable engineering standards and present quality/maintainability findings separately from vulnerability claims |
+| **Dependency Audit** | npm/pnpm and pip-audit adapters, dependency/advisory provenance, SBOM artifacts, and explicit failure/reachability limits; [design](../architecture/sca-design.md) |
+| **Automation and Fix** | Scheduled/on-demand assessments, scoped repair agents supplied with findings and standards, tests/reassessment, and reviewable pull requests; [workflow proposal](user-agent-skills.md) |
+| **External finding imports** | SAST/code-quality adapters retaining source, provenance, and uncertainty within the remediation workflow |
+| **Baselines and incremental analysis** | Stable finding identity, correct invalidation, comparison and explicit severity gates; current exit codes are not severity gates |
+| **Public analysis packs and standards** | Public pack loading and broader user-selected standards; embedded components do not imply an executable plugin system |
+| **Additional acquisition and languages** | Queue inputs and further source-language/framework adapters under separate coverage contracts |
+| **External generalization evaluation** | Bounded checks on fresh JS/TS and Python services against source-reviewed expectations; prior sample results do not establish general accuracy |
 
-The shared embedded catalog is implemented for SQL, JS/TS MongoDB-style NoSQL, standalone validation,
-XSS, command execution and outbound observations. Static adapters select versioned interpretation
-material; the engine enforces mandatory evidence validation checks. Logging migration, public pack loading, downloadable
-plugins and general standards ingestion remain separate work. See the
-[implementation ledger](../architecture/analysis-packs.md#current-implementation-status),
-[selection contract](../architecture/analysis-packs.md#descriptor-and-selection-contract) and
-[bounds](../architecture/analysis-packs.md#bounds-and-compatibility).
+### Deferred analysis boundaries
+
+Windows path/shell semantics, runtime symlink/TOCTOU state, whole-program or greater-than-one-hop
+summaries, a full CFG/SSA rewrite, second-order database-to-path/command flows, and uncommon custom
+archive/template engines are deferred. The [proposal's non-goals](analyzer-hardening-and-wire-efficiency-proposal.md#tier-3--high-effort--low-or-narrow-impact-future-work--do-not-implement-now)
+own the rationale. Unsupported behavior must remain explicit rather than being reported as safe.
 
 ## Structural analysis and semantic judgment
 
-Go establishes bindings, operand roles, values, invocation/control relationships, snapshots and gaps.
-The judge assesses the named claims using each candidate's source-backed slice and applicable
-questions. Several questions share one candidate request; analyzers are not combined into a single
-whole-subgraph request. Model confidence never closes missing structural evidence. Full SSRF,
-whole-program soundness and independent Findings Review are not implemented.
-See [claim gates](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes)
-and [provider boundary](../architecture.md#provider-neutral-judge-boundary).
+Static analysis supplies bindings, operand roles, value transfers, controls, snapshots, and gaps.
+The decision model assesses the named claim; deterministic gates check required evidence and
+consistency. A protected operation does not certify its entire entry or application. Questions can
+share one candidate request, but whole-subgraph cross-analyzer batching is not implemented.
+See [claim gates](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes).
 
 ## Acceptance targets
 
-Use independent source-reviewed vulnerable, protected and unknown controls across applicable
-JS/TS/Python coverage. Pin sample revisions; keep answer keys out of model input. Compare positive
-coverage with false findings and false protection, not only agreement with another scanner.
-Sample checkouts are read-only and reports go outside targets/worktrees. See
-[sample policy](../../docs/samples/reference-policy.md) and
-[available apps](vulnerable-sample-apps.md#applications).
+The [sample catalog](vulnerable-sample-apps.md#applications) owns target pins and source-expectation
+references. Analyzer evaluation records own measured positives, protected controls, unresolved cases,
+and known misses; historical counts and old reports are not automatically current results.
 
-## How a phase becomes agent-manageable work
+Verification uses source-reviewed vulnerable, protected, and unresolved controls, with answer keys
+kept outside model input. Keep pinned targets unchanged and write reports outside their trees.
+See the [baseline policy](../../docs/samples/reference-policy.md). The current worktree's E1 evidence
+includes full race checks, request-byte compatibility, historical exact replay, and report parity;
+future work needs evidence appropriate to its changed behavior.
 
-A contract fixes scope, branch, dependencies, acceptance tests, evaluation references and review
-shape before implementation. Explicit user requests authorize assigned work under
-[AGENTS.md](../../AGENTS.md#authorization-and-delivery). Track execution in ignored
-`.zazz/ephemeral/`; keep durable outcomes in contracts, architecture and evaluation docs.
-No automatic extra worktree, stack, merge or release step is required.
+<a id="how-a-phase-becomes-agent-manageable-work"></a>
 
-## Delivered foundation references
+## Maintaining this plan
 
-Older phase/backlog links below are retained for existing contracts. The redundant thirteen-phase
-proposal and S01–S34 backlog have been replaced by the capability matrix and deliverable list above;
-they are not a second implementation sequence.
+Update a row when functionality is implemented, verification changes its supported boundary, or
+an owner changes the roadmap. Link detailed contracts and results instead of copying their test
+counts or session checklists. Record implementation/review/release state separately; do not mark
+future slices complete merely because an earlier slice in the same milestone shipped.
+
+Explicit user requests authorize assigned work under [AGENTS.md](../../AGENTS.md#authorization-and-delivery).
+Specifications own bounded scope and acceptance; ignored `.zazz/ephemeral/` logs own execution
+history. This document is the single functionality status list, not a second execution tracker.
+
+## Historical references
+
+These anchors preserve older links; the completed and planned tables above own current status.
+
+<a id="active-delivery-shared-gemini-then-path-traversal"></a>
+<a id="delivered-foundation-optional-gemini-adapter-and-path-traversal"></a>
+**Provider/path foundation:** [optional Gemini verification](../evaluation/gemini-decisions-results.md),
+[path results](../evaluation/path-traversal-results.md), and
+[Tier-1 hardening](../specifications/path-traversal-hardening.md).
 
 <a id="first-build"></a>
 <a id="phase-0--foundation-audit-and-tooling-decision"></a>
-**Parser foundation:** [route MVP](../specifications/tree-sitter-route-identification-mvp.md),
-[verification limits](06-route-validation-assessment.md#route-verification).
-
 <a id="route-string-validation-delivery-sequence"></a>
-**Route/string assessment:** delivered bounded resolution, SQL/input-policy evidence, judge transport
-and reporting under the [contract](../specifications/route-string-validation.md). Independent
-Findings Review remains planned. [Two-case results](../evaluation/juice-shop/results.md) own history.
+**Parser and route/string foundations:** [route MVP](../specifications/tree-sitter-route-identification-mvp.md),
+[assessment contract](../specifications/route-string-validation.md), and
+[historical verification](06-route-validation-assessment.md#route-verification).
 
 <a id="phase-11--python-adapter"></a>
-**Python adapter:** [contract](../specifications/python-support.md),
+**Python foundation:** [contract](../specifications/python-support.md) and
 [results/limits](../evaluation/python-support-results.md).
-
-<a id="ordered-specification-backlog"></a>
-**Replacement backlog:** use the [complete delivery list](#complete-delivery-list).

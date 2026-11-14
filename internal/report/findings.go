@@ -233,6 +233,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	} else if f.Status == "poor_practice" && u.Kind != "input_validation_candidate" {
 		f.Uncertainty += " Exploitability is separate from the established construction practice; a missing or inconclusive semantic assessment does not remove this remediation task."
 	}
+	if a.DeduplicatedFrom != "" {
+		f.Uncertainty += " Assessment derived from equivalent entry context " + a.DeduplicatedFrom + "; scanner policy was applied independently to this candidate."
+	}
 	f.Recommendations = scopedGuidance(u, f)
 	return f
 }

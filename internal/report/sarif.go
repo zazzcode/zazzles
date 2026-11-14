@@ -168,6 +168,9 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 	if len(report.SkippedFamilies) > 0 {
 		run["properties"].(map[string]any)["scan.skippedFamilies"] = report.SkippedFamilies
 	}
+	if len(report.OnlyFamilies) > 0 {
+		run["properties"].(map[string]any)["scan.onlyFamilies"] = report.OnlyFamilies
+	}
 	return map[string]any{"$schema": SchemaURI, "version": "2.1.0", "runs": []any{run}}
 }
 

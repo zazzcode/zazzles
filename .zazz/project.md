@@ -14,7 +14,9 @@ Audit and automated Fix remain planned. A completed run is not a security or qua
 The broader framework is intended to collect findings from Zazzles and external SAST, security,
 code-quality and dependency-analysis tools, dispatch scoped remediation agents with applicable
 standards, verify their changes through tests and reassessment, and prepare focused pull requests
-for human review. Current engineering focuses on Zazzles' own Scan engine. External finding
+for human review. On-demand runs and recurring jobs (cron or scheduled CI) should support any
+selected combination of Scan, Inspect and Audit/SCA through this loop. Current engineering focuses
+on Zazzles' own Scan engine. External finding
 integration and automated agent/PR orchestration remain planned; findings retain their tool provenance
 and do not inherit Zazzles verification merely by being imported.
 

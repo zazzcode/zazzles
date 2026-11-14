@@ -3,7 +3,8 @@
 Zazzles is being developed as an assessment and remediation framework for application security,
 code quality and dependencies. Its goal is to connect **Scan**, **Inspect** and **Audit** with an
 automated **Fix** workflow: collect findings, give coding agents the relevant evidence and standards,
-verify their changes, and prepare focused pull requests for human review.
+verify their changes, and prepare focused pull requests for human review. The intended workflow can
+run on demand or periodically through scheduled automation.
 
 **Current focus:** building Zazzles' own source-code security scanner, with bounded JavaScript,
 TypeScript and Python support. It produces source-backed assessments and reviewable reports.
@@ -22,7 +23,7 @@ Inspect/Audit workflows and automated Fix orchestration are not yet implemented.
 |---|---|---|
 | **Scan** | Identify security vulnerabilities and assess security controls | Implemented subsets in JavaScript, TypeScript and Python |
 | **Inspect** | Assess code quality, maintainability and conformance to coding and architecture standards | Planned capability. Existing validation and construction-practice checks provide a foundation |
-| **Audit** | Identify vulnerable dependencies and retain advisory evidence | Planned |
+| **Audit** | Software composition analysis (SCA): identify vulnerable dependencies and retain advisory evidence | Planned |
 | **Fix** | Orchestrate agents to remediate findings using applicable standards, verify changes and prepare pull requests | Planned |
 
 Today's CLI and sample reports describe Scan, which also reports supported validation and
@@ -323,12 +324,17 @@ and prioritize findings from Zazzles and supported external tools, then dispatch
 tasks to coding agents. Each task carries the finding, source evidence, applicable coding and
 architecture standards, and acceptance criteria. Agents implement fixes, run tests and reassess the
 changed code, repeating as needed before preparing focused pull requests with verification evidence.
-Human review governs approval and integration.
+A recurring job, such as cron or a scheduled CI workflow, should be able to run any selected
+combination of Scan, Inspect and Audit/SCA, identify actionable issues, and carry them through this
+remediation loop to pull requests ready for review and merge. Human review and repository checks
+govern approval and integration.
 
 ```mermaid
 flowchart LR
-    Z[Zazzles Scan, Inspect and Audit] --> F[Collect and prioritize findings]
-    X[External security and code-quality tools] --> F
+    T[On demand, cron or scheduled CI] --> Z[Zazzles Scan, Inspect and Audit/SCA]
+    T --> X[External security and code-quality tools]
+    Z --> F[Collect and prioritize findings]
+    X --> F
     F --> A[Dispatch scoped remediation agents]
     S[Applicable coding and architecture standards] --> A
     A --> V[Implement fixes, test and reassess]

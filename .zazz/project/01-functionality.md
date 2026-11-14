@@ -110,7 +110,7 @@ safe/vulnerable pairs and unsupported constructs.
 | Analyzer / capability | Candidate evidence | Mitigation distinctions to test |
 |---|---|---|
 | SQL Injection Analyzer | Source-derived query fragments, query API, parameter positions | Bound values versus dynamic identifiers or SQL fragments |
-| NoSQL Injection Analyzer | Untrusted values/objects entering database filters | Scalar coercion, schema enforcement, operator/object allow-lists |
+| NoSQL Injection Analyzer | Initially MongoDB/Mongoose and MarsDB-compatible filters; other engines need separate API models/rules/guidelines | Scalar coercion, schema enforcement, operator/object allow-lists; findings name the actual database/driver |
 | Command Injection Analyzer | Shell command construction and execution mode | Shell interpolation versus argument-vector execution; executable/option control |
 | Path Traversal Analyzer | Untrusted path parts reaching filesystem operations | Normalization versus enforced base-directory containment |
 | SSRF Analyzer | Untrusted input affecting an outbound request target | Host/scheme restrictions, redirects, unresolved runtime/network behavior |

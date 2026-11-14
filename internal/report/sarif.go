@@ -185,6 +185,11 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/sql-input-protection", "CWE-89"
 	case "nosql_query", "nosql_query_candidate":
 		return "scan/nosql-input-protection", "CWE-943"
+	case "path_traversal_candidate":
+		if isArchiveExtraction(use) {
+			return "scan/path-traversal-archive-extraction", "CWE-22"
+		}
+		return "scan/path-traversal", "CWE-22"
 	case "command_execution_candidate":
 		if use.Assessment.FindingStatus == "confirmed_vulnerability" && use.Assessment.Answers["shell_syntax_protection"] != "vulnerable" && use.Assessment.Answers["executable_control"] != "unsafe" && use.Assessment.Answers["argument_control"] == "unsafe" {
 			return "scan/command-argument-injection", "CWE-88"

@@ -38,6 +38,8 @@ func guidance(use analysis.CandidateUse) Guidance {
 		}, ExampleStatus: "not_generated; driver-specific adaptation and tests required"}
 	case "command_execution_candidate":
 		g = commandGuidance()
+	case "path_traversal_candidate":
+		g = pathGuidance()
 	case "input_validation", "input_validation_candidate":
 		g = Guidance{Title: "Validate and sanitize each request input", Actions: []string{
 			"Define the server-side field policy, then enforce applicable type, presence, length, range, and format constraints before use. Free text must remain valid for its business purpose.",

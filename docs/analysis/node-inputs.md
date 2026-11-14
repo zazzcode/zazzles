@@ -7,7 +7,7 @@ version 1 separates origin, initial type, type at the actual sink, transformatio
 source-present controls and gaps. `acquisition` identifies the entry/input boundary; actual network
 transports remain on the existing entry transport associations, independently of framework metadata. The facts are transport-neutral: HTTP, GraphQL and unary gRPC can
 feed the same sink contracts and judgment policy. Queue acquisition is not implemented. Python
-keeps its existing behavior; its staged migration is [proposed](../../PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+keeps its existing behavior; migration to the shared input-fact model remains deferred.
 
 ## Supported HTTP boundary
 

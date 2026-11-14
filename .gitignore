@@ -34,3 +34,6 @@ graphify-out/
 .idea/
 .vscode/
 *.swp
+
+# Local planning proposal maintained outside this repository
+/PYTHON-INPUT-REFACTOR-PROPOSAL.md

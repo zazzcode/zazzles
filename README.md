@@ -1,22 +1,24 @@
 # Zazzles
 
-Zazzles helps developers and coding agents assess application security, code quality and dependencies,
-then use the resulting evidence to make verified repairs. It explains what needs attention, what
-already works, and what remains uncertain.
+Zazzles is being developed to turn security, code-quality and dependency findings into verified code
+changes. Its vision combines **Scan**, **Inspect** and **Audit** with coding agents that apply the
+relevant standards, test and reassess their fixes, and prepare focused pull requests for review.
+Teams should be able to run this workflow on demand or on a recurring automated schedule.
 
-Security findings and quality assessments have distinct purposes. For example, an application can
-safely bind a value into SQL while failing to enforce a required input format. The validation defect
-still deserves a fix, but it does not establish an injection vulnerability.
+We are building toward that vision in four stages:
 
-The broader goal is a feedback loop: agents create code, Zazzles assesses supported requirements,
-and agents repair issues before tests and reassessment. Teams should be able to use their own
-coding and architecture standards without adopting Zazz methodology.
+1. **Scan and Inspect first:** develop Zazzles' own source-code security and code-quality assessments,
+   backed by source evidence and applicable coding and architecture standards.
+2. **SCA Audit next:** integrate dependency auditing through each language's ecosystem tooling,
+   starting with npm/pnpm for JavaScript/TypeScript and pip-audit for Python.
+3. **Automation and Fix:** schedule assessments, dispatch scoped remediation agents, verify changes
+   through tests and reassessment, and open pull requests for review and merge.
+4. **External SAST findings:** extend the framework to accept findings from other SAST and
+   code-quality scanners, bringing them into the same remediation workflow.
 
-**Available today:** bounded Scan analysis for JavaScript, TypeScript and Python, including
-input-validation judgments and selected construction-practice checks. 
-
-**Planned:** a distinct Inspect
-capability, dependency Audit and automated Fix. Supported checks and limits are described below.
+**Available today:** bounded Scan analysis for JavaScript, TypeScript and Python. Existing validation
+and construction-practice checks provide part of Inspect's foundation; a distinct Inspect workflow,
+SCA Audit, automated remediation and external SAST integrations remain planned.
 
 <a id="project-goals-scan-audit-and-fix"></a>
 <a id="project-goals-scan-quality-audit-and-fix"></a>
@@ -27,15 +29,15 @@ capability, dependency Audit and automated Fix. Supported checks and limits are 
 |---|---|---|
 | **Scan** | Identify security vulnerabilities and assess security controls | Implemented subsets in JavaScript, TypeScript and Python |
 | **Inspect** | Assess code quality, maintainability and conformance to coding and architecture standards | Planned capability. Existing validation and construction-practice checks provide a foundation |
-| **Audit** | Identify vulnerable dependencies and retain advisory evidence | Planned |
-| **Fix** | Help agents repair supported issues from Scan, Inspect and Audit, then verify changes | Planned |
+| **Audit** | Software composition analysis (SCA): identify vulnerable dependencies and retain advisory evidence | Planned |
+| **Fix** | Orchestrate agents to remediate findings using applicable standards, verify changes and prepare pull requests | Planned |
 
 Today's CLI and sample reports describe Scan, which also reports supported validation and
 construction-practice concerns. There is no separate Inspect command or report view yet.
 The four goals define product responsibilities, not four implemented CLI commands.
 
-**Run independently, in any order.** The intended capabilities are not a required pipeline. Use Scan
-for security, Inspect for code quality, or Audit for dependencies as needed.
+**Independent use once available.** The delivery order above does not prescribe how teams use the
+capabilities. Use Scan for security, Inspect for code quality, or Audit for dependencies as needed.
 
 Fix can start from an existing report or a user-specified issue without requiring a fresh run of
 the other capabilities. Each still needs its own inputs and verification.
@@ -61,17 +63,34 @@ Scan reads application source and follows supported input values into security-s
 such as database queries or HTML output. It records the relevant code, value transfers, controls
 and analysis gaps. It does not execute the application.
 
-A large language model (LLM) assesses specific security questions using that evidence. Go policy
-then checks whether the evidence and answers support the conclusion. Missing facts remain explicit,
-even when the model gives a confident answer.
+A large language model (LLM) assesses specific security questions using that evidence.
+**Evidence validation** checks completeness and consistency before classification; missing or
+contradictory facts keep the affected claim in Review. See the
+[architecture definitions](.zazz/architecture.md#evidence-validation).
 
-Development and calibration use the OpenAI Luna Decision API (`gpt-6-luna`). The CLI also implements
-a Jev transport, but transport support does not establish equivalent assessment accuracy.
-The current assessed-scan instructions use Luna. Other provider integrations remain future work.
+Development and calibration have used OpenAI Decisions (`gpt-6-luna`). Google Gemini Decisions
+(`gemini-decision-1`) now supports the same shared judge and passed a
+[bounded live sample scan](.zazz/evaluation/gemini-decisions-results.md).
+The CLI also implements a stub-tested Jev transport. Provider support and one successful sample
+do not establish equivalent assessment accuracy; broader matched evaluation remains separate work.
 
 Model assessment is part of a completed security assessment. Offline scanning still supports source
 inventory, evidence inspection, deterministic construction findings and saved-report export.
 It leaves model assessments marked as not run.
+
+## Model request rates and spending
+
+Use `--judge-limit` / `JUDGE_LIMIT` for assessment requests, `--judge-budget-usd` /
+`JUDGE_BUDGET_USD` for a per-scan spending guard, and `--judge-rpm` / `JUDGE_RPM` plus
+`--judge-tpm` / `JUDGE_TPM` for local pacing. A positive dollar budget also requires
+`--judge-input-usd-per-million` / `JUDGE_INPUT_USD_PER_MILLION` with the highest applicable input price.
+Flags override environment settings; `--judge` still explicitly enables requests.
+
+Discovery and assessment share the rate/spend state. The guard reserves maximum input cost before a
+call; refused work remains unjudged. TPM scheduling uses a documented estimate, and limits apply to
+one process, not the provider account or concurrent scans. Keep provider billing controls in place.
+See [configuration, pricing assumptions and examples](docs/decision-models.md#rate-and-spending-configuration).
+These controls are implemented and verified under the full race suite.
 
 ## Architecture and approach
 
@@ -90,7 +109,7 @@ flowchart LR
     A[Discover entries and handlers] --> B[Track supported values and controls]
     B --> C[Assemble source evidence]
     C --> D[Judge the named security claim]
-    D --> E[Apply evidence gates and report]
+    D --> E[Validate evidence and report]
 ```
 
 A function call alone does not prove that an input reaches a sensitive operation. Unresolved
@@ -104,8 +123,8 @@ and Hapi identify registrations and request inputs. Shared, transport-neutral fa
 initial type, type at the sink, transformations and supplied hooks/schema code. Existing GraphQL
 and unary gRPC entries can carry the same facts without assuming that declarations enforce types.
 The same Mongoose, SQL and process contracts consume the evidence; the judge assesses application
-controls and deterministic policy checks completeness and consistency. A schema's presence is not
-protection. Python keeps its existing adapters; its migration is [proposed separately](PYTHON-INPUT-REFACTOR-PROPOSAL.md).
+controls, and evidence validation checks completeness and consistency. A schema's presence is not
+protection. Python keeps its existing adapters; migration to the shared input-fact model remains deferred.
 
 Optional `--discover-routes --discovery-limit N`, used with `--analyze --judge`, asks the selected model
 to select source-backed Node route/handler alternatives. Discovery has a separate additional request
@@ -120,14 +139,16 @@ trusted reachability or vulnerability findings. Queue acquisition remains future
 
 ### Analyzers, analysis packs and reusable components
 
-An **Analyzer** identifies and assesses a named security concern. Examples include:
+An **Analyzer** spans extraction, interpretation, model assessment, evidence validation and reporting
+for a named security concern. Examples include:
 
 - **SQL Injection Analyzer**
-- **NoSQL Injection Analyzer**
+- **NoSQL Injection Analyzer** — initially bounded MongoDB/Mongoose and MarsDB-compatible operations
 - **XSS Analyzer** — reflected, stored and client-side/DOM/framework analysis
 - **Input Validation Analyzer**
 - **Sensitive Data Logging Analyzer**
 - **Command Injection Analyzer** — Node `child_process` and Python `os`/`subprocess` calls: shell syntax, executable and argument facets across Express, GraphQL/gRPC and 11 Python frameworks
+- **Path Traversal Analyzer** — request-controlled file paths and archive entry names in Node `fs`, Express `sendFile`/`download`, `adm-zip` and `unzipper.Open.buffer` extraction (Zip Slip), `hbs` render layouts, and Python `open`/`pathlib`/archive opens/Flask file APIs: traversal, containment control and coverage (CWE-22)
 
 An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
 questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use
@@ -140,11 +161,10 @@ analyzer does not require a separate engine or package. The
 | Language guidance | How to interpret code and supported controls in JavaScript/TypeScript or Python |
 | Framework and flow capabilities | Which entry bindings and value transfers the compiled analyzer supports |
 | Library contracts | How a supported operation uses its arguments, such as SQL text versus bound values |
-| Claim questions and evidence requirements | What the model must assess and what source facts Go requires for the result |
+| Claim questions and evidence requirements | What the model must assess and what source facts are required for the result |
 
-For each potential issue, static analysis selects the relevant components. The Decision LLM receives
-that interpretation material together with the actual source evidence. Go checks the answers against
-mandatory evidence requirements. A missing binding or unresolved path remains a gap.
+For each potential issue, static analysis selects the relevant components. The decision model receives
+that interpretation material together with the actual source evidence.
 
 For example, Python SQLite and TypeScript Sequelize use different library contracts while sharing
 SQL assessment questions. A separate input-validation assessment can check an established field
@@ -153,8 +173,8 @@ requirement without needing a database contract. SQL protection and field valida
 Reports record component versions and content digests so a judgment can be traced to the knowledge
 used. Saved answers can be replayed only when the exact model request still matches.
 
-The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and
-supported XSS Analyzer capabilities use this design. Outbound
+The SQL Injection, JS/TS NoSQL Injection, Input Validation, XSS, Command Injection and Path Traversal
+Analyzers use this design. Outbound
 observations also select components, but do not yet receive a server-side request forgery (SSRF)
 judgment; they remain Review. The Sensitive Data Logging Analyzer works through its existing path
 and is the remaining component migration.
@@ -164,10 +184,6 @@ See the [technical approach](docs/technical-approach.md#analysis-knowledge-and-c
 ownership, compatibility and coverage details.
 
 ### Technical approach: evidence and semantic judgment
-
-> **Zazzles establishes supported code relationships through static analysis, then uses a decision
-> model to evaluate whether the demonstrated controls satisfy a specific security requirement.
-> Explicit evidence gates constrain the resulting judgment.**
 
 The judge can consider a custom validation function's implementation, actual value transfers and
 relevant conditions. Within supported paths, this reduces the need to define a named sanitizer
@@ -243,7 +259,7 @@ at declared limits. Unresolved behavior remains visible.
 |---|---|
 | **Cross-site scripting (XSS)** | Supported server responses and templates, stored-value traces, DOM/framework sinks and selected server-to-browser links, including REST resources, Angular dialogs and JWT claims |
 | **SQL injection** | Verified query construction and value binding, including Sequelize, sql.js and selected Python DB-API patterns |
-| **NoSQL injection** | Supported JavaScript/TypeScript selectors and executable `$where` expressions |
+| **NoSQL injection — MongoDB-style** | Bounded JavaScript/TypeScript MongoDB/Mongoose and MarsDB-compatible selectors and executable `$where` expressions |
 | **Input validation** | Source-backed field requirements and enforcing guards, assessed separately from operation protection |
 | **Sensitive-data logging** | Request data and credentials reaching verified loggers |
 | **Outbound requests** | Unverified JS/TS `fetch`/`axios` call observations and supported Python URL-operand tracking. Complete SSRF assessment is planned |
@@ -253,6 +269,11 @@ XSS support includes selected EJS, Handlebars, Pug, Jinja, jQuery, React, Vue an
 HTML responses for Flask, Quart, FastAPI, Django, Pyramid, Bottle, aiohttp, Falcon and WSGI.
 Protection depends on the output context and modeled paths. See the
 [XSS guide](docs/analysis/xss.md) and [Python coverage guide](docs/python-support.md) for details.
+
+NoSQL is intended to support multiple databases; MongoDB-style operations are the initial scope.
+DynamoDB and other engines need their own API models, rules and guidance. Findings should identify
+the actual database/driver, including MarsDB for its compatible in-process operations; a generic
+NoSQL label does not establish support for every engine. See [database scope](docs/analysis/database-injection.md#database-specific-nosql-scope).
 
 Python NoSQL and general Python-to-browser linkage remain planned. Go analysis, whole-program
 analysis, independent Findings Review and dependency auditing are also future work.
@@ -271,11 +292,24 @@ per-language checklist and delivery order.
 ### Implemented analyzers and supporting coverage
 
 - **Input Validation Analyzer** and **SQL Injection Analyzer:** supported JS/TS/Python cases.
-- **NoSQL Injection Analyzer:** supported JavaScript/TypeScript cases; Python remains pending.
+- **NoSQL Injection Analyzer:** bounded JavaScript/TypeScript MongoDB/Mongoose and MarsDB-compatible cases; Python and other engines remain pending.
 - **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
+- **Command Injection Analyzer:** verified Node/Python process operands, shell/executable/argument
+  assessments and source-reviewed sample acceptance.
+- **Path Traversal Analyzer:** verified filesystem reads, writes and deletes in Node `fs` and Express
+  `sendFile`/`download`, `hbs` render-layout reads, `adm-zip` and `unzipper.Open.buffer` archive entry
+  writes (Zip Slip), Python `open`/`io.open`/`pathlib` (including `Path.unlink`), `tarfile`/`bz2`/`gzip`/`lzma`
+  opens, `os.remove`, Flask `send_file`/`send_from_directory`, and werkzeug `FileStorage.save`. Request
+  `body`/`query`/`params`/`headers`/`cookies`, `req.path`/`url` (including helper-nested reads), uploaded
+  files, and path-scoped Express route-chain / mounted-router handlers are sources. Separate traversal,
+  containment-control and coverage assessments report confirmed findings, poor-practice findings (weak
+  controls), protected records and Review, with AST branch-polarity, mutation and `realpath`-ordering
+  soundness checks. Unsupported operations, other archive/template libraries and second-order storage
+  flows stay uncovered and are never reported as safe. See the [rules](docs/analysis/path-traversal.md) and
+  [results](.zazz/evaluation/path-traversal-results.md).
 - **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
-  JS/TS API-to-browser links and Python inline-script analysis. Every source-reviewed XSS in the five
-  [primary sample applications](.zazz/project/vulnerable-sample-apps.md) is a confirmed finding; see the
+  JS/TS API-to-browser links and Python inline-script analysis. All 28 required positive cases across the five
+  [primary sample applications](.zazz/project/vulnerable-sample-apps.md) were confirmed, with controls preserved; see the
   [results](.zazz/evaluation/xss-hardening-results.md).
 
 Supporting infrastructure and knowledge:
@@ -289,7 +323,7 @@ Supporting infrastructure and knowledge:
 
 ### Planned analyzers and other work
 
-- **Planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
+- **Planned analyzers:** Code Injection Analyzer, XXE Analyzer,
   Open Redirect Analyzer, Weak Randomness Analyzer, Cookie/Session/Header Configuration Analyzer,
   SSRF Analyzer and JS/TS Prototype Pollution Analyzer.
 - **Python coverage completion:** add NoSQL and API-to-browser linkage before dependency auditing.
@@ -317,44 +351,42 @@ source, expected findings and current scanner results.
 
 ## Goal: an assessment and remediation loop for agents
 
-**One possible planned workflow:** a coding agent writes or revises code, selects Scan, Inspect
-or Audit assessments as needed, then uses Fix to address supported issues. Tests and reassessment
-check the revision before review. This loop is optional, not a required order for the capabilities.
+The planned workflow turns assessment findings into verified, reviewable changes. It should collect
+and prioritize findings from Zazzles and supported external tools, then dispatch scoped remediation
+tasks to coding agents. Each task carries the finding, source evidence, applicable coding and
+architecture standards, and acceptance criteria. Agents implement fixes, run tests and reassess the
+changed code, repeating as needed before preparing focused pull requests with verification evidence.
+A recurring job, such as cron or a scheduled CI workflow, should be able to run any selected
+combination of Scan, Inspect and Audit/SCA, identify actionable issues, and carry them through this
+remediation loop to pull requests ready for review and merge. Human review and repository checks
+govern approval and integration.
 
 ```mermaid
 flowchart LR
-    A[Team requirements and standards] --> B[Agent writes or revises code]
-    B --> C[Choose Scan, Inspect or Audit]
-    C --> D[Fix supported issues]
-    D --> E[Tests and reassessment]
-    E -->|More work| B
-    E -->|Ready for review| F[Human review and approval]
+    T[On demand, cron or scheduled CI] --> Z[Zazzles Scan, Inspect and Audit/SCA]
+    T --> X[External security and code-quality tools]
+    Z --> F[Collect and prioritize findings]
+    X --> F
+    F --> A[Dispatch scoped remediation agents]
+    S[Applicable coding and architecture standards] --> A
+    A --> V[Implement fixes, test and reassess]
+    V -->|Further changes needed| A
+    V -->|Verified changes| P[Prepare focused pull requests]
+    P --> R[Human review and approval]
 ```
 
-Teams should be able to select their own standards for code structure, architecture, validation
-and other engineering practices. Using Zazzles should not require adopting Zazz methodology.
-The selected standard supplies the requirement. Source evidence shows whether the implementation
-meets it within the supported scope.
+Planned tool integrations should retain each finding's source evidence, provenance and assessment
+limits. Importing a finding must not imply independent verification by Zazzles without corresponding
+validation.
 
-Users should not need to write a standards manual to get started. Zazzles already supplies
-versioned language guidance for security assessment. Broader quality baselines and optional team
-profiles are planned. Findings about standards need an identifiable requirement and source evidence,
-not only a model's preference.
+Teams should be able to select their own coding and architecture standards without adopting Zazz
+methodology. Zazzles already embeds versioned security guidance; broader standards selection and
+remediation orchestration remain planned. See the
+[standards-workflow design](.zazz/project/analysis-pack-mvp.md#standards-driven-agent-workflow).
 
-The SQL Injection, NoSQL Injection, Input Validation and XSS Analyzers use
-[analysis packs and components](docs/technical-approach.md#analysis-knowledge-and-components) to
-organize existing knowledge with explicit versions and applicability. Broader team-standard
-components remain planned under the [standards-workflow design](.zazz/project/analysis-pack-mvp.md#standards-driven-agent-workflow).
-Deterministic checks can handle mechanical requirements. Semantic judgment can assess contextual
-requirements using the actual implementation and relevant relationships.
-
-**Available today:** bounded assessments and reviewable reports. **Planned:** general standards
-selection and assessment, plus automated repair orchestration. Zazzles does not currently load
-arbitrary standards documents or run this entire loop.
-
-Passing an assessment covers only its named requirements and analyzed scope. Tests and human
-review still matter. Unsupported standards, missing context and unresolved questions remain visible
-instead of becoming a claim that all code meets a team's standards.
+Scan, Inspect and Audit are intended to remain independently usable. Fix may start from an existing
+report or a user-specified issue; running the complete loop is optional. Tests and reassessment cover
+only the named requirements and analyzed scope, with unresolved evidence kept visible.
 
 ## Agent-first philosophy
 
@@ -394,9 +426,40 @@ load `.env`. The [setup guide](docs/getting-started.md) explains environment loa
 
 ### Required decision-model setup
 
-For a model-assessed security scan, configure Luna using the [decision-model guide](docs/decision-models.md).
-Select it with `--judge openai --judge-model gpt-6-luna --judge-limit <count>`.
-The scanner reads the provider key from its process environment.
+Choose one model in your ignored `.env`. It applies to every analyzer; keep only one active
+`JUDGE_DECISION_MODEL` assignment. Conflicting CLI/environment selections fail before scanning.
+The [decision-model guide](docs/decision-models.md) covers advanced setup and the stub-tested Jev adapter:
+
+| Provider | Model setting | Credential field |
+| --- | --- | --- |
+| OpenAI Decisions | `JUDGE_DECISION_MODEL=gpt-6-luna` | `OPENAI_API_KEY=...` |
+| Google Gemini Decisions | `JUDGE_DECISION_MODEL=gemini-decision-1` | `GEMINI_API_KEY=...` |
+
+Create a Google key in [Google AI Studio](https://aistudio.google.com/api-keys), or use your OpenAI
+API account key. Fill the credential locally; never commit it. Keys may coexist, but each scan
+uses only the selected provider. Google calls use the `v1beta` Decisions endpoint and accept only
+`gemini-decision-1`.
+
+Load your trusted `.env`, then run the command matching its model:
+
+```bash
+set -a
+. ./.env
+set +a
+
+# OpenAI: JUDGE_DECISION_MODEL=gpt-6-luna
+./bin/scan --analyze --entry src/server.ts --route /api/ping \
+  --judge openai --judge-limit 2 /path/to/vulnerable-typescript-app
+
+# Gemini: JUDGE_DECISION_MODEL=gemini-decision-1
+./bin/scan --analyze --entry src/server.ts --route /api/ping \
+  --judge gemini --judge-limit 2 /path/to/vulnerable-typescript-app
+```
+
+Run only the command for the active model. When switching, edit the model setting and reload in a
+fresh shell; commenting a line does not clear a value already exported in the current shell.
+Every analyzer uses this same model selection. Different candidate uses are separate requests;
+each request includes that analyzer's applicable questions over its evidence slice.
 
 Model requests transmit source evidence and can incur charges. Authorize the target scope and
 request count before running them. A configured key does not authorize automatic paid calls.
@@ -407,7 +470,9 @@ model-assessed security scan. Inventory and saved-report export need no model ca
 
 ## Run
 
-The examples below send source evidence to Luna. Set the API key in your process environment first,
+The examples below send source evidence to Luna; set `JUDGE_DECISION_MODEL=gpt-6-luna` first.
+For Gemini, set `JUDGE_DECISION_MODEL=gemini-decision-1` and replace
+`--judge openai --judge-model gpt-6-luna` with `--judge gemini`. Set the API key in your process environment first,
 and choose an authorized request limit and target path.
 
 ```bash

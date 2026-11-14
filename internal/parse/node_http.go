@@ -9,6 +9,8 @@ import (
 // nodeHTTPContext is adapter output consumed by common source/flow assembly.
 // No adapter chooses a database contract or a vulnerability status.
 type nodeHTTPContext struct {
+	pathOnly              bool
+	pathIndex             int
 	entry                 analysis.EntryPoint
 	registration, handler *sourceModule
 	call, body            *sitter.Node

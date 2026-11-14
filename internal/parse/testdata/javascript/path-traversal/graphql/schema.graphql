@@ -1,0 +1,6 @@
+# Source-only Apollo v4 path fixture; never executed.
+type Query {
+ report(name: String): String
+ listed(name: String): String
+ fixed(name: String): String
+}

@@ -39,7 +39,7 @@ the candidate. Missing helper bodies, unresolved effects and reached limits rema
 Established SAST includes structured program models, framework knowledge and dataflow, not just
 text matching. For example, [Semgrep taint rules](https://docs.semgrep.dev/writing-rules/data-flow/taint-mode/overview)
 define sources, propagation, sanitizers and sinks and can produce traces. Zazzles's design places a
-decision model within claim judgment, constrained by static evidence and Go policy. This is an
+decision model within claim judgment, constrained by static evidence and evidence validation. This is an
 architectural distinction, not proof of uniqueness, broader coverage or superior accuracy.
 
 <a id="current-foundation-and-proposed-change"></a>

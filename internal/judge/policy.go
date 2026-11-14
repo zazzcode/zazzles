@@ -17,6 +17,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyCommandPolicy(use, a)
 		return
 	}
+	if use.Kind == "path_traversal_candidate" {
+		applyPathPolicy(use, a)
+		return
+	}
 	if logUse(use) {
 		applyLogPolicy(use, a)
 		return

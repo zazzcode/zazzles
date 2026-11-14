@@ -138,7 +138,7 @@ Phase 9 still owns the stable normalized finding contract, identity/baselines, C
 integration. This bounded adapter does not complete that phase. Neither JSON nor SARIF changes
 finding eligibility, runtime-confirmation state or independent-review policy.
 
-The [query judgment design](query-judgment.md) owns automatic injection evidence and policy gates.
+The [query judgment design](query-judgment.md) owns automatic injection evidence and evidence validation.
 Public [analysis rules](../../docs/analysis/README.md) describe SQL/NoSQL and validation semantics.
 
 Current analysis JSON uses schema4 and `analysis_guidelines`; schemas1–4 remain readable

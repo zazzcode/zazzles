@@ -40,26 +40,7 @@ func commandFields(u analysis.CandidateUse, entry analysis.EntryPoint) []string 
 // language adapter. Language adapters supply blockers, guard evidence and
 // supported-transfer evidence they established from source.
 func commandCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
-	// Control-kind evidence in a command use must not become an applicable control
-	// of the shared invocation context: that would change the invocation identity
-	// and every existing sibling candidate ID. The kinds are namespaced here and
-	// restored as role names below.
-	for i, e := range u.Context {
-		switch e.Kind {
-		case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
-			u.Context[i].Kind = "command_" + e.Kind
-		}
-	}
-	roles := evidenceRoles(u.Context)
-	for kind, items := range roles {
-		if strings.HasPrefix(kind, "command_") {
-			switch strings.TrimPrefix(kind, "command_") {
-			case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
-				roles[strings.TrimPrefix(kind, "command_")] = append(roles[strings.TrimPrefix(kind, "command_")], items...)
-				delete(roles, kind)
-			}
-		}
-	}
+	roles := namespacedRoles(u, "command_")
 	c := &analysis.Completeness{ClaimKind: "command_execution", Required: append([]string{}, commandRequiredRoles...),
 		Evidence: roles, Blockers: blockers, Coverage: coverage, Scope: commandScope}
 	if c.Blockers == nil {
@@ -227,115 +208,24 @@ func finishCommandPaths(u *analysis.CandidateUse, c *analysis.Completeness, guar
 // attachment: claim kind, roles, blockers, guard evidence and the selected
 // contract. It runs with and without explicit check files.
 func (s *moduleSet) assembleCommandClaims(report *analysis.AnalysisReport) {
-	entries := map[string]analysis.EntryPoint{}
-	for _, e := range report.Entries {
-		entries[e.ID] = e
-	}
-	for i := range report.Uses {
-		u := &report.Uses[i]
-		if u.Kind != "command_execution_candidate" || u.Command == nil || u.Completeness != nil {
-			continue
-		}
-		entry, ok := entries[u.EntryID]
-		if !ok {
-			continue
-		}
-		fields := commandFields(*u, entry)
-		check := analysis.Check{ID: "automatic-command", Kind: "command_execution", Fields: fields}
-		switch entry.Kind {
-		case "graphql":
-			check.Selector = &analysis.EntrySelector{Kind: "graphql", Type: entry.GraphQL.Type, Field: entry.GraphQL.Field}
-		case "grpc":
-			service := entry.GRPC.Service
-			if entry.GRPC.Package != "" {
-				service = entry.GRPC.Package + "." + service
-			}
-			check.Selector = &analysis.EntrySelector{Kind: "grpc", Service: service, Method: entry.GRPC.Method}
-		default:
-			check.Method, check.Path = entry.HTTPRoute().Method, entry.HTTPRoute().PathPattern
-		}
-		s.contextLimits = nil
-		s.contextFields = fields
-		// Only this invocation's entry supplies chain evidence: a sibling entry with an
-		// identical (empty) selector must not contribute its registration gaps.
-		scoped := *report
-		scoped.Entries = []analysis.EntryPoint{entry}
-		chain, chainGaps := s.chainEvidence(&scoped, check)
-		chainGaps = s.withoutTransportOnlyGaps(chainGaps)
-		blockers := []analysis.Gap{}
-		for _, g := range append(append([]analysis.Gap{}, chainGaps...), s.contextLimits...) {
-			// The process call itself receives the request value; that is the claim, not a missing helper.
-			if g.Kind == "input_helper_unresolved" && g.At.File == u.Sink.Span.File && g.At.StartByte >= u.Sink.Span.StartByte && g.At.EndByte <= u.Sink.Span.EndByte {
-				continue
-			}
-			blockers = append(blockers, g)
-		}
-
-		// Control flow of the supplied handlers.
-		controlComplete := false
-		var complete []analysis.Evidence
-		extra := map[string][]analysis.Evidence{"invoked_callable": nil}
-		for _, e := range u.Context {
-			if e.Kind != "handler" {
-				continue
-			}
-			module := s.modules[e.Span.File]
-			if module == nil {
-				continue
-			}
-			body := nodeAt(module.tree.RootNode(), e.Span.StartByte, e.Span.EndByte)
-			if body == nil {
-				continue
-			}
-			edges, missing := controlContext(module, body)
-			u.ControlEdges = append(u.ControlEdges, edges...)
-			blockers = append(blockers, missing...)
-			controlComplete = len(missing) == 0
-			if controlComplete {
-				complete = append(complete, e)
-			}
-			extra["control_flow"] = append(extra["control_flow"], e)
-		}
-		// Guards that dominate or enclose the call and mention an operand.
-		guards, transforms := s.commandGuards(u)
-		guardIndex := []int{}
-		for _, g := range guards {
-			guardIndex = append(guardIndex, len(u.Context))
-			u.Context = append(u.Context, g)
-		}
-		u.Context = append(u.Context, chain...)
-		coverage := []analysis.Gap{}
-		for _, g := range u.Gaps {
-			switch {
-			case s.commandGapCovered(u, g, controlComplete, complete, transforms, extra):
-				coverage = append(coverage, g)
-			default:
-				blockers = append(blockers, g)
-			}
-		}
-		c := commandCompleteness(u, extra, blockers, coverage)
-		if len(chain) > 0 && len(chainGaps) == 0 && len(s.contextLimits) == 0 {
-			// Supplied route/middleware context supersedes discovery's generic warning.
-			remaining := []analysis.Gap{}
-			for _, g := range c.Coverage {
-				if g.Kind == "middleware_unresolved" {
-					c.Resolved = append(c.Resolved, g)
-				} else {
-					remaining = append(remaining, g)
-				}
-			}
-			c.Coverage = remaining
-		}
-		for _, t := range transforms {
-			c.ModelFacts = append(c.ModelFacts, "Supported transfer "+t.Text+" at "+t.Span.File+" carries its receiver into the result; judge whether its pattern constrains the value. The transfer is not a validator by itself.")
-		}
-		finishCommandPaths(u, c, guards, guardIndex, func(g analysis.Gap, d analysis.Dependency) bool { return gapTouchesDependency(g, d) })
-		u.Completeness = c
-		u.APIModel = analysispacks.CommandContract(u.Command.ContractID)
-		u.Gaps = append(append([]analysis.Gap{}, u.Gaps...), c.Blockers...)
-		u.Gaps = dedupeGaps(u.Gaps)
-		u.Check = nil
-	}
+	s.assembleClaims(report, claimHooks{
+		kind:      "command_execution_candidate",
+		checkID:   "automatic-command",
+		checkKind: "command_execution",
+		present:   func(u *analysis.CandidateUse) bool { return u.Command != nil },
+		fields:    commandFields,
+		guards:    s.commandGuards,
+		gapCovered: func(u *analysis.CandidateUse, g analysis.Gap, controlComplete bool, complete, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
+			return s.commandGapCovered(u, g, controlComplete, complete, transforms, extra)
+		},
+		complete: commandCompleteness,
+		finish: func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int) {
+			finishCommandPaths(u, c, guards, guardIndex, func(g analysis.Gap, d analysis.Dependency) bool { return gapTouchesDependency(g, d) })
+		},
+		contract: func(u *analysis.CandidateUse) *analysis.APIModel {
+			return analysispacks.CommandContract(u.Command.ContractID)
+		},
+	})
 }
 
 func dedupeGaps(in []analysis.Gap) []analysis.Gap {

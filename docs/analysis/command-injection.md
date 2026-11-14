@@ -31,8 +31,8 @@ a command candidate. Callback output parameters never become command dependencie
 ## Facets and outcomes
 
 Each process use is one record. A model decision answers four questions (shell syntax, executable
-control, argument control, protection coverage); the scanner's Go policy then gates them against the
-source facts:
+control, argument control, protection coverage); evidence validation checks those answers against the
+source facts before classification:
 
 - A shell answer of vulnerable needs a request-derived value in an effective shell-command operand.
   A shell-disabled call with data operands has no shell question, so claiming one is contradictory.

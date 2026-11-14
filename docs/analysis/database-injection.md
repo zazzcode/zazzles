@@ -33,6 +33,21 @@ a MongoDB server or establish support for every MongoDB driver. Unsupported bind
 - A vulnerability verdict requires request-controlled syntax on a supported path, independently of
   the construction-practice answer. Missing field validation alone does not prove SQL injection.
 
+## Database-specific NoSQL scope
+
+NoSQL names the analyzer category, with intended support for multiple database engines. The initial
+implementation covers bounded MongoDB/Mongoose and MarsDB-compatible JavaScript/TypeScript operations.
+It does not provide generic NoSQL coverage. DynamoDB and every additional engine require their own
+verified API/operand models, rules, guidelines, applicability gates and positive/protected/unknown
+controls. Python NoSQL remains unimplemented.
+
+Findings MUST name the actual source-supported database and driver/API in their explanation:
+MongoDB through Mongoose, MarsDB for its compatible in-process queries, or an explicitly unknown
+engine when identity is unresolved. Preserve the NoSQL category and existing machine IDs; database
+identity is additional context. Do not rename MarsDB to MongoDB or infer DynamoDB semantics from
+MongoDB selectors. Historical generic report labels remain historical; a generic category alone
+does not meet this database-identification requirement for future report improvements.
+
 ## NoSQL rules
 
 - Analyze selector keys/values, update data, and executable expressions as different slots.

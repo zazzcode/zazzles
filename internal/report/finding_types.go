@@ -24,6 +24,10 @@ var findingTypes = []analysis.FindingType{
 		Description:    "Request-controlled values reach an operating-system process: shell command text, the executable, a separate argument or process shell configuration.",
 		Interpretation: "One record per process use, with separate shell-syntax, executable-selection and argument facets under a declared POSIX assumption. A confirmed record is a static source judgment, not runtime exploitation or independent Findings Review. Shell-disabled argument arrays do not by themselves establish protection; an unknown utility's options and unmodeled platform behavior remain Review.",
 		Remediation:    "Prefer eliminating process execution. Otherwise use a fixed trusted absolute executable, pass values as separate arguments with the shell disabled, and enforce utility-specific constraints such as a finite set of permitted values. Do not rely on stripping punctuation or on `--` as a universal option terminator."},
+	{ID: "path-traversal", Label: "Path Traversal", Coverage: "bounded Node fs and Python open/io.open/pathlib read and write analysis",
+		Description:    "A request-controlled value selects the file a read or write operation opens, so '..' segments, an absolute path or an unconstrained name can reach files outside the intended directory.",
+		Interpretation: "One record per filesystem use, with separate traversal, containment-control and coverage assessments under a declared POSIX assumption. A confirmed record is a static source judgment (CWE-22), not runtime exploitation or independent Findings Review. Normalization, join or resolve calls, a '..' blacklist, a prefix check without a separator and error handling do not establish containment. Framework file-serving wrappers, uploads, deletes, archives and symbolic-link or race behavior are not modeled and stay Review or uncovered.",
+		Remediation:    "Select files by a trusted identifier or a finite allow-list. Otherwise resolve the final path and enforce a path-component-boundary containment check against the trusted directory before the operation, and decide deliberately how symbolic links are treated."},
 	{ID: "input-validation", Label: "Input Validation", Coverage: "bounded analysis",
 		Description:    "Server-side checks enforce the business requirements for a field, such as required presence, runtime type, permitted format, range, or length.",
 		Interpretation: "Poor input validation means an applicable requirement is not adequately enforced. This neutral family label also covers unresolved checks and supported protection: no validator identified in an analyzed slice is not proof that every execution path lacks validation. Free-text punctuation is not itself a defect.",
@@ -77,6 +81,8 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		ids = append(ids, "nosql-injection")
 	case "command_execution_candidate":
 		return append(ids, "command-injection")
+	case "path_traversal_candidate":
+		return append(ids, "path-traversal")
 	case "input_validation", "input_validation_candidate":
 		ids = append(ids, "input-validation")
 	case "account_creation", "account_creation_candidate":

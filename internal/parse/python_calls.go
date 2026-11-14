@@ -25,6 +25,9 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	if object != nil {
 		receiver = f.eval(object)
 	}
+	// Recording a filesystem candidate is additive and precedes framework call
+	// models, which can consume a call such as send_from_directory whole.
+	f.pathCall(n, fn, receiver, object, method)
 	if v, ok := f.frameworkCall(n, q, nodes, values, all); ok {
 		return v
 	}
@@ -163,6 +166,11 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		if f.route.generated {
 			f.gaps = append(f.gaps, f.gap("python_dispatch_unresolved", "Request-dependent call lacks a supported callable: "+name, n))
 		}
+	}
+	if pyPathObjectNames[q] {
+		// A pathlib object keeps the value's dependencies; the receiver of a later
+		// read or write method carries the effective path.
+		v.binding = "pathlib_path"
 	}
 	return v
 }

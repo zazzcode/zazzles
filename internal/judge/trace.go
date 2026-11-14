@@ -48,7 +48,7 @@ func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis
 		a.Reason = err.Error()
 		return a
 	}
-	details, err := answerDetails(trace.Response, answers, questionsFor(use))
+	details, err := c.answerDetails(trace.Response, answers, questionsFor(use))
 	if err != nil {
 		a.Reason = err.Error()
 		return a

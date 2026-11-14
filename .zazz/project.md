@@ -34,10 +34,14 @@ command injection and preserved Review for unknown field policy. See [verificati
 This bounded result does not establish equal provider accuracy. No live Jev calls were made.
 
 The [roadmap checklist](project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
-separates completed provider setup from the [later Path Traversal Analyzer](specifications/path-traversal.md#1-capability-and-prerequisite),
-which has not been implemented or launched. NoSQL remains an extensible analyzer category with
-bounded MongoDB/Mongoose and MarsDB-compatible support initially; other engines need distinct rules
-and guidance, and findings must identify the actual database/driver.
+tracks both completed provider setup and the delivered [Path Traversal Analyzer](specifications/path-traversal.md#1-capability-and-prerequisite)
+(including [Tier-1 soundness/determinism hardening](specifications/path-traversal-hardening.md) and
+[shared rate/spend controls](specifications/decision-model-limits.md); see [results](evaluation/path-traversal-results.md)).
+Higher-difficulty cross-analyzer improvements are ranked in the
+[hardening and wire-efficiency proposal](project/analyzer-hardening-and-wire-efficiency-proposal.md).
+NoSQL remains an extensible analyzer category with bounded MongoDB/Mongoose and MarsDB-compatible
+support initially; other engines need distinct rules and guidance, and findings must identify the
+actual database/driver.
 
 ## Four product capabilities
 
@@ -248,13 +252,14 @@ established product promises.
 ## Analysis pack initiative
 
 The **SQL Injection Analyzer**, **NoSQL Injection Analyzer** (JS/TS), **Input Validation Analyzer**,
-**XSS Analyzer** and **Command Injection Analyzer** use embedded analysis packs and reusable components. **Sensitive Data Logging
-Analyzer** is implemented on its existing path; its catalog migration remains pending. The **Command
-Injection Analyzer** is delivered ([results](evaluation/command-injection-results.md)); **Harden XSS
-analyzers** is the next analyzer task. XSS includes reflected, stored and client-side/DOM
-capabilities rather than separate engines. The
-[architecture terminology](architecture.md#analyzer-terminology) distinguishes analyzer capabilities,
-analysis-pack knowledge and the shared analysis engine.
+**XSS Analyzer**, **Command Injection Analyzer** and **Path Traversal Analyzer** use embedded analysis
+packs and reusable components. **Sensitive Data Logging Analyzer** is implemented on its existing path;
+its catalog migration remains pending. The **Command Injection Analyzer** ([results](evaluation/command-injection-results.md)),
+**XSS hardening** ([results](evaluation/xss-hardening-results.md)) and **Path Traversal Analyzer**
+([results](evaluation/path-traversal-results.md)) are delivered and live-verified across the pinned
+sample corpus. XSS includes reflected, stored and client-side/DOM capabilities rather than separate
+engines. The [architecture terminology](architecture.md#analyzer-terminology) distinguishes analyzer
+capabilities, analysis-pack knowledge and the shared analysis engine.
 
 The catalog also supports [outbound observations](specifications/components-03-outbound.md), without
 implementing the planned SSRF Analyzer's security assessment. This implements the

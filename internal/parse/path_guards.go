@@ -1,7 +1,6 @@
 package parse
 
 import (
-	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -11,127 +10,19 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
-// pathGuardInfo records, while the syntax context is available, the kind of
-// each guard and which dependencies' derived values it mentions. The assembly
-// reads it back when it attaches guards to flows.
-type pathGuardInfo struct {
-	kinds map[string]string
-	deps  map[string]map[int]bool
-	// ambiguousCallers records a helper with several call sites of which one has no
-	// control, so the controls of the others cannot be attributed to the flow.
-	ambiguousCallers bool
-}
-
-func newPathGuardInfo() *pathGuardInfo {
-	return &pathGuardInfo{kinds: map[string]string{}, deps: map[string]map[int]bool{}}
-}
-
-func guardKey(e analysis.Evidence) string {
-	return fmt.Sprintf("%s:%d:%d", e.Span.File, e.Span.StartByte, e.Span.EndByte)
-}
-
-func (g *pathGuardInfo) note(e analysis.Evidence, kind string, deps map[int]bool) {
-	g.kinds[guardKey(e)] = kind
-	g.deps[guardKey(e)] = deps
-}
-
-var (
-	dotDotText      = regexp.MustCompile(`['"]\.\.['"]|\\\.\\\.|/\\\.\\\./|\.\.(?:/|\\\\)`)
-	boundaryText    = regexp.MustCompile(`(?:\bsep\b|\bpath\.sep\b|\bos\.sep\b|["'` + "`" + `][\\/]+["'` + "`" + `]|\+\s*["'` + "`" + `][\\/])`)
-	startsWithCall  = regexp.MustCompile(`(?:\.\s*(?:startsWith|startswith)\s*\(([^)]*)\))|(?:\.\s*indexOf\s*\(([^)]*)\)\s*===?\s*0)`)
-	relativeCall    = regexp.MustCompile(`\.\s*(?:relative|relpath|is_relative_to|relative_to)\s*\(`)
-	commonPathCall  = regexp.MustCompile(`\.\s*commonpath\s*\(`)
-	membershipCall  = regexp.MustCompile(`([A-Za-z_$][\w$.]*|\[[^\]]*\])\s*\.\s*(?:has|includes|indexOf)\s*\(([^)]*)\)`)
-	inOperator      = regexp.MustCompile(`([A-Za-z_$][\w$.\[\]'"]*)\s+(not\s+)?in\s+([A-Za-z_$][\w$]*|\[[^\]]*\]|\([^)]*\)|\{[^}]*\})`)
-	jsSubscriptTest = regexp.MustCompile(`([A-Za-z_$][\w$]*)\s*\[\s*([A-Za-z_$][\w$.]*)\s*\]`)
-	// keyPresenceTest is `'k' [not] in <container>`; emptyComparison is `x == ''`, `x != None`.
-	// Neither constrains what a present value contains.
-	keyPresenceTest = regexp.MustCompile(`^\s*(?:not\s+)?r?['"][\w -]*['"]\s+(?:not\s+)?in\s+[A-Za-z_][\w.]*\s*$`)
-	emptyComparison = regexp.MustCompile(`^\s*(?:not\s+)?[\w.\[\]'"]+\s*(?:==|!=|is not|is)\s*(?:''|""|None|null|undefined)\s*$`)
-	// separatorText is a test for a path separator character in the value.
-	separatorText = regexp.MustCompile(`(?:includes|indexOf|contains|find)\s*\(\s*(?:path\.sep|os\.sep|['"][\\/]['"])\s*\)|['"][\\/]['"]\s+(?:not\s+)?in\b|\b(?:os|path)\.sep\s+(?:not\s+)?in\b`)
-	constantList  = regexp.MustCompile(`^[\[\(\{]\s*(?:(?:r?['"][^'"]*['"])\s*(?::\s*[^,\]\)\}]*)?\s*,?\s*)+[\]\)\}]$`)
-)
-
-// classifyPathGuardText classifies a control that mentions the path value.
-// defs maps a derived variable to its defining expression so a check on
-// `rel` is understood as the relative-path check it came from. collectionIs
-// reports whether an identifier is a constant finite collection of literals.
-func classifyPathGuardText(cond string, names []string, defs map[string]string, collectionIs func(string) bool) string {
-	if keyPresenceTest.MatchString(cond) || emptyComparison.MatchString(cond) {
-		return analysis.PathGuardPresenceOrType
-	}
-	text := cond
-	related := cond
-	for name, def := range defs {
-		if mentionsAny(cond, []string{name}) {
-			related += " " + def
-		}
-	}
-	for _, m := range membershipCall.FindAllStringSubmatch(related, -1) {
-		receiver, arg := strings.TrimSpace(m[1]), m[2]
-		if !mentionsAny(arg, names) || mentionsAny(receiver, names) {
-			continue
-		}
-		if (strings.HasPrefix(receiver, "[") && constantList.MatchString(receiver)) || collectionIs(receiver) {
-			return analysis.PathGuardAllowlist
-		}
-	}
-	for _, m := range inOperator.FindAllStringSubmatch(text, -1) {
-		left, right := strings.TrimSpace(m[1]), strings.TrimSpace(m[3])
-		if !mentionsAny(left, names) || mentionsAny(right, names) {
-			continue
-		}
-		if constantList.MatchString(right) || collectionIs(right) {
-			return analysis.PathGuardAllowlist
-		}
-	}
-	for _, m := range jsSubscriptTest.FindAllStringSubmatch(text, -1) {
-		if mentionsAny(m[2], names) && collectionIs(m[1]) {
-			return analysis.PathGuardAllowlist
-		}
-	}
-	switch {
-	case commonPathCall.MatchString(related):
-		return analysis.PathGuardCommonPath
-	case relativeCall.MatchString(related):
-		return analysis.PathGuardRelative
-	}
-	if m := startsWithCall.FindStringSubmatch(related); m != nil {
-		arg := m[1] + m[2]
-		if boundaryText.MatchString(arg) {
-			return analysis.PathGuardPrefixBoundary
-		}
-		if dotDotText.MatchString(arg) {
-			return analysis.PathGuardDotDotText
-		}
-		return analysis.PathGuardPrefixBare
-	}
-	if dotDotText.MatchString(text) {
-		return analysis.PathGuardDotDotText
-	}
-	if separatorText.MatchString(text) {
-		return analysis.PathGuardSeparatorText
-	}
-	for _, m := range membershipCall.FindAllStringSubmatch(related, -1) {
-		if mentionsAny(m[1], names) && !mentionsAny(m[2], names) {
-			return analysis.PathGuardSubstring
-		}
-	}
-	return analysis.PathGuardUnclassified
-}
-
 type pathGuardScan struct {
-	m      *sourceModule
-	info   *pathGuardInfo
-	guards []analysis.Evidence
-	seen   map[int]bool
+	m        *sourceModule
+	info     *pathGuardInfo
+	guards   []analysis.Evidence
+	decls    []analysis.Evidence
+	declSeen map[int]bool
+	seen     map[int]bool
 }
 
 // derive extends names with variables initialized from a known name
 // (`const rel = path.relative(root, full)`) so a check on the derived value is
 // attributed to the operand it came from; defs keeps each derived definition.
-func (g *pathGuardScan) derive(scope *sitter.Node, names map[string]bool, defs map[string]string) {
+func (g *pathGuardScan) derive(scope *sitter.Node, names map[string]bool, defs map[string]string, defNodes map[string]*sitter.Node) {
 	list := func() []string {
 		out := make([]string, 0, len(names))
 		for name := range names {
@@ -151,6 +42,7 @@ func (g *pathGuardScan) derive(scope *sitter.Node, names map[string]bool, defs m
 					if !names[name] && mentionsAny(v.Utf8Text(g.m.src), list()) {
 						names[name] = true
 						defs[name] = v.Utf8Text(g.m.src)
+						defNodes[name] = v
 						changed = true
 					}
 				}
@@ -213,8 +105,7 @@ func localFunctionName(m *sourceModule, fn *sitter.Node) string {
 }
 
 // pathGuards finds statements that dominate or enclose the filesystem call and
-// mention a request-derived path value, and classifies each. Presence and type
-// tests are not recorded: they never constrain content.
+// mention a request-derived path value, and classifies each with AST polarity.
 func (s *moduleSet) pathGuards(info *pathGuardInfo) func(*analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) {
 	return func(u *analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) {
 		info.ambiguousCallers = false
@@ -226,181 +117,224 @@ func (s *moduleSet) pathGuards(info *pathGuardInfo) func(*analysis.CandidateUse)
 		if call == nil {
 			return nil, nil
 		}
-		scan := &pathGuardScan{m: m, info: info, seen: map[int]bool{}}
-		operand := map[string]bool{}
-		var collect func(*sitter.Node)
-		collect = func(n *sitter.Node) {
-			if n.Kind() == "identifier" {
-				operand[n.Utf8Text(m.src)] = true
-			}
-			if isFunction(n) {
-				return
-			}
-			for i := uint(0); i < n.NamedChildCount(); i++ {
-				collect(n.NamedChild(i))
-			}
+		scan := &pathGuardScan{m: m, info: info, declSeen: map[int]bool{}, seen: map[int]bool{}}
+		scan.run(u, call)
+		u.Context = append(u.Context, scan.decls...)
+		return scan.guards, nil
+	}
+}
+
+func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
+	m, info := scan.m, scan.info
+	operand := map[string]bool{}
+	var collect func(*sitter.Node)
+	collect = func(n *sitter.Node) {
+		if n.Kind() == "identifier" {
+			operand[n.Utf8Text(m.src)] = true
 		}
-		if args := call.ChildByFieldName("arguments"); args != nil {
-			if first := args.NamedChild(0); first != nil {
-				collect(first)
-			}
+		if isFunction(n) {
+			return
 		}
-		scope := call
-		for p := call.Parent(); p != nil; p = p.Parent() {
-			scope = p
-			if isFunction(p) || p.Kind() == "function_declaration" {
-				break
-			}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			collect(n.NamedChild(i))
 		}
-		// Per dependency: the operand's own identifiers plus that dependency's
-		// value chain, extended through derived variables.
-		type depNames struct {
-			idx   int
-			names map[string]bool
-			list  []string
+	}
+	if args := call.ChildByFieldName("arguments"); args != nil {
+		if first := args.NamedChild(0); first != nil {
+			collect(first)
 		}
-		var all []depNames
-		defs := map[string]string{}
-		for i, d := range u.Dependencies {
-			if d.SinkSlot != analysis.PathSlotFile {
+	}
+	scope := call
+	for p := call.Parent(); p != nil; p = p.Parent() {
+		scope = p
+		if isFunction(p) || p.Kind() == "function_declaration" {
+			break
+		}
+	}
+	type depNames struct {
+		idx   int
+		names map[string]bool
+		list  []string
+	}
+	var all []depNames
+	defs := map[string]string{}
+	defNodes := map[string]*sitter.Node{}
+	for i, d := range u.Dependencies {
+		if d.SinkSlot != analysis.PathSlotFile {
+			continue
+		}
+		names := map[string]bool{}
+		for name := range operand {
+			names[name] = true
+		}
+		for _, name := range commandDepNames(d) {
+			names[name] = true
+		}
+		scan.derive(scope, names, defs, defNodes)
+		list := make([]string, 0, len(names))
+		for name := range names {
+			list = append(list, name)
+		}
+		sort.Strings(list)
+		all = append(all, depNames{i, names, list})
+	}
+	collection := func(name string) bool {
+		trimmed := strings.TrimSpace(name)
+		if !constantCollection(m, trimmed) {
+			return false
+		}
+		if decl := jsTopDeclarationNode(m, trimmed); decl != nil && !scan.declSeen[int(decl.StartByte())] {
+			scan.declSeen[int(decl.StartByte())] = true
+			scan.decls = append(scan.decls, m.evidence("allowlist_definition", decl))
+		}
+		return true
+	}
+	baseConst := func(name string) bool {
+		trimmed := strings.TrimSpace(name)
+		v := topVariable(m, trimmed)
+		if v == nil || shadowedAnywhere(m, trimmed) || bindingReassigned(m, trimmed) || !constantPathValue(m, v, 0) {
+			return false
+		}
+		if decl := jsTopDeclarationNode(m, trimmed); decl != nil && !scan.declSeen[int(decl.StartByte())] {
+			scan.declSeen[int(decl.StartByte())] = true
+			scan.decls = append(scan.decls, m.evidence("constant_base", decl))
+		}
+		return true
+	}
+	consider := func(kind string, polarity guardPolarity, cond, whole *sitter.Node, guardEnd uint) {
+		if cond == nil || scan.seen[int(whole.StartByte())] {
+			return
+		}
+		text := cond.Utf8Text(m.src)
+		covered := map[int]bool{}
+		var union []string
+		for _, d := range all {
+			if !mentionsAny(text, d.list) || pathPresenceOnly(cond, d.list, defs, m.src, 0) {
 				continue
 			}
-			names := map[string]bool{}
-			for name := range operand {
-				names[name] = true
-			}
-			for _, name := range commandDepNames(d) {
-				names[name] = true
-			}
-			scan.derive(scope, names, defs)
-			list := make([]string, 0, len(names))
-			for name := range names {
-				list = append(list, name)
-			}
-			sort.Strings(list)
-			all = append(all, depNames{i, names, list})
-		}
-		collection := func(name string) bool { return constantCollection(m, strings.TrimSpace(name)) }
-		consider := func(kind string, cond, whole *sitter.Node, guardEnd uint) {
-			if cond == nil || scan.seen[int(whole.StartByte())] {
-				return
-			}
-			text := cond.Utf8Text(m.src)
-			covered := map[int]bool{}
-			var union []string
-			for _, d := range all {
-				if !mentionsAny(text, d.list) || pathPresenceOnly(cond, d.list, defs, m.src, 0) {
-					continue
+			var mentioned []string
+			for _, name := range d.list {
+				if mentionsAny(text, []string{name}) {
+					mentioned = append(mentioned, name)
 				}
-				var mentioned []string
-				for _, name := range d.list {
-					if mentionsAny(text, []string{name}) {
-						mentioned = append(mentioned, name)
+			}
+			if scan.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
+				continue
+			}
+			covered[d.idx] = true
+			union = append(union, d.list...)
+		}
+		if len(covered) == 0 {
+			return
+		}
+		scan.seen[int(whole.StartByte())] = true
+		class, rootContain := classifyPathGuardAST(cond, m.src, polarity, union, defs, defNodes, collection, baseConst)
+		if class == analysis.PathGuardPresenceOrType {
+			return
+		}
+		ev := m.evidence(kind, whole)
+		info.noteWithMeta(ev, class, covered, rootContain)
+		scan.guards = append(scan.guards, ev)
+	}
+	climb := func(start *sitter.Node) *sitter.Node {
+		child := start
+		for p := start.Parent(); p != nil; p = p.Parent() {
+			switch p.Kind() {
+			case "statement_block", "program":
+				for i := uint(0); i < p.NamedChildCount(); i++ {
+					sib := p.NamedChild(i)
+					if sib.StartByte() >= child.StartByte() {
+						break
+					}
+					if sib.Kind() == "if_statement" && alwaysExits(sib.ChildByFieldName("consequence")) {
+						consider("terminating_guard", guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte())
 					}
 				}
-				if scan.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
-					continue
-				}
-				covered[d.idx] = true
-				union = append(union, d.list...)
-			}
-			if len(covered) == 0 {
-				return
-			}
-			scan.seen[int(whole.StartByte())] = true
-			class := classifyPathGuardText(text, union, defs, collection)
-			if class == analysis.PathGuardPresenceOrType {
-				return // a presence or emptiness test never constrains content
-			}
-			ev := m.evidence(kind, whole)
-			info.note(ev, class, covered)
-			scan.guards = append(scan.guards, ev)
-		}
-		// climb collects the controls that dominate or enclose start within its
-		// function and returns that function.
-		climb := func(start *sitter.Node) *sitter.Node {
-			child := start
-			for p := start.Parent(); p != nil; p = p.Parent() {
-				switch p.Kind() {
-				case "statement_block", "program":
-					for i := uint(0); i < p.NamedChildCount(); i++ {
-						sib := p.NamedChild(i)
-						if sib.StartByte() >= child.StartByte() {
-							break
-						}
-						if sib.Kind() == "if_statement" && alwaysExits(sib.ChildByFieldName("consequence")) {
-							consider("terminating_guard", sib.ChildByFieldName("condition"), sib, sib.EndByte())
-						}
-					}
-				case "if_statement":
-					cond := p.ChildByFieldName("condition")
-					if cond != nil && int(child.StartByte()) >= int(cond.EndByte()) {
-						consider("enclosing_guard", cond, cond, cond.EndByte())
+			case "if_statement":
+				cond, cons := p.ChildByFieldName("condition"), p.ChildByFieldName("consequence")
+				if cond != nil && cons != nil {
+					if child.StartByte() >= cons.StartByte() && child.EndByte() <= cons.EndByte() {
+						consider("enclosing_guard", guardEnforcesWhenTrue, cond, cond, cond.EndByte())
+					} else if alt := p.ChildByFieldName("alternative"); alt != nil && child.StartByte() >= alt.StartByte() && child.EndByte() <= alt.EndByte() {
+						consider("enclosing_guard", guardRejectsWhenTrue, cond, cond, cond.EndByte())
 					}
 				}
-				child = p
-				if isFunction(p) || p.Kind() == "function_declaration" {
-					return p
-				}
 			}
-			return nil
+			child = p
+			if isFunction(p) || p.Kind() == "function_declaration" {
+				return p
+			}
 		}
-		helper := climb(call)
-		if name := localFunctionName(m, helper); name != "" {
-			// The sink is inside a local helper: the controls that dominate its call
-			// site in the calling function apply to the values passed in. Several call
-			// sites cannot be told apart, so any site without a control leaves the
-			// flow unresolved rather than borrowing a sibling's control.
-			var sites []*sitter.Node
-			for _, e := range u.Context {
-				if e.Kind != "handler" && e.Kind != "path_handler" {
-					continue
+		return nil
+	}
+	helper := climb(call)
+	scan.checkHelperCallers(u, helper, climb)
+	scan.attachImplicitGuards(u)
+}
+
+func (scan *pathGuardScan) checkHelperCallers(u *analysis.CandidateUse, helper *sitter.Node, climb func(*sitter.Node) *sitter.Node) {
+	m, info := scan.m, scan.info
+	name := localFunctionName(m, helper)
+	if name == "" {
+		return
+	}
+	var sites []*sitter.Node
+	for _, e := range u.Context {
+		if e.Kind != "handler" && e.Kind != "path_handler" {
+			continue
+		}
+		if body := nodeAt(m.tree.RootNode(), e.Span.StartByte, e.Span.EndByte); body != nil && e.Span.File == m.file {
+			walkCalls(body, func(c *sitter.Node) {
+				if fn := c.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" && fn.Utf8Text(m.src) == name && !(c.StartByte() >= helper.StartByte() && c.EndByte() <= helper.EndByte()) {
+					sites = append(sites, c)
 				}
-				if body := nodeAt(m.tree.RootNode(), e.Span.StartByte, e.Span.EndByte); body != nil && e.Span.File == m.file {
-					walkCalls(body, func(c *sitter.Node) {
-						if fn := c.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" && fn.Utf8Text(m.src) == name && !(c.StartByte() >= helper.StartByte() && c.EndByte() <= helper.EndByte()) {
-							sites = append(sites, c)
-						}
-					})
+			})
+		}
+	}
+	if len(sites) > 1 {
+		for _, site := range sites {
+			before := len(scan.guards)
+			climb(site)
+			siteEnforcing := false
+			for _, g := range scan.guards[before:] {
+				if analysis.EnforcingPathGuard(info.kinds[guardKey(g)]) {
+					siteEnforcing = true
 				}
 			}
-			unguarded := false
-			for _, site := range sites {
-				before := len(scan.guards)
-				climb(site)
-				if len(scan.guards) == before && len(sites) > 1 {
-					unguarded = true
-				}
-			}
-			if unguarded {
+			if !siteEnforcing {
 				info.ambiguousCallers = true
 			}
 		}
-		if e := u.Path.Extractor; e != nil && e.Assessment == "fixed_version" {
+	} else if len(sites) == 1 {
+		climb(sites[0])
+	}
+}
+
+func (scan *pathGuardScan) attachImplicitGuards(u *analysis.CandidateUse) {
+	m, info := scan.m, scan.info
+	if e := u.Path.Extractor; e != nil && e.Assessment == "fixed_version" {
+		covered := map[int]bool{}
+		for i, d := range u.Dependencies {
+			if d.SinkSlot == analysis.PathSlotArchive {
+				covered[i] = true
+			}
+		}
+		ev := u.Context[e.Context]
+		info.note(ev, analysis.PathGuardLibraryEntryCheck, covered)
+		scan.guards = append(scan.guards, ev)
+	}
+	if u.Path.ContractID == analysispacks.ExpressSendContract {
+		if root := sendRootOption(m, u); root != nil {
 			covered := map[int]bool{}
 			for i, d := range u.Dependencies {
-				if d.SinkSlot == analysis.PathSlotArchive {
+				if d.SinkSlot == analysis.PathSlotFile {
 					covered[i] = true
 				}
 			}
-			ev := u.Context[e.Context]
-			info.note(ev, analysis.PathGuardLibraryEntryCheck, covered)
+			ev := m.evidence("framework_root", root)
+			info.note(ev, analysis.PathGuardFrameworkRoot, covered)
 			scan.guards = append(scan.guards, ev)
 		}
-		if u.Path.ContractID == analysispacks.ExpressSendContract {
-			if root := sendRootOption(m, u); root != nil {
-				covered := map[int]bool{}
-				for i, d := range u.Dependencies {
-					if d.SinkSlot == analysis.PathSlotFile {
-						covered[i] = true
-					}
-				}
-				ev := m.evidence("framework_root", root)
-				info.note(ev, analysis.PathGuardFrameworkRoot, covered)
-				scan.guards = append(scan.guards, ev)
-			}
-		}
-		return scan.guards, nil
 	}
 }
 

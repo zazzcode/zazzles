@@ -8,6 +8,58 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
+// mayContainPathSink checks whether a middleware function or its reachable local
+// callees contain any filesystem, archive or render operation before running a
+// full HTTP handler pass over nonfinal Express route arguments.
+func (s *moduleSet) mayContainPathSink(m *sourceModule, fn *sitter.Node) bool {
+	visited := map[string]bool{}
+	found := false
+	var check func(*sourceModule, *sitter.Node, int)
+	check = func(mod *sourceModule, node *sitter.Node, depth int) {
+		if found || mod == nil || node == nil || depth > 3 {
+			return
+		}
+		walkCalls(node, func(c *sitter.Node) {
+			if found {
+				return
+			}
+			callee := c.ChildByFieldName("function")
+			if callee == nil {
+				return
+			}
+			if _, ok := fsMember(mod, c, callee); ok {
+				found = true
+				return
+			}
+			if _, _, ok := unzipperBufferCall(mod, c); ok {
+				found = true
+				return
+			}
+			if callee.Kind() == "member_expression" {
+				if p := callee.ChildByFieldName("property"); p != nil {
+					switch p.Utf8Text(mod.src) {
+					case "sendFile", "sendfile", "download", "render", "extractAllTo", "extractAllToAsync":
+						found = true
+						return
+					}
+				}
+			}
+			cm, next := s.resolveCall(mod, c)
+			if cm == nil || next == nil {
+				return
+			}
+			key := fmt.Sprintf("%s:%d", cm.file, next.StartByte())
+			if visited[key] {
+				return
+			}
+			visited[key] = true
+			check(cm, next, depth+1)
+		})
+	}
+	check(m, fn, 0)
+	return found
+}
+
 // analyzePathChainHandlers adds path-scoped invocations for source-resolved
 // nonfinal Express handlers. Existing final-handler records are left unchanged.
 func (s *moduleSet) analyzePathChainHandlers(out *analysis.AnalysisReport, m, owner *sourceModule, r analysis.Route, call *sitter.Node, receiver string, context []analysis.Evidence, sourcePath, mount string, seeds registrationSeeds) {
@@ -28,7 +80,7 @@ func (s *moduleSet) analyzePathChainHandlers(out *analysis.AnalysisReport, m, ow
 			h = seeds[h.Utf8Text(m.src)]
 		}
 		hm, node := s.pathHandler(m, h)
-		if hm == nil {
+		if hm == nil || !s.mayContainPathSink(hm, node) {
 			continue
 		}
 		sibling := r

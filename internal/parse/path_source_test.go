@@ -102,10 +102,21 @@ func TestPathSourceCases(t *testing.T) {
 		}
 		return out
 	}
-	hasFlow := func(u analysis.CandidateUse, protection string) bool {
+	hasUnsafeWitness := func(u analysis.CandidateUse) bool {
 		for _, f := range u.Path.Paths {
-			if f.Protection == protection {
+			if f.Protection == "raw" {
 				return true
+			}
+			if f.Protection == "guarded" && len(f.Controls) > 0 && !f.NormalizedBeforeGuard {
+				nonEnforcing := true
+				for _, ci := range f.Controls {
+					if !analysis.KnownNonEnforcingPathGuard(u.Path.Guards[ci].Kind) {
+						nonEnforcing = false
+					}
+				}
+				if nonEnforcing {
+					return true
+				}
 			}
 		}
 		return false
@@ -130,6 +141,14 @@ func TestPathSourceCases(t *testing.T) {
 		}
 		return out
 	}
+	hasFlow := func(u analysis.CandidateUse, protection string) bool {
+		for _, f := range u.Path.Paths {
+			if f.Protection == protection {
+				return true
+			}
+		}
+		return false
+	}
 	for _, row := range m.Positives {
 		if reports[row.Target] == nil {
 			continue
@@ -141,8 +160,8 @@ func TestPathSourceCases(t *testing.T) {
 					t.Fatalf("candidates %d, want %d (contexts)", len(found), max(row.ContextCount, 1))
 				}
 				for _, c := range found {
-					if !hasFlow(c.use, "raw") || c.use.Path.Role != row.Role {
-						t.Fatalf("context %s: want a raw %s flow, got role %s flows %+v", c.registration, row.Role, c.use.Path.Role, c.use.Path.Paths)
+					if !hasUnsafeWitness(c.use) || c.use.Path.Role != row.Role {
+						t.Fatalf("context %s: want an unsafe %s witness flow, got role %s flows %+v guards %+v", c.registration, row.Role, c.use.Path.Role, c.use.Path.Paths, c.use.Path.Guards)
 					}
 					if err := c.use.Path.Validate(len(c.use.Dependencies), len(c.use.Context)); err != nil {
 						t.Fatal(err)

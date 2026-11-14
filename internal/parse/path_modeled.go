@@ -156,10 +156,69 @@ func constantPathValue(m *sourceModule, n *sitter.Node, depth int) bool {
 	return false
 }
 
+var jsMutatingCollectionMethods = map[string]bool{
+	"push": true, "unshift": true, "splice": true, "pop": true, "shift": true,
+	"fill": true, "copyWithin": true, "add": true, "set": true, "delete": true, "clear": true,
+}
+
+func jsCollectionMutated(m *sourceModule, name string) bool {
+	mutated := false
+	var walk func(*sitter.Node)
+	walk = func(n *sitter.Node) {
+		if mutated {
+			return
+		}
+		switch n.Kind() {
+		case "assignment_expression", "augmented_assignment_expression":
+			left := n.ChildByFieldName("left")
+			if left != nil && (left.Kind() == "subscript_expression" || left.Kind() == "member_expression") {
+				if obj := left.ChildByFieldName("object"); obj != nil && obj.Kind() == "identifier" && obj.Utf8Text(m.src) == name {
+					mutated = true
+				}
+			}
+		case "call_expression":
+			fn := n.ChildByFieldName("function")
+			if fn != nil && fn.Kind() == "member_expression" {
+				obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+				if obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(m.src) == name && jsMutatingCollectionMethods[prop.Utf8Text(m.src)] {
+					mutated = true
+				}
+			}
+			if fn != nil && fn.Utf8Text(m.src) == "Object.assign" {
+				if args := n.ChildByFieldName("arguments"); args != nil && args.NamedChildCount() > 0 {
+					if first := args.NamedChild(0); first != nil && first.Kind() == "identifier" && first.Utf8Text(m.src) == name {
+						mutated = true
+					}
+				}
+			}
+		}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			walk(n.NamedChild(i))
+		}
+	}
+	walk(m.tree.RootNode())
+	return mutated
+}
+
+// jsTopDeclarationNode returns the full top-level declaration statement for name.
+func jsTopDeclarationNode(m *sourceModule, name string) *sitter.Node {
+	v := topVariable(m, name)
+	if v == nil {
+		return nil
+	}
+	if p := v.Parent(); p != nil && p.Kind() == "variable_declarator" {
+		if decl := p.Parent(); decl != nil && (decl.Kind() == "lexical_declaration" || decl.Kind() == "variable_declaration") {
+			return decl
+		}
+		return p
+	}
+	return v
+}
+
 // constantCollection reports an array, Set or object literal made only of string
-// literals: a finite set of trusted constant identities.
+// literals and never mutated: a finite set of trusted constant identities.
 func constantCollection(m *sourceModule, name string) bool {
-	if shadowedAnywhere(m, name) || bindingReassigned(m, name) {
+	if shadowedAnywhere(m, name) || bindingReassigned(m, name) || jsCollectionMutated(m, name) {
 		return false
 	}
 	v := topVariable(m, name)
@@ -341,6 +400,20 @@ func (s *moduleSet) pathGapCovered(u *analysis.CandidateUse, g analysis.Gap, con
 		if m := s.modules[g.At.File]; m != nil && s.touchesAnyDependency(g, *u) {
 			if n := nodeAt(m.tree.RootNode(), g.At.StartByte, g.At.EndByte); n != nil && constantPathValue(m, n, 0) {
 				extra["constant_base"] = append(extra["constant_base"], m.evidence("constant_base", n))
+				hasGuard := false
+				for _, ce := range u.Context {
+					if ce.Kind == "terminating_guard" || ce.Kind == "enclosing_guard" {
+						hasGuard = true
+						break
+					}
+				}
+				if hasGuard && n.Kind() == "identifier" {
+					if decl := jsTopDeclarationNode(m, n.Utf8Text(m.src)); decl != nil {
+						ev := m.evidence("constant_base", decl)
+						extra["constant_base"] = append(extra["constant_base"], ev)
+						u.Context = append(u.Context, ev)
+					}
+				}
 				return true
 			}
 		}

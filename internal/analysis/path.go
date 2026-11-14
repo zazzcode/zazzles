@@ -29,18 +29,22 @@ const (
 	PathGuardSeparatorText      = "separator_text"
 	PathGuardUnclassified       = "unclassified"
 	PathGuardSubstring          = "substring"
-	PathTransformRealpath       = "realpath"
-	PathTransformDecode         = "decode"
-	PathTransformJoin           = "join"
-	PathTransformResolve        = "resolve"
-	PathTransformNormalize      = "normalize"
-	PathTransformReduce         = "reduce"
-	PathTransformConcat         = "concat"
-	PathTransformTemplate       = "template"
-	PathTransformAbsolutize     = "absolutize"
-	PathTransformPathObject     = "path_object"
-	PathTransformStringShape    = "string_operation"
-	PathTransformSanitize       = "sanitize_component"
+	// PathGuardInverted marks a verified containment test whose polarity at the
+	// sink is inverted (e.g. the sink executes only when an allow-list or
+	// boundary check fails), so only values OUTSIDE the allowed set reach the sink.
+	PathGuardInverted        = "inverted_containment"
+	PathTransformRealpath    = "realpath"
+	PathTransformDecode      = "decode"
+	PathTransformJoin        = "join"
+	PathTransformResolve     = "resolve"
+	PathTransformNormalize   = "normalize"
+	PathTransformReduce      = "reduce"
+	PathTransformConcat      = "concat"
+	PathTransformTemplate    = "template"
+	PathTransformAbsolutize  = "absolutize"
+	PathTransformPathObject  = "path_object"
+	PathTransformStringShape = "string_operation"
+	PathTransformSanitize    = "sanitize_component"
 )
 
 // PathFacts describes one filesystem path use independently of language.
@@ -52,7 +56,7 @@ type PathFacts struct {
 	ContractID string `json:"contract_id"`
 	// Platform is a declared analysis assumption ("posix"), never inferred from the scanner host.
 	Platform string `json:"platform"`
-	// Role is read, write or unknown (a dynamic mode); it never changes which operand is the path.
+	// Role is read, write, delete or unknown (a dynamic mode); it never changes which operand is the path.
 	Role     string        `json:"role"`
 	Operands []PathOperand `json:"operands"`
 	Paths    []PathFlow    `json:"paths"`
@@ -104,6 +108,12 @@ type PathFlow struct {
 	// DecodedAfterGuard is true when a decoding step on this value follows a
 	// control that mentions it, so the control inspected the pre-decoded text.
 	DecodedAfterGuard bool `json:"decoded_after_guard,omitempty"`
+	// RealpathBeforeGuard is true when symbolic-link resolution on this value
+	// precedes an enforcing boundary control, rather than running after it.
+	RealpathBeforeGuard bool `json:"realpath_before_guard,omitempty"`
+	// NormalizedBeforeGuard is true when path normalization or resolution on the
+	// compared value precedes a positive containment substring check.
+	NormalizedBeforeGuard bool `json:"normalized_before_guard,omitempty"`
 }
 
 // PathGuard is one source-backed control mentioning a path value.
@@ -128,7 +138,7 @@ func EnforcingPathGuard(kind string) bool { return pathEnforcingKind(kind) }
 // KnownNonEnforcingPathGuard reports a recognized control that does not
 // establish containment (text blacklists, presence and type tests).
 func KnownNonEnforcingPathGuard(kind string) bool {
-	return kind == PathGuardDotDotText || kind == PathGuardPresenceOrType || kind == PathGuardSubstring
+	return kind == PathGuardDotDotText || kind == PathGuardPresenceOrType || kind == PathGuardSubstring || kind == PathGuardInverted
 }
 
 // Validate checks every index and enumerated value against the candidate use.
@@ -184,7 +194,7 @@ func (p *PathFacts) Validate(deps, context int) error {
 			return fmt.Errorf("path guard context %d out of range", g.Context)
 		}
 		switch g.Kind {
-		case PathGuardAllowlist, PathGuardPrefixBoundary, PathGuardPrefixBare, PathGuardRelative, PathGuardCommonPath, PathGuardDotDotText, PathGuardPresenceOrType, PathGuardUnclassified, PathGuardComponentSanitizer, PathGuardFrameworkRoot, PathGuardLibraryEntryCheck, PathGuardSeparatorText, PathGuardSubstring:
+		case PathGuardAllowlist, PathGuardPrefixBoundary, PathGuardPrefixBare, PathGuardRelative, PathGuardCommonPath, PathGuardDotDotText, PathGuardPresenceOrType, PathGuardUnclassified, PathGuardComponentSanitizer, PathGuardFrameworkRoot, PathGuardLibraryEntryCheck, PathGuardSeparatorText, PathGuardSubstring, PathGuardInverted:
 		default:
 			return fmt.Errorf("invalid path guard kind %q", g.Kind)
 		}

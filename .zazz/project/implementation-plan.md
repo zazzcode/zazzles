@@ -42,6 +42,8 @@ bounded follow-on contracts.
 | XSS — server/template, stored, DOM/framework | [x] | [x] | [x] | Bounded render/origin contracts; Python includes selected inline template scripts |
 | XSS — API-to-browser linkage | [x] | [x] | [ ] | General Python linkage remains pending |
 | Command Injection | [x] | [x] | [x] | Process operands, shell/executable/argument claims; [results](../evaluation/command-injection-results.md) |
+| Path Traversal | [x] | [x] | [x] | Verified filesystem, `adm-zip`/`unzipper` Zip Slip and `hbs` layout operands, AST-polarity containment gates; [results](../evaluation/path-traversal-results.md) |
+| Decision-model rate/spend limits | [x] | [x] | [x] | Per-scan `--judge-budget-usd` pre-call reservation and `--judge-rpm`/`--judge-tpm` pacing; [contract](../specifications/decision-model-limits.md) |
 | Common entry/dispatch | [x] | [x] | [x] | HTTP/browser foundations; bounded dynamic HTTP, Node GraphQL/unary gRPC; [acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
 | Outbound observations | [x] | [x] | [x] | Observation only; requested security judgment stays not_run/Review, not SSRF support |
 | JSON / HTML / SARIF | [x] | [x] | [x] | Fresh schema4; schemas1–4 remain readable; [report contract](../architecture/reporting-and-sarif.md) |
@@ -82,7 +84,7 @@ worktree stay together, including shared Gemini support and later path analysis 
 | [x] | Command Injection | `command-injection` | Delivered: verified Node/Python process contracts, shell/executable/argument facets, 11 Python framework adapters, GraphQL/gRPC contexts; four full judged scans with every independent positive confirmed ([results](../evaluation/command-injection-results.md)) |
 | [x] | Harden XSS analyzers | `xss-hardening` | Delivered: all 28 source-reviewed XSS cases confirmed across five apps with every control held, including VulnPy's Jinja case and sql.js SQL injection; [contract](../specifications/xss-hardening.md), [results](../evaluation/xss-hardening-results.md), [sample applications](vulnerable-sample-apps.md) |
 | [x] | Shared Gemini Decisions provider | `path-traversal` (interactive prerequisite) | [Provider contract](../specifications/gemini-decisions.md); [verified two-request live sample](../evaluation/gemini-decisions-results.md), shared protocols and single-model selection |
-| [ ] | Path Traversal | `path-traversal` | Verified checkpoint: Node `fs`/Express send, Python `open`/`pathlib`/archive opens/Flask file APIs and `adm-zip` extraction (Zip Slip) with traversal/containment/coverage assessment, poor-practice outcome and `req.path` sources; 116 positive sample contexts judged, 85 positive contexts unjudged, two Juice Shop operations uncovered and one protected fixture unresolved ([results](../evaluation/path-traversal-results.md)); uncovered shapes are documented limits |
+| [x] | Path Traversal | `path-traversal` | Delivered (human review pending): 11 verified contracts across Node `fs`/Express send/`adm-zip`/`unzipper`/`hbs` layout and Python `open`/`pathlib`/`os.remove`/archive opens/Flask/werkzeug, Tier-1 AST polarity/false-protection hardening, and shared rate/spend controls; all 204 positive sample contexts confirmed, 4/4 sample protected controls held, 78/78 portable controls matched (including 16/16 protected), 11/11 live adversarial controls passed, and 360/360 exact replays verified ([results](../evaluation/path-traversal-results.md), [hardening spec](../specifications/path-traversal-hardening.md)) |
 | [ ] | Code Injection | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |
 | [ ] | XXE | `xxe` | Request-to-XML parsing and verified parser configuration across supported languages |
 | [ ] | Open Redirect | `open-redirect` | Request-influenced redirect targets and actual destination policy |
@@ -103,6 +105,7 @@ priorities above:
 | [ ] | NoSQL engine expansion | `nosql-engine-<database>` | Separate MongoDB coverage expansion and each new engine's API models/guidance; database identity in findings |
 | [ ] | Logging component migration | `logging-components` | Move existing logger knowledge into catalog without claiming broader detection |
 | [ ] | Stronger claim evidence | `analysis-certainty` | [Targeted plan](analysis-certainty-improvements.md); helper/guard/API evidence and false-protection controls |
+| [ ] | Cross-analyzer scheduling, context dedupe & Wire Bundle v7 | `analyzer-engine-hardening` | [Proposal](analyzer-hardening-and-wire-efficiency-proposal.md): `--only-family`/`--skip-family`, `--judge-limit` XSS/Logging slot fix, default-on Fact-Signature Context Deduplication (`-96.9%` multi-adapter calls), shared JS/Python AST guard engine for Command/Path/Validation, monorepo `packageVersion`, and Wire Bundle v7 (`-25–35%` tokens/request) |
 | [ ] | Independent Findings Review | `findings-review` | Separate reviewer, disagreements and completion state; not the judge or Review report category |
 | [ ] | Inspect workflow | `inspect-workflow` | Selected standards, applicability and presentation separate from vulnerability counts |
 | [ ] | Automation, Fix workflow and user-agent skills | `agent-remediation` | Stage 3: scheduled assessments, scoped agents, verified repairs and focused PRs; [workflow proposal](user-agent-skills.md) |
@@ -121,14 +124,14 @@ owns analyzer implementation and its remaining coverage improvements. The shared
 - [x] Verify existing analyzers through HTTP stubs; preserve old provider/replay behavior.
 - [x] Run a small authorized Gemini sample scan, recording model, scope, calls and results.
 - [x] Implement path operands, containment evidence, selected components and evidence validation.
-- [ ] Close the live protected-control discrepancy: Python prefix-boundary remains Review (40/40 vulnerable, 14/15 protected, 13/13 unknown/weak controls match; offline gates and report parity pass).
+- [x] Close the live protected-control discrepancy: Python `/p/prefix-boundary` now passes live (`protected_for_claim`) after supplying verified module `ROOT`/import excerpts; all 78/78 portable controls (49/49 vulnerable, 16/16 protected, 13/13 unknown/weak) and 11/11 live adversarial controls match.
 - [x] Run the [unattended correction loop](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop) across all eight sample apps; see the [results](../evaluation/path-traversal-results.md).
 - [x] Widen scope (user-approved) to the source-documented traversals in the eight samples: send wrappers, `req.path`, upload save, archive opens, adm-zip extraction, delete.
-- [ ] Final live verification of implemented general chain/export/mount/immediate-invocation, unzipper entry-name and `hbs` layout models; scoped portable parser/policy/report tests pass.
-- [x] Judge all VulnPy contexts: 196 file-open contexts confirmed and all 64 WSGI templates Review; final replay onto the latest code pending.
-- [x] Implement [shared decision-model controls](../specifications/decision-model-limits.md): per-scan dollar budget with explicit pricing/pre-call reservation, RPM/TPM pacing and flag/environment configuration covering discovery and assessment; update README/setup/output docs. Sample and both local environments are configured; older stage binaries ignore new settings until integration.
-- [ ] Further archive libraries and dynamic entry/engine contracts beyond those explicitly modeled remain future coverage.
-- [ ] Final full race/source/replay/compatibility verification after the last changes (paused at owner request), then human review.
+- [x] Live verification of general chain/export/mount/immediate-invocation, `unzipper` entry-name (`JS-ZIPSLIP-JUICE`) and `hbs` layout (`JS-LFR-RENDER-JUICE` both call sites) models, plus [Tier-1 hardening](../specifications/path-traversal-hardening.md).
+- [x] Judge all VulnPy contexts: 196 file-open contexts confirmed and all 64 WSGI templates Review; all 260 VulnPy contexts verified via exact replay (`360` total exact replays across all 11 bundles).
+- [x] Implement [shared decision-model controls](../specifications/decision-model-limits.md): per-scan dollar budget with explicit pricing/pre-call reservation, RPM/TPM pacing and flag/environment configuration covering discovery and assessment; update README/setup/output docs.
+- [ ] Further archive libraries, Tier-2 [cross-analyzer architecture & wire-efficiency slices](analyzer-hardening-and-wire-efficiency-proposal.md) and dynamic entry/engine contracts beyond those explicitly modeled remain future coverage.
+- [x] Final full 9-package `-race`, source matrix, exact replay, 3-format parity and checkpoint-compatibility verification passed; human PR review remains next.
 
 No live Jev evaluation is included. Credentials stay in ignored local `.env` files; all analyzers
 use the same selected provider/model, with no fallback. [Setup](../../docs/decision-models.md#credentials-and-local-environment)

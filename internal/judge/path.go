@@ -99,6 +99,9 @@ func unsafeWitness(f *analysis.PathFacts, flow analysis.PathFlow, python bool) b
 			if k == analysis.PathGuardDotDotText && !absoluteCanReplaceBase(flow, python) {
 				return false
 			}
+			if k == analysis.PathGuardSubstring && flow.NormalizedBeforeGuard {
+				return false
+			}
 		}
 		return true
 	}
@@ -107,9 +110,9 @@ func unsafeWitness(f *analysis.PathFacts, flow analysis.PathFlow, python bool) b
 
 // weakControlsOnly reports that every request-derived flow is guarded and every
 // control on it is a recognized weak kind: a prefix comparison without a separator
-// boundary, a '..' text test or a separator-only test. Such a control is poor
-// practice (it does not establish containment) without being a proven exploit;
-// an unclassified control is not recognized and never counts here.
+// boundary, a normalized positive substring check, a '..' text test or a separator-only test.
+// Such a control is poor practice (it does not establish containment) without being a proven
+// exploit; an unclassified control is not recognized and never counts here.
 func weakControlsOnly(f *analysis.PathFacts) bool {
 	if len(f.Paths) == 0 {
 		return false
@@ -120,7 +123,7 @@ func weakControlsOnly(f *analysis.PathFacts) bool {
 		}
 		for _, k := range guardKindsOf(f, flow) {
 			switch k {
-			case analysis.PathGuardPrefixBare, analysis.PathGuardDotDotText, analysis.PathGuardSeparatorText:
+			case analysis.PathGuardPrefixBare, analysis.PathGuardDotDotText, analysis.PathGuardSeparatorText, analysis.PathGuardSubstring:
 			default:
 				return false
 			}
@@ -211,8 +214,8 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		}
 		if ans["containment_control"] == "resolved_boundary" {
 			for _, flow := range f.Paths {
-				if !hasTransform(flow, analysis.PathTransformRealpath) {
-					contradict("symbolic-link-resolved containment claimed but a request-derived path is not produced by a realpath/resolve call in the supplied source")
+				if !hasTransform(flow, analysis.PathTransformRealpath) || !flow.RealpathBeforeGuard {
+					contradict("symbolic-link-resolved containment claimed but a request-derived path is not produced by a realpath/resolve call before the boundary check in the supplied source")
 					break
 				}
 			}

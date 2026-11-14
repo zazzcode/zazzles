@@ -7,12 +7,14 @@ Follow only the section links relevant to the task; linked documents are not aut
 
 The assigned worktree/branch is `path-traversal`. Shared Gemini support for **all analyzers** is
 implemented with a [passing two-request live sample](../evaluation/gemini-decisions-results.md#scope-and-outcome).
-Path traversal implementation and evaluation continue under the
-[analyzer contract](../specifications/path-traversal.md#1-capability-and-prerequisite) and
-[results](../evaluation/path-traversal-results.md); the
-[active checklist](../project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
-owns progress. All VulnPy contexts are judged. The implemented Juice Shop coverage and shared controls need final live/full verification; one conservative protected-fixture disagreement and human review remain open. The owner authorized closing these and implementing [shared rate/spend configuration](../specifications/decision-model-limits.md) after the verified checkpoint. Read the ignored
-`.zazz/ephemeral/path-traversal-run-log.md` on resume if present.
+Path traversal implementation, [Tier-1 soundness/determinism hardening](../specifications/path-traversal-hardening.md),
+and [shared rate/spend configuration](../specifications/decision-model-limits.md) are implemented and verified
+under the [analyzer contract](../specifications/path-traversal.md#1-capability-and-prerequisite) and
+[results](../evaluation/path-traversal-results.md): all 204 positive sample contexts, 4/4 sample protected
+controls, 78/78 portable controls, 11/11 live adversarial controls and 360 exact replays pass, alongside
+the full 9-package `-race` suite. Higher-difficulty cross-analyzer improvements are ranked in the
+[hardening and wire-efficiency proposal](../project/analyzer-hardening-and-wire-efficiency-proposal.md).
+Human review remains open. Read the ignored `.zazz/ephemeral/path-traversal-run-log.md` on resume if present.
 Preserve concurrent user edits, especially local credentials. No live Jev evaluation is assigned.
 
 ## Code structure

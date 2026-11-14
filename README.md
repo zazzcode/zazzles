@@ -90,7 +90,7 @@ Discovery and assessment share the rate/spend state. The guard reserves maximum 
 call; refused work remains unjudged. TPM scheduling uses a documented estimate, and limits apply to
 one process, not the provider account or concurrent scans. Keep provider billing controls in place.
 See [configuration, pricing assumptions and examples](docs/decision-models.md#rate-and-spending-configuration).
-These controls are implemented in the continuation checkpoint; final full verification is pending.
+These controls are implemented and verified under the full race suite.
 
 ## Architecture and approach
 
@@ -148,7 +148,7 @@ for a named security concern. Examples include:
 - **Input Validation Analyzer**
 - **Sensitive Data Logging Analyzer**
 - **Command Injection Analyzer** — Node `child_process` and Python `os`/`subprocess` calls: shell syntax, executable and argument facets across Express, GraphQL/gRPC and 11 Python frameworks
-- **Path Traversal Analyzer** — request-controlled file paths and archive entry names in Node `fs`, Express `sendFile`/`download`, `adm-zip` extraction (Zip Slip) and Python `open`/`pathlib`/archive opens/Flask file APIs: traversal, containment control and coverage (CWE-22)
+- **Path Traversal Analyzer** — request-controlled file paths and archive entry names in Node `fs`, Express `sendFile`/`download`, `adm-zip` and `unzipper.Open.buffer` extraction (Zip Slip), `hbs` render layouts, and Python `open`/`pathlib`/archive opens/Flask file APIs: traversal, containment control and coverage (CWE-22)
 
 An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
 questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use
@@ -297,13 +297,15 @@ per-language checklist and delivery order.
 - **Command Injection Analyzer:** verified Node/Python process operands, shell/executable/argument
   assessments and source-reviewed sample acceptance.
 - **Path Traversal Analyzer:** verified filesystem reads, writes and deletes in Node `fs` and Express
-  `sendFile`/`download`, Python `open`/`io.open`/`pathlib`, `tarfile`/`bz2`/`gzip`/`lzma` opens,
-  `os.remove`, Flask `send_file`/`send_from_directory`, werkzeug `FileStorage.save`, and `adm-zip`
-  extraction (Zip Slip, version-checked). Request `body`/`query`/`params`/`headers`/`cookies`, `req.path`/`url`
-  and uploaded files are sources. Separate traversal, containment-control and coverage assessments report
-  confirmed findings, poor-practice findings (weak controls), protected records and Review. Unsupported
-  operations, other archive libraries, middleware-chain handlers and template-layout reads stay uncovered and
-  are never reported as safe. See the [rules](docs/analysis/path-traversal.md) and
+  `sendFile`/`download`, `hbs` render-layout reads, `adm-zip` and `unzipper.Open.buffer` archive entry
+  writes (Zip Slip), Python `open`/`io.open`/`pathlib` (including `Path.unlink`), `tarfile`/`bz2`/`gzip`/`lzma`
+  opens, `os.remove`, Flask `send_file`/`send_from_directory`, and werkzeug `FileStorage.save`. Request
+  `body`/`query`/`params`/`headers`/`cookies`, `req.path`/`url` (including helper-nested reads), uploaded
+  files, and path-scoped Express route-chain / mounted-router handlers are sources. Separate traversal,
+  containment-control and coverage assessments report confirmed findings, poor-practice findings (weak
+  controls), protected records and Review, with AST branch-polarity, mutation and `realpath`-ordering
+  soundness checks. Unsupported operations, other archive/template libraries and second-order storage
+  flows stay uncovered and are never reported as safe. See the [rules](docs/analysis/path-traversal.md) and
   [results](.zazz/evaluation/path-traversal-results.md).
 - **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
   JS/TS API-to-browser links and Python inline-script analysis. All 28 required positive cases across the five
@@ -321,7 +323,7 @@ Supporting infrastructure and knowledge:
 
 ### Planned analyzers and other work
 
-- **Planned analyzers:** Path Traversal Analyzer, Code Injection Analyzer, XXE Analyzer,
+- **Planned analyzers:** Code Injection Analyzer, XXE Analyzer,
   Open Redirect Analyzer, Weak Randomness Analyzer, Cookie/Session/Header Configuration Analyzer,
   SSRF Analyzer and JS/TS Prototype Pollution Analyzer.
 - **Python coverage completion:** add NoSQL and API-to-browser linkage before dependency auditing.

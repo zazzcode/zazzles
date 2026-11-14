@@ -423,3 +423,319 @@ func TestPathExpandedChainAndLayout(t *testing.T) {
 		}
 	}
 }
+
+func TestPathGuardPolarityAndBypass(t *testing.T) {
+	tsRoot := t.TempDir()
+	writeSource(t, tsRoot, "server.ts", `
+import express, { Request, Response } from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
+const app = express();
+const ROOT = path.resolve(__dirname, 'uploads');
+const ALLOWED = new Set(['a.txt', 'b.txt']);
+app.get('/else-branch', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (ALLOWED.has(f)) { return res.send('cached'); } else { res.send(fs.readFileSync(path.join(ROOT, f))); }
+});
+app.get('/negated-consequence', (req: Request, res: Response) => {
+  const full = path.resolve(ROOT, req.query.f as string);
+  if (!full.startsWith(ROOT + path.sep)) { res.send(fs.readFileSync(full)); }
+});
+app.get('/inverted-terminating', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (ALLOWED.has(f)) return res.status(403).end();
+  res.send(fs.readFileSync(path.join(ROOT, f)));
+});
+app.get('/conjunct-bypass', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (!req.query.admin && !ALLOWED.has(f)) return res.status(403).end();
+  res.send(fs.readFileSync(path.join(ROOT, f)));
+});
+app.get('/disjunct-enforced', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (!req.query.admin || !ALLOWED.has(f)) return res.status(403).end();
+  res.send(fs.readFileSync(path.join(ROOT, f)));
+});
+app.get('/enclosing-positive', (req: Request, res: Response) => {
+  const full = path.resolve(ROOT, req.query.f as string);
+  if (full.startsWith(ROOT + path.sep)) { res.send(fs.readFileSync(full)); }
+});
+`)
+	tsReport, err := Analyze(tsRoot, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tsUses := pathUses(tsReport)
+	for _, route := range []string{"/else-branch", "/negated-consequence", "/inverted-terminating", "/conjunct-bypass"} {
+		u, ok := tsUses[route]
+		if !ok {
+			t.Fatalf("missing candidate %s", route)
+		}
+		for _, k := range guardKinds(u) {
+			if analysis.EnforcingPathGuard(k) {
+				t.Errorf("%s wrongly received enforcing guard kind %s", route, k)
+			}
+		}
+	}
+	for route, want := range map[string]string{"/disjunct-enforced": analysis.PathGuardAllowlist, "/enclosing-positive": analysis.PathGuardPrefixBoundary} {
+		u, ok := tsUses[route]
+		if !ok {
+			t.Fatalf("missing candidate %s", route)
+		}
+		if got := guardKinds(u); len(got) != 1 || got[0] != want {
+			t.Errorf("%s guard kinds %v, want [%s]", route, got, want)
+		}
+	}
+
+	pyRoot := pythonFixture(t, map[string]string{"app.py": `
+import os
+from flask import Flask, abort, request
+app = Flask(__name__)
+ROOT = os.path.abspath("uploads")
+ALLOWED = {"a.txt", "b.txt"}
+
+@app.route("/negated-consequence")
+def neg_cons():
+    full = os.path.abspath(os.path.join(ROOT, request.args.get("f", "")))
+    if not full.startswith(ROOT + os.sep):
+        return open(full).read()
+    return "ok"
+
+@app.route("/inverted-terminating")
+def inv_term():
+    name = request.args.get("f", "")
+    if name in ALLOWED:
+        abort(403)
+    return open(os.path.join(ROOT, name)).read()
+
+@app.route("/conjunct-bypass")
+def conj_bypass():
+    name = request.args.get("f", "")
+    if not request.args.get("admin") and name not in ALLOWED:
+        abort(403)
+    return open(os.path.join(ROOT, name)).read()
+
+@app.route("/disjunct-enforced")
+def disj_enforced():
+    name = request.args.get("f", "")
+    if not request.args.get("admin") or name not in ALLOWED:
+        abort(403)
+    return open(os.path.join(ROOT, name)).read()
+`})
+	pyReport, err := Analyze(pyRoot, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pyUses := pathUses(pyReport)
+	for _, route := range []string{"/negated-consequence", "/inverted-terminating", "/conjunct-bypass"} {
+		u, ok := pyUses[route]
+		if !ok {
+			t.Fatalf("python missing candidate %s", route)
+		}
+		for _, k := range guardKinds(u) {
+			if analysis.EnforcingPathGuard(k) {
+				t.Errorf("python %s wrongly received enforcing guard kind %s", route, k)
+			}
+		}
+	}
+	if got := guardKinds(pyUses["/disjunct-enforced"]); len(got) != 1 || got[0] != analysis.PathGuardAllowlist {
+		t.Errorf("python /disjunct-enforced guards %v, want [allowlist]", got)
+	}
+}
+
+func TestPathFalseProtectionControls(t *testing.T) {
+	tsRoot := t.TempDir()
+	writeSource(t, tsRoot, "ext.ts", `export const EXTERNAL = ['a.txt'];`)
+	writeSource(t, tsRoot, "server.ts", `
+import express, { Request, Response } from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
+import { EXTERNAL } from './ext';
+const app = express();
+const ROOT = path.resolve(__dirname, 'uploads');
+const MUTATED = ['a.txt'];
+MUTATED.push(process.env.EXTRA || 'x');
+const ALLOWED = new Set(['a.txt']);
+
+function openDecoded(p: string) {
+  return fs.readFileSync(path.join(ROOT, decodeURIComponent(p)));
+}
+
+function readShared(file: string) {
+  return fs.readFileSync(path.join(ROOT, file));
+}
+
+app.get('/external-includes', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (!EXTERNAL.includes(f)) return res.status(403).end();
+  res.send(fs.readFileSync(path.join(ROOT, f)));
+});
+app.get('/mutated-allowlist', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (!MUTATED.includes(f)) return res.status(403).end();
+  res.send(fs.readFileSync(path.join(ROOT, f)));
+});
+app.get('/realpath-after-guard', (req: Request, res: Response) => {
+  const full = path.resolve(ROOT, req.query.f as string);
+  if (!full.startsWith(ROOT + path.sep)) return res.status(403).end();
+  const resolved = fs.realpathSync(full);
+  res.send(fs.readFileSync(resolved));
+});
+app.get('/decode-in-helper', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (f.includes('..')) return res.status(400).end();
+  res.send(openDecoded(f));
+});
+app.get('/mixed-helper-callers', (req: Request, res: Response) => {
+  const f = req.query.f as string;
+  if (req.query.strict) {
+    if (!ALLOWED.has(f)) return res.status(403).end();
+    return res.send(readShared(f));
+  }
+  if (f.includes('..')) return res.status(400).end();
+  res.send(readShared(f));
+});
+`)
+	tsReport, err := Analyze(tsRoot, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tsUses := pathUses(tsReport)
+	if got := guardKinds(tsUses["/external-includes"]); len(got) != 1 || got[0] != analysis.PathGuardUnclassified {
+		t.Errorf("/external-includes guards %v, want [unclassified]", got)
+	}
+	if got := guardKinds(tsUses["/mutated-allowlist"]); len(got) != 1 || got[0] != analysis.PathGuardUnclassified {
+		t.Errorf("/mutated-allowlist guards %v, want [unclassified]", got)
+	}
+	if u := tsUses["/realpath-after-guard"]; u.Path.Paths[0].RealpathBeforeGuard {
+		t.Errorf("/realpath-after-guard set RealpathBeforeGuard=true when realpath ran after guard")
+	}
+	if u := tsUses["/decode-in-helper"]; !u.Path.Paths[0].DecodedAfterGuard {
+		t.Errorf("/decode-in-helper missed DecodedAfterGuard across helper declared above handler")
+	}
+	if u := tsUses["/mixed-helper-callers"]; u.Path.Paths[0].Protection != "unknown" {
+		t.Errorf("/mixed-helper-callers protection=%s, want unknown", u.Path.Paths[0].Protection)
+	}
+
+	pyRoot := pythonFixture(t, map[string]string{
+		"helpers.py": "def pick_dir():\n    return '/tmp/x'\n",
+		"app.py": `
+import io
+import os
+from pathlib import Path
+from flask import Flask, abort, request, send_from_directory
+from helpers import pick_dir
+app = Flask(__name__)
+ROOT = os.path.abspath("uploads")
+SPLAT_MAP = {"a.txt": 1, **os.environ}
+MUTATED_SET = {"a.txt"}
+MUTATED_SET.add("b.txt")
+
+@app.route("/unresolved-send-dir")
+def unresolved_send():
+    return send_from_directory(pick_dir(), request.args.get("f", ""))
+
+@app.route("/dict-splat")
+def dict_splat():
+    name = request.args.get("f", "")
+    if name not in SPLAT_MAP:
+        abort(403)
+    return open(os.path.join(ROOT, name)).read()
+
+@app.route("/mutated-set")
+def mutated_set():
+    name = request.args.get("f", "")
+    if name not in MUTATED_SET:
+        abort(403)
+    return open(os.path.join(ROOT, name)).read()
+
+@app.route("/pathlib-unlink")
+def pathlib_unlink():
+    Path(ROOT, request.args.get("f", "")).unlink()
+    return "ok"
+`,
+		"patched.py": `
+import io
+from flask import Flask, request
+app = Flask(__name__)
+io.open = lambda p: p
+@app.route("/monkey-patched-io")
+def patched_io():
+    return io.open(request.args.get("f", ""))
+`,
+	})
+	pyReport, err := Analyze(pyRoot, "app.py")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pyUses := pathUses(pyReport)
+	if got := guardKinds(pyUses["/unresolved-send-dir"]); len(got) != 0 {
+		t.Errorf("/unresolved-send-dir wrongly attached guards %v", got)
+	}
+	if got := guardKinds(pyUses["/dict-splat"]); len(got) != 1 || got[0] != analysis.PathGuardUnclassified {
+		t.Errorf("/dict-splat guards %v, want [unclassified]", got)
+	}
+	if got := guardKinds(pyUses["/mutated-set"]); len(got) != 1 || got[0] != analysis.PathGuardUnclassified {
+		t.Errorf("/mutated-set guards %v, want [unclassified]", got)
+	}
+	if u, ok := pyUses["/pathlib-unlink"]; !ok || u.Path.Operation != "pathlib.Path.unlink" || u.Path.Role != "delete" {
+		t.Errorf("/pathlib-unlink missing or wrong role: %+v", u.Path)
+	}
+	patchedReport, err := Analyze(pyRoot, "patched.py")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := pathUses(patchedReport)["/monkey-patched-io"]; ok {
+		t.Errorf("monkey-patched io.open must not earn verified contract")
+	}
+}
+
+func TestPathBindingsAndURLHelpers(t *testing.T) {
+	root := t.TempDir()
+	writeSource(t, root, "server.js", `
+const express = require('express');
+const { readFile } = require('fs').promises;
+const fs = require('fs');
+const path = require('path');
+const app = express();
+const ROOT = path.join(__dirname, 'pub');
+
+function serveReqPath(req, res) {
+  res.send(fs.readFileSync(path.join(ROOT, req.path)));
+}
+
+app.get('/promises-destructured', async (req, res) => {
+  res.send(await readFile(path.join(ROOT, req.query.f)));
+});
+app.use('/nested-url', (req, res) => serveReqPath(req, res));
+`)
+	r, err := Analyze(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	uses := pathUses(r)
+	if u, ok := uses["/promises-destructured"]; !ok || u.Path.Operation != "fs/promises.readFile" {
+		t.Errorf("/promises-destructured missing or wrong op: %+v", u.Path)
+	}
+	if u, ok := uses["/nested-url"]; !ok || u.Path.Operation != "fs.readFileSync" {
+		t.Errorf("/nested-url helper req.path missing: %+v", u.Path)
+	}
+}
+
+func TestPathGuardClassificationDeterminism(t *testing.T) {
+	var first string
+	for iter := 0; iter < 100; iter++ {
+		defs := map[string]string{
+			"checkA": "full.startsWith(ROOT)",
+			"checkB": "full.startsWith(ROOT + path.sep)",
+			"checkC": "full.startsWith(BASE)",
+			"checkD": "full.startsWith('/srv/')",
+		}
+		got := classifyPathGuardText("!checkA || !checkB || !checkC || !checkD", []string{"full", "checkA", "checkB", "checkC", "checkD"}, defs, func(string) bool { return false })
+		if iter == 0 {
+			first = got
+		} else if got != first {
+			t.Fatalf("nondeterministic guard classification on iter %d: got %s, first %s", iter, got, first)
+		}
+	}
+}

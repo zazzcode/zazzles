@@ -40,14 +40,19 @@ func fsCoreModule(module string) (core, promises bool) {
 	return false, false
 }
 
-// readFSDestructuring records `const { readFile, writeFile: save } = require('fs')`.
+// readFSDestructuring records `const { readFile, writeFile: save } = require('fs')`
+// and `const { readFile } = require('fs').promises`.
 func (m *sourceModule) readFSDestructuring(pattern, v, declaration *sitter.Node) {
 	path, member, ok := requireBinding(m, v)
-	if !ok || member != "*" {
+	if !ok || (member != "*" && member != "promises") {
 		return
 	}
-	if core, _ := fsCoreModule(path); !core {
+	core, promises := fsCoreModule(path)
+	if !core || (member == "promises" && promises) {
 		return
+	}
+	if member == "promises" {
+		path = "fs/promises"
 	}
 	for i := uint(0); i < pattern.NamedChildCount(); i++ {
 		c := pattern.NamedChild(i)

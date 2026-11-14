@@ -96,8 +96,10 @@ catalog contract with cited official semantics; an operation not listed is not c
 | Node `fs` `readFile(Sync)`, `writeFile(Sync)`, `appendFile(Sync)`, `createReadStream`, `createWriteStream`, `unlink(Sync)`, `rm(Sync)`; `fs/promises` and `fs.promises` forms | `node-fs-file-v1` | first argument; write data, options and callbacks are separate; verified core import/require/destructuring only |
 | Express `res.sendFile`, `res.download` | `express-send-file-v1` | first argument; a constant `root` option is a library-enforced boundary; request-derived root is not |
 | `adm-zip` `extractAllTo(Async)` on an `AdmZip(...)` instance | `adm-zip-extract-v1` | the request-supplied archive (entry names); release from lockfile/manifest decides: below 0.4.11 witness, fixed release control, range/missing unknown |
+| `unzipper.Open.buffer(buf).files` entry `path` written via `fs.createWriteStream` | `unzipper-entry-write-v1` | caller-selected write path derived from stored ZIP entry name; `Open.buffer` does not contain caller writes |
+| Express `res.render(view, options)` with verified `hbs` view-engine setting | `hbs-render-layout-v1` | effective `options.layout` operand after object spreads/overrides; `layout: false` disables read |
 | Python builtin `open`, `io.open` | `python-open-file-v1` | first/file operand; mode decides read/write; shadowing blocks the contract |
-| Python `pathlib.Path.open/read_text/read_bytes/write_text/write_bytes` | `python-pathlib-file-v1` | verified Path receiver (constructor, module-level Path, `/`) |
+| Python `pathlib.Path.open/read_text/read_bytes/write_text/write_bytes/unlink` | `python-pathlib-file-v1` | verified Path receiver (constructor, module-level Path, `/`); `unlink` carries delete role |
 | Python `tarfile.open/TarFile/TarFile.open`, `bz2.open/BZ2File`, `gzip.open/GzipFile`, `lzma.open/LZMAFile` | `python-archive-open-v1` | name/filename argument or keyword |
 | Python `os.remove`, `os.unlink` | `python-os-file-v1` | first argument (delete role) |
 | Flask `send_file`, `send_from_directory` | `flask-send-file-v1` | `send_file` first argument; `send_from_directory` path argument, library `safe_join` boundary when the directory is not request-derived |
@@ -193,12 +195,12 @@ No fallback, live Jev calls, integration push, merge or release is authorized.
 
 - [x] Shared Gemini prerequisite verified before analyzer launch.
 - [x] Exact API/platform matrix and independent references locked (versioned `matrix.json` with corrections).
-- [ ] JS/TS/Python positive, protected and unknown controls pass offline and live (offline passes; live 40/40 vulnerable, 14/15 protected and 13/13 unknown/weak match; Python prefix-boundary remains Review).
-- [x] Selected components, mandatory gates and exact replay verified.
-- [x] JSON/HTML/SARIF parity and existing-family checks pass (byte-identical non-path evidence).
+- [x] JS/TS/Python positive, protected and unknown controls pass offline and live (78/78 portable controls across standard + expanded fixtures: 49/49 vulnerable, 16/16 protected including Python `/p/prefix-boundary`, 13/13 unknown/weak; plus 11/11 live adversarial hardening controls).
+- [x] Selected components, mandatory gates and exact replay verified (360/360 exact replays across all 8 sample apps + 3 fixture suites with zero live calls).
+- [x] JSON/HTML/SARIF parity and existing-family checks pass (byte-identical non-path evidence across all 8 samples; 2 enumerated path-only Juice Shop entries).
 - [x] Authorized sample evidence and public coverage limits recorded ([results](../evaluation/path-traversal-results.md)).
-- [ ] Close both remaining Juice Shop rows through general verified models: middleware-chain upload handler/unzipper entry-name flow and `hbs` render-layout read.
-- [x] Judge all VulnPy contexts (196 file-open confirmed; 64 WSGI templates Review). Final replay onto latest code pending.
+- [x] Close both remaining Juice Shop rows through general verified models: middleware-chain upload handler/unzipper entry-name flow (`JS-ZIPSLIP-JUICE`) and `hbs` render-layout read (`JS-LFR-RENDER-JUICE`, both call sites confirmed live).
+- [x] Judge all VulnPy contexts (196 file-open confirmed; 64 WSGI templates Review; all 260 replayed onto final hardened code).
 - [ ] Human review completed.
 
 ## 10. Open questions
@@ -319,3 +321,13 @@ Source matrix positives now include the ZIP write at :34 and layout reads at :10
 judgments for those new bytes have not run. The owner requested holding tests and pushing a checkpoint.
 Keep unresolved predecessors, custom file filters and unknown option overrides explicit; do not weaken
 evidence gates or special-case targets. Full final verification and human review remain open.
+
+### 2026-11-14 — Tier-1 hardening, live verification and full matrix convergence
+
+**Source.** Owner authorized executing [Tier-1 hardening](path-traversal-hardening.md) alongside the resumed live/full verification of the Juice Shop `unzipper`/`hbs` coverage and shared decision-model limits.
+
+**Changed sections.** Supported operation matrix (§5) and Definition of done (§9); full evidence recorded in [results](../evaluation/path-traversal-results.md) and `observed.json`.
+
+**Summary.** Added AST branch-polarity (`PathGuardInverted`) and compound-boolean soundness, normalization-sensitive `PathGuardSubstring` policy (`confirmed_vulnerability` vs `poor_practice`), five false-protection closures (`safeSendDirectory`, dict-splat/mutated allow-lists, `RealpathBeforeGuard`, helper-nested `DecodedAfterGuard`, multi-caller helper guard intersection), generalized Python monkey-patch detection, guarded constant/import excerpt injection (resolving Python `/p/prefix-boundary` live), `require('fs').promises` destructuring, `pathlib.Path.unlink`, helper-nested `req.path`/`url`, deterministic `defs` sorting, Express middleware fast-skip, and contextual file splits.
+
+**Verification impact.** Full 9-package `go test -race ./... -count=1` passes; `compare_checkpoint.sh 86f5bc5` proves zero non-path use changes; all 204 positive sample contexts, 4/4 sample protected contexts, 78/78 portable controls, 11/11 live adversarial hardening controls and 360/360 exact replays pass with 3-format JSON/HTML/SARIF parity. Human review remains next.

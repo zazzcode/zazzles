@@ -133,3 +133,59 @@ func TestPathPreTransportFailuresMakeNoCalls(t *testing.T) {
 		t.Fatal("browser entry selected a filesystem contract")
 	}
 }
+
+func TestPathPayloadConstantDefinitions(t *testing.T) {
+	pyUses, _ := pathUsesByRoute(t, "python/path-traversal")
+	pyUse := pyUses["/p/prefix-boundary"]
+	c, _ := New("gemini", "gemini-decision-1", "offline-preview")
+	pyTrace, err := c.Preview(pyUse)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pyBody map[string]any
+	if err := json.Unmarshal(pyTrace.Request, &pyBody); err != nil {
+		t.Fatal(err)
+	}
+	pyInput := pyBody["input"].(string)
+	var pyDecoded map[string]any
+	if err := json.Unmarshal([]byte(pyInput), &pyDecoded); err != nil {
+		t.Fatal(err)
+	}
+	pyExcerptsJSON, _ := json.Marshal(pyDecoded["use"].(map[string]any)["source_excerpts"])
+	pyCoverageJSON, _ := json.Marshal(pyDecoded["use"].(map[string]any)["coverage_gaps"])
+	if !strings.Contains(string(pyExcerptsJSON), `ROOT = os.path.abspath(\"uploads\")`) {
+		t.Errorf("python /p/prefix-boundary payload omits module ROOT declaration from excerpts: %s", string(pyExcerptsJSON))
+	}
+	if strings.Contains(string(pyCoverageJSON), `Value definition is not resolved: ROOT`) {
+		t.Errorf("python /p/prefix-boundary payload still marks ROOT unresolved in coverage_gaps: %s", string(pyCoverageJSON))
+	}
+	// Transfer facts must not be duplicated in model_facts.
+	const dupFact = `Supported transfer transformation os.path.abspath`
+	if strings.Count(pyInput, dupFact) > 1 {
+		t.Errorf("python /p/prefix-boundary duplicated transfer model_facts (%d copies)", strings.Count(pyInput, dupFact))
+	}
+
+	tsUses, _ := pathUsesByRoute(t, "typescript/path-traversal")
+	tsTrace, err := c.Preview(tsUses["/p/prefix-boundary"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	var tsBody map[string]any
+	if err := json.Unmarshal(tsTrace.Request, &tsBody); err != nil {
+		t.Fatal(err)
+	}
+	tsInput := tsBody["input"].(string)
+	if !strings.Contains(tsInput, `const ROOT = path.resolve(__dirname, '../uploads')`) {
+		t.Errorf("typescript /p/prefix-boundary payload omits module ROOT declaration from excerpts")
+	}
+	tsAllowTrace, err := c.Preview(tsUses["/p/allowlist"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(tsAllowTrace.Request, &tsBody); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(tsBody["input"].(string), `const ALLOWED = new Set(['report.txt', 'notes.txt'])`) {
+		t.Errorf("typescript /p/allowlist payload omits module ALLOWED declaration from excerpts")
+	}
+}

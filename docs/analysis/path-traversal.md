@@ -17,16 +17,16 @@ or independent Findings Review.
 | JS/TS | `fs.readFile`, `readFileSync`, `writeFile`, `writeFileSync`, `appendFile`, `appendFileSync`, `createReadStream`, `createWriteStream`, `unlink`, `unlinkSync`, `rm`, `rmSync`; `fs/promises` and `fs.promises` forms | first argument; the data argument of a write is not a path |
 | JS/TS | Express `res.sendFile`, `res.download` (a parameter of the enclosing handler, module imports `express`) | first argument; a constant `root` option adds library-enforced containment |
 | JS | `adm-zip` `extractAllTo` on an `AdmZip(...)` instance | the request-supplied archive (entry names), see below |
-| JS/TS | Caller writes from verified `unzipper.Open.buffer(...).files` entry names; `hbs` `res.render` with verified view-engine registration | archive `entry.path`, or the effective `options.layout` after spreads/overrides (continuation checkpoint; final live/full verification pending) |
+| JS/TS | Caller writes from verified `unzipper.Open.buffer(...).files` entry names; `hbs` `res.render` with verified view-engine registration | archive `entry.path`, or the effective `options.layout` after spreads/overrides |
 | Python | builtin `open`, `io.open` | first positional argument or `file=`; the mode decides read or write |
-| Python | `pathlib.Path.open/read_text/read_bytes/write_text/write_bytes` | the `Path` receiver (built by `Path(...)`, a module-level `Path`, or the `/` operator) |
+| Python | `pathlib.Path.open/read_text/read_bytes/write_text/write_bytes/unlink` | the `Path` receiver (built by `Path(...)`, a module-level `Path`, or the `/` operator) |
 | Python | `tarfile.open`, `TarFile`, `TarFile.open`, `bz2.open`, `BZ2File`, `gzip.open`, `GzipFile`, `lzma.open`, `LZMAFile` | the file name argument |
 | Python | `os.remove`, `os.unlink` | first argument |
 | Python | Flask `send_file`, `send_from_directory` | `send_file`: first argument; `send_from_directory`: its `path` argument (library `safe_join` against a directory that is not request-derived) |
 | Python | werkzeug `FileStorage.save` on a value from `request.files` | the destination argument; `secure_filename` is a verified control |
 
-Bindings come from ESM default, namespace and named imports, CommonJS `require` and destructuring,
-`fs.promises`, Python module and from imports and the unshadowed builtin `open`. A fake object, a local
+Bindings come from ESM default, namespace and named imports, CommonJS `require` and destructuring (including
+`require('fs').promises`), `fs.promises`, Python module and from imports and the unshadowed builtin `open`. A fake object, a local
 module named `fs`, a reassigned binding, a parameter, a local `def open` or `def secure_filename`, an import
 named `open` from another module, or a source-visible patch earns no verified contract. Spreads and
 `*args`/`**kwargs` stay visible blockers.
@@ -80,10 +80,14 @@ facts before classification:
   control leaves the flow unresolved. Normalization, a join,
   a type cast, a length limit, a `..` blacklist, `try`/`except` and an error response after the
   read never count. Presence-only tests are not controls.
-- A check that is followed by a decode, assigned over, or placed in a sibling branch does not cover the
-  call. The control attaches only to the values whose derived names it mentions.
+- A check that is followed by a decode (locally or inside a called helper), assigned over, placed in a
+  sibling or negated branch, conditionally bypassed via a conjunction (`if (!admin && !allowed) reject`),
+  or checked against a mutated or splatted collection does not cover the call. The control attaches only
+  to the values whose derived names it mentions, and multi-caller helpers require every call site to
+  enforce containment.
 - Resolved containment is claimed only when the compared value comes from a realpath/resolve call in the
-  source; a lexical boundary check says nothing about links created after the check, and the report says
+  source **before** the boundary check (`realpath` after a lexical check does not establish a resolved
+  boundary); a lexical boundary check says nothing about links created after the check, and the report says
   so. Races and filesystem state are never inferred.
 - An unsafe witness needs only its own source-to-operand path; unresolved siblings remain visible and
   never become protection. An all-unknown or all-not-applicable answer is not green.
@@ -92,23 +96,24 @@ Status follows the shared vocabulary: `confirmed_vulnerability` (finding), `poor
 `protected_for_claim` (protection) or `needs_evidence` (Review). Only a final protected record is green.
 
 **Poor practice.** When every request-derived flow is guarded only by a recognized weak control (a prefix
-comparison without a separator boundary, a `..` text test or a separator-only test) and the assessment finds
-no enforced containment, the record is a `poor_practice` finding: an established construction weakness, not a
-proven exploit. A control the scanner cannot classify never qualifies; it stays Review.
+comparison without a separator boundary, a normalized positive root substring test, a `..` text test or a
+separator-only test) and the assessment finds no enforced containment, the record is a `poor_practice`
+finding: an established construction weakness, not a proven exploit. Unnormalized substring checks and
+substring blacklists remain unsafe witnesses; an unverified collection membership check stays Review.
 
 ## Coverage and limits
 
-Entry coverage rides the shared model: Express routes and `app.use` handlers, GraphQL and unary gRPC
-contexts, and Python Flask, FastAPI, Quart, Django, Falcon, Bottle, Pyramid, aiohttp and WSGI dispatch. Repeated exposures of one sink
-are separate contexts, not separate defects.
+Entry coverage rides the shared model plus path-scoped Express route-chain handlers, explicit local export
+lists, verified configuration-parameter router mounts and immediate closures: Express routes and `app.use`
+handlers, GraphQL and unary gRPC contexts, and Python Flask, FastAPI, Quart, Django, Falcon, Bottle,
+Pyramid, aiohttp and WSGI dispatch. Repeated exposures of one sink are separate contexts, not separate defects.
 
 Not covered, and reported as such rather than as safe: `copyFile`, `rename`, `readdir`, `stat`,
 `existsSync`, `express.static`/`serve-index`, multer disk storage, `shutil`, Python `zipfile`/`tarfile`
-extraction, archive libraries other than `adm-zip` (including `unzipper` entry loops and hand-written
-extraction), template-layout and view-name reads such as `res.render` with a request `layout`, handlers
-that are not the last element of an Express route chain (they are not entries in the shared model),
-second-order flows through storage, and symbolic-link or race behavior. Unmodeled middleware, helpers,
-mutation through unmodeled calls, cross-module guards and whole-program flow stay Review.
+extraction, archive libraries other than `adm-zip` and `unzipper.Open.buffer` entry writes, template
+engines other than `hbs` layout reads, second-order flows through storage, Windows path semantics, and
+symbolic-link or race behavior. Unmodeled middleware (including custom upload `fileFilter` callbacks),
+helpers, mutation through unmodeled calls, cross-module guards and whole-program flow stay Review.
 
 ## Remediation guidance
 
@@ -119,15 +124,6 @@ operation, rejecting on failure, and decide deliberately how symbolic links are 
 join or resolve call, normalization, a `..` blacklist or a prefix check without a separator. Reports never
 export a verified patch.
 
-See the [path contract](../../.zazz/specifications/path-traversal.md) and the
-[acceptance results](../../.zazz/evaluation/path-traversal-results.md) for the tested matrix and its limits.
-
-## Continuation coverage and verification status
-
-General path-only chain/export/mount/immediate-invocation acquisition, unzipper entry-name writes and
-hbs layout reads are implemented with portable parser/policy/report regressions. They add path-scoped
-records without migrating existing analyzer evidence. Custom upload filters, unknown spreads and
-unverified renderer overrides remain unresolved. All VulnPy contexts are now judged. Fresh Juice Shop
-judgments and final full verification after the last edits are pending: the owner requested stopping
-checks and pushing the current checkpoint. The [contract](../../.zazz/specifications/path-traversal.md)
-and [results](../../.zazz/evaluation/path-traversal-results.md) retain that distinction.
+See the [path contract](../../.zazz/specifications/path-traversal.md),
+[Tier-1 hardening contract](../../.zazz/specifications/path-traversal-hardening.md), and the
+[acceptance results](../../.zazz/evaluation/path-traversal-results.md) for the verified matrix and limits.

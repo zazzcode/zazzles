@@ -204,10 +204,67 @@ func guardDescription(kind string) string {
 		return "a framework-enforced root that rejects a path escaping it (Express send with a constant root option, Flask send_from_directory with a directory that is not request-derived): a lexical boundary, answer lexical_boundary"
 	case analysis.PathGuardSeparatorText:
 		return "a path-separator text test that rejects multi-component values but not a bare '..' component"
+	case analysis.PathGuardSubstring:
+		return "a substring test on the path string (not a path-component boundary)"
+	case analysis.PathGuardInverted:
+		return "an inverted containment test (the operation executes on the non-matching / non-contained branch)"
 	case analysis.PathGuardComponentSanitizer:
 		return "a verified werkzeug secure_filename reduction to one safe path component (no separator or '..' can remain), which is a lexical boundary: answer lexical_boundary"
 	}
 	return "an unclassified condition"
+}
+
+func isNormTransform(kind string) bool {
+	switch kind {
+	case analysis.PathTransformResolve, analysis.PathTransformNormalize, analysis.PathTransformAbsolutize, analysis.PathTransformRealpath:
+		return true
+	}
+	return false
+}
+
+// transferFollowsGuard reports whether transfer step ti in dep.Transfers executes
+// after guard g, accounting for helper calls whose body sits earlier in the file.
+func transferFollowsGuard(u *analysis.CandidateUse, dep analysis.Dependency, ti int, g analysis.Evidence) bool {
+	e := dep.Transfers[ti]
+	if e.Span.File == g.Span.File && e.Span.StartByte >= g.Span.EndByte {
+		// Make sure this transfer isn't before an enclosing guard inside the same scope.
+		return true
+	}
+	// If a parameter_binding / argument_to_parameter precedes ti in dataflow order,
+	// check whether a helper_call in u.Context occurred after g.Span.EndByte.
+	enteredHelper := false
+	for k := 0; k <= ti; k++ {
+		if dep.Transfers[k].Kind == "parameter_binding" || dep.Transfers[k].Kind == "argument_to_parameter" {
+			enteredHelper = true
+			break
+		}
+	}
+	if enteredHelper {
+		for _, ctx := range u.Context {
+			if ctx.Kind == "helper_call" && ctx.Span.File == g.Span.File && ctx.Span.StartByte >= g.Span.EndByte {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func transferPrecedesGuard(u *analysis.CandidateUse, dep analysis.Dependency, ti int, g analysis.Evidence) bool {
+	e := dep.Transfers[ti]
+	if e.Span.File == g.Span.File && e.Span.EndByte <= g.Span.StartByte {
+		// Exclude transfers inside a helper that is only invoked AFTER the guard.
+		for k := 0; k <= ti; k++ {
+			if dep.Transfers[k].Kind == "parameter_binding" || dep.Transfers[k].Kind == "argument_to_parameter" {
+				for _, ctx := range u.Context {
+					if ctx.Kind == "helper_call" && ctx.Span.File == g.Span.File && ctx.Span.StartByte >= g.Span.EndByte {
+						return false
+					}
+				}
+			}
+		}
+		return true
+	}
+	return false
 }
 
 // finishPathFlows records, per flow, the guards found for that dependency,
@@ -242,7 +299,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 		switch {
 		case info.ambiguousCallers:
 			p.Protection = "unknown"
-			p.Reason = "the operation is in a helper with several call sites, at least one without a control; per-call-site coverage is not modeled"
+			p.Reason = "the operation is in a helper with several call sites, at least one without an enforcing control; per-call-site coverage is not modeled"
 		case unknown:
 			p.Protection = "unknown"
 			p.Reason = "an unresolved transfer or helper touches this source-to-operand path"
@@ -253,13 +310,27 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 			p.Protection = "guarded"
 			p.Controls = controls
 			p.Reason = "a dominating or enclosing control mentions this value; its adequacy is not established by the scanner"
-			for _, e := range dep.Transfers {
-				if transformKind(e) != analysis.PathTransformDecode && !decodeCallText.MatchString(e.Text) {
-					continue
+			for ti, e := range dep.Transfers {
+				tk := transformKind(e)
+				if tk == analysis.PathTransformDecode || decodeCallText.MatchString(e.Text) {
+					for _, ci := range controls {
+						if transferFollowsGuard(u, dep, ti, guards[ci]) {
+							p.DecodedAfterGuard = true
+						}
+					}
 				}
-				for _, ci := range controls {
-					if e.Span.File == guards[ci].Span.File && e.Span.StartByte >= guards[ci].Span.EndByte {
-						p.DecodedAfterGuard = true
+				if tk == analysis.PathTransformRealpath {
+					for _, ci := range controls {
+						if analysis.EnforcingPathGuard(f.Guards[ci].Kind) && transferPrecedesGuard(u, dep, ti, guards[ci]) {
+							p.RealpathBeforeGuard = true
+						}
+					}
+				}
+				if isNormTransform(tk) {
+					for _, ci := range controls {
+						if f.Guards[ci].Kind == analysis.PathGuardSubstring && info.rootContain[guardKey(guards[ci])] && transferPrecedesGuard(u, dep, ti, guards[ci]) {
+							p.NormalizedBeforeGuard = true
+						}
 					}
 				}
 			}

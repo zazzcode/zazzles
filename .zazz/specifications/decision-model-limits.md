@@ -97,7 +97,7 @@ owner's $10 maximum authorization for any subsequent specifically scoped live ev
 - [x] Discovery/assessment failure and incomplete-report behavior verified with local HTTP stubs.
 - [x] README, setup/running docs, sample environment and project plan match implemented checkpoint.
 - [x] Requested local environment settings updated without exposing or changing credentials.
-- [ ] Required offline checks and human review completed.
+- [x] Required offline checks (including full 9-package `-race` suite) completed; human review pending.
 
 ## Open questions and references
 

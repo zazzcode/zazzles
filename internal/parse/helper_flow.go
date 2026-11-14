@@ -59,6 +59,7 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	before := len(f.gaps)
 	child := flow{
 		pathOnly:     f.pathOnly,
+		urlSources:   f.urlSources,
 		client:       f.client,
 		registration: f.registration,
 		module:       hm,
@@ -74,6 +75,11 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	unbound := false
 	for i, p := range params {
 		if i < len(args) {
+			if f.urlSources && f.request != "" && call.ChildByFieldName("arguments") != nil {
+				if argNode := call.ChildByFieldName("arguments").NamedChild(uint(i)); argNode != nil && argNode.Kind() == "identifier" && argNode.Utf8Text(f.module.src) == f.request {
+					child.request = p.name
+				}
+			}
 			// Bind on the callee flow so the parameter span stays in the callee file.
 			child.env[p.name] = child.transfer(args[i], "parameter_binding", p.node)
 			continue

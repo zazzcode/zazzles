@@ -18,7 +18,8 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 ## Specification index
 
 - [Shared Gemini Decisions provider](gemini-decisions.md) — interactive shared-provider integration and bounded live smoke before analyzer work.
-- [Path Traversal Analyzer](path-traversal.md) — later JS/TS/Python filesystem/containment analysis; no provider implementation.
+- [Path Traversal Analyzer](path-traversal.md) — JS/TS/Python filesystem, Zip Slip (`adm-zip`/`unzipper`) and `hbs` layout containment analysis; implemented and live-verified across all eight sample apps.
+- [Path Traversal Tier-1 Hardening](path-traversal-hardening.md) — AST branch-polarity/conjunction soundness, normalization-sensitive substring policy, false-protection closures, guarded constant/import excerpt injection, determinism and file-size split; implemented and live-verified.
 
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
 
@@ -69,4 +70,4 @@ ownership, approval, execution, and review requirements. Earlier LLM-era phase n
 by the current plan.
 
 The [decision-model limits contract](decision-model-limits.md) records owner-authorized shared rate and
-spending controls pending implementation after the path-traversal checkpoint.
+spending controls implemented and verified under the full race suite.

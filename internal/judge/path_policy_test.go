@@ -248,3 +248,62 @@ func TestPathExpandedPolicy(t *testing.T) {
 		})
 	}
 }
+
+func TestPathGuardSubstringAndResolvedOrderPolicy(t *testing.T) {
+	uses, _ := pathUsesByRoute(t, "typescript/path-traversal")
+	base := uses["/v/join-read"]
+	eval := func(flow analysis.PathFlow, guards []analysis.PathGuard, answers pathAnswers) analysis.Assessment {
+		u := base
+		f := *base.Path
+		f.Guards = guards
+		f.Paths = []analysis.PathFlow{flow}
+		u.Path = &f
+		c, _ := pathStub(t, "openai", answers)
+		return c.Assess(context.Background(), u)
+	}
+	// Unnormalized path-receiver .includes('/uploads/') allows '/uploads/../../etc/passwd' -> confirmed_vulnerability
+	unnorm := eval(
+		analysis.PathFlow{Dependency: 0, Operand: analysis.PathSlotFile, Protection: "guarded", Controls: []int{0}, Transforms: []string{analysis.PathTransformConcat}},
+		[]analysis.PathGuard{{Context: 0, Kind: analysis.PathGuardSubstring}},
+		honestRaw,
+	)
+	if unnorm.FindingStatus != "confirmed_vulnerability" {
+		t.Errorf("unnormalized substring containment check: got %s, want confirmed_vulnerability", unnorm.FindingStatus)
+	}
+	// Normalized path-receiver .includes(ROOT) collapses '..', leaving sibling-directory collision -> poor_practice
+	norm := eval(
+		analysis.PathFlow{Dependency: 0, Operand: analysis.PathSlotFile, Protection: "guarded", Controls: []int{0}, Transforms: []string{analysis.PathTransformResolve}, NormalizedBeforeGuard: true},
+		[]analysis.PathGuard{{Context: 0, Kind: analysis.PathGuardSubstring}},
+		honestRaw,
+	)
+	if norm.FindingStatus != "poor_practice" {
+		t.Errorf("normalized substring containment check: got %s, want poor_practice", norm.FindingStatus)
+	}
+	// Blacklist substring (!filePath.includes('ftp')) is NOT a root containment check even after resolve -> confirmed_vulnerability
+	blacklist := eval(
+		analysis.PathFlow{Dependency: 0, Operand: analysis.PathSlotFile, Protection: "guarded", Controls: []int{0}, Transforms: []string{analysis.PathTransformResolve}},
+		[]analysis.PathGuard{{Context: 0, Kind: analysis.PathGuardSubstring}},
+		honestRaw,
+	)
+	if blacklist.FindingStatus != "confirmed_vulnerability" {
+		t.Errorf("substring blacklist after resolve: got %s, want confirmed_vulnerability", blacklist.FindingStatus)
+	}
+	// Inverted polarity on a verified containment check is an unsafe witness -> confirmed_vulnerability
+	inv := eval(
+		analysis.PathFlow{Dependency: 0, Operand: analysis.PathSlotFile, Protection: "guarded", Controls: []int{0}, Transforms: []string{analysis.PathTransformJoin}},
+		[]analysis.PathGuard{{Context: 0, Kind: analysis.PathGuardInverted}},
+		honestRaw,
+	)
+	if inv.FindingStatus != "confirmed_vulnerability" {
+		t.Errorf("inverted containment guard: got %s, want confirmed_vulnerability", inv.FindingStatus)
+	}
+	// realpath called AFTER lexical guard cannot satisfy resolved_boundary
+	realAfter := eval(
+		analysis.PathFlow{Dependency: 0, Operand: analysis.PathSlotFile, Protection: "guarded", Controls: []int{0}, Transforms: []string{analysis.PathTransformResolve, analysis.PathTransformRealpath}, RealpathBeforeGuard: false},
+		[]analysis.PathGuard{{Context: 0, Kind: analysis.PathGuardPrefixBoundary}},
+		protectedResolved,
+	)
+	if realAfter.FindingStatus == "protected_for_claim" {
+		t.Errorf("realpath after lexical guard wrongly accepted as resolved_boundary: %+v", realAfter)
+	}
+}

@@ -1,22 +1,17 @@
 # Zazzles
 
-Zazzles helps developers and coding agents assess application security, code quality and dependencies,
-then use the resulting evidence to make verified repairs. It explains what needs attention, what
-already works, and what remains uncertain.
+Zazzles is being developed as an assessment and remediation framework for application security,
+code quality and dependencies. Its goal is to connect **Scan**, **Inspect** and **Audit** with an
+automated **Fix** workflow: collect findings, give coding agents the relevant evidence and standards,
+verify their changes, and prepare focused pull requests for human review.
 
-Security findings and quality assessments have distinct purposes. For example, an application can
-safely bind a value into SQL while failing to enforce a required input format. The validation defect
-still deserves a fix, but it does not establish an injection vulnerability.
+**Current focus:** building Zazzles' own source-code security scanner, with bounded JavaScript,
+TypeScript and Python support. It produces source-backed assessments and reviewable reports.
 
-The broader goal is a feedback loop: agents create code, Zazzles assesses supported requirements,
-and agents repair issues before tests and reassessment. Teams should be able to use their own
-coding and architecture standards without adopting Zazz methodology.
-
-**Available today:** bounded Scan analysis for JavaScript, TypeScript and Python, including
-input-validation judgments and selected construction-practice checks. 
-
-**Planned:** a distinct Inspect
-capability, dependency Audit and automated Fix. Supported checks and limits are described below.
+**Planned framework:** orchestrate remediation agents and integrate findings from other SAST,
+code-quality and dependency-analysis tools. Teams should be able to use Zazzles' scanner, external
+tools, or a combination within the same remediation workflow. External-tool integration, distinct
+Inspect/Audit workflows and automated Fix orchestration are not yet implemented.
 
 <a id="project-goals-scan-audit-and-fix"></a>
 <a id="project-goals-scan-quality-audit-and-fix"></a>
@@ -28,7 +23,7 @@ capability, dependency Audit and automated Fix. Supported checks and limits are 
 | **Scan** | Identify security vulnerabilities and assess security controls | Implemented subsets in JavaScript, TypeScript and Python |
 | **Inspect** | Assess code quality, maintainability and conformance to coding and architecture standards | Planned capability. Existing validation and construction-practice checks provide a foundation |
 | **Audit** | Identify vulnerable dependencies and retain advisory evidence | Planned |
-| **Fix** | Help agents repair supported issues from Scan, Inspect and Audit, then verify changes | Planned |
+| **Fix** | Orchestrate agents to remediate findings using applicable standards, verify changes and prepare pull requests | Planned |
 
 Today's CLI and sample reports describe Scan, which also reports supported validation and
 construction-practice concerns. There is no separate Inspect command or report view yet.
@@ -323,44 +318,37 @@ source, expected findings and current scanner results.
 
 ## Goal: an assessment and remediation loop for agents
 
-**One possible planned workflow:** a coding agent writes or revises code, selects Scan, Inspect
-or Audit assessments as needed, then uses Fix to address supported issues. Tests and reassessment
-check the revision before review. This loop is optional, not a required order for the capabilities.
+The planned workflow turns assessment findings into verified, reviewable changes. It should collect
+and prioritize findings from Zazzles and supported external tools, then dispatch scoped remediation
+tasks to coding agents. Each task carries the finding, source evidence, applicable coding and
+architecture standards, and acceptance criteria. Agents implement fixes, run tests and reassess the
+changed code, repeating as needed before preparing focused pull requests with verification evidence.
+Human review governs approval and integration.
 
 ```mermaid
 flowchart LR
-    A[Team requirements and standards] --> B[Agent writes or revises code]
-    B --> C[Choose Scan, Inspect or Audit]
-    C --> D[Fix supported issues]
-    D --> E[Tests and reassessment]
-    E -->|More work| B
-    E -->|Ready for review| F[Human review and approval]
+    Z[Zazzles Scan, Inspect and Audit] --> F[Collect and prioritize findings]
+    X[External security and code-quality tools] --> F
+    F --> A[Dispatch scoped remediation agents]
+    S[Applicable coding and architecture standards] --> A
+    A --> V[Implement fixes, test and reassess]
+    V -->|Further changes needed| A
+    V -->|Verified changes| P[Prepare focused pull requests]
+    P --> R[Human review and approval]
 ```
 
-Teams should be able to select their own standards for code structure, architecture, validation
-and other engineering practices. Using Zazzles should not require adopting Zazz methodology.
-The selected standard supplies the requirement. Source evidence shows whether the implementation
-meets it within the supported scope.
+Planned tool integrations should retain each finding's source evidence, provenance and assessment
+limits. Importing a finding must not imply independent verification by Zazzles without corresponding
+validation.
 
-Users should not need to write a standards manual to get started. Zazzles already supplies
-versioned language guidance for security assessment. Broader quality baselines and optional team
-profiles are planned. Findings about standards need an identifiable requirement and source evidence,
-not only a model's preference.
+Teams should be able to select their own coding and architecture standards without adopting Zazz
+methodology. Zazzles already embeds versioned security guidance; broader standards selection and
+remediation orchestration remain planned. See the
+[standards-workflow design](.zazz/project/analysis-pack-mvp.md#standards-driven-agent-workflow).
 
-The SQL Injection, NoSQL Injection, Input Validation and XSS Analyzers use
-[analysis packs and components](docs/technical-approach.md#analysis-knowledge-and-components) to
-organize existing knowledge with explicit versions and applicability. Broader team-standard
-components remain planned under the [standards-workflow design](.zazz/project/analysis-pack-mvp.md#standards-driven-agent-workflow).
-Deterministic checks can handle mechanical requirements. Semantic judgment can assess contextual
-requirements using the actual implementation and relevant relationships.
-
-**Available today:** bounded assessments and reviewable reports. **Planned:** general standards
-selection and assessment, plus automated repair orchestration. Zazzles does not currently load
-arbitrary standards documents or run this entire loop.
-
-Passing an assessment covers only its named requirements and analyzed scope. Tests and human
-review still matter. Unsupported standards, missing context and unresolved questions remain visible
-instead of becoming a claim that all code meets a team's standards.
+Scan, Inspect and Audit are intended to remain independently usable. Fix may start from an existing
+report or a user-specified issue; running the complete loop is optional. Tests and reassessment cover
+only the named requirements and analyzed scope, with unresolved evidence kept visible.
 
 ## Agent-first philosophy
 

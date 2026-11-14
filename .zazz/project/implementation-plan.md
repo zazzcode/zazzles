@@ -10,6 +10,9 @@ acceptance details. This plan is not blanket implementation or live-call authori
 selected engineering standards. **Audit** will assess dependencies. **Fix** will support agent
 remediation with verification. Scan exists in bounded form; distinct Inspect/Audit/Fix workflows
 remain planned. They can eventually run independently; usage order does not dictate delivery order.
+The broader framework will accept findings from Zazzles and external analysis tools, then dispatch
+remediation agents with applicable standards, tests/reassessment and focused pull requests. Current
+priority remains the native Scan engine; external integrations and agent/PR orchestration are planned.
 See [product responsibilities](../project.md#four-product-capabilities).
 
 ## Supported capability checklist

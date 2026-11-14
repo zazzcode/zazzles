@@ -22,6 +22,7 @@ const questionVersion = "candidate-use-v10"
 type Client struct {
 	provider, model, key, endpoint string
 	http                           *http.Client
+	limiter                        *requestLimiter
 }
 
 // New configures an explicit provider and credential without making a request.
@@ -33,13 +34,19 @@ func New(provider, model, key string) (*Client, error) {
 		if model == "" {
 			c.model = "gpt-6-luna"
 		}
+	case "gemini":
+		c.endpoint = "https://generativelanguage.googleapis.com/v1beta/decisions"
+		if model != "" && model != "gemini-decision-1" {
+			return nil, errors.New("Gemini Decisions supports only gemini-decision-1")
+		}
+		c.model = "gemini-decision-1"
 	case "jev":
 		c.endpoint = "https://api.typesafe.ai/v1/systemone"
 		if model == "" {
 			return nil, errors.New("Jev requires an explicit --judge-model from the provider model catalog")
 		}
 	default:
-		return nil, errors.New("unsupported judge provider; select openai or jev")
+		return nil, errors.New("unsupported judge provider; select openai, gemini or jev")
 	}
 	if strings.TrimSpace(key) == "" {
 		return nil, errors.New("selected judge API key is missing")
@@ -101,16 +108,20 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 	data, reason := c.exchange(ctx, payload, trace)
 	if reason != "" {
 		a.Reason = reason
+		if strings.HasPrefix(reason, "judge limit:") {
+			a.Status = "not_run"
+		}
 		return a
 	}
 	answers, model, usage, err := c.decodeQuestions(data, questionsFor(use))
 	if err != nil {
 		a.Reason = err.Error()
+		c.stopLimitedScan(a.Reason)
 		return a
 	}
 	a.Status = "completed"
 	a.Answers = answers
-	a.AnswerDetails, err = answerDetails(data, answers, questionsFor(use))
+	a.AnswerDetails, err = c.answerDetails(data, answers, questionsFor(use))
 	if err != nil {
 		a.Status, a.Reason = "failed", err.Error()
 		return a
@@ -179,6 +190,10 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the selected command contract and the four command questions to this source-to-process claim under the declared POSIX assumption. Shell syntax, executable selection, argument interpretation and protection coverage are separate facets: assess each from the effective operand slots in the command facts. Supplied evidence is present, not necessarily complete or protective; a guard or constraint protects only the operand, branch and invocation it dominates. Casts, annotations, length limits, blacklist replacement, exception handling and unrelated hashing are not protection. Unknown utility options are unknown, not unsafe. Do not claim runtime exploitation. No model confidence may invent missing bindings, operands, guards or coverage."
 	}
+	if use.Kind == "path_traversal_candidate" {
+		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
+		instruction = common + "Apply only the selected path contract and the three path questions to this source-to-file-operand claim under the declared POSIX assumption. Traversal, containment control and protection coverage are separate facets: assess each from the effective path operand and flows in the path facts. Only the path operand is a path source; request data written as file content or passed as an option is not. Supplied evidence is present, not necessarily complete or protective; a control protects only the value, branch and invocation it dominates and only when it rejects before the file operation. A join, resolve, normalize, abspath, normpath or basename call, a type annotation, an error response, try/except, a '..' substring blacklist and a prefix comparison without a separator boundary are not containment. A check followed by a decode or a reassignment inspected a different value. Do not infer symbolic-link or filesystem state and do not claim runtime exploitation. No model confidence may invent missing bindings, operands, controls or coverage."
+	}
 	evidence, err := json.Marshal(struct {
 		Components         *analysis.ComponentSelection   `json:"analysis_components,omitempty"`
 		Instruction        string                         `json:"instruction"`
@@ -209,7 +224,11 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 		}
 		qs[q.name] = map[string]any{"type": "choice", "instructions": questionInstructions(q, use), "criteria": criteria}
 	}
-	return json.Marshal(map[string]any{"model": c.model, "state": string(evidence), "questions": qs})
+	field := "state"
+	if c.provider == "gemini" {
+		field = "input"
+	}
+	return json.Marshal(map[string]any{"model": c.model, field: string(evidence), "questions": qs})
 }
 
 type answer struct {
@@ -219,6 +238,9 @@ type answer struct {
 }
 
 func (c *Client) decodeQuestions(data []byte, expected []question) (map[string]string, string, map[string]int64, error) {
+	if c.provider == "gemini" {
+		return c.decodeGemini(data, expected)
+	}
 	var raw struct {
 		Model   string           `json:"model"`
 		Answers json.RawMessage  `json:"answers"`

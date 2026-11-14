@@ -90,7 +90,11 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if language == lang.Python || use.InputFacts.Validate(use.Dependencies) != nil || (use.EntryFacts != nil && (use.EntryFacts.Kind != use.InputFacts.Acquisition || use.EntryFacts.Location.Span != use.InputFacts.Binding.Span || use.EntryFacts.Location.SHA256 != use.InputFacts.Binding.SHA256)) {
 			return nil, fmt.Errorf("invalid Node input facts")
 		}
-		roots = append(roots, "source.node-input-v1")
+		input := "source.node-input-v1"
+		if family.Name == "path" {
+			input = "source.node-input-path-v1"
+		}
+		roots = append(roots, input)
 	}
 	ids, err := c.closure(roots)
 	if err != nil {

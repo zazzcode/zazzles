@@ -102,6 +102,11 @@ func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
 				return pythonValue{binding: "logger", evidence: []analysis.Evidence{m.evidence("logger_binding", global)}}
 			}
 		}
+		if global := m.vars[pyText(m, n)]; global != nil && global.Kind() == "call" && pyPathObjectNames[f.qualified(pyText(m, global.ChildByFieldName("function")))] {
+			// A module-level Path(...) keeps its legacy unresolved-value record; the
+			// binding only lets a later read, write or / operator recognize the object.
+			return pythonValue{unknown: true, binding: "pathlib_path", gaps: []analysis.Gap{f.gap("python_value_unresolved", "Value definition is not resolved: "+pyText(m, n), n)}}
+		}
 		if f.qualified(pyText(m, n)) == "flask.request" {
 			return pythonValue{binding: "flask_request"}
 		}
@@ -160,9 +165,19 @@ func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
 			}
 		}
 
-		v := f.evalChildren(n)
+		var v pythonValue
+		pathObject := false
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			child := f.eval(n.NamedChild(i))
+			pathObject = pathObject || child.binding == "pathlib_path"
+			v = pyCombine(v, child)
+		}
 		if n.Kind() == "binary_operator" {
 			v.built = true
+			if pathObject && pyText(m, n.ChildByFieldName("operator")) == "/" {
+				// pathlib's / operator joins path components and stays a path object.
+				v.binding = "pathlib_path"
+			}
 		}
 		if n.Kind() == "comparison_operator" {
 			v = pyProtect(v, "non_content")

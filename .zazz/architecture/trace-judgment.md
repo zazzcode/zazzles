@@ -65,7 +65,7 @@ outbound observations select `pack.outbound` but have no model questionnaire or 
 They return `not_run` without a model call, remain Review and leave requested assessment incomplete;
 Preview rejects them without a request body. Logging is the remaining unmigrated existing family.
 Selected obligations extend the
-original source-required roles and mandatory Go gates. Changed request context still rejects replay;
+original source-required roles and mandatory evidence validation checks. Changed request context still rejects replay;
 old question versions remain historical on export.
 
 ## Route and browser slices

@@ -93,6 +93,8 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		describeXSS(u, &f)
 	case "command_execution_candidate":
 		describeCommand(u, &f)
+	case "path_traversal_candidate":
+		describePath(u, &f)
 	case "outbound_http_candidate":
 		f.Title = "Outbound request needs destination review"
 		f.Summary = "Scan recorded a possible outbound HTTP use. Verify the destination, request-value handling, and applicable restrictions; this is not a confirmed SSRF finding."
@@ -120,6 +122,8 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 			f.Protection = "Field-policy enforcement: " + displayLabel(a.Protection) + ". " + a.Reason
 		} else if u.Kind == "command_execution_candidate" {
 			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
+		} else if u.Kind == "path_traversal_candidate" {
+			f.Protection = "Path assessment: traversal " + displayLabel(a.Answers["path_traversal"]) + ", containment " + displayLabel(a.Answers["containment_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "xss_candidate" {
 			f.Protection = "Decision XSS exposure: " + displayLabel(a.Answers["xss_exposure"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "log_sink_candidate" {
@@ -143,6 +147,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 			if u.Kind == "command_execution_candidate" && u.Command != nil && a.QuestionVersion == analysispacks.CommandProtocol && len(a.BlockingGaps) == 0 {
 				confirmCommand(u, &f)
 			}
+			if u.Kind == "path_traversal_candidate" && u.Path != nil && a.QuestionVersion == analysispacks.PathProtocol && len(a.BlockingGaps) == 0 {
+				confirmPath(u, &f)
+			}
 			if u.Completeness != nil && u.Completeness.ClaimKind == "injection" && len(a.BlockingGaps) == 0 && (a.Answers["injection_protection"] == "vulnerable" || a.Answers["injection_protection"] == "insufficient") {
 				f.RecordType = "finding"
 				f.Status = "confirmed_vulnerability"
@@ -156,6 +163,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 				f.Uncertainty += " Conditional value paths are present. This static vulnerability judgment is scoped to an unsafe supported path under its configuration/branch precondition, not every runtime configuration; inspect the conditional-expression evidence."
 			}
 		case "poor_practice":
+			if u.Kind == "path_traversal_candidate" && u.Path != nil && a.QuestionVersion == analysispacks.PathProtocol && len(a.BlockingGaps) == 0 {
+				confirmWeakPath(u, &f)
+			}
 			// Historical field-policy assessments keep their own protocol
 			// version; current ones carry the selected component protocol.
 			if u.Kind == "input_validation_candidate" && (a.QuestionVersion == analysispacks.ValidationProtocol || a.QuestionVersion == "validation-use-v2") && len(a.BlockingGaps) == 0 && a.Answers["field_requirement"] == "established" && a.Answers["enforcement_coverage"] == "complete" && a.Answers["validation"] == "insufficient" {
@@ -178,6 +188,10 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 				f.Title = "ObjectId lookup keeps the constrained identifier as data"
 				f.Summary = "The source, transformations and supplied controls support a constrained identifier at findById. The pinned default-ObjectId contract and consistent judgment support protection of this NoSQL-injection claim. Input acquisition is separate from sink semantics."
 				f.Uncertainty = "This protection does not establish authorization, ownership, valid-ID error handling, business validation or safe stored-content rendering. Inspect the separate source/type/transfer evidence and declared dependency assumptions."
+			}
+			if u.Kind == "path_traversal_candidate" {
+				f.Title = "File path is contained"
+				f.Summary = "Source-backed containment on the same value and a consistent path assessment support protection of this file operation against traversal for the stated claim. Preserve the control; this does not assess other file operations, symbolic-link or race behavior, or authorization of the selected file."
 			}
 			if u.Kind == "command_execution_candidate" {
 				f.Title = "Process operands are constrained"

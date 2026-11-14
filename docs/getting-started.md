@@ -54,4 +54,5 @@ shell use; CI should set environment variables and secrets through its workflow 
 
 
 Continue with [required decision-model setup](decision-models.md) before a security assessment.
-Luna judgment is core to that workflow; evidence-only inspection and rendering do not require API calls.
+Select one `JUDGE_DECISION_MODEL` for all analyzers: OpenAI `gpt-6-luna` or Google
+`gemini-decision-1`, with the matching explicit `--judge` provider. Model judgment is core to that workflow; evidence-only inspection and rendering do not require API calls.

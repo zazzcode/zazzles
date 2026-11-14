@@ -9,6 +9,9 @@ import (
 )
 
 type value struct {
+	pathArchive        string
+	pathArchiveBinding *analysis.Evidence
+	pathObjectClosed   bool
 	grpcInput          *grpcInput
 	grpcTransfers      []analysis.Evidence
 	graphqlArgs        *analysis.Evidence
@@ -30,6 +33,7 @@ type value struct {
 	gaps          []analysis.Gap
 }
 type flow struct {
+	pathOnly     bool
 	constants    registrationSeeds
 	client       *clientContext
 	response     string
@@ -53,6 +57,10 @@ type flow struct {
 	parts map[string]string
 	// setterValue, inside a model attribute setter, receives what the setter stores.
 	setterValue *value
+	// urlSources makes the request URL members (path, url, originalUrl, baseUrl)
+	// request sources. It is set only on the path-only second pass of a handler, so no
+	// other analyzer's dependencies or request bytes change.
+	urlSources bool
 }
 
 func (f *flow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -143,6 +151,9 @@ func (f *flow) statement(n *sitter.Node) bool {
 		return n.Kind() == "throw_statement"
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
+		if f.pathOnly && f.pathArchiveForOf(n) {
+			return false
+		}
 		if !f.clientForOf(n) {
 			f.branches(n)
 		}
@@ -299,6 +310,11 @@ func (f *flow) eval(n *sitter.Node) value {
 			return v
 		}
 	}
+	if f.pathOnly {
+		if v, ok := f.pathArchiveValue(n); ok {
+			return v
+		}
+	}
 	switch n.Kind() {
 	case "identifier", "shorthand_property_identifier":
 		if v, ok := f.env[n.Utf8Text(src)]; ok {
@@ -311,6 +327,11 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return value{gaps: []analysis.Gap{f.gap("unknown_value", "unresolved local value: "+n.Utf8Text(src), n)}}
 	case "member_expression", "subscript_expression":
+		if f.urlSources && n.Kind() == "member_expression" {
+			if obj, prop := n.ChildByFieldName("object"), n.ChildByFieldName("property"); obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(src) == f.request && requestURLMembers[prop.Utf8Text(src)] {
+				return value{deps: []analysis.Dependency{{Source: f.module.evidence("input_source", n), Transfers: []analysis.Evidence{}}}}
+			}
+		}
 		partField := f.partField(n)
 		if (partField != nil || isRequestField(n, src, f.request) || f.hapiPayload(n)) && f.nodeFieldAvailable(n) {
 			sourceNode := n
@@ -392,7 +413,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return v
 	case "object":
-		v := value{fields: map[string]value{}}
+		v := value{fields: map[string]value{}, pathObjectClosed: true}
 		var spread value
 		for i := uint(0); i < n.NamedChildCount(); i++ {
 			p := n.NamedChild(i)
@@ -409,6 +430,7 @@ func (f *flow) eval(n *sitter.Node) value {
 				v.fields[p.Utf8Text(src)] = field
 			} else if p.Kind() == "spread_element" && p.NamedChildCount() == 1 {
 				spread = f.eval(p.NamedChild(0))
+				v.pathObjectClosed = v.pathObjectClosed && spread.pathObjectClosed
 				v = combine(v, spread)
 			}
 		}
@@ -537,6 +559,12 @@ func (f *flow) transfer(v value, kind string, n *sitter.Node) value {
 }
 
 func combine(a, b value) value {
+	if a.pathArchive == "" {
+		a.pathArchive = b.pathArchive
+	}
+	if a.pathArchiveBinding == nil {
+		a.pathArchiveBinding = b.pathArchiveBinding
+	}
 	if a.model == "" {
 		a.model, a.read = b.model, b.read
 	}
@@ -609,6 +637,9 @@ func (f *flow) call(n *sitter.Node) value {
 }
 
 func (f *flow) evalCall(n *sitter.Node) value {
+	if v, ok := f.pathImmediate(n); ok {
+		return v
+	}
 	fn := n.ChildByFieldName("function")
 	args := n.ChildByFieldName("arguments")
 	if fn == nil {
@@ -629,6 +660,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		if v, handled := f.clientCall(n, fn, args); handled {
 			return v
 		}
+	}
+	// Recording a filesystem candidate is additive and precedes the template-file
+	// read model, which otherwise consumes fs.readFile calls whole.
+	if f.client == nil {
+		f.pathCall(n, fn, args)
 	}
 	if modeled, handled := f.templateCall(n, fn, args); handled {
 		return modeled

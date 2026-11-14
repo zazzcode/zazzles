@@ -10,6 +10,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Node input acquisition](node-inputs.md) | Transport-neutral value facts, bounded Express/Fastify/Hapi adapters and provisional model-assisted discovery |
 | [Database injection](database-injection.md) | SQL/NoSQL library contracts, source flow, branch constraints, and verdicts |
 | [Command injection](command-injection.md) | Verified Node/Python process APIs, shell/executable/argument facets, guards and outcomes |
+| [Path traversal](path-traversal.md) | Verified Node `fs` and Python `open`/`pathlib` operations, effective path operands, containment controls and outcomes |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |
 | [Cross-site scripting](xss.md) | Source-to-rendering evidence, HTML contexts, template escaping, sanitization and XSS outcomes |
@@ -32,15 +33,15 @@ root `docs/`. See [contributing](../contributing.md) for repository workflow.
 
 The scanner also embeds versioned language **Analysis Guidelines** from
 [`internal/guidelines/`](../../internal/guidelines/). These documents combine secure coding
-recommendations with instructions for interpreting source evidence. SQL, NoSQL, standalone validation
-and XSS select applicable sections through the embedded component catalog, alongside family-specific
+recommendations with instructions for interpreting source evidence. SQL, NoSQL, standalone validation,
+XSS, command execution and path traversal select applicable sections through the embedded component catalog, alongside family-specific
 contracts, questions and evidence obligations. Logging still receives the full applicable language
 document pending its component migration. Reports retain guideline identity/version under
 `analysis_guidelines` and selected component provenance under `analysis_components`. Outbound
 observations select static components but send no model request. See the
 [component organization](../technical-approach.md#analysis-knowledge-and-components).
-They do not implement detection or override missing evidence, application requirements or Go policy
-gates. Unlike the product guides on this page, their text is included in model requests.
+They do not implement detection or override missing evidence, application requirements or mandatory
+evidence validation checks. Unlike the product guides on this page, their text is included in model requests.
 
 “Poor practice” remains a finding classification for established defects. It is independent of the
 former `Practice` name for guideline documents. See the [architecture terminology](../../.zazz/architecture.md#1-architecture-premise).

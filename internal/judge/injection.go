@@ -18,6 +18,8 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return componentQuestions(analysispacks.ValidationQuestions())
 		case "command_execution_candidate":
 			return componentQuestions(analysispacks.CommandQuestions())
+		case "path_traversal_candidate":
+			return componentQuestions(analysispacks.PathQuestions())
 		}
 	}
 	if use.Kind == "xss_candidate" {
@@ -37,6 +39,9 @@ func questionChoices(q question) []map[string]string {
 		return c
 	}
 	if c := analysispacks.CommandChoices(q.name); c != nil {
+		return c
+	}
+	if c := analysispacks.PathChoices(q.name); c != nil {
 		return c
 	}
 	if c := xssChoices(q.name); c != nil {

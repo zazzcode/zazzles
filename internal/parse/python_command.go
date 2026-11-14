@@ -45,7 +45,7 @@ func (s *pythonSet) commandTampered(m *pythonModule, module string) bool {
 						return
 					}
 					root := strings.Split(pyText(mod, left), ".")[0]
-					if imp, ok := mod.imports[root]; ok && imp.name == "" && (imp.module == "os" || imp.module == "subprocess") {
+					if imp, ok := mod.imports[root]; ok && imp.name == "" && imp.module != "" {
 						s.tampered["patch:"+imp.module] = true
 					}
 				case "call":
@@ -53,7 +53,7 @@ func (s *pythonSet) commandTampered(m *pythonModule, module string) bool {
 					if fn == "setattr" {
 						if args := pyArgs(n); len(args) > 0 {
 							root := pyText(mod, args[0])
-							if imp, ok := mod.imports[root]; ok && imp.name == "" && (imp.module == "os" || imp.module == "subprocess") {
+							if imp, ok := mod.imports[root]; ok && imp.name == "" && imp.module != "" {
 								s.tampered["patch:"+imp.module] = true
 							}
 						}

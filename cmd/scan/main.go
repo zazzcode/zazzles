@@ -14,6 +14,7 @@ import (
 	"sort"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/judge"
 	"github.com/zazzcode/zazzles/internal/lang"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
@@ -48,8 +49,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		routeFilter    = flags.String("route", "", "optional exact route path pattern for --analyze")
 		checksFile     = flags.String("checks", "", "JSON file declaring route/method/field security requirements for --analyze")
 		entry          = flags.String("entry", "", "relative JS/TS/Python registration file for --analyze")
-		judgeProvider  = flags.String("judge", "", "optional semantic judge: openai or jev (transmits bounded source evidence)")
-		judgeModel     = flags.String("judge-model", "", "judge model; required for jev")
+		judgeProvider  = flags.String("judge", "", "optional semantic judge: openai, gemini or jev (transmits bounded source evidence)")
+		judgeModel     = flags.String("judge-model", "", "judge model; defaults to JUDGE_DECISION_MODEL, gpt-6-luna for openai or gemini-decision-1 for gemini; required for jev")
 		discoverRoutes = flags.Bool("discover-routes", false, "opt-in model-assisted Node route proposals; unverified bindings remain provisional")
 		discoveryLimit = flags.Int("discovery-limit", 3, "maximum additional model discovery requests with --discover-routes, no retries")
 		judgeLimit     = flags.Int("judge-limit", 10, "maximum judge requests per run, no retries")
@@ -58,11 +59,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		traceDir       = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
 		asJSON         = flags.Bool("json", false, "emit machine-readable JSON instead of text")
 	)
+	limitFlags := addJudgeLimitFlags(flags)
 	flags.BoolVar(analyzeMode, "strings", false, "compatibility alias for --analyze")
 	flags.Usage = func() {
 		fmt.Fprintln(stderr, "usage: scan --list [--json] <path>")
 		fmt.Fprintln(stderr, "       scan --routes [--json] <path>")
-		fmt.Fprintln(stderr, "       scan --analyze [--json] [--entry file] [--judge openai|jev] <path>")
+		fmt.Fprintln(stderr, "       scan --analyze [--json] [--entry file] [--judge openai|gemini|jev] <path>")
 		fmt.Fprintln(stderr, "       scan --export-html <saved-report.json>")
 		fmt.Fprintln(stderr, "       scan --export-sarif <saved-report.json>")
 		flags.PrintDefaults()
@@ -128,7 +130,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	if *analyzeMode {
-		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit})
+		limits := judge.Limits{}
+		if *judgeProvider != "" {
+			var err error
+			limits, *judgeLimit, err = limitFlags.resolve(flags, os.Getenv)
+			if err != nil {
+				fmt.Fprintf(stderr, "scan: %v\n", err)
+				return exitUsage
+			}
+		}
+		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit}, limits)
 	}
 	if *routes {
 		return runRoutes(flags.Arg(0), *asJSON, stdout, stderr)

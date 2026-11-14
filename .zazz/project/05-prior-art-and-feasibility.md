@@ -181,5 +181,5 @@ was executed, no benchmark was added, and no engine/code/rules were adopted.
 
 The [public technical comparison](../../docs/technical-approach.md#relationship-to-joern-scan)
 explains the shared static-analysis principles and the differences: Zazzles's bounded Go evidence
-assembly, explicit entry/invocation contexts, claim-specific decision-model assessment and Go policy
-gates. This is not a claim of equivalent trace coverage, novel algorithms or measured superiority.
+assembly, explicit entry/invocation contexts, claim-specific decision-model assessment and evidence
+validation. This is not a claim of equivalent trace coverage, novel algorithms or measured superiority.

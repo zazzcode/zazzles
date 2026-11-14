@@ -1,0 +1,8 @@
+syntax = "proto3";
+package fixtures.files;
+message Request { string name = 1; }
+message Reply { string body = 1; }
+service ReportService {
+ rpc Fetch(Request) returns (Reply);
+ rpc Fixed(Request) returns (Reply);
+}

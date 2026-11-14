@@ -120,6 +120,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		})
 	}
 	set.mountedRoutes(out, selected)
+	set.pathConfiguredMounts(out, selected)
 	if err := set.browser(out); err != nil {
 		return nil, err
 	}
@@ -129,12 +130,13 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	set.linkTokenClaims(out)
 	assembleXSSClaims(out)
 	set.assembleCommandClaims(out)
+	set.assemblePathClaims(out)
 	// Check assembly rebuilds the use list for its own claim families; the
-	// command claim is independent of explicit check files and is kept whole.
+	// command and path claims are independent of explicit check files and are kept whole.
 	var commandUses []analysis.CandidateUse
 	rest := out.Uses[:0:0]
 	for _, u := range out.Uses {
-		if u.Kind == "command_execution_candidate" {
+		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" {
 			commandUses = append(commandUses, u)
 		} else {
 			rest = append(rest, u)

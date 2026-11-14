@@ -36,12 +36,12 @@ source snapshots and dispatch; unknown suggestions remain provisional coverage. 
 
 ## Current implementation status
 
-The SQL Injection Analyzer, JS/TS NoSQL Injection Analyzer, Input Validation Analyzer and XSS
-Analyzer use the shared embedded catalog, deterministic selection and schema-4 provenance. Outbound
+The SQL Injection, JS/TS NoSQL Injection, Input Validation, XSS and Command Injection Analyzers
+use the shared embedded catalog, deterministic selection and schema-4 provenance. Outbound
 observations also select catalog components, without implementing SSRF security assessment.
 Static adapters establish source facts;
-components select relevant guidance, contracts, questions and evidence obligations; Go judgment
-retains mandatory completeness and consistency gates. Outbound is observation-only, with no model
+components select relevant guidance, contracts, questions and evidence obligations; evidence validation
+enforces completeness and consistency requirements. Outbound is observation-only, with no model
 questionnaire, model calls or SSRF verdict.
 
 The SQL-first MVP and migration sessions 01–03 are implemented. The Sensitive Data Logging
@@ -168,7 +168,7 @@ transport and mandatory claim gates in `internal/judge`, and presentation in `in
 | Language interpretation | `internal/guidelines/javascript.md`, `python.md`, `go.md` | Registered families select validated existing sections; unmigrated families retain full language documents; Go guidance does not establish Go support |
 | Sequelize raw SQL | `internal/parse/checks.go` | Catalog owns the verified operation contract; parse still proves receiver/import/slot bindings |
 | Python SQL drivers | `internal/parse/python_dbapi.go` | Catalog owns sqlite3, Psycopg 2/3, PyMySQL and MySQL Connector operation contracts; parse still proves connection/cursor provenance |
-| SQL questions and choices | `internal/judge/client.go`, `injection.go` | SQL components own the selected question/answer material; judge encodes, decodes and applies Go policy |
+| SQL questions and choices | `internal/judge/client.go`, `injection.go` | SQL components own the selected question/answer material; judge encodes, decodes and applies evidence validation |
 | Required SQL evidence | `internal/parse/checks.go`, `python_sql.go`; `internal/judge/policy.go` | Components declare obligations; core input-source, sink-binding, invoked-callable and control-flow roles remain mandatory |
 | NoSQL contracts | `internal/analysispacks/nosql.go` (catalog owner); parse proves collection/model bindings | Migrated: MarsDB collection and Mongoose query/casting contracts are catalog components; selector, `$where`, schema/version and all-path semantics preserved |
 | XSS contracts/questions | `internal/analysispacks/xss.go` and `xss_selection.go`; validated guideline projections | Migrated: catalog owns primary rendering contracts, five questions and supplementary context/protection/storage/browser/response material; parse retains source facts and judge retains mandatory gates |
@@ -209,8 +209,8 @@ retain the contract's bounded assumptions; a scanner contract version is not an 
 
 Static registered-family assembly records its selection and effective obligations on the candidate. Existing
 `completeness.required` and source gaps are preserved; `analysis_components.required` records selected
-obligations, and Go judgment validates their union with core/claim roles. Judgment
-validates/consumes that same selection. Mandatory Go obligations are unioned with component roles;
+obligations. Evidence validation checks their union with core/claim roles and consumes that same
+selection. Mandatory engine obligations are unioned with component roles;
 component content cannot remove evidence gates, invent an edge or clear a blocker. Caller-specific
 controls remain attached to invocation contexts, including shared callables exposed through several
 entries. Protection cannot transfer from one caller, field, operand or branch to another.
@@ -259,7 +259,8 @@ issue counts and status semantics, including a construction-practice concern bes
 | Analyzer / supporting observations | Status | Next bounded task and acceptance controls |
 | --- | --- | --- |
 | SQL Injection Analyzer with query validation/construction facets | Migrated / offline verification passed | Catalog/selection, request composition, provenance and actual JS/TS/Python pipeline parity; raw, bound, constrained, unknown and context-isolation controls; `sql-components-v2` provenance after family generalization with frozen discovery hashes and outcomes |
-| Command Injection Analyzer | Implemented; offline checks and full judged scans passed | `pack.command`/`claim.command`/`evidence.command`/`flow.command`, `language.command.{javascript,python}` and four `api.*` operation contracts; four shell/executable/argument/coverage questions under `command-components-v1`; Go policy gates; predecessor requests and identities unchanged ([results](../evaluation/command-injection-results.md)) |
+| Command Injection Analyzer | Implemented; offline checks and full judged scans passed | `pack.command`/`claim.command`/`evidence.command`/`flow.command`, `language.command.{javascript,python}` and four `api.*` operation contracts; four shell/executable/argument/coverage questions under `command-components-v1`; evidence validation checks; predecessor requests and identities unchanged ([results](../evaluation/command-injection-results.md)) |
+| Path Traversal Analyzer | Implemented; offline checks, full 8-app matrix and live controls passed | `pack.path`/`claim.path`/`evidence.path`/`flow.path`, `language.path.{javascript,python}`, eleven `api.*` operation contracts (`node-fs-file-v1`, `express-send-file-v1`, `adm-zip-extract-v1`, `unzipper-entry-write-v1`, `hbs-render-layout-v1`, `python-open-file-v1`, `python-pathlib-file-v1`, `python-archive-open-v1`, `python-os-file-v1`, `flask-send-file-v1`, `werkzeug-file-save-v1`) and path-only `source.node-input-path-v1`; three questions under `path-components-v1` (traversal, containment control, coverage); AST-polarity and order-sensitive evidence validation checks; shared node-input component and predecessor requests unchanged ([results](../evaluation/path-traversal-results.md)) |
 | XSS Analyzer (reflected, stored and client-side/DOM/framework) | Migrated / offline verification passed | Selected rendering/context/protection/storage/browser/response material; five unchanged named questions, mandatory origin/context/path gates, JSON-only observations, exact replay and separate bounded fetch-method correction |
 | Input Validation Analyzer | Migrated / offline verification passed | Requirement/enforcement questions and field-policy guidance selected per claim; established/absent policies, enforced/bypassed/missing guards, client-only policy, unknown helpers, API-less claims, JS/Python parity and claim isolation; no invented standards |
 | Sensitive Data Logging Analyzer | Implemented; catalog migration pending | Move sensitive-content/emission/redaction contracts and questions; paired leaks, metadata/constants, redaction and unknowns |
@@ -589,3 +590,18 @@ The command family adds components without touching existing descriptors: comman
 references into the deduplicated evidence table) travel in the wire bundle. Control-kind evidence in a command use is
 namespaced so invocation identity, and therefore every existing candidate ID, is unchanged. Limits: POSIX assumption,
 bounded transfers, adapter-specific entry models (see the [public guide](../../docs/analysis/command-injection.md)).
+
+## Path traversal components (2026-11-14)
+
+The path family follows the command pattern: path-only embedded guidance (`internal/guidelines/path*.go`, never in
+default language selection), catalog-owned contracts selected only after a verified `fs`/`open`/`pathlib` binding,
+reused `entry.http/graphql/grpc` descriptors, and `PathFacts` (operation, role, operand slots, per-flow protection,
+transformations, base, classified guards) in the wire bundle. Two decisions are architectural. First, the shared
+`source.node-input-v1` component is not widened: adding the path kind to its applicability would change its digest and
+therefore every existing Node family's selected request, so a path-only twin `source.node-input-path-v1` shares the
+same material constant. Second, claim assembly (entry scoping, supplied route/middleware context, handler control flow,
+guards, completeness) is now one hook-driven routine (`internal/parse/claim_assembly.go`) used by the command and path
+families; the command tests, including the source cases on the pinned targets, are unchanged by the refactor. Only request
+`input_source` dependencies are path flows; stored, file, API and browser values are not. Path-scoped second-pass URL/file
+members (`req.path`/`url`/`originalUrl`/`file(s)`), non-final Express route-chain handlers, explicit local export lists and
+mounted router parameters extend path coverage without altering any existing analyzer's evidence (see the [results](../evaluation/path-traversal-results.md)).

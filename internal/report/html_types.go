@@ -37,7 +37,7 @@ func rowTypePills(items []htmlItem) []htmlTypePill {
 				p.Protected++
 			case "confirmed_vulnerability":
 				switch id {
-				case "sql-injection", "nosql-injection", "reflected-xss", "stored-xss", "dom-xss", "command-injection", "sensitive-data-logging":
+				case "sql-injection", "nosql-injection", "reflected-xss", "stored-xss", "dom-xss", "command-injection", "path-traversal", "sensitive-data-logging":
 					p.Confirmed++
 				default:
 					p.Review++

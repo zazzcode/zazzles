@@ -1,0 +1,1869 @@
+{
+  "date": "2026-11-14",
+  "model": "gemini-decision-1",
+  "protocol": "path-components-v1",
+  "base": "86f5bc5",
+  "exact_replays_verified": 360,
+  "ledger_totals": {
+    "live_requests": 464,
+    "replayed": 478,
+    "failed": 3,
+    "input_tokens": 6272774,
+    "output_tokens": 0,
+    "possibly_interrupted_requests_max": 1
+  },
+  "ledger_batches": [
+    {
+      "batch": "pt-01-ts",
+      "target": "vulnerable-typescript-app",
+      "live_requests": 1,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 10539,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:03:13Z"
+    },
+    {
+      "batch": "pt-02-vulnerable-flask-app",
+      "target": "vulnerable-flask-app",
+      "live_requests": 2,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 14354,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:03:27Z"
+    },
+    {
+      "batch": "pt-02-juice-shop",
+      "target": "juice-shop",
+      "live_requests": 3,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 44675,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:04:26Z"
+    },
+    {
+      "batch": "pt-03-vulnpy-pt",
+      "target": "vulnpy",
+      "live_requests": 1,
+      "replayed": 0,
+      "failed": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:04:45Z"
+    },
+    {
+      "batch": "pt-04-vulnpy-pt-paced",
+      "target": "vulnpy",
+      "live_requests": 56,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 886359,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:05:49Z"
+    },
+    {
+      "batch": "pt-05-vulnpy-templating-sample",
+      "target": "vulnpy",
+      "live_requests": 3,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 64544,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:32:08Z"
+    },
+    {
+      "batch": "pt-06-typescript-fixture",
+      "target": "typescript-fixture",
+      "live_requests": 4,
+      "replayed": 0,
+      "failed": 1,
+      "input_tokens": 24848,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:33:29Z"
+    },
+    {
+      "batch": "pt-06-python-fixture",
+      "target": "python-fixture",
+      "live_requests": 1,
+      "replayed": 0,
+      "failed": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:33:30Z"
+    },
+    {
+      "batch": "pt-07-typescript-fixture",
+      "target": "typescript-fixture",
+      "live_requests": 16,
+      "replayed": 3,
+      "failed": 0,
+      "input_tokens": 143723,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:34:19Z"
+    },
+    {
+      "batch": "pt-07-python-fixture",
+      "target": "python-fixture",
+      "live_requests": 22,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 165103,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:38:41Z"
+    },
+    {
+      "batch": "pt-08-typescript",
+      "target": "typescript-fixture",
+      "live_requests": 7,
+      "replayed": 12,
+      "failed": 0,
+      "input_tokens": 67820,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:46:04Z"
+    },
+    {
+      "batch": "pt-08-python",
+      "target": "python-fixture",
+      "live_requests": 7,
+      "replayed": 15,
+      "failed": 0,
+      "input_tokens": 55134,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:48:22Z"
+    },
+    {
+      "batch": "pt-08-juice",
+      "target": "juice-shop",
+      "live_requests": 2,
+      "replayed": 1,
+      "failed": 0,
+      "input_tokens": 31651,
+      "output_tokens": 0,
+      "time": "2026-11-14T18:51:41Z"
+    },
+    {
+      "batch": "pt-f1-vulnerable-typescript-app",
+      "target": "vulnerable-typescript-app",
+      "live_requests": 0,
+      "replayed": 1,
+      "failed": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:17:42Z"
+    },
+    {
+      "batch": "pt-f1-vulnerable-flask-app",
+      "target": "vulnerable-flask-app",
+      "live_requests": 1,
+      "replayed": 2,
+      "failed": 0,
+      "input_tokens": 9235,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:17:42Z"
+    },
+    {
+      "batch": "pt-f1-nodejs-goof",
+      "target": "nodejs-goof",
+      "live_requests": 1,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 16167,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:18:57Z"
+    },
+    {
+      "batch": "pt-f1-ThreatByte",
+      "target": "ThreatByte",
+      "live_requests": 5,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 46407,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:20:13Z"
+    },
+    {
+      "batch": "pt-f1-juice-shop",
+      "target": "juice-shop",
+      "live_requests": 7,
+      "replayed": 2,
+      "failed": 0,
+      "input_tokens": 109790,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:23:31Z"
+    },
+    {
+      "batch": "pt-f2-vulnpy-interrupted-recovered",
+      "target": "vulnpy",
+      "live_requests": 14,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 221021,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:36:42.782995+00:00",
+      "unresolved_inflight_max": 1,
+      "note": "Owner requested stopping old slow batch. Recovered completed live traces only; replay progress was not flushed and is not reconstructed. Reserve one additional possibly in-flight request by lowering subsequent total-cap to 499. Usage of that possible request is unknown."
+    },
+    {
+      "batch": "pt-paid-vulnpy",
+      "target": "vulnpy",
+      "live_requests": 41,
+      "replayed": 71,
+      "failed": 0,
+      "input_tokens": 634256,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:38:49Z"
+    },
+    {
+      "batch": "pt-paid-typescript",
+      "target": "typescript-fixture",
+      "live_requests": 32,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 280662,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:39:55Z"
+    },
+    {
+      "batch": "pt-paid-python",
+      "target": "python-fixture",
+      "live_requests": 36,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 272188,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:41:10Z"
+    },
+    {
+      "batch": "pt-all-vulnpy-archive",
+      "target": "vulnpy",
+      "live_requests": 85,
+      "replayed": 55,
+      "failed": 0,
+      "input_tokens": 1369431,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:58:36Z"
+    },
+    {
+      "batch": "pt-all-vulnpy-template",
+      "target": "vulnpy",
+      "live_requests": 61,
+      "replayed": 3,
+      "failed": 0,
+      "input_tokens": 1235043,
+      "output_tokens": 0,
+      "time": "2026-11-14T20:00:52Z"
+    },
+    {
+      "batch": "pt-tier1-juice-shop",
+      "target": "juice-shop",
+      "live_requests": 5,
+      "replayed": 7,
+      "failed": 0,
+      "input_tokens": 69915,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:40:24Z"
+    },
+    {
+      "batch": "pt-tier1-ThreatByte",
+      "target": "ThreatByte",
+      "live_requests": 1,
+      "replayed": 4,
+      "failed": 0,
+      "input_tokens": 10196,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:40:27Z"
+    },
+    {
+      "batch": "pt-tier1-vulnerable-flask-app",
+      "target": "vulnerable-flask-app",
+      "live_requests": 1,
+      "replayed": 2,
+      "failed": 0,
+      "input_tokens": 9240,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:40:32Z"
+    },
+    {
+      "batch": "pt-tier1-vulnpy",
+      "target": "vulnpy",
+      "live_requests": 7,
+      "replayed": 253,
+      "failed": 0,
+      "input_tokens": 90259,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:40:41Z"
+    },
+    {
+      "batch": "pt-tier1-ts-fixture",
+      "target": "typescript-fixture",
+      "live_requests": 11,
+      "replayed": 21,
+      "failed": 0,
+      "input_tokens": 113103,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:41:52Z"
+    },
+    {
+      "batch": "pt-tier1-ts-expanded-fixture",
+      "target": "typescript-expanded-fixture",
+      "live_requests": 10,
+      "replayed": 0,
+      "failed": 0,
+      "input_tokens": 84539,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:43:02Z"
+    },
+    {
+      "batch": "pt-tier1-py-fixture",
+      "target": "python-fixture",
+      "live_requests": 10,
+      "replayed": 26,
+      "failed": 0,
+      "input_tokens": 89287,
+      "output_tokens": 0,
+      "time": "2026-11-14T21:44:11Z"
+    },
+    {
+      "batch": "pt-tier1-adversarial-controls",
+      "failed": 0,
+      "input_tokens": 103285,
+      "live_requests": 11,
+      "output_tokens": 0,
+      "replayed": 0,
+      "target": "tier1-adversarial-controls",
+      "time": "2026-11-14T21:50:00Z"
+    }
+  ],
+  "matrix_rows": [
+    {
+      "id": "TS-PATH-01",
+      "target": "vulnerable-typescript-app",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "src/server.ts",
+          "line": 104
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "FLASK-PATH-01",
+      "target": "vulnerable-flask-app",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "vulnerable-flask-app.py",
+          "line": 77
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "FLASK-PATH-02",
+      "target": "vulnerable-flask-app",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "vulnerable-flask-app.py",
+          "line": 129
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "VP-PATH-IO-OPEN",
+      "target": "vulnpy",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 48
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 28
+      },
+      "matches": true
+    },
+    {
+      "id": "VP-PATH-OPEN",
+      "target": "vulnpy",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 57
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 28
+      },
+      "matches": true
+    },
+    {
+      "id": "TB-PATH-UPLOAD",
+      "target": "ThreatByte",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "server/routes.py",
+          "line": 264
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "GOOF-PATH-ZIPSLIP",
+      "target": "nodejs-goof",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "routes/index.js",
+          "line": 270
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "VP-PATH-TAR-BZ2",
+      "target": "vulnpy",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 8
+        },
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 16
+        },
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 24
+        },
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 32
+        },
+        {
+          "file": "src/vulnpy/trigger/pt.py",
+          "line": 40
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 140
+      },
+      "matches": true
+    },
+    {
+      "id": "JS-ZIPSLIP-JUICE",
+      "target": "juice-shop",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "routes/fileUpload.ts",
+          "line": 34
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "JS-LFR-RENDER-JUICE",
+      "target": "juice-shop",
+      "expectation": "expected_positives",
+      "sinks": [
+        {
+          "file": "routes/dataErasure.ts",
+          "line": 107
+        },
+        {
+          "file": "routes/dataErasure.ts",
+          "line": 123
+        }
+      ],
+      "observed": {
+        "confirmed_vulnerability": 2
+      },
+      "matches": true
+    },
+    {
+      "id": "FLASK-PATH-N-UPLOAD",
+      "target": "vulnerable-flask-app",
+      "expectation": "expected_protected",
+      "sinks": [
+        {
+          "file": "vulnerable-flask-app.py",
+          "line": 209
+        }
+      ],
+      "observed": {
+        "protected_for_claim": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "TB-PATH-P-SEND",
+      "target": "ThreatByte",
+      "expectation": "expected_protected",
+      "sinks": [
+        {
+          "file": "server/routes.py",
+          "line": 302
+        },
+        {
+          "file": "server/routes.py",
+          "line": 309
+        },
+        {
+          "file": "server/routes.py",
+          "line": 334
+        }
+      ],
+      "observed": {
+        "protected_for_claim": 3
+      },
+      "matches": true
+    },
+    {
+      "id": "VP-PATH-U01",
+      "target": "vulnpy",
+      "expectation": "expected_unknown",
+      "sinks": [
+        {
+          "file": "src/vulnpy/common/templating.py",
+          "line": 27
+        }
+      ],
+      "observed": {
+        "needs_evidence": 64
+      },
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-FIXKEY",
+      "target": "juice-shop",
+      "expectation": "expected_unknown",
+      "sinks": [
+        {
+          "file": "routes/vulnCodeFixes.ts",
+          "line": 83
+        }
+      ],
+      "observed": {
+        "needs_evidence": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-SNIPPETKEY",
+      "target": "juice-shop",
+      "expectation": "expected_unknown",
+      "sinks": [
+        {
+          "file": "routes/vulnCodeSnippet.ts",
+          "line": 90
+        }
+      ],
+      "observed": {
+        "needs_evidence": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-INFRA",
+      "target": "juice-shop",
+      "expectation": "expected_unknown",
+      "sinks": [
+        {
+          "file": "server.ts",
+          "line": 277
+        }
+      ],
+      "observed": {
+        "needs_evidence": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "TB-PATH-REMOVE",
+      "target": "ThreatByte",
+      "expectation": "expected_unknown",
+      "sinks": [
+        {
+          "file": "server/routes.py",
+          "line": 364
+        }
+      ],
+      "observed": {
+        "needs_evidence": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-SENDFILE",
+      "target": "juice-shop",
+      "expectation": "expected_unknown",
+      "sinks": [
+        {
+          "file": "routes/fileServer.ts",
+          "line": 32
+        },
+        {
+          "file": "routes/keyServer.ts",
+          "line": 14
+        },
+        {
+          "file": "routes/logfileServer.ts",
+          "line": 14
+        },
+        {
+          "file": "routes/quarantineServer.ts",
+          "line": 14
+        }
+      ],
+      "observed": {
+        "needs_evidence": 4
+      },
+      "matches": true
+    },
+    {
+      "id": "GOOF-PATH-N01",
+      "target": "nodejs-goof",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "routes/index.js",
+          "line": 272
+        }
+      ],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "DEMO-PATH-N01",
+      "target": "vuln-demo-app",
+      "expectation": "expected_no_candidate",
+      "sinks": [],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "INSECURE-PATH-N01",
+      "target": "python-insecure-app",
+      "expectation": "expected_no_candidate",
+      "sinks": [],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-N01",
+      "target": "juice-shop",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "routes/languages.ts",
+          "line": 31
+        }
+      ],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-N02",
+      "target": "juice-shop",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "data/staticData.ts",
+          "line": 9
+        }
+      ],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-N03",
+      "target": "juice-shop",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "routes/videoHandler.ts",
+          "line": 82
+        }
+      ],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-N04",
+      "target": "juice-shop",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "routes/profileImageFileUpload.ts",
+          "line": 42
+        }
+      ],
+      "observed": {
+        "needs_evidence": 1
+      },
+      "matches": true
+    },
+    {
+      "id": "VP-PATH-N01",
+      "target": "vulnpy",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "src/vulnpy/common/templating.py",
+          "line": 27
+        }
+      ],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "TB-PATH-N01",
+      "target": "ThreatByte",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "server/api/v1/api_v1.py",
+          "line": 284
+        }
+      ],
+      "observed": {},
+      "matches": true
+    },
+    {
+      "id": "JS-PATH-N05",
+      "target": "juice-shop",
+      "expectation": "expected_no_candidate",
+      "sinks": [
+        {
+          "file": "routes/profileImageUrlUpload.ts",
+          "line": 29
+        }
+      ],
+      "observed": {
+        "needs_evidence": 1
+      },
+      "matches": true
+    }
+  ],
+  "fixture_rows": [
+    {
+      "target": "typescript-fixture",
+      "route": "/v/join-read",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/resolve-sync",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/write",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/promises",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/normalize-only",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/direct",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/try-catch",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/blacklist",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/reassigned",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/sibling-branch",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/helper",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/allowlist",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/allowlist-array",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/prefix-boundary",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/relative",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/realpath",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "resolved_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/helper-guard",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/u/helper-two-callers",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "unknown",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/u/helper-two-callers",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "unknown",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/u/prefix-bare",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "unknown",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/u/missing-helper",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "unknown",
+        "path_traversal": "unknown",
+        "protection_coverage": "unknown"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/u/basename",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/static",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "unknown",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/url",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/send-file",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/download",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/p/send-root",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/send-dynamic-root",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/u/send-separator/:file",
+      "status": "poor_practice",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/stream",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/append",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-fixture",
+      "route": "/v/unlink",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/middle",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/archive-middle",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/layout",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/layout-spread",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/exported-archive-middle",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/u/archive-filter",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/p/layout-allowlist-alias",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/layout-gated-blacklist",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/v/irrelevant-helper-budget",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "typescript-expanded-fixture",
+      "route": "/panel",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/open",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/join",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/write",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/io-open",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/pathlib-read",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/pathlib-bytes",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/pathlib-write",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/normpath-only",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/try-except",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/blacklist",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/reassigned",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/sibling-branch",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/helper",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/tar",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/bz2",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/gzip-write",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/upload",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/upload-checked",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/allowlist",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/allowlist-tuple",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/prefix-boundary",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/commonpath",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/realpath",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "resolved_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/upload-secure",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/helper-guard",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "finite_allowlist",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/u/helper-two-callers",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/u/prefix-bare",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "unknown",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/u/missing-helper",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "unknown",
+        "path_traversal": "unknown",
+        "protection_coverage": "unknown"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/u/basename",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/u/registry-select",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "unknown",
+        "path_traversal": "unknown",
+        "protection_coverage": "unknown"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/remove",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/send-file",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/p/send-from-dir",
+      "status": "protected_for_claim",
+      "expected": "protected_for_claim",
+      "matches": true,
+      "answers": {
+        "containment_control": "lexical_boundary",
+        "path_traversal": "protected",
+        "protection_coverage": "complete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/send-from-dir-dynamic",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/v/send-in-branch",
+      "status": "confirmed_vulnerability",
+      "expected": "confirmed_vulnerability",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "vulnerable",
+        "protection_coverage": "incomplete"
+      }
+    },
+    {
+      "target": "python-fixture",
+      "route": "/u/fake-sanitizer",
+      "status": "needs_evidence",
+      "expected": "needs_evidence_or_poor_practice",
+      "matches": true,
+      "answers": {
+        "containment_control": "none",
+        "path_traversal": "unknown",
+        "protection_coverage": "incomplete"
+      }
+    }
+  ],
+  "format_parity": {
+    "vuln-demo-app": {
+      "path_records": 0,
+      "json_html_sarif": "pass"
+    },
+    "vulnerable-typescript-app": {
+      "path_records": 1,
+      "json_html_sarif": "pass"
+    },
+    "nodejs-goof": {
+      "path_records": 1,
+      "json_html_sarif": "pass"
+    },
+    "juice-shop": {
+      "path_records": 12,
+      "json_html_sarif": "pass"
+    },
+    "vulnpy": {
+      "path_records": 260,
+      "json_html_sarif": "pass"
+    },
+    "ThreatByte": {
+      "path_records": 5,
+      "json_html_sarif": "pass"
+    },
+    "python-insecure-app": {
+      "path_records": 0,
+      "json_html_sarif": "pass"
+    },
+    "vulnerable-flask-app": {
+      "path_records": 3,
+      "json_html_sarif": "pass"
+    },
+    "typescript-fixture": {
+      "path_records": 32,
+      "json_html_sarif": "pass"
+    },
+    "typescript-expanded-fixture": {
+      "path_records": 10,
+      "json_html_sarif": "pass"
+    },
+    "python-fixture": {
+      "path_records": 36,
+      "json_html_sarif": "pass"
+    }
+  },
+  "components": {
+    "api.node-fs-file-v1": {
+      "id": "api.node-fs-file-v1",
+      "version": "1",
+      "digest": "4cd2917606ce986205f6bf6cff7adb21128702632cdd9c779ce9ec260505c879"
+    },
+    "claim.path": {
+      "id": "claim.path",
+      "version": "1",
+      "digest": "3990df450e20dbf5afd0681138fdf2d413ec39a1b1549a98f575fc90725bb464"
+    },
+    "entry.http": {
+      "id": "entry.http",
+      "version": "1",
+      "digest": "5bc9d6e9b967abeefaa00c251c4a168bb625ec1fb3c368739108980646ed58bf"
+    },
+    "evidence.path": {
+      "id": "evidence.path",
+      "version": "1",
+      "digest": "20d0193956ab71c5a0f311cd30f6624b116954b67b5cfb1e18ea3822db7b1b90"
+    },
+    "flow.path": {
+      "id": "flow.path",
+      "version": "1",
+      "digest": "39d3ffd1094f36cdf9023f851d57c035ed9a41bcc3e2bcfbd9d45d4f04052e4f"
+    },
+    "language.path.javascript": {
+      "id": "language.path.javascript",
+      "version": "1",
+      "digest": "89f5d8183e0cfbcd753b21ef94d9222ad6ae88cd7cc9e163c180c1b8ee13acf8"
+    },
+    "pack.path": {
+      "id": "pack.path",
+      "version": "1",
+      "digest": "21eaa59e5e5aefda282af0218598b31af492099a9dbf0db8450d94cf7ec50d00"
+    },
+    "source.node-input-path-v1": {
+      "id": "source.node-input-path-v1",
+      "version": "1",
+      "digest": "2c56fb912283a82bc35f1196e9845e877dac1f7512989f2587310f3d37b100c5"
+    },
+    "api.adm-zip-extract-v1": {
+      "id": "api.adm-zip-extract-v1",
+      "version": "1",
+      "digest": "e20d5ae2c952a53dd0ca95e43f9ce57275c858149463ac5c877dc442fa4059b1"
+    },
+    "api.express-send-file-v1": {
+      "id": "api.express-send-file-v1",
+      "version": "1",
+      "digest": "9e2a27612623eb6242d72b7c4e85a6f837775907e8db9228f25d0234918e9a69"
+    },
+    "api.unzipper-entry-write-v1": {
+      "id": "api.unzipper-entry-write-v1",
+      "version": "1",
+      "digest": "4e6f64e0c424126d090fcfa73ddbfe7181191ede180b08a577526d09958bf9de"
+    },
+    "api.hbs-render-layout-v1": {
+      "id": "api.hbs-render-layout-v1",
+      "version": "1",
+      "digest": "70139a8eb35b2f2365b46438109bc31486d163a0d9ad4f42cd57979cdd1ebe30"
+    },
+    "api.python-archive-open-v1": {
+      "id": "api.python-archive-open-v1",
+      "version": "1",
+      "digest": "59190a3281fb2dec9d2788543dfea9fc0f24ec910691a16e08c836225e083a57"
+    },
+    "language.path.python": {
+      "id": "language.path.python",
+      "version": "1",
+      "digest": "de62abc174eccda224fdc719522c0ccb8e173b40bc95f355b5248056e844cf78"
+    },
+    "api.python-open-file-v1": {
+      "id": "api.python-open-file-v1",
+      "version": "1",
+      "digest": "cd9804b7522fb2edb4a18f48816379013fbdd4a51697da13037ab6ab6c7828ac"
+    },
+    "api.werkzeug-file-save-v1": {
+      "id": "api.werkzeug-file-save-v1",
+      "version": "1",
+      "digest": "c6dc5f4565d2d57a06c511fe63f5d2afa697900b93e194b5c73f30f4fa0be78f"
+    },
+    "api.flask-send-file-v1": {
+      "id": "api.flask-send-file-v1",
+      "version": "1",
+      "digest": "b420678059ddaeddafeb2713f91ad4a03a6d58518e461099fa8d3acb74610248"
+    },
+    "api.python-os-file-v1": {
+      "id": "api.python-os-file-v1",
+      "version": "1",
+      "digest": "16bfded9eaf9861c2feeee7265a19e9849ede063c8a1f779dd4e93b596146225"
+    },
+    "api.python-pathlib-file-v1": {
+      "id": "api.python-pathlib-file-v1",
+      "version": "1",
+      "digest": "dee8f6106f07e1aa31c6325b1aac48a5252331a41e6381043f436dc647b10647"
+    }
+  },
+  "artifact_bundles": {
+    "vuln-demo-app": "_test-findings/vuln-demo-app/run-1393388834",
+    "vulnerable-typescript-app": "_test-findings/vulnerable-typescript-app/run-1934434610",
+    "nodejs-goof": "_test-findings/nodejs-goof/run-3666355812",
+    "juice-shop": "_test-findings/juice-shop/run-3422908151",
+    "vulnpy": "_test-findings/vulnpy/run-1174743748",
+    "ThreatByte": "_test-findings/ThreatByte/run-1999368039",
+    "python-insecure-app": "_test-findings/python-insecure-app/run-3433250284",
+    "vulnerable-flask-app": "_test-findings/vulnerable-flask-app/run-743166978",
+    "typescript-fixture": "_test-findings/path-fixtures/path-traversal/run-2666993315",
+    "typescript-expanded-fixture": "_test-findings/path-fixtures/path-traversal-expanded/run-2889572030",
+    "python-fixture": "_test-findings/path-fixtures/path-traversal/run-3947469994"
+  }
+}

@@ -5,20 +5,21 @@
 ## Source-backed analysis with constrained semantic judgment
 
 Zazzles establishes supported code relationships through static analysis, then uses a decision model
-to evaluate whether the demonstrated controls satisfy a specific security requirement. Explicit
-evidence gates constrain the resulting judgment. The intended output helps a developer or coding
-agent decide what to repair, what protection to preserve and what uncertainty to investigate.
+to evaluate whether the demonstrated controls satisfy a specific security requirement. Evidence
+validation checks completeness and consistency before classification. The intended output helps a
+developer or coding agent decide what to repair, what protection to preserve and what uncertainty to investigate.
 
 The Go scanner reads application source, resolves supported language/framework bindings and follows
 values into security-sensitive operations. Each candidate carries source spans and hashes, relevant
 helpers, branch conditions, operation operand roles, library contracts and unresolved facts. The
 semantic judge receives this evidence together with versioned language **Analysis Guidelines**.
-Go then checks the answers against claim-specific evidence requirements and consistency gates.
+The [architecture](../.zazz/architecture.md#evidence-validation) defines the deterministic evidence
+checks applied to the model answers; the predictions themselves are not assumed deterministic.
 
 The model is part of security judgment, rather than only a prose explanation of a preexisting alert.
 It does not generate the source relationships or fill missing code with assumptions. Source text is
 evidence data; scanner-supplied guidelines define the interpretation instructions. JSON preserves
-both evidence and raw answers, while HTML and SARIF present the policy-gated result.
+both evidence and raw answers, while HTML and SARIF present the validated result.
 
 A custom validation function illustrates the intended benefit. When its implementation, actual value
 transfers and relevant conditions are supplied within supported paths, the judge can assess whether
@@ -228,9 +229,9 @@ standards ingestion remain outside the MVP.
 
 The [Python evaluation](../.zazz/evaluation/python-support-results.md) records 29 passing scoped case
 checks across the original three pinned applications, including nine source-reviewed SQL/XSS positive
-cases. It also records model overclaims that Go policy blocked and the validation calibration needed
-to avoid stronger requirements being invented. These examples support the value of explicit policy
-and evidence boundaries; they do not establish general accuracy.
+cases. It also records model overclaims that evidence validation blocked and the validation calibration needed
+to avoid stronger requirements being invented. These examples support the value of explicit evidence validation
+and claim boundaries; they do not establish general accuracy.
 
 The original VulnPy baseline recorded six positive coverage misses and four warning controls.
 Later dynamic-route work recovered generated Flask/FastAPI SQL and raw-HTML traces; the

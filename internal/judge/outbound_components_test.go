@@ -32,11 +32,14 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			}
 			report.Enrich(r)
 			b, _ := json.Marshal(r)
+			// The digest covers the shared finding-type glossary, which gains one entry per
+			// new analyzer. Without the glossary these four reports are byte-identical to
+			// the previous baseline; only the glossary changed with the path-traversal type.
 			want := map[string]string{
-				"javascript/outbound":  "c824eb0f4b304de03e5ead8efc64947a4c2789dedc6f2196d59692a00377fba2",
-				"typescript/outbound":  "4d3c9342df47c416b506d7297d4a579979f228807b1bf4a126a11b16ec1a36a3",
-				"python/outbound":      "48d92786838da8f6fcde462e773210aff4aa3591b4d04edc4bb277341b32e5c7",
-				"javascript/xss-fetch": "70b04cd46cd3a405cfe40856328f4c076ef06ce621f400612bed90bc006b6f7b",
+				"javascript/outbound":  "386eb7d4dee50c6c2e8887ffad4ca3093e43788ee7f9040693bdce55ee1e278e",
+				"typescript/outbound":  "64e9c0022c32d6676d512d884d616e2e64b4b29bb4929da130ccdc21062086b7",
+				"python/outbound":      "d35054e2b46a053dcbbf56bfab8d2c12b37ba887e43380ca7865b0cc79372a36",
+				"javascript/xss-fetch": "80b0ac7d0f29de7ba3660a157b4969be67fe8a6bb343d047088f768564e77f8b",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)

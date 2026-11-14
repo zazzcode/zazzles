@@ -20,9 +20,11 @@ func (s *moduleSet) analyzeSeededRoute(out *analysis.AnalysisReport, m, owner *s
 		h = seeds[h.Utf8Text(m.src)]
 	}
 	s.analyzeHTTPHandler(out, m, owner, r, call, receiver, context, sourcePath, mount, seeds, h)
+	s.analyzePathChainHandlers(out, m, owner, r, call, receiver, context, sourcePath, mount, seeds)
 }
 
-func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *sourceModule, r analysis.Route, call *sitter.Node, receiver string, context []analysis.Evidence, sourcePath, mount string, seeds registrationSeeds, h *sitter.Node) {
+func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *sourceModule, r analysis.Route, call *sitter.Node, receiver string, context []analysis.Evidence, sourcePath, mount string, seeds registrationSeeds, h *sitter.Node, pathPass ...pathHandlerTarget) {
+	pathOnly := len(pathPass) > 0
 	e := httpEntry(r, m.evidence("entry_registration", call), owner.file+":"+owner.hash+":"+receiver)
 	e.HTTP.Receiver = receiver
 	e.HTTP.SourcePath = sourcePath
@@ -35,6 +37,9 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 		return
 	}
 	hm, body, req, gaps := s.handler(m, h)
+	if pathOnly {
+		hm, body, req, gaps = s.handler(pathPass[0].module, pathPass[0].node)
+	}
 	mechanism := "direct_registration"
 	if len(seeds) > 0 {
 		mechanism = "table_expansion"
@@ -49,6 +54,9 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 	if body != nil && req == "" {
 		parts, gaps = requestParts(hm, body, gaps)
 	}
+	if body != nil && pathOnly {
+		parts, gaps = pathRequestParts(hm, body, parts, gaps)
+	}
 	e.Gaps = append(e.Gaps, gaps...)
 	if body != nil {
 		if r.Handler.Span.File == "" {
@@ -56,6 +64,10 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 		}
 		evidence := hm.evidence("handler", body)
 		s.rememberNodeHTTP(e, m, hm, call, body, req, receiver, context)
+		if pathOnly {
+			s.nodeHTTP[e.ID].pathOnly = true
+			s.nodeHTTP[e.ID].pathIndex = pathPass[0].index
+		}
 		inputs := []analysis.InputBinding{}
 		if req != "" {
 			inputs = append(inputs, httpInput("http.request", req, parameterEvidence(hm, body, 0)))
@@ -75,7 +87,7 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 		invocation := registerInvocation(out, e, &evidence, mechanism, inputs, e.Gaps)
 		invocation.Closures = registrationClosures(m, seeds)
 		out.InvocationContexts[len(out.InvocationContexts)-1] = invocation
-		f := flow{module: hm, set: s, entry: e, invocation: invocation, registration: owner,
+		f := flow{pathOnly: pathOnly, module: hm, set: s, entry: e, invocation: invocation, registration: owner,
 			constants: seeds, env: map[string]value{}, context: append([]analysis.Evidence{m.evidence("registration", call), evidence}, context...),
 			gaps: append([]analysis.Gap{}, e.Gaps...), helpers: &helperExpansion{budget: 24, stack: map[string]bool{}}, facts: newInputFacts(), parts: parts}
 		f.seedInvocation()
@@ -89,6 +101,7 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 		f.statements(body)
 		f.finishValidation()
 		s.requestLineLogs(&f, m, call, receiver)
+		f.uses = s.withRequestURLPaths(f, m, hm, body, call, seeds, context, e, parts, r)
 		out.Uses = append(out.Uses, f.uses...)
 		e.Gaps = append(e.Gaps, f.gaps[len(e.Gaps):]...)
 	}

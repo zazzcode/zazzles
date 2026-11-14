@@ -1,5 +1,39 @@
 # Path traversal evaluation — implementation checkpoint
 
+## Continuation checkpoint — final verification paused
+
+The owner requested stopping tests and committing/pushing the current improvements before the session
+limit. The earlier evidence below remains a historical verified checkpoint; `observed.json` describes
+that earlier run. The current matrix adds expected Juice Shop positives whose **fresh live judgments
+are still pending**, not claimed as detected live.
+
+The continuation implemented shared rate/spend flags and environment configuration, general path-only
+chain/export/mount/immediate-invocation acquisition, and `unzipper` entry-write / `hbs` layout contracts.
+Scoped limiter/CLI race tests and expanded parser/policy/report tests passed. An intermediate full race
+run exposed a missing substring-guard enum case; it was stopped, the case was corrected, and targeted
+policy/parser tests passed. **The final full suite was not rerun**, per the owner's request. An earlier
+continuation compatibility run preserved every existing non-path use/entry and added two path-only
+Juice Shop entries; that comparison predates the last edits and needs a final rerun.
+
+All previously unjudged VulnPy contexts have now been assessed: all 140 archive-open contexts were
+confirmed across replay/new calls, and all 64 WSGI template contexts remain Review. The original 56
+`open`/`io.open` contexts were already confirmed. No statuses are derived from representative contexts.
+Final replay onto the latest code remains pending. The two new batches used 146 fresh requests with
+zero failures; two additional old template traces matched exactly, reducing the expected fresh count.
+
+Current ledger: **408 known attempts, 405 successes, 3 earlier free-tier failures; 5,702,950 recorded
+input tokens, zero output tokens; at most one separately reserved interrupted request**. Pricing all
+recorded input as paid at $0.10/million would be about **$0.5703**, not an invoice. The owner authorizes
+up to $10; the evaluation harness stayed below its tighter local $1 guard.
+
+[Continuation accounting and pending work](path-traversal/continuation.json) preserves the distinction
+between the completed live work and unverified implementation. New VulnPy bundles:
+
+| Context group | JSON | HTML | SARIF |
+|---|---|---|---|
+| archive | [JSON](../../../_test-findings/vulnpy/run-2346745897/findings.json) | [HTML](../../../_test-findings/vulnpy/run-2346745897/findings.html) | [SARIF](../../../_test-findings/vulnpy/run-2346745897/findings.sarif) |
+| template | [JSON](../../../_test-findings/vulnpy/run-3677647146/findings.json) | [HTML](../../../_test-findings/vulnpy/run-3677647146/findings.html) | [SARIF](../../../_test-findings/vulnpy/run-3677647146/findings.sarif) |
+
 ## Scope and outcome
 
 Evaluation on 2026-11-14 uses `gemini-decision-1` only, protocol `path-components-v1`, on the eight pinned

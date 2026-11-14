@@ -11,7 +11,7 @@ Path traversal implementation and evaluation continue under the
 [analyzer contract](../specifications/path-traversal.md#1-capability-and-prerequisite) and
 [results](../evaluation/path-traversal-results.md); the
 [active checklist](../project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
-owns progress. Two Juice Shop coverage rows, 148 unjudged VulnPy contexts, one live protected-control discrepancy and human review remain open. The owner authorized closing these and implementing [shared rate/spend configuration](../specifications/decision-model-limits.md) after the verified checkpoint. Read the ignored
+owns progress. All VulnPy contexts are judged. The implemented Juice Shop coverage and shared controls need final live/full verification; one conservative protected-fixture disagreement and human review remain open. The owner authorized closing these and implementing [shared rate/spend configuration](../specifications/decision-model-limits.md) after the verified checkpoint. Read the ignored
 `.zazz/ephemeral/path-traversal-run-log.md` on resume if present.
 Preserve concurrent user edits, especially local credentials. No live Jev evaluation is assigned.
 

@@ -51,24 +51,52 @@ shell variable. Duplicate assignments in a shell file silently use the last valu
 Never overwrite an existing `.env` to switch providers. Alternative provider-specific model
 settings (`SCAN_OPENAI_MODEL`, `SCAN_GEMINI_MODEL`, `SCAN_JEV_MODEL`) must remain unset.
 
-A funded API account/key is separate from source-transmission permission and the scanner's request cap.
-`--judge-limit` caps candidate requests per scan (default 10); it is not a dollar budget. The scanner
-currently sends judge requests sequentially, with no automatic RPM/TPM pacing, configurable concurrency,
-or currency-budget enforcement. Reported token usage is accounting, not a spending guard. A paid tier
-can permit faster spending as well as higher throughput; configure the provider's account spending
-controls and choose a small explicit request cap before a live scan.
+## Rate and spending configuration
 
-Provider quotas apply independently of Zazzles. For example, Google's
-[Gemini Decision limits](https://aistudio.google.com/docs/rate-limits#gemini-decision) distinguish requests
-and input tokens per minute; check the linked AI Studio page for your project's active limits. The
-scanner does not discover those limits or automatically pace to them. A rate-limit failure remains
-visible as a failed assessment; later candidates may still be attempted within the scan request cap.
-There are no automatic retries or provider/model fallback. Agents must also obey the user's active
-provider/model restrictions.
+A funded account is separate from source-transmission permission. Requests remain sequential. Set limits
+through process environment or flags; flags take precedence. The scanner does not auto-load `.env`.
+Loading settings never enables paid calls: `--judge` remains explicit.
 
-The owner-authorized [shared limits contract](../.zazz/specifications/decision-model-limits.md) defines
-pending per-scan dollar/RPM/TPM configuration. New `JUDGE_*` limit variables in `.env.sample` are staged
-for that implementation and are currently inactive; they do not enforce a cap in this checkpoint.
+| Flag | Environment | Default |
+|---|---|---|
+| `--judge-limit` | `JUDGE_LIMIT` | 10 assessment requests; discovery retains its separate request allowance |
+| `--judge-budget-usd` | `JUDGE_BUDGET_USD` | 0 (disabled) |
+| `--judge-input-usd-per-million` | `JUDGE_INPUT_USD_PER_MILLION` | Required when the budget is positive |
+| `--judge-rpm` | `JUDGE_RPM` | 0 (local pacing disabled) |
+| `--judge-tpm` | `JUDGE_TPM` | 0 (local pacing disabled) |
+
+Budget and pacing state is shared by discovery and all assessment families for **one scan/process**.
+It does not combine separate scans or impose an account/day cap. The local spending guard reserves
+maximum input cost **before** each request and reconciles valid usage; failed/missing-usage calls retain
+the reservation. Known billing bounds cover `gemini-decision-1` and OpenAI `gpt-6-luna` Decisions;
+other provider/models fail closed when a dollar budget is enabled. Configure the highest applicable
+input price, including cache-write, long-context and regional premiums. Correct prices/provider bounds
+are required; keep provider account controls in place. This is not a provider billing lock.
+
+TPM uses request UTF-8 bytes plus a 4,096-token framing allowance as a local estimate, then retains the
+larger of that estimate and reported usage for the rolling minute. It is not an authoritative tokenizer
+or account quota measurement. RPM/TPM waits are cancellable; an oversized request stops explicitly.
+Authentication, rate and transport failures stop subsequent calls without retry or fallback. Refused
+records remain unjudged, reports retain settings/accounting, and an incomplete scan exits nonzero.
+
+Example for a verified paid Gemini project (check your active quotas first):
+
+```bash
+scan --analyze --judge gemini --judge-limit 100 \
+  --judge-budget-usd 10 --judge-input-usd-per-million 0.10 \
+  --judge-rpm 60 --judge-tpm 600000 /path/to/app
+```
+
+[Google pricing](https://aistudio.google.com/docs/pricing#gemini-decision) lists $0.10/million input;
+[Google quotas](https://aistudio.google.com/docs/rate-limits#gemini-decision) vary by project/tier.
+For Luna, a conservative $0.30/million input example covers the documented current
+[cache-write/long-context/regional premiums](https://developers.openai.com/api/docs/models/gpt-6-luna);
+verify the maximum applicable rate for your account. Prices are explicit, not auto-discovered.
+
+These controls are implemented in the continuation checkpoint and have scoped offline test evidence;
+final full verification is pending at the owner's request. See the
+[contract](../.zazz/specifications/decision-model-limits.md) and
+[checkpoint results](../.zazz/evaluation/path-traversal-results.md).
 
 ## Scope a live run
 

@@ -68,7 +68,7 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 			related += " " + def
 		}
 	}
-	for _, m := range membershipCall.FindAllStringSubmatch(text, -1) {
+	for _, m := range membershipCall.FindAllStringSubmatch(related, -1) {
 		receiver, arg := strings.TrimSpace(m[1]), m[2]
 		if !mentionsAny(arg, names) || mentionsAny(receiver, names) {
 			continue
@@ -112,6 +112,11 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 	}
 	if separatorText.MatchString(text) {
 		return analysis.PathGuardSeparatorText
+	}
+	for _, m := range membershipCall.FindAllStringSubmatch(related, -1) {
+		if mentionsAny(m[1], names) && !mentionsAny(m[2], names) {
+			return analysis.PathGuardSubstring
+		}
 	}
 	return analysis.PathGuardUnclassified
 }
@@ -284,7 +289,7 @@ func (s *moduleSet) pathGuards(info *pathGuardInfo) func(*analysis.CandidateUse)
 			covered := map[int]bool{}
 			var union []string
 			for _, d := range all {
-				if !mentionsAny(text, d.list) || presenceOnlyCondition(text, d.list) {
+				if !mentionsAny(text, d.list) || pathPresenceOnly(cond, d.list, defs, m.src, 0) {
 					continue
 				}
 				var mentioned []string
@@ -420,4 +425,42 @@ func sendRootOption(m *sourceModule, u *analysis.CandidateUse) *sitter.Node {
 		}
 	}
 	return nil
+}
+
+// pathPresenceOnly distinguishes a truthiness gate from a boolean alias whose
+// definition actually checks path content. Non-input feature gates do not
+// establish containment; an input-taking unknown helper remains a control.
+func pathPresenceOnly(n *sitter.Node, names []string, defs map[string]string, src []byte, depth int) bool {
+	if n == nil || depth > 8 {
+		return false
+	}
+	text := n.Utf8Text(src)
+	if !mentionsAny(text, names) {
+		return true
+	}
+	switch n.Kind() {
+	case "parenthesized_expression":
+		return n.NamedChildCount() == 1 && pathPresenceOnly(n.NamedChild(0), names, defs, src, depth+1)
+	case "identifier":
+		def := defs[text]
+		if regexp.MustCompile(`\.(?:has|includes|indexOf|startsWith|endsWith|isAbsolute)\s*\(|[=!<>]=|&&|\|\|`).MatchString(def) {
+			return false
+		}
+		return true
+	case "member_expression", "subscript_expression":
+		return true
+	case "unary_expression":
+		op := n.ChildByFieldName("operator")
+		return op != nil && op.Utf8Text(src) == "!" && pathPresenceOnly(n.ChildByFieldName("argument"), names, defs, src, depth+1)
+	case "binary_expression":
+		op := n.ChildByFieldName("operator")
+		if op == nil {
+			return false
+		}
+		if op.Utf8Text(src) == "&&" || op.Utf8Text(src) == "||" {
+			return pathPresenceOnly(n.ChildByFieldName("left"), names, defs, src, depth+1) && pathPresenceOnly(n.ChildByFieldName("right"), names, defs, src, depth+1)
+		}
+		return emptyComparison.MatchString(strings.Trim(text, "() "))
+	}
+	return false
 }

@@ -28,6 +28,7 @@ const (
 	PathGuardLibraryEntryCheck  = "library_entry_check"
 	PathGuardSeparatorText      = "separator_text"
 	PathGuardUnclassified       = "unclassified"
+	PathGuardSubstring          = "substring"
 	PathTransformRealpath       = "realpath"
 	PathTransformDecode         = "decode"
 	PathTransformJoin           = "join"
@@ -64,7 +65,8 @@ type PathFacts struct {
 // PathExtractor is the dependency fact for an archive extraction. Assessment is
 // vulnerable_version (a release known to write entry names unchecked), fixed_version
 // (a release that rejects names escaping the destination) or unknown_version (a range,
-// a missing or unparseable declaration).
+// a missing or unparseable declaration), or caller_entry_path (a verified archive
+// reader exposes names and caller code selects a separate write destination).
 type PathExtractor struct {
 	Library    string `json:"library"`
 	Declared   string `json:"declared,omitempty"`
@@ -126,7 +128,7 @@ func EnforcingPathGuard(kind string) bool { return pathEnforcingKind(kind) }
 // KnownNonEnforcingPathGuard reports a recognized control that does not
 // establish containment (text blacklists, presence and type tests).
 func KnownNonEnforcingPathGuard(kind string) bool {
-	return kind == PathGuardDotDotText || kind == PathGuardPresenceOrType
+	return kind == PathGuardDotDotText || kind == PathGuardPresenceOrType || kind == PathGuardSubstring
 }
 
 // Validate checks every index and enumerated value against the candidate use.
@@ -169,7 +171,7 @@ func (p *PathFacts) Validate(deps, context int) error {
 	}
 	if e := p.Extractor; e != nil {
 		switch e.Assessment {
-		case "vulnerable_version", "fixed_version", "unknown_version":
+		case "vulnerable_version", "fixed_version", "unknown_version", "caller_entry_path":
 		default:
 			return fmt.Errorf("invalid extractor assessment %q", e.Assessment)
 		}
@@ -182,7 +184,7 @@ func (p *PathFacts) Validate(deps, context int) error {
 			return fmt.Errorf("path guard context %d out of range", g.Context)
 		}
 		switch g.Kind {
-		case PathGuardAllowlist, PathGuardPrefixBoundary, PathGuardPrefixBare, PathGuardRelative, PathGuardCommonPath, PathGuardDotDotText, PathGuardPresenceOrType, PathGuardUnclassified, PathGuardComponentSanitizer, PathGuardFrameworkRoot, PathGuardLibraryEntryCheck, PathGuardSeparatorText:
+		case PathGuardAllowlist, PathGuardPrefixBoundary, PathGuardPrefixBare, PathGuardRelative, PathGuardCommonPath, PathGuardDotDotText, PathGuardPresenceOrType, PathGuardUnclassified, PathGuardComponentSanitizer, PathGuardFrameworkRoot, PathGuardLibraryEntryCheck, PathGuardSeparatorText, PathGuardSubstring:
 		default:
 			return fmt.Errorf("invalid path guard kind %q", g.Kind)
 		}

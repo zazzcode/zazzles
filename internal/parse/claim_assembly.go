@@ -11,6 +11,7 @@ import (
 // handler control flow, guards and claim-scoped completeness. A family supplies
 // only what differs: its facts, guard finder, gap coverage and completeness.
 type claimHooks struct {
+	chainEvidence            func(*analysis.AnalysisReport, analysis.Check, *analysis.CandidateUse) ([]analysis.Evidence, []analysis.Gap)
 	kind, checkID, checkKind string
 	present                  func(*analysis.CandidateUse) bool
 	fields                   func(analysis.CandidateUse, analysis.EntryPoint) []string
@@ -84,7 +85,13 @@ func (s *moduleSet) assembleClaims(report *analysis.AnalysisReport, h claimHooks
 		// identical (empty) selector must not contribute its registration gaps.
 		scoped := *report
 		scoped.Entries = []analysis.EntryPoint{entry}
-		chain, chainGaps := s.chainEvidence(&scoped, check)
+		var chain []analysis.Evidence
+		var chainGaps []analysis.Gap
+		if h.chainEvidence != nil {
+			chain, chainGaps = h.chainEvidence(&scoped, check, u)
+		} else {
+			chain, chainGaps = s.chainEvidence(&scoped, check)
+		}
 		chainGaps = s.withoutTransportOnlyGaps(chainGaps)
 		blockers := []analysis.Gap{}
 		for _, g := range append(append([]analysis.Gap{}, chainGaps...), s.contextLimits...) {
@@ -116,8 +123,14 @@ func (s *moduleSet) assembleClaims(report *analysis.AnalysisReport, h claimHooks
 			}
 			edges, missing := controlContext(module, body)
 			u.ControlEdges = append(u.ControlEdges, edges...)
-			blockers = append(blockers, missing...)
-			controlComplete = len(missing) == 0
+			var remaining []analysis.Gap
+			for _, g := range missing {
+				if h.chainGapCovered == nil || !h.chainGapCovered(u, g) {
+					remaining = append(remaining, g)
+				}
+			}
+			blockers = append(blockers, remaining...)
+			controlComplete = len(remaining) == 0
 			if controlComplete {
 				complete = append(complete, e)
 			}

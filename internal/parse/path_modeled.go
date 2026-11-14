@@ -3,6 +3,7 @@ package parse
 import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 // pathModuleOps are the Node path operations modeled as transformations.
@@ -282,6 +283,13 @@ func responseEmission(m *sourceModule, call *sitter.Node) bool {
 // module reference, a modeled path/decode/realpath call or the call that consumes
 // the file result (a separate response claim).
 func (s *moduleSet) pathModeledGap(u *analysis.CandidateUse, g analysis.Gap) bool {
+	if g.Kind == "control_flow_unresolved" && u.Path != nil && u.Path.ContractID == analysispacks.UnzipperEntryContract {
+		for _, e := range u.Context {
+			if e.Kind == "archive_iteration" && e.Span == g.At {
+				return true
+			}
+		}
+	}
 	switch g.Kind {
 	case "unknown_value", "unknown_call_result", "unknown_transfer", "input_helper_unresolved":
 	default:
@@ -317,6 +325,9 @@ func (s *moduleSet) pathModeledGap(u *analysis.CandidateUse, g analysis.Gap) boo
 // base or the consumer of the file result is covered; every other gap on the
 // operand path stays a blocker.
 func (s *moduleSet) pathGapCovered(u *analysis.CandidateUse, g analysis.Gap, controlComplete bool, complete, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
+	if g.Kind == "path_unrelated_helper_limit" {
+		return true
+	}
 	if s.pathModeledGap(u, g) {
 		if m := s.modules[g.At.File]; m != nil {
 			if n := nodeAt(m.tree.RootNode(), g.At.StartByte, g.At.EndByte); n != nil && n.Kind() == "call_expression" && s.touchesAnyDependency(g, *u) {

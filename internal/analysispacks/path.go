@@ -8,6 +8,8 @@ const PathProtocol = "path-components-v1"
 // Operation-contract identifiers. Each is selected only after the parser
 // verified the actual import or builtin binding of the called filesystem API.
 const (
+	UnzipperEntryContract = "unzipper-entry-write-v1"
+	HbsLayoutContract     = "hbs-render-layout-v1"
 	NodeFSContract        = "node-fs-file-v1"
 	PythonOpenContract    = "python-open-file-v1"
 	PythonPathlibContract = "python-pathlib-file-v1"
@@ -19,7 +21,7 @@ const (
 	FlaskSendContract     = "flask-send-file-v1"
 )
 
-var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract}
+var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, UnzipperEntryContract, HbsLayoutContract}
 
 // PathContract returns a copy of the supported operation contract by verified ID.
 // Semantics follow the cited official documentation; the declared platform is a
@@ -27,6 +29,11 @@ var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlib
 // version is evidence of the target's deployed runtime.
 func PathContract(id string) *analysis.APIModel {
 	switch id {
+	case UnzipperEntryContract:
+		return &analysis.APIModel{ID: id, Library: "unzipper", Reference: "https://github.com/ZJONSSON/node-unzipper#openbuffer", Semantics: "unzipper.Open.buffer(buffer) returns the ZIP central directory with a files array. Each entry.path is the stored archive name and entry.stream() is content. When a request supplies buffer, entry names are request-derived path text. Caller code that passes an entry name to fs.createWriteStream writes the selected path; Open.buffer does not validate that caller's destination. A substring includes(root) check is not component containment: a normalized path can still leave the intended extraction directory or enter a sibling sharing text. A path.join/resolve alone is not containment. Only the write path, not stream content, is the path operand. This is the caller-controlled ZIP entry write (Zip Slip) contract, not a claim that unzipper's extract helper or every release is vulnerable. POSIX is a declared assumption; no symlink/race state is inferred."}
+	case HbsLayoutContract:
+		return &analysis.APIModel{ID: id, Library: "hbs", Reference: "https://github.com/pillarjs/hbs/blob/v4.2.0/lib/hbs.js", Semantics: "With a source-verified Express view engine setting of hbs, res.render(view, options) passes options.layout to hbs. hbs joins each configured views directory with layout, appends the view extension only when none is present, then reads and compiles that file. A layout with '..' components can leave the views directory; path.join does not enforce containment. layout false disables the layout read. Options object spreads and later properties follow JavaScript overwrite order; only the effective layout value is the file path operand, while other locals are template data. A request-body layout option is not contained by checking a different derived path against a substring blacklist. Other engines, dynamically overridden engine registrations and missing settings are not covered. POSIX is declared; deployment, filesystem links and runtime exploitability are not inferred."}
+
 	case NodeFSContract:
 		return &analysis.APIModel{ID: id, Library: "fs", Reference: "https://nodejs.org/api/fs.html#fsreadfilepath-options-callback",
 			Semantics: "fs.readFile, readFileSync, writeFile, writeFileSync and the fs/promises (fs.promises) readFile and writeFile take the file path as their first argument; the second argument of the write forms is the data written, a separate operand and never a path source, and encoding, mode, flag and callback arguments are configuration or output, not a path. A string path is interpreted relative to the process working directory when it is not absolute and is not resolved against any directory by the API. path.join concatenates its segments and normalizes them, so an absolute later segment is appended rather than replacing the earlier segments, while '..' segments can still climb above the earlier segments; path.resolve processes right to left, so an absolute later segment replaces everything before it; path.normalize resolves '.' and '..' lexically without a root. None of join, resolve or normalize checks containment within a directory, and all three are lexical: only fs.realpath and fs.promises.realpath resolve symbolic links. This contract is not evidence of the deployed platform."}
@@ -97,6 +104,8 @@ func PathChoices(name string) []map[string]string {
 }
 
 var pathOwners = map[string]string{
+	UnzipperEntryContract: "internal/parse/path_unzipper.go",
+	HbsLayoutContract:     "internal/parse/path_render.go",
 	NodeFSContract:        "internal/parse/path_node.go",
 	PythonOpenContract:    "internal/parse/python_path.go",
 	PythonPathlibContract: "internal/parse/python_path.go",

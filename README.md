@@ -80,17 +80,17 @@ It leaves model assessments marked as not run.
 
 ## Model request rates and spending
 
-Today's scanner bounds assessment requests with `--judge-limit` (default 10); optional discovery has
-its own request cap. It currently sends requests sequentially and has no built-in dollar cap or
-RPM/TPM pacing. The path evaluation used a separate local harness; those guards are not product settings.
+Use `--judge-limit` / `JUDGE_LIMIT` for assessment requests, `--judge-budget-usd` /
+`JUDGE_BUDGET_USD` for a per-scan spending guard, and `--judge-rpm` / `JUDGE_RPM` plus
+`--judge-tpm` / `JUDGE_TPM` for local pacing. A positive dollar budget also requires
+`--judge-input-usd-per-million` / `JUDGE_INPUT_USD_PER_MILLION` with the highest applicable input price.
+Flags override environment settings; `--judge` still explicitly enables requests.
 
-**Authorized next:** shared per-scan spend and rate configuration, explicit pricing, pre-call budget
-reservations, incomplete output when limits stop work, and flag/environment settings. This is pending
-implementation after the verified path-traversal checkpoint. The example environment's new `JUDGE_*`
-limit values are staged for that work and currently inactive. See the
-[limits contract](.zazz/specifications/decision-model-limits.md),
-[provider/setup guide](docs/decision-models.md) and [project plan](.zazz/project/implementation-plan.md).
-A $10 per-scan guard will not replace account-wide provider billing controls or combine concurrent scans.
+Discovery and assessment share the rate/spend state. The guard reserves maximum input cost before a
+call; refused work remains unjudged. TPM scheduling uses a documented estimate, and limits apply to
+one process, not the provider account or concurrent scans. Keep provider billing controls in place.
+See [configuration, pricing assumptions and examples](docs/decision-models.md#rate-and-spending-configuration).
+These controls are implemented in the continuation checkpoint; final full verification is pending.
 
 ## Architecture and approach
 

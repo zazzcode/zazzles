@@ -14,6 +14,7 @@ import (
 	"sort"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/judge"
 	"github.com/zazzcode/zazzles/internal/lang"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
@@ -58,6 +59,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		traceDir       = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
 		asJSON         = flags.Bool("json", false, "emit machine-readable JSON instead of text")
 	)
+	limitFlags := addJudgeLimitFlags(flags)
 	flags.BoolVar(analyzeMode, "strings", false, "compatibility alias for --analyze")
 	flags.Usage = func() {
 		fmt.Fprintln(stderr, "usage: scan --list [--json] <path>")
@@ -128,7 +130,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	if *analyzeMode {
-		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit})
+		limits := judge.Limits{}
+		if *judgeProvider != "" {
+			var err error
+			limits, *judgeLimit, err = limitFlags.resolve(flags, os.Getenv)
+			if err != nil {
+				fmt.Fprintf(stderr, "scan: %v\n", err)
+				return exitUsage
+			}
+		}
+		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit}, limits)
 	}
 	if *routes {
 		return runRoutes(flags.Arg(0), *asJSON, stdout, stderr)

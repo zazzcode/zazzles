@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"strings"
 )
 
 const DiscoveryProtocol = "node-route-discovery-v1"
@@ -98,9 +99,15 @@ func (c *Client) DiscoverTrace(ctx context.Context, p analysis.DiscoveryProposal
 	data, reason := c.exchange(ctx, payload, &tr)
 	if reason != "" {
 		p.Reason = reason
+		if strings.HasPrefix(reason, "judge limit:") {
+			p.ModelStatus = "not_run"
+		}
 		return p, tr
 	}
 	p = c.decodeDiscovery(p, data)
+	if p.ModelStatus != "completed" {
+		c.stopLimitedScan(p.Reason)
+	}
 	return p, tr
 }
 func (c *Client) ReplayDiscovery(p analysis.DiscoveryProposal, tr DecisionTrace) analysis.DiscoveryProposal {

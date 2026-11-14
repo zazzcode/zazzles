@@ -198,7 +198,7 @@ No fallback, live Jev calls, integration push, merge or release is authorized.
 - [x] JSON/HTML/SARIF parity and existing-family checks pass (byte-identical non-path evidence).
 - [x] Authorized sample evidence and public coverage limits recorded ([results](../evaluation/path-traversal-results.md)).
 - [ ] Close both remaining Juice Shop rows through general verified models: middleware-chain upload handler/unzipper entry-name flow and `hbs` render-layout read.
-- [ ] Judge all remaining 148 VulnPy contexts; current representative sampling does not satisfy this expanded acceptance.
+- [x] Judge all VulnPy contexts (196 file-open confirmed; 64 WSGI templates Review). Final replay onto latest code pending.
 - [ ] Human review completed.
 
 ## 10. Open questions
@@ -307,3 +307,15 @@ contract).
 **Rationale and scope.** Model Express route-chain handlers and unzipper entry names generally, and verify `hbs` engine registration/layout semantics for `res.render`; no target-specific rules or expectation changes to match model answers. Judge the 85 remaining archive-open and 63 WSGI-template contexts. Existing records/evidence must remain byte-identical; explicitly added middleware-handler entries/records are allowed coverage expansion, not permission to rewrite old evidence.
 
 **Verification impact.** Failing portable regressions before each new model; source-reviewed official API contracts; all matrix rows/live contexts scored; exact replay for unchanged bytes; fresh judgments only for changed/new requests. Compare all existing non-path uses/entries byte-for-byte while enumerating any newly admitted middleware entries. Re-run build/vet/race, report parity and documentation checks. Pricing/rate configuration must not alter evidence payloads.
+
+### 2026-11-14 — Coverage implementation checkpoint, verification paused
+
+General path-only chain/export/mount/immediate-invocation acquisition, verified memory-upload binding,
+unzipper Open.buffer/files/entry.path writes and source-registered hbs layout reads are implemented.
+Portable parser, model-answer gate and report-parity regressions pass after the substring guard enum
+correction. Existing non-path records were byte-identical in an intermediate eight-app comparison, with
+two additional path-only Juice Shop entries; final comparison after last edits remains pending.
+Source matrix positives now include the ZIP write at :34 and layout reads at :107 and :123. Fresh live
+judgments for those new bytes have not run. The owner requested holding tests and pushing a checkpoint.
+Keep unresolved predecessors, custom file filters and unknown option overrides explicit; do not weaken
+evidence gates or special-case targets. Full final verification and human review remain open.

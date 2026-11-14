@@ -17,6 +17,7 @@ or independent Findings Review.
 | JS/TS | `fs.readFile`, `readFileSync`, `writeFile`, `writeFileSync`, `appendFile`, `appendFileSync`, `createReadStream`, `createWriteStream`, `unlink`, `unlinkSync`, `rm`, `rmSync`; `fs/promises` and `fs.promises` forms | first argument; the data argument of a write is not a path |
 | JS/TS | Express `res.sendFile`, `res.download` (a parameter of the enclosing handler, module imports `express`) | first argument; a constant `root` option adds library-enforced containment |
 | JS | `adm-zip` `extractAllTo` on an `AdmZip(...)` instance | the request-supplied archive (entry names), see below |
+| JS/TS | Caller writes from verified `unzipper.Open.buffer(...).files` entry names; `hbs` `res.render` with verified view-engine registration | archive `entry.path`, or the effective `options.layout` after spreads/overrides (continuation checkpoint; final live/full verification pending) |
 | Python | builtin `open`, `io.open` | first positional argument or `file=`; the mode decides read or write |
 | Python | `pathlib.Path.open/read_text/read_bytes/write_text/write_bytes` | the `Path` receiver (built by `Path(...)`, a module-level `Path`, or the `/` operator) |
 | Python | `tarfile.open`, `TarFile`, `TarFile.open`, `bz2.open`, `BZ2File`, `gzip.open`, `GzipFile`, `lzma.open`, `LZMAFile` | the file name argument |
@@ -121,11 +122,12 @@ export a verified patch.
 See the [path contract](../../.zazz/specifications/path-traversal.md) and the
 [acceptance results](../../.zazz/evaluation/path-traversal-results.md) for the tested matrix and its limits.
 
-## Authorized coverage improvements
+## Continuation coverage and verification status
 
-The verified checkpoint still leaves two source-reviewed Juice Shop operations uncovered: an upload
-handler in the middle of an Express route chain, and an `hbs` layout read through `res.render`. The owner
-has authorized general handler/entry-name and engine-layout models, plus judging every remaining VulnPy
-context. Those changes are pending implementation; they do not widen the verified operation table above
-yet. The [contract](../../.zazz/specifications/path-traversal.md#9-definition-of-done) and
-[results](../../.zazz/evaluation/path-traversal-results.md) distinguish current evidence from acceptance work.
+General path-only chain/export/mount/immediate-invocation acquisition, unzipper entry-name writes and
+hbs layout reads are implemented with portable parser/policy/report regressions. They add path-scoped
+records without migrating existing analyzer evidence. Custom upload filters, unknown spreads and
+unverified renderer overrides remain unresolved. All VulnPy contexts are now judged. Fresh Juice Shop
+judgments and final full verification after the last edits are pending: the owner requested stopping
+checks and pushing the current checkpoint. The [contract](../../.zazz/specifications/path-traversal.md)
+and [results](../../.zazz/evaluation/path-traversal-results.md) retain that distinction.

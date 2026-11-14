@@ -22,6 +22,7 @@ const questionVersion = "candidate-use-v10"
 type Client struct {
 	provider, model, key, endpoint string
 	http                           *http.Client
+	limiter                        *requestLimiter
 }
 
 // New configures an explicit provider and credential without making a request.
@@ -107,11 +108,15 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 	data, reason := c.exchange(ctx, payload, trace)
 	if reason != "" {
 		a.Reason = reason
+		if strings.HasPrefix(reason, "judge limit:") {
+			a.Status = "not_run"
+		}
 		return a
 	}
 	answers, model, usage, err := c.decodeQuestions(data, questionsFor(use))
 	if err != nil {
 		a.Reason = err.Error()
+		c.stopLimitedScan(a.Reason)
 		return a
 	}
 	a.Status = "completed"

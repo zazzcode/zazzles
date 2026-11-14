@@ -120,6 +120,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		})
 	}
 	set.mountedRoutes(out, selected)
+	set.pathConfiguredMounts(out, selected)
 	if err := set.browser(out); err != nil {
 		return nil, err
 	}

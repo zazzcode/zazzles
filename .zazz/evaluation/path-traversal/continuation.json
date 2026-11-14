@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-14",
+  "status": "checkpoint; final verification paused at owner request",
+  "ledger_totals": {
+    "live_requests": 408,
+    "failed": 3,
+    "input_tokens": 5702950,
+    "output_tokens": 0,
+    "possibly_interrupted_requests_max": 1
+  },
+  "new_batches": [
+    {
+      "batch": "pt-all-vulnpy-archive",
+      "target": "vulnpy",
+      "live_requests": 85,
+      "replayed": 55,
+      "failed": 0,
+      "input_tokens": 1369431,
+      "output_tokens": 0,
+      "time": "2026-11-14T19:58:36Z"
+    },
+    {
+      "batch": "pt-all-vulnpy-template",
+      "target": "vulnpy",
+      "live_requests": 61,
+      "replayed": 3,
+      "failed": 0,
+      "input_tokens": 1235043,
+      "output_tokens": 0,
+      "time": "2026-11-14T20:00:52Z"
+    }
+  ],
+  "vulnpy_bundles": {
+    "archive": "_test-findings/vulnpy/run-2346745897",
+    "template": "_test-findings/vulnpy/run-3677647146"
+  },
+  "pending": [
+    "Fresh Juice Shop judgments for new ZIP entry write and both hbs render call sites",
+    "Live expanded portable fixtures",
+    "Final full race/source/compatibility/replay verification after last edits",
+    "Conservative Python prefix-boundary model disagreement remains Review"
+  ],
+  "code_scope": [
+    "Shared per-scan rate/spend controls and CLI/environment configuration",
+    "Path-only general chain/export/mount/immediate-invocation acquisition",
+    "unzipper entry-name write and hbs layout contracts"
+  ],
+  "other_chat_files_excluded": [
+    ".zazz/specifications/path-traversal-hardening.md",
+    ".zazz/project/analyzer-hardening-and-wire-efficiency-proposal.md"
+  ]
+}

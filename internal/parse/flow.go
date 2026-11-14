@@ -9,6 +9,9 @@ import (
 )
 
 type value struct {
+	pathArchive        string
+	pathArchiveBinding *analysis.Evidence
+	pathObjectClosed   bool
 	grpcInput          *grpcInput
 	grpcTransfers      []analysis.Evidence
 	graphqlArgs        *analysis.Evidence
@@ -30,6 +33,7 @@ type value struct {
 	gaps          []analysis.Gap
 }
 type flow struct {
+	pathOnly     bool
 	constants    registrationSeeds
 	client       *clientContext
 	response     string
@@ -147,6 +151,9 @@ func (f *flow) statement(n *sitter.Node) bool {
 		return n.Kind() == "throw_statement"
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
+		if f.pathOnly && f.pathArchiveForOf(n) {
+			return false
+		}
 		if !f.clientForOf(n) {
 			f.branches(n)
 		}
@@ -303,6 +310,11 @@ func (f *flow) eval(n *sitter.Node) value {
 			return v
 		}
 	}
+	if f.pathOnly {
+		if v, ok := f.pathArchiveValue(n); ok {
+			return v
+		}
+	}
 	switch n.Kind() {
 	case "identifier", "shorthand_property_identifier":
 		if v, ok := f.env[n.Utf8Text(src)]; ok {
@@ -401,7 +413,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return v
 	case "object":
-		v := value{fields: map[string]value{}}
+		v := value{fields: map[string]value{}, pathObjectClosed: true}
 		var spread value
 		for i := uint(0); i < n.NamedChildCount(); i++ {
 			p := n.NamedChild(i)
@@ -418,6 +430,7 @@ func (f *flow) eval(n *sitter.Node) value {
 				v.fields[p.Utf8Text(src)] = field
 			} else if p.Kind() == "spread_element" && p.NamedChildCount() == 1 {
 				spread = f.eval(p.NamedChild(0))
+				v.pathObjectClosed = v.pathObjectClosed && spread.pathObjectClosed
 				v = combine(v, spread)
 			}
 		}
@@ -546,6 +559,12 @@ func (f *flow) transfer(v value, kind string, n *sitter.Node) value {
 }
 
 func combine(a, b value) value {
+	if a.pathArchive == "" {
+		a.pathArchive = b.pathArchive
+	}
+	if a.pathArchiveBinding == nil {
+		a.pathArchiveBinding = b.pathArchiveBinding
+	}
 	if a.model == "" {
 		a.model, a.read = b.model, b.read
 	}
@@ -618,6 +637,9 @@ func (f *flow) call(n *sitter.Node) value {
 }
 
 func (f *flow) evalCall(n *sitter.Node) value {
+	if v, ok := f.pathImmediate(n); ok {
+		return v
+	}
 	fn := n.ChildByFieldName("function")
 	args := n.ChildByFieldName("arguments")
 	if fn == nil {

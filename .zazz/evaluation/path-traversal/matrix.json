@@ -213,6 +213,44 @@
       "context_count": 28,
       "expected": "confirmed_vulnerability CWE-22 in every generated framework context for each of the five sinks",
       "reference": "source review 2026-11-14"
+    },
+    {
+      "id": "JS-ZIPSLIP-JUICE",
+      "target": "juice-shop",
+      "route": "POST /file-upload, source-resolved middle handler",
+      "field": "request file.buffer -> unzipper.Open.buffer -> files[] -> entry.path",
+      "sink": {
+        "file": "routes/fileUpload.ts",
+        "line": 34
+      },
+      "operation_role": "write",
+      "context_count": 1,
+      "operation": "fs.createWriteStream(uploads/complaints/ + fileName), fileName = entry.path",
+      "guard": "absolutePath.includes(path.resolve(.)) is a substring, not extraction-root containment",
+      "expected": "confirmed_vulnerability CWE-22, caller-controlled archive entry write (Zip Slip)",
+      "reference": "Original source-reviewed remaining row; verified general Express chain dispatch, explicit export list, memory-upload binding and unzipper Open.buffer contract before live judgment."
+    },
+    {
+      "id": "JS-LFR-RENDER-JUICE",
+      "target": "juice-shop",
+      "route": "POST /dataerasure, verified mounted router and immediate async invocation",
+      "field": "req.body.layout through options spread",
+      "sinks": [
+        {
+          "file": "routes/dataErasure.ts",
+          "line": 107
+        },
+        {
+          "file": "routes/dataErasure.ts",
+          "line": 123
+        }
+      ],
+      "operation_role": "read",
+      "context_count": 1,
+      "operation": "res.render(dataErasureResult, {...req.body, ...themeVars}) -> hbs options.layout read",
+      "guard": "First call blacklists path substrings; second call has only the inverse layout/feature gate. Neither enforces views-root containment. themeVars is a closed object without layout.",
+      "expected": "confirmed_vulnerability CWE-22 at both call sites",
+      "reference": "Original source-reviewed remaining row, plus supplementary review of the fallback at :123; hbs v4.2.0 lib/hbs.js lines 123-194 and source-verified view-engine setting."
     }
   ],
   "expected_unknown": [
@@ -487,6 +525,20 @@
       "old_label": "expected_no_candidate for every adapter: the template name never derives from the request",
       "new_label": "no candidate for ten adapters; unknown for the wsgi adapter (VP-PATH-U01)",
       "evidence": "src/vulnpy/wsgi/app.py:68-70 sets name from environ['PATH_INFO'] components and selects sanitized_name from TRIGGER_MAP.keys() by equality before get_template. The earlier label was derived from the Flask-style blueprints and did not account for the wsgi adapter."
+    },
+    {
+      "id": "JS-ZIPSLIP-JUICE",
+      "date": "2026-11-14",
+      "old_label": "not covered by initial checkpoint: The zip handler is a middle element of the /file-upload route chain; the shared entry model analyzes only the last handler of a chain, so no entry reaches it. Source: unzipper entry.path written under uploads/complaints/ with a substring (includes) check that is not containment (real Zip Slip, fileWriteChallenge). Needs middleware-chain entries, which change every analyzer's entries.",
+      "new_label": "positive expected under newly verified general acquisition/API models; fresh live judgment required",
+      "evidence": "Owner requested closing the row in this session; general portable regressions and official contracts precede new live judgment."
+    },
+    {
+      "id": "JS-LFR-RENDER-JUICE",
+      "date": "2026-11-14",
+      "old_label": "not covered by initial checkpoint: req.body.layout reaches the template engine's layout option through res.render with only a substring blacklist (real local file read, lfrChallenge). Needs a verified per-engine render-layout contract and the view-engine registration; not modeled.",
+      "new_label": "positive expected under newly verified general acquisition/API models; fresh live judgment required",
+      "evidence": "Owner requested closing the row in this session; general portable regressions and official contracts precede new live judgment."
     }
   ],
   "scope_history": "Version 1 (2026-11-14) followed the initial contract: fs read/write, Python open/io.open/pathlib. The user then approved bringing the source-documented traversal surfaces of the eight samples into scope (Express send wrappers, req.path/url sources, upload save, archive opens and adm-zip extraction, delete). Rows moved from deferred to scored below; the old deferred entries remain in `deferred_unsupported_api` with their new status.",
@@ -525,7 +577,7 @@
     }
   ],
   "no_candidate_note": "JS-PATH-N04 permits an unresolved record; JS-PATH-N05 was added after supplementary source review of the URL profile image writer. Non-WSGI VulnPy template contexts remain no-candidate; WSGI is separately scored by VP-PATH-U01.",
-  "remaining_blocked": [
+  "coverage_history": [
     {
       "id": "JS-ZIPSLIP-JUICE",
       "target": "juice-shop",
@@ -538,5 +590,6 @@
       "sink": "routes/dataErasure.ts:104-110",
       "why": "req.body.layout reaches the template engine's layout option through res.render with only a substring blacklist (real local file read, lfrChallenge). Needs a verified per-engine render-layout contract and the view-engine registration; not modeled."
     }
-  ]
+  ],
+  "remaining_blocked": []
 }

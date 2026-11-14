@@ -20,7 +20,7 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 	return runAnalysisConfigured(root, entry, checksFile, provider, model, limit, asJSON, asSARIF, outputDir, traceDir, skipped, stdout, stderr, scope, discoveryOptions{})
 }
 
-func runAnalysisConfigured(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection, discovery discoveryOptions) int {
+func runAnalysisConfigured(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection, discovery discoveryOptions, runtimeLimits ...judge.Limits) int {
 	var client *judge.Client
 	if provider != "" {
 		var err error
@@ -33,6 +33,12 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 		if err != nil {
 			fmt.Fprintf(stderr, "scan: %v\n", err)
 			return exitError
+		}
+		if len(runtimeLimits) > 0 {
+			if err := client.SetLimits(runtimeLimits[0]); err != nil {
+				fmt.Fprintf(stderr, "scan: %v\n", err)
+				return exitUsage
+			}
 		}
 	}
 	checks, err := loadChecks(checksFile)
@@ -102,6 +108,11 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 			}
 		}
 		report.Limitations = append(report.Limitations, fmt.Sprintf("The input-validation analyzer was not used for this run (--skip-family input-validation): %d input-validation records were not judged and remain Review. This is a scope choice, not an assessment; absence of an input-validation finding here does not mean validation is adequate.", count))
+	}
+	if client != nil {
+		if summary := client.LimitSummary(); summary != "" {
+			report.Limitations = append(report.Limitations, summary)
+		}
 	}
 	reportpkg.Enrich(report)
 	bundleDir := ""

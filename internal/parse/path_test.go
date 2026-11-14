@@ -384,3 +384,42 @@ func TestPathArchiveExtraction(t *testing.T) {
 		})
 	}
 }
+
+func TestPathExpandedChainAndLayout(t *testing.T) {
+	r := analyzeFixture(t, "typescript/path-traversal-expanded")
+	uses := pathUses(r)
+	for _, route := range []string{"/v/middle", "/v/archive-middle", "/v/layout", "/v/layout-spread", "/v/exported-archive-middle", "/panel", "/v/irrelevant-helper-budget"} {
+		u, ok := uses[route]
+		if !ok {
+			t.Errorf("no general path candidate for %s", route)
+			continue
+		}
+		if err := u.Path.Validate(len(u.Dependencies), len(u.Context)); err != nil {
+			t.Error(err)
+		}
+		if len(u.Path.Paths) == 0 {
+			t.Errorf("missing request path at %s", route)
+		}
+		if len(u.Completeness.Blockers) > 0 {
+			t.Errorf("%s blockers: %+v", route, u.Completeness.Blockers)
+		}
+	}
+	for route, want := range map[string]string{"/p/layout-allowlist-alias": analysis.PathGuardAllowlist, "/v/layout-gated-blacklist": analysis.PathGuardSubstring} {
+		u, ok := uses[route]
+		if !ok {
+			t.Errorf("missing %s", route)
+			continue
+		}
+		if got := guardKinds(u); len(got) != 1 || got[0] != want {
+			t.Errorf("%s guards %v, want %s", route, got, want)
+		}
+	}
+	if u, ok := uses["/u/archive-filter"]; !ok || len(u.Completeness.Blockers) == 0 {
+		t.Error("custom file filter must remain an unresolved predecessor")
+	}
+	for _, route := range []string{"/n/layout-overridden", "/n/layout-constant"} {
+		if _, ok := uses[route]; ok {
+			t.Errorf("constant/overridden layout should not be a candidate: %s", route)
+		}
+	}
+}

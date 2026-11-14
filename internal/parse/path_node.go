@@ -295,6 +295,9 @@ func parameterOfEnclosing(m *sourceModule, n *sitter.Node, name string) bool {
 }
 
 func (f *flow) pathCall(call, fn, args *sitter.Node) bool {
+	if f.pathRenderCall(call, fn, args) {
+		return true
+	}
 	if f.archiveExtract(call, fn, args) {
 		return true
 	}
@@ -328,7 +331,18 @@ func (f *flow) pathCall(call, fn, args *sitter.Node) bool {
 			pathNode = pathNode.NamedChild(0)
 		}
 	}
-	b.operand(analysis.PathSlotFile, "path_operand", pathNode, f.quiet(pathNode))
+	pathValue := f.quiet(pathNode)
+	if pathValue.pathArchive == "path" {
+		contract = analysispacks.UnzipperEntryContract
+		b.facts.ContractID = contract
+		index := 0
+		if pathValue.pathArchiveBinding != nil {
+			binding.evidence = append(binding.evidence, *pathValue.pathArchiveBinding)
+			index = len(f.context) + len(binding.evidence) - 1
+		}
+		b.facts.Extractor = &analysis.PathExtractor{Library: "unzipper", Assessment: "caller_entry_path", Context: index}
+	}
+	b.operand(analysis.PathSlotFile, "path_operand", pathNode, pathValue)
 	if !b.request {
 		return true // a constant or non-request path is not a candidate
 	}

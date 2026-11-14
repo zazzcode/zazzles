@@ -5,8 +5,8 @@
 Add shared, user-facing per-scan request, rate and dollar-budget configuration for model assessment
 and optional route discovery. The owner requested implementation, README/project-plan documentation,
 `.env.sample` and both existing worktrees' local `.env` updates on 2026-11-14, then requested a verified
-checkpoint **before** implementing improvements. This contract records that pending work; it is not a
-claim that these controls are already implemented.
+checkpoint **before** implementing improvements. The controls are now implemented with scoped offline/race evidence. Final full verification was paused
+at the owner's request; this checkpoint does not claim final acceptance.
 
 ## Required reading
 
@@ -93,10 +93,10 @@ owner's $10 maximum authorization for any subsequent specifically scoped live ev
 
 ## Definition of done
 
-- [ ] Shared configuration, validation, pre-call reservation and rate pacing implemented.
-- [ ] Discovery/assessment failure and incomplete-report behavior verified.
-- [ ] README, setup/running docs, sample environment and project plan match implementation.
-- [ ] Requested local environment settings verified without exposing or changing credentials.
+- [x] Shared configuration, validation, pre-call reservation and rate pacing implemented.
+- [x] Discovery/assessment failure and incomplete-report behavior verified with local HTTP stubs.
+- [x] README, setup/running docs, sample environment and project plan match implemented checkpoint.
+- [x] Requested local environment settings updated without exposing or changing credentials.
 - [ ] Required offline checks and human review completed.
 
 ## Open questions and references
@@ -115,3 +115,12 @@ Official references: [Google model](https://aistudio.google.com/docs/models/gemi
 
 Recorded requested configuration, safety semantics, scope and checks before implementation. The owner
 requested committing/pushing the verified analyzer and updated specifications/documentation first.
+
+### 2026-11-14 — Implementation checkpoint, final checks paused
+
+Implemented shared limits, explicit pricing, conservative full-context pre-call reservations with integer
+microdollars, rolling RPM/estimated TPM pacing, flag-over-environment precedence and report limitations.
+Known budget bounds: Gemini 262,144 input tokens; Luna conservatively 1,050,000 context tokens. Scoped
+judge/CLI race tests passed. Updated README/setup/running docs, sample configuration and both requested
+local environments. The owner requested no further tests and a pushed checkpoint; full final verification
+remains unchecked.

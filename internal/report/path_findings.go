@@ -94,6 +94,13 @@ func pathGuidance() Guidance {
 }
 
 func pathFindingGuidance(u analysis.CandidateUse, at string) Guidance {
+	if isArchiveExtraction(u) && u.Path.Extractor.Assessment == "caller_entry_path" {
+		return Guidance{Title: "Contain each archive entry before writing", Actions: []string{
+			"At " + at + ", validate the effective path built from the archive entry name before " + pathSinkLabel(u) + ". Reading ZIP metadata does not contain the caller's filesystem writes.",
+			"Resolve the final destination and enforce a path-component boundary against the extraction root; reject escaping paths. A substring includes(root) test is not containment.",
+			"Add a regression archive with '../' entry names and verify no writes escape the destination; decide how symbolic-link entries and races are handled.",
+		}, ExampleStatus: "no automatic patch; no verified fix is exported"}
+	}
 	if isArchiveExtraction(u) {
 		return Guidance{Title: "Validate archive entry names before extraction", Actions: []string{
 			"At " + at + ", do not extract entries from a request-supplied archive with " + pathSinkLabel(u) + " unless the extractor validates entry names: upgrade " + u.Path.Extractor.Library + " to a release that rejects names escaping the destination, or extract entry by entry.",

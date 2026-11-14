@@ -17,10 +17,33 @@ var requestURLMembers = map[string]bool{"path": true, "url": true, "originalUrl"
 // candidate present in both passes is replaced by the second, which is a superset.
 // Every other family's uses are those of the first pass, so their evidence is unchanged.
 func (s *moduleSet) withRequestURLPaths(first flow, m, hm *sourceModule, body *sitter.Node, call *sitter.Node, seeds registrationSeeds, context []analysis.Evidence, e analysis.EntryPoint, parts map[string]string, r analysis.Route) []analysis.CandidateUse {
-	if first.request == "" || !regexp.MustCompile(`\b`+regexp.QuoteMeta(first.request)+`\.(path|url|originalUrl|baseUrl|file|files)\b`).MatchString(string(hm.src[body.StartByte():body.EndByte()])) {
+	if first.pathOnly {
 		return first.uses
 	}
-	second := flow{module: first.module, set: s, entry: first.entry, invocation: first.invocation, registration: first.registration, request: first.request,
+	needed := first.request != "" && regexp.MustCompile(`\b`+regexp.QuoteMeta(first.request)+`\.(path|url|originalUrl|baseUrl|file|files)\b`).MatchString(string(hm.src[body.StartByte():body.EndByte()]))
+	if first.request != "" {
+		walkCalls(body, func(call *sitter.Node) {
+			fn := call.ChildByFieldName("function")
+			for fn != nil && fn.Kind() == "parenthesized_expression" && fn.NamedChildCount() == 1 {
+				fn = fn.NamedChild(0)
+			}
+			if fn != nil && fn.Kind() == "member_expression" {
+				if p := fn.ChildByFieldName("property"); p != nil && p.Utf8Text(hm.src) == "render" {
+					needed = true
+				}
+			}
+			if fn != nil && isFunction(fn) {
+				needed = true
+			}
+			if _, _, ok := unzipperBufferCall(hm, call); ok {
+				needed = true
+			}
+		})
+	}
+	if !needed {
+		return first.uses
+	}
+	second := flow{pathOnly: true, module: first.module, set: s, entry: first.entry, invocation: first.invocation, registration: first.registration, request: first.request,
 		constants: seeds, env: map[string]value{}, context: append([]analysis.Evidence{}, first.context[:2]...), helpers: &helperExpansion{budget: 24, stack: map[string]bool{}}, facts: newInputFacts(), parts: parts, urlSources: true}
 	second.context = append(second.context, context...)
 	second.gaps = append([]analysis.Gap{}, e.Gaps...)

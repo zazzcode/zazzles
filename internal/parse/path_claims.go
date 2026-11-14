@@ -303,6 +303,7 @@ func (s *moduleSet) assemblePathClaims(report *analysis.AnalysisReport) {
 		kind:            "path_traversal_candidate",
 		checkID:         "automatic-path",
 		checkKind:       "path_traversal",
+		chainEvidence:   s.pathChainEvidence,
 		present:         func(u *analysis.CandidateUse) bool { return u.Path != nil },
 		fields:          commandFields,
 		guards:          s.pathGuards(info),

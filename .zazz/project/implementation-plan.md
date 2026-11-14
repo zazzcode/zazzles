@@ -124,11 +124,11 @@ owns analyzer implementation and its remaining coverage improvements. The shared
 - [ ] Close the live protected-control discrepancy: Python prefix-boundary remains Review (40/40 vulnerable, 14/15 protected, 13/13 unknown/weak controls match; offline gates and report parity pass).
 - [x] Run the [unattended correction loop](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop) across all eight sample apps; see the [results](../evaluation/path-traversal-results.md).
 - [x] Widen scope (user-approved) to the source-documented traversals in the eight samples: send wrappers, `req.path`, upload save, archive opens, adm-zip extraction, delete.
-- [ ] Owner-authorized next: general middleware-chain handler coverage and verified unzipper entry-name flow (Juice Shop zip upload), plus an `hbs` template-layout read contract (`res.render` layout).
-- [ ] Judge the remaining 148 VulnPy invocation contexts (85 archive opens and 63 WSGI template contexts); do not infer their statuses from representative contexts.
-- [ ] Implement [shared decision-model controls](../specifications/decision-model-limits.md): per-scan dollar budget with explicit pricing/pre-call reservation, RPM/TPM pacing and flag/environment configuration covering discovery and assessment; update README/setup/output docs. Sample and both local environment settings are staged but inactive until implementation.
+- [ ] Final live verification of implemented general chain/export/mount/immediate-invocation, unzipper entry-name and `hbs` layout models; scoped portable parser/policy/report tests pass.
+- [x] Judge all VulnPy contexts: 196 file-open contexts confirmed and all 64 WSGI templates Review; final replay onto the latest code pending.
+- [x] Implement [shared decision-model controls](../specifications/decision-model-limits.md): per-scan dollar budget with explicit pricing/pre-call reservation, RPM/TPM pacing and flag/environment configuration covering discovery and assessment; update README/setup/output docs. Sample and both local environments are configured; older stage binaries ignore new settings until integration.
 - [ ] Further archive libraries and dynamic entry/engine contracts beyond those explicitly modeled remain future coverage.
-- [ ] Human review of the analyzer checkpoint.
+- [ ] Final full race/source/replay/compatibility verification after the last changes (paused at owner request), then human review.
 
 No live Jev evaluation is included. Credentials stay in ignored local `.env` files; all analyzers
 use the same selected provider/model, with no fallback. [Setup](../../docs/decision-models.md#credentials-and-local-environment)

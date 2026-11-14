@@ -223,3 +223,28 @@ func TestPathPolicyFacts(t *testing.T) {
 		}
 	})
 }
+
+func TestPathExpandedPolicy(t *testing.T) {
+	uses, _ := pathUsesByRoute(t, "typescript/path-traversal-expanded")
+	for route, want := range map[string]string{
+		"/v/middle": "confirmed_vulnerability", "/v/archive-middle": "confirmed_vulnerability", "/v/exported-archive-middle": "confirmed_vulnerability",
+		"/v/layout": "confirmed_vulnerability", "/v/layout-spread": "confirmed_vulnerability", "/v/layout-gated-blacklist": "confirmed_vulnerability", "/panel": "confirmed_vulnerability",
+		"/v/irrelevant-helper-budget": "confirmed_vulnerability", "/p/layout-allowlist-alias": "protected_for_claim", "/u/archive-filter": "needs_evidence",
+	} {
+		t.Run(route, func(t *testing.T) {
+			u, ok := uses[route]
+			if !ok {
+				t.Fatal("no candidate")
+			}
+			answers := honestRaw
+			if want == "protected_for_claim" {
+				answers = optimisticAllowlist
+			}
+			c, _ := pathStub(t, "openai", answers)
+			a := c.Assess(context.Background(), u)
+			if a.FindingStatus != want {
+				t.Fatalf("got %+v, want %s; facts %+v", a, want, u.Path)
+			}
+		})
+	}
+}

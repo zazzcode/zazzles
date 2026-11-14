@@ -17,7 +17,7 @@ import (
 // and SARIF agree on record counts, statuses, the filesystem operation, CWE-22
 // and the scoped remediation.
 func TestPathPipelineParity(t *testing.T) {
-	for _, dir := range []string{"typescript/path-traversal", "javascript/path-traversal", "python/path-traversal"} {
+	for _, dir := range []string{"typescript/path-traversal", "javascript/path-traversal", "python/path-traversal", "typescript/path-traversal-expanded"} {
 		t.Run(dir, func(t *testing.T) {
 			r, err := parse.Analyze("../parse/testdata/"+dir, "")
 			if err != nil {

@@ -44,7 +44,11 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 		return value{}, false, false
 	}
 	if f.helpers.budget <= 0 || f.depth >= 3 {
-		f.gaps = append(f.gaps, f.gap("helper_call_limit", "helper call expansion reached its depth or count limit: "+name, call))
+		kind := "helper_call_limit"
+		if f.pathOnly && pathUnrelatedHelper(args, helper) {
+			kind = "path_unrelated_helper_limit"
+		}
+		f.gaps = append(f.gaps, f.gap(kind, "helper call expansion reached its depth or count limit: "+name, call))
 		return value{}, false, false
 	}
 	f.helpers.budget--
@@ -54,6 +58,7 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	f.context = append(f.context, hm.evidence("helper_definition", helper))
 	before := len(f.gaps)
 	child := flow{
+		pathOnly:     f.pathOnly,
 		client:       f.client,
 		registration: f.registration,
 		module:       hm,

@@ -336,3 +336,11 @@ Outbound uses are observations, not security verdicts. A requested model scan ke
 and in Review, makes no model calls for them, saves the incomplete report and exits 1. The existing
 candidate-position request cap remains conservative. Structural-only scanning completes normally;
 exporting a saved report preserves its historical answers. See [decision-model scope](decision-models.md#outbound-observations).
+
+## Judge rate and spending controls
+
+The continuation CLI supports shared per-scan dollar-budget and RPM/TPM settings for discovery and
+assessment. Configure explicit maximum input pricing with a dollar budget; flags override process
+environment. See the [settings table and examples](decision-models.md#rate-and-spending-configuration).
+Refusals leave incomplete records and a nonzero exit status. Final full verification of the continuation
+checkpoint is pending at the owner's request.

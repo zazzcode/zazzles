@@ -10,11 +10,26 @@ acceptance details. This plan is not blanket implementation or live-call authori
 selected engineering standards. **Audit** will assess dependencies. **Fix** will support agent
 remediation with verification. Scan exists in bounded form; distinct Inspect/Audit/Fix workflows
 remain planned. They can eventually run independently; usage order does not dictate delivery order.
-The broader framework will accept findings from Zazzles and external analysis tools, then dispatch
-remediation agents with applicable standards, tests/reassessment and focused pull requests. Planned
-cron or scheduled CI execution can run any combination of Scan, Inspect and Audit/SCA. Current
-priority remains the native Scan engine; external integrations and agent/PR orchestration are planned.
-See [product responsibilities](../project.md#four-product-capabilities).
+The broader goal is to turn findings and applicable standards into verified changes and reviewable
+pull requests. See [product responsibilities](../project.md#four-product-capabilities).
+
+## Delivery priorities
+
+1. **Native Scan and Inspect:** strengthen source-code security assessment and develop code-quality/
+   standards assessment on the shared engine. Current Scan/analyzer work, including path traversal,
+   belongs here; a distinct Inspect workflow is still planned.
+2. **SCA Audit:** use per-language ecosystem tooling rather than building an advisory scanner from
+   scratch: npm/pnpm for JavaScript/TypeScript and pip-audit for Python, with separate adapters for
+   later languages. Preserve advisory provenance and dependency evidence.
+3. **Automation and Fix:** add on-demand and cron/scheduled-CI orchestration, scoped remediation
+   agents supplied with findings and standards, tests/reassessment, and focused pull requests.
+4. **External SAST findings:** add imports/adapters for other security and code-quality scanners,
+   preserving their provenance and limits within the established remediation workflow.
+
+This is implementation order, not a required usage pipeline. Each capability remains independently
+usable once delivered. Ecosystem SCA adapters in stage 2 are distinct from external SAST finding
+integration in stage 4. The detailed branch checklist below retains existing delivered work and
+bounded follow-on contracts.
 
 ## Supported capability checklist
 
@@ -80,7 +95,8 @@ worktree stay together, including shared Gemini support and later path analysis 
 | [ ] | Secret Scanning | `hardcoded-secrets` / secret scanning | Private material in source; public verification keys and placeholders remain controls |
 
 
-Additional follow-on deliverables need prioritization and a bounded contract:
+Additional follow-on deliverables require bounded contracts; their placement follows the delivery
+priorities above:
 
 | Status | Deliverable | Proposed worktree/branch | Outcome |
 | --- | --- | --- | --- |
@@ -89,7 +105,8 @@ Additional follow-on deliverables need prioritization and a bounded contract:
 | [ ] | Stronger claim evidence | `analysis-certainty` | [Targeted plan](analysis-certainty-improvements.md); helper/guard/API evidence and false-protection controls |
 | [ ] | Independent Findings Review | `findings-review` | Separate reviewer, disagreements and completion state; not the judge or Review report category |
 | [ ] | Inspect workflow | `inspect-workflow` | Selected standards, applicability and presentation separate from vulnerability counts |
-| [ ] | Fix workflow and user-agent skills | `agent-remediation` | [Workflow proposal](user-agent-skills.md), verified repairs in independent copies |
+| [ ] | Automation, Fix workflow and user-agent skills | `agent-remediation` | Stage 3: scheduled assessments, scoped agents, verified repairs and focused PRs; [workflow proposal](user-agent-skills.md) |
+| [ ] | External SAST/code-quality finding integrations | `external-scanner-findings` | Stage 4: scanner-specific imports, source/provenance retention and reuse of the remediation workflow |
 | [ ] | Baselines, CI severity gate, incremental analysis | `scan-baselines` | Stable identity, invalidation correctness and explicit severity gating |
 | [ ] | Additional source languages | `language-<name>` | Separate language contract; no fixed position or automatic framework parity |
 

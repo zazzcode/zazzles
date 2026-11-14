@@ -1,18 +1,24 @@
 # Zazzles
 
-Zazzles is being developed as an assessment and remediation framework for application security,
-code quality and dependencies. Its goal is to connect **Scan**, **Inspect** and **Audit** with an
-automated **Fix** workflow: collect findings, give coding agents the relevant evidence and standards,
-verify their changes, and prepare focused pull requests for human review. The intended workflow can
-run on demand or periodically through scheduled automation.
+Zazzles is being developed to turn security, code-quality and dependency findings into verified code
+changes. Its vision combines **Scan**, **Inspect** and **Audit** with coding agents that apply the
+relevant standards, test and reassess their fixes, and prepare focused pull requests for review.
+Teams should be able to run this workflow on demand or on a recurring automated schedule.
 
-**Current focus:** building Zazzles' own source-code security scanner, with bounded JavaScript,
-TypeScript and Python support. It produces source-backed assessments and reviewable reports.
+We are building toward that vision in four stages:
 
-**Planned framework:** orchestrate remediation agents and integrate findings from other SAST,
-code-quality and dependency-analysis tools. Teams should be able to use Zazzles' scanner, external
-tools, or a combination within the same remediation workflow. External-tool integration, distinct
-Inspect/Audit workflows and automated Fix orchestration are not yet implemented.
+1. **Scan and Inspect first:** develop Zazzles' own source-code security and code-quality assessments,
+   backed by source evidence and applicable coding and architecture standards.
+2. **SCA Audit next:** integrate dependency auditing through each language's ecosystem tooling,
+   starting with npm/pnpm for JavaScript/TypeScript and pip-audit for Python.
+3. **Automation and Fix:** schedule assessments, dispatch scoped remediation agents, verify changes
+   through tests and reassessment, and open pull requests for review and merge.
+4. **External SAST findings:** extend the framework to accept findings from other SAST and
+   code-quality scanners, bringing them into the same remediation workflow.
+
+**Available today:** bounded Scan analysis for JavaScript, TypeScript and Python. Existing validation
+and construction-practice checks provide part of Inspect's foundation; a distinct Inspect workflow,
+SCA Audit, automated remediation and external SAST integrations remain planned.
 
 <a id="project-goals-scan-audit-and-fix"></a>
 <a id="project-goals-scan-quality-audit-and-fix"></a>
@@ -30,8 +36,8 @@ Today's CLI and sample reports describe Scan, which also reports supported valid
 construction-practice concerns. There is no separate Inspect command or report view yet.
 The four goals define product responsibilities, not four implemented CLI commands.
 
-**Run independently, in any order.** The intended capabilities are not a required pipeline. Use Scan
-for security, Inspect for code quality, or Audit for dependencies as needed.
+**Independent use once available.** The delivery order above does not prescribe how teams use the
+capabilities. Use Scan for security, Inspect for code quality, or Audit for dependencies as needed.
 
 Fix can start from an existing report or a user-specified issue without requiring a fresh run of
 the other capabilities. Each still needs its own inputs and verification.

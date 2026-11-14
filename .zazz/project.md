@@ -11,14 +11,14 @@ dependencies, then use the evidence to make verified repairs. Its four product g
 Inspect, Audit and Fix. Scan has bounded implementations today. Inspect as a distinct capability,
 Audit and automated Fix remain planned. A completed run is not a security or quality certification.
 
-The broader framework is intended to collect findings from Zazzles and external SAST, security,
-code-quality and dependency-analysis tools, dispatch scoped remediation agents with applicable
-standards, verify their changes through tests and reassessment, and prepare focused pull requests
-for human review. On-demand runs and recurring jobs (cron or scheduled CI) should support any
-selected combination of Scan, Inspect and Audit/SCA through this loop. Current engineering focuses
-on Zazzles' own Scan engine. External finding
-integration and automated agent/PR orchestration remain planned; findings retain their tool provenance
-and do not inherit Zazzles verification merely by being imported.
+The long-term goal is an assessment and remediation framework that turns findings and applicable
+standards into tested changes and focused pull requests. Delivery starts with native **Scan and
+Inspect**, followed by **SCA Audit through language-specific ecosystem tools**, then **scheduled
+automation and agent-driven Fix**, and finally **external SAST/code-quality finding integrations**.
+The [delivery priorities](project/implementation-plan.md#delivery-priorities) own that sequence.
+The finished workflow should support on-demand and recurring execution, with human review governing
+integration. External findings retain their provenance and do not inherit Zazzles verification merely
+by being imported.
 
 Each analyzer uses the shared engine for extraction, model assessment, evidence validation and
 reporting. The [architecture](architecture.md#evidence-validation) owns these definitions and the

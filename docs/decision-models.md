@@ -5,9 +5,10 @@
 ## Core security judgment
 
 Decision-model assessment is required and core to Zazzles' security-assessment workflow. The scanner
-builds source-backed traces and operation/guard evidence for the model to judge. We develop and test
-with the OpenAI Decisions API using Luna (`gpt-6-luna`). Jev and other models are planned for future
-support. Model answers cannot replace missing source facts or override claim blockers.
+builds source-backed traces and operation/guard evidence for the model to judge.
+The shared judge supports OpenAI Decisions using Luna (`gpt-6-luna`) and Google Gemini Decisions
+using `gemini-decision-1`. Jev has an adapter with local stub coverage; it has not been live-validated
+in this delivery. Model answers cannot replace missing source facts or override claim blockers.
 
 Inventory, evidence extraction, deterministic practice checks, saved-report rendering and local tests
 can run without an API key. Those are useful inspection/development modes; they do not complete the
@@ -16,17 +17,39 @@ and runtime confirmation.
 
 ## Credentials and local environment
 
-Configure Luna for the current assessed-scan workflow:
+Select one model for the whole scan. Every supported analyzer uses this selection:
 
 | Scanner provider | Environment variable | Selection |
 |---|---|---|
-| OpenAI Decisions | `OPENAI_API_KEY` | `--judge openai --judge-model gpt-6-luna` |
+| OpenAI Decisions | `OPENAI_API_KEY` | `JUDGE_DECISION_MODEL=gpt-6-luna`, `--judge openai` |
+| Google Gemini Decisions | `GEMINI_API_KEY` | `JUDGE_DECISION_MODEL=gemini-decision-1`, `--judge gemini` |
+| Jev (stub-tested adapter) | `TYPESAFE_API_KEY` | Explicit catalog model in `JUDGE_DECISION_MODEL`, `--judge jev` |
 
 Obtain a key through the selected provider's account/console. Keep it in a password manager or local
 ignored `.env`, never chat, tracked files, logs, or command arguments. The tracked
 [.env.sample](../.env.sample) has empty credential fields. Preserve an existing `.env` rather than
 replacing it. See [environment loading](getting-started.md#local-environment-file): zazzles reads process
 environment variables and does not automatically load the file.
+
+Use a single active `JUDGE_DECISION_MODEL` assignment, not a list. If `--judge-model` is also given,
+it must match. Provider/model mismatches fail before scanning. Without the environment setting,
+explicit CLI selection still works; OpenAI defaults to `gpt-6-luna`, Gemini to `gemini-decision-1`,
+and Jev requires an explicit model. Keys do not select a provider and can coexist. No `--judge`
+means no model requests, even with a configured model/key.
+
+For Google, create an API key in [Google AI Studio](https://aistudio.google.com/api-keys).
+The key is shared across Gemini models, but Zazzles accepts only `gemini-decision-1`. It sends the
+model explicitly to `/v1beta/decisions` using Google's API-key header. The current Go integration
+uses the documented REST API: the latest released Go GenAI SDK checked (v1.77.0) lacks Decisions;
+Google's Python/JS SDK examples require 3.2+. See the
+[official model](https://aistudio.google.com/docs/models/gemini-decision-1) and
+[Decisions API](https://aistudio.google.com/docs/decisions-api).
+
+To switch, edit the one model assignment and use the matching `--judge`. A fresh subshell avoids
+stale exported variables. Removing/commenting a key or model in `.env` does not unset an existing
+shell variable. Duplicate assignments in a shell file silently use the last value; retain only one.
+Never overwrite an existing `.env` to switch providers. Alternative provider-specific model
+settings (`SCAN_OPENAI_MODEL`, `SCAN_GEMINI_MODEL`, `SCAN_JEV_MODEL`) must remain unset.
 
 A funded API account/key is separate from source-transmission permission and the zazzles's request cap.
 The scanner has no currency-budget enforcement; choose an explicit small limit. There is no automatic
@@ -46,6 +69,9 @@ Confirm the target root, entry file, selected route, and allowed source evidence
     --judge-limit 1 /path/to/app
 )
 ```
+
+For Gemini, set `JUDGE_DECISION_MODEL=gemini-decision-1` in your local environment and replace
+`--judge openai --judge-model gpt-6-luna` with `--judge gemini`.
 
 This sends bounded source evidence to the selected provider. The cap is per run; there are no retries.
 Additional uses beyond the cap remain unassessed and cause exit 1. A requested assessment failure,
@@ -110,3 +136,12 @@ observations; it does not promise that every unused HTTP slot will be reassigned
 continue under the same cap. Structural-only scans do not request model completion. Saved historical
 generic answers, versions and statuses remain intact on export; they are not rewritten or replayed
 onto new evidence. Full SSRF, exfiltration and browser-security assessment require separate contracts.
+
+## Request granularity
+
+The scanner sends one request per candidate use with that analyzer's applicable atomic questions
+sharing its evidence slice. For example, command execution asks separately about shell syntax,
+executable selection, arguments and coverage within one request. Different analyzers/candidates
+are assessed separately, even when their source slices overlap. All use the same scan-wide selected
+provider/model; no analyzer-specific fallback or whole-subgraph cross-analyzer batch is implemented.
+Google probability maps and confidence are retained for audit and never close static blockers.

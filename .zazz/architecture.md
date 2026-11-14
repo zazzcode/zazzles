@@ -39,9 +39,11 @@ and [capability checklist](project/implementation-plan.md#supported-capability-c
 ## Current provider decision
 
 Zazzles uses a provider-neutral **semantic judge** to analyze source-backed security claims.
-The Go client supports explicit `openai` and `jev` transports. Development and live calibration
+The Go client supports explicit `openai`, `gemini` and `jev` transports. Development and live calibration
 use OpenAI Decisions with `gpt-6-luna`; transport support does not establish equivalent provider
-accuracy. Credentials do not select a provider or authorize a paid request. No provider/model
+accuracy. Gemini uses only `gemini-decision-1` on v1beta Decisions; one
+`JUDGE_DECISION_MODEL` applies to every analyzer. Jev has stub coverage but no live evaluation
+in this delivery. Credentials do not select a provider or authorize a paid request. No provider/model
 fallback occurs. See [decision-model setup](../docs/decision-models.md).
 
 Decision-model judgment is core to a completed security assessment. Offline inventory, evidence

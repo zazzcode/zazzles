@@ -15,7 +15,11 @@ func (c *Client) exchange(ctx context.Context, payload []byte, trace *DecisionTr
 	if err != nil {
 		return nil, "request construction failed"
 	}
-	req.Header.Set("Authorization", "Bearer "+c.key)
+	if c.provider == "gemini" {
+		req.Header.Set("x-goog-api-key", c.key)
+	} else {
+		req.Header.Set("Authorization", "Bearer "+c.key)
+	}
 	req.Header.Set("Content-Type", "application/json")
 	res, err := c.http.Do(req)
 	if err != nil {

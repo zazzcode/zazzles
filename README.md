@@ -65,9 +65,10 @@ A large language model (LLM) assesses specific security questions using that evi
 then checks whether the evidence and answers support the conclusion. Missing facts remain explicit,
 even when the model gives a confident answer.
 
-Development and calibration use the OpenAI Luna Decision API (`gpt-6-luna`). The CLI also implements
-a Jev transport, but transport support does not establish equivalent assessment accuracy.
-The current assessed-scan instructions use Luna. Other provider integrations remain future work.
+Development and calibration have used OpenAI Decisions (`gpt-6-luna`). Google Gemini Decisions
+(`gemini-decision-1`) now supports the same shared judge and passed a bounded live sample scan.
+The CLI also implements a stub-tested Jev transport. Provider support and one successful sample
+do not establish equivalent assessment accuracy; broader matched evaluation remains separate work.
 
 Model assessment is part of a completed security assessment. Offline scanning still supports source
 inventory, evidence inspection, deterministic construction findings and saved-report export.
@@ -123,7 +124,7 @@ trusted reachability or vulnerability findings. Queue acquisition remains future
 An **Analyzer** identifies and assesses a named security concern. Examples include:
 
 - **SQL Injection Analyzer**
-- **NoSQL Injection Analyzer**
+- **NoSQL Injection Analyzer** — initially bounded MongoDB/Mongoose and MarsDB-compatible operations
 - **XSS Analyzer** — reflected, stored and client-side/DOM/framework analysis
 - **Input Validation Analyzer**
 - **Sensitive Data Logging Analyzer**
@@ -243,7 +244,7 @@ at declared limits. Unresolved behavior remains visible.
 |---|---|
 | **Cross-site scripting (XSS)** | Supported server responses and templates, stored-value traces, DOM/framework sinks and selected server-to-browser links, including REST resources, Angular dialogs and JWT claims |
 | **SQL injection** | Verified query construction and value binding, including Sequelize, sql.js and selected Python DB-API patterns |
-| **NoSQL injection** | Supported JavaScript/TypeScript selectors and executable `$where` expressions |
+| **NoSQL injection — MongoDB-style** | Bounded JavaScript/TypeScript MongoDB/Mongoose and MarsDB-compatible selectors and executable `$where` expressions |
 | **Input validation** | Source-backed field requirements and enforcing guards, assessed separately from operation protection |
 | **Sensitive-data logging** | Request data and credentials reaching verified loggers |
 | **Outbound requests** | Unverified JS/TS `fetch`/`axios` call observations and supported Python URL-operand tracking. Complete SSRF assessment is planned |
@@ -253,6 +254,11 @@ XSS support includes selected EJS, Handlebars, Pug, Jinja, jQuery, React, Vue an
 HTML responses for Flask, Quart, FastAPI, Django, Pyramid, Bottle, aiohttp, Falcon and WSGI.
 Protection depends on the output context and modeled paths. See the
 [XSS guide](docs/analysis/xss.md) and [Python coverage guide](docs/python-support.md) for details.
+
+NoSQL is intended to support multiple databases; MongoDB-style operations are the initial scope.
+DynamoDB and other engines need their own API models, rules and guidance. Findings should identify
+the actual database/driver, including MarsDB for its compatible in-process operations; a generic
+NoSQL label does not establish support for every engine. See [database scope](docs/analysis/database-injection.md#database-specific-nosql-scope).
 
 Python NoSQL and general Python-to-browser linkage remain planned. Go analysis, whole-program
 analysis, independent Findings Review and dependency auditing are also future work.
@@ -271,7 +277,7 @@ per-language checklist and delivery order.
 ### Implemented analyzers and supporting coverage
 
 - **Input Validation Analyzer** and **SQL Injection Analyzer:** supported JS/TS/Python cases.
-- **NoSQL Injection Analyzer:** supported JavaScript/TypeScript cases; Python remains pending.
+- **NoSQL Injection Analyzer:** bounded JavaScript/TypeScript MongoDB/Mongoose and MarsDB-compatible cases; Python and other engines remain pending.
 - **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
 - **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
   JS/TS API-to-browser links and Python inline-script analysis. Every source-reviewed XSS in the five
@@ -394,9 +400,49 @@ load `.env`. The [setup guide](docs/getting-started.md) explains environment loa
 
 ### Required decision-model setup
 
-For a model-assessed security scan, configure Luna using the [decision-model guide](docs/decision-models.md).
-Select it with `--judge openai --judge-model gpt-6-luna --judge-limit <count>`.
+For a model-assessed security scan, choose OpenAI Luna or Google Gemini Decisions using the [decision-model guide](docs/decision-models.md).
+Set one `JUDGE_DECISION_MODEL` for every analyzer: `gpt-6-luna` with `--judge openai`, or
+`gemini-decision-1` with `--judge gemini`. Add `--judge-limit <count>` to bound requests.
+Conflicting CLI/environment models fail before scanning. Jev has a stub-tested adapter; no live
+Jev evaluation is claimed.
 The scanner reads the provider key from its process environment.
+
+Choose one provider block in your ignored `.env` (keep only one active model assignment):
+
+| Provider | Model setting | Credential field |
+| --- | --- | --- |
+| OpenAI Decisions | `JUDGE_DECISION_MODEL=gpt-6-luna` | `OPENAI_API_KEY=...` |
+| Google Gemini Decisions | `JUDGE_DECISION_MODEL=gemini-decision-1` | `GEMINI_API_KEY=...` |
+
+Create a Google key in [Google AI Studio](https://aistudio.google.com/api-keys), or use your OpenAI
+API account key. Fill the credential locally; never commit it. Keys may coexist, but each scan
+uses only the selected provider. Google calls use the `v1beta` Decisions endpoint and accept only
+`gemini-decision-1`.
+
+Load your trusted `.env`, then run the command matching its model:
+
+```bash
+set -a
+. ./.env
+set +a
+
+# OpenAI: JUDGE_DECISION_MODEL=gpt-6-luna
+./bin/scan --analyze --entry src/server.ts --route /api/ping \
+  --judge openai --judge-limit 2 /path/to/vulnerable-typescript-app
+
+# Gemini: JUDGE_DECISION_MODEL=gemini-decision-1
+./bin/scan --analyze --entry src/server.ts --route /api/ping \
+  --judge gemini --judge-limit 2 /path/to/vulnerable-typescript-app
+```
+
+Run only the command for the active model. When switching, edit the model setting and reload in a
+fresh shell; commenting a line does not clear a value already exported in the current shell.
+Every analyzer uses this same model selection. Different candidate uses are separate requests;
+each request includes that analyzer's applicable questions over its evidence slice.
+
+Gemini's bounded `/api/ping` smoke scan completed both requests and confirmed the expected command
+injection; the separate unknown field-policy claim stayed Review. This verifies a small scan,
+not accuracy parity with OpenAI. [Evidence and limits](.zazz/evaluation/gemini-decisions-results.md).
 
 Model requests transmit source evidence and can incur charges. Authorize the target scope and
 request count before running them. A configured key does not authorize automatic paid calls.
@@ -407,7 +453,9 @@ model-assessed security scan. Inventory and saved-report export need no model ca
 
 ## Run
 
-The examples below send source evidence to Luna. Set the API key in your process environment first,
+The examples below send source evidence to Luna; set `JUDGE_DECISION_MODEL=gpt-6-luna` first.
+For Gemini, set `JUDGE_DECISION_MODEL=gemini-decision-1` and replace
+`--judge openai --judge-model gpt-6-luna` with `--judge gemini`. Set the API key in your process environment first,
 and choose an authorized request limit and target path.
 
 ```bash

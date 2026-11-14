@@ -23,14 +23,12 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 func runAnalysisConfigured(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped []string, stdout, stderr io.Writer, scope analysis.EntrySelection, discovery discoveryOptions) int {
 	var client *judge.Client
 	if provider != "" {
-		key := ""
-		switch provider {
-		case "openai":
-			key = os.Getenv("OPENAI_API_KEY")
-		case "jev":
-			key = os.Getenv("TYPESAFE_API_KEY")
-		}
 		var err error
+		model, key, err := judgeConfiguration(provider, model, os.Getenv)
+		if err != nil {
+			fmt.Fprintf(stderr, "scan: %v\n", err)
+			return exitError
+		}
 		client, err = newJudgeClient(provider, model, key)
 		if err != nil {
 			fmt.Fprintf(stderr, "scan: %v\n", err)

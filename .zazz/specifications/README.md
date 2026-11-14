@@ -17,6 +17,9 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
+- [Shared Gemini Decisions provider](gemini-decisions.md) — interactive shared-provider integration and bounded live smoke before analyzer work.
+- [Path Traversal Analyzer](path-traversal.md) — later JS/TS/Python filesystem/containment analysis; no provider implementation.
+
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
 
 - [Node.js input/acquisition refactor](node-http-input-refactor.md) — transport-neutral value facts, bounded Express/Fastify/Hapi adapters, shared sink contracts and opt-in provisional model discovery; Python migration proposed separately at project root.

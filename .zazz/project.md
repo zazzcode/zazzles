@@ -1,6 +1,6 @@
 # Zazzles — project overview
 
-**Project overview, updated 2026-11-06.** This overview owns product purpose, direction,
+**Project overview, updated 2026-11-14.** This overview owns product purpose, direction,
 and repository state. The [agent orientation](docs/zazzles-agent-orientation.md#documentation-map) routes
 to the detailed documents and defines their responsibilities.
 
@@ -10,6 +10,21 @@ Zazzles helps developers and coding agents assess application security, code qua
 dependencies, then use the evidence to make verified repairs. Its four product goals are Scan,
 Inspect, Audit and Fix. Scan has bounded implementations today. Inspect as a distinct capability,
 Audit and automated Fix remain planned. A completed run is not a security or quality certification.
+
+## Shared decision-model support
+
+OpenAI Decisions (`gpt-6-luna`) and Google Gemini Decisions (`gemini-decision-1`) can assess every
+implemented analyzer through the same source/evidence gates. [User setup](../docs/decision-models.md#credentials-and-local-environment)
+owns configuration; the [provider contract](specifications/gemini-decisions.md#capability-and-boundary)
+owns this delivery. A two-request Gemini scan of the pinned TypeScript sample's `/api/ping` confirmed
+command injection and preserved Review for unknown field policy. See [verification evidence](evaluation/gemini-decisions-results.md).
+This bounded result does not establish equal provider accuracy. No live Jev calls were made.
+
+The [roadmap checklist](project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
+separates completed provider setup from the [later Path Traversal Analyzer](specifications/path-traversal.md#1-capability-and-prerequisite),
+which has not been implemented or launched. NoSQL remains an extensible analyzer category with
+bounded MongoDB/Mongoose and MarsDB-compatible support initially; other engines need distinct rules
+and guidance, and findings must identify the actual database/driver.
 
 ## Four product capabilities
 
@@ -126,7 +141,7 @@ SAST rather than assume that using AI improves detection. The
 [phased plan](project/implementation-plan.md) owns delivery order. SCA remains a complementary objective
 after the source-code analysis foundation.
 
-**Languages, updated 2026-11-06.** JavaScript, TypeScript and Python have implemented bounded
+**Languages, updated 2026-11-14.** JavaScript, TypeScript and Python have implemented bounded
 adapters. Go remains planned; later language expansion has no fixed delivery position. A file
 extension is not analysis support.
 
@@ -142,7 +157,7 @@ exploitability, and a protected dataflow claim does not make the route's configu
 
 ## Product direction
 
-The chosen direction combines **Tree-sitter extraction, Go control-flow/dataflow analysis, OpenAI Decision
+The chosen direction combines **Tree-sitter extraction, Go control-flow/dataflow analysis, provider-neutral Decision
 assessment of string validation/sanitization, then an LLM Findings Reviewer for identified issues**.
 All scanner and code-analysis implementation is Go, including model clients and orchestration.
 The decision model's role is bounded semantic assessment; the reviewer provides deeper findings review.
@@ -155,8 +170,10 @@ remains useful, with omitted assessment/review stages explicitly marked.
 writes a JSON route index of Express-style JS/TS registrations and the handler names at the call.
 It does not follow imports or decide whether a string is validated. The OpenAI Decisions API
 (`gpt-6-luna`) is the later assessor of validation and sanitization. It is not called in this slice.
-The [architecture provider decision](architecture.md#current-provider-decision) keeps GPT Decisions
-and Jev as alternative semantic judge providers, with OpenAI first and future adapters allowed.
+The [architecture provider decision](architecture.md#current-provider-decision) keeps explicit
+OpenAI, Gemini and Jev adapters behind a shared judge. `JUDGE_DECISION_MODEL` selects one model
+for every analyzer; `--judge` enables calls and must match the model. Gemini accepts only
+`gemini-decision-1` through v1beta Decisions. Jev remains stub-tested, without live validation here.
 The [graph design](architecture/repository-graph.md) covers the target repository: API entry points,
 internal paths, outbound service calls and their strings, responses, and subsequent value flow.
 The 2026-10-31 [assessment](project/06-route-validation-assessment.md) records route verification
@@ -183,7 +200,7 @@ complete CFG/interprocedural analysis, independent Findings Reviewer, or reviewe
 
 **Implemented 2026-10-31:** `--analyze` adds bounded route/handler resolution and request-value
 use witnesses with source hashes, candidate SQL/outbound HTTP call models, and explicit gaps.
-Optional `--judge openai|jev` sends bounded evidence through provider-specific typed adapters;
+Optional `--judge openai|gemini|jev` sends bounded evidence through provider-specific typed adapters;
 bounded Luna integration/control evaluations are recorded in [results](evaluation/juice-shop/results.md). See the [current contract](specifications/route-string-validation.md)
 and [API setup](docs/openai-decisions-setup.md).
 

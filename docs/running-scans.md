@@ -157,7 +157,7 @@ reported as an SQL call; if it carries a hinted request field, it is a sensitive
 Use `--route /rest/user/login` to select an exact path pattern before model requests.
 Offline assessment is `not_run`. For provider selection and key instructions, including personal-key
 ownership and Jev configuration, see [decision-model setup](decision-models.md).
-`--judge openai|jev` explicitly transmits bounded evidence; `--judge-limit` caps requests (default 10,
+`--judge openai|gemini|jev` explicitly transmits bounded evidence; `--judge-limit` caps requests (default 10,
 no retries). A requested judge failure, skipped oversized payload or exhausted request cap exits 1
 with its report retained. Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.

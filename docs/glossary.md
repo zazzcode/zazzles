@@ -11,7 +11,7 @@ without a demonstrated exploit. A Review category is a question, not an establis
 | Category | Meaning | Current scope |
 |---|---|---|
 | **SQL Injection** | Input can affect SQL structure; review executable text separately from bound values | Bounded SQL construction/binding analysis; string-built query practice can merit refactoring without an established exploit |
-| **NoSQL Injection** | Input can affect operators, selectors, or executable expressions | Bounded `$where` and document analysis; executable string construction is a practice finding, unknown document constraints are Review |
+| **NoSQL Injection** | Input can affect operators, selectors, or executable expressions | Initially bounded MongoDB/Mongoose and MarsDB-compatible `$where`/document analysis; other engines need separate models; executable string construction is a practice finding, unknown document constraints are Review |
 | **Input Validation** | A server-side field policy governs presence, runtime type, format, range, or length | Bounded validation evidence; absent modeled checks alone are Review |
 | **Account Creation Validation** | Required fields and guards must hold before persistence | Declared account-creation cases; general bypass discovery is incomplete |
 | **Outbound Request Safety** | Destination, headers, or request values need appropriate constraints | Bounded use evidence; not complete SSRF detection |

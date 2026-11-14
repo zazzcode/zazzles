@@ -43,7 +43,11 @@ func (c *Client) discoveryPayload(p analysis.DiscoveryProposal) ([]byte, error) 
 		for _, v := range choices {
 			criteria[v["value"]] = v["description"]
 		}
-		payload, err = json.Marshal(map[string]any{"model": c.model, "state": string(input), "questions": map[string]any{q.name: map[string]any{"type": "choice", "instructions": q.instructions, "criteria": criteria}}})
+		field := "state"
+		if c.provider == "gemini" {
+			field = "input"
+		}
+		payload, err = json.Marshal(map[string]any{"model": c.model, field: string(input), "questions": map[string]any{q.name: map[string]any{"type": "choice", "instructions": q.instructions, "criteria": criteria}}})
 	}
 	if len(payload) > 64<<10 {
 		return nil, fmt.Errorf("discovery payload exceeds 64 KiB")

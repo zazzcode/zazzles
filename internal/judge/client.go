@@ -33,13 +33,19 @@ func New(provider, model, key string) (*Client, error) {
 		if model == "" {
 			c.model = "gpt-6-luna"
 		}
+	case "gemini":
+		c.endpoint = "https://generativelanguage.googleapis.com/v1beta/decisions"
+		if model != "" && model != "gemini-decision-1" {
+			return nil, errors.New("Gemini Decisions supports only gemini-decision-1")
+		}
+		c.model = "gemini-decision-1"
 	case "jev":
 		c.endpoint = "https://api.typesafe.ai/v1/systemone"
 		if model == "" {
 			return nil, errors.New("Jev requires an explicit --judge-model from the provider model catalog")
 		}
 	default:
-		return nil, errors.New("unsupported judge provider; select openai or jev")
+		return nil, errors.New("unsupported judge provider; select openai, gemini or jev")
 	}
 	if strings.TrimSpace(key) == "" {
 		return nil, errors.New("selected judge API key is missing")
@@ -110,7 +116,7 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 	}
 	a.Status = "completed"
 	a.Answers = answers
-	a.AnswerDetails, err = answerDetails(data, answers, questionsFor(use))
+	a.AnswerDetails, err = c.answerDetails(data, answers, questionsFor(use))
 	if err != nil {
 		a.Status, a.Reason = "failed", err.Error()
 		return a
@@ -209,7 +215,11 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 		}
 		qs[q.name] = map[string]any{"type": "choice", "instructions": questionInstructions(q, use), "criteria": criteria}
 	}
-	return json.Marshal(map[string]any{"model": c.model, "state": string(evidence), "questions": qs})
+	field := "state"
+	if c.provider == "gemini" {
+		field = "input"
+	}
+	return json.Marshal(map[string]any{"model": c.model, field: string(evidence), "questions": qs})
 }
 
 type answer struct {
@@ -219,6 +229,9 @@ type answer struct {
 }
 
 func (c *Client) decodeQuestions(data []byte, expected []question) (map[string]string, string, map[string]int64, error) {
+	if c.provider == "gemini" {
+		return c.decodeGemini(data, expected)
+	}
 	var raw struct {
 		Model   string           `json:"model"`
 		Answers json.RawMessage  `json:"answers"`

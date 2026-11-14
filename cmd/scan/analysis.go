@@ -138,7 +138,7 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 }
 
 func queryUse(use analysis.CandidateUse) bool {
-	return use.Kind == "sql_query_candidate" || use.Kind == "nosql_query_candidate" || use.Kind == "command_execution_candidate"
+	return use.Kind == "sql_query_candidate" || use.Kind == "nosql_query_candidate" || use.Kind == "command_execution_candidate" || use.Kind == "path_traversal_candidate"
 }
 
 const skipReason = "input-validation analyzer not used for this run (--skip-family input-validation)"

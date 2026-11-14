@@ -95,8 +95,9 @@ func wireBundle(use analysis.CandidateUse) any {
 		APIModel        *analysis.APIModel     `json:"api_model,omitempty"`
 		XSS             *analysis.XSSFacts     `json:"xss,omitempty"`
 		Command         *analysis.CommandFacts `json:"command,omitempty"`
+		Path            *analysis.PathFacts    `json:"path,omitempty"`
 		InputFacts      any                    `json:"input_facts,omitempty"`
-	}{invocation, 6, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, roles, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, use.Command, inputFacts}
+	}{invocation, 6, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, roles, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, use.Command, use.Path, inputFacts}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {

@@ -1,0 +1,542 @@
+{
+  "version": 2,
+  "reviewed": "2026-11-14",
+  "method": "Source-reviewed before any scanner or model output was observed. Every row was derived by reading the pinned source (input field -> path construction/guard -> effective filesystem operation) and the cited reference. Application comments, challenge names and scanner output are not truth. Labels never enter scanner or model input. A corrected expectation keeps the old label in `corrections`. Supplementary row JS-PATH-N05 was source-reviewed after the scan located that operation; it is explicitly identified rather than represented as part of the original pre-scan matrix.",
+  "platform_assumptions": {
+    "platform": "posix (declared analysis assumption; Windows drive/UNC/backslash semantics are not modeled and the scanner host is not evidence of a target's deployment)",
+    "node": "Node fs.readFile/readFileSync/writeFile/writeFileSync (callback, sync and fs/promises): first argument is the file path; path.join concatenates and normalizes (an absolute later segment does NOT reset), path.resolve and Python os.path.join/pathlib '/' DO reset on an absolute later segment; path.normalize of a rooted string removes leading '..'.",
+    "python": "builtin open and io.open: first/file operand, mode decides read versus write; pathlib receiver carries the path.",
+    "local_verification": "Semantics spot-checked on node v24.21.0 path.posix and Python 3.14.7 posixpath on 2026-11-14 (join/resolve/normalize/relative/commonpath/startswith sibling-prefix collision, basename). This is a runtime-behavior check of declared posix semantics, not evidence about a deployed target."
+  },
+  "targets": {
+    "vulnerable-typescript-app": {
+      "revision": "7f8b240a2f02beba099da3632d1ba679ff8bc32f",
+      "sha256": {
+        "src/server.ts": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+      }
+    },
+    "vuln-demo-app": {
+      "revision": "d27b35bdd2d599f1f79dace71d5272215df04423",
+      "sha256": {
+        "server.js": "ff4f61acd1037140c697af68ceb223c70f432583e4d2c23d79f852f066a11a31"
+      }
+    },
+    "nodejs-goof": {
+      "revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "sha256": {
+        "routes/index.js": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+      }
+    },
+    "juice-shop": {
+      "revision": "f189f521266f42c6bd05884468292000cee852ed",
+      "sha256": {
+        "routes/vulnCodeFixes.ts": "947bfb300d76d2347d2f3dba8a6432129281b8fcc5aa7f7e806fe9f8207dac96",
+        "routes/vulnCodeSnippet.ts": "1521983d9a9e6e6f967b8bf7df2c655e7af0aed9976abfe464d3244c6b3e265c",
+        "server.ts": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1",
+        "routes/languages.ts": "5a995c3d9bf22d3bfcf8af275e63256ac6b2af812626d32f51a699bebe08f863",
+        "data/staticData.ts": "6897e8e746cb05376e38b75bc04cc9e0c23629b0f6a42f2cd6f3a1f5ce821aac",
+        "routes/videoHandler.ts": "5c3bdfb5e0662bf1da44f63ae4f3d62ac857d9579b8b11e937bab4b7229ec552",
+        "routes/profileImageFileUpload.ts": "6c19407cb05fbb2e8b676f2d964eccec79db13d302cc806ed1fef0e757b312c7",
+        "routes/fileServer.ts": "3291e01af092d95cfdaea506c13ff2b4ae4533cea351cde9a48134f4ed55f9f9",
+        "routes/logfileServer.ts": "37fe634d42307b1197b76b7fc85a506a47f0a6a67543961e55aa496ea1ef7379",
+        "routes/keyServer.ts": "b47736841886e865dbe07f6db3596b5e1e64435051c3362a18a21bac2412c712",
+        "routes/quarantineServer.ts": "4e5fce67300b892ab31acda43e381d4889136cfaf5bb97de7a9c116c66486a4d",
+        "routes/dataErasure.ts": "11231aefa83ceec4b0c6903ecd4fb9ccddc24b49044961fcac017e3cf7c631ba",
+        "routes/profileImageUrlUpload.ts": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+        "routes/fileUpload.ts": "cbaa5d28d378d7ce5b521b634f5250bb8d1fa09c6ac6004bf3f4759bab892573"
+      }
+    },
+    "vulnpy": {
+      "revision": "b81885e58283a3449b578d20c20557aff637e5ea",
+      "sha256": {
+        "src/vulnpy/trigger/pt.py": "5008396966c09eb8a0931b8b1da51aae243d6f0529b1ac9e981d7c8f5d738b82",
+        "src/vulnpy/common/templating.py": "5f8433e52e1cdd70cb86f459ee829831c29acc42c63d299bcf7f689996d2c2f8"
+      }
+    },
+    "ThreatByte": {
+      "revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
+      "sha256": {
+        "server/routes.py": "f2061e3b7dd73df51b02a7a37ae78bb736810696ac50ab921d836f72ec81c75e",
+        "server/api/v1/api_v1.py": "4e5206674c8a378afd079a979134c6431cb3711e3c0815a6d3de94d0134db09a"
+      }
+    },
+    "python-insecure-app": {
+      "revision": "b188493768ca2c1ef003e08148fb2e4577219c36",
+      "sha256": {
+        "app/main.py": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+      }
+    },
+    "vulnerable-flask-app": {
+      "revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
+      "sha256": {
+        "vulnerable-flask-app.py": "b5b577aeae87401dc0bde1cedb9fec8de1f63f2139b1f6de425857f5de66c4db"
+      }
+    }
+  },
+  "expected_positives": [
+    {
+      "id": "TS-PATH-01",
+      "target": "vulnerable-typescript-app",
+      "route": "GET /api/files",
+      "field": "req.query.filename",
+      "construction": "path.join(__dirname, '../uploads', filename); the type annotation is not a runtime constraint",
+      "guard": "none; the err callback and 404 response run after the read and protect nothing",
+      "operation": "fs.readFile(filePath, 'utf8', cb) src/server.ts:104 (first argument is the path)",
+      "sink": {
+        "file": "src/server.ts",
+        "line": 104
+      },
+      "operation_role": "read",
+      "expected": "confirmed_vulnerability CWE-22",
+      "reference": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md TS-PATH-01"
+    },
+    {
+      "id": "FLASK-PATH-01",
+      "target": "vulnerable-flask-app",
+      "route": "GET /read_file",
+      "field": "request.args.get('filename')",
+      "construction": "none; the raw value is the file operand",
+      "guard": "none",
+      "operation": "open(filename, \"r\") vulnerable-flask-app.py:77",
+      "sink": {
+        "file": "vulnerable-flask-app.py",
+        "line": 77
+      },
+      "operation_role": "read",
+      "expected": "confirmed_vulnerability CWE-22",
+      "reference": "source review 2026-11-14; python-support-results.md route inventory"
+    },
+    {
+      "id": "FLASK-PATH-02",
+      "target": "vulnerable-flask-app",
+      "route": "GET /create_file",
+      "field": "request.args.get('filename') (and 'text')",
+      "construction": "none; raw filename is the file operand; text is the separate write content",
+      "guard": "none; the surrounding try/except runs after the open and protects nothing",
+      "operation": "open(filename, \"w\") vulnerable-flask-app.py:129",
+      "sink": {
+        "file": "vulnerable-flask-app.py",
+        "line": 129
+      },
+      "operation_role": "write",
+      "expected": "confirmed_vulnerability CWE-22 (write); text must not be reported as a path source",
+      "reference": "source review 2026-11-14"
+    },
+    {
+      "id": "VP-PATH-IO-OPEN",
+      "target": "vulnpy",
+      "route": "generated /vulnpy/pt/io_open/ trigger routes (shared trigger, 11 adapters)",
+      "field": "user_input (header User-Input, query user_input or form user_input per adapter)",
+      "construction": "none",
+      "guard": "none; try/except Exception returns None after the open",
+      "operation": "io.open(user_input) src/vulnpy/trigger/pt.py:48",
+      "sink": {
+        "file": "src/vulnpy/trigger/pt.py",
+        "line": 48
+      },
+      "operation_role": "read",
+      "context_count": 28,
+      "expected": "confirmed_vulnerability CWE-22 in every generated framework context (repeated contexts are one root defect)",
+      "contexts": "same adapter registration contexts as the verified command-injection matrix for src/vulnpy/trigger/cmdi.py (flask 3, fastapi 1, quart 1, django 2, django-asgi 2, falcon 1, falcon-asgi 1, bottle 1, pyramid 2, aiohttp 2, wsgi 1 registrations x methods)",
+      "reference": ".zazz/evaluation/vulnpy-detection-guide.md; ../vulnpy/src/vulnpy/trigger/__init__.py DATA pt=../../etc/passwd"
+    },
+    {
+      "id": "VP-PATH-OPEN",
+      "target": "vulnpy",
+      "route": "generated /vulnpy/pt/open/ trigger routes (shared trigger, 11 adapters)",
+      "field": "user_input",
+      "construction": "none",
+      "guard": "none; try/except Exception returns None after the open",
+      "operation": "open(user_input) src/vulnpy/trigger/pt.py:57",
+      "sink": {
+        "file": "src/vulnpy/trigger/pt.py",
+        "line": 57
+      },
+      "operation_role": "read",
+      "context_count": 28,
+      "expected": "confirmed_vulnerability CWE-22 in every generated framework context",
+      "contexts": "as VP-PATH-IO-OPEN",
+      "reference": ".zazz/evaluation/vulnpy-detection-guide.md"
+    },
+    {
+      "id": "TB-PATH-UPLOAD",
+      "target": "ThreatByte",
+      "route": "POST /upload",
+      "field": "request.files['file'].filename (client-supplied, unsanitized)",
+      "construction": "os.path.join(UPLOAD_FOLDER, filename)",
+      "guard": "only presence checks ('file' not in request.files, filename == ''), which constrain nothing",
+      "operation": "FileStorage.save(filepath) server/routes.py:264",
+      "sink": {
+        "file": "server/routes.py",
+        "line": 264
+      },
+      "operation_role": "write",
+      "expected": "confirmed_vulnerability CWE-22 (arbitrary file write)",
+      "reference": "source review 2026-11-14; werkzeug FileStorage.filename is the unmodified client name"
+    },
+    {
+      "id": "GOOF-PATH-ZIPSLIP",
+      "target": "nodejs-goof",
+      "route": "POST /import",
+      "field": "req.files.importFile.data (uploaded archive bytes; entry names are attacker-controlled)",
+      "construction": "AdmZip(importFile.data).extractAllTo('/tmp/extracted_files', true)",
+      "guard": "none; package.json pins adm-zip 0.4.7, below 0.4.11, the first release that rejects escaping entry names (CVE-2018-1002204)",
+      "operation": "extractAllTo routes/index.js:270",
+      "sink": {
+        "file": "routes/index.js",
+        "line": 270
+      },
+      "operation_role": "write",
+      "expected": "confirmed_vulnerability CWE-22 (Zip Slip, archive extraction variant)",
+      "reference": "source review 2026-11-14; https://github.com/snyk/zip-slip-vulnerability"
+    },
+    {
+      "id": "VP-PATH-TAR-BZ2",
+      "target": "vulnpy",
+      "route": "generated /vulnpy/pt/* trigger routes (shared trigger, 11 adapters)",
+      "field": "user_input",
+      "construction": "none",
+      "guard": "none; try/except returns None after the open",
+      "operation": "tarfile.TarFile.open :8, tarfile.TarFile :16, tarfile.open :24, bz2.BZ2File :32, bz2.open :40 in src/vulnpy/trigger/pt.py",
+      "sinks": [
+        8,
+        16,
+        24,
+        32,
+        40
+      ],
+      "sink": {
+        "file": "src/vulnpy/trigger/pt.py",
+        "line": 8
+      },
+      "operation_role": "read",
+      "context_count": 28,
+      "expected": "confirmed_vulnerability CWE-22 in every generated framework context for each of the five sinks",
+      "reference": "source review 2026-11-14"
+    }
+  ],
+  "expected_unknown": [
+    {
+      "id": "VP-PATH-U01",
+      "target": "vulnpy",
+      "route": "wsgi adapter generated trigger routes",
+      "sink": {
+        "file": "src/vulnpy/common/templating.py",
+        "line": 27
+      },
+      "registration_file": "src/vulnpy/wsgi/app.py",
+      "field": "environ['PATH_INFO'] component",
+      "construction": "sanitized_name = [s for s in TRIGGER_MAP.keys() if s == name][0] then get_template('{}.html'.format(sanitized_name)) then os.path.join(TEMPLATES_LOCATION, path)",
+      "guard": "A registry-element selection by equality: the opened name is a TRIGGER_MAP key, not the request string, but TRIGGER_MAP is built by create_trigger_map() at import time rather than being a literal, and a comprehension-selection idiom is not a modeled containment control.",
+      "operation": "open(filename, 'r') src/vulnpy/common/templating.py:27",
+      "expected": "unknown/Review: must NOT be confirmed_vulnerability and must NOT be protected_for_claim; reported contexts are WSGI only",
+      "reference": "source review 2026-11-14 (scan output only located the context; the label was decided from the source)"
+    },
+    {
+      "id": "JS-PATH-FIXKEY",
+      "target": "juice-shop",
+      "route": "POST checkCorrectFix (routes/vulnCodeFixes.ts)",
+      "field": "req.body.key",
+      "construction": "'./data/static/codefixes/' + key + '.info.yml'",
+      "guard": "No local containment check. readFixes(key) at :58 returns fixes only when a readdirSync name startsWith(`${key}_`); directory entries contain no separators, so key cannot carry a separator and still match. That is a membership-by-helper control, not a modeled containment check.",
+      "operation": "fs.readFileSync(path, 'utf8') routes/vulnCodeFixes.ts:83 (fs.existsSync at :82 is not a modeled operation)",
+      "sink": {
+        "file": "routes/vulnCodeFixes.ts",
+        "line": 83
+      },
+      "expected": "unknown/Review: must NOT be confirmed_vulnerability and must NOT be protected_for_claim (unmodeled helper membership guard)",
+      "reference": "source review 2026-11-14"
+    },
+    {
+      "id": "JS-PATH-SNIPPETKEY",
+      "target": "juice-shop",
+      "route": "POST checkVulnLines (routes/vulnCodeSnippet.ts)",
+      "field": "req.body.key",
+      "construction": "'./data/static/codefixes/' + key + '.info.yml'",
+      "guard": "retrieveCodeSnippet(key) at :72 must return non-null before the read; its membership semantics are in an unmodeled helper.",
+      "operation": "fs.readFile(path, {encoding}) routes/vulnCodeSnippet.ts:90 (fs.stat at :89 not modeled)",
+      "sink": {
+        "file": "routes/vulnCodeSnippet.ts",
+        "line": 90
+      },
+      "expected": "unknown/Review: not confirmed, not protected",
+      "reference": "source review 2026-11-14"
+    },
+    {
+      "id": "JS-PATH-INFRA",
+      "target": "juice-shop",
+      "history": "Initially blocked: req.path, req.url and req.originalUrl are not request-field sources in the shared Node acquisition. With the user's approval they are admitted for path claims only, through a path-only second pass of the handler, so no other analyzer's evidence changes.",
+      "route": "app.use('/infrastructure', ...) server.ts",
+      "field": "req.path",
+      "construction": "path.resolve('infrastructure', path.normalize(req.path).replace(/^[\\\\/]+/, ''))",
+      "guard": "filePath.startsWith(path.resolve('infrastructure')) rejects with 403 before the read, but the prefix has no trailing separator (a sibling such as infrastructure-x would satisfy it). Lexical prefix alone is not containment. In practice req.path is rooted so path.normalize removes leading '..', but that platform/framework fact is not established by supplied evidence.",
+      "operation": "fs.readFile(filePath, 'utf8', cb) server.ts:277",
+      "sink": {
+        "file": "server.ts",
+        "line": 277
+      },
+      "expected": "unknown/Review: must NOT be protected_for_claim (sibling-prefix collision); must NOT be confirmed (rooted req.path normalization is not scanner-established)",
+      "reference": "source review 2026-11-14; posix semantics verified locally"
+    },
+    {
+      "id": "TB-PATH-REMOVE",
+      "target": "ThreatByte",
+      "route": "POST /delete/<filename>",
+      "field": "URL path parameter filename",
+      "construction": "os.path.join(UPLOAD_FOLDER, filename)",
+      "guard": "database membership check and os.path.exists; the <filename> converter excludes separators but a bare '..' or a stored name is not modeled",
+      "operation": "os.remove(file_path) server/routes.py:364",
+      "sink": {
+        "file": "server/routes.py",
+        "line": 364
+      },
+      "expected": "unknown/Review: not confirmed, not protected"
+    },
+    {
+      "id": "JS-PATH-SENDFILE",
+      "target": "juice-shop",
+      "sinks": [
+        {
+          "file": "routes/fileServer.ts",
+          "line": 32
+        },
+        {
+          "file": "routes/keyServer.ts",
+          "line": 14
+        },
+        {
+          "file": "routes/logfileServer.ts",
+          "line": 14
+        },
+        {
+          "file": "routes/quarantineServer.ts",
+          "line": 14
+        }
+      ],
+      "field": "req.params.file",
+      "construction": "res.sendFile(path.resolve('<dir>/', file))",
+      "guard": "!file.includes('/') rejects multi-component values in the caller; a bare '..' resolves to a directory, which sendFile does not serve. The extension allow-list in fileServer is not a containment control",
+      "expected": "unknown/Review: not confirmed, not protected",
+      "reference": "source review 2026-11-14; the poison-null-byte and directory-listing challenges are not traversal outside the served directory"
+    }
+  ],
+  "expected_no_candidate": [
+    {
+      "id": "GOOF-PATH-N01",
+      "target": "nodejs-goof",
+      "operation": "fs.readFile('backup.txt', 'ascii', cb) routes/index.js:272",
+      "sink": {
+        "file": "routes/index.js",
+        "line": 272
+      },
+      "why": "constant path; the uploaded archive is a separate extraction operand scored by GOOF-PATH-ZIPSLIP"
+    },
+    {
+      "id": "DEMO-PATH-N01",
+      "target": "vuln-demo-app",
+      "why": "no filesystem operation in server.js (only sql.js, express and http)"
+    },
+    {
+      "id": "INSECURE-PATH-N01",
+      "target": "python-insecure-app",
+      "why": "no filesystem operation in app/main.py"
+    },
+    {
+      "id": "JS-PATH-N01",
+      "target": "juice-shop",
+      "operation": "readFile('frontend/dist/frontend/assets/i18n/' + fileName) routes/languages.ts:31, :40",
+      "sink": {
+        "file": "routes/languages.ts",
+        "line": 31
+      },
+      "why": "fileName comes from readdir of a fixed directory, not from the request"
+    },
+    {
+      "id": "JS-PATH-N02",
+      "target": "juice-shop",
+      "operation": "readFile(path.resolve('./data/static/' + file + '.yml')) data/staticData.ts:9",
+      "sink": {
+        "file": "data/staticData.ts",
+        "line": 9
+      },
+      "why": "every caller passes a literal name; no request source"
+    },
+    {
+      "id": "JS-PATH-N03",
+      "target": "juice-shop",
+      "operation": "fs.readFileSync('.../videos/' + subtitles) routes/videoHandler.ts:82",
+      "sink": {
+        "file": "routes/videoHandler.ts",
+        "line": 82
+      },
+      "why": "subtitles is application configuration, not a request field"
+    },
+    {
+      "id": "JS-PATH-N04",
+      "target": "juice-shop",
+      "operation": "fs.writeFile(filePath, buffer) routes/profileImageFileUpload.ts:42",
+      "sink": {
+        "file": "routes/profileImageFileUpload.ts",
+        "line": 42
+      },
+      "allow_unresolved": true,
+      "why": "path pieces are the authenticated user id and an extension sniffed from content; the uploaded bytes are the write content, a separate operand. Allowed outcomes: no candidate, or an unresolved record. Never a confirmed path finding."
+    },
+    {
+      "id": "VP-PATH-N01",
+      "target": "vulnpy",
+      "operation": "open(filename) src/vulnpy/common/templating.py:27",
+      "sink": {
+        "file": "src/vulnpy/common/templating.py",
+        "line": 27
+      },
+      "adapters": "flask, fastapi, quart, django, django-asgi, falcon, falcon-asgi, bottle, pyramid, aiohttp (every adapter except wsgi)",
+      "except_registration_file": "src/vulnpy/wsgi/app.py",
+      "why": "get_template path is format('{}.html', name) where name iterates TRIGGER_MAP keys, never the request. The wsgi adapter is the exception, see corrections and expected_unknown VP-PATH-U01."
+    },
+    {
+      "id": "TB-PATH-N01",
+      "target": "ThreatByte",
+      "operation": "open(file_path, 'wb') server/api/v1/api_v1.py:284",
+      "sink": {
+        "file": "server/api/v1/api_v1.py",
+        "line": 284
+      },
+      "why": "path is UPLOAD_FOLDER/<database integer id>.png; the request-influenced bytes are the write content (an SSRF concern), a separate operand and never a path source"
+    },
+    {
+      "id": "JS-PATH-N05",
+      "target": "juice-shop",
+      "operation": "fs.createWriteStream(profile image path) routes/profileImageUrlUpload.ts:29",
+      "sink": {
+        "file": "routes/profileImageUrlUpload.ts",
+        "line": 29
+      },
+      "allow_unresolved": true,
+      "why": "The authenticated user id and an extension selected by a finite literal allow-list form the path. The remote response is content. No candidate or unresolved is acceptable; never confirmed or protected without a modeled selection control.",
+      "reference": "Supplementary source review on continuation: the scan located this additional operation; the expectation follows the source at lines 28-29, independently of the model answer."
+    }
+  ],
+  "deferred_unsupported_api": [
+    {
+      "id": "JS-DEFER-SENDFILE",
+      "target": "juice-shop",
+      "rows": [
+        "routes/fileServer.ts:32",
+        "routes/logfileServer.ts:14",
+        "routes/keyServer.ts:14",
+        "routes/quarantineServer.ts:14"
+      ],
+      "api": "express res.sendFile(path.resolve(root, params.file))",
+      "why": "Initial-scope history: framework send-file wrappers are deferred by the contract until an operand contract is source-reviewed; these are source-documented traversal surfaces and are NOT scored as detected or protected",
+      "status": "in scope now: scored as JS-PATH-SENDFILE (unknown)"
+    },
+    {
+      "id": "JS-DEFER-RENDER",
+      "target": "juice-shop",
+      "rows": [
+        "routes/dataErasure.ts:104"
+      ],
+      "api": "res.render with path.resolve(req.body.layout)",
+      "why": "Initial-scope history: template-layout file read through a framework render API; not in the fs matrix"
+    },
+    {
+      "id": "JS-DEFER-ARCHIVE",
+      "target": "juice-shop,nodejs-goof",
+      "rows": [
+        "juice-shop routes/fileUpload.ts:34",
+        "nodejs-goof routes/index.js:270"
+      ],
+      "api": "archive entry extraction / createWriteStream",
+      "why": "Initial-scope history: archive extraction (Zip Slip) is explicitly out of scope",
+      "status": "goof adm-zip: in scope now (GOOF-PATH-ZIPSLIP, positive). Juice Shop fileUpload zip: remaining, see remaining_blocked"
+    },
+    {
+      "id": "PY-DEFER-TAR-BZ2",
+      "target": "vulnpy",
+      "rows": [
+        "trigger/pt.py:8",
+        ":16",
+        ":24",
+        ":32",
+        ":40"
+      ],
+      "api": "tarfile.open/TarFile, bz2.BZ2File/open",
+      "why": "Initial-scope history: not in the initial open/pathlib matrix",
+      "status": "in scope now: scored as VP-PATH-TAR-BZ2 (positive)"
+    },
+    {
+      "id": "PY-DEFER-FLASK-FILES",
+      "target": "ThreatByte,vulnerable-flask-app",
+      "rows": [
+        "ThreatByte server/routes.py:264 file.save(request filename)",
+        ":302, :309, :334 send_from_directory",
+        ":364 os.remove(join(UPLOAD_FOLDER, filename))",
+        "vulnerable-flask-app.py:209 f.save(secure_filename(...))"
+      ],
+      "api": "werkzeug FileStorage.save, flask send_from_directory, os.remove",
+      "why": "Initial-scope history: upload, delete and framework send-file wrappers are deferred",
+      "status": "in scope now: TB-PATH-UPLOAD (positive), TB-PATH-P-SEND and FLASK-PATH-N-UPLOAD (protected), TB-PATH-REMOVE (unknown)"
+    }
+  ],
+  "regression_pairs": "Independent portable fixtures under internal/parse/testdata/{javascript,typescript,python}/path-traversal/ carry positive, protected, unknown and no-candidate controls. The expanded scope also has sample protected controls: FLASK-PATH-N-UPLOAD and TB-PATH-P-SEND. Fixtures cover allow-list identity, separator-bounded prefix, relative/commonpath/realpath, sibling-prefix collision, decode-after-check, reassignment, shadowed bindings, constant paths, content-versus-path, sibling branches and local helper guards.",
+  "corrections": [
+    {
+      "id": "VP-PATH-N01",
+      "date": "2026-11-14",
+      "old_label": "expected_no_candidate for every adapter: the template name never derives from the request",
+      "new_label": "no candidate for ten adapters; unknown for the wsgi adapter (VP-PATH-U01)",
+      "evidence": "src/vulnpy/wsgi/app.py:68-70 sets name from environ['PATH_INFO'] components and selects sanitized_name from TRIGGER_MAP.keys() by equality before get_template. The earlier label was derived from the Flask-style blueprints and did not account for the wsgi adapter."
+    }
+  ],
+  "scope_history": "Version 1 (2026-11-14) followed the initial contract: fs read/write, Python open/io.open/pathlib. The user then approved bringing the source-documented traversal surfaces of the eight samples into scope (Express send wrappers, req.path/url sources, upload save, archive opens and adm-zip extraction, delete). Rows moved from deferred to scored below; the old deferred entries remain in `deferred_unsupported_api` with their new status.",
+  "expected_protected": [
+    {
+      "id": "FLASK-PATH-N-UPLOAD",
+      "target": "vulnerable-flask-app",
+      "sink": {
+        "file": "vulnerable-flask-app.py",
+        "line": 209
+      },
+      "operation": "f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename))) :209",
+      "expected": "protected_for_claim: werkzeug secure_filename reduces the client name to one component with no separator or '..'; the base is application configuration",
+      "reference": "source review 2026-11-14"
+    },
+    {
+      "id": "TB-PATH-P-SEND",
+      "target": "ThreatByte",
+      "sinks": [
+        {
+          "file": "server/routes.py",
+          "line": 302
+        },
+        {
+          "file": "server/routes.py",
+          "line": 309
+        },
+        {
+          "file": "server/routes.py",
+          "line": 334
+        }
+      ],
+      "operation": "send_from_directory(UPLOAD_FOLDER|PROFILE_PICTURES_UPLOAD_FOLDER, filename)",
+      "expected": "protected_for_claim: safe_join rejects an escaping path and the directory is a configuration constant; the <filename> route converter excludes separators",
+      "reference": "source review 2026-11-14"
+    }
+  ],
+  "no_candidate_note": "JS-PATH-N04 permits an unresolved record; JS-PATH-N05 was added after supplementary source review of the URL profile image writer. Non-WSGI VulnPy template contexts remain no-candidate; WSGI is separately scored by VP-PATH-U01.",
+  "remaining_blocked": [
+    {
+      "id": "JS-ZIPSLIP-JUICE",
+      "target": "juice-shop",
+      "sink": "routes/fileUpload.ts:34",
+      "why": "The zip handler is a middle element of the /file-upload route chain; the shared entry model analyzes only the last handler of a chain, so no entry reaches it. Source: unzipper entry.path written under uploads/complaints/ with a substring (includes) check that is not containment (real Zip Slip, fileWriteChallenge). Needs middleware-chain entries, which change every analyzer's entries."
+    },
+    {
+      "id": "JS-LFR-RENDER-JUICE",
+      "target": "juice-shop",
+      "sink": "routes/dataErasure.ts:104-110",
+      "why": "req.body.layout reaches the template engine's layout option through res.render with only a substring blacklist (real local file read, lfrChallenge). Needs a verified per-engine render-layout contract and the view-engine registration; not modeled."
+    }
+  ]
+}

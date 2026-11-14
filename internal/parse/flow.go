@@ -53,6 +53,10 @@ type flow struct {
 	parts map[string]string
 	// setterValue, inside a model attribute setter, receives what the setter stores.
 	setterValue *value
+	// urlSources makes the request URL members (path, url, originalUrl, baseUrl)
+	// request sources. It is set only on the path-only second pass of a handler, so no
+	// other analyzer's dependencies or request bytes change.
+	urlSources bool
 }
 
 func (f *flow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -311,6 +315,11 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return value{gaps: []analysis.Gap{f.gap("unknown_value", "unresolved local value: "+n.Utf8Text(src), n)}}
 	case "member_expression", "subscript_expression":
+		if f.urlSources && n.Kind() == "member_expression" {
+			if obj, prop := n.ChildByFieldName("object"), n.ChildByFieldName("property"); obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(src) == f.request && requestURLMembers[prop.Utf8Text(src)] {
+				return value{deps: []analysis.Dependency{{Source: f.module.evidence("input_source", n), Transfers: []analysis.Evidence{}}}}
+			}
+		}
 		partField := f.partField(n)
 		if (partField != nil || isRequestField(n, src, f.request) || f.hapiPayload(n)) && f.nodeFieldAvailable(n) {
 			sourceNode := n
@@ -629,6 +638,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		if v, handled := f.clientCall(n, fn, args); handled {
 			return v
 		}
+	}
+	// Recording a filesystem candidate is additive and precedes the template-file
+	// read model, which otherwise consumes fs.readFile calls whole.
+	if f.client == nil {
+		f.pathCall(n, fn, args)
 	}
 	if modeled, handled := f.templateCall(n, fn, args); handled {
 		return modeled

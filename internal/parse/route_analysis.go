@@ -89,6 +89,7 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 		f.statements(body)
 		f.finishValidation()
 		s.requestLineLogs(&f, m, call, receiver)
+		f.uses = s.withRequestURLPaths(f, m, hm, body, call, seeds, context, e, parts, r)
 		out.Uses = append(out.Uses, f.uses...)
 		e.Gaps = append(e.Gaps, f.gaps[len(e.Gaps):]...)
 	}

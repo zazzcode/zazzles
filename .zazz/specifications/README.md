@@ -67,3 +67,6 @@ See [repository state](../project.md#concept-stage-repository-state) for the cur
 [specification-driven delivery](../docs/zazz-methodology.md#specification-driven-delivery-cycle) for
 ownership, approval, execution, and review requirements. Earlier LLM-era phase numbering is superseded
 by the current plan.
+
+The [decision-model limits contract](decision-model-limits.md) records owner-authorized shared rate and
+spending controls pending implementation after the path-traversal checkpoint.

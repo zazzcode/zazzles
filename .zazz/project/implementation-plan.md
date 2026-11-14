@@ -82,7 +82,7 @@ worktree stay together, including shared Gemini support and later path analysis 
 | [x] | Command Injection | `command-injection` | Delivered: verified Node/Python process contracts, shell/executable/argument facets, 11 Python framework adapters, GraphQL/gRPC contexts; four full judged scans with every independent positive confirmed ([results](../evaluation/command-injection-results.md)) |
 | [x] | Harden XSS analyzers | `xss-hardening` | Delivered: all 28 source-reviewed XSS cases confirmed across five apps with every control held, including VulnPy's Jinja case and sql.js SQL injection; [contract](../specifications/xss-hardening.md), [results](../evaluation/xss-hardening-results.md), [sample applications](vulnerable-sample-apps.md) |
 | [x] | Shared Gemini Decisions provider | `path-traversal` (interactive prerequisite) | [Provider contract](../specifications/gemini-decisions.md); [verified two-request live sample](../evaluation/gemini-decisions-results.md), shared protocols and single-model selection |
-| [ ] | Path Traversal | `path-traversal` (later session) | [Analyzer contract](../specifications/path-traversal.md); JS/TS/Python file-path containment; provider implementation excluded |
+| [ ] | Path Traversal | `path-traversal` | Verified checkpoint: Node `fs`/Express send, Python `open`/`pathlib`/archive opens/Flask file APIs and `adm-zip` extraction (Zip Slip) with traversal/containment/coverage assessment, poor-practice outcome and `req.path` sources; 116 positive sample contexts judged, 85 positive contexts unjudged, two Juice Shop operations uncovered and one protected fixture unresolved ([results](../evaluation/path-traversal-results.md)); uncovered shapes are documented limits |
 | [ ] | Code Injection | `code-injection` | Request-to-eval/code-generation paths, starting with `/api/calculate`, across supported languages |
 | [ ] | XXE | `xxe` | Request-to-XML parsing and verified parser configuration across supported languages |
 | [ ] | Open Redirect | `open-redirect` | Request-influenced redirect targets and actual destination policy |
@@ -114,15 +114,21 @@ priorities above:
 
 The [provider contract](../specifications/gemini-decisions.md#capability-and-boundary) owns interactive
 Gemini setup and verification. The separate [path contract](../specifications/path-traversal.md#1-capability-and-prerequisite)
-owns the later unattended analyzer implementation; do not launch that session until Gemini is verified.
+owns analyzer implementation and its remaining coverage improvements. The shared provider prerequisite is verified.
 
 - [x] Add `gemini` as one scan-wide provider using only `gemini-decision-1` and v1beta Decisions.
 - [x] Configure `JUDGE_DECISION_MODEL`; reject conflicting CLI settings and model lists.
 - [x] Verify existing analyzers through HTTP stubs; preserve old provider/replay behavior.
 - [x] Run a small authorized Gemini sample scan, recording model, scope, calls and results.
-- [ ] Later implement path operands, containment evidence, selected components and evidence validation.
-- [ ] Verify JS/TS/Python positive/protected/unknown controls and three-format reports.
-- [ ] Run the [unattended correction loop](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop) across all eight sample apps after the user launches analyzer work.
+- [x] Implement path operands, containment evidence, selected components and evidence validation.
+- [ ] Close the live protected-control discrepancy: Python prefix-boundary remains Review (40/40 vulnerable, 14/15 protected, 13/13 unknown/weak controls match; offline gates and report parity pass).
+- [x] Run the [unattended correction loop](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop) across all eight sample apps; see the [results](../evaluation/path-traversal-results.md).
+- [x] Widen scope (user-approved) to the source-documented traversals in the eight samples: send wrappers, `req.path`, upload save, archive opens, adm-zip extraction, delete.
+- [ ] Owner-authorized next: general middleware-chain handler coverage and verified unzipper entry-name flow (Juice Shop zip upload), plus an `hbs` template-layout read contract (`res.render` layout).
+- [ ] Judge the remaining 148 VulnPy invocation contexts (85 archive opens and 63 WSGI template contexts); do not infer their statuses from representative contexts.
+- [ ] Implement [shared decision-model controls](../specifications/decision-model-limits.md): per-scan dollar budget with explicit pricing/pre-call reservation, RPM/TPM pacing and flag/environment configuration covering discovery and assessment; update README/setup/output docs. Sample and both local environment settings are staged but inactive until implementation.
+- [ ] Further archive libraries and dynamic entry/engine contracts beyond those explicitly modeled remain future coverage.
+- [ ] Human review of the analyzer checkpoint.
 
 No live Jev evaluation is included. Credentials stay in ignored local `.env` files; all analyzers
 use the same selected provider/model, with no fallback. [Setup](../../docs/decision-models.md#credentials-and-local-environment)

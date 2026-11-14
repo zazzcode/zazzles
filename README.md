@@ -78,6 +78,20 @@ Model assessment is part of a completed security assessment. Offline scanning st
 inventory, evidence inspection, deterministic construction findings and saved-report export.
 It leaves model assessments marked as not run.
 
+## Model request rates and spending
+
+Today's scanner bounds assessment requests with `--judge-limit` (default 10); optional discovery has
+its own request cap. It currently sends requests sequentially and has no built-in dollar cap or
+RPM/TPM pacing. The path evaluation used a separate local harness; those guards are not product settings.
+
+**Authorized next:** shared per-scan spend and rate configuration, explicit pricing, pre-call budget
+reservations, incomplete output when limits stop work, and flag/environment settings. This is pending
+implementation after the verified path-traversal checkpoint. The example environment's new `JUDGE_*`
+limit values are staged for that work and currently inactive. See the
+[limits contract](.zazz/specifications/decision-model-limits.md),
+[provider/setup guide](docs/decision-models.md) and [project plan](.zazz/project/implementation-plan.md).
+A $10 per-scan guard will not replace account-wide provider billing controls or combine concurrent scans.
+
 ## Architecture and approach
 
 ### Common entry and dispatch overview
@@ -134,6 +148,7 @@ for a named security concern. Examples include:
 - **Input Validation Analyzer**
 - **Sensitive Data Logging Analyzer**
 - **Command Injection Analyzer** — Node `child_process` and Python `os`/`subprocess` calls: shell syntax, executable and argument facets across Express, GraphQL/gRPC and 11 Python frameworks
+- **Path Traversal Analyzer** — request-controlled file paths and archive entry names in Node `fs`, Express `sendFile`/`download`, `adm-zip` extraction (Zip Slip) and Python `open`/`pathlib`/archive opens/Flask file APIs: traversal, containment control and coverage (CWE-22)
 
 An **analysis pack** supplies versioned knowledge supporting an analyzer: API contracts, guidance,
 questions and evidence requirements. Packs combine reusable **analysis components**. Analyzers use
@@ -158,8 +173,8 @@ requirement without needing a database contract. SQL protection and field valida
 Reports record component versions and content digests so a judgment can be traced to the knowledge
 used. Saved answers can be replayed only when the exact model request still matches.
 
-The SQL Injection, JS/TS NoSQL Injection, Input Validation, XSS and Command Injection Analyzers
-use this design. Outbound
+The SQL Injection, JS/TS NoSQL Injection, Input Validation, XSS, Command Injection and Path Traversal
+Analyzers use this design. Outbound
 observations also select components, but do not yet receive a server-side request forgery (SSRF)
 judgment; they remain Review. The Sensitive Data Logging Analyzer works through its existing path
 and is the remaining component migration.
@@ -281,6 +296,15 @@ per-language checklist and delivery order.
 - **Sensitive Data Logging Analyzer:** bounded sensitive-content emission and redaction analysis.
 - **Command Injection Analyzer:** verified Node/Python process operands, shell/executable/argument
   assessments and source-reviewed sample acceptance.
+- **Path Traversal Analyzer:** verified filesystem reads, writes and deletes in Node `fs` and Express
+  `sendFile`/`download`, Python `open`/`io.open`/`pathlib`, `tarfile`/`bz2`/`gzip`/`lzma` opens,
+  `os.remove`, Flask `send_file`/`send_from_directory`, werkzeug `FileStorage.save`, and `adm-zip`
+  extraction (Zip Slip, version-checked). Request `body`/`query`/`params`/`headers`/`cookies`, `req.path`/`url`
+  and uploaded files are sources. Separate traversal, containment-control and coverage assessments report
+  confirmed findings, poor-practice findings (weak controls), protected records and Review. Unsupported
+  operations, other archive libraries, middleware-chain handlers and template-layout reads stay uncovered and
+  are never reported as safe. See the [rules](docs/analysis/path-traversal.md) and
+  [results](.zazz/evaluation/path-traversal-results.md).
 - **XSS Analyzer:** reflected, stored and client-side/DOM/framework capabilities, including selected
   JS/TS API-to-browser links and Python inline-script analysis. All 28 required positive cases across the five
   [primary sample applications](.zazz/project/vulnerable-sample-apps.md) were confirmed, with controls preserved; see the

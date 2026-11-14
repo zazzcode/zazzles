@@ -3,16 +3,21 @@
 ## 1. Capability and prerequisite
 
 Implement bounded request-to-filesystem path traversal analysis for JavaScript, TypeScript and
-Python on the existing shared analysis engine, component catalog and report pipeline. Begin with
-`GET /api/files` in the pinned vulnerable TypeScript sample, then verify positive, protected and
-unresolved controls across all supported languages.
+Python on the existing shared analysis engine, component catalog and report pipeline. The analyzer
+covers request-controlled file paths **and** request-supplied archive entry names (the Zip Slip
+variant of CWE-22) for the operations in the [supported operation matrix](#supported-operation-matrix),
+reports confirmed, poor-practice, protected and Review records, and is verified across the eight
+cataloged sample apps plus portable positive/protected/unknown fixtures.
 
 Shared Gemini support is an existing provider integration, delivered and verified separately under
 the [Gemini contract](gemini-decisions.md#capability-and-boundary). This specification does not
-implement a provider. Before unattended analyzer execution, verify the project plan's
-[Gemini prerequisite](../project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
-and its live sample result; an unchecked prerequisite blocks that session.
-The selected `JUDGE_DECISION_MODEL` applies to every analyzer. No per-family provider or fallback.
+implement a provider. The selected `JUDGE_DECISION_MODEL` applies to every analyzer. No per-family
+provider or fallback.
+
+**Detection must be general.** Samples are test targets, never inputs to the analyzer. No target name,
+file name, line number, challenge name or answer key may appear in analyzer code, catalog material or
+model-bound evidence. A case the analyzer cannot detect through a verified, source-backed model is
+reported as not covered, never special-cased or faked.
 
 ## 2. Required reading
 
@@ -42,6 +47,15 @@ The selected `JUDGE_DECISION_MODEL` applies to every analyzer. No per-family pro
   engine/prompt.
   Preserve existing-family request bytes and historical reports; changed evidence needs new answers.
 - Targets remain read-only. No dependency installs, app execution or remediation in pinned checkouts.
+- Only request-origin (`input_source`) dependencies are path sources. Stored, file, API-response and
+  browser values are never invented as request fields; write content and options are never path sources.
+- A verified binding, an enforcing control and a dependency version are facts established from source
+  (imports, syntax, manifest/lockfile), never from names, comments or model confidence.
+- Adding the analyzer must not change any existing analyzer's evidence: every non-path use and every
+  entry of every sample must stay byte-identical to the base commit (verified by comparison), and a
+  path-only pass (for example the request-URL second pass) must discard all non-path uses.
+- A candidate hook must run before any shared model that consumes the same call whole (template-file
+  read, framework response model) and must be additive.
 
 ## 4. Scope and review shape
 
@@ -58,38 +72,50 @@ this spec preparation does not launch it. No extra worktree or branch stack is n
 | `internal/report/path*.go`, classification/SARIF/guidance hooks | Scoped CWE-22 findings and JSON/HTML/SARIF parity |
 | `internal/parse/testdata/{javascript,typescript,python}/path-traversal/` | Independent positive/protected/unknown fixtures |
 | `docs/analysis/path-traversal.md`, analysis index; `.zazz/evaluation/path-traversal*` | Product rules, reviewed source matrix and acceptance evidence |
+| `internal/parse/claim_assembly.go` | Hook-driven claim assembly shared with the command analyzer |
 | README, orientation, implementation plan and architecture status | Delivered coverage/limits after verification |
 
 Strict scope: only these file groups and necessary integration hooks in the named roots.
-No archive extraction/Zip Slip, new languages, general graph rewrite, unbounded filesystem modeling,
-other vulnerability classes or provider implementation. Identify exact shared hooks in the run log
+Archive extraction (Zip Slip) is in scope only for the libraries that have a source-reviewed contract
+(currently `adm-zip` `extractAllTo`, with the release decided from the dependency declaration). No new
+languages, general graph rewrite, unbounded filesystem modeling, other vulnerability classes or provider implementation. Identify exact shared hooks in the run log
 before editing; add a generalizable fixture for each required structural prerequisite.
 
 ## 5. Acceptance criteria
 
-### Initial operation contract
+### Supported operation matrix
 
-The source-reviewed first witness is `src/server.ts:104`: `req.query.filename` flows through
-`path.join(__dirname, '../uploads', filename)` into `fs.readFile(filePath, 'utf8', callback)`.
-The path join has no enforcing containment check. Type assertions are not runtime constraints.
-Preserve the callback/error branches; neither an error response nor `try/catch` protects the path.
+The first source-reviewed witness is `src/server.ts:104` of the pinned vulnerable TypeScript sample:
+`req.query.filename` flows through `path.join(__dirname, '../uploads', filename)` into
+`fs.readFile(filePath, 'utf8', callback)` with no enforcing containment; type assertions are not runtime
+constraints and neither the error branch nor `try/catch` protects the path. Each row below has its own
+catalog contract with cited official semantics; an operation not listed is not covered.
 
-| Binding / API | Effective path slot and bounded behavior |
-| --- | --- |
-| Node `fs.readFile`, `readFileSync`; `fs/promises.readFile` | First path argument, not encoding/options or callback output; support verified core import/require aliases |
-| Node `fs.writeFile`, `writeFileSync`; `fs/promises.writeFile` | First path argument; file content is a separate operand, not a path source |
-| Python builtin `open`, `io.open` | First/file positional or keyword operand; mode distinguishes read/write; shadowing blocks the builtin contract |
-| Python `pathlib.Path.open`, `read_text`, `read_bytes`, `write_text`, `write_bytes` | Verified Path receiver carries the effective path; content/encoding are distinct |
-| Node `path.join`, `resolve`, `normalize`; Python `os.path.join`, `abspath`, `normpath`, Path `/` | Transformations, never automatic containment proof |
-| Node `path.relative`, `realpath`; Python `commonpath`, `realpath`, `Path.resolve` | Evidence for a guard only with same value/root and enforcing control; lexical prefix alone is insufficient |
+| Binding / API | Contract | Effective operand and bounded behavior |
+| --- | --- | --- |
+| Node `fs` `readFile(Sync)`, `writeFile(Sync)`, `appendFile(Sync)`, `createReadStream`, `createWriteStream`, `unlink(Sync)`, `rm(Sync)`; `fs/promises` and `fs.promises` forms | `node-fs-file-v1` | first argument; write data, options and callbacks are separate; verified core import/require/destructuring only |
+| Express `res.sendFile`, `res.download` | `express-send-file-v1` | first argument; a constant `root` option is a library-enforced boundary; request-derived root is not |
+| `adm-zip` `extractAllTo(Async)` on an `AdmZip(...)` instance | `adm-zip-extract-v1` | the request-supplied archive (entry names); release from lockfile/manifest decides: below 0.4.11 witness, fixed release control, range/missing unknown |
+| Python builtin `open`, `io.open` | `python-open-file-v1` | first/file operand; mode decides read/write; shadowing blocks the contract |
+| Python `pathlib.Path.open/read_text/read_bytes/write_text/write_bytes` | `python-pathlib-file-v1` | verified Path receiver (constructor, module-level Path, `/`) |
+| Python `tarfile.open/TarFile/TarFile.open`, `bz2.open/BZ2File`, `gzip.open/GzipFile`, `lzma.open/LZMAFile` | `python-archive-open-v1` | name/filename argument or keyword |
+| Python `os.remove`, `os.unlink` | `python-os-file-v1` | first argument (delete role) |
+| Flask `send_file`, `send_from_directory` | `flask-send-file-v1` | `send_file` first argument; `send_from_directory` path argument, library `safe_join` boundary when the directory is not request-derived |
+| werkzeug `FileStorage.save` on a `request.files` value | `werkzeug-file-save-v1` | destination argument; client `filename` is unsanitized; verified `secure_filename` is a lexical component control |
+| Node `path.join/resolve/normalize/basename/dirname/extname/relative/isAbsolute`; Python `os.path.join/abspath/normpath/realpath/basename/dirname/relpath/commonpath`, Path `/` | (transformations) | never automatic containment; `join` appends an absolute segment, `resolve`/`os.path.join`/`/` replace the base |
+| Controls: allow-list membership, separator-bounded prefix, `relative`, `commonpath`, `is_relative_to`, `secure_filename`, Express root, `send_from_directory`, fixed extractor release | (guard kinds) | enforcing only on the same value with a rejecting, terminating branch; bare prefix, `..` text, separator-only and unclassified controls never establish containment |
 
-Framework send-file wrappers, uploads, delete/rename and multi-path operations are deferred unless
-explicitly added with source-reviewed operand contracts before their implementation. This keeps the
-initial read/write boundary reviewable rather than guessing framework or filesystem semantics.
+Request sources: Express `body`, `query`, `params`, `headers`, `cookies`; for path claims only `req.path`,
+`req.url`, `req.originalUrl`, `req.baseUrl`, `req.file(s)` (a path-only second pass of the handler);
+Flask `request` containers and `request.files`; GraphQL and gRPC request fields through the shared entry
+model. Deferred, reported as not covered: `copyFile`, `rename`, `readdir`, `stat`, `existsSync`,
+`express.static`, multer disk storage, `shutil`, Python archive extraction, archive libraries other than
+`adm-zip`, template-layout reads (`res.render` layout), handlers that are not the last element of an Express
+route chain, second-order flows and symbolic-link/race behavior.
 
 ### Required outcomes
 
-1. Bind the initial Node filesystem and Python open/pathlib APIs above from source,
+1. Bind the supported operations above from source,
    not names alone. Verify their version-specific semantics before coding. Fake objects,
    shadowed imports/requires, reassignment and unmodeled wrappers cannot acquire trusted contracts.
 2. Record source field, effective file-path operand, trusted root if established, transformations,
@@ -104,11 +130,18 @@ initial read/write boundary reviewable rather than guessing framework or filesys
    Missing relevant facts stay Review; do not infer safe filesystem state from the scanner host.
 5. Add all required path components/guidance, protocol version and provenance. Ask atomic traversal,
    containment and coverage questions over the candidate evidence; mandatory gates remain in Go.
-6. JSON/HTML/SARIF agree on finding status, filesystem operation, CWE-22 and scoped remediation.
+6. JSON/HTML/SARIF agree on finding status (`confirmed_vulnerability`, `poor_practice`, `protected_for_claim`,
+   `needs_evidence`), filesystem operation, CWE-22 and scoped remediation; the archive variant has its own
+   title and SARIF rule id under the same finding type.
    Historical schemas/replay remain readable; existing analyzers retain their results.
 7. The independently reviewed `/api/files` positive and JS/TS/Python positive/protected/unknown
-   controls pass. Source expectations precede tuning and never enter model input. Any broader
-   sample acceptance declares pins, denominator, routes and request cap before live calls.
+   controls pass. Source expectations precede tuning and never enter model input. Sample acceptance
+   declares pins, denominator, routes and request cap before live calls and scores every row of the
+   reviewed matrix (positive, protected, unknown, no-candidate), reporting remaining blocked rows.
+8. A new `poor_practice` outcome applies only when every request flow is guarded solely by a recognized
+   weak control and the assessment finds no enforced containment; unclassified controls stay Review.
+9. Guards are found across a local helper boundary by following the helper to its call sites; several call
+   sites with one uncontrolled site leave the flow unresolved.
 
 ## 6. Test strategy
 
@@ -123,7 +156,14 @@ Official semantics to verify at the target-relevant runtime/platform before codi
 [Python os.path](https://docs.python.org/3/library/os.path.html), and each selected framework's
 file-response contract. The deployed platform is not inferred from the development computer.
 Independently review pinned sample source before locking the positive denominator; test false
-findings and false protection alongside recall.
+findings and false protection alongside recall. Required test kinds: per-language fixture tables
+(`TestPathJSOperands`, `TestPathCommonJSBindings`, `TestPathPythonOperands`, GraphQL/gRPC entries, archive
+extraction by dependency version); catalog selection and contract tests; model-answer policy matrices over the
+same fixtures with honest, over-claimed and unknown answers; request payload, provenance, exact replay and
+mutation rejection; JSON/HTML/SARIF parity; an independent structural source-case test that scores the
+matrix against the pinned targets (`TestPathSourceCases`); and a comparison proving every non-path use and
+entry of every sample equals the base commit. A live fixture run with the selected model verifies protected
+and unknown controls end to end.
 
 ## 7. Prescriptive execution sequence
 
@@ -151,20 +191,28 @@ No fallback, live Jev calls, integration push, merge or release is authorized.
 
 ## 9. Definition of done
 
-- [ ] Shared Gemini prerequisite verified before analyzer launch.
-- [ ] Exact API/platform matrix and independent references locked.
-- [ ] JS/TS/Python positive, protected and unknown controls pass.
-- [ ] Selected components, mandatory gates and exact replay verified.
-- [ ] JSON/HTML/SARIF parity and existing-family checks pass.
-- [ ] Authorized sample evidence and public coverage limits recorded.
+- [x] Shared Gemini prerequisite verified before analyzer launch.
+- [x] Exact API/platform matrix and independent references locked (versioned `matrix.json` with corrections).
+- [ ] JS/TS/Python positive, protected and unknown controls pass offline and live (offline passes; live 40/40 vulnerable, 14/15 protected and 13/13 unknown/weak match; Python prefix-boundary remains Review).
+- [x] Selected components, mandatory gates and exact replay verified.
+- [x] JSON/HTML/SARIF parity and existing-family checks pass (byte-identical non-path evidence).
+- [x] Authorized sample evidence and public coverage limits recorded ([results](../evaluation/path-traversal-results.md)).
+- [ ] Close both remaining Juice Shop rows through general verified models: middleware-chain upload handler/unzipper entry-name flow and `hbs` render-layout read.
+- [ ] Judge all remaining 148 VulnPy contexts; current representative sampling does not satisfy this expanded acceptance.
 - [ ] Human review completed.
 
 ## 10. Open questions
 
-The initial API matrix is fixed above; target-relevant platform assumptions must be recorded in
-§7 step 1 before coding.
-The unattended scope below selects all eight cataloged sample apps, Gemini only, with bounded
-requests and explicit incomplete-state reporting. It does not launch the session.
+Resolved: the API matrix is the supported operation matrix above; the platform is POSIX by declaration; the
+unattended scope covers all eight cataloged sample apps, Gemini only, with bounded requests.
+
+Owner-authorized next: general middle-handler entries and unzipper entry-name flow; verified `hbs`
+render-layout semantics with source-backed engine registration; all remaining VulnPy live contexts.
+These are implementation requirements, not unresolved permission questions. Existing records must remain
+unchanged while the newly admitted middleware-handler records are enumerated separately.
+
+Still open beyond that scope: additional archive operations (`tar`, Python `zipfile`/`tarfile` extraction)
+and unmodeled hand-written entry loops; second-order flows through storage; Windows path semantics.
 
 ## 11. Copy/paste prompt: unattended implementation, testing and correction loop
 
@@ -238,3 +286,24 @@ model answered or the scanner exited zero. No broader provider-equivalence claim
 2026-11-14 — User separated the shared provider prerequisite and requested the copy/paste
 unattended implementation/testing prompt, including a correction loop across all cataloged sample
 apps. This specification prepares that session; it does not start it.
+
+2026-11-14 (implementation session) — User approved widening scope so every source-documented traversal in
+the eight samples is detected with accuracy: Express `res.sendFile`/`download`, `req.path`/`req.url`/
+`req.originalUrl`/`req.file(s)` as path-claim sources (through a path-only second pass of the handler, so no
+other analyzer's evidence changes), Node `createReadStream`/`createWriteStream`/`appendFile`/`unlink`/`rm`,
+Python `tarfile`/`bz2`/`gzip`/`lzma` opens, `os.remove`/`os.unlink`, Flask `send_file`/`send_from_directory`,
+werkzeug `FileStorage.save` with verified `secure_filename`, and `adm-zip` extraction (Zip Slip, archive
+variant of CWE-22, reported under the same finding type with its own title and SARIF rule). A `poor_practice`
+outcome was added for recognized weak controls. Remaining and reported, not faked: Juice Shop's zip upload
+(middle handler of a route chain is not an entry) and its `res.render` layout read (no verified per-engine
+contract).
+
+### 2026-11-14 — Owner authorizes remaining coverage and shared controls
+
+**Source.** Owner requested fixing both uncovered Juice Shop cases and the unjudged VulnPy contexts in this session, updating specifications/capability docs, then committing/pushing a checkpoint before implementing improvements.
+
+**Changed sections.** Definition of done and open-question status; the results record now reports exact live fixture variance and partial context judgment. Shared runtime limits have their own [contract](decision-model-limits.md).
+
+**Rationale and scope.** Model Express route-chain handlers and unzipper entry names generally, and verify `hbs` engine registration/layout semantics for `res.render`; no target-specific rules or expectation changes to match model answers. Judge the 85 remaining archive-open and 63 WSGI-template contexts. Existing records/evidence must remain byte-identical; explicitly added middleware-handler entries/records are allowed coverage expansion, not permission to rewrite old evidence.
+
+**Verification impact.** Failing portable regressions before each new model; source-reviewed official API contracts; all matrix rows/live contexts scored; exact replay for unchanged bytes; fresh judgments only for changed/new requests. Compare all existing non-path uses/entries byte-for-byte while enumerating any newly admitted middleware entries. Re-run build/vet/race, report parity and documentation checks. Pricing/rate configuration must not alter evidence payloads.

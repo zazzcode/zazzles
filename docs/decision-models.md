@@ -51,9 +51,24 @@ shell variable. Duplicate assignments in a shell file silently use the last valu
 Never overwrite an existing `.env` to switch providers. Alternative provider-specific model
 settings (`SCAN_OPENAI_MODEL`, `SCAN_GEMINI_MODEL`, `SCAN_JEV_MODEL`) must remain unset.
 
-A funded API account/key is separate from source-transmission permission and the zazzles's request cap.
-The scanner has no currency-budget enforcement; choose an explicit small limit. There is no automatic
-provider/model fallback. Agents must also obey the user's active provider/model restrictions.
+A funded API account/key is separate from source-transmission permission and the scanner's request cap.
+`--judge-limit` caps candidate requests per scan (default 10); it is not a dollar budget. The scanner
+currently sends judge requests sequentially, with no automatic RPM/TPM pacing, configurable concurrency,
+or currency-budget enforcement. Reported token usage is accounting, not a spending guard. A paid tier
+can permit faster spending as well as higher throughput; configure the provider's account spending
+controls and choose a small explicit request cap before a live scan.
+
+Provider quotas apply independently of Zazzles. For example, Google's
+[Gemini Decision limits](https://aistudio.google.com/docs/rate-limits#gemini-decision) distinguish requests
+and input tokens per minute; check the linked AI Studio page for your project's active limits. The
+scanner does not discover those limits or automatically pace to them. A rate-limit failure remains
+visible as a failed assessment; later candidates may still be attempted within the scan request cap.
+There are no automatic retries or provider/model fallback. Agents must also obey the user's active
+provider/model restrictions.
+
+The owner-authorized [shared limits contract](../.zazz/specifications/decision-model-limits.md) defines
+pending per-scan dollar/RPM/TPM configuration. New `JUDGE_*` limit variables in `.env.sample` are staged
+for that implementation and are currently inactive; they do not enforce a cap in this checkpoint.
 
 ## Scope a live run
 

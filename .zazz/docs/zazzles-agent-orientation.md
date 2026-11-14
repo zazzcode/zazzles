@@ -7,10 +7,12 @@ Follow only the section links relevant to the task; linked documents are not aut
 
 The assigned worktree/branch is `path-traversal`. Shared Gemini support for **all analyzers** is
 implemented with a [passing two-request live sample](../evaluation/gemini-decisions-results.md#scope-and-outcome).
-Path traversal implementation is a later session using the
-[copy/paste launch prompt](../specifications/path-traversal.md#11-copypaste-prompt-unattended-implementation-testing-and-correction-loop). The [provider contract](../specifications/gemini-decisions.md#capability-and-boundary) owns current scope;
-the [analyzer contract](../specifications/path-traversal.md#1-capability-and-prerequisite) is for a later session; the [active checklist](../project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
-owns progress. Read the ignored `.zazz/ephemeral/path-traversal-run-log.md` on resume if present.
+Path traversal implementation and evaluation continue under the
+[analyzer contract](../specifications/path-traversal.md#1-capability-and-prerequisite) and
+[results](../evaluation/path-traversal-results.md); the
+[active checklist](../project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
+owns progress. Two Juice Shop coverage rows, 148 unjudged VulnPy contexts, one live protected-control discrepancy and human review remain open. The owner authorized closing these and implementing [shared rate/spend configuration](../specifications/decision-model-limits.md) after the verified checkpoint. Read the ignored
+`.zazz/ephemeral/path-traversal-run-log.md` on resume if present.
 Preserve concurrent user edits, especially local credentials. No live Jev evaluation is assigned.
 
 ## Code structure
@@ -84,7 +86,8 @@ The [capability matrix](../project/implementation-plan.md#supported-capability-c
 language coverage and limits; the [delivery checklist](../project/implementation-plan.md#complete-delivery-list)
 owns branch outcomes. Implemented foundations include bounded JS/TS/Python analysis, shared entry/
 dispatch and schema4 reports; analyzers cover validation, SQL, MongoDB-style NoSQL (JS/TS), logging,
-XSS and command injection. Outbound is observation-only. Inspect/Audit/Fix workflows remain planned.
+XSS, command injection and path traversal (verified Node `fs`/Python `open`/`pathlib` operands; see
+[results](../evaluation/path-traversal-results.md)). Outbound is observation-only. Inspect/Audit/Fix workflows remain planned.
 
 For exact acceptance read only the matching record:
 [command results](../evaluation/command-injection-results.md),

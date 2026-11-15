@@ -3,12 +3,17 @@
 The intentionally vulnerable applications Zazzles is evaluated against: where each comes from, what a source review
 expects, and what the scanner reports. Applications are read-only scan targets, pinned to the revisions below.
 
-**Expected** comes from source-reviewed references, never from scanner output. **Actual** for the JavaScript apps comes from the
-2026-11-15 E3 rebuild (OpenAI Decisions `gpt-6-luna`, evidence wire v7 with JavaScript conditional flow; see the
-[verification record](../evaluation/wire-bundle-v7-results.md#s4-and-broader-w6)). Juice Shop ran every analyzer; the others ran the
-security sink families without standalone input validation. VulnPy rows come from the core v7 rebuild, whose requests are
-unchanged. Earlier XSS evidence is in the [XSS hardening results](../evaluation/xss-hardening-results.md). These are static judgments, not runtime exploits, and human review is pending.
-The XSS rows are the only ones with a machine-checked [matrix](../evaluation/xss-hardening/matrix.json).
+**Expected** comes from source-reviewed references, never from scanner output. **Actual** for the JavaScript
+apps comes from the 2026-11-15 Node rebuild with OpenAI Decisions `gpt-6-luna` (every analyzer on Juice
+Shop, Goof, the TypeScript app, and vuln-demo-app—including middleware-chain / URL / upload inputs and
+Node `http`/`https` SSRF). VulnPy rows come from the earlier core v7 rebuild, whose requests are unchanged.
+Earlier XSS evidence is in the [XSS hardening results](../evaluation/xss-hardening-results.md). These are
+static judgments, not runtime exploits. The XSS rows are the only ones with a machine-checked
+[matrix](../evaluation/xss-hardening/matrix.json).
+
+**Efficacy metric:** for each shipped analyzer, confirm the cataloged required positives and leave
+key-approved Review/Protected cases unresolved—not “every vulnerability in the app.” Families without
+an analyzer are **Not covered**.
 
 Outcomes: **Confirmed** is a red `confirmed_vulnerability`. **Review** is an unresolved, blue record. **Not covered**
 means Zazzles has no analyzer for that family yet, so no result says nothing about the application.

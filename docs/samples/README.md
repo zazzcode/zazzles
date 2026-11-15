@@ -18,11 +18,13 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 
 The three Node.js reports (Juice Shop, Node.js Goof, Vulnerable TypeScript app) were rebuilt on
 2026-11-15 with OpenAI Luna Decisions: every analyzer, including Express middleware-chain stages,
-URL and upload inputs, broader file/archive operations, and Node `http`/`https` SSRF. Python samples
-keep their prior judgments. Excluded and unsupported records remain explicitly unassessed; VulnPy
-omits excluded records from its public copy to bound file size. Path traversal and Zip Slip results
-appear inside each report. Each sample's README has a **Current report** section with its counts and
-notable results.
+URL and upload inputs, broader file/archive operations, and Node `http`/`https` SSRF. On that rebuild,
+every source-reviewed required positive for those analyzers was confirmed (see the
+[expected-vs-actual tables](../../.zazz/project/vulnerable-sample-apps.md)); defects outside those
+analyzers remain not covered. Python samples keep their prior judgments. Excluded and unsupported
+records remain explicitly unassessed; VulnPy omits excluded records from its public copy to bound
+file size. Path traversal and Zip Slip results appear inside each report. Each sample's README has a
+**Current report** section with its counts and notable results.
 
 The reports include XSS discovery and the **Hide protected results** remediation
 filter. Server/API routes and browser/client-side sources have separate sections and headings.

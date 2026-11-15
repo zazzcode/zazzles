@@ -1,20 +1,16 @@
 {
   "target": "ThreatByte",
   "revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
-  "adapter": "python-adapter-v1",
   "assessment": "gpt-6-luna; exact-request replay only",
-  "entries": 23,
-  "client_entries": 1,
-  "records": 56,
-  "assessed": 56,
   "outcomes": {
-    "protected_for_claim": 41,
-    "needs_evidence": 8,
-    "poor_practice": 2,
-    "needs_review": 1,
-    "confirmed_vulnerability": 4
+    "confirmed_vulnerability": 4,
+    "poor_practice": 1,
+    "protected_for_claim": 34,
+    "inconclusive_review": 22,
+    "not_run": 1,
+    "failed": 0
   },
-  "runtime_confirmation": false,
+  "runtime_confirmation": "none; static source judgments only",
   "independent_findings_review": "Source-reviewed cases; not exhaustive audit",
   "source_reference": "reference.md",
   "case_inventory": "cases.json",
@@ -22,7 +18,20 @@
     "Semgrep CE 1.183.0 / 20261101 snapshot",
     "Bearer e3753de / rules 82c335f"
   ],
-  "raw_run": "run-2441916737",
-  "evidence_version": 2,
-  "presentation_version": 5
+  "date": "2026-11-14",
+  "target_revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
+  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+  "evaluation_mode": "full source-transmitting judged scan of every analyzer",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "provider_requests": 61,
+  "input_tokens": 464233,
+  "positions": 62,
+  "published_records": 62,
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "previous": {
+    "revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
+    "assessment": "gpt-6-luna; exact-request replay only",
+    "raw_run": "run-2441916737"
+  }
 }

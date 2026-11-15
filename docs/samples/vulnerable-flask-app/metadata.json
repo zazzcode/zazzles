@@ -1,17 +1,16 @@
 {
   "target": "vulnerable-flask-app",
   "revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
-  "adapter": "python-adapter-v1",
   "assessment": "gpt-6-luna; exact-request replay only",
-  "entries": 19,
-  "client_entries": 0,
-  "records": 24,
-  "assessed": 24,
   "outcomes": {
-    "confirmed_vulnerability": 4,
-    "needs_evidence": 20
+    "confirmed_vulnerability": 8,
+    "poor_practice": 0,
+    "protected_for_claim": 0,
+    "inconclusive_review": 22,
+    "not_run": 0,
+    "failed": 0
   },
-  "runtime_confirmation": false,
+  "runtime_confirmation": "none; static source judgments only",
   "independent_findings_review": "Source-reviewed cases; not exhaustive audit",
   "source_reference": "reference.md",
   "case_inventory": "cases.json",
@@ -19,7 +18,20 @@
     "Semgrep CE 1.183.0 / 20261101 snapshot",
     "Bearer e3753de / rules 82c335f"
   ],
-  "raw_run": "run-2756034149",
-  "evidence_version": 2,
-  "presentation_version": 5
+  "date": "2026-11-14",
+  "target_revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
+  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+  "evaluation_mode": "full source-transmitting judged scan of every analyzer",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "provider_requests": 30,
+  "input_tokens": 138679,
+  "positions": 30,
+  "published_records": 30,
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "previous": {
+    "revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
+    "assessment": "gpt-6-luna; exact-request replay only",
+    "raw_run": "run-2756034149"
+  }
 }

@@ -2,6 +2,18 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
+## Current report (rebuilt 2026-11-14)
+
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+
+Every analyzer was run on the pinned revision `b188493768ca` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+
+- **Records:** 2. **Judged:** 2, in 2 requests (10,136 input tokens).
+- **Outcomes:** 0 confirmed vulnerabilities, 0 poor practice, 0 protected, 2 inconclusive (Review).
+- The application has no file or process operations and only two analyzable records, so the report is unchanged in substance.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
+
 Target: [trottomv/python-insecure-app](https://github.com/trottomv/python-insecure-app), pinned at
 `b188493`. Final verification used a fresh clean upstream clone at the same revision, matching
 the initial source hashes. Upstream source excerpts retain their authorship.

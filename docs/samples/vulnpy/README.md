@@ -2,6 +2,19 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
+## Current report (rebuilt 2026-11-14)
+
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+
+The command, SQL and XSS analyzers were run on the pinned revision `b81885e58283` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+
+- **Records:** 170. **Judged:** 170, in 170 requests (2,018,941 input tokens).
+- **Outcomes:** 155 confirmed vulnerabilities, 0 poor practice, 0 protected, 15 inconclusive (Review).
+- **Scope:** command (61 records), SQL (78) and XSS (31) were judged. The input-validation analyzer (2,830 records) and the path-traversal analyzer (260 contexts) were not run for this report, to bound cost and file size, and the entries that carried only those records are omitted.
+- **Path traversal:** the 260 contexts are covered by [saved decisions and tests](../../../.zazz/evaluation/path-traversal-results.md), not republished here.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
+
 Target: [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy), MIT,
 reviewed at `b81885e58283a3449b578d20c20557aff637e5ea`. The target remained clean and unchanged.
 Its vulnerable function library is exposed through several frameworks and dynamically built routes.

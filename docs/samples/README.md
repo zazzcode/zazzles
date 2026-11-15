@@ -16,13 +16,10 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [findings.json](vulnpy/findings.json) | [findings.sarif](vulnpy/findings.sarif) |
 
-Five samples also have a **path-traversal and Zip Slip** report in their `path-traversal/` folder:
-[Juice Shop](juice-shop/path-traversal/findings.html), [Node.js Goof](nodejs-goof/path-traversal/findings.html),
-[Vulnerable TypeScript app](vulnerable-typescript-app/path-traversal/findings.html),
-[ThreatByte](ThreatByte/path-traversal/findings.html) and
-[Vulnerable Flask App](vulnerable-flask-app/path-traversal/findings.html). Each ran only the path
-analyzer with `gpt-6-luna` on the pinned revision. VulnPy's 260 path contexts and the Python insecure app
-(no file operations) are not republished here.
+All seven reports were rebuilt on 2026-11-14 with the current scanner and `gpt-6-luna`: every analyzer
+on six samples, and command, SQL and XSS on VulnPy. Path traversal and Zip Slip results now appear
+inside each report. Each sample's README has a **Current report** section with its counts and notable
+results.
 
 The reports include XSS discovery and the **Hide protected results** remediation
 filter. Server/API routes and browser/client-side sources have separate sections and headings.

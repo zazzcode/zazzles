@@ -46,10 +46,117 @@
       ],
       "invocations": [
         {
-          "executionSuccessful": true
+          "executionSuccessful": true,
+          "properties": {
+            "scan.dispatchBindings": [
+              {
+                "id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+                "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+                "registration_id": "registration:v1:401e0f2e856b78603b073a0aa4e8ff7c5a745448adce72e88bdb4ee369f920b9",
+                "callable_id": "callable:v1:9d813c0efef5f449f8b8bc4b7e9ce24314b79bf5416137fbf5263cdb44946a35",
+                "mechanism": "decorator_registration",
+                "resolution": "resolved",
+                "stage": 0
+              }
+            ],
+            "scan.entries": [
+              {
+                "id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+                "kind": "http",
+                "name": "GET /",
+                "instance_id": "app/main.py:2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890:fastapi",
+                "location": {
+                  "kind": "entry_registration",
+                  "text": "@app.get(\"/\", response_class=HTMLResponse)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 18,
+                    "end_line": 18,
+                    "start_byte": 342,
+                    "end_byte": 384
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                "http": {
+                  "framework": "fastapi",
+                  "method": "GET",
+                  "path": "/"
+                }
+              }
+            ],
+            "scan.invocationContexts": [
+              {
+                "id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
+                "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+                "dispatch_binding_id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+                "inputs": [
+                  {
+                    "role": "http.query",
+                    "parameter": "name",
+                    "origin": {
+                      "kind": "external",
+                      "evidence": [
+                        {
+                          "kind": "input_binding",
+                          "text": "name: str = config.SUPER_SECRET_NAME",
+                          "span": {
+                            "file": "app/main.py",
+                            "start_line": 19,
+                            "end_line": 19,
+                            "start_byte": 407,
+                            "end_byte": 443
+                          },
+                          "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "controls": [
+                  {
+                    "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
+                    "dispatch_binding_id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+                    "evidence": {
+                      "model_text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n       \n                                                                  \n\n         \n                                                                              \n\n            \n                                                                   \n       \n    try:\n                                                            \n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n                                                                              \n                                         \n    return Template(content).render()",
+                      "kind": "invoked_callable",
+                      "text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n    \"\"\"\n    Root endpoint that greets the user and provides a random text.\n\n    Args:\n        name (str, optional): Name of the user. Defaults to SUPER_SECRET_NAME.\n\n    Returns:\n        str: HTML content with a greeting and a public ip response.\n    \"\"\"\n    try:\n        # Get the public IP address from an external service\n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n    # https://fastapi.tiangolo.com/advanced/custom-response/#return-a-response\n    # FIXME: return HTMLResponse(content)\n    return Template(content).render()",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 19,
+                        "end_line": 41,
+                        "start_byte": 385,
+                        "end_byte": 1328
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    }
+                  }
+                ]
+              }
+            ],
+            "scan.registrations": [
+              {
+                "id": "registration:v1:401e0f2e856b78603b073a0aa4e8ff7c5a745448adce72e88bdb4ee369f920b9",
+                "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+                "origin": {
+                  "kind": "entry_registration",
+                  "text": "@app.get(\"/\", response_class=HTMLResponse)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 18,
+                    "end_line": 18,
+                    "start_byte": 342,
+                    "end_byte": 384
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                "framework": "fastapi"
+              }
+            ]
+          }
         }
       ],
       "properties": {
+        "scan.checkMatches": null,
         "scan.findingTypes": [
           {
             "id": "dom-xss",
@@ -82,6 +189,22 @@
             "interpretation": "Executable $where string construction is poor practice to refactor even without a proven exploit. An unmodeled document constraint alone is Review, not an established defect. Inspect actual value types, keys, transformations, library behavior, and the named status.",
             "remediation": "Prefer data-only query APIs, constrain scalar slots and permitted keys/operators, and avoid building executable $where strings from input.",
             "coverage": "bounded analysis"
+          },
+          {
+            "id": "command-injection",
+            "label": "Command Injection",
+            "description": "Request-controlled values reach an operating-system process: shell command text, the executable, a separate argument or process shell configuration.",
+            "interpretation": "One record per process use, with separate shell-syntax, executable-selection and argument facets under a declared POSIX assumption. A confirmed record is a static source judgment, not runtime exploitation or independent Findings Review. Shell-disabled argument arrays do not by themselves establish protection; an unknown utility's options and unmodeled platform behavior remain Review.",
+            "remediation": "Prefer eliminating process execution. Otherwise use a fixed trusted absolute executable, pass values as separate arguments with the shell disabled, and enforce utility-specific constraints such as a finite set of permitted values. Do not rely on stripping punctuation or on `--` as a universal option terminator.",
+            "coverage": "bounded Node child_process and Python os/subprocess analysis"
+          },
+          {
+            "id": "path-traversal",
+            "label": "Path Traversal",
+            "description": "A request-controlled value selects the file a read or write operation opens, so '..' segments, an absolute path or an unconstrained name can reach files outside the intended directory.",
+            "interpretation": "One record per filesystem use, with separate traversal, containment-control and coverage assessments under a declared POSIX assumption. A confirmed record is a static source judgment (CWE-22), not runtime exploitation or independent Findings Review. Normalization, join or resolve calls, a '..' blacklist, a prefix check without a separator and error handling do not establish containment. Framework file-serving wrappers, uploads, deletes, archives and symbolic-link or race behavior are not modeled and stay Review or uncovered.",
+            "remediation": "Select files by a trusted identifier or a finite allow-list. Otherwise resolve the final path and enforce a path-component-boundary containment check against the trusted directory before the operation, and decide deliberately how symbolic links are treated.",
+            "coverage": "bounded Node fs and Python open/io.open/pathlib read and write analysis"
           },
           {
             "id": "input-validation",
@@ -144,13 +267,16 @@
         "scan.limitations": [
           "ESM relative imports, literal CommonJS requires and direct exported handlers are resolved; dynamic imports, re-exports and mutated module bindings remain uncertain",
           "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
-          "Supported helper calls bind identifier parameters and direct returns; branches, closures, wrappers, unknown calls, recursion, and asynchronous response continuations remain uncertain",
+          "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
           "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
-          "Python adapter v1: static Flask/Blueprint, RESTX Resource and FastAPI routes; dynamic registration, custom decorators and response overrides remain gaps",
+          "Python supports static Flask/Blueprint, RESTX Resource and FastAPI routes plus bounded source-derived Flask/FastAPI generation; runtime registry mutation, unsupported decorators and response overrides remain gaps",
           "Python helper expansion is bounded to depth 3 and 24 calls per route; loops, comprehensions, mutation, exceptions and external dispatch are conservative",
-          "Jinja output requires a verified Flask template binding; unresolved configuration, includes/macros and stored origins remain Review; no runtime execution or SCA"
+          "Jinja output requires a verified Flask template binding; unresolved configuration, includes/macros and stored origins remain Review; no runtime execution or SCA",
+          "Judged 2 distinct candidate signatures across 2 total entry contexts (0 derived across equivalent entry contexts).",
+          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 2; reported input tokens 10136; unknown-usage attempts 0. "
         ],
-        "scan.selectedRoute": ""
+        "scan.selectedRoute": "",
+        "scan.selectedScope": {}
       },
       "results": [
         {
@@ -186,7 +312,7 @@
                       "executionOrder": 1,
                       "location": {
                         "message": {
-                          "text": "request_source"
+                          "text": "input_source"
                         },
                         "physicalLocation": {
                           "artifactLocation": {
@@ -644,14 +770,15 @@
             }
           ],
           "message": {
-            "text": "GET /: Cross-site scripting supported by source analysis [confirmed_vulnerability]. A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
+            "text": "GET /: Untrusted data reaches raw HTML output [poor_practice]. A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate. Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence."
           },
           "properties": {
             "scan.assessment": {
+              "request_digest": "75dced93c377ec080af81bc12410141befc2e49dcd62e3cb9ec2969c88dc4d43",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.71,
+                  "confidence": 0.51,
                   "probabilities": [
                     {
                       "value": "adequate",
@@ -659,11 +786,11 @@
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.21
+                      "probability": 0.36
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.78
+                      "probability": 0.63
                     },
                     {
                       "value": "unknown",
@@ -672,54 +799,54 @@
                   ]
                 },
                 "output_context": {
-                  "choice": "html_text",
-                  "confidence": 0.98,
+                  "choice": "template_code",
+                  "confidence": 0.29,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.98
+                      "probability": 0.35
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "url",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "script",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "style",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unquoted_attribute",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0
+                      "probability": 0.09
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.36
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.13
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
-                  "choice": "ineffective",
-                  "confidence": 0.93,
+                  "choice": "absent",
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "effective",
@@ -727,11 +854,11 @@
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.95
+                      "probability": 0.01
                     },
                     {
                       "value": "absent",
-                      "probability": 0.05
+                      "probability": 0.99
                     },
                     {
                       "value": "unknown",
@@ -741,7 +868,7 @@
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.99,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -749,29 +876,29 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.99
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.95,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.96
+                      "probability": 0.98
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.02
                     },
                     {
                       "value": "not_applicable",
@@ -780,24 +907,37 @@
                   ]
                 }
               },
-              "finding_status": "confirmed_vulnerability",
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "xss_context_unresolved",
+                  "detail": "Answers must agree with the established rendering context and protection facts.",
+                  "at": {
+                    "file": "",
+                    "start_line": 0,
+                    "end_line": 0,
+                    "start_byte": 0,
+                    "end_byte": 0
+                  }
+                }
+              ],
               "answers": {
                 "encoding_adequacy": "not_present",
-                "output_context": "html_text",
-                "sanitizer_effectiveness": "ineffective",
+                "output_context": "template_code",
+                "sanitizer_effectiveness": "absent",
                 "xss_all_paths_protected": "no",
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 5181,
+                "input_tokens": 6638,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-use-v1",
-              "protection": "insufficient",
-              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
+              "question_version": "xss-components-v1",
+              "protection": "uncertain",
+              "reason": "The XSS claim has missing or unresolved source-backed evidence."
             },
             "scan.blockingGaps": [],
             "scan.coverageGaps": [
@@ -813,20 +953,55 @@
                 }
               }
             ],
+            "scan.dispatchBinding": {
+              "id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+              "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "registration_id": "registration:v1:401e0f2e856b78603b073a0aa4e8ff7c5a745448adce72e88bdb4ee369f920b9",
+              "callable_id": "callable:v1:9d813c0efef5f449f8b8bc4b7e9ce24314b79bf5416137fbf5263cdb44946a35",
+              "mechanism": "decorator_registration",
+              "resolution": "resolved",
+              "stage": 0
+            },
+            "scan.entry": {
+              "id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "kind": "http",
+              "name": "GET /",
+              "instance_id": "app/main.py:2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890:fastapi",
+              "location": {
+                "kind": "entry_registration",
+                "text": "@app.get(\"/\", response_class=HTMLResponse)",
+                "span": {
+                  "file": "app/main.py",
+                  "start_line": 18,
+                  "end_line": 18,
+                  "start_byte": 342,
+                  "end_byte": 384
+                },
+                "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+              },
+              "http": {
+                "framework": "fastapi",
+                "method": "GET",
+                "path": "/"
+              }
+            },
+            "scan.entryId": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+            "scan.entryKind": "http",
             "scan.finding": {
               "type_ids": [
                 "reflected-xss"
               ],
-              "id": "finding:use:route:app/main.py:342:GET:/:app/main.py:1302:xss",
-              "use_id": "use:route:app/main.py:342:GET:/:app/main.py:1302:xss",
-              "route_id": "route:app/main.py:342:GET:/",
+              "id": "finding:candidate:v1:a859302f63383dab4965e3d171100970151f4d1b2b80b54767e27e9ea2fa28cc",
+              "use_id": "candidate:v1:a859302f63383dab4965e3d171100970151f4d1b2b80b54767e27e9ea2fa28cc",
+              "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
               "record_type": "finding",
-              "status": "confirmed_vulnerability",
-              "title": "Cross-site scripting supported by source analysis",
-              "summary": "A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate.",
+              "status": "poor_practice",
+              "title": "Untrusted data reaches raw HTML output",
+              "summary": "A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
+              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Exploitability is separate from the established construction practice; a missing or inconclusive semantic assessment does not remove this remediation task.",
               "recommendations": {
                 "title": "Repair this HTML output",
                 "actions": [
@@ -837,6 +1012,54 @@
                 "example_status": "source-derived candidate; review intended output semantics and test before applying"
               }
             },
+            "scan.invocationContext": {
+              "id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
+              "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "dispatch_binding_id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+              "inputs": [
+                {
+                  "role": "http.query",
+                  "parameter": "name",
+                  "origin": {
+                    "kind": "external",
+                    "evidence": [
+                      {
+                        "kind": "input_binding",
+                        "text": "name: str = config.SUPER_SECRET_NAME",
+                        "span": {
+                          "file": "app/main.py",
+                          "start_line": 19,
+                          "end_line": 19,
+                          "start_byte": 407,
+                          "end_byte": 443
+                        },
+                        "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "controls": [
+                {
+                  "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
+                  "dispatch_binding_id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+                  "evidence": {
+                    "model_text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n       \n                                                                  \n\n         \n                                                                              \n\n            \n                                                                   \n       \n    try:\n                                                            \n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n                                                                              \n                                         \n    return Template(content).render()",
+                    "kind": "invoked_callable",
+                    "text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n    \"\"\"\n    Root endpoint that greets the user and provides a random text.\n\n    Args:\n        name (str, optional): Name of the user. Defaults to SUPER_SECRET_NAME.\n\n    Returns:\n        str: HTML content with a greeting and a public ip response.\n    \"\"\"\n    try:\n        # Get the public IP address from an external service\n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n    # https://fastapi.tiangolo.com/advanced/custom-response/#return-a-response\n    # FIXME: return HTMLResponse(content)\n    return Template(content).render()",
+                    "span": {
+                      "file": "app/main.py",
+                      "start_line": 19,
+                      "end_line": 41,
+                      "start_byte": 385,
+                      "end_byte": 1328
+                    },
+                    "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                  }
+                }
+              ]
+            },
+            "scan.invocationContextId": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
             "scan.kind": "xss_candidate",
             "scan.recommendations": {
               "title": "Repair this HTML output",
@@ -850,19 +1073,22 @@
             "scan.requiredEvidence": [
               "render_source",
               "render_binding",
-              "render_context"
+              "render_context",
+              "entry_registration",
+              "dispatch_binding",
+              "invocation_binding"
             ],
             "scan.reviewStatus": "not_run",
             "scan.route": "GET /",
             "scan.runtimeConfirmation": "not_run",
             "scan.scope": "Bounded source-to-rendering flow; output context and protections are scoped to this sink.",
-            "scan.useId": "use:route:app/main.py:342:GET:/:app/main.py:1302:xss"
+            "scan.useId": "candidate:v1:a859302f63383dab4965e3d171100970151f4d1b2b80b54767e27e9ea2fa28cc"
           },
           "relatedLocations": [
             {
               "id": 0,
               "message": {
-                "text": "route_handler"
+                "text": "invoked_callable"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -903,6 +1129,21 @@
                   "startLine": 10
                 }
               }
+            },
+            {
+              "id": 3,
+              "message": {
+                "text": "entry_registration"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "endLine": 18,
+                  "startLine": 18
+                }
+              }
             }
           ],
           "ruleId": "scan/xss-output-protection",
@@ -941,7 +1182,7 @@
                       "executionOrder": 1,
                       "location": {
                         "message": {
-                          "text": "request_source"
+                          "text": "input_source"
                         },
                         "physicalLocation": {
                           "artifactLocation": {
@@ -988,40 +1229,51 @@
             }
           ],
           "message": {
-            "text": "GET /: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. legacy candidate has no claim-scoped completeness evidence"
+            "text": "GET /: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
+              "request_digest": "1e1a6923d153de6c9dc36cd17f8683b83c96529b4a934ca216ccb9cb744ed586",
               "answer_details": {
-                "protection": {
-                  "choice": "not_applicable",
-                  "confidence": 0.88,
+                "enforcement_coverage": {
+                  "choice": "complete",
+                  "confidence": 0.94,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.01
+                      "value": "complete",
+                      "probability": 0.97
                     },
                     {
-                      "value": "insufficient",
-                      "probability": 0.06
+                      "value": "incomplete",
+                      "probability": 0.03
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
                     },
                     {
-                      "value": "uncertain",
-                      "probability": 0.02
+                      "value": "unknown",
+                      "probability": 1
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.91
+                      "probability": 0
                     }
                   ]
                 },
                 "validation": {
                   "choice": "uncertain",
-                  "confidence": 0.92,
+                  "confidence": 0.83,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0
+                      "probability": 0.02
                     },
                     {
                       "value": "insufficient",
@@ -1029,11 +1281,11 @@
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.94
+                      "probability": 0.87
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.05
                     }
                   ]
                 }
@@ -1041,8 +1293,41 @@
               "finding_status": "needs_evidence",
               "blocking_gaps": [
                 {
-                  "kind": "input_validation_unresolved",
-                  "detail": "query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
                   "at": {
                     "file": "app/main.py",
                     "start_line": 19,
@@ -1053,19 +1338,20 @@
                 }
               ],
               "answers": {
-                "protection": "not_applicable",
+                "enforcement_coverage": "complete",
+                "field_requirement": "unknown",
                 "validation": "uncertain"
               },
               "usage": {
-                "input_tokens": 2097,
+                "input_tokens": 3498,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "string-use-v8",
+              "question_version": "validation-components-v1",
               "protection": "uncertain",
-              "reason": "legacy candidate has no claim-scoped completeness evidence"
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -1080,50 +1366,139 @@
                 }
               }
             ],
+            "scan.dispatchBinding": {
+              "id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+              "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "registration_id": "registration:v1:401e0f2e856b78603b073a0aa4e8ff7c5a745448adce72e88bdb4ee369f920b9",
+              "callable_id": "callable:v1:9d813c0efef5f449f8b8bc4b7e9ce24314b79bf5416137fbf5263cdb44946a35",
+              "mechanism": "decorator_registration",
+              "resolution": "resolved",
+              "stage": 0
+            },
+            "scan.entry": {
+              "id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "kind": "http",
+              "name": "GET /",
+              "instance_id": "app/main.py:2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890:fastapi",
+              "location": {
+                "kind": "entry_registration",
+                "text": "@app.get(\"/\", response_class=HTMLResponse)",
+                "span": {
+                  "file": "app/main.py",
+                  "start_line": 18,
+                  "end_line": 18,
+                  "start_byte": 342,
+                  "end_byte": 384
+                },
+                "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+              },
+              "http": {
+                "framework": "fastapi",
+                "method": "GET",
+                "path": "/"
+              }
+            },
+            "scan.entryId": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+            "scan.entryKind": "http",
             "scan.finding": {
               "type_ids": [
                 "input-validation"
               ],
-              "id": "finding:input:route:app/main.py:342:GET:/:query.name",
-              "use_id": "input:route:app/main.py:342:GET:/:query.name",
-              "route_id": "route:app/main.py:342:GET:/",
+              "id": "finding:candidate:v1:5251ed700e640423945bddf2d3658ef90d0146dc09dfb72a86033722c2f4af84",
+              "use_id": "candidate:v1:5251ed700e640423945bddf2d3658ef90d0146dc09dfb72a86033722c2f4af84",
+              "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
               "record_type": "analysis",
               "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
               "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied Model validation answer: Inconclusive.",
-              "use_protection": "Assessed injection/use protection: Inconclusive. legacy candidate has no claim-scoped completeness evidence",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-                  "Resolve input_validation_unresolved at app/main.py:19: query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
-                  "Reconcile the semantic assessment with this exact source claim: legacy candidate has no claim-scoped completeness evidence"
+                  "Resolve validation_evidence_missing at app/main.py:19: input_source",
+                  "Resolve validation_evidence_missing at app/main.py:19: field_policy",
+                  "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
+                  "Resolve validation_evidence_missing at app/main.py:19: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
             },
+            "scan.invocationContext": {
+              "id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
+              "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
+              "dispatch_binding_id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+              "inputs": [
+                {
+                  "role": "http.query",
+                  "parameter": "name",
+                  "origin": {
+                    "kind": "external",
+                    "evidence": [
+                      {
+                        "kind": "input_binding",
+                        "text": "name: str = config.SUPER_SECRET_NAME",
+                        "span": {
+                          "file": "app/main.py",
+                          "start_line": 19,
+                          "end_line": 19,
+                          "start_byte": 407,
+                          "end_byte": 443
+                        },
+                        "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "controls": [
+                {
+                  "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
+                  "dispatch_binding_id": "dispatch:v1:badf9cf87f7151b4e396f00abbd836e78e8e922cb4a7f78b1de778a17e8e834f",
+                  "evidence": {
+                    "model_text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n       \n                                                                  \n\n         \n                                                                              \n\n            \n                                                                   \n       \n    try:\n                                                            \n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n                                                                              \n                                         \n    return Template(content).render()",
+                    "kind": "invoked_callable",
+                    "text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n    \"\"\"\n    Root endpoint that greets the user and provides a random text.\n\n    Args:\n        name (str, optional): Name of the user. Defaults to SUPER_SECRET_NAME.\n\n    Returns:\n        str: HTML content with a greeting and a public ip response.\n    \"\"\"\n    try:\n        # Get the public IP address from an external service\n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n    # https://fastapi.tiangolo.com/advanced/custom-response/#return-a-response\n    # FIXME: return HTMLResponse(content)\n    return Template(content).render()",
+                    "span": {
+                      "file": "app/main.py",
+                      "start_line": 19,
+                      "end_line": 41,
+                      "start_byte": 385,
+                      "end_byte": 1328
+                    },
+                    "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                  }
+                }
+              ]
+            },
+            "scan.invocationContextId": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
             "scan.kind": "input_validation_candidate",
             "scan.recommendations": {
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-                "Resolve input_validation_unresolved at app/main.py:19: query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
-                "Reconcile the semantic assessment with this exact source claim: legacy candidate has no claim-scoped completeness evidence"
+                "Resolve validation_evidence_missing at app/main.py:19: input_source",
+                "Resolve validation_evidence_missing at app/main.py:19: field_policy",
+                "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
+                "Resolve validation_evidence_missing at app/main.py:19: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
             "scan.reviewStatus": "not_run",
             "scan.route": "GET /",
             "scan.runtimeConfirmation": "not_run",
-            "scan.useId": "input:route:app/main.py:342:GET:/:query.name"
+            "scan.useId": "candidate:v1:5251ed700e640423945bddf2d3658ef90d0146dc09dfb72a86033722c2f4af84"
           },
           "relatedLocations": [
             {
               "id": 0,
               "message": {
-                "text": "route_handler"
+                "text": "invoked_callable"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -1164,6 +1539,21 @@
                   "startLine": 10
                 }
               }
+            },
+            {
+              "id": 3,
+              "message": {
+                "text": "entry_registration"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "endLine": 18,
+                  "startLine": 18
+                }
+              }
             }
           ],
           "ruleId": "scan/input-validation",
@@ -1193,8 +1583,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.\n- Resolve input_validation_unresolved at app/main.py:19: query.name: assess actual enforcing conditions in handler; no external business policy was supplied\n- Reconcile the semantic assessment with this exact source claim: legacy candidate has no claim-scoped completeness evidence\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect. Resolve input_validation_unresolved at app/main.py:19: query.name: assess actual enforcing conditions in handler; no external business policy was supplied Reconcile the semantic assessment with this exact source claim: legacy candidate has no claim-scoped completeness evidence"
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.\n- Resolve validation_evidence_missing at app/main.py:19: input_source\n- Resolve validation_evidence_missing at app/main.py:19: field_policy\n- Resolve validation_evidence_missing at app/main.py:19: invoked_callable\n- Resolve validation_evidence_missing at app/main.py:19: control_flow\n- Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect. Resolve validation_evidence_missing at app/main.py:19: input_source Resolve validation_evidence_missing at app/main.py:19: field_policy Resolve validation_evidence_missing at app/main.py:19: invoked_callable Resolve validation_evidence_missing at app/main.py:19: control_flow Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               },
               "id": "scan/input-validation",
               "properties": {

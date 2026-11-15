@@ -1,19 +1,20 @@
 # OWASP Juice Shop sample
 
 
-## Path traversal and Zip Slip results (2026-11-14)
 
-[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+## Current report (rebuilt 2026-11-14)
 
-A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
-`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use
-it alongside the main report above. Static source judgments only; nothing was run or exploited.
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Twelve file operations were judged in 12 requests (150,844 input tokens).
+Every analyzer was run on the pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
 
-- **Zip Slip:** `routes/fileUpload.ts:34` writes uploaded archive entries with `fs.createWriteStream`. This is a **confirmed vulnerability**.
-- **Layout path:** both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**.
-- **Review (9):** file serving and reads such as `routes/fileServer.ts`, `keyServer.ts`, `logfileServer.ts`, `quarantineServer.ts`, `server.ts:277`, `profileImageFileUpload.ts`, `profileImageUrlUpload.ts`, `vulnCodeSnippet.ts` and `vulnCodeFixes.ts`. The model did not establish a vulnerability or protection from the supplied evidence, so each stays a question to investigate.
+- **Records:** 223. **Judged:** 128, in 128 requests (1,087,834 input tokens).
+- **Outcomes:** 19 confirmed vulnerabilities, 0 poor practice, 0 protected, 109 inconclusive (Review).
+- **Path traversal and Zip Slip (12 judged):** the upload Zip Slip at `routes/fileUpload.ts:34` and both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**. The other nine (file serving and reads) stay **Review**.
+- **Not assessed by design (90):** 66 outbound HTTP observations, 23 API-data records with no rendering claim, and one NoSQL record at `routes/order.ts:164` whose evidence exceeds the 64 KiB request limit.
+- **Failed before any model call (5):** model component selection needs a verified API binding for `routes/orderHistory.ts` (lines 17 and 36), `routes/createProductReviews.ts:23`, and `routes/chat.ts` (lines 117 and 123). They remain unassessed, not safe.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 
 ## Command-injection acceptance scan (2026-11-07)
 

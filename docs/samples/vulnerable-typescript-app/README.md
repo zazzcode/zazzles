@@ -1,17 +1,20 @@
 # Vulnerable TypeScript app sample
 
 
-## Path traversal and Zip Slip results (2026-11-14)
 
-[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+## Current report (rebuilt 2026-11-14)
 
-A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
-`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use
-it alongside the main report above. Static source judgments only; nothing was run or exploited.
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-One file operation was judged in one request (8,813 input tokens).
+Every analyzer was run on the pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
 
-- `GET /api/files` reads a request-controlled filename through `path.join` and `fs.readFile` at `src/server.ts:104`. This is a **confirmed vulnerability**.
+- **Records:** 24. **Judged:** 18, in 18 requests (82,948 input tokens).
+- **Outcomes:** 4 confirmed vulnerabilities, 0 poor practice, 0 protected, 14 inconclusive (Review).
+- **Command injection:** `GET /api/ping` at `src/server.ts:90` is a **confirmed vulnerability**.
+- **Path traversal:** `GET /api/files` at `src/server.ts:104` is a **confirmed vulnerability**.
+- **Not assessed by design (6):** one outbound HTTP observation and five API-data records with no rendering claim.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 
 ## Command-injection acceptance scan (2026-11-07)
 

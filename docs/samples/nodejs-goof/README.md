@@ -8,14 +8,14 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-All analyzers were run at pinned revision `add14ba59e98` with OpenAI `gpt-6-luna` on the `node-inputs-and-file-apis` branch (E4: shared Express middleware-chain / URL/upload inputs, phase-2 file APIs, Node `http`/`https` SSRF). The target remained clean. These are static source judgments.
+All analyzers were run at pinned revision `add14ba59e98` with OpenAI `gpt-6-luna`, including
+standalone input validation and upload/URL acquisition. The target remained clean. These are static
+source judgments.
 
 - **Records:** 31. **Judged:** 31, in 31 requests (134,978 input tokens).
 - **Outcomes among judged records:** 5 confirmed vulnerabilities, 0 poor practice, 4 protected, 0 not applicable, 22 inconclusive (Review).
 - **Unassessed records shown:** 0; provider/decoder failures: 0.
-- **Zip Slip:** uploaded archive extraction at `routes/index.js:270` stays under the verified adm-zip contract. Shared upload/URL acquisition and require-destructuring bindings are active in this rebuild.
-
-[E4 contract](../../../.zazz/specifications/shared-node-inputs-and-file-apis.md).
+- **Zip Slip:** uploaded archive extraction at `routes/index.js:270` stays under the verified adm-zip contract.
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

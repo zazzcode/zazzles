@@ -95,9 +95,12 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 - NoSQL injection (MongoDB-style databases)
 - Cross-site scripting (XSS): server-rendered, stored, and browser/DOM
 - Command injection
-- Path traversal, including Zip Slip when extracting uploaded archives
-- Server-side request forgery (SSRF) when a verified `fetch`, `axios` or Python HTTP client call takes
-  its destination from the request; other outbound calls are grouped observations for review
+- Path traversal and unsafe file/archive use: Node `fs` reads/writes (including `open`, `copyFile`,
+  and `rename`), Zip Slip when extracting uploaded archives, Python `FileResponse` / upload
+  filenames, `shutil` copy/move, and `tarfile.extractall` (with explicit filter/runtime facts)
+- Server-side request forgery (SSRF) when a verified `fetch`, `axios`, Node `http`/`https`, or
+  Python HTTP client call takes its destination from the request; other outbound calls are grouped
+  observations for review
 
 **Good-practice checks**
 
@@ -107,8 +110,10 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 
 **How it finds problems**
 
-- Finds entry points: web routes, browser events, GraphQL and gRPC
-- Follows request input to the sensitive operation it reaches
+- Finds entry points: web routes (including each stage of an Express middleware chain), browser
+  events, GraphQL and gRPC
+- Follows request input to the sensitive operation it reaches, including URL fields
+  (`path` / `url` / `originalUrl`) and verified upload filename or file content on Node apps
 - Notices the checks on the way, such as `if` guards and allow-lists. In JavaScript and TypeScript it
   follows each side of an `if`/`else` separately, so a check on one branch never protects another
 - Reads each library's version for the part of a monorepo being analyzed

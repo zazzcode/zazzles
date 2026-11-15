@@ -6,14 +6,13 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-All analyzers were run at pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna` on the `node-inputs-and-file-apis` branch (E4: shared Express middleware-chain / URL/upload inputs, phase-2 file APIs, Node `http`/`https` SSRF). The target remained clean. These are static source judgments.
+All analyzers were run at pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna`, including
+standalone input validation and Node `http`/`https` SSRF where those sinks exist. The target remained
+clean. These are static source judgments.
 
 - **Records:** 24. **Judged:** 19, in 19 requests (61,777 input tokens).
 - **Outcomes among judged records:** 5 confirmed vulnerabilities, 0 poor practice, 0 protected, 0 not applicable, 14 inconclusive (Review).
 - **Unassessed records shown:** 5; provider/decoder failures: 0.
-- **E4:** all analyzers judged, including standalone input validation; Node core HTTP SSRF contracts apply where sinks exist.
-
-[E4 contract](../../../.zazz/specifications/shared-node-inputs-and-file-apis.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

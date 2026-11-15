@@ -16,13 +16,13 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [findings.json](vulnpy/findings.json) | [findings.sarif](vulnpy/findings.sarif) |
 
-The three Node.js reports (Juice Shop, Node.js Goof, Vulnerable TypeScript app) were rebuilt again on
-2026-11-15 under E4 on `node-inputs-and-file-apis` with `gpt-6-luna` (all analyzers; 250 charged
-requests including calibration and vuln-demo-app, exact replay 250/250). Python samples keep their
-prior wire-v7 judgments. Excluded and unsupported records remain explicitly unassessed; VulnPy omits
-excluded records from its public copy to bound file size. Path traversal and Zip Slip results appear
-inside each report. Each sample's README has a **Current report** section with its counts and notable
-results.
+The three Node.js reports (Juice Shop, Node.js Goof, Vulnerable TypeScript app) were rebuilt on
+2026-11-15 with OpenAI Luna Decisions: every analyzer, including Express middleware-chain stages,
+URL and upload inputs, broader file/archive operations, and Node `http`/`https` SSRF. Python samples
+keep their prior judgments. Excluded and unsupported records remain explicitly unassessed; VulnPy
+omits excluded records from its public copy to bound file size. Path traversal and Zip Slip results
+appear inside each report. Each sample's README has a **Current report** section with its counts and
+notable results.
 
 The reports include XSS discovery and the **Hide protected results** remediation
 filter. Server/API routes and browser/client-side sources have separate sections and headings.

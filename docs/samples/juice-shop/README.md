@@ -6,14 +6,14 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna` on the `node-inputs-and-file-apis` branch (E4: shared Express middleware-chain / URL/upload inputs, phase-2 file APIs, Node `http`/`https` SSRF). The target remained clean. These are static source judgments.
+All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna`. Express middleware
+stages, URL and upload inputs, and Node `http`/`https` SSRF are included. The target remained clean.
+These are static source judgments.
 
 - **Records:** 246. **Judged:** 153, in 153 requests (758,312 input tokens).
 - **Outcomes among judged records:** 22 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 130 inconclusive (Review).
 - **Unassessed records shown:** 93; provider/decoder failures: 0.
-- **E4 deltas:** shared middleware-chain stages and `source.node-input-v2` URL/upload facts expand validation/XSS coverage (e.g. dataErasure). Multipart `uploadToMemory.single('file')` remains an unresolved factory witness. `order.ts:164` NoSQL request accounting follows the shared input capability.
-
-[E4 contract](../../../.zazz/specifications/shared-node-inputs-and-file-apis.md).
+- **Notable:** middleware-chain and URL/upload acquisition expand validation and XSS coverage (for example dataErasure). Multipart `uploadToMemory.single('file')` remains unresolved. The large NoSQL request at `order.ts:164` is still assessed with shared input facts.
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

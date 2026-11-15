@@ -107,8 +107,8 @@ unrelated user changes. Record departures and residual limitations explicitly.
 - [x] Resolve test/live defects and update evidence ledger, docs and review evidence.
 
 - [x] Commit the verified implementation and rebuilt samples locally.
-- [ ] Push the feature commit and update existing draft PR #14. Automatic approval review
-  rejected external publication pending explicit user confirmation; no push or PR update executed.
+- [x] Push the feature commit and update existing draft PR #14. The owner explicitly
+  authorized publication after automatic review initially blocked it; PR #14 remains draft against `stage`.
 
 Follow-ups remain in this same worktree and branch, sequenced after E3 validation:
 
@@ -116,6 +116,13 @@ Follow-ups remain in this same worktree and branch, sequenced after E3 validatio
 - [ ] Re-measure remaining large requests and determine relevance-filter need.
 - [ ] Run paired ablation before helper/model relevance filtering.
 - [ ] Implement and validate data-path slicing after precise branch modeling.
+
+Remaining verification and product decisions:
+
+- [ ] Re-record the full historical path corpus under v7, including all 260 VulnPy path contexts.
+- [ ] Decide whether the retention proxy is sufficient or add answer citations so the original
+  citation-specific retention criterion can be checked directly.
+- [ ] Evaluate broader fixed query/middleware prose consolidation beyond the operand-family W6 implementation.
 
 ## Definition of done
 

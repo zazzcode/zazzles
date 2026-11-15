@@ -250,10 +250,11 @@ bytes, (2) a saved replay fails, (3) a live run needs more than 8 requests befor
 
 ## 10. Definition of done
 
-- [ ] AC1–AC14 green with evidence in the run log; AC13 delta list matches.
-- [ ] AC15 live results recorded; sample rebuilt; README counts match `findings.json`.
-- [ ] Analysis docs, interpretation guide, plan, spec index and orientation match the code.
-- [ ] Draft PR to `stage`.
+- [x] AC1–AC5 and AC7–AC14 baseline checks verified in the run log; the later [wire v7 contract](wire-bundle-v7.md) supersedes the original request-byte freeze.
+- [ ] AC6 citation-specific retention remains uncheckable because saved answers contain no citations. The 360 historical exact replays and the decisive-evidence retention proxy passed; an explicit citation/proxy decision remains open.
+- [x] AC15 live results recorded; samples rebuilt; README counts match `findings.json`.
+- [x] Analysis docs, interpretation guide, plan, spec index and orientation match the code.
+- [x] Draft PR [#14](https://github.com/zazzcode/zazzles/pull/14) targets `stage`.
 
 ## 11. Open questions
 

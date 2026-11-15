@@ -73,6 +73,7 @@ func (s *moduleSet) graphqlFlow(out *analysis.AnalysisReport, m *sourceModule, f
 			}
 		}
 	}
+	promoteInvocationPreconditions(f.uses, f.context)
 	out.Uses = append(out.Uses, f.uses...)
 }
 

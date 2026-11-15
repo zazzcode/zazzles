@@ -29,8 +29,8 @@ var gateRoles = map[string]bool{
 // controlKinds are evidence kinds that record a control on a value or path.
 // They are path evidence wherever they appear, so the budget never sheds them.
 var controlKinds = map[string]bool{
-	"branch_precondition": true, "branch_false_precondition": true, "branch_alternative": true,
-	"guard_test": true, "conditional_test": true, "exception_precondition": true, "condition": true,
+	"branch_precondition": true, "branch_true_precondition": true, "branch_false_precondition": true, "branch_alternative": true,
+	"guard_test": true, "conditional_test": true, "conditional_false_test": true, "exception_precondition": true, "condition": true,
 	"terminating_guard": true, "enclosing_guard": true, "allowlist_definition": true,
 }
 

@@ -417,23 +417,33 @@ func gapKinds(gaps []analysis.Gap) string {
 }
 
 func TestCommandGuardResolvesItsControlFlowGaps(t *testing.T) {
+	// A modeled if records no control-flow gap. The guard engine still settles the
+	// gaps of an if the walk keeps unmodeled (here, one that rebinds the request).
 	uses := analyzeCommandRoutes(t, "server.js", jsCommandPrelude+`
 app.get('/guard',(req,res)=>{const cmd=req.query.c;if(!ALLOWED.has(cmd)){return res.sendStatus(400);}exec(cmd,()=>{});res.send('x');});
-app.get('/with-else',(req,res)=>{const cmd=req.query.c;if(!ALLOWED.has(cmd)){return res.sendStatus(400);}else{cmd=cmd.trim();}exec(cmd,()=>{});res.send('x');});
+app.get('/with-else',(req,res)=>{let cmd=req.query.c;if(!ALLOWED.has(cmd)){return res.sendStatus(400);}else{cmd=cmd.trim();}exec(cmd,()=>{});res.send('x');});
 app.get('/unrelated',(req,res)=>{const cmd=req.query.c;if(req.query.d){return res.sendStatus(400);}exec(cmd,()=>{});res.send('x');});
+app.get('/fallback-guard',(req,res)=>{const cmd=req.query.c;if(!ALLOWED.has(cmd)){req=null;return res.sendStatus(400);}exec(cmd,()=>{});res.send('x');});
+app.get('/fallback-unrelated',(req,res)=>{const cmd=req.query.c;if(res.locals.d){req=null;return res.sendStatus(400);}exec(cmd,()=>{});res.send('x');});
 `)
-	for _, route := range []string{"/guard", "/with-else", "/unrelated"} {
+	flowGap := func(kinds string) bool {
+		return strings.Contains(kinds, "branch_exit") || strings.Contains(kinds, "unsupported_control_flow")
+	}
+	for _, route := range []string{"/guard", "/with-else", "/unrelated", "/fallback-guard", "/fallback-unrelated"} {
 		u := uses[route]
 		resolved, coverage := gapKinds(u.Completeness.Resolved), gapKinds(u.Completeness.Coverage)
-		hasFlow := strings.Contains(coverage, "branch_exit") || strings.Contains(coverage, "unsupported_control_flow")
 		switch route {
-		case "/guard":
-			if !strings.Contains(resolved, "branch_exit") || !strings.Contains(resolved, "unsupported_control_flow") || hasFlow {
+		case "/fallback-guard":
+			if !strings.Contains(resolved, "branch_exit") || !strings.Contains(resolved, "unsupported_control_flow") || flowGap(coverage) {
 				t.Fatalf("%s: resolved [%s] coverage [%s]; the guarded statement's gaps must be resolved", route, resolved, coverage)
 			}
-		default:
-			if strings.Contains(resolved, "branch_exit") || strings.Contains(resolved, "unsupported_control_flow") || !hasFlow {
+		case "/fallback-unrelated":
+			if flowGap(resolved) || !flowGap(coverage) {
 				t.Fatalf("%s: resolved [%s] coverage [%s]; gaps without a verified guard stay as coverage", route, resolved, coverage)
+			}
+		default:
+			if flowGap(resolved) || flowGap(coverage) || flowGap(gapKinds(u.Gaps)) {
+				t.Fatalf("%s: resolved [%s] coverage [%s]; a modeled if records no control-flow gap", route, resolved, coverage)
 			}
 		}
 	}

@@ -46,6 +46,39 @@ evidence validation checks. Unlike the product guides on this page, their text i
 “Poor practice” remains a finding classification for established defects. It is independent of the
 former `Practice` name for guideline documents. See the [architecture terminology](../../.zazz/architecture.md#1-architecture-premise).
 
+Fixed interpretation sentences for query and middleware facts are owned by one embedded note
+document, [`facts.md`](../../internal/guidelines/facts.md). A candidate's `model_facts` carry only a
+short code plus the exact expression and file, and its request includes only the notes for the codes
+it names. A code without a note fails the request instead of reaching the model unexplained.
+
+## JavaScript conditional flow
+
+The shared JavaScript/TypeScript flow models `if`, `else if` and `else` statements precisely. Every
+analyzer uses it.
+
+- **Polarity.** The test is evaluated once. A use inside an arm records the test as
+  `branch_true_precondition` or `branch_false_precondition`.
+- **Exits.** An arm that returns, throws or calls the unshadowed Node `process.exit` leaves the
+  continuing path. When every arm leaves, later code is not discovered.
+- **Joins.** Arms run in isolated copies of the environment and context. Where both arms continue,
+  a dependency specific to one arm carries that arm's test as a transfer. Path controls survive the
+  join only when both arms carry them, so a guard on one arm never protects a sibling arm or later code.
+- **Ambiguity.** Binding, model, origin and response content-type metadata stay verified only when the
+  arms agree; otherwise an `unknown_control_effect` gap records the ambiguity.
+- **Heap writes.** An unmodeled heap write inside an arm stays an `unsupported_write` gap for later code.
+- **Block scope.** `let`, `const` and `class` bindings are block scoped; `var` keeps function scope.
+
+These statements keep the conservative fallback and its `unsupported_control_flow` gap: loops,
+`switch`, `try`/`finally`, request/response identifier rebinding, browser/client flows and model
+setters. Case bodies of `switch` are not traversed (a recorded limit).
+
+The fallback never carries a path control recorded inside a body to later code. A helper whose
+conditional can exit early, or whose test may guard content, stays a may-dependency for its callers.
+For GraphQL and gRPC, a precondition that every use carries and that holds at the end of the resolver
+becomes an invocation control: `conditional_test` when true, `conditional_false_test` when false.
+
+## Entry adapters
+
 The [bounded Apollo GraphQL adapter](../running-scans.md#bounded-apollo-graphql-analysis) adds
 resolver-specific argument sources to these existing analysis rules. Parent/context/info provenance,
 SDL syntax coverage and application policy remain separate from SQL protection and claim status.

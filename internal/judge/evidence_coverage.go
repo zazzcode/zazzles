@@ -32,7 +32,7 @@ func augmentRoles(use analysis.CandidateUse, roles map[string][]string, ref func
 			role = "invoked_callable"
 		case "helper_definition", "relevant_function", "condition_helper", "wrapper_definition", "authentication_adapter":
 			role = "helper_definitions"
-		case "branch_precondition", "branch_false_precondition", "branch_alternative", "guard_test", "conditional_test", "exception_precondition", "condition":
+		case "branch_precondition", "branch_true_precondition", "branch_false_precondition", "branch_alternative", "guard_test", "conditional_test", "conditional_false_test", "exception_precondition", "condition":
 			role = "path_conditions"
 		case "form_field_requirement", "field_policy":
 			role = "field_policy"

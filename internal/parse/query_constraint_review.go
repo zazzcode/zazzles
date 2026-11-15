@@ -38,7 +38,22 @@ func (s *moduleSet) queryConstraintReview(use *analysis.CandidateUse) {
 	if use.Kind != "nosql_query_candidate" {
 		return
 	}
-	for _, e := range c.Evidence["control_statement"] {
+	// A modeled conditional records its test as the arm precondition instead of the
+	// whole statement; an unmodeled one keeps the statement.
+	tests := append([]analysis.Evidence{}, c.Evidence["control_statement"]...)
+	// An arm precondition is a witness only with the polarity that excludes a
+	// non-string on this path: a false `!==` test or a true `===` test.
+	for _, e := range c.Evidence[branchTruePrecondition] {
+		if typeofPolarity(e.Text) == "equal" {
+			tests = append(tests, e)
+		}
+	}
+	for _, e := range c.Evidence[branchFalsePrecondition] {
+		if typeofPolarity(e.Text) == "not_equal" {
+			tests = append(tests, e)
+		}
+	}
+	for _, e := range tests {
 		if e.Span.File != use.Sink.Span.File || e.Span.StartByte >= use.Sink.Span.StartByte || !strings.Contains(e.Text, "typeof") {
 			continue
 		}
@@ -49,4 +64,21 @@ func (s *moduleSet) queryConstraintReview(use *analysis.CandidateUse) {
 			}
 		}
 	}
+}
+
+// typeofPolarity classifies a single `typeof x === 'string'` style test by its
+// comparison; a negated, compound or non-string test is "".
+func typeofPolarity(text string) string {
+	t := strings.Join(strings.Fields(strings.Trim(strings.TrimSpace(text), "()")), "")
+	if strings.ContainsAny(t, "&|!(") && !strings.Contains(t, "!=") || strings.Count(t, "typeof") != 1 || !strings.HasPrefix(t, "typeof") ||
+		!(strings.HasSuffix(t, "'string'") || strings.HasSuffix(t, `"string"`)) || strings.Contains(t, "&&") || strings.Contains(t, "||") {
+		return ""
+	}
+	switch {
+	case strings.Contains(t, "!==") || strings.Contains(t, "!="):
+		return "not_equal"
+	case strings.Contains(t, "===") || strings.Contains(t, "=="):
+		return "equal"
+	}
+	return ""
 }

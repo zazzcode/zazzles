@@ -170,10 +170,10 @@ func (s *moduleSet) expressContractFacts(use *analysis.CandidateUse) {
 	for _, e := range use.Context {
 		fact := ""
 		if e.Kind == "input_predicate_call" {
-			fact = "A verified immutable validator.isEmail(value) call is a string/email predicate on that argument only (non-string inputs can throw). It does not transform another request field or remove query operators from a sibling password/selector value. A successful predicate must not lend validation or protection to another field."
+			fact = "validator_is_email"
 		}
 		if e.Kind == "middleware_adapter_call" {
-			fact = "Verified default method-override()/express-fileupload() or literal-data express-session options are transport/session adapters, not per-field database validators. Default method override changes request method, default upload handling concerns multipart bodies, and session handling supplies session/cookie state. They do not impose a scalar schema on fields of an already parsed JSON body. Custom callbacks, stores, dynamic options, mutated imports and unknown middleware are not covered by this contract."
+			fact = "express_transport_adapters"
 		}
 		if fact != "" && !seen[fact] {
 			use.Completeness.ModelFacts = append(use.Completeness.ModelFacts, fact)

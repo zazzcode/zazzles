@@ -105,10 +105,10 @@ func TestBranchPathsAndPreconditions(t *testing.T) {
 		name, body, protection string
 		branchKinds            []string
 	}{
-		{"else branch is traversed", "let v=req.query.q;if(req.query.a){v=escapeHtml(v)}else{v=opaque(v)}res.send('<p>'+v+'</p>')", "unknown", []string{"branch_consequence", "branch_alternative"}},
-		{"if without else keeps the skipped path", "let v=req.query.q;if(req.query.a){v=escapeHtml(v)}res.send('<p>'+v+'</p>')", "raw", []string{"branch_consequence", ""}},
+		{"else branch is traversed", "let v=req.query.q;if(req.query.a){v=escapeHtml(v)}else{v=opaque(v)}res.send('<p>'+v+'</p>')", "unknown", []string{"branch_true_precondition", "branch_false_precondition"}},
+		{"if without else keeps the skipped path under the false test", "let v=req.query.q;if(req.query.a){v=escapeHtml(v)}res.send('<p>'+v+'</p>')", "raw", []string{"branch_true_precondition", "branch_false_precondition"}},
 		{"returning branch does not reach the sink", "let v=escapeHtml(req.query.q);if(req.query.a){v=req.query.q;return res.end()}res.send('<p>'+v+'</p>')", "sanitized", []string{""}},
-		{"single-statement branches", "let v=req.query.q;if(req.query.a) v=escapeHtml(v); else /* both */ v=escapeHtml(v);res.send('<p>'+v+'</p>')", "sanitized", []string{"branch_consequence", "branch_alternative"}},
+		{"single-statement branches", "let v=req.query.q;if(req.query.a) v=escapeHtml(v); else /* both */ v=escapeHtml(v);res.send('<p>'+v+'</p>')", "sanitized", []string{"branch_true_precondition", "branch_false_precondition"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

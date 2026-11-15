@@ -39,7 +39,7 @@ func TestExpressQueryAdapterCompleteness(t *testing.T) {
 			}
 			if !tc.blocked {
 				facts := strings.Join(u.Completeness.ModelFacts, "\n")
-				if !strings.Contains(facts, "isEmail") || !strings.Contains(facts, "not") {
+				if !strings.Contains(facts, "validator_is_email") || !strings.Contains(facts, "express_transport_adapters") {
 					t.Fatalf("predicate contract absent: %s", facts)
 				}
 				if len(u.Completeness.Evidence["middleware_adapter_binding"]) < 3 {

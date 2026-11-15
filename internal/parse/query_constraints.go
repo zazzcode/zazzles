@@ -33,16 +33,16 @@ func conditionalConstraints(m *sourceModule, n *sitter.Node, c *analysis.Complet
 	}
 	allNumeric := true
 	for _, value := range alternatives {
-		fact := "No numeric output guarantee is established for this alternative; assess its actual constraints independently."
+		code := "output_alternative_unconstrained"
 		if numericQueryValue(m, value) {
-			fact = "This alternative produces only a number on normal completion (or throws); the original request text is not its output."
+			code = "output_alternative_numeric"
 		} else {
 			allNumeric = false
 		}
-		c.ModelFacts = append(c.ModelFacts, "Conditional output alternative "+value.Utf8Text(m.src)+" at "+m.file+": "+fact)
+		c.ModelFacts = append(c.ModelFacts, code+": "+value.Utf8Text(m.src)+" at "+m.file)
 	}
 	if allNumeric {
-		c.ModelFacts = append(c.ModelFacts, "Every output alternative of the exact expression "+n.Utf8Text(m.src)+" at "+m.file+" is proven numeric on normal completion. There is no unconstrained text-output sibling branch in this expression. This is a value-type fact, not business validation or approval of executable-string construction; assess the actual database slot separately.")
+		c.ModelFacts = append(c.ModelFacts, "numeric_output_expression: "+n.Utf8Text(m.src)+" at "+m.file)
 	}
 }
 

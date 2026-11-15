@@ -198,7 +198,7 @@ func enrichInvocationEvidence(out *analysis.AnalysisReport) {
 		}
 		for _, e := range u.Context {
 			switch e.Kind {
-			case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
+			case "guard_test", "conditional_test", conditionalFalseTest, "branch_precondition", "authentication_adapter", "invoked_callable":
 				found := false
 				for _, control := range ctx.Controls {
 					found = found || control.Evidence == e

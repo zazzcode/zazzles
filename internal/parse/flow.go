@@ -57,10 +57,23 @@ type flow struct {
 	parts map[string]string
 	// setterValue, inside a model attribute setter, receives what the setter stores.
 	setterValue *value
+	// heapWrites records unmodeled heap/property writes whose expression value is
+	// discarded. A conditional join keeps them as gaps for later code.
+	heapWrites []analysis.Gap
+	// conditions, when set, collects the modeled conditionals of a helper body so
+	// the helper keeps its precision policy for tests that may guard content.
+	conditions *[]modeledCondition
 	// urlSources makes the request URL members (path, url, originalUrl, baseUrl)
 	// request sources. It is set only on the path-only second pass of a handler, so no
 	// other analyzer's dependencies or request bytes change.
 	urlSources bool
+}
+
+// modeledCondition is one conditional the flow modeled precisely: its test and
+// whether an arm left the statement.
+type modeledCondition struct {
+	test  *sitter.Node
+	exits bool
 }
 
 func (f *flow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -93,7 +106,7 @@ func (f *flow) statements(body *sitter.Node) bool {
 func (f *flow) statement(n *sitter.Node) bool {
 	switch n.Kind() {
 	case "statement_block":
-		return f.statements(n)
+		return f.block(n)
 	case "if_statement":
 		if yes, known := f.registrationCondition(n.ChildByFieldName("condition")); known {
 			f.context = append(f.context, f.module.evidence("conditional_test", n.ChildByFieldName("condition")))
@@ -148,7 +161,8 @@ func (f *flow) statement(n *sitter.Node) bool {
 		if n.NamedChildCount() > 0 {
 			f.eval(n.NamedChild(0))
 		}
-		return n.Kind() == "throw_statement"
+		// The shared guard engine treats the Node global process.exit as an exit too.
+		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && f.module.nodeProcessExit(n.NamedChild(0)))
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
 		if f.pathOnly && f.pathArchiveForOf(n) {
@@ -161,6 +175,97 @@ func (f *flow) statement(n *sitter.Node) bool {
 		f.branches(n)
 	}
 	return false
+}
+
+// heapWrite returns the gap for an unmodeled heap write and records it for
+// conditional joins, where the discarded expression value would otherwise lose it.
+func (f *flow) heapWrite(detail string, n *sitter.Node) analysis.Gap {
+	g := f.gap("unsupported_write", detail, n)
+	f.heapWrites = append(f.heapWrites, g)
+	return g
+}
+
+// block runs a nested statement block. let/const/class bindings it declares are
+// block scoped: after the block, a shadowed outer binding is restored and a new
+// one is removed, so it cannot leak into a sibling branch or later code.
+func (f *flow) block(n *sitter.Node) bool {
+	names := blockDeclarations(n, f.module.src)
+	if len(names) == 0 {
+		return f.statements(n)
+	}
+	type saved struct {
+		v     value
+		bound bool
+	}
+	prior := map[string]saved{}
+	for _, name := range names {
+		v, ok := f.env[name]
+		prior[name] = saved{v, ok}
+	}
+	request, response := f.request, f.response
+	exits := f.statements(n)
+	for _, name := range names {
+		if p := prior[name]; p.bound {
+			f.env[name] = p.v
+		} else {
+			delete(f.env, name)
+		}
+		if name == request && request != "" {
+			f.request = request
+		}
+		if name == response && response != "" {
+			f.response = response
+		}
+	}
+	return exits
+}
+
+// blockDeclarations lists the names a block's own let/const/class declarations bind.
+func blockDeclarations(n *sitter.Node, src []byte) []string {
+	var names []string
+	seen := map[string]bool{}
+	add := func(name string) {
+		if name != "" && !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	}
+	var pattern func(*sitter.Node)
+	pattern = func(p *sitter.Node) {
+		if p == nil {
+			return
+		}
+		switch p.Kind() {
+		case "identifier", "shorthand_property_identifier_pattern":
+			add(p.Utf8Text(src))
+			return
+		case "pair_pattern":
+			pattern(p.ChildByFieldName("value"))
+			return
+		case "assignment_pattern":
+			pattern(p.ChildByFieldName("left"))
+			return
+		}
+		for i := uint(0); i < p.NamedChildCount(); i++ {
+			pattern(p.NamedChild(i))
+		}
+	}
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		c := n.NamedChild(i)
+		switch c.Kind() {
+		case "lexical_declaration":
+			for j := uint(0); j < c.NamedChildCount(); j++ {
+				if d := c.NamedChild(j); d.Kind() == "variable_declarator" {
+					pattern(d.ChildByFieldName("name"))
+				}
+			}
+		case "class_declaration":
+			if name := c.ChildByFieldName("name"); name != nil {
+				add(name.Utf8Text(src))
+			}
+		}
+	}
+	return names
 }
 
 // branches explores the bodies of a statement the flow does not model precisely.
@@ -176,17 +281,26 @@ func (f *flow) branches(n *sitter.Node) {
 		f.eval(condition)
 	}
 	type exit struct {
-		env    map[string]value
-		branch *analysis.Evidence
+		env               map[string]value
+		branch            *analysis.Evidence
+		request, response string
 	}
 	saved := copyValues(f.env)
+	request, response := f.request, f.response
 	var exits []exit
 	runs := 0
+	baseContext := append([]analysis.Evidence{}, f.context...)
+	var added []analysis.Evidence
 	run := func(body *sitter.Node, branch *analysis.Evidence) {
 		runs++
 		f.env = copyValues(saved)
+		// Each body starts from the request/response identifiers and the context
+		// before the statement; one body's path controls never reach another.
+		f.request, f.response = request, response
+		f.context = append([]analysis.Evidence{}, baseContext...)
+		defer func() { added = append(added, f.context[len(baseContext):]...) }()
 		if !f.statement(body) {
-			exits = append(exits, exit{f.env, branch})
+			exits = append(exits, exit{f.env, branch, f.request, f.response})
 		}
 	}
 	complete := false
@@ -224,7 +338,29 @@ func (f *flow) branches(n *sitter.Node) {
 		f.gaps = append(f.gaps, f.gap("branch_exit", "a branch returns or throws; its condition may guard later code", n))
 	}
 	if !complete {
-		exits = append(exits, exit{saved, nil})
+		exits = append(exits, exit{saved, nil, request, response})
+	}
+	// A body may run zero times or only partly: later code keeps the binding
+	// evidence the bodies found, never a path control recorded inside one.
+	f.context = joinArmContext(baseContext, added, nil)
+	// An identifier still bound on some continuing path keeps its role there; a
+	// path that rebinds it is a may-change, not a removal of the feasible source.
+	f.request, f.response = "", ""
+	rebound := false
+	for _, e := range exits {
+		if e.request == request {
+			f.request = request
+		}
+		if e.response == response {
+			f.response = response
+		}
+		rebound = rebound || e.request != request || e.response != response
+	}
+	if len(exits) == 0 {
+		f.request, f.response = request, response
+	}
+	if rebound {
+		f.gaps = append(f.gaps, f.gap("unknown_control_effect", "request or response identifier may be rebound on a path", n))
 	}
 	merged := map[string]value{}
 	keys := map[string]bool{}
@@ -388,7 +524,7 @@ func (f *flow) eval(n *sitter.Node) value {
 			}
 		} else if !f.assignLocalField(left, v) {
 			f.assignStoredField(left, v)
-			v.gaps = append(v.gaps, f.gap("unsupported_write", "heap/property assignment is not modeled", n))
+			v.gaps = append(v.gaps, f.heapWrite("heap/property assignment is not modeled", n))
 		}
 		return v
 	case "augmented_assignment_expression":
@@ -409,7 +545,19 @@ func (f *flow) eval(n *sitter.Node) value {
 				f.env[left.Utf8Text(src)] = v
 			}
 		} else if left != nil {
-			v.gaps = append(v.gaps, f.gap("unsupported_write", "heap/property assignment is not modeled", n))
+			v.gaps = append(v.gaps, f.heapWrite("heap/property assignment is not modeled", n))
+		}
+		return v
+	case "update_expression":
+		v := f.transfer(f.children(n), "expression", n)
+		if arg := n.ChildByFieldName("argument"); arg != nil && arg.Kind() != "identifier" {
+			v.gaps = append(v.gaps, f.heapWrite("heap/property update is not modeled", n))
+		}
+		return v
+	case "unary_expression":
+		v := f.transfer(f.children(n), "expression", n)
+		if op := n.ChildByFieldName("operator"); op != nil && op.Utf8Text(src) == "delete" {
+			v.gaps = append(v.gaps, f.heapWrite("heap/property delete is not modeled", n))
 		}
 		return v
 	case "object":

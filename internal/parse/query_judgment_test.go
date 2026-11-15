@@ -26,7 +26,7 @@ func TestConditionalQueryOutputConstraints(t *testing.T) {
 			}
 			u := kindUse(t, r, "nosql_query_candidate")
 			facts := strings.Join(u.Completeness.ModelFacts, "\n")
-			if got := strings.Contains(facts, "Every output alternative"); got != tt.allNumeric {
+			if got := strings.Contains(facts, "numeric_output_expression: "); got != tt.allNumeric {
 				t.Fatalf("all numeric = %v, want %v; facts:\n%s", got, tt.allNumeric, facts)
 			}
 		})

@@ -345,6 +345,9 @@ product behavior; `.zazz/standards/` governs development. Neither is loaded dyna
 
 ## 7. Evidence bundle contract
 
+Request size, evidence relevance, the request budget and planned compaction are designed in
+[request size and evidence relevance](architecture/request-size-and-evidence-relevance.md).
+
 The [trace judgment design](architecture/trace-judgment.md) owns evidence-version 3: deduplicated
 source evidence, dependency witnesses, trace/control edges, roles, required evidence, API contracts,
 exact field constraints and remaining blockers. Supplied evidence means present, not complete or

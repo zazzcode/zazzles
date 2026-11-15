@@ -94,6 +94,24 @@ Report examples are illustrative, not applied or verified patches. JSON includes
 Human records reference `use_id`, `entry_id` and `invocation_context_id`; raw assessments preserve provider/model, answers,
 completion status, blockers, and scope. HTML and SARIF are offline views of that evidence.
 
+## Request size and omitted evidence
+
+A decision request is limited to 65,536 bytes. A request under the limit is sent unchanged. Over the
+limit the scanner first uses its lossless compact form, then leaves out whole context evidence items
+(text already inside another item first, then context in other files, then same-file context furthest
+from the operation). Dependency, control and required evidence is never left out. The request states
+each omission in an `evidence_omitted_for_size` gap, and the record lists it in
+`assessment.evidence_omissions`. If the required evidence alone is too large, no request is sent and
+the record stays **Inconclusive** with a reason starting `evidence_too_large:` and the bytes by section.
+
+## Outbound observations and SSRF
+
+Outbound observations carry `outbound.destination_origin` (`request`, `external_data`, `constant`,
+`environment` or `unestablished`) for the destination argument only. Observations of one call reached
+from several entries are shown once; the representative names the entry count and `grouped_use_ids`,
+and the other records carry `grouped_into`. SSRF claims report destination control, restriction and
+coverage separately; see [SSRF analysis](analysis/ssrf.md).
+
 ## Completion and compatibility
 
 `not_run`, `failed`, and `completed` describe semantic-assessment execution, independently of whether
@@ -124,3 +142,16 @@ and callable locations related. Namespaced properties retain typed entry and inv
 metadata. Entry/scan gaps without uses appear in invocation metadata/notifications, without
 fabricated security results. Saved report exports preserve raw historical answers and do
 not rerun analysis or transfer those answers onto changed requests.
+
+## Evidence wire versions and historical judgments
+
+Current model requests use evidence wire version 7. Compact evidence rows retain file
+and line ranges; context facts refer to evidence IDs, and dependencies preserve each
+source, transfer, operand slot and storage key. Full source hashes, byte coordinates
+and selected component digests remain in local report and trace provenance.
+
+Wire representation changes invalidate exact saved-request replay. Historical reports
+remain readable with their original model answers; a current scan needs a fresh
+judgment when its evidence or protocol changed. Source-proven transparent JavaScript
+and TypeScript wrappers can resolve dispatch, while wrappers with mutations,
+argument changes, repeated calls or unknown effects retain coverage limits.

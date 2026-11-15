@@ -1,9 +1,11 @@
 package parse
 
 import (
-	"github.com/zazzcode/zazzles/internal/analysis"
 	"sort"
 	"strings"
+
+	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
 // automaticQueries reuses claim-scoped assembly without benchmark answer files.
@@ -133,6 +135,21 @@ func (s *moduleSet) collectionBinding(use analysis.CandidateUse) []analysis.Evid
 		out = append(out, m.evidence("sink_binding", imp.declaration))
 	} else if len(parts) != 1 {
 		return nil
+	} else if imp, ok := m.imports[name]; ok && topVariable(m, name) == nil {
+		// A named ES import is followed to the declaring module exactly like the
+		// namespace form above; a default or namespace binding is not a collection.
+		if imp.name == "*" || imp.name == "default" || bindingReassigned(m, name) {
+			return nil
+		}
+		declaring, local, via := s.namedExport(m, imp.module, imp.name, 0)
+		if declaring == nil {
+			return nil
+		}
+		target, name = declaring, local
+		out = append(out, m.evidence("sink_binding", imp.declaration))
+		for _, step := range via {
+			out = append(out, step.module.evidence("sink_binding", step.node))
+		}
 	}
 	ctor := topVariable(target, name)
 	if ctor == nil || ctor.Kind() != "new_expression" {
@@ -152,4 +169,98 @@ func (s *moduleSet) collectionBinding(use analysis.CandidateUse) []analysis.Evid
 	}
 	out = append(out, target.evidence("sink_binding", imp.declaration), target.evidence("sink_binding", ctor.Parent()))
 	return out
+}
+
+type exportStep struct {
+	module *sourceModule
+	node   *sitter.Node
+}
+
+// namedExport resolves the exported name of a relative module to the module and
+// top-level local name that declare it, following export-clause aliases and
+// `export { x } from` re-exports. It returns nil when the module is not local,
+// the name is exported zero or several times, or the local binding is reassigned.
+// via lists the re-export statements crossed, as evidence of the binding chain.
+func (s *moduleSet) namedExport(from *sourceModule, path, exported string, depth int) (*sourceModule, string, []exportStep) {
+	if depth > 3 {
+		return nil, "", nil
+	}
+	t := s.importModule(from, path)
+	if t == nil {
+		return nil, "", nil
+	}
+	type match struct {
+		local, source string
+		node          *sitter.Node
+	}
+	var found []match
+	root := t.tree.RootNode()
+	for i := uint(0); i < root.NamedChildCount(); i++ {
+		n := root.NamedChild(i)
+		if n.Kind() != "export_statement" {
+			continue
+		}
+		if decl := n.ChildByFieldName("declaration"); decl != nil {
+			if decl.Kind() == "lexical_declaration" || decl.Kind() == "variable_declaration" {
+				for j := uint(0); j < decl.NamedChildCount(); j++ {
+					if id := decl.NamedChild(j).ChildByFieldName("name"); id != nil && id.Utf8Text(t.src) == exported {
+						found = append(found, match{local: exported})
+					}
+				}
+			} else if id := decl.ChildByFieldName("name"); id != nil && id.Utf8Text(t.src) == exported {
+				found = append(found, match{local: exported})
+			}
+		}
+		source := ""
+		if src := n.ChildByFieldName("source"); src != nil {
+			value, ok := stringLiteral(src, t.src)
+			if !ok {
+				return nil, "", nil
+			}
+			source = value
+		}
+		for j := uint(0); j < n.NamedChildCount(); j++ {
+			clause := n.NamedChild(j)
+			if clause.Kind() != "export_clause" {
+				continue
+			}
+			for k := uint(0); k < clause.NamedChildCount(); k++ {
+				spec := clause.NamedChild(k)
+				id, alias := spec.ChildByFieldName("name"), spec.ChildByFieldName("alias")
+				visible := alias
+				if visible == nil {
+					visible = id
+				}
+				if id != nil && visible != nil && visible.Utf8Text(t.src) == exported {
+					found = append(found, match{local: id.Utf8Text(t.src), source: source, node: n})
+				}
+			}
+		}
+	}
+	if len(found) != 1 {
+		return nil, "", nil
+	}
+	f := found[0]
+	if f.source != "" {
+		declaring, local, via := s.namedExport(t, f.source, f.local, depth+1)
+		if declaring == nil {
+			return nil, "", nil
+		}
+		return declaring, local, append([]exportStep{{t, f.node}}, via...)
+	}
+	if bindingReassigned(t, f.local) {
+		return nil, "", nil
+	}
+	if imp, ok := t.imports[f.local]; ok && topVariable(t, f.local) == nil {
+		// `import { x } from './a'; export { x }` forwards another module's binding.
+		if imp.name == "*" || imp.name == "default" {
+			return nil, "", nil
+		}
+		declaring, local, via := s.namedExport(t, imp.module, imp.name, depth+1)
+		if declaring == nil {
+			return nil, "", nil
+		}
+		return declaring, local, append([]exportStep{{t, imp.declaration}}, via...)
+	}
+	return t, f.local, nil
 }

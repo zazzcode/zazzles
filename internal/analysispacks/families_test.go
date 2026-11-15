@@ -21,7 +21,7 @@ func validationSelectionUse(file string, claim bool) analysis.CandidateUse {
 }
 
 func TestFamilyComponentSelection(t *testing.T) {
-	families := map[string][]string{"sql": nil, "nosql": nil, "validation": nil, "xss": nil, "outbound": nil, "command": nil, "path": nil}
+	families := map[string][]string{"logging": nil, "sql": nil, "nosql": nil, "validation": nil, "xss": nil, "outbound": nil, "command": nil, "path": nil, "ssrf": nil}
 	for _, fam := range Families() {
 		if _, ok := families[fam.Name]; !ok {
 			t.Fatalf("unexpected family %s", fam.Name)
@@ -155,7 +155,7 @@ func TestFamilyComponentSelection(t *testing.T) {
 
 	// Unregistered kinds keep their existing runtime paths: no selection is
 	// attached and none is required for their requests.
-	for _, kind := range []string{"xss_data_candidate", "log_sink_candidate"} {
+	for _, kind := range []string{"xss_data_candidate"} {
 		u := analysis.CandidateUse{Kind: kind, Sink: analysis.Evidence{Span: analysis.Span{File: "server.ts"}}}
 		Attach(&u)
 		if u.Components != nil {
@@ -251,5 +251,30 @@ func TestFamilyMaterialSizes(t *testing.T) {
 			t.Fatalf("%s material %d exceeds %d", tt.name, size, MaxMaterialBytes)
 		}
 		t.Logf("%s selected_material=%d bytes components=%d", tt.name, size, components)
+	}
+}
+
+func TestLoggingCatalogSelectionAndFailure(t *testing.T) {
+	for _, file := range []string{"server.js", "server.ts", "app.py"} {
+		u := analysis.CandidateUse{Kind: "log_sink_candidate", Sink: analysis.Evidence{Span: analysis.Span{File: file}}}
+		Attach(&u)
+		if u.Components == nil || u.Components.Failure != "" {
+			t.Fatalf("logging selection: %+v", u.Components)
+		}
+		m, err := ForUse(u)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(m.Questions) != 4 || !strings.Contains(m.Guidelines.Body, "## Logging") || strings.Contains(m.Guidelines.Body, "## Sinks") {
+			t.Fatal("logging selected unrelated guidance or lost questions")
+		}
+		u.Components.Digest = "stale"
+		if _, err = ForUse(u); err == nil {
+			t.Fatal("stale logging selection accepted")
+		}
+		u.Components = nil
+		if _, err = ForUse(u); err == nil {
+			t.Fatal("missing logging selection accepted")
+		}
 	}
 }

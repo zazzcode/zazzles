@@ -38,6 +38,9 @@ func Text(w io.Writer, r *analysis.AnalysisReport) {
 			seen[u.EntryID] = true
 		}
 		f := r.Findings[i]
+		if f.GroupedInto != "" {
+			continue
+		}
 		fmt.Fprintf(w, "%s: %s [%s]\n%s\nentry=%s context=%s %s %s:%d sources=%d gaps=%d judge=%s\n", f.RecordType, f.Title, f.Status, f.Summary, u.EntryID, u.InvocationContextID, u.Kind, u.Sink.Span.File, u.Sink.Span.StartLine, len(u.Dependencies), len(u.Gaps), u.Assessment.Status)
 		if u.Check != nil {
 			fmt.Fprintf(w, "check=%s finding=%s protection=%s blockers=%d\n", u.Check.ID, u.Assessment.FindingStatus, u.Assessment.Protection, len(u.Assessment.BlockingGaps))

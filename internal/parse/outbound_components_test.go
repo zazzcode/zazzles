@@ -15,9 +15,11 @@ func TestBrowserServerRequestIsolation(t *testing.T) {
 	}
 	outbound, render := 0, 0
 	for _, u := range r.Uses {
-		if u.Kind == "outbound_http_candidate" {
+		// The server call's destination is a request value, so it is an SSRF claim;
+		// the browser fetch never becomes a server outbound record.
+		if u.Kind == "outbound_http_candidate" || u.Kind == "ssrf_candidate" {
 			outbound++
-			if u.Sink.Span.File != "server.js" || u.APIModel != nil || u.XSS != nil || u.Components == nil || u.Components.Pack.ID != "pack.outbound" {
+			if u.Kind != "ssrf_candidate" || u.Sink.Span.File != "server.js" || u.XSS != nil || u.Components == nil || u.Components.Pack.ID != "pack.ssrf" {
 				t.Fatal("browser/server observations conflated")
 			}
 			if len(u.Dependencies) != 1 || !strings.Contains(u.Dependencies[0].Source.Text, "req.query.destination") {

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 func TestClaimScopedPolicy(t *testing.T) {
@@ -52,5 +53,32 @@ func TestWireEvidenceDeduplication(t *testing.T) {
 	}
 	if len(decoded.Evidence) != 1 {
 		t.Fatalf("duplicated evidence: %s", data)
+	}
+}
+
+func TestSequelizeFinderPolicy(t *testing.T) {
+	use := func(sink string) analysis.CandidateUse {
+		return analysis.CandidateUse{Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: sink}, APIModel: analysispacks.SQLContract(analysispacks.SequelizeFinderContract),
+			Completeness: &analysis.Completeness{ClaimKind: "injection", Required: []string{"input_source"}, Evidence: map[string][]analysis.Evidence{"input_source": {{}}, "sink_binding": {{}}, "invoked_callable": {{}}, "control_flow": {{}}}}}
+	}
+	bound := use("ProductModel.findAll({ where: { name: { [Op.like]: `%${q}%` } } })")
+	raw := use("ProductModel.findAll({ where: Sequelize.literal(`name LIKE '%${q}%'`) })")
+	for _, tt := range []struct {
+		name   string
+		use    analysis.CandidateUse
+		answer string
+		status string
+	}{
+		{"bound like answered vulnerable", bound, "vulnerable", "needs_evidence"},
+		{"bound like answered protected", bound, "protected", "protected_for_claim"},
+		{"raw literal answered vulnerable", raw, "vulnerable", "confirmed_vulnerability"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			a := analysis.Assessment{Status: "completed", Answers: map[string]string{"injection_protection": tt.answer, "protection": "uncertain", "validation": "uncertain"}}
+			applyPolicy(tt.use, &a)
+			if a.FindingStatus != tt.status {
+				t.Fatalf("status=%s want %s: %s %+v", a.FindingStatus, tt.status, a.Reason, a.BlockingGaps)
+			}
+		})
 	}
 }

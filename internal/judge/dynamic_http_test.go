@@ -52,7 +52,7 @@ func TestDynamicPythonVulnPyTraces(t *testing.T) {
 		if err := json.Unmarshal(envelope.Use, &evidence); err != nil {
 			t.Error(err)
 		}
-		if evidence.Version != 6 || len(evidence.Invocation.Closures) == 0 || !strings.Contains(body.Input, "closure_capture") && strings.Contains(body.Input, "sql_query_candidate") {
+		if evidence.Version != 7 || len(evidence.Invocation.Closures) == 0 || !strings.Contains(body.Input, "closure_capture") && strings.Contains(body.Input, "sql_query_candidate") {
 			t.Error("dynamic prompt lost closure/trace witnesses")
 		}
 		answers := []map[string]string{}

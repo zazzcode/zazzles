@@ -87,6 +87,9 @@ func HTML(w io.Writer, r *analysis.AnalysisReport) error {
 			v.Rows = append(v.Rows, row)
 		}
 		f := r.Findings[i]
+		if f.GroupedInto != "" {
+			continue
+		}
 		row.Items = append(row.Items, htmlItem{f, u})
 		switch f.RecordType {
 		case "finding":

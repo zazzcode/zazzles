@@ -131,12 +131,13 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	assembleXSSClaims(out)
 	set.assembleCommandClaims(out)
 	set.assemblePathClaims(out)
+	set.assembleSSRFClaims(out)
 	// Check assembly rebuilds the use list for its own claim families; the
 	// command and path claims are independent of explicit check files and are kept whole.
 	var commandUses []analysis.CandidateUse
 	rest := out.Uses[:0:0]
 	for _, u := range out.Uses {
-		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" {
+		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" || u.Kind == "ssrf_candidate" {
 			commandUses = append(commandUses, u)
 		} else {
 			rest = append(rest, u)
@@ -220,12 +221,17 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 	if n == nil {
 		return nil, nil, "", []analysis.Gap{{Kind: "unresolved_handler", Detail: "no supported handler argument"}}
 	}
+	unwrapped := false
 	if n.Kind() == "call_expression" {
-		fn := n.ChildByFieldName("function")
-		args := n.ChildByFieldName("arguments")
-		if fn != nil && fn.Kind() == "member_expression" && args != nil && args.NamedChildCount() == 1 {
-			gaps = append(gaps, analysis.Gap{Kind: "unresolved_wrapper", Detail: "wrapper semantics not modeled", At: spanOf(m.file, n)})
-			n = args.NamedChild(0)
+		fn, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments")
+		if args != nil && args.NamedChildCount() == 1 {
+			if _, ok := s.transparentWrapper(m, n); ok {
+				n = args.NamedChild(0)
+				unwrapped = true
+			} else if fn != nil && fn.Kind() == "member_expression" && handlerArgument(args.NamedChild(0)) {
+				gaps = append(gaps, analysis.Gap{Kind: "unresolved_wrapper", Detail: "wrapper semantics not modeled", At: spanOf(m.file, n)})
+				n = args.NamedChild(0)
+			}
 		}
 	}
 	factory := n.Kind() == "call_expression"
@@ -239,6 +245,9 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 	target := m
 	if n != nil && (n.Kind() == "identifier" || n.Kind() == "member_expression") {
 		name := n.Utf8Text(m.src)
+		if unwrapped && !contractBindingStable(m, strings.Split(name, ".")[0], n) {
+			return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "wrapped handler binding is mutable or escapes", At: spanOf(m.file, n)})
+		}
 		if shadowed(n, strings.Split(name, ".")[0], m.src) {
 			return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "handler binding is shadowed", At: spanOf(m.file, n)})
 		}
@@ -249,6 +258,12 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 	}
 	if target.tree.RootNode().HasError() {
 		return nil, nil, "", append(gaps, analysis.Gap{Kind: "parse_error", Detail: "handler module has syntax errors", At: spanOf(target.file, n)})
+	}
+	if unwrapped && factory && asyncFunction(n) {
+		return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_factory", Detail: "async factory returns a promise rather than a handler", At: spanOf(target.file, n)})
+	}
+	if unwrapped && !stableFunctionBinding(target, n) {
+		return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "wrapped callable binding is mutable", At: spanOf(target.file, n)})
 	}
 	if factory {
 		body := n.ChildByFieldName("body")
@@ -277,6 +292,9 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 	}
 	if n == nil {
 		return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_factory", Detail: "no direct returned function", At: spanOf(target.file, target.tree.RootNode())})
+	}
+	if unwrapped && !stableFunctionBinding(target, n) {
+		return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "returned handler binding is mutable", At: spanOf(target.file, n)})
 	}
 	params := n.ChildByFieldName("parameters")
 	req := ""

@@ -18,7 +18,7 @@ func TestCommandComponentSelection(t *testing.T) {
 		t.Fatal(err)
 	}
 	f := FamFamily("command_execution_candidate")
-	if f == nil || !f.RequiresAPI || ProtocolFor("command_execution_candidate") != "command-components-v1" || !f.PythonHTTPOnly {
+	if f == nil || !f.RequiresAPI || ProtocolFor("command_execution_candidate") != "command-components-v2" || !f.PythonHTTPOnly {
 		t.Fatalf("family registration: %+v", f)
 	}
 	if want := []string{"shell_syntax_protection", "executable_control", "argument_control", "protection_coverage"}; !reflect.DeepEqual(f.QuestionNames, want) {

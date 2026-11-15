@@ -36,6 +36,10 @@ var findingTypes = []analysis.FindingType{
 		Description:    "Required account fields and enforcing guards must be checked before an account is persisted.",
 		Interpretation: "Review field requirements, conditional bypasses, and generated persistence behavior. A modeled create operation alone does not prove a registration bypass.",
 		Remediation:    "Enforce required fields before persistence, terminate rejected paths, add appropriate database constraints, and test the persisted result."},
+	{ID: "server-side-request-forgery", Label: "Server-Side Request Forgery", Coverage: "bounded global fetch, axios and Python requests/httpx/urllib destination analysis",
+		Description:    "A request-controlled value chooses the destination of an outbound HTTP request the server makes, so it can reach hosts the requester cannot reach directly.",
+		Interpretation: "One record per outbound call whose destination operand a request value reaches through a verified client, with separate destination-control, restriction and coverage assessments. A confirmed record is a static source judgment (CWE-918), not network reachability, DNS, redirect or deployment-policy analysis. A string prefix test is poor practice, not a restriction. Second-order destinations and unverified clients stay outbound observations.",
+		Remediation:    "Select destinations from a fixed table of trusted URLs. Otherwise parse the URL, allow-list scheme and host before the request, and disable or re-check redirects."},
 	{ID: "outbound-request-safety", Label: "Outbound Request Safety", Coverage: "bounded analysis",
 		Description:    "Input used in an outbound request may affect its destination, headers, or other request values. Unrestricted destination control can lead to server-side request forgery (SSRF).",
 		Interpretation: "The current scanner records bounded outbound-use evidence. A pill does not establish SSRF, destination reachability, or complete response-flow analysis.",
@@ -89,6 +93,8 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		ids = append(ids, "account-creation-validation", "input-validation")
 	case "outbound_http", "outbound_http_candidate":
 		ids = append(ids, "outbound-request-safety")
+	case "ssrf_candidate":
+		return append(ids, "server-side-request-forgery")
 	case "log_sink", "log_sink_candidate":
 		// Field validation does not change what a log line contains; it is reported on its own record.
 		return append(ids, "sensitive-data-logging")

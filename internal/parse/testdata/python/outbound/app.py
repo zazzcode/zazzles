@@ -10,4 +10,5 @@ def outbound():
     urllib.request.urlopen(request.args.get('third'))
     response = requests.get('https://target.invalid/fixed')
     requests.post('https://target.invalid/fixed', data=response.text)
+    requests.get(response.text)
     return 'ok'

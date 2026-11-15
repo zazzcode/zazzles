@@ -69,7 +69,8 @@ def unknown():
 			}
 		case "log_sink_candidate":
 			logs++
-		case "outbound_http_candidate":
+		case "outbound_http_candidate", "ssrf_candidate":
+			// A request-derived destination is an SSRF claim, still one outbound destination.
 			out++
 		}
 	}
@@ -274,8 +275,16 @@ def index():
 	}
 	count := 0
 	for _, u := range r.Uses {
-		if u.Kind == "outbound_http_candidate" {
+		switch u.Kind {
+		case "outbound_http_candidate":
+			t.Fatalf("a request destination stayed an observation, or a body-only call was recorded: %s", u.Sink.Text)
+		case "ssrf_candidate":
 			count++
+			for _, d := range u.Dependencies {
+				if d.SinkSlot != "destination" || d.Source.Text == "request.json" {
+					t.Fatalf("non-destination dependency on the SSRF claim: %+v", d)
+				}
+			}
 		}
 	}
 	if count != 2 {

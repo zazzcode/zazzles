@@ -37,15 +37,17 @@ func TestCompactBundleIsLossless(t *testing.T) {
 	details := schema["gap_details"].([]any)
 	location := func(source any, coords []any) (map[string]any, string) {
 		p := sources[int(source.(float64))].([]any)
-		return map[string]any{"file": p[0], "start_line": coords[0], "end_line": coords[1], "start_byte": coords[2], "end_byte": coords[3]}, p[1].(string)
+		return map[string]any{"file": p[0], "start_line": coords[0], "end_line": coords[1]}, ""
 	}
 	evidence := []any{}
 	for _, item := range got["evidence"].([]any) {
 		row := item.([]any)
-		span, hash := location(row[1], row[2:6])
-		e := map[string]any{"kind": row[0], "span": span, "sha256": hash, "text": row[6]}
-		if row[7] != nil {
-			e["text_ref"] = row[7]
+		span, _ := location(row[1], row[2:4])
+		e := map[string]any{"kind": row[0], "span": span, "text": row[4]}
+		if row[5] != nil {
+			e["text_ref"] = row[5]
+			e["start_column"] = row[6]
+			e["end_column"] = row[7]
 		}
 		evidence = append(evidence, e)
 	}
@@ -53,8 +55,8 @@ func TestCompactBundleIsLossless(t *testing.T) {
 	excerpts := []any{}
 	for _, item := range got["source_excerpts"].([]any) {
 		row := item.([]any)
-		span, hash := location(row[0], row[1:5])
-		excerpts = append(excerpts, map[string]any{"kind": "source_excerpt", "span": span, "sha256": hash, "text": row[5]})
+		span, _ := location(row[0], row[1:3])
+		excerpts = append(excerpts, map[string]any{"kind": "source_excerpt", "span": span, "text": row[3]})
 	}
 	got["source_excerpts"] = excerpts
 	var restore func(any) any
@@ -65,7 +67,7 @@ func TestCompactBundleIsLossless(t *testing.T) {
 				if ref, ok := x[i].(string); ok && strings.HasPrefix(ref, "g") {
 					if id, err := strconv.Atoi(ref[1:]); err == nil && id >= 0 && id < len(gaps) {
 						row := gaps[id].([]any)
-						span, _ := location(row[2], row[3:7])
+						span, _ := location(row[2], row[3:5])
 						x[i] = map[string]any{"kind": row[0], "detail": details[int(row[1].(float64))], "at": span}
 						continue
 					}
@@ -91,6 +93,24 @@ func TestCompactBundleIsLossless(t *testing.T) {
 		}
 	}
 	delete(got, "compact_wire")
+	delete(want, "trace_graph")
+	var omitProvenance func(any)
+	omitProvenance = func(v any) {
+		switch x := v.(type) {
+		case map[string]any:
+			delete(x, "sha256")
+			delete(x, "start_byte")
+			delete(x, "end_byte")
+			for _, item := range x {
+				omitProvenance(item)
+			}
+		case []any:
+			for _, item := range x {
+				omitProvenance(item)
+			}
+		}
+	}
+	omitProvenance(want)
 	if !reflect.DeepEqual(want, got) {
 		t.Fatalf("compact bundle failed exact reconstruction\nwant=%v\ngot=%v", want, got)
 	}

@@ -33,6 +33,7 @@ type CandidateUse struct {
 	XSS                 *XSSFacts           `json:"xss,omitempty"`
 	Command             *CommandFacts       `json:"command,omitempty"`
 	Path                *PathFacts          `json:"path,omitempty"`
+	Outbound            *OutboundFacts      `json:"outbound,omitempty"`
 	APIModel            *APIModel           `json:"api_model,omitempty"`
 	ControlEdges        []ControlEdge       `json:"control_edges,omitempty"`
 	Check               *Check              `json:"check,omitempty"`
@@ -54,19 +55,33 @@ type CandidateUse struct {
 
 // Assessment preserves the judge's result independently from structural evidence.
 type Assessment struct {
-	DeduplicatedFrom string                  `json:"deduplicated_from,omitempty"`
-	RequestDigest    string                  `json:"request_digest,omitempty"`
-	AnswerDetails    map[string]AnswerDetail `json:"answer_details,omitempty"`
-	FindingStatus    string                  `json:"finding_status,omitempty"`
-	BlockingGaps     []Gap                   `json:"blocking_gaps,omitempty"`
-	Answers          map[string]string       `json:"answers,omitempty"`
-	Usage            map[string]int64        `json:"usage,omitempty"`
-	Status           string                  `json:"status"`
-	Provider         string                  `json:"provider,omitempty"`
-	Model            string                  `json:"model,omitempty"`
-	QuestionVersion  string                  `json:"question_version,omitempty"`
-	Protection       string                  `json:"protection,omitempty"`
-	Reason           string                  `json:"reason,omitempty"`
+	// EvidenceOmissions lists context evidence left out of an over-limit request.
+	// The request itself names the same items in an evidence_omitted_for_size gap.
+	EvidenceOmissions []EvidenceOmission      `json:"evidence_omissions,omitempty"`
+	DeduplicatedFrom  string                  `json:"deduplicated_from,omitempty"`
+	RequestDigest     string                  `json:"request_digest,omitempty"`
+	AnswerDetails     map[string]AnswerDetail `json:"answer_details,omitempty"`
+	FindingStatus     string                  `json:"finding_status,omitempty"`
+	BlockingGaps      []Gap                   `json:"blocking_gaps,omitempty"`
+	Answers           map[string]string       `json:"answers,omitempty"`
+	Usage             map[string]int64        `json:"usage,omitempty"`
+	Status            string                  `json:"status"`
+	Provider          string                  `json:"provider,omitempty"`
+	Model             string                  `json:"model,omitempty"`
+	QuestionVersion   string                  `json:"question_version,omitempty"`
+	Protection        string                  `json:"protection,omitempty"`
+	Reason            string                  `json:"reason,omitempty"`
+}
+
+// EvidenceOmission identifies one supplied evidence item that a size-bounded
+// request did not carry. It is a reviewable record, never a judgment.
+type EvidenceOmission struct {
+	Kind  string `json:"kind"`
+	Span  Span   `json:"span"`
+	Bytes int    `json:"bytes"`
+	// Lossless is true when the item's source text is still supplied inside
+	// another evidence item, so leaving it out removed no source.
+	Lossless bool `json:"lossless,omitempty"`
 }
 
 // AnalysisReport contains bounded security analysis, separate from the route inventory.

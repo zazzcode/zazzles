@@ -81,6 +81,7 @@ func (s *moduleSet) grpcFlow(out *analysis.AnalysisReport, m *sourceModule, fn *
 			}
 		}
 	}
+	promoteInvocationPreconditions(f.uses, f.context)
 	out.Uses = append(out.Uses, f.uses...)
 }
 func (f *flow) grpcProjection(n *sitter.Node, base value) (value, bool) {

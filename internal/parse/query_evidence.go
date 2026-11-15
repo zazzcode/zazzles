@@ -23,11 +23,11 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 		}
 	}
 	if use.Check != nil && use.Check.Selector != nil && use.Check.Selector.Kind == "graphql" {
-		c.ModelFacts = []string{"Scope is a verified Apollo schema field and its independently bound resolver invocation. Only args values have external provenance; parent/context/info and parent-result transitions remain unknown. SDL scalar/type/directive names establish neither database safety nor application validation policy."}
+		c.ModelFacts = []string{"scope_apollo_resolver"}
 	} else if use.Check != nil && use.Check.Selector != nil && use.Check.Selector.Kind == "grpc" {
-		c.ModelFacts = []string{"Scope is a verified grpc-js unary service/method with an independently bound handler invocation. Only call.request fields have external request provenance; metadata, context and callback roles remain distinct/unknown. Proto3 field types and decoding do not establish database protection or business validation policy."}
+		c.ModelFacts = []string{"scope_grpc_unary"}
 	} else if ctx := s.nodeHTTP[use.EntryID]; ctx != nil && ctx.entry.HTTP.Framework != "express" {
-		c.ModelFacts = []string{"A verified " + ctx.entry.HTTP.Framework + " registration and handler are supplied. Input acquisition, hooks/schema configuration and value transfers are separate from sink semantics. Source-present controls may be judged; absent or unsupported bodies/scopes remain blockers. A schema declaration is not by itself protection."}
+		c.ModelFacts = []string{"scope_node_framework: " + ctx.entry.HTTP.Framework}
 		// Discovery's generic middleware warning is replaced only by the adapter's
 		// explicitly bounded lifecycle context, retaining every adapter gap.
 		kept := []analysis.Gap{}
@@ -40,11 +40,8 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 		}
 		c.Coverage = kept
 	} else if chainSupplied && len(s.contextLimits) == 0 {
-		c.ModelFacts = []string{
-			"Scope is direct Express registrations with syntactically matched earlier middleware and same-route handlers. Matching source bodies or explicit transport/authentication adapter contracts are supplied; unsupported/dynamic chains remain blockers.",
-			"Known express.json/body-parser parsing adapters parse request values and may admit nested JSON objects. They do not enforce an id/email/name field schema or remove query operators from nested fields. A parser call alone is not a validator.",
-			"For this supported registration scope, the discovery-stage generic middleware_unresolved warning is superseded by the supplied route/middleware context. Judge guard effects from those bodies and actual input transformations; do not invent additional undisclosed middleware.",
-		}
+		// Fixed interpretation is owned by the guidance fact notes (W6).
+		c.ModelFacts = []string{"scope_express_direct"}
 		coverage := []analysis.Gap{}
 		for _, g := range c.Coverage {
 			if g.Kind == "middleware_unresolved" {
@@ -80,7 +77,8 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 				c.Evidence["conditional_value"] = append(c.Evidence["conditional_value"], m.evidence("conditional_value", n))
 			}
 		case "unresolved_wrapper":
-			covered = len(c.Evidence["wrapper_definition"]) > 0
+			// Source presence alone does not prove wrapper transparency.
+			covered = false
 		}
 		if covered {
 			c.Coverage = append(c.Coverage, g)
@@ -99,7 +97,7 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 		}
 		fn := node.ChildByFieldName("function")
 		if fn != nil && fn.Utf8Text(module.src) == "Number" && nativeStringOperation(module, node) {
-			c.ModelFacts = append(c.ModelFacts, "The exact transformation "+e.Text+" at "+e.Span.File+" is a verified unshadowed ECMAScript Number call. ONLY that call result is numeric (including NaN/Infinity) or throws; this guarantee does NOT apply to the original input or other conditional branches. Evaluate each alternative separately. String truncation and newline removal do not make other alternatives numeric and do not remove query-expression operators. Numeric business requirements remain separate.")
+			c.ModelFacts = append(c.ModelFacts, "verified_number_call: "+e.Text+" at "+e.Span.File)
 		}
 	}
 	c.Blockers = blockers
@@ -122,12 +120,12 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 			for _, witness := range evidence {
 				c.Evidence[witness.Kind] = append(c.Evidence[witness.Kind], witness)
 			}
-			c.ModelFacts = append(c.ModelFacts, "The exact native crypto expression "+e.Text+" at "+e.Span.File+" returns hexadecimal text [0-9a-f] on normal completion, or throws. Only this expression's output has that alphabet; raw input and sibling alternatives do not inherit it. Trace helper-return and concatenation transfers separately for each input. This does not establish cryptographic strength or business validation and does not parameterize concatenated SQL. Reference: https://nodejs.org/api/crypto.html#hashdigestencoding")
+			c.ModelFacts = append(c.ModelFacts, "native_hash_hex: "+e.Text+" at "+e.Span.File)
 		}
 	}
 	s.expressContractFacts(use)
 	if use.Kind == "nosql_query_candidate" {
-		c.ModelFacts = append(c.ModelFacts, "For selector-value operator injection, distinguish an object from a primitive string: Mongo-style operators inside an object are interpreted, while text such as $ne inside a primitive string remains data. A dominating typeof field !== string rejection that returns/throws before the sink excludes object-valued input for that field on the continuing path, provided there is no intervening mutation or bypass. A mere type test without enforcing control flow does not constrain the sink. Evaluate every selector field and path independently; a guard on one field cannot protect another, and a string used as executable $where text has different semantics.")
+		c.ModelFacts = append(c.ModelFacts, "nosql_selector_semantics")
 	}
 	s.conditionalHelpers(use)
 	s.queryConstraintReview(use)
@@ -272,6 +270,6 @@ func (s *moduleSet) conditionalHelpers(use *analysis.CandidateUse) {
 		conditionalConstraints(m, n, c)
 	}
 	if len(c.Evidence["conditional_value"]) > 0 {
-		c.ModelFacts = append(c.ModelFacts, "Conditional value expressions and any directly resolved condition helper bodies are supplied. A static path may be judged under an explicit possible configuration precondition; do not require an observed runtime request/configuration. Reject a path if supplied source proves its precondition impossible. Do not report all runtime configurations as vulnerable merely because one supported branch is unsafe.")
+		c.ModelFacts = append(c.ModelFacts, "conditional_value_paths")
 	}
 }

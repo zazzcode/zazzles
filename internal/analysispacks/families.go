@@ -11,10 +11,10 @@ import (
 // takes a new protocol identifier; historical answers under an older protocol
 // are retained but cannot replay onto changed requests.
 const (
-	SQLProtocol        = "sql-components-v2"
-	NoSQLProtocol      = "nosql-components-v1"
-	ValidationProtocol = "validation-components-v1"
-	XSSProtocol        = "xss-components-v1"
+	SQLProtocol        = "sql-components-v3"
+	NoSQLProtocol      = "nosql-components-v2"
+	ValidationProtocol = "validation-components-v2"
+	XSSProtocol        = "xss-components-v2"
 	// CommandProtocol and PathProtocol are declared in command.go and path.go.
 )
 
@@ -93,6 +93,7 @@ func languageID(f *Family, language lang.Language) string {
 // Families returns the registered component families in stable order.
 func Families() []Family {
 	return []Family{
+		{Name: "logging", Label: "Sensitive-data logging", Kinds: []string{"log_sink_candidate"}, QuestionNames: loggingQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.logging", Claim: "claim.logging", Evidence: "evidence.logging", PolicyOwner: "internal/judge/logging.go"},
 		{Name: "outbound", Label: "Outbound observation", ObservationOnly: true, Kinds: []string{"outbound_http_candidate"}, Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.outbound", Claim: "observation.outbound", Evidence: "evidence.outbound", PolicyOwner: "internal/parse/flow.go + internal/parse/python_frameworks.go"},
 		{Name: "xss", Label: "XSS", Kinds: []string{"xss_candidate"}, QuestionNames: xssQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.xss", Claim: "claim.xss", Evidence: "evidence.xss", PolicyOwner: "internal/judge/xss.go"},
 		{
@@ -131,6 +132,15 @@ func Families() []Family {
 			PolicyOwner: "internal/judge/path.go",
 		},
 		{
+			Name: "ssrf", Label: "Server-side request forgery", Kinds: []string{"ssrf_candidate"}, QuestionNames: ssrfQuestionNames(),
+			Languages:      []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python},
+			Entries:        []string{"entry.http", "entry.graphql", "entry.grpc"},
+			RequiresAPI:    true,
+			PythonHTTPOnly: true,
+			Pack:           "pack.ssrf", Claim: "claim.ssrf", Evidence: "evidence.ssrf",
+			PolicyOwner: "internal/judge/ssrf.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python},
 			// A standalone field claim needs an explicit/source-backed
@@ -164,6 +174,8 @@ func ProtocolFor(kind string) string {
 
 func familyProtocol(name string) string {
 	switch name {
+	case "logging":
+		return LoggingProtocol
 	case "outbound":
 		return "outbound-observation-v1" // Catalog compatibility only; no assessment protocol.
 	case "xss":
@@ -178,6 +190,8 @@ func familyProtocol(name string) string {
 		return CommandProtocol
 	case "path":
 		return PathProtocol
+	case "ssrf":
+		return SSRFProtocol
 	}
 	return ""
 }
@@ -192,6 +206,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return CommandContract(id)
 	case "path":
 		return PathContract(id)
+	case "ssrf":
+		return SSRFContract(id)
 	}
 	return nil
 }
@@ -204,6 +220,8 @@ func contractIDs(f *Family) []string {
 		return commandContractIDs
 	case "path":
 		return pathContractIDs
+	case "ssrf":
+		return ssrfContractIDs
 	}
 	return noSQLContractIDs
 }
@@ -249,6 +267,9 @@ func flowID(f *Family) string {
 	}
 	if f.Name == "path" {
 		return "flow.path"
+	}
+	if f.Name == "ssrf" {
+		return "flow.ssrf"
 	}
 	return "flow.local"
 }

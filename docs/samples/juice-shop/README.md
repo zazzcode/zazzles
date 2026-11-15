@@ -2,17 +2,18 @@
 
 
 
-## Current report (rebuilt 2026-11-14)
+## Current report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Every analyzer was run on the pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, evidence wire v7, precise JavaScript conditional flow and guidance-owned fact codes on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 223. **Judged:** 128, in 128 requests (1,087,834 input tokens).
-- **Outcomes:** 19 confirmed vulnerabilities, 0 poor practice, 0 protected, 109 inconclusive (Review).
-- **Path traversal and Zip Slip (12 judged):** the upload Zip Slip at `routes/fileUpload.ts:34` and both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**. The other nine (file serving and reads) stay **Review**.
-- **Not assessed by design (90):** 66 outbound HTTP observations, 23 API-data records with no rendering claim, and one NoSQL record at `routes/order.ts:164` whose evidence exceeds the 64 KiB request limit.
-- **Failed before any model call (5):** model component selection needs a verified API binding for `routes/orderHistory.ts` (lines 17 and 36), `routes/createProductReviews.ts:23`, and `routes/chat.ts` (lines 117 and 123). They remain unassessed, not safe.
+- **Records:** 222. **Judged:** 134, in 134 requests (698,288 input tokens).
+- **Outcomes among judged records:** 21 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 112 inconclusive (Review).
+- **Unassessed records shown:** 88; provider/decoder failures: 0.
+- **Wrapped SSRF:** transparent async forwarding resolves at `utils.asyncHandler`; the remaining multipart upload factory is unresolved, so `routes/profileImageUrlUpload.ts:24` remains Review. The largest NoSQL request, `order.ts:164`, fits without shedding evidence and retains its claim blockers. Precise conditional modeling removed the generic branch blocker from the `likeProductReviews.ts` NoSQL records, which are now confirmed; `orderHistory.ts:36` is Review on a borderline source-coverage answer.
+
+[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

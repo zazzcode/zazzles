@@ -85,7 +85,7 @@ func (c *Client) AssessScheduled(ctx context.Context, report *analysis.AnalysisR
 		} else {
 			u.Assessment, trace = c.AssessTrace(ctx, *u)
 			// Failed preflight and zero-call size limits do not spend HTTP slots.
-			if trace.HTTPStatus != 0 || trace.RequestBytes > 0 && trace.RequestBytes <= 64<<10 && !strings.HasPrefix(u.Assessment.Reason, "judge limit:") {
+			if trace.HTTPStatus != 0 || trace.RequestBytes > 0 && trace.RequestBytes <= requestLimit && !strings.HasPrefix(u.Assessment.Reason, "judge limit:") {
 				calls++
 			}
 			if err == nil && u.Assessment.Status == "completed" {

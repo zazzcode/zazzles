@@ -72,6 +72,8 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 		helpers: f.helpers,
 		facts:   f.facts,
 	}
+	var conditions []modeledCondition
+	child.conditions = &conditions
 	unbound := false
 	for i, p := range params {
 		if i < len(args) {
@@ -110,6 +112,14 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 				precise = false
 			}
 		case "branch_exit", "work_limit", "unsupported_binding", "helper_call_limit", "recursive_helper":
+			precise = false
+		}
+	}
+	// A modeled conditional keeps its return paths apart, but the caller's checks
+	// do not see a helper's tests. As for an unmodeled branch, an arm that leaves
+	// early, or a test that may guard content, keeps the result a may-dependency.
+	for _, c := range conditions {
+		if c.exits || !contentNeutral(c.test, helper, hm.src, 0) {
 			precise = false
 		}
 	}

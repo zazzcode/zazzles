@@ -6,8 +6,9 @@ import (
 	"sort"
 )
 
-// Compaction changes representation only: record order, roles, source bytes,
-// snapshot identities, gaps and every reference remain recoverable.
+// Compaction keeps record order, roles, executable source, gaps and references.
+// Snapshot hashes and byte coordinates stay in local provenance; excerpt columns
+// distinguish nodes sharing a line in the model-facing projection.
 func compactBundle(bundle any) (any, error) {
 	raw, err := json.Marshal(bundle)
 	if err != nil {
@@ -20,17 +21,17 @@ func compactBundle(bundle any) (any, error) {
 	sources := []any{}
 	sourceIDs := map[string]int{}
 	source := func(file, hash any) int {
-		key := fmt.Sprint(file) + "\x00" + fmt.Sprint(hash)
+		key := fmt.Sprint(file)
 		if i, ok := sourceIDs[key]; ok {
 			return i
 		}
 		i := len(sources)
 		sourceIDs[key] = i
-		sources = append(sources, []any{file, hash})
+		sources = append(sources, []any{file})
 		return i
 	}
 	span := func(s map[string]any) []any {
-		return []any{s["start_line"], s["end_line"], s["start_byte"], s["end_byte"]}
+		return []any{s["start_line"], s["end_line"]}
 	}
 	evidence := []any{}
 	for _, item := range out["evidence"].([]any) {
@@ -38,7 +39,7 @@ func compactBundle(bundle any) (any, error) {
 		s := e["span"].(map[string]any)
 		row := []any{e["kind"], source(s["file"], e["sha256"])}
 		row = append(row, span(s)...)
-		row = append(row, e["text"], e["text_ref"])
+		row = append(row, e["text"], e["text_ref"], e["start_column"], e["end_column"])
 		evidence = append(evidence, row)
 	}
 	out["evidence"] = evidence
@@ -86,6 +87,10 @@ func compactBundle(bundle any) (any, error) {
 				gaps = append(gaps, row)
 				return id
 			}
+			// These coordinates identify snapshots locally; model evidence uses lines.
+			delete(v, "start_byte")
+			delete(v, "end_byte")
+			delete(v, "sha256")
 			keys := make([]string, 0, len(v))
 			for k := range v {
 				keys = append(keys, k)
@@ -98,13 +103,16 @@ func compactBundle(bundle any) (any, error) {
 		}
 		return value
 	}
+	// Dependencies retain storage keys and transfer order; control_edges retain
+	// all explicit edge kinds. trace_graph is derived from these exact witnesses.
+	delete(out, "trace_graph")
 	visit(out)
 	out["compact_wire"] = map[string]any{
 		"sources": sources, "gap_details": details, "gaps": gaps,
-		"evidence_columns": []string{"kind", "source_index", "start_line", "end_line", "start_byte", "end_byte", "text", "text_ref"},
-		"excerpt_columns":  []string{"source_index", "start_line", "end_line", "start_byte", "end_byte", "text"},
-		"gap_columns":      []string{"kind", "detail_index", "source_index", "start_line", "end_line", "start_byte", "end_byte"},
-		"source_columns":   []string{"file", "sha256"},
+		"evidence_columns": []string{"kind", "source_index", "start_line", "end_line", "text", "text_ref", "start_column", "end_column"},
+		"excerpt_columns":  []string{"source_index", "start_line", "end_line", "text"},
+		"gap_columns":      []string{"kind", "detail_index", "source_index", "start_line", "end_line"},
+		"source_columns":   []string{"file"},
 	}
 	return out, nil
 }

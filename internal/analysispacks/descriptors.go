@@ -14,7 +14,7 @@ func claimPayload(questions []Question, choices map[string][]map[string]string) 
 
 func descriptors() ([]Component, error) {
 	sharedLimits := []string{"bounded existing adapters only; no additional discovery or safety guarantees"}
-	allKinds := []string{"sql_query_candidate", "nosql_query_candidate", "input_validation_candidate"}
+	allKinds := []string{"sql_query_candidate", "nosql_query_candidate", "input_validation_candidate", "log_sink_candidate"}
 	makeComponent := func(id, kind, owner string, app []string, protocols []string, material string) Component {
 		return Component{ID: id, Version: "1", Kind: kind, Owner: owner, Domains: []string{"security", "construction_practice", "validation"}, Applicability: app, Compatibility: protocols, Limits: sharedLimits, Tests: []string{"TestFamilyComponentSelection"}, Material: material}
 	}
@@ -23,6 +23,13 @@ func descriptors() ([]Component, error) {
 		questions []Question
 		choices   func() map[string][]map[string]string
 	}{
+		"claim.logging": {LoggingQuestions(), func() map[string][]map[string]string {
+			choices := map[string][]map[string]string{}
+			for _, q := range LoggingQuestions() {
+				choices[q.Name] = LoggingChoices(q.Name)
+			}
+			return choices
+		}},
 		"claim.xss": {XSSQuestions(), func() map[string][]map[string]string {
 			choices := map[string][]map[string]string{}
 			for _, q := range XSSQuestions() {
@@ -49,7 +56,7 @@ func descriptors() ([]Component, error) {
 		}},
 	}
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" {
+		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
 			continue
 		}
 		protocol := familyProtocol(f.Name)
@@ -73,10 +80,10 @@ func descriptors() ([]Component, error) {
 	}
 	// The local flow adapter is a deliberately shared compiled capability: all
 	// three families resolve value/transfer facts through the same parse path.
-	flow := makeComponent("flow.local", "compiled_capability", "internal/parse/query_evidence.go + internal/parse/python_sql.go", allKinds, []string{SQLProtocol, NoSQLProtocol, ValidationProtocol}, "")
+	flow := makeComponent("flow.local", "compiled_capability", "internal/parse/query_evidence.go + internal/parse/python_sql.go", allKinds, []string{SQLProtocol, NoSQLProtocol, ValidationProtocol, LoggingProtocol}, "")
 	out = append(out, flow)
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" {
+		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
 			continue
 		}
 		seen := map[string]bool{}
@@ -113,14 +120,15 @@ func descriptors() ([]Component, error) {
 	for _, id := range sqlContractIDs {
 		contractOwners[id] = "internal/parse/checks.go"
 	}
-	for _, id := range sqlContractIDs[1:] {
+	for _, id := range sqlContractIDs[2:] {
 		contractOwners[id] = "internal/parse/python_sql.go"
 	}
+	contractOwners[SequelizeFinderContract] = "internal/parse/sequelize_finders.go"
 	for _, id := range noSQLContractIDs {
 		contractOwners[id] = "internal/parse/checks.go + internal/parse/mongoose_query_context.go"
 	}
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" {
+		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
 			continue
 		}
 		if !f.RequiresAPI {
@@ -157,6 +165,11 @@ func descriptors() ([]Component, error) {
 		return nil, err
 	}
 	out = append(out, path...)
+	ssrf, err := ssrfDescriptors()
+	if err != nil {
+		return nil, err
+	}
+	out = append(out, ssrf...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
 	out = append(out, nodeInputComponent())

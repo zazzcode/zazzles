@@ -1,31 +1,32 @@
 {
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
-  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
-  "evaluation_mode": "full source-transmitting judged scan of every analyzer",
+  "scanner_revision": "analyzer-assessment-coverage dec3b30 (evidence wire v7 with JavaScript conditional flow and fact codes; see wire-bundle-v7 verification record)",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "positions": 223,
-  "provider_requests": 128,
-  "input_tokens": 1087834,
-  "published_records": 223,
+  "positions": 222,
+  "provider_requests": 134,
+  "input_tokens": 698288,
+  "published_records": 222,
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "runtime_confirmation": "none; static source judgments only",
-  "previous": {
-    "date": "2026-11-07",
-    "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
-    "scanner_revision": "6f5cb711fe06c6d538f636aaea9aad9b5500cbc9",
-    "evaluation_mode": "full source-transmitting judged scan",
-    "provider_requests": 117,
-    "input_tokens": 926572,
-    "retained_run": "run-1366234482"
-  },
   "outcomes": {
-    "confirmed_vulnerability": 19,
-    "poor_practice": 0,
-    "protected_for_claim": 0,
-    "inconclusive_review": 109,
-    "not_run": 90,
-    "failed": 5
+    "needs_evidence": 112,
+    "confirmed_vulnerability": 21,
+    "poor_practice": 1
+  },
+  "not_run": 88,
+  "failed": 0,
+  "previous": {
+    "date": "2026-11-15",
+    "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
+    "provider_requests": 134,
+    "input_tokens": 709889,
+    "outcomes": {
+      "needs_evidence": 114,
+      "confirmed_vulnerability": 19,
+      "poor_practice": 1
+    }
   }
 }

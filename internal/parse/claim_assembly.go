@@ -37,7 +37,7 @@ type claimHooks struct {
 func namespacedRoles(u *analysis.CandidateUse, prefix string) map[string][]analysis.Evidence {
 	for i, e := range u.Context {
 		switch e.Kind {
-		case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
+		case "guard_test", "conditional_test", conditionalFalseTest, "branch_precondition", "authentication_adapter", "invoked_callable":
 			u.Context[i].Kind = prefix + e.Kind
 		}
 	}
@@ -45,7 +45,7 @@ func namespacedRoles(u *analysis.CandidateUse, prefix string) map[string][]analy
 	for kind, items := range roles {
 		if strings.HasPrefix(kind, prefix) {
 			switch strings.TrimPrefix(kind, prefix) {
-			case "guard_test", "conditional_test", "branch_precondition", "authentication_adapter", "invoked_callable":
+			case "guard_test", "conditional_test", conditionalFalseTest, "branch_precondition", "authentication_adapter", "invoked_callable":
 				roles[strings.TrimPrefix(kind, prefix)] = append(roles[strings.TrimPrefix(kind, prefix)], items...)
 				delete(roles, kind)
 			}
@@ -172,7 +172,7 @@ func (s *moduleSet) assembleClaims(report *analysis.AnalysisReport, h claimHooks
 			h.resolve(u, c, guards)
 		}
 		for _, t := range transforms {
-			c.ModelFacts = append(c.ModelFacts, "Supported transfer "+t.Text+" at "+t.Span.File+" carries its receiver into the result; judge whether its pattern constrains the value. The transfer is not a validator by itself.")
+			c.ModelFacts = append(c.ModelFacts, "supported_transfer: "+t.Text+" at "+t.Span.File)
 		}
 		h.finish(u, c, guards, guardIndex)
 		u.Completeness = c

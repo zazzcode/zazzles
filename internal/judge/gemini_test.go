@@ -54,7 +54,15 @@ func TestGeminiProtocolAndReplay(t *testing.T) {
 	if d.Confidence == nil || *d.Confidence != .9 || len(d.Probabilities) != 3 || d.Probabilities[0].Value != "insufficient" {
 		t.Fatalf("scores=%+v", d)
 	}
-	if got := c.Replay(use, tr); got.Status != "completed" {
+	encoded, err := json.Marshal(tr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var persisted DecisionTrace
+	if err = json.Unmarshal(encoded, &persisted); err != nil {
+		t.Fatal(err)
+	}
+	if got := c.Replay(use, persisted); got.Status != "completed" {
 		t.Fatalf("replay=%+v", got)
 	}
 	use.Sink.Text = "changed source"
@@ -183,7 +191,15 @@ func TestGeminiAllAnalyzerProtocols(t *testing.T) {
 			if a.Status != "completed" || a.Provider != "gemini" || a.Model != "gemini-decision-1" || len(a.Answers) != len(questionsFor(use)) {
 				t.Fatalf("assessment=%+v", a)
 			}
-			if got := c.Replay(use, tr); got.Status != "completed" {
+			encoded, err := json.Marshal(tr)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var persisted DecisionTrace
+			if err = json.Unmarshal(encoded, &persisted); err != nil {
+				t.Fatal(err)
+			}
+			if got := c.Replay(use, persisted); got.Status != "completed" {
 				t.Fatalf("replay=%+v", got)
 			}
 		})

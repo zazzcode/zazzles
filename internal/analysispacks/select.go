@@ -30,7 +30,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	if !ok || !family.supports(language) {
 		return nil, fmt.Errorf("unsupported %s source language", family.Label)
 	}
-	if family.Name != "xss" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
+	if family.Name != "xss" && family.Name != "logging" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
 		return nil, fmt.Errorf("%s selection must not carry an API contract", family.Label)
 	}
 	var contract *analysis.APIModel
@@ -91,8 +91,11 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			return nil, fmt.Errorf("invalid Node input facts")
 		}
 		input := "source.node-input-v1"
-		if family.Name == "path" {
+		switch family.Name {
+		case "path":
 			input = "source.node-input-path-v1"
+		case "ssrf":
+			input = "source.node-input-ssrf-v1"
 		}
 		roots = append(roots, input)
 	}

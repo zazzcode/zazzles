@@ -17,7 +17,7 @@ Names such as `query` or `find` alone MUST NOT establish a database API. An arra
 NoSQL sink. Unresolved applicable checks, dynamic bindings, or missing helper bodies remain blockers.
 
 The bounded automatic adapters currently include verified Sequelize raw-query usage, sql.js statements
-and MarsDB collection construction/imports. A sql.js claim needs a verified `sql.js` import and a receiver
+and MarsDB collection construction/imports (namespace imports, ES named and aliased imports, export-clause aliases and `export { x } from` re-exports; a name exported more than once or reassigned is not followed), and Sequelize model finders. A sql.js claim needs a verified `sql.js` import and a receiver
 assigned from `new <module>.Database(...)`, with request data in the SQL text argument of `run`, `exec` or
 `prepare`, directly or through a local helper. Values in a bound array are not a claim. MarsDB has Mongo-style matching semantics; this does not make it
 a MongoDB server or establish support for every MongoDB driver. Unsupported bindings remain Review.
@@ -28,6 +28,12 @@ a MongoDB server or establish support for every MongoDB driver. Unsupported bind
 - Actual query argument roles matter. Binding parameters or replacements preserve data separately
   from SQL structure; `model` or `plain` options do not protect an already-built SQL string.
 - Interpolated ORM search values are not automatically executable SQL. Verify the library slot.
+- A Sequelize finder (`findAll`, `findOne`, `findAndCountAll`, `count`, `findOrCreate`) on a class that
+  extends the `sequelize` `Model` binds its `where` values, including `Op.like` operands
+  (`sequelize-model-finder-v1`). An injection answer is inconsistent unless the same call contains raw SQL
+  (`Sequelize.literal`, `sequelize.literal`, `Op.literal`). Unescaped `%` and `_` in a LIKE pattern are a
+  wildcard concern (`like_pattern_interpolated`), not SQL syntax control. A call that only contains a
+  nested function with a finder, such as a tool or callback registration, is not itself a SQL candidate.
 - A `try` body does not guard its query; `catch` is an exceptional successor. `finally` stays unresolved.
 - A string merely constructed or logged without a database call is not an executed SQL sink.
 - A vulnerability verdict requires request-controlled syntax on a supported path, independently of

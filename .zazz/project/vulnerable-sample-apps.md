@@ -3,9 +3,11 @@
 The intentionally vulnerable applications Zazzles is evaluated against: where each comes from, what a source review
 expects, and what the scanner reports. Applications are read-only scan targets, pinned to the revisions below.
 
-**Expected** comes from source-reviewed references, never from scanner output. **Actual** comes from the
-[XSS hardening results](../evaluation/xss-hardening-results.md): OpenAI Decisions `gpt-6-luna` scans of 2026-11-07 with
-`--skip-family input-validation`, and the follow-up sql.js scans recorded there. These are static judgments, not runtime exploits, and human review is pending.
+**Expected** comes from source-reviewed references, never from scanner output. **Actual** for the JavaScript apps comes from the
+2026-11-15 E3 rebuild (OpenAI Decisions `gpt-6-luna`, evidence wire v7 with JavaScript conditional flow; see the
+[verification record](../evaluation/wire-bundle-v7-results.md#s4-and-broader-w6)). Juice Shop ran every analyzer; the others ran the
+security sink families without standalone input validation. VulnPy rows come from the core v7 rebuild, whose requests are
+unchanged. Earlier XSS evidence is in the [XSS hardening results](../evaluation/xss-hardening-results.md). These are static judgments, not runtime exploits, and human review is pending.
 The XSS rows are the only ones with a machine-checked [matrix](../evaluation/xss-hardening/matrix.json).
 
 Outcomes: **Confirmed** is a red `confirmed_vulnerability`. **Review** is an unresolved, blue record. **Not covered**
@@ -33,7 +35,7 @@ means Zazzles has no analyzer for that family yet, so no result says nothing abo
 | Reflected XSS, attribute (`DEMO-XSS-04`) | `GET /search`, `:166` | Confirmed |
 | Reflected XSS (`DEMO-XSS-05`) | `POST /fetch`, `:236` | Confirmed |
 | SQL injection (`DEMO-SQL-01` to `05`) | `/login`, `/search`, `/api/users/:id`, `/api/notes/:id`, `DELETE /admin/users/:id` | Confirmed, all five |
-| SSRF | `POST /fetch` | Not covered |
+| SSRF | `POST /fetch`, `:232` `http.get(url)` | Not covered: Node `http`/`https` clients are not yet SSRF contracts (only `fetch`/`axios`). Planned E4 deliverable |
 | IDOR, missing admin authorization | `/api/*`, `/admin/users` | Not covered |
 
 Not expected: bound `POST /notes` SQL and escaped remote body output produce no finding. `/login` and `/admin/users` output stays
@@ -45,8 +47,8 @@ Review because `users` has no request write. `err.message` output (`DEMO-XSS-Q01
 |---|---|---|
 | Reflected XSS (`TS-XSS-01`) | `GET /api/search`, `src/server.ts:117` | Confirmed |
 | Command injection (`TS-CMDI-01`) | `GET /api/ping`, `:90` | Confirmed |
-| Credential logging (`TS-LOG-01`) | `POST /api/login`, `:74` | Confirmed |
-| Outbound destination (`TS-SSRF-01`) | `GET /api/proxy`, `:125` | Observation only, not judged |
+| Credential logging (`TS-LOG-01`) | `POST /api/login`, `:74` | Review (model answered data class unknown, 0.46); confirmed in the core v7 run |
+| SSRF (`TS-SSRF-01`) | `GET /api/proxy`, `:125` | Confirmed (verified `axios` call with a request-derived destination) |
 | Path traversal, code injection, open redirect, cookie configuration, hardcoded secrets | [guide](../evaluation/vulnerable-typescript-app-detection-guide.md) | Not covered |
 | Authentication, authorization, IDOR, mass assignment, disclosure | [guide](../evaluation/vulnerable-typescript-app-detection-guide.md) | Not covered |
 
@@ -57,8 +59,9 @@ Review because `users` has no request write. `err.message` output (`DEMO-XSS-Q01
 | Reflected XSS (`GOOF-XSS-01`) | `GET /login`, `views/admin.ejs:17` | Confirmed |
 | Stored XSS (`GOOF-XSS-02`, `03`) | `POST /create`, `POST /update/:id` → `views/index.ejs:20` | Confirmed, one sink with separate write paths |
 | Command injection | `POST /create`, `routes/index.js:174` | Confirmed |
-| NoSQL injection | `POST /login`, `routes/index.js:52` | **Review, expected positive: not yet red** |
-| Escaped outputs (`GOOF-XSS-N01`, `N02`) | `views/edit.ejs:20`, `:23` | `:20` Protected; `:23` Review (model answered unknown), not a finding |
+| NoSQL injection | `POST /login`, `routes/index.js:52` | Confirmed |
+| Zip Slip | `POST /import`, `routes/index.js:270` | Confirmed (verified `adm-zip` contract) |
+| Escaped outputs (`GOOF-XSS-N01`, `N02`) | `views/edit.ejs:20`, `:23` | Both Review (per-path answer unknown), not findings |
 | Render options (`GOOF-XSS-N03`) | `views/account.hbs` | Review, as expected |
 
 ### OWASP Juice Shop
@@ -74,8 +77,8 @@ Review because `users` has no request write. `err.message` output (`DEMO-XSS-Q01
 | Profile template XSS (`JS-XSS-07`) | `routes/userProfile.ts:101` | Confirmed |
 | Subtitles (`JS-XSS-08`) | `routes/videoHandler.ts:72` | Review, as the key requires |
 | SQL injection | `routes/login.ts:34`, `routes/search.ts:23` | Confirmed |
-| NoSQL injection | `showProductReviews.ts:36`, `trackOrder.ts:18`, `updateProductReviews.ts:17` | Confirmed; ten other query records stay Review and one was not run |
-| Sensitive logging | `server.ts:366` | Confirmed, two contexts |
+| NoSQL injection | `showProductReviews.ts:36`, `trackOrder.ts:18`, `updateProductReviews.ts:17` | Confirmed. `likeProductReviews.ts:25`, `:35`, `:43` are also confirmed; `orderHistory.ts:36` (confirmed in core v7) and the other query records stay Review |
+| Sensitive logging | `server.ts:366` | Confirmed in one context; the second context is Review |
 
 The XSS paths depend on `isChallengeEnabled` branches, which stay attached as preconditions. Juice Shop has many more
 [challenge categories](../evaluation/juice-shop/README.md) than Zazzles covers; a challenge's existence is not a SAST label.

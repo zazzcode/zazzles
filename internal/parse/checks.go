@@ -69,6 +69,8 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 					binding = s.collectionBinding(use)
 				} else if sqlJS := s.sqlJSBinding(use); len(sqlJS) > 0 {
 					binding, sqlContract = sqlJS, "sqljs-statement-v1"
+				} else if finder := s.sequelizeFinderBinding(use); len(binding) == 0 && len(finder) > 0 {
+					binding, sqlContract = finder, "sequelize-model-finder-v1"
 				}
 				if len(binding) > 0 {
 					if check.Kind == "nosql_query" {
@@ -114,7 +116,7 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 						} else {
 							use.Completeness.Blockers = append(use.Completeness.Blockers, g)
 						}
-					case "middleware_unresolved", "query_text_interpolated", "query_document_unvalidated", "input_validation_absent", "input_validation_unresolved", "input_validation_middleware", "validation_insufficient_for_sink", "validation_type_only", "sink_must_bind_free_text", "validation_free_text_bound":
+					case "middleware_unresolved", "query_text_interpolated", "like_pattern_interpolated", "query_document_unvalidated", "input_validation_absent", "input_validation_unresolved", "input_validation_middleware", "validation_insufficient_for_sink", "validation_type_only", "sink_must_bind_free_text", "validation_free_text_bound":
 						// Query shape and missing validation stay visible. They do not
 						// convert a clear insufficient protection answer into an abstention.
 						use.Completeness.Coverage = append(use.Completeness.Coverage, g)

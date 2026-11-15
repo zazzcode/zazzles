@@ -64,6 +64,11 @@ func (l guardLang) climb(start *sitter.Node, visit func(guardSite)) *sitter.Node
 				}
 				if sib.Kind() == "if_statement" && l.exits(sib.ChildByFieldName("consequence")) {
 					visit(guardSite{terminatingGuardKind, guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte()})
+					// Later code also runs only when each test of an else-if chain whose
+					// consequence exits is false, as long as every earlier arm exits.
+					for link := elseIf(sib); link != nil && l.exits(link.ChildByFieldName("consequence")); link = elseIf(link) {
+						visit(guardSite{terminatingGuardKind, guardRejectsWhenTrue, link.ChildByFieldName("condition"), link, sib.EndByte()})
+					}
 				}
 			}
 		case p.Kind() == "if_statement":
@@ -233,4 +238,22 @@ func (l guardLang) commonGuardSites(perSite [][]guardSite) []guardSite {
 		}
 	}
 	return common
+}
+
+// elseIf returns the if statement an else clause directly holds (a JavaScript
+// else-if link), or nil.
+func elseIf(n *sitter.Node) *sitter.Node {
+	alt := n.ChildByFieldName("alternative")
+	if alt == nil || alt.Kind() != "else_clause" {
+		return nil
+	}
+	for i := uint(0); i < alt.NamedChildCount(); i++ {
+		if c := alt.NamedChild(i); c.Kind() != "comment" {
+			if c.Kind() == "if_statement" {
+				return c
+			}
+			return nil
+		}
+	}
+	return nil
 }

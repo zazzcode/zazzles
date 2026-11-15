@@ -147,7 +147,7 @@ func TestSQLComponentLimits(t *testing.T) {
 	c.endpoint = s.URL
 	c.http = s.Client()
 	got := c.Assess(context.Background(), u)
-	if calls != 0 || got.Status != "not_run" || !strings.Contains(got.Reason, "64 KiB") {
+	if calls != 0 || got.Status != "not_run" || !strings.HasPrefix(got.Reason, evidenceTooLarge+":") {
 		t.Fatalf("oversize request not rejected: %+v calls=%d", got, calls)
 	}
 }

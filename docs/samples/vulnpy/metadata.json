@@ -1,31 +1,26 @@
 {
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "target_revision": "b81885e58283a3449b578d20c20557aff637e5ea",
-  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
-  "evaluation_mode": "judged scan of command, SQL and XSS; input-validation and path-traversal analyzers not run (cost and file size)",
+  "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
+  "evaluation_mode": "fresh gpt-6-luna scan: command, SQL and XSS; other analyzers excluded",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "positions": 170,
+  "positions": 3260,
   "provider_requests": 170,
-  "input_tokens": 2018941,
+  "input_tokens": 1004048,
   "published_records": 170,
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "runtime_confirmation": "none; static source judgments only",
-  "previous": {
-    "date": "2026-11-07",
-    "target_revision": "b81885e58283a3449b578d20c20557aff637e5ea",
-    "scanner_revision": "6f5cb711fe06c6d538f636aaea9aad9b5500cbc9",
-    "evaluation_mode": "full source-transmitting judged scan",
-    "provider_requests": 147,
-    "input_tokens": 1789377,
-    "retained_run": "run-3860022235"
-  },
   "outcomes": {
     "confirmed_vulnerability": 155,
-    "poor_practice": 0,
-    "protected_for_claim": 0,
-    "inconclusive_review": 15,
-    "not_run": 0,
-    "failed": 0
+    "poor_practice": 15
+  },
+  "not_run": 0,
+  "failed": 0,
+  "previous": {
+    "date": "2026-11-14",
+    "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+    "provider_requests": 170,
+    "input_tokens": 2018941
   }
 }

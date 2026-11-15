@@ -74,7 +74,7 @@ func TestLocalDependencies(t *testing.T) {
 		{"parameter binding remains candidate", "const v=req.body.email; db.query('SELECT ?', {replacements:[v]})", 1, ""},
 		{"method receiver dependency", "db.query(req.query.q.trim())", 1, "unknown_transfer"},
 		{"unknown sanitizer not trusted", "const v=custom(req.query.q); db.query(v)", 1, "unknown_transfer"},
-		{"guard evidence retained", "const v=req.query.q; if (!valid(v)) {return}; db.query(v)", 1, "unsupported_control_flow"},
+		{"modeled guard leaves no control-flow gap", "const v=req.query.q; if (!valid(v)) {return}; db.query(v)", 1, ""},
 		{"ignored validator", "const v=req.query.q; valid(v); db.query(v)", 1, ""},
 		{"request reassigned", "req={body:{email:'literal'}};db.query(req.body.email)", 0, ""},
 		{"destructuring", "const {email}=req.body;db.query(email)", 1, ""},
@@ -243,7 +243,7 @@ func TestCustomValidationEvidence(t *testing.T) {
 	use := report.Uses[0]
 	guard, helper := false, false
 	for _, e := range use.Context {
-		if e.Kind == "control_statement" && strings.Contains(e.Text, "acceptsId") {
+		if e.Kind == "branch_false_precondition" && strings.Contains(e.Text, "acceptsId") {
 			guard = true
 		}
 		if e.Kind == "helper_definition" && strings.Contains(e.Text, "[0-9]") {

@@ -64,11 +64,12 @@ func registrationProtection(use, invocation map[string]any) (map[string]bool, ma
 			resolved[string(b)] = true
 		}
 	}
-	for _, key := range []string{"entry_gaps", "dispatch_gaps"} {
-		if gaps, ok := invocation[key].([]any); ok {
+	gapCollections := []any{invocation["entry_gaps"], invocation["dispatch_gaps"], use["blocking_gaps"], use["coverage_gaps"]}
+	for _, collection := range gapCollections {
+		if gaps, ok := collection.([]any); ok {
 			for _, gap := range gaps {
-				b, _ := json.Marshal(gap)
-				if resolved[string(b)] {
+				encoded, _ := json.Marshal(gap)
+				if resolved[string(encoded)] {
 					continue
 				}
 				if g, ok := gap.(map[string]any); ok {
@@ -143,6 +144,8 @@ func normalizeEvidence(use map[string]any, protected, protectedSpans map[string]
 					encoded, _ := json.Marshal(span)
 					registrationSpans[string(encoded)] = true
 					delete(e, "span")
+					delete(e, "start_column")
+					delete(e, "end_column")
 				}
 			}
 		}

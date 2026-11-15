@@ -52,7 +52,7 @@ func TestNativeHashHexTransfer(t *testing.T) {
 					t.Fatal("raw branch inherited sibling hex constraint")
 				}
 			}
-			if tc.known && !strings.Contains(strings.Join(u.Completeness.ModelFacts, "\n"), "hexadecimal") {
+			if tc.known && !strings.Contains(strings.Join(u.Completeness.ModelFacts, "\n"), "native_hash_hex: ") {
 				t.Fatal("hex contract missing")
 			}
 			if tc.name == "hex" || tc.name == "utf8" {

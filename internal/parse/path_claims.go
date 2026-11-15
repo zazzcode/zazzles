@@ -37,12 +37,6 @@ func pathCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis
 	if len(c.Evidence["invoked_callable"]) == 0 {
 		c.Evidence["invoked_callable"] = append([]analysis.Evidence{}, c.Evidence["handler"]...)
 	}
-	f := u.Path
-	c.ModelFacts = []string{
-		"Platform assumption: " + f.Platform + " semantics are a declared analysis assumption, not inferred from the scanner host; Windows drive, UNC and backslash behavior is not modeled. Symbolic-link and race state is never inferred.",
-		"Verified operation " + f.Operation + " (" + f.Role + "). Only the path operand slot is a path source; request data in the content or option slots is not.",
-		"Dependency, operand, guard and flow records in path facts refer to the evidence table by index. Each flow keeps its own source, transformations and guard facts; a guard or constraint on one value, branch or invocation does not protect another.",
-	}
 	return c
 }
 
@@ -363,7 +357,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 		summary = append(summary, line)
 	}
 	if len(summary) > 0 {
-		c.ModelFacts = append(c.ModelFacts, "Path flow facts: "+strings.Join(summary, "; ")+". A raw or guarded flow is an independent source-to-operand witness; an unknown sibling flow stays visible as a blocker for that flow only and does not make a supported raw flow unknown.")
+		c.ModelFacts = append(c.ModelFacts, "Path flow facts: "+strings.Join(summary, "; ")+".")
 	}
 }
 

@@ -36,6 +36,7 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 		noteHTTPDeclaration(out, r, context)
 		return
 	}
+	context = append(append([]analysis.Evidence{}, context...), s.wrapperEvidence(m, h)...)
 	hm, body, req, gaps := s.handler(m, h)
 	if pathOnly {
 		hm, body, req, gaps = s.handler(pathPass[0].module, pathPass[0].node)

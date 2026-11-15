@@ -191,10 +191,6 @@ func ssrfCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis
 	if len(c.Evidence["invoked_callable"]) == 0 {
 		c.Evidence["invoked_callable"] = append([]analysis.Evidence{}, c.Evidence["handler"]...)
 	}
-	c.ModelFacts = []string{
-		"Verified operation " + u.Outbound.Operation + " (contract " + u.Outbound.ContractID + "); a request-derived value reaches its destination operand. Dependencies tagged sink_slot destination are the destination paths; other call arguments are not destination control.",
-		"Dependency and path records in outbound facts refer to the evidence table by index. Each path keeps its own source, transfers and guard facts; a guard on one value, branch or invocation does not protect another.",
-	}
 	return c
 }
 

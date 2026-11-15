@@ -175,3 +175,7 @@ These anchors preserve older links; the completed and planned tables above own c
 <a id="phase-11--python-adapter"></a>
 **Python foundation:** [contract](../specifications/python-support.md) and
 [results/limits](../evaluation/python-support-results.md).
+
+## Evidence wire v7
+
+The [E3 contract](../specifications/wire-bundle-v7.md) coordinates compact requests, evidence references, catalog-backed logging and transparent wrapper dispatch in `analyzer-assessment-coverage`. Its checklist tracks validation and the same-branch flow/relevance follow-ups.

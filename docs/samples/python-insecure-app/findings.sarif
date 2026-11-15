@@ -152,7 +152,15 @@
                 "framework": "fastapi"
               }
             ]
-          }
+          },
+          "toolExecutionNotifications": [
+            {
+              "level": "note",
+              "message": {
+                "text": "GET /: semantic assessment not_run"
+              }
+            }
+          ]
         }
       ],
       "properties": {
@@ -223,6 +231,14 @@
             "coverage": "bounded analysis"
           },
           {
+            "id": "server-side-request-forgery",
+            "label": "Server-Side Request Forgery",
+            "description": "A request-controlled value chooses the destination of an outbound HTTP request the server makes, so it can reach hosts the requester cannot reach directly.",
+            "interpretation": "One record per outbound call whose destination operand a request value reaches through a verified client, with separate destination-control, restriction and coverage assessments. A confirmed record is a static source judgment (CWE-918), not network reachability, DNS, redirect or deployment-policy analysis. A string prefix test is poor practice, not a restriction. Second-order destinations and unverified clients stay outbound observations.",
+            "remediation": "Select destinations from a fixed table of trusted URLs. Otherwise parse the URL, allow-list scheme and host before the request, and disable or re-check redirects.",
+            "coverage": "bounded global fetch, axios and Python requests/httpx/urllib destination analysis"
+          },
+          {
             "id": "outbound-request-safety",
             "label": "Outbound Request Safety",
             "description": "Input used in an outbound request may affect its destination, headers, or other request values. Unrestricted destination control can lead to server-side request forgery (SSRF).",
@@ -272,8 +288,18 @@
           "Python supports static Flask/Blueprint, RESTX Resource and FastAPI routes plus bounded source-derived Flask/FastAPI generation; runtime registry mutation, unsupported decorators and response overrides remain gaps",
           "Python helper expansion is bounded to depth 3 and 24 calls per route; loops, comprehensions, mutation, exceptions and external dispatch are conservative",
           "Jinja output requires a verified Flask template binding; unresolved configuration, includes/macros and stored origins remain Review; no runtime execution or SCA",
-          "Judged 2 distinct candidate signatures across 2 total entry contexts (0 derived across equivalent entry contexts).",
-          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 2; reported input tokens 10136; unknown-usage attempts 0. "
+          "Analyzer family selection: skipped [], only [sql,nosql,xss,command,path,logging,ssrf]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.",
+          "Judged 1 distinct candidate signatures across 1 total entry contexts (0 derived across equivalent entry contexts).",
+          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 1; reported input tokens 4029; unknown-usage attempts 0. "
+        ],
+        "scan.onlyFamilies": [
+          "sql",
+          "nosql",
+          "xss",
+          "command",
+          "path",
+          "logging",
+          "ssrf"
         ],
         "scan.selectedRoute": "",
         "scan.selectedScope": {}
@@ -770,45 +796,45 @@
             }
           ],
           "message": {
-            "text": "GET /: Untrusted data reaches raw HTML output [poor_practice]. A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate. Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence."
+            "text": "GET /: Cross-site scripting supported by source analysis [confirmed_vulnerability]. A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "75dced93c377ec080af81bc12410141befc2e49dcd62e3cb9ec2969c88dc4d43",
+              "request_digest": "745fcc35bf4acd59c4faa8dcff9f7b84514507e96443bdcde42e7ebd897157b0",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.51,
+                  "confidence": 0.71,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.36
+                      "probability": 0.21
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.63
+                      "probability": 0.78
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "output_context": {
-                  "choice": "template_code",
-                  "confidence": 0.29,
+                  "choice": "html_text",
+                  "confidence": 0.9,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.35
+                      "probability": 0.91
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.02
+                      "probability": 0.01
                     },
                     {
                       "value": "url",
@@ -816,37 +842,37 @@
                     },
                     {
                       "value": "script",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "style",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unquoted_attribute",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "active_attribute",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0.09
+                      "probability": 0
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.36
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.13
+                      "probability": 0.06
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.99,
+                  "confidence": 0.95,
                   "probabilities": [
                     {
                       "value": "effective",
@@ -854,51 +880,51 @@
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "absent",
-                      "probability": 0.99
+                      "probability": 0.96
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.02
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 1,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "no",
-                      "probability": 1
+                      "probability": 0.97
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.02
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.97,
+                  "confidence": 0.84,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.98
+                      "probability": 0.88
                     },
                     {
                       "value": "protected",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.11
                     },
                     {
                       "value": "not_applicable",
@@ -907,37 +933,24 @@
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
-              "blocking_gaps": [
-                {
-                  "kind": "xss_context_unresolved",
-                  "detail": "Answers must agree with the established rendering context and protection facts.",
-                  "at": {
-                    "file": "",
-                    "start_line": 0,
-                    "end_line": 0,
-                    "start_byte": 0,
-                    "end_byte": 0
-                  }
-                }
-              ],
+              "finding_status": "confirmed_vulnerability",
               "answers": {
                 "encoding_adequacy": "not_present",
-                "output_context": "template_code",
+                "output_context": "html_text",
                 "sanitizer_effectiveness": "absent",
                 "xss_all_paths_protected": "no",
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 6638,
+                "input_tokens": 4029,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v1",
-              "protection": "uncertain",
-              "reason": "The XSS claim has missing or unresolved source-backed evidence."
+              "question_version": "xss-components-v2",
+              "protection": "insufficient",
+              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
             "scan.blockingGaps": [],
             "scan.coverageGaps": [
@@ -996,12 +1009,12 @@
               "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
               "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
               "record_type": "finding",
-              "status": "poor_practice",
-              "title": "Untrusted data reaches raw HTML output",
-              "summary": "A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate.",
+              "status": "confirmed_vulnerability",
+              "title": "Cross-site scripting supported by source analysis",
+              "summary": "A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Exploitability is separate from the established construction practice; a missing or inconclusive semantic assessment does not remove this remediation task.",
+              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Repair this HTML output",
                 "actions": [
@@ -1229,129 +1242,12 @@
             }
           ],
           "message": {
-            "text": "GET /: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+            "text": "GET /: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "1e1a6923d153de6c9dc36cd17f8683b83c96529b4a934ca216ccb9cb744ed586",
-              "answer_details": {
-                "enforcement_coverage": {
-                  "choice": "complete",
-                  "confidence": 0.94,
-                  "probabilities": [
-                    {
-                      "value": "complete",
-                      "probability": 0.97
-                    },
-                    {
-                      "value": "incomplete",
-                      "probability": 0.03
-                    }
-                  ]
-                },
-                "field_requirement": {
-                  "choice": "unknown",
-                  "confidence": 1,
-                  "probabilities": [
-                    {
-                      "value": "established",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 1
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0
-                    }
-                  ]
-                },
-                "validation": {
-                  "choice": "uncertain",
-                  "confidence": 0.83,
-                  "probabilities": [
-                    {
-                      "value": "sufficient",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "insufficient",
-                      "probability": 0.06
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.87
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.05
-                    }
-                  ]
-                }
-              },
-              "finding_status": "needs_evidence",
-              "blocking_gaps": [
-                {
-                  "kind": "validation_evidence_missing",
-                  "detail": "input_source",
-                  "at": {
-                    "file": "app/main.py",
-                    "start_line": 19,
-                    "end_line": 19,
-                    "start_byte": 407,
-                    "end_byte": 443
-                  }
-                },
-                {
-                  "kind": "validation_evidence_missing",
-                  "detail": "field_policy",
-                  "at": {
-                    "file": "app/main.py",
-                    "start_line": 19,
-                    "end_line": 19,
-                    "start_byte": 407,
-                    "end_byte": 443
-                  }
-                },
-                {
-                  "kind": "validation_evidence_missing",
-                  "detail": "invoked_callable",
-                  "at": {
-                    "file": "app/main.py",
-                    "start_line": 19,
-                    "end_line": 19,
-                    "start_byte": 407,
-                    "end_byte": 443
-                  }
-                },
-                {
-                  "kind": "validation_evidence_missing",
-                  "detail": "control_flow",
-                  "at": {
-                    "file": "app/main.py",
-                    "start_line": 19,
-                    "end_line": 19,
-                    "start_byte": 407,
-                    "end_byte": 443
-                  }
-                }
-              ],
-              "answers": {
-                "enforcement_coverage": "complete",
-                "field_requirement": "unknown",
-                "validation": "uncertain"
-              },
-              "usage": {
-                "input_tokens": 3498,
-                "output_tokens": 0
-              },
-              "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "validation-components-v1",
-              "protection": "uncertain",
-              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+              "status": "not_run",
+              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
             },
             "scan.coverageGaps": [
               {
@@ -1409,21 +1305,17 @@
               "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
               "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
               "record_type": "analysis",
-              "status": "needs_evidence",
+              "status": "needs_review",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied Model validation answer: Inconclusive.",
-              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
+              "use_protection": "Not established from the supplied evidence.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-                  "Resolve validation_evidence_missing at app/main.py:19: input_source",
-                  "Resolve validation_evidence_missing at app/main.py:19: field_policy",
-                  "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
-                  "Resolve validation_evidence_missing at app/main.py:19: control_flow",
-                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -1481,11 +1373,7 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-                "Resolve validation_evidence_missing at app/main.py:19: input_source",
-                "Resolve validation_evidence_missing at app/main.py:19: field_policy",
-                "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
-                "Resolve validation_evidence_missing at app/main.py:19: control_flow",
-                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -1583,8 +1471,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.\n- Resolve validation_evidence_missing at app/main.py:19: input_source\n- Resolve validation_evidence_missing at app/main.py:19: field_policy\n- Resolve validation_evidence_missing at app/main.py:19: invoked_callable\n- Resolve validation_evidence_missing at app/main.py:19: control_flow\n- Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect. Resolve validation_evidence_missing at app/main.py:19: input_source Resolve validation_evidence_missing at app/main.py:19: field_policy Resolve validation_evidence_missing at app/main.py:19: invoked_callable Resolve validation_evidence_missing at app/main.py:19: control_flow Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.\n- Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect. Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
               },
               "id": "scan/input-validation",
               "properties": {

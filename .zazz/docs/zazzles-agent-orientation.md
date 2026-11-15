@@ -5,19 +5,21 @@ Follow only the section links relevant to the task; linked documents are not aut
 
 ## Current work
 
-The assigned worktree/branch is `analyzer-engine-hardening`. It carries the verified
-[hardening milestone](../specifications/analyzer-engine-hardening.md): slice E1 (scheduling, family
-filters, conservative context reuse) and slice E2 (the [shared guard and workspace-manifest
-engine](../specifications/shared-guard-and-manifest-engine.md)), plus the earlier path-traversal
-work they build on ([results](../evaluation/path-traversal-results.md)). E3 (wire bundle v7) and E4
-(shared Node inputs and file APIs) are planned for their own worktrees and need their own contracts
-([proposal](../project/analyzer-hardening-and-wire-efficiency-proposal.md)). Human review remains
-open. Read the ignored `.zazz/ephemeral/analyzer-engine-hardening-run-log.md` on resume if present.
-Preserve concurrent user edits, especially local credentials. No live Jev evaluation is assigned.
-
-The `analyzer-assessment-coverage` worktree carries the [assessment coverage contract](../specifications/analyzer-assessment-coverage.md)
-(MarsDB named imports, request budget, outbound grouping and SSRF, Sequelize finders); run log
+The assigned `analyzer-assessment-coverage` worktree carries the
+[assessment coverage contract](../specifications/analyzer-assessment-coverage.md)
+(MarsDB named imports, request budget, outbound grouping and SSRF, Sequelize finders)
+and the [wire v7 contract](../specifications/wire-bundle-v7.md). Its tracked work
+checklist records completed work, verification and remaining items. E3 and the
+sequenced JavaScript flow/relevance follow-ups stay in this same worktree and branch;
+the owner chose core E3 first. Execution history belongs in
 `.zazz/ephemeral/analyzer-assessment-coverage-run-log.md`.
+
+The parent [hardening milestone](../specifications/analyzer-engine-hardening.md)
+established E1 scheduling/context reuse and E2 shared guards/workspace manifests.
+E4 shared Node inputs/file APIs remains a separate planned scope. The
+[v7 verification record](../evaluation/wire-bundle-v7-results.md) owns current byte
+measurements and paid-run limits. Preserve concurrent user edits and local credentials;
+no live Jev evaluation or provider fallback is assigned.
 
 ## Code structure
 

@@ -35,9 +35,8 @@ root `docs/`. See [contributing](../contributing.md) for repository workflow.
 The scanner also embeds versioned language **Analysis Guidelines** from
 [`internal/guidelines/`](../../internal/guidelines/). These documents combine secure coding
 recommendations with instructions for interpreting source evidence. SQL, NoSQL, standalone validation,
-XSS, command execution and path traversal select applicable sections through the embedded component catalog, alongside family-specific
-contracts, questions and evidence obligations. Logging still receives the full applicable language
-document pending its component migration. Reports retain guideline identity/version under
+XSS, command execution, path traversal and sensitive-data logging select applicable sections through the embedded component catalog, alongside family-specific
+contracts, questions and evidence obligations. Logging selects the Logging and Do not claim sections, with catalog-owned questions and provenance. Reports retain guideline identity/version under
 `analysis_guidelines` and selected component provenance under `analysis_components`. Outbound
 observations select static components but send no model request. See the
 [component organization](../technical-approach.md#analysis-knowledge-and-components).

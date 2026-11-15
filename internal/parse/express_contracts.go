@@ -34,11 +34,11 @@ func importedContractCall(m *sourceModule, call *sitter.Node) (importBinding, st
 	return imp, method, true
 }
 
-func contractBindingStable(m *sourceModule, name string) bool {
+func contractBindingStable(m *sourceModule, name string, allowed ...*sitter.Node) bool {
 	if m.contractBindings == nil {
 		m.contractBindings = map[string]bool{}
 	}
-	if stable, ok := m.contractBindings[name]; ok {
+	if stable, ok := m.contractBindings[name]; ok && len(allowed) == 0 {
 		return stable
 	}
 	stable := !bindingReassigned(m, name)
@@ -65,7 +65,15 @@ func contractBindingStable(m *sourceModule, name string) bool {
 			if p := n.Parent(); p != nil {
 				switch p.Kind() {
 				case "arguments", "return_statement", "spread_element":
-					stable = false
+					permitted := false
+					for _, item := range allowed {
+						if item != nil && n.StartByte() == item.StartByte() && n.EndByte() == item.EndByte() {
+							permitted = true
+						}
+					}
+					if !permitted {
+						stable = false
+					}
 				case "variable_declarator":
 					if v := p.ChildByFieldName("value"); v != nil && v.StartByte() == n.StartByte() {
 						stable = false
@@ -78,7 +86,9 @@ func contractBindingStable(m *sourceModule, name string) bool {
 		}
 	}
 	visit(m.tree.RootNode())
-	m.contractBindings[name] = stable
+	if len(allowed) == 0 {
+		m.contractBindings[name] = stable
+	}
 	return stable
 }
 

@@ -6,13 +6,14 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Every analyzer was run on the pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-assessment-coverage branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 222 (158 shown: the 65 `lib/webhook.ts` observations are one grouped observation). **Judged:** 134, in 134 requests (1,174,169 input tokens). **Failed:** 0. **Skipped for size:** 0.
-- **Outcomes:** 20 confirmed vulnerabilities, 1 poor practice (the `$where` construction at `routes/chat.ts:149`), 0 protected, 113 inconclusive (Review).
-- **Newly judged:** the MarsDB records at `routes/orderHistory.ts` (lines 17 and 36) and `routes/createProductReviews.ts:23` (now a **confirmed** NoSQL injection); `routes/order.ts:164`, which fits the request limit after 29 context evidence items were left out (listed in the record); the Sequelize finder at `routes/chat.ts:123` (bound `Op.like` values, Review); and the SSRF claim at `routes/profileImageUrlUpload.ts:24` (Review: its handler is wrapped by `utils.asyncHandler`, whose semantics are not modeled). The `tool(...)` call at `routes/chat.ts:117` is no longer a SQL record.
-- **Path traversal and Zip Slip:** the upload Zip Slip at `routes/fileUpload.ts:34` and both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**; the other file operations stay **Review**.
-- **Not assessed by design (88):** 65 outbound observations of one call whose destination comes from the environment (shown once), and 23 API-data records with no rendering claim.
+- **Records:** 222. **Judged:** 134, in 134 requests (709,889 input tokens).
+- **Outcomes among judged records:** 19 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 114 inconclusive (Review).
+- **Unassessed records shown:** 88; provider/decoder failures: 0.
+- **Wrapped SSRF:** transparent async forwarding resolves at `utils.asyncHandler`; the remaining multipart upload factory is unresolved, so `routes/profileImageUrlUpload.ts:24` remains Review. The largest NoSQL request, `order.ts:164`, now fits without shedding evidence and retains its claim blockers.
+
+[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

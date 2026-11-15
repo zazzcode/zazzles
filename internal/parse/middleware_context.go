@@ -84,6 +84,9 @@ func (s *moduleSet) middlewareContext(m *sourceModule, route analysis.Route) ([]
 				}
 				continue
 			}
+			if headerOnlyMiddleware(hm, body) && !stableMiddleware(m, arg, hm, body) {
+				more = append(more, analysis.Gap{Kind: "applicable_middleware_unresolved", Detail: "middleware binding is mutable or escapes; original declaration alone does not establish its effective behavior", At: spanOf(m.file, arg)})
+			}
 			// The full source is usable for judging even when the dependency engine
 			// cannot lower a destructured URL-only request parameter.
 			for _, g := range more {
@@ -91,7 +94,14 @@ func (s *moduleSet) middlewareContext(m *sourceModule, route analysis.Route) ([]
 					gaps = append(gaps, g)
 				}
 			}
-			out = append(out, hm.evidence("middleware_handler", body))
+			evidence := hm.evidence("middleware_handler", body)
+			if len(more) == 0 && stableMiddleware(m, arg, hm, body) && headerOnlyMiddleware(hm, body) {
+				evidence.Kind = "middleware_summary"
+				evidence.ModelText = middlewareSummary(hm, body)
+				out = append(out, evidence)
+				continue
+			}
+			out = append(out, evidence)
 			s.includeHelpers(hm, body, &out, seen, 0)
 		}
 	})

@@ -30,7 +30,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	if !ok || !family.supports(language) {
 		return nil, fmt.Errorf("unsupported %s source language", family.Label)
 	}
-	if family.Name != "xss" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
+	if family.Name != "xss" && family.Name != "logging" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
 		return nil, fmt.Errorf("%s selection must not carry an API contract", family.Label)
 	}
 	var contract *analysis.APIModel

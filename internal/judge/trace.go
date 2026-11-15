@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"reflect"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
@@ -42,7 +41,7 @@ func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis
 	}
 	a.EvidenceOmissions = omitted
 	a.RequestDigest = requestDigest(use, payload)
-	if trace.RequestDigest != "" && trace.RequestDigest != a.RequestDigest || trace.Components != nil && !reflect.DeepEqual(trace.Components, use.Components) {
+	if trace.RequestDigest != "" && trace.RequestDigest != a.RequestDigest || trace.Components != nil && !sameComponents(trace.Components, use.Components) {
 		a.Status = "failed"
 		a.Reason = "Saved component provenance does not match current request"
 		return a
@@ -86,4 +85,13 @@ func sameRequest(a, b []byte) bool {
 		return false
 	}
 	return bytes.Equal(x.Bytes(), y.Bytes())
+}
+
+// Compare serialized provenance: omitempty intentionally gives nil and empty
+// optional lists the same persisted representation. All identities and digests
+// must still match exactly after a trace is saved and loaded.
+func sameComponents(a, b *analysis.ComponentSelection) bool {
+	x, xe := json.Marshal(a)
+	y, ye := json.Marshal(b)
+	return xe == nil && ye == nil && bytes.Equal(x, y)
 }

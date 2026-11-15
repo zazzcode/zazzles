@@ -58,10 +58,10 @@ func budgetFixture(t *testing.T) analysis.CandidateUse {
 	return u
 }
 
-func TestRequestBudgetUnderLimitUnchanged(t *testing.T) {
+func TestRequestBudgetUnderLimitAlwaysCompact(t *testing.T) {
 	c := offlineClient(t)
 	for name, u := range map[string]analysis.CandidateUse{"nosql": selectedNoSQLUse(t), "sql": selectedSQLUse(t), "budget fixture": budgetFixture(t)} {
-		full, err := c.payloadForm(u, false)
+		full, err := c.payloadForm(u, true)
 		if err != nil {
 			t.Fatal(err)
 		}

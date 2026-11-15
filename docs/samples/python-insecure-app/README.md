@@ -2,15 +2,17 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
-## Current report (rebuilt 2026-11-14)
+## Current report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Every analyzer was run on the pinned revision `b188493768ca` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+Security sink families; standalone input validation excluded were run at pinned revision `b188493768ca` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 2. **Judged:** 2, in 2 requests (10,136 input tokens).
-- **Outcomes:** 0 confirmed vulnerabilities, 0 poor practice, 0 protected, 2 inconclusive (Review).
-- The application has no file or process operations and only two analyzable records, so the report is unchanged in substance.
+- **Records:** 2. **Judged:** 1, in 1 requests (4,029 input tokens).
+- **Outcomes among judged records:** 1 confirmed vulnerabilities, 0 poor practice, 0 protected, 0 not applicable, 0 inconclusive (Review).
+- **Unassessed records shown:** 1; provider/decoder failures: 0.
+
+[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

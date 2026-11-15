@@ -20,14 +20,14 @@ func TestOutboundPredecessorRequests(t *testing.T) {
 				t.Fatal(err)
 			}
 			want := map[string]string{
-				"sql/openai":        "cc5d9438867c14316df7bbb2ac441e4143e107b90fe0a9e155e4c4ab54f36fa0",
-				"sql/jev":           "5a239fd5268db1cf0dd284ce72094d725298e866148140c2efa059472e575d7b",
-				"nosql/openai":      "45dacb566a83935984190704101dca2e3bebb8d83e76b68e4c684b436d441a6d",
-				"nosql/jev":         "86b33c964d607de01da80bf6df286df3e563ca5546521ccb813fa9e8d0aaedaa",
-				"validation/openai": "8d697510453a70d924951b4c0fd932becdc6655b52de605ffaed6230bb609fdb",
-				"validation/jev":    "5e8f4916be5915ece2bf01a309f8becd20974f4dc45ebe405298030cddeb4f7c",
-				"xss/openai":        "cb98157b641e7101d0000ad6c8554c18ae475050d78e0a20dac7907862f73f59",
-				"xss/jev":           "b0fa1f76e006cfaa5c20038ce878760d2b0d4d1078c22c4b938edb3788d08f63",
+				"sql/openai":        "63b82d25814d6b4042c3458d39d2157101f77bd8ceae7d742783e8c1b157460d",
+				"sql/jev":           "f81a71325d91b097298d6a5105f212129261524de848ed53ec99f9feaea1f9ac",
+				"nosql/openai":      "7e4b4543a716f04a71184afb0bfe0c094134ae184c0a2e214ebb10f0d1738382",
+				"nosql/jev":         "e936284fd52ad16eb2197adf0ea79d1b7e58e1f1a44ae1138dea57baf7c45107",
+				"validation/openai": "eb9a101c64059673445447b39a43707f6edc158c238f1a6eed9b0c3a15e7ee3a",
+				"validation/jev":    "2d71889f6cb884563022d98d13f8512639a656161fa5ed0233e865e63f804727",
+				"xss/openai":        "5c1d0a056d4c55b9a47f4a88e1aa3bfb8753475508c84c5d4c6a574e769b8aa5",
+				"xss/jev":           "d0ce5f2d9b295938f7816645e050bdb1d46caaf24b2862ea7ce1e04eade4ceda",
 			}[family+"/"+provider]
 			if got := fmt.Sprintf("%x", sha256.Sum256(p)); got != want {
 				t.Fatalf("%s/%s request bytes changed: %s", family, provider, got)

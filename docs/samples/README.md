@@ -16,8 +16,10 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [findings.json](vulnpy/findings.json) | [findings.sarif](vulnpy/findings.sarif) |
 
-All seven reports were rebuilt on 2026-11-14 with the current scanner and `gpt-6-luna`: every analyzer
-on six samples, and command, SQL and XSS on VulnPy. Path traversal and Zip Slip results now appear
+All seven reports were rebuilt on 2026-11-15 with evidence wire v7 and `gpt-6-luna`: every analyzer
+on Juice Shop, security sink families on five other samples (standalone input validation excluded),
+and command, SQL and XSS on VulnPy. Excluded and unsupported records remain explicitly unassessed;
+VulnPy omits excluded records from its public copy to bound file size. Path traversal and Zip Slip results now appear
 inside each report. Each sample's README has a **Current report** section with its counts and notable
 results.
 

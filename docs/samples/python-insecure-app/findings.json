@@ -65,6 +65,14 @@
       "coverage": "bounded analysis"
     },
     {
+      "id": "server-side-request-forgery",
+      "label": "Server-Side Request Forgery",
+      "description": "A request-controlled value chooses the destination of an outbound HTTP request the server makes, so it can reach hosts the requester cannot reach directly.",
+      "interpretation": "One record per outbound call whose destination operand a request value reaches through a verified client, with separate destination-control, restriction and coverage assessments. A confirmed record is a static source judgment (CWE-918), not network reachability, DNS, redirect or deployment-policy analysis. A string prefix test is poor practice, not a restriction. Second-order destinations and unverified clients stay outbound observations.",
+      "remediation": "Select destinations from a fixed table of trusted URLs. Otherwise parse the URL, allow-list scheme and host before the request, and disable or re-check redirects.",
+      "coverage": "bounded global fetch, axios and Python requests/httpx/urllib destination analysis"
+    },
+    {
       "id": "outbound-request-safety",
       "label": "Outbound Request Safety",
       "description": "Input used in an outbound request may affect its destination, headers, or other request values. Unrestricted destination control can lead to server-side request forgery (SSRF).",
@@ -116,12 +124,12 @@
       "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
       "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
       "record_type": "finding",
-      "status": "poor_practice",
-      "title": "Untrusted data reaches raw HTML output",
-      "summary": "A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate.",
+      "status": "confirmed_vulnerability",
+      "title": "Cross-site scripting supported by source analysis",
+      "summary": "A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate.",
       "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-      "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
-      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Exploitability is separate from the established construction practice; a missing or inconclusive semantic assessment does not remove this remediation task.",
+      "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
+      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
       "recommendations": {
         "title": "Repair this HTML output",
         "actions": [
@@ -141,21 +149,17 @@
       "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
       "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
       "record_type": "analysis",
-      "status": "needs_evidence",
+      "status": "needs_review",
       "title": "Request-field validation needs review",
       "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-      "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied Model validation answer: Inconclusive.",
-      "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
-      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
+      "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
+      "use_protection": "Not established from the supplied evidence.",
+      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
       "recommendations": {
         "title": "Resolve the specific claim blockers",
         "actions": [
           "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-          "Resolve validation_evidence_missing at app/main.py:19: input_source",
-          "Resolve validation_evidence_missing at app/main.py:19: field_policy",
-          "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
-          "Resolve validation_evidence_missing at app/main.py:19: control_flow",
-          "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+          "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
         ],
         "example_status": "no patch proposed while the claim is inconclusive"
       }
@@ -293,51 +297,51 @@
         "pack": {
           "id": "pack.xss",
           "version": "1",
-          "digest": "b8fd2e557375020ca0ea9d151e10087d7e87a3ab3f538aa2e52b2d4a137bf1ac"
+          "digest": "9ad9889e982a8774a7760e404d7491ca35d5a6db00a71bdb35e3c67d26b41437"
         },
         "components": [
           {
             "id": "claim.xss",
             "version": "1",
-            "digest": "8f04247f992a3f097186a86ec680f0b14bc4e6933bb18e083f0ed4abecb1be85"
+            "digest": "f906f4c87ed46ea143188b791bbe9771bf2c47efb0bac5eaa6d9978b8853e9c3"
           },
           {
             "id": "context.xss",
             "version": "1",
-            "digest": "d8c43efe5a5e2f550d4847a1a1a9ae4ce5290a9f58e969b9e873fffe27b243a7"
+            "digest": "b8328bdb4c58f00550f49437bde78d649a6574dfe492898863ca9580b490b54f"
           },
           {
             "id": "evidence.xss",
             "version": "1",
-            "digest": "d5d2d1ac9c61653485298e37202eb821960896b7122e75ac0228c5d21133febc"
+            "digest": "b8901b565507a4d38eac133c41a6fe2d43adfda659a8db284e4328e1b0a8218b"
           },
           {
             "id": "flow.xss",
             "version": "1",
-            "digest": "d16ba798b6eddf19dc54b738f1f3f14c3447e928b52246ca47188e4d3ea11e33"
+            "digest": "2d86f7a48af81c30a4df48befa42e179ce4932c8cd60edd32288a4b46912d76d"
           },
           {
             "id": "language.xss.python",
             "version": "3",
-            "digest": "3dd2884f9bfc80e64f142f6085dc36248c525742da2a90d38195f43287eda820"
+            "digest": "a2a5ce3ad6430b5e20423a2091921824624b12f0768056082d3108eab047beff"
           },
           {
             "id": "pack.xss",
             "version": "1",
-            "digest": "b8fd2e557375020ca0ea9d151e10087d7e87a3ab3f538aa2e52b2d4a137bf1ac"
+            "digest": "9ad9889e982a8774a7760e404d7491ca35d5a6db00a71bdb35e3c67d26b41437"
           },
           {
             "id": "protection.xss",
             "version": "1",
-            "digest": "7e4f1c17bdb0446ebb029f5fc854935c29defa1cda53a658f5c4f7113a373327"
+            "digest": "a2efbcf8b0416e9956e6eae9f85f97284b107c733858426d685d7d6b57e4aedf"
           },
           {
             "id": "render.python-html-output-v1",
             "version": "1",
-            "digest": "ab7b6d3e6aa97417a706944ee0d15ceb7d8bbd985803c89268092b1acb1db110"
+            "digest": "e149d8c83499782cb07ff6feafcf93051510ef603751f745b33aaf96d39ef813"
           }
         ],
-        "digest": "bb996657712a1d4bc4ad28e00c79955352ccf826513e17f40a43bc38e935f137",
+        "digest": "63c9a91095bb4b8704cfc4265cfa0412dd786e1f03898eaeedade40d1021ef93",
         "required": [
           "dispatch_binding",
           "entry_registration",
@@ -836,41 +840,41 @@
         }
       ],
       "assessment": {
-        "request_digest": "75dced93c377ec080af81bc12410141befc2e49dcd62e3cb9ec2969c88dc4d43",
+        "request_digest": "745fcc35bf4acd59c4faa8dcff9f7b84514507e96443bdcde42e7ebd897157b0",
         "answer_details": {
           "encoding_adequacy": {
             "choice": "not_present",
-            "confidence": 0.51,
+            "confidence": 0.71,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "inadequate",
-                "probability": 0.36
+                "probability": 0.21
               },
               {
                 "value": "not_present",
-                "probability": 0.63
+                "probability": 0.78
               },
               {
                 "value": "unknown",
-                "probability": 0.01
+                "probability": 0
               }
             ]
           },
           "output_context": {
-            "choice": "template_code",
-            "confidence": 0.29,
+            "choice": "html_text",
+            "confidence": 0.9,
             "probabilities": [
               {
                 "value": "html_text",
-                "probability": 0.35
+                "probability": 0.91
               },
               {
                 "value": "html_attribute",
-                "probability": 0.02
+                "probability": 0.01
               },
               {
                 "value": "url",
@@ -878,37 +882,37 @@
               },
               {
                 "value": "script",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "style",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "unquoted_attribute",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "active_attribute",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "html_tag",
-                "probability": 0.09
+                "probability": 0
               },
               {
                 "value": "template_code",
-                "probability": 0.36
+                "probability": 0.01
               },
               {
                 "value": "unknown",
-                "probability": 0.13
+                "probability": 0.06
               }
             ]
           },
           "sanitizer_effectiveness": {
             "choice": "absent",
-            "confidence": 0.99,
+            "confidence": 0.95,
             "probabilities": [
               {
                 "value": "effective",
@@ -916,51 +920,51 @@
               },
               {
                 "value": "ineffective",
-                "probability": 0.01
+                "probability": 0.02
               },
               {
                 "value": "absent",
-                "probability": 0.99
+                "probability": 0.96
               },
               {
                 "value": "unknown",
-                "probability": 0
+                "probability": 0.02
               }
             ]
           },
           "xss_all_paths_protected": {
             "choice": "no",
-            "confidence": 1,
+            "confidence": 0.96,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "no",
-                "probability": 1
+                "probability": 0.97
               },
               {
                 "value": "unknown",
-                "probability": 0
+                "probability": 0.02
               }
             ]
           },
           "xss_exposure": {
             "choice": "vulnerable",
-            "confidence": 0.97,
+            "confidence": 0.84,
             "probabilities": [
               {
                 "value": "vulnerable",
-                "probability": 0.98
+                "probability": 0.88
               },
               {
                 "value": "protected",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "unknown",
-                "probability": 0.02
+                "probability": 0.11
               },
               {
                 "value": "not_applicable",
@@ -969,37 +973,24 @@
             ]
           }
         },
-        "finding_status": "needs_evidence",
-        "blocking_gaps": [
-          {
-            "kind": "xss_context_unresolved",
-            "detail": "Answers must agree with the established rendering context and protection facts.",
-            "at": {
-              "file": "",
-              "start_line": 0,
-              "end_line": 0,
-              "start_byte": 0,
-              "end_byte": 0
-            }
-          }
-        ],
+        "finding_status": "confirmed_vulnerability",
         "answers": {
           "encoding_adequacy": "not_present",
-          "output_context": "template_code",
+          "output_context": "html_text",
           "sanitizer_effectiveness": "absent",
           "xss_all_paths_protected": "no",
           "xss_exposure": "vulnerable"
         },
         "usage": {
-          "input_tokens": 6638,
+          "input_tokens": 4029,
           "output_tokens": 0
         },
         "status": "completed",
         "provider": "openai",
         "model": "gpt-6-luna",
-        "question_version": "xss-components-v1",
-        "protection": "uncertain",
-        "reason": "The XSS claim has missing or unresolved source-backed evidence."
+        "question_version": "xss-components-v2",
+        "protection": "insufficient",
+        "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
       }
     },
     {
@@ -1007,36 +998,36 @@
         "pack": {
           "id": "pack.validation",
           "version": "1",
-          "digest": "d0b03234881d856e4e4112939d7ac39c447d24186d2a6248b18171a9d2e367c3"
+          "digest": "aa59a2c9949683454fed99b6ca7877fde9aaa799979e377eef835282c2d88b85"
         },
         "components": [
           {
             "id": "claim.validation",
             "version": "1",
-            "digest": "6cc3db521cdeffd4ad7de745a69cbd814eed402a75e8cd2ed5781bcd55a0aa15"
+            "digest": "ce8a43e91a7efff1e17141aa1c1179c110558251ef09eca870c24ce96892b739"
           },
           {
             "id": "evidence.validation",
             "version": "1",
-            "digest": "a24c6858b8d94985a8e99e8704c534ed287b553e434e35c92432ac46887a0fed"
+            "digest": "115f0bb3b39b75e97d270fbb2aee1e1edc7fe4fd5b0b61b47e9e96e2e2746837"
           },
           {
             "id": "flow.local",
             "version": "1",
-            "digest": "c65636aaa05907c487d36aa10570c4fdf192f212ce6fd61b775d13faf7e7f68e"
+            "digest": "dabcfe4a32c3c45eb3b89a8913193ccbad1d84679d838c0e2908c00a3e520e5f"
           },
           {
             "id": "language.validation.python",
             "version": "3",
-            "digest": "ec41f8add3a2355a1b5874ebd0cbafd5940e80f563be5810c09accf987a58adc"
+            "digest": "5a15a682cebf7b8b6749633f96f9e8bd8f1afecdf795dacb7eff5db18e612833"
           },
           {
             "id": "pack.validation",
             "version": "1",
-            "digest": "d0b03234881d856e4e4112939d7ac39c447d24186d2a6248b18171a9d2e367c3"
+            "digest": "aa59a2c9949683454fed99b6ca7877fde9aaa799979e377eef835282c2d88b85"
           }
         ],
-        "digest": "db7d685f3292647efab73fe7e89c1fef2fae8633e215aa86f4965e4cfe0c0a63",
+        "digest": "8e49b493478799f3111c9a887f9a29688bd1a5233be2d9d9c4cfdee611797c8f",
         "required": [
           "control_flow",
           "field_policy",
@@ -1133,125 +1124,8 @@
         }
       ],
       "assessment": {
-        "request_digest": "1e1a6923d153de6c9dc36cd17f8683b83c96529b4a934ca216ccb9cb744ed586",
-        "answer_details": {
-          "enforcement_coverage": {
-            "choice": "complete",
-            "confidence": 0.94,
-            "probabilities": [
-              {
-                "value": "complete",
-                "probability": 0.97
-              },
-              {
-                "value": "incomplete",
-                "probability": 0.03
-              }
-            ]
-          },
-          "field_requirement": {
-            "choice": "unknown",
-            "confidence": 1,
-            "probabilities": [
-              {
-                "value": "established",
-                "probability": 0
-              },
-              {
-                "value": "unknown",
-                "probability": 1
-              },
-              {
-                "value": "not_applicable",
-                "probability": 0
-              }
-            ]
-          },
-          "validation": {
-            "choice": "uncertain",
-            "confidence": 0.83,
-            "probabilities": [
-              {
-                "value": "sufficient",
-                "probability": 0.02
-              },
-              {
-                "value": "insufficient",
-                "probability": 0.06
-              },
-              {
-                "value": "uncertain",
-                "probability": 0.87
-              },
-              {
-                "value": "not_applicable",
-                "probability": 0.05
-              }
-            ]
-          }
-        },
-        "finding_status": "needs_evidence",
-        "blocking_gaps": [
-          {
-            "kind": "validation_evidence_missing",
-            "detail": "input_source",
-            "at": {
-              "file": "app/main.py",
-              "start_line": 19,
-              "end_line": 19,
-              "start_byte": 407,
-              "end_byte": 443
-            }
-          },
-          {
-            "kind": "validation_evidence_missing",
-            "detail": "field_policy",
-            "at": {
-              "file": "app/main.py",
-              "start_line": 19,
-              "end_line": 19,
-              "start_byte": 407,
-              "end_byte": 443
-            }
-          },
-          {
-            "kind": "validation_evidence_missing",
-            "detail": "invoked_callable",
-            "at": {
-              "file": "app/main.py",
-              "start_line": 19,
-              "end_line": 19,
-              "start_byte": 407,
-              "end_byte": 443
-            }
-          },
-          {
-            "kind": "validation_evidence_missing",
-            "detail": "control_flow",
-            "at": {
-              "file": "app/main.py",
-              "start_line": 19,
-              "end_line": 19,
-              "start_byte": 407,
-              "end_byte": 443
-            }
-          }
-        ],
-        "answers": {
-          "enforcement_coverage": "complete",
-          "field_requirement": "unknown",
-          "validation": "uncertain"
-        },
-        "usage": {
-          "input_tokens": 3498,
-          "output_tokens": 0
-        },
-        "status": "completed",
-        "provider": "openai",
-        "model": "gpt-6-luna",
-        "question_version": "validation-components-v1",
-        "protection": "uncertain",
-        "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
+        "status": "not_run",
+        "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
       }
     }
   ],
@@ -1326,8 +1200,9 @@
     "Python supports static Flask/Blueprint, RESTX Resource and FastAPI routes plus bounded source-derived Flask/FastAPI generation; runtime registry mutation, unsupported decorators and response overrides remain gaps",
     "Python helper expansion is bounded to depth 3 and 24 calls per route; loops, comprehensions, mutation, exceptions and external dispatch are conservative",
     "Jinja output requires a verified Flask template binding; unresolved configuration, includes/macros and stored origins remain Review; no runtime execution or SCA",
-    "Judged 2 distinct candidate signatures across 2 total entry contexts (0 derived across equivalent entry contexts).",
-    "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 2; reported input tokens 10136; unknown-usage attempts 0. "
+    "Analyzer family selection: skipped [], only [sql,nosql,xss,command,path,logging,ssrf]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.",
+    "Judged 1 distinct candidate signatures across 1 total entry contexts (0 derived across equivalent entry contexts).",
+    "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 1; reported input tokens 4029; unknown-usage attempts 0. "
   ],
   "analysis_guidelines": [
     {
@@ -1337,5 +1212,14 @@
         "python"
       ]
     }
+  ],
+  "only_families": [
+    "sql",
+    "nosql",
+    "xss",
+    "command",
+    "path",
+    "logging",
+    "ssrf"
   ]
 }

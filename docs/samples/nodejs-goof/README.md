@@ -4,17 +4,18 @@
 [Capability inventory](../../../.zazz/evaluation/nodejs-goof-capabilities.md) ·
 [Independent XSS answer key](xss-answer-key.md)
 
-## Current report (rebuilt 2026-11-14)
+## Current report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Every analyzer was run on the pinned revision `add14ba59e98` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+Security sink families; standalone input validation excluded were run at pinned revision `add14ba59e98` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 29. **Judged:** 29, in 29 requests (234,617 input tokens).
-- **Outcomes:** 3 confirmed vulnerabilities, 0 poor practice, 2 protected, 24 inconclusive (Review).
-- **Command injection:** `POST /create` at `routes/index.js:174` is a **confirmed vulnerability**.
-- **Zip Slip candidate:** `routes/index.js:270` calls `adm-zip` `extractAllTo` on an uploaded archive, and the scanner establishes `adm-zip` 0.4.7 (before the 0.4.11 fix). The result is **Review, not a finding**: the model answered "not applicable" twice (identical answers) and the evidence gate refused to classify an answer that contradicts the source. It is tracked in the [handoff](../../../HANDOFF-js-guard-confidence.md#7-second-open-item-goof-zip-slip-is-review-not-a-finding).
-- **Protected (2):** scoped to the named claims; see the report.
+- **Records:** 29. **Judged:** 18, in 18 requests (96,588 input tokens).
+- **Outcomes among judged records:** 5 confirmed vulnerabilities, 0 poor practice, 2 protected, 0 not applicable, 11 inconclusive (Review).
+- **Unassessed records shown:** 11; provider/decoder failures: 0.
+- **Zip Slip:** the uploaded archive extraction at `routes/index.js:270` is confirmed vulnerable under the verified adm-zip contract; the unchanged answer-consistency gate accepted the fresh traversal/containment answers.
+
+[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

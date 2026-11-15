@@ -2,16 +2,18 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
-## Current report (rebuilt 2026-11-14)
+## Current report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-The command, SQL and XSS analyzers were run on the pinned revision `b81885e58283` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+Command, SQL and XSS; other analyzers excluded were run at pinned revision `b81885e58283` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 170. **Judged:** 170, in 170 requests (2,018,941 input tokens).
-- **Outcomes:** 155 confirmed vulnerabilities, 0 poor practice, 0 protected, 15 inconclusive (Review).
-- **Scope:** command (61 records), SQL (78) and XSS (31) were judged. The input-validation analyzer (2,830 records) and the path-traversal analyzer (260 contexts) were not run for this report, to bound cost and file size, and the entries that carried only those records are omitted.
-- **Path traversal:** the 260 contexts are covered by [saved decisions and tests](../../../.zazz/evaluation/path-traversal-results.md), not republished here.
+- **Records:** 170. **Judged:** 170, in 170 requests (1,004,048 input tokens).
+- **Outcomes among judged records:** 155 confirmed vulnerabilities, 15 poor practice, 0 protected, 0 not applicable, 0 inconclusive (Review).
+- **Unassessed records shown:** 0; provider/decoder failures: 0.
+- **Scope:** 61 command, 78 SQL and 31 XSS contexts. Unjudged input-validation and path records are omitted from this public copy. Historical path decisions remain historical; they were not relabeled as v7 decisions.
+
+[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

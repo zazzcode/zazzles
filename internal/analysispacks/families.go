@@ -11,10 +11,10 @@ import (
 // takes a new protocol identifier; historical answers under an older protocol
 // are retained but cannot replay onto changed requests.
 const (
-	SQLProtocol        = "sql-components-v2"
-	NoSQLProtocol      = "nosql-components-v1"
-	ValidationProtocol = "validation-components-v1"
-	XSSProtocol        = "xss-components-v1"
+	SQLProtocol        = "sql-components-v3"
+	NoSQLProtocol      = "nosql-components-v2"
+	ValidationProtocol = "validation-components-v2"
+	XSSProtocol        = "xss-components-v2"
 	// CommandProtocol and PathProtocol are declared in command.go and path.go.
 )
 
@@ -93,6 +93,7 @@ func languageID(f *Family, language lang.Language) string {
 // Families returns the registered component families in stable order.
 func Families() []Family {
 	return []Family{
+		{Name: "logging", Label: "Sensitive-data logging", Kinds: []string{"log_sink_candidate"}, QuestionNames: loggingQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.logging", Claim: "claim.logging", Evidence: "evidence.logging", PolicyOwner: "internal/judge/logging.go"},
 		{Name: "outbound", Label: "Outbound observation", ObservationOnly: true, Kinds: []string{"outbound_http_candidate"}, Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.outbound", Claim: "observation.outbound", Evidence: "evidence.outbound", PolicyOwner: "internal/parse/flow.go + internal/parse/python_frameworks.go"},
 		{Name: "xss", Label: "XSS", Kinds: []string{"xss_candidate"}, QuestionNames: xssQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.xss", Claim: "claim.xss", Evidence: "evidence.xss", PolicyOwner: "internal/judge/xss.go"},
 		{
@@ -173,6 +174,8 @@ func ProtocolFor(kind string) string {
 
 func familyProtocol(name string) string {
 	switch name {
+	case "logging":
+		return LoggingProtocol
 	case "outbound":
 		return "outbound-observation-v1" // Catalog compatibility only; no assessment protocol.
 	case "xss":

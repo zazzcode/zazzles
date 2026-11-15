@@ -80,7 +80,8 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 				c.Evidence["conditional_value"] = append(c.Evidence["conditional_value"], m.evidence("conditional_value", n))
 			}
 		case "unresolved_wrapper":
-			covered = len(c.Evidence["wrapper_definition"]) > 0
+			// Source presence alone does not prove wrapper transparency.
+			covered = false
 		}
 		if covered {
 			c.Coverage = append(c.Coverage, g)

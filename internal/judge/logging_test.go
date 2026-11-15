@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 func logClaim(gaps ...string) analysis.CandidateUse {
@@ -15,6 +16,7 @@ func logClaim(gaps ...string) analysis.CandidateUse {
 	for _, g := range gaps {
 		u.Gaps = append(u.Gaps, analysis.Gap{Kind: g})
 	}
+	analysispacks.Attach(&u)
 	return u
 }
 

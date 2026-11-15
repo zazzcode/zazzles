@@ -14,7 +14,7 @@ func claimPayload(questions []Question, choices map[string][]map[string]string) 
 
 func descriptors() ([]Component, error) {
 	sharedLimits := []string{"bounded existing adapters only; no additional discovery or safety guarantees"}
-	allKinds := []string{"sql_query_candidate", "nosql_query_candidate", "input_validation_candidate"}
+	allKinds := []string{"sql_query_candidate", "nosql_query_candidate", "input_validation_candidate", "log_sink_candidate"}
 	makeComponent := func(id, kind, owner string, app []string, protocols []string, material string) Component {
 		return Component{ID: id, Version: "1", Kind: kind, Owner: owner, Domains: []string{"security", "construction_practice", "validation"}, Applicability: app, Compatibility: protocols, Limits: sharedLimits, Tests: []string{"TestFamilyComponentSelection"}, Material: material}
 	}
@@ -23,6 +23,13 @@ func descriptors() ([]Component, error) {
 		questions []Question
 		choices   func() map[string][]map[string]string
 	}{
+		"claim.logging": {LoggingQuestions(), func() map[string][]map[string]string {
+			choices := map[string][]map[string]string{}
+			for _, q := range LoggingQuestions() {
+				choices[q.Name] = LoggingChoices(q.Name)
+			}
+			return choices
+		}},
 		"claim.xss": {XSSQuestions(), func() map[string][]map[string]string {
 			choices := map[string][]map[string]string{}
 			for _, q := range XSSQuestions() {
@@ -73,7 +80,7 @@ func descriptors() ([]Component, error) {
 	}
 	// The local flow adapter is a deliberately shared compiled capability: all
 	// three families resolve value/transfer facts through the same parse path.
-	flow := makeComponent("flow.local", "compiled_capability", "internal/parse/query_evidence.go + internal/parse/python_sql.go", allKinds, []string{SQLProtocol, NoSQLProtocol, ValidationProtocol}, "")
+	flow := makeComponent("flow.local", "compiled_capability", "internal/parse/query_evidence.go + internal/parse/python_sql.go", allKinds, []string{SQLProtocol, NoSQLProtocol, ValidationProtocol, LoggingProtocol}, "")
 	out = append(out, flow)
 	for _, f := range Families() {
 		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
@@ -113,7 +120,7 @@ func descriptors() ([]Component, error) {
 	for _, id := range sqlContractIDs {
 		contractOwners[id] = "internal/parse/checks.go"
 	}
-	for _, id := range sqlContractIDs[1:] {
+	for _, id := range sqlContractIDs[2:] {
 		contractOwners[id] = "internal/parse/python_sql.go"
 	}
 	contractOwners[SequelizeFinderContract] = "internal/parse/sequelize_finders.go"

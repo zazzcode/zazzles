@@ -2,16 +2,17 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
-## Current report (rebuilt 2026-11-14)
+## Current report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Every analyzer was run on the pinned revision `a67cbe590698` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+Security sink families; standalone input validation excluded were run at pinned revision `a67cbe590698` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 30. **Judged:** 30, in 30 requests (138,679 input tokens).
-- **Outcomes:** 8 confirmed vulnerabilities, 0 poor practice, 0 protected, 22 inconclusive (Review).
-- **Path traversal (3 judged):** the `open` calls at `vulnerable-flask-app.py:77` and `:129` are **confirmed vulnerabilities**; the `FileStorage.save` upload at line 209 stays **Review**.
-- **Command injection:** two records are **confirmed vulnerabilities**.
+- **Records:** 30. **Judged:** 13, in 13 requests (49,487 input tokens).
+- **Outcomes among judged records:** 8 confirmed vulnerabilities, 0 poor practice, 0 protected, 0 not applicable, 5 inconclusive (Review).
+- **Unassessed records shown:** 17; provider/decoder failures: 0.
+
+[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

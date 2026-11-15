@@ -9,12 +9,9 @@ import (
 	"github.com/zazzcode/zazzles/internal/parse"
 )
 
-// TestCommandPredecessorRequests freezes the effective decision-request bytes
-// of every existing family on current parsed fixtures. The digests were
-// recorded from the pre-command commit e12873c; command and SSRF candidates are
-// new families and are excluded from the comparison. The javascript/outbound
-// baseline drops the one fetch observation that became an SSRF claim; its four
-// remaining observation lines are unchanged.
+// TestCommandPredecessorRequests freezes existing-family requests after the
+// coordinated v7 representation and component protocol upgrade. Candidate counts
+// stay fixed; observation-only records still have no request.
 func TestCommandPredecessorRequests(t *testing.T) {
 	type baseline struct {
 		count  int
@@ -22,15 +19,15 @@ func TestCommandPredecessorRequests(t *testing.T) {
 	}
 	want := map[string]baseline{
 		"string-flow":                 {1, "6f9b69d1d97fc527823f4fbc55e28b09f1c46ae489bc6fcd34eebd06329758b6"},
-		"javascript/grpc":             {7, "88a94875ce7eb996d9fc55a25b1130bf94e142624e7f0b99b68a6cb54e7a6318"},
-		"typescript/grpc":             {7, "7db64bd3d2e9db24f0364638bbf40602a4d669c49402fdc43adf9eaaeaf1046f"},
-		"javascript/graphql":          {7, "b551545c156b7e9f558a4ff418dc7920432044aa6c17c08e4361627611be5295"},
-		"typescript/graphql":          {7, "ec6afb13620aa35ad4cb794743157383bb5d70a42a18de75cf3282f2380d4df0"},
-		"javascript/dynamic-dispatch": {4, "e0424db9e36013a6ecf84c4d8026dbb29ef92503666c205bf47908ab1752dea3"},
-		"typescript/dynamic-dispatch": {4, "d3c570ca16b55796754ecec6876571e76ac4de98c29c2760943453cc11b78b43"},
-		"python/routes":               {5, "c4ab83af8da35abce5bf61b3961bd27c8ea8b58a6d0d7f7c1c8409d8a6bd6e40"},
-		"python/dynamic-vulnpy":       {31, "c679955d3a3676a570c8a2f9281bf54638d05b0beb679c5716a3978a38a3f58a"},
-		"javascript/xss-fetch":        {5, "cd41f16976985b7ab9b8fa2b9cc8ee247f1384cf330d22221868508f97221743"},
+		"javascript/grpc":             {7, "85d7ccc338aa644833a5c0389a45ff34e899aaf59b9a31e64c4f531da26af9ec"},
+		"typescript/grpc":             {7, "2aa415f952b010e817657ecc147869a96d001dcb4a6ead665af5f2188f83cceb"},
+		"javascript/graphql":          {7, "36af2c45c83be79cfe29ebfc3ca607017ced56bf43bb33cd929337d44b8ad27f"},
+		"typescript/graphql":          {7, "a8b7629d33c019d7bc359c5cfc693a1f4ba70b67d7646ecec930630269fce41e"},
+		"javascript/dynamic-dispatch": {4, "d38d7e7d24b6eb0393ff8b8ecd3cf554d4001fbe24344e36ed2585e0ac2d0dbc"},
+		"typescript/dynamic-dispatch": {4, "f2b4f8d1d09947b7ce06283a7edfb7cab0a4164a64fd54450ad81da09e56e9f1"},
+		"python/routes":               {5, "2ce7531c60f7d221060704bbe570cdd3f07cac5a245916fe547846bfe9099e58"},
+		"python/dynamic-vulnpy":       {31, "c511526614a93ba654d051f6929efb1f70f3d91a234ab94628e48f1da0d66542"},
+		"javascript/xss-fetch":        {5, "f88b981603f5431ae1dbc62aa89840fdea7b2aaaa27b3d1f8a6da0a7bdfbe2b2"},
 		"javascript/outbound":         {4, "7616f13e1350e438c8ff872759a2b58a948bf45f08379401a1f0a6c5c341718b"},
 	}
 	c, _ := New("openai", "fixture-model", "k")

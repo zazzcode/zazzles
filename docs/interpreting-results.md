@@ -142,3 +142,16 @@ and callable locations related. Namespaced properties retain typed entry and inv
 metadata. Entry/scan gaps without uses appear in invocation metadata/notifications, without
 fabricated security results. Saved report exports preserve raw historical answers and do
 not rerun analysis or transfer those answers onto changed requests.
+
+## Evidence wire versions and historical judgments
+
+Current model requests use evidence wire version 7. Compact evidence rows retain file
+and line ranges; context facts refer to evidence IDs, and dependencies preserve each
+source, transfer, operand slot and storage key. Full source hashes, byte coordinates
+and selected component digests remain in local report and trace provenance.
+
+Wire representation changes invalidate exact saved-request replay. Historical reports
+remain readable with their original model answers; a current scan needs a fresh
+judgment when its evidence or protocol changed. Source-proven transparent JavaScript
+and TypeScript wrappers can resolve dispatch, while wrappers with mutations,
+argument changes, repeated calls or unknown effects retain coverage limits.

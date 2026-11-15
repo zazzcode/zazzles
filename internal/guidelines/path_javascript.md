@@ -12,7 +12,9 @@ Report a source-confirmed path traversal separately from field validation. A req
 
 ## Operations
 
-For `readFile`, `readFileSync`, `writeFile`, `writeFileSync` and their `fs/promises` forms the first argument is the path. Write data, encoding, mode, flag and callback arguments are not a path: request data written to a file is not a traversal by itself. `path.join` concatenates and normalizes, so `..` segments still climb while an absolute later segment is appended; `path.resolve` replaces everything before an absolute segment; `path.normalize` is lexical. None of them checks containment, and a verified join or resolve of a request value with a fixed directory does not establish a trusted root.
+For `readFile`, `readFileSync`, `writeFile`, `writeFileSync`, `appendFile`, `appendFileSync`, `createReadStream`, `createWriteStream`, `unlink`, `unlinkSync`, `rm` and `rmSync` the first argument is the path. The supported `fs/promises` forms are `readFile`, `writeFile`, `appendFile`, `unlink` and `rm`. Write data, encoding, mode, flag and callback arguments are not a path: request data written to a file is not a traversal by itself. `path.join` concatenates and normalizes, so `..` segments still climb while an absolute later segment is appended; `path.resolve` replaces everything before an absolute segment; `path.normalize` is lexical. None of them checks containment, and a verified join or resolve of a request value with a fixed directory does not establish a trusted root.
+
+For archive extraction, request-controlled entry names form an independent path operand. A constant extraction destination alone does not establish containment or make traversal not applicable. Judge each effective destination joined with the stored entry name under the verified extractor contract.
 
 ## Containment
 

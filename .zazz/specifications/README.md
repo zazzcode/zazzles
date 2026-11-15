@@ -75,3 +75,7 @@ by the current plan.
 
 The [decision-model limits contract](decision-model-limits.md) records owner-authorized shared rate and
 spending controls implemented and verified under the full race suite.
+
+## Wire bundle v7
+
+[Wire bundle v7 and catalog synchronization](wire-bundle-v7.md) implements the coordinated E3 protocol upgrade in the assessment-coverage branch.

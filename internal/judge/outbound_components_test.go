@@ -32,17 +32,13 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			}
 			report.Enrich(r)
 			b, _ := json.Marshal(r)
-			// The digest covers the shared finding-type glossary, which gains one entry per
-			// new analyzer. The SSRF family changed these reports in three listed ways only:
-			// the glossary gained the SSRF type; observations carry their destination origin
-			// (field and one summary sentence); and verified calls whose destination is a
-			// request value are SSRF claims instead of observations. xss-fetch differs only
-			// by the glossary and the origin facts.
+			// The v7 catalog changes component provenance and family fact prose.
+			// Discovery identities and observation-only outcomes remain unchanged.
 			want := map[string]string{
-				"javascript/outbound":  "02d413369833f92aa1884b9a45c4e880f0a12699e1fa0d292b44780f9a79863a",
-				"typescript/outbound":  "1c0e1587e07a449fad396f2315413ded55e624184dcda61d6a63a488e9b4d5d6",
-				"python/outbound":      "86835664dc2af002812de5f533c91b10fe2080eeb09c4dd63e98d2f4eed3c5b4",
-				"javascript/xss-fetch": "1c3c99536d5ddb92b80fc1d1514fa996bb57e542f038ffd8f4c265fca453539e",
+				"javascript/outbound":  "e79876e62f1e95d8b73160631e5c672e45cc73efad44272f5a23fd24b0e9e62a",
+				"typescript/outbound":  "46d8c52e6989076547470e333fdd533061339b7b62ef8bf619b9f3a76b1e8185",
+				"python/outbound":      "524792e097cb6b8ad7d50127f5e2aceb88524c76431dc62d39a515af91becaef",
+				"javascript/xss-fetch": "73f4032846b5d8ec5fd5e0c1369f12d7471c539ad09668cb82e724b43e4a4fe1",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)

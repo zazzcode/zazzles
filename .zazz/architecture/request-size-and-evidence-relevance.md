@@ -128,22 +128,27 @@ Status values: `implemented`, `planned`, `proposed`, `rejected`.
 - **Tests:** `TestRequestBudget*` in `internal/judge/budget_test.go`, including 40 synthetic growth
   shapes across six families in JS and Python.
 
-### W1–W5: Wire Bundle v7 representation — planned (E3)
+### W1–W5: Wire Bundle v7 representation — implemented
 
 Owned by the E3 contract; summarized here so the size design is in one place. See the
 [proposal §4.3](../project/analyzer-hardening-and-wire-efficiency-proposal.md#43-wire-bundle-v7-t2-2--all-analyzers).
 
 - **W1.** Always apply the lossless compact form (`compactBundle`, `internal/judge/compact_bundle.go`).
-  Today it applies only over the limit.
-- **W2.** Drop `evidence_roles`; keep `evidence_coverage`.
-- **W3.** Strip 64-hex component digests from model-facing `analysis_components`; keep them on
+  It now applies before the budget on every assessed request.
+- **W2.** Drop `evidence_roles`; keep `evidence_coverage`, with the union of adapter and selected catalog obligations.
+- **W3.** Send component IDs in model-facing `analysis_components`; keep versions and digests on
   `CandidateUse.Components` and in traces for replay verification.
 - **W4.** Project Command, Path and outbound fact context indices to `eN` wire ids. The hard-tier
   budget must keep operating on `CandidateUse` indices and project afterwards.
 - **W5.** Keep static fields before `use`, for provider prefix caching.
 - **Expected:** 25–35% fewer input bytes per request (proposal estimate; to be measured).
 
-### W6: Move fixed explanatory sentences out of each request — proposed
+### W6: Move fixed explanatory sentences out of each request — implemented for operand families
+
+The implemented scope removes Command/Path/SSRF interpretation already carried by structured
+platform/operand fields and selected guidance, with shared index/path interpretation in the static
+instruction. Candidate-specific transformation facts remain. Broader query/middleware sentence
+consolidation is not claimed by this bounded implementation.
 
 - **What:** `Completeness.ModelFacts` repeats fixed sentences per family (3,753 bytes on
   `order.ts:164`, much of it constant text such as the Express middleware scope explanation). Move
@@ -155,14 +160,12 @@ Owned by the E3 contract; summarized here so the size design is in one place. Se
   sentence and test that each moved sentence still appears in the selected material.
 - **Measure:** `model_facts` bytes per family, before and after.
 
-### W7: Condense masked comments and whitespace — proposed
+### W7: Condense masked comments and whitespace — implemented
 
 - **Today:** `modelSource` (`internal/parse/model_source.go`) replaces every comment character with a
   space, keeping newlines and tabs. That hides comment text from the model but saves no bytes; a license
   header or JSDoc block is still sent as spaces.
-- **What:** in model-facing excerpt text only, collapse runs of masked spaces, strip trailing whitespace
-  on each line and collapse blank-line runs. Keep newlines, so line numbers in evidence spans still
-  match. Optionally shorten leading indentation.
+- **What:** in model-facing excerpt text only, collapse only runs of spaces proven by comparison with original source to come from comment/docstring masking. Keep every newline and all unchanged whitespace, including multiline literal content. General blank-line/indentation trimming was rejected because it can change literal values.
 - **Constraints:** the request instruction currently says masked source keeps byte positions, and
   `sharedSourceExcerpts` (`internal/judge/source_excerpts.go`) merges excerpts by requiring text length
   to equal span length. Both must change together; excerpt merging must then work on original
@@ -197,7 +200,12 @@ Owned by the E3 contract; summarized here so the size design is in one place. Se
 - **Measure:** bytes and the count of omitted helpers per family; answer stability on saved traces near
   the soft threshold.
 
-### S3: One-line summary for middleware that cannot change the claim — proposed (always on)
+### S3: One-line summary for middleware that cannot change the claim — implemented (bounded grammar)
+
+Only stable inline/local/imported middleware with literal response-header calls followed by one
+`next()` is summarized. Exact header names and values remain visible, so the model can still weigh
+response behavior. Unknown factories, mutations, helpers, authorization and error forwarding retain
+source and gaps; serving files is not summarized by this implementation.
 
 - **What:** replace the bodies of registrations that cannot write `req.body` or `req.query` and do not
   authorize with one summary line listing them, for example "12 registrations that only set headers or
@@ -210,14 +218,14 @@ Owned by the E3 contract; summarized here so the size design is in one place. Se
   library contract. A bare package name is not enough.
 - **Measure:** middleware bytes per request on Juice Shop and nodejs-goof.
 
-### S4: Remove repeated gaps at the source — planned (with E3)
+### S4: Remove repeated gaps at the source — planned (after E3 validation)
 
 - **What:** model JavaScript `if` statements precisely, as the Python `conditional` does
   (`internal/parse/python_control.go`), instead of falling to `branches` in `internal/parse/flow.go`,
   which records `unsupported_control_flow`, `branch_exit` and `unknown_control_effect` at every `if`.
 - **Why:** this is both noise (it repeats in coverage and entry gaps) and an accuracy problem (see
   "Why size matters").
-- **Risk:** changes flow evidence for every JavaScript analyzer; batch it into the protocol bump.
+- **Risk:** changes flow evidence for every JavaScript analyzer; the owner sequenced it after core E3 validation in the same worktree and branch.
 
 ### Rejected
 
@@ -252,41 +260,41 @@ compacted bytes on `routes/order.ts:164`.
 | `resolved_gaps` | small | Rarely | One summary line naming the resolving evidence | S5 |
 | Provider question and choice text (outside `input`) | about 2–4 KB | Yes; static per family | Order the static parts before the evidence, if the provider API allows it | W12 |
 
-### W8: Model-facing spans without byte offsets or hashes — proposed (protocol bump)
+### W8: Model-facing spans without byte offsets or hashes — implemented
 
 Evidence rows, excerpts and gap rows carry `start_byte`, `end_byte` and a SHA-256 per source. The model
-reasons over text and line numbers; offsets and hashes exist for replay and excerpt identity. Send file
-and line range only. Keep offsets and hashes in the trace, so replay still verifies exact source. Excerpt
+reasons over text and line numbers; offsets and hashes exist for replay and excerpt identity. Send file and line ranges plus character columns locating each node in its condensed excerpt (one-based, exclusive end; first-line columns are excerpt-relative). Same-line nodes must remain distinguishable. Keep offsets and hashes in the trace, so replay still verifies exact source. Excerpt
 merging (`sharedSourceExcerpts`) keeps using byte offsets internally.
 
-### W9: One representation of the dependency path — proposed (protocol bump)
+### W9: One representation of the dependency path — implemented
 
 `trace_graph` is built from `dependencies` and `control_edges` (`buildTraceGraph`,
-`internal/judge/evidence_trace.go`), and all three are sent. Keep one. First prove, by a unit test over
-every family fixture, that the kept form preserves every fact: sink slot, storage key, transfer order
+`internal/judge/evidence_trace.go`), and all three are sent. Keep `dependencies` and `control_edges`, removing their derived `trace_graph`. Unit tests across family fixtures prove that the retained form preserves every fact: sink slot, storage key, transfer order
 and edge kinds.
 
-### W10: Guideline sections by claim — proposed (protocol bump)
+### W10: Guideline sections by claim — implemented
 
 Send only the guideline sections the selected claim and contract use. The catalog already selects
 components per family; extend the selection to sections for the language documents that are still sent
 whole (logging). Gate on the section-validation tests in `internal/guidelines`.
 
-### W11: Reference instead of repeat — proposed (protocol bump)
+### W11: Reference instead of repeat — implemented for exact duplicates
 
 `invocation.entry_gaps` repeats coverage gaps, `invocation` repeats registration evidence, and
 `input_facts` repeats dependency sources and transfers. Replace the copies with `eN` and dependency
 indices. This is lossless, and it also removes the entry-gap channel through which unrelated JavaScript
 `if` gaps reached the model.
 
-### W12: Static-first request envelope — proposed (verify first)
+### W12: Static-first request envelope — rejected as outer-key reordering
 
 Provider requests are built from Go maps (`payloadForm`, `internal/judge/client.go`), so keys are sorted
 and the envelope is `input`, `model`, `questions`. The static question and choice text therefore follows
 the per-candidate evidence, and provider prompt caching, which matches on a prefix, may not reuse it.
-Check the provider's caching rules and whether field order can be controlled (an ordered encoder, or
-static guidance moved to the front of `input`). Measure with the cached-token counts in the usage
-record. This changes cost, not accuracy.
+The verified [Decisions caching contract](https://developers.openai.com/api/docs/guides/decisions#reuse-shared-input-with-prompt-caching)
+states that shared `input` is the reusable prefix and question content lies outside it.
+Reordering outer JSON keys cannot move questions into that prefix. Keep the already
+static-first input envelope and its ordering regression test; do not duplicate questions
+or claim cache savings from JSON key order. Record actual cached-token usage from live responses.
 
 ### S5: Claim-relevant coverage gaps — proposed (accuracy-affecting)
 
@@ -332,6 +340,21 @@ Append one row per implemented or measured strategy. Do not rewrite earlier rows
 | Date | Strategy | Change | Evidence |
 |---|---|---|---|
 | 2026-11-15 | Hard-tier shedding and floor | Implemented | Only `order.ts:164` over the limit across 4,404 candidates; 72,580 → 65,235 bytes, 29 context items omitted; judged live (`gpt-6-luna`, 17,087 input tokens; Review with middleware blockers). Requests under the limit byte-identical to base. 40 synthetic growth shapes fit with an omission gap or reach the floor. |
+
+| 2026-11-15 | W1–W5 | Implemented | Always compact; single unioned role ledger; prompt component IDs; post-budget eN projection; static-first input order. Wire, budget and provenance tests pass. |
+| 2026-11-15 | W6 | Implemented for Command/Path/SSRF fixed index/platform interpretation | Removed facts duplicated by structured operands/platform fields and selected guidance; independent-path interpretation lives in static instruction. Candidate-specific transformations and per-path facts remain. |
+| 2026-11-15 | W7 | Implemented bounded mask compaction | Merge on snapshot coordinates before condensing; preserve all line separators and literal whitespace. Same-line locator and multiline literal regression tests pass. General whitespace trimming rejected. |
+| 2026-11-15 | W8 | Implemented with excerpt columns | Snapshot hashes and byte offsets stay local; file/line/character columns identify model nodes, including same-line calls after masked-space compaction. |
+| 2026-11-15 | W9 | Implemented | Retain dependencies and control edges, omit derived trace graph. Fixture checks preserve source, transfer order, sink slots, storage keys and explicit control kinds. |
+| 2026-11-15 | W10 / logging migration | Implemented | Logging catalog owns four existing facets and selects Logging/Do not claim guidance. Missing/stale selection fails explicitly; local provenance and gates remain. |
+| 2026-11-15 | W11 | Implemented for proven duplicates | Input values reference a dependency only on exact source/transfer equality. Invocation gaps are removed only when identical to a claim-ledger gap; unresolved registration spans remain protected in equivalence normalization. |
+| 2026-11-15 | W12 | Rejected outer-key reorder | Decisions caches shared input, excluding question content. Retained static-first input ordering; inspect actual cache-read/write usage instead. |
+| 2026-11-15 | S3 | Implemented bounded grammar | Only stable inline/local/imported middleware with literal header calls then exactly one next() can summarize. Exact header names/values survive; writes, helpers, authorization, error forwarding, factory calls and reassignment do not summarize. |
+| 2026-11-15 | Transparent wrappers / catalog prose | Implemented | Source-proven arrow/function/typed wrappers and error forwarding; async factories, recursion, mutations, reordered/repeated calls and unstable inner bindings retain gaps. sql.js owner fixed; Node fs/archive operand prose synchronized. |
+
+| 2026-11-15 | Final offline and paid verification | Measured | Standard-app reductions 24.6–43.1%; largest request 61,735 bytes, no sample shedding. 434/440 charged requests, 406 final decisions replayed exactly. Raw final usage reports zero cache-read tokens; no cache saving claimed. |
+
+Measured distributions and validation limits are in the [v7 verification record](../evaluation/wire-bundle-v7-results.md).
 
 ## Open questions
 

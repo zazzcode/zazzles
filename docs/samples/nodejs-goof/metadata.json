@@ -1,31 +1,27 @@
 {
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "target_revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
-  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
-  "evaluation_mode": "full source-transmitting judged scan of every analyzer",
+  "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
+  "evaluation_mode": "fresh gpt-6-luna scan: security sink families; standalone input validation excluded",
   "provider": "openai",
   "model": "gpt-6-luna",
   "positions": 29,
-  "provider_requests": 29,
-  "input_tokens": 234617,
+  "provider_requests": 18,
+  "input_tokens": 96588,
   "published_records": 29,
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "runtime_confirmation": "none; static source judgments only",
-  "previous": {
-    "date": "2026-11-07",
-    "target_revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
-    "scanner_revision": "919f3f95cf4ef79147af1fd9738b5bf17b8293b7 plus source manifest identified below",
-    "evaluation_mode": "scoped two-decision NoSQL follow-up; 32 exact replays from the retained full scan",
-    "provider_requests": 2,
-    "input_tokens": 24847,
-    "retained_run": "run-3132504896 (offline re-render of run-1204339142)"
-  },
   "outcomes": {
-    "confirmed_vulnerability": 3,
-    "poor_practice": 0,
-    "protected_for_claim": 2,
-    "inconclusive_review": 24,
-    "not_run": 0,
-    "failed": 0
+    "confirmed_vulnerability": 5,
+    "needs_evidence": 11,
+    "protected_for_claim": 2
+  },
+  "not_run": 11,
+  "failed": 0,
+  "previous": {
+    "date": "2026-11-14",
+    "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+    "provider_requests": 29,
+    "input_tokens": 234617
   }
 }

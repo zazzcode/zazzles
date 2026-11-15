@@ -7,7 +7,7 @@ import (
 )
 
 // SSRFProtocol is the server-side request forgery question/envelope protocol.
-const SSRFProtocol = "ssrf-components-v1"
+const SSRFProtocol = "ssrf-components-v2"
 
 // Operation-contract identifiers. Each is selected only after the parser verified
 // the client binding and that a request value reaches the destination operand.

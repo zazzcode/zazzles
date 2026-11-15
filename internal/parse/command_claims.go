@@ -60,20 +60,7 @@ func commandCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analy
 	if len(c.Evidence["invoked_callable"]) == 0 {
 		c.Evidence["invoked_callable"] = append([]analysis.Evidence{}, c.Evidence["handler"]...)
 	}
-	f := u.Command
-	c.ModelFacts = []string{
-		"Platform assumption: " + f.Platform + " semantics are a declared analysis assumption, not inferred from the scanner host; Windows, batch, cmd and PowerShell behavior is not modeled.",
-		"Verified operation " + f.Operation + "; API shell mode " + f.APIShellMode + ", effective shell mode " + f.EffectiveShellMode + commandInterpreterFact(f) + ", argv shape " + f.ArgvShape + ".",
-		"Dependency, operand and path records in command facts refer to the evidence table by index. Each path keeps its own source, transfers and guard facts; a guard or constraint on one operand, branch or invocation does not protect another.",
-	}
 	return c
-}
-
-func commandInterpreterFact(f *analysis.CommandFacts) string {
-	if f.Interpreter == "" {
-		return ""
-	}
-	return " (interpreter " + f.Interpreter + ")"
 }
 
 // commandDepNames lists the identifiers a dependency is reachable by: its
@@ -209,7 +196,7 @@ func finishOperandPaths(u *analysis.CandidateUse, paths []analysis.CommandPath, 
 		summary = append(summary, "dependency "+itoa(p.Dependency)+" ("+u.Dependencies[p.Dependency].Source.Text+") -> "+p.Operand+": "+p.Protection)
 	}
 	if len(summary) > 0 {
-		c.ModelFacts = append(c.ModelFacts, "Operand path facts: "+strings.Join(summary, "; ")+". A raw or guarded path is an independent source-to-operand witness; an unknown sibling path stays visible as a blocker for that path only and does not make a supported raw path unknown.")
+		c.ModelFacts = append(c.ModelFacts, "Operand path facts: "+strings.Join(summary, "; ")+".")
 	}
 }
 

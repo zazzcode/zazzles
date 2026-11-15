@@ -36,19 +36,18 @@ source snapshots and dispatch; unknown suggestions remain provisional coverage. 
 
 ## Current implementation status
 
-The SQL Injection, JS/TS NoSQL Injection, Input Validation, XSS and Command Injection Analyzers
-use the shared embedded catalog, deterministic selection and schema-4 provenance. Outbound
-observations also select catalog components, without implementing SSRF security assessment.
-Static adapters establish source facts;
-components select relevant guidance, contracts, questions and evidence obligations; evidence validation
-enforces completeness and consistency requirements. Outbound is observation-only, with no model
-questionnaire, model calls or SSRF verdict.
+All assessed families now use the shared embedded catalog: SQL, JS/TS NoSQL,
+input validation, XSS, command injection, path traversal, SSRF and sensitive-data
+logging. Static adapters establish source facts; components select relevant guidance,
+contracts, questions and evidence obligations. Evidence validation enforces completeness
+and consistency. Outbound observations remain a separate zero-call capability.
+Logging selects only its language Logging and Do not claim sections and retains its
+independent sensitive-content, emission and redaction gates.
 
-The SQL-first MVP and migration sessions 01–03 are implemented. The Sensitive Data Logging
-Analyzer still uses its working judge-owned questions and `log-use-v1` protocol outside component selection. It is the remaining
-migration of an existing analyzer. The Command Injection Analyzer is delivered as a new capability on this structure (see the command ledger below);
-complete SSRF assessment, general Inspect, public pack loading and executable plugins remain future
-capabilities.
+The [wire v7 contract](../specifications/wire-bundle-v7.md) coordinates the protocol
+upgrade and [request-size design](request-size-and-evidence-relevance.md) records
+representation strategies and evidence. General Inspect, public pack loading and
+executable plugins remain future capabilities.
 
 The [fresh paid verification](#fresh-paid-component-e2e-2026-11-06) and
 [static baseline comparison](#merge-readiness-recheck-2026-11-06) record actual results and limits.
@@ -173,7 +172,7 @@ transport and mandatory claim gates in `internal/judge`, and presentation in `in
 | NoSQL contracts | `internal/analysispacks/nosql.go` (catalog owner); parse proves collection/model bindings | Migrated: MarsDB collection and Mongoose query/casting contracts are catalog components; selector, `$where`, schema/version and all-path semantics preserved |
 | XSS contracts/questions | `internal/analysispacks/xss.go` and `xss_selection.go`; validated guideline projections | Migrated: catalog owns primary rendering contracts, five questions and supplementary context/protection/storage/browser/response material; parse retains source facts and judge retains mandatory gates |
 | Standalone validation | `internal/analysispacks/validation.go` (questions/choices); policy assembly stays in parse; gates in `internal/judge/validation.go` | Migrated: requirement/enforcement questions are catalog components; established/absent policies, enforced/bypassed/missing guards and API-less field claims preserved |
-| Logging | Logger/source extraction in parse; `internal/judge/logging.go` | Inventoried, not migrated; retain sensitive content, emission and redaction gates |
+| Logging | Logger/source extraction in parse; `internal/analysispacks/logging.go`, `internal/judge/logging.go` | Catalog-owned questions and selected guidance; sensitive content, emission and redaction gates retained |
 | Outbound requests | Destination/source extraction in parse; `internal/analysispacks/outbound.go` owns Python contract and observation descriptors | Migrated: JS/TS shapes remain unverified, Python URL/body/response roles preserved; no security questionnaire, model request or SSRF verdict |
 | Findings and exports | `internal/report/`, `cmd/scan/` | Existing presentation counts/statuses remain; canonical JSON carries detailed selection provenance |
 
@@ -233,14 +232,18 @@ for both provider encoders; source and selected material count toward it. Reques
 lossless compaction. Excess material or a still-oversize body remains unresolved with no HTTP call;
 required content is never truncated. Measurements are recorded under verification below.
 
-Fresh analysis JSON uses schema 4. SQL requests use `sql-components-v2` (the NoSQL/validation
-generalization changed component compatibility metadata and therefore SQL provenance bytes; guidance,
-questions, choices and outcomes are unchanged), NoSQL uses `nosql-components-v1` and standalone
-validation `validation-components-v1`. The accepted foundation used schema 3 with
-`candidate-injection-v1` SQL/NoSQL requests and `validation-use-v2` validation requests; saved
-reports keep those answers but cannot replay onto changed requests. XSS uses `xss-components-v1`,
-logging `log-use-v1`, and generic candidates `candidate-use-v10`. Evidence-version 3 and
-route-inventory schema 1 are independent contracts.
+Fresh analysis JSON uses schema 4 and model-facing evidence version 7. Protocols are
+`sql-components-v3`, `nosql-components-v2`, `validation-components-v2`,
+`xss-components-v2`, `command-components-v2`, `path-components-v2`,
+`ssrf-components-v2`, `log-components-v2`, and generic `candidate-use-v11`.
+Historical reports keep their original answers and protocols but cannot replay onto
+changed requests. Route-inventory schema 1 is independent.
+
+Every request uses compact evidence rows, one evidence coverage ledger and the
+original dependency/control-edge witnesses. Model-facing components list IDs;
+full versions and digests remain in report/trace provenance. Snapshot hashes and
+byte offsets remain local, with file/line ranges in requests. Command, Path and
+SSRF context references are evidence IDs; Path flow controls still index Path guards.
 
 The candidate's `analysis_components` records pack/component IDs, versions, digests, effective
 required roles, limits and optional `failure` coverage provenance, separately from original source

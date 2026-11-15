@@ -5,6 +5,23 @@ import "github.com/zazzcode/zazzles/internal/analysis"
 // wireInvocation projects canonical read views, referring to deduplicated source
 // evidence rather than sending another copy of handler bodies with each binding.
 func wireInvocation(use analysis.CandidateUse, ref func(analysis.Evidence) string) any {
+	uniqueGaps := func(items []analysis.Gap) []analysis.Gap {
+		var out []analysis.Gap
+		for _, g := range items {
+			duplicate := false
+			if c := use.Completeness; c != nil {
+				for _, collection := range [][]analysis.Gap{c.Blockers, c.Coverage, c.Resolved} {
+					for _, known := range collection {
+						duplicate = duplicate || g == known
+					}
+				}
+			}
+			if !duplicate {
+				out = append(out, g)
+			}
+		}
+		return out
+	}
 	out := map[string]any{"assessment_scope": "This candidate invocation only; not protection of the entire entry or all dispatch alternatives", "entry_id": use.EntryID, "invocation_context_id": use.InvocationContextID, "entry_kind": use.EntryKind}
 	if e := use.EntryFacts; e != nil {
 		out["instance_id"] = e.InstanceID
@@ -13,7 +30,7 @@ func wireInvocation(use analysis.CandidateUse, ref func(analysis.Evidence) strin
 		out["browser"] = e.Browser
 		out["graphql"] = e.GraphQL
 		out["grpc"] = e.GRPC
-		out["entry_gaps"] = e.Gaps
+		out["entry_gaps"] = uniqueGaps(e.Gaps)
 		transports := []any{}
 		for _, transport := range e.Transports {
 			evidence := []string{}
@@ -37,7 +54,7 @@ func wireInvocation(use analysis.CandidateUse, ref func(analysis.Evidence) strin
 		out["mechanism"] = b.Mechanism
 		out["stage"] = b.Stage
 		out["alternative"] = b.Alternative
-		out["dispatch_gaps"] = b.Gaps
+		out["dispatch_gaps"] = uniqueGaps(b.Gaps)
 	}
 	if ctx := use.InvocationFacts; ctx != nil {
 		input := func(v analysis.InputBinding) map[string]any {
@@ -65,7 +82,7 @@ func wireInvocation(use analysis.CandidateUse, ref func(analysis.Evidence) strin
 			controls = append(controls, map[string]string{"invocation_context_id": v.InvocationContextID, "dispatch_binding_id": v.DispatchBindingID, "evidence": ref(v.Evidence)})
 		}
 		out["controls"] = controls
-		out["context_gaps"] = ctx.Gaps
+		out["context_gaps"] = uniqueGaps(ctx.Gaps)
 	}
 	return out
 }

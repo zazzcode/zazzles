@@ -1,8 +1,12 @@
 package judge
 
-import "github.com/zazzcode/zazzles/internal/analysis"
+import (
+	"github.com/zazzcode/zazzles/internal/analysis"
+	"reflect"
+)
 
-func wireInputFacts(f *analysis.InputFacts, ref func(analysis.Evidence) string) any {
+func wireInputFacts(use analysis.CandidateUse, ref func(analysis.Evidence) string) any {
+	f := use.InputFacts
 	if f == nil {
 		return nil
 	}
@@ -12,7 +16,16 @@ func wireInputFacts(f *analysis.InputFacts, ref func(analysis.Evidence) string) 
 		for _, e := range v.Transfers {
 			transfers = append(transfers, ref(e))
 		}
-		values = append(values, map[string]any{"dependency": v.Dependency, "origin": v.Origin, "initial_type": v.InitialType, "sink_type": v.SinkType, "source": ref(v.Source), "transfers": transfers})
+		value := map[string]any{"dependency": v.Dependency, "origin": v.Origin, "initial_type": v.InitialType, "sink_type": v.SinkType, "source": ref(v.Source), "transfers": transfers}
+		if v.Dependency >= 0 && v.Dependency < len(use.Dependencies) {
+			d := use.Dependencies[v.Dependency]
+			if reflect.DeepEqual(v.Source, d.Source) && reflect.DeepEqual(v.Transfers, d.Transfers) {
+				delete(value, "source")
+				delete(value, "transfers")
+				value["path_from_dependency"] = true
+			}
+		}
+		values = append(values, value)
 	}
 	controls := []string{}
 	for _, e := range f.Controls {

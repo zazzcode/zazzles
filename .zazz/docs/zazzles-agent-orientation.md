@@ -142,7 +142,7 @@ Write reports to the container's `_test-findings/<app>/run-<id>/` via `--output-
 | Owner | Start at |
 | --- | --- |
 | Product goals and roadmap | [Capability boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries), [complete delivery list](../project/implementation-plan.md#complete-delivery-list) |
-| Architecture | [Pipeline](../architecture.md#2-pipeline), [package map](../architecture.md#11-implemented-package-boundaries), [judge boundary](../architecture.md#provider-neutral-judge-boundary) |
+| Architecture | [Request size and relevance](../architecture/request-size-and-evidence-relevance.md), [Pipeline](../architecture.md#2-pipeline), [package map](../architecture.md#11-implemented-package-boundaries), [judge boundary](../architecture.md#provider-neutral-judge-boundary) |
 | Product rules | [Analysis index](../../docs/analysis/README.md), [database rules](../../docs/analysis/database-injection.md), [input rules](../../docs/analysis/input-validation.md), [XSS rules](../../docs/analysis/xss.md) |
 | User setup/output | [Setup](../../docs/getting-started.md), [scan options](../../docs/running-scans.md), [interpretation](../../docs/interpreting-results.md) |
 | Contracts and process | [Spec index](../specifications/README.md#specification-index), [execution records](agent-execution-discipline.md#execution-records), [standards index](../standards/index.yaml) |

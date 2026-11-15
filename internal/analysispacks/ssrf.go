@@ -123,7 +123,7 @@ func ssrfDescriptors() ([]Component, error) {
 		out = append(out, v)
 	}
 	input := nodeInputComponent()
-	input.ID = "source.node-input-ssrf-v1"
+	input.ID = "source.node-input-ssrf-v2"
 	input.Applicability = []string{"ssrf_candidate"}
 	input.Compatibility = protocols
 	input.Tests = []string{"TestSSRFComponentSelection"}

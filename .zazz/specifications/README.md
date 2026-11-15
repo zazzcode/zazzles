@@ -23,7 +23,9 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 - [Cross-Analyzer Engine Hardening](analyzer-engine-hardening.md) — milestone specification index (`E1`–`E4`) and executable Slice `E1` contract (`--only-family`/`--skip-family`, `--judge-limit` XSS/Logging priority & zero-call observation handling, and default-on context deduplication) for execution after `path-traversal` merges to `stage`.
 - [Shared Guard & Workspace Manifest Engine](shared-guard-and-manifest-engine.md) — Slice `E2` contract: one lexical guard engine (polarity, terminators, derived values, reassignment, helper call sites) for Command and Path, allow-list definition evidence, and nearest-workspace manifest/lockfile version resolution for Path, XSS and NoSQL; implemented and verified in the `analyzer-engine-hardening` worktree.
 
-- [Analyzer assessment coverage](analyzer-assessment-coverage.md) — MarsDB named-import binding, request budget with explicit omissions and `evidence_too_large` floor, outbound destination origin/grouping and the first SSRF family, Sequelize finder contract; implemented in the `analyzer-assessment-coverage` worktree.
+- [Analyzer assessment coverage](analyzer-assessment-coverage.md) — MarsDB named-import binding, request budget with explicit omissions and `evidence_too_large` floor, outbound destination origin/grouping and the first SSRF family, Sequelize finder contract; implemented and merged via PR #14.
+- [Wire bundle v7](wire-bundle-v7.md) — compact evidence wire, logging catalog sync, wrappers/middleware summaries, JS conditionals; merged via PR #14.
+- [Shared Node inputs and file APIs (E4)](shared-node-inputs-and-file-apis.md) — Express middleware-chain entries, `source.node-input-v2` URL/upload facts, phase-2 Node/Python file APIs, Node `http`/`https` SSRF; in progress on `node-inputs-and-file-apis`.
 
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
 

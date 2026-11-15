@@ -85,7 +85,7 @@ func TestNodeInputJudgment(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				if !strings.Contains(string(p.Request), "source.node-input-v1") || !strings.Contains(string(p.Request), "initial_type") {
+				if !strings.Contains(string(p.Request), "source.node-input-v2") || !strings.Contains(string(p.Request), "initial_type") {
 					t.Fatal("selected source/type interpretation missing")
 				}
 				changed := u

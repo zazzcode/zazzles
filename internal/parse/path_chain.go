@@ -8,9 +8,23 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
+// sensitiveMiddlewareCallees are member/identifier names that justify analyzing a
+// nonfinal Express stage for any family (not only path).
+var sensitiveMiddlewareCallees = map[string]bool{
+	"sendFile": true, "sendfile": true, "download": true, "render": true,
+	"extractAllTo": true, "extractAllToAsync": true,
+	"query": true, "exec": true, "execSync": true, "execFile": true, "execFileSync": true,
+	"spawn": true, "spawnSync": true,
+	"send": true, "json": true, "write": true, "end": true, "redirect": true,
+	"find": true, "findOne": true, "findAll": true, "findById": true, "findByPk": true,
+	"info": true, "error": true, "warn": true, "debug": true, "verbose": true, "silly": true, "log": true,
+	"get": true, "request": true, "post": true, "put": true, "patch": true, "delete": true,
+	"createLogger": true,
+}
+
 // mayContainPathSink checks whether a middleware function or its reachable local
-// callees contain any filesystem, archive or render operation before running a
-// full HTTP handler pass over nonfinal Express route arguments.
+// callees contain a sensitive sink before running a full HTTP handler pass over
+// nonfinal Express route arguments (all assessed families after E4).
 func (s *moduleSet) mayContainPathSink(m *sourceModule, fn *sitter.Node) bool {
 	visited := map[string]bool{}
 	found := false
@@ -35,13 +49,17 @@ func (s *moduleSet) mayContainPathSink(m *sourceModule, fn *sitter.Node) bool {
 				found = true
 				return
 			}
-			if callee.Kind() == "member_expression" {
-				if p := callee.ChildByFieldName("property"); p != nil {
-					switch p.Utf8Text(mod.src) {
-					case "sendFile", "sendfile", "download", "render", "extractAllTo", "extractAllToAsync":
-						found = true
-						return
-					}
+			switch callee.Kind() {
+			case "member_expression":
+				if p := callee.ChildByFieldName("property"); p != nil && sensitiveMiddlewareCallees[p.Utf8Text(mod.src)] {
+					found = true
+					return
+				}
+			case "identifier":
+				name := callee.Utf8Text(mod.src)
+				if sensitiveMiddlewareCallees[name] || mod.commandNames[name].module != "" || mod.fsNames[name].module != "" {
+					found = true
+					return
 				}
 			}
 			cm, next := s.resolveCall(mod, c)
@@ -60,8 +78,8 @@ func (s *moduleSet) mayContainPathSink(m *sourceModule, fn *sitter.Node) bool {
 	return found
 }
 
-// analyzePathChainHandlers adds path-scoped invocations for source-resolved
-// nonfinal Express handlers. Existing final-handler records are left unchanged.
+// analyzePathChainHandlers adds sibling invocations for source-resolved nonfinal
+// Express handlers across families. Existing final-handler records are left unchanged.
 func (s *moduleSet) analyzePathChainHandlers(out *analysis.AnalysisReport, m, owner *sourceModule, r analysis.Route, call *sitter.Node, receiver string, context []analysis.Evidence, sourcePath, mount string, seeds registrationSeeds) {
 	if r.Framework != "express" {
 		return

@@ -293,3 +293,76 @@ func TestMountedHTTPPredecessorUsesSourcePath(t *testing.T) {
 	}
 	t.Fatal("missing query")
 }
+
+func TestSharedExpressChain(t *testing.T) {
+	root := t.TempDir()
+	writeSource(t, root, "server.js", `
+const express=require('express');
+const {exec}=require('child_process');
+const {Sequelize}=require('sequelize');
+const db=new Sequelize('sqlite::memory:');
+const app=express();
+function mw(req,res,next){db.query('SELECT '+req.query.q);next()}
+function final(req,res){exec('echo '+req.query.q);res.end()}
+app.post('/x',mw,final);
+app.post('/unknown',mystery,final);
+`)
+	r, err := Analyze(root, "server.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sql, cmd []analysis.CandidateUse
+	entries := map[string]bool{}
+	for _, u := range r.Uses {
+		entries[u.EntryID] = true
+		switch u.Kind {
+		case "sql_query_candidate":
+			sql = append(sql, u)
+		case "command_execution_candidate":
+			cmd = append(cmd, u)
+		}
+	}
+	if len(sql) != 1 {
+		t.Fatalf("middleware SQL uses=%d want 1: %+v", len(sql), sql)
+	}
+	// /x final + /unknown final both run exec.
+	if len(cmd) != 2 {
+		t.Fatalf("final command uses=%d want 2", len(cmd))
+	}
+	var xCmd *analysis.CandidateUse
+	for i := range cmd {
+		for _, e := range r.Entries {
+			if e.ID == cmd[i].EntryID && e.HTTP != nil && e.HTTP.Path == "/x" {
+				xCmd = &cmd[i]
+			}
+		}
+	}
+	if xCmd == nil {
+		t.Fatal("missing command on /x final")
+	}
+	if sql[0].EntryID == xCmd.EntryID || sql[0].InvocationContextID == xCmd.InvocationContextID || sql[0].ID == xCmd.ID {
+		t.Fatal("chain and final share identity")
+	}
+	if !entries[sql[0].EntryID] || !entries[xCmd.EntryID] {
+		t.Fatal("missing entries for chain/final uses")
+	}
+	// Two entries for /x (final + chain sibling); mystery middleware invents no chain entry.
+	xEntries := 0
+	for _, e := range r.Entries {
+		if e.HTTP != nil && e.HTTP.Path == "/x" {
+			xEntries++
+		}
+	}
+	if xEntries != 2 {
+		t.Fatalf("/x entries=%d want 2 (final+chain)", xEntries)
+	}
+	unknownEntries := 0
+	for _, e := range r.Entries {
+		if e.HTTP != nil && e.HTTP.Path == "/unknown" {
+			unknownEntries++
+		}
+	}
+	if unknownEntries != 1 {
+		t.Fatalf("/unknown entries=%d want 1 (final only; mystery unresolved)", unknownEntries)
+	}
+}

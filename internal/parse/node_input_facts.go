@@ -76,12 +76,16 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 			if n != nil && n.Kind() == "member_expression" {
 				container, key := n.ChildByFieldName("object"), n.ChildByFieldName("property")
 				if container != nil && key != nil {
+					prop := key.Utf8Text(m.src)
+					if container.Kind() == "identifier" && container.Utf8Text(m.src) == c.request {
+						v.Origin = nodeURLUploadOrigin(prop, "")
+					}
 					parts := strings.Split(container.Utf8Text(m.src), ".")
 					if len(parts) == 2 && parts[0] == c.request {
 						switch parts[1] {
 						case "params":
 							v.Origin = "http.path"
-							if namedHTTPParameter(c.entry.HTTP.Path, key.Utf8Text(m.src), c.entry.HTTP.Framework) {
+							if namedHTTPParameter(c.entry.HTTP.Path, prop, c.entry.HTTP.Framework) {
 								v.InitialType = "string"
 								if stable && !inputEffects(facts.Controls) && len(facts.Gaps) == 0 && preservesInputType(d.Transfers) {
 									v.SinkType = "string"
@@ -95,6 +99,11 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 							v.Origin = "http.headers"
 						case "cookies":
 							v.Origin = "http.cookies"
+						case "file", "files":
+							v.Origin = nodeURLUploadOrigin(parts[1], prop)
+						case "path", "url", "originalUrl", "baseUrl":
+							// Nested reads on URL members keep the URL origin.
+							v.Origin = nodeURLUploadOrigin(parts[1], "")
 						}
 					}
 				}
@@ -109,6 +118,33 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 	// semantic question. Unknown bodies, not unknown safety, are completeness gaps.
 	u.InputFacts = facts
 }
+// nodeURLUploadOrigin maps Express URL/upload request members to acquisition origins.
+// property is set for req.file.<property> / req.files.<property> projections.
+func nodeURLUploadOrigin(member, property string) string {
+	switch member {
+	case "path":
+		return "http.url_path"
+	case "url":
+		return "http.url"
+	case "originalUrl":
+		return "http.original_url"
+	case "baseUrl":
+		return "http.base_url"
+	case "file", "files":
+		switch property {
+		case "originalname", "filename", "name":
+			return "http.upload_filename"
+		case "buffer", "data", "stream":
+			return "http.upload_content"
+		case "":
+			return "http.upload"
+		default:
+			return "http.upload"
+		}
+	}
+	return "unknown"
+}
+
 func namedHTTPParameter(path, key, framework string) bool {
 	for _, part := range strings.Split(path, "/") {
 		if (framework == "hapi" && part == "{"+key+"}") || (framework != "hapi" && part == ":"+key) {

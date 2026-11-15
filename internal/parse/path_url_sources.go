@@ -7,9 +7,9 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-// requestURLMembers are the Express request members that carry the URL path. The
-// shared acquisition models only body, query, params, headers and cookies, so these
-// are admitted for path claims alone.
+// requestURLMembers are Express request URL/upload members. After E4 they are also
+// admitted via isRequestField for all Node families; this map still drives the
+// path-only second-pass bridge until deliverable C retires it.
 var requestURLMembers = map[string]bool{"path": true, "url": true, "originalUrl": true, "baseUrl": true, "file": true, "files": true}
 
 var anyURLSourceMember = regexp.MustCompile(`\.(?:path|url|originalUrl|baseUrl|file|files)\b`)

@@ -189,3 +189,80 @@ func TestGlobalLoggerSourceSnapshot(t *testing.T) {
 		})
 	}
 }
+
+func TestRequireDestructuring(t *testing.T) {
+	t.Run("winston createLogger", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const {createLogger}=require('winston');const logger=createLogger({});const app=express();app.get('/x',(req,res)=>{logger.error(req.query.token);res.end()});`)
+		report, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		uses := logUses(report)
+		if len(uses) != 1 || !gapKind(uses[0].Gaps, "log_sensitive_field_hint") {
+			t.Fatalf("winston destructure missed: %+v", uses)
+		}
+	})
+	t.Run("winston aliased createLogger", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const {createLogger: make}=require('winston');const logger=make({});const app=express();app.get('/x',(req,res)=>{logger.warn(req.query.token);res.end()});`)
+		report, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if uses := logUses(report); len(uses) != 1 {
+			t.Fatalf("aliased winston destructure missed: %+v", uses)
+		}
+	})
+	t.Run("fake winston module rejected", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const {createLogger}=require('not-winston');const logger=createLogger({});const app=express();app.get('/x',(req,res)=>{logger.error(req.query.token);res.end()});`)
+		report, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if uses := logUses(report); len(uses) != 0 {
+			t.Fatalf("fake winston accepted: %+v", uses)
+		}
+	})
+	t.Run("sequelize constructor", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const {Sequelize}=require('sequelize');const db=new Sequelize('sqlite::memory:');const app=express();app.get('/x',(req,res)=>{db.query('SELECT '+req.query.q);res.end()});`)
+		report, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		u := kindUse(t, report, "sql_query_candidate")
+		if u.APIModel == nil || u.APIModel.Library != "sequelize" || u.APIModel.ID != "sequelize-raw-query-v1" {
+			t.Fatalf("sequelize destructure unbound: api=%+v gaps=%+v", u.APIModel, u.Gaps)
+		}
+		if len(u.Completeness.Evidence["sink_binding"]) == 0 {
+			t.Fatalf("verified sink_binding evidence missing: %+v", u.Completeness)
+		}
+	})
+	t.Run("sequelize aliased constructor", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const {Sequelize: ORM}=require('sequelize');const db=new ORM('sqlite::memory:');const app=express();app.get('/x',(req,res)=>{db.query('SELECT '+req.query.q);res.end()});`)
+		report, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		u := kindUse(t, report, "sql_query_candidate")
+		if u.APIModel == nil || u.APIModel.Library != "sequelize" {
+			t.Fatalf("aliased sequelize destructure unbound: %+v", u.APIModel)
+		}
+	})
+	t.Run("bare require still unbound without member name", func(t *testing.T) {
+		// const Sequelize=require('sequelize') records name "*"; ctor check wants "Sequelize".
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const Sequelize=require('sequelize');const db=new Sequelize('sqlite::memory:');const app=express();app.get('/x',(req,res)=>{db.query('SELECT '+req.query.q);res.end()});`)
+		report, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		u := kindUse(t, report, "sql_query_candidate")
+		if u.APIModel != nil && u.APIModel.Library == "sequelize" && !gapKind(u.Gaps, "sink_binding_unverified") {
+			t.Fatalf("bare require unexpectedly bound as named Sequelize: %+v", u.APIModel)
+		}
+	})
+}

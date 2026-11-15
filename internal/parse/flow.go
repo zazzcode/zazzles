@@ -320,16 +320,46 @@ func (f *flow) branches(n *sitter.Node) {
 			}
 		}
 	} else {
-		for j := uint(0); j < n.NamedChildCount(); j++ {
-			c := n.NamedChild(j)
-			switch c.Kind() {
-			case "statement_block":
-				run(c, nil)
-			case "else_clause", "catch_clause", "finally_clause":
-				if body := c.ChildByFieldName("body"); body != nil {
-					run(body, nil)
-				} else if c.NamedChildCount() > 0 {
-					run(c.NamedChild(c.NamedChildCount()-1), nil)
+		switch n.Kind() {
+		case "switch_statement":
+			// Case/default bodies are field-named "body" (possibly several); they are
+			// never statement_block children of the switch itself.
+			if body := n.ChildByFieldName("body"); body != nil {
+				for j := uint(0); j < body.NamedChildCount(); j++ {
+					c := body.NamedChild(j)
+					if c.Kind() != "switch_case" && c.Kind() != "switch_default" {
+						continue
+					}
+					if value := c.ChildByFieldName("value"); value != nil {
+						f.eval(value)
+					}
+					for k := uint(0); k < c.ChildCount(); k++ {
+						child := c.Child(k)
+						if !child.IsNamed() || c.FieldNameForChild(uint32(k)) != "body" {
+							continue
+						}
+						run(child, nil)
+					}
+				}
+			}
+		case "labeled_statement", "while_statement", "for_statement", "do_statement", "for_in_statement":
+			// Brace-less loop/label bodies are expression_statement (or other
+			// non-block) under the "body" field; the generic walk below misses them.
+			if body := n.ChildByFieldName("body"); body != nil {
+				run(body, nil)
+			}
+		default:
+			for j := uint(0); j < n.NamedChildCount(); j++ {
+				c := n.NamedChild(j)
+				switch c.Kind() {
+				case "statement_block":
+					run(c, nil)
+				case "else_clause", "catch_clause", "finally_clause":
+					if body := c.ChildByFieldName("body"); body != nil {
+						run(body, nil)
+					} else if c.NamedChildCount() > 0 {
+						run(c.NamedChild(c.NamedChildCount()-1), nil)
+					}
 				}
 			}
 		}
@@ -646,7 +676,8 @@ func isRequestField(n *sitter.Node, src []byte, req string) bool {
 	prop := n.ChildByFieldName("property")
 	if obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(src) == req {
 		switch prop.Utf8Text(src) {
-		case "body", "query", "params", "headers", "cookies":
+		case "body", "query", "params", "headers", "cookies", "payload",
+			"path", "url", "originalUrl", "baseUrl", "file", "files":
 			return true
 		}
 	}
@@ -658,7 +689,8 @@ func isRequestField(n *sitter.Node, src []byte, req string) bool {
 			prop := obj.ChildByFieldName("property")
 			if root != nil && prop != nil && root.Kind() == "identifier" && root.Utf8Text(src) == req {
 				switch prop.Utf8Text(src) {
-				case "body", "query", "params", "headers", "cookies":
+				case "body", "query", "params", "headers", "cookies", "payload",
+					"path", "url", "originalUrl", "baseUrl", "file", "files":
 					return true
 				}
 			}

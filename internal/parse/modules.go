@@ -127,6 +127,7 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 				name := d.ChildByFieldName("name")
 				v := d.ChildByFieldName("value")
 				if name != nil && v != nil && name.Kind() == "object_pattern" {
+					m.readRequireDestructuring(name, v, d)
 					m.readCommandDestructuring(name, v, d)
 					m.readFSDestructuring(name, v, d)
 				}

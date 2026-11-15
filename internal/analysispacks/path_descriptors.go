@@ -61,7 +61,7 @@ func pathDescriptors() ([]Component, error) {
 // its digest and with it every existing family's selected request.
 func pathNodeInputComponent() Component {
 	v := nodeInputComponent()
-	v.ID = "source.node-input-path-v1"
+	v.ID = "source.node-input-path-v2"
 	v.Applicability = []string{"path_traversal_candidate"}
 	v.Compatibility = []string{PathProtocol}
 	v.Tests = []string{"TestPathComponentSelection"}

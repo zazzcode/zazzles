@@ -62,14 +62,15 @@ all its syntax, APIs, or vulnerable paths are covered.
 
 ## Active delivery: analyzer engine hardening
 
-E1 (scheduling, family filters, context reuse) and E2 (shared guard and workspace-manifest
-engine) are merged. E3 (evidence wire v7, assessment coverage, JavaScript conditional flow and
-fact-code consolidation) is complete on `analyzer-assessment-coverage`, in draft PR #14 for human
-review.
+E1 (scheduling, family filters, context reuse), E2 (shared guard and workspace-manifest
+engine), and E3 (evidence wire v7, assessment coverage, JavaScript conditional flow and
+fact-code consolidation) are merged into `stage` via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
+(`6e815ec`).
 
-**Next work item:** E4 shared Node inputs and file APIs. It runs in its own worktree and branch,
-cut from `stage` after E3 merges. The handoff in the container root lists the open items E3 hands
-over.
+**Active work item:** E4 shared Node inputs and file APIs on worktree/branch
+`node-inputs-and-file-apis` (base `6e815ec`). Contract:
+[shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md).
+The container-root handoff lists the open items E3 handed over.
 
 Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
 is one record near the soft threshold and none over the limit. The full v7 re-recording of the 260
@@ -88,8 +89,8 @@ sets the dependency order. Each remaining slice requires its dedicated executabl
 | Slice | Planned outcome | State |
 |---|---|---|
 | **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators including exiting else-if links, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Merged; [contract](../specifications/shared-guard-and-manifest-engine.md) |
-| **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Complete in `analyzer-assessment-coverage` (draft PR #14); [contract](../specifications/wire-bundle-v7.md) |
-| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` miss) | Next, in its own worktree and branch after E3 merges |
+| **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Merged via [PR #14](https://github.com/zazzcode/zazzles/pull/14); [contract](../specifications/wire-bundle-v7.md) |
+| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` miss) | In progress on `node-inputs-and-file-apis`; [contract](../specifications/shared-node-inputs-and-file-apis.md) |
 
 The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
 boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.

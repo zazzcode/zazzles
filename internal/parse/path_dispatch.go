@@ -62,14 +62,11 @@ func (s *moduleSet) pathHandler(m *sourceModule, h *sitter.Node) (*sourceModule,
 	return nil, nil
 }
 
+// appendPathAcquisition merges a nonfinal Express stage's analysis into the
+// shared report. Every family keeps its uses (SQL/command/XSS/…); path-only
+// filtering was the pre-E4 gap that hid middleware sinks.
 func appendPathAcquisition(out, extra *analysis.AnalysisReport) {
-	var uses []analysis.CandidateUse
-	for _, u := range extra.Uses {
-		if u.Kind == "path_traversal_candidate" {
-			uses = append(uses, u)
-		}
-	}
-	if len(uses) == 0 {
+	if len(extra.Uses) == 0 {
 		return
 	}
 	out.Entries = append(out.Entries, extra.Entries...)
@@ -77,7 +74,7 @@ func appendPathAcquisition(out, extra *analysis.AnalysisReport) {
 	out.DispatchBindings = append(out.DispatchBindings, extra.DispatchBindings...)
 	out.Callables = append(out.Callables, extra.Callables...)
 	out.InvocationContexts = append(out.InvocationContexts, extra.InvocationContexts...)
-	out.Uses = append(out.Uses, uses...)
+	out.Uses = append(out.Uses, extra.Uses...)
 }
 
 // pathConfiguredMounts admits mounts on verified configuration-function

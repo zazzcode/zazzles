@@ -40,6 +40,33 @@ func (m *sourceModule) readRequire(name string, v, declaration *sitter.Node) {
 	}
 }
 
+// readRequireDestructuring records `const { createLogger, Sequelize: S } = require('mod')`
+// into imports the same way ESM named imports do. Specialized child_process/fs maps stay
+// on readCommandDestructuring / readFSDestructuring.
+func (m *sourceModule) readRequireDestructuring(pattern, v, declaration *sitter.Node) {
+	path, member, ok := requireBinding(m, v)
+	if !ok || member != "*" {
+		return
+	}
+	for i := uint(0); i < pattern.NamedChildCount(); i++ {
+		c := pattern.NamedChild(i)
+		local, name := "", ""
+		switch c.Kind() {
+		case "shorthand_property_identifier_pattern":
+			local = c.Utf8Text(m.src)
+			name = local
+		case "pair_pattern":
+			key, value := c.ChildByFieldName("key"), c.ChildByFieldName("value")
+			if key != nil && value != nil && value.Kind() == "identifier" {
+				local, name = value.Utf8Text(m.src), key.Utf8Text(m.src)
+			}
+		}
+		if local != "" && !bindingReassigned(m, local) {
+			m.imports[local] = importBinding{path, name, declaration}
+		}
+	}
+}
+
 func (m *sourceModule) readCommonJSExport(n *sitter.Node) {
 	if n.Kind() != "expression_statement" || n.NamedChildCount() != 1 {
 		return

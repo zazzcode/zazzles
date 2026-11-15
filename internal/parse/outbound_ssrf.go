@@ -11,7 +11,15 @@ import (
 // axiosURLMethods take the destination URL as their first argument.
 var axiosURLMethods = map[string]bool{"get": true, "delete": true, "head": true, "options": true, "post": true, "put": true, "patch": true}
 
-// outboundOperation verifies the client behind a fetch/axios-shaped call. It
+func nodeHTTPModule(module string) bool {
+	switch module {
+	case "http", "https", "node:http", "node:https":
+		return true
+	}
+	return false
+}
+
+// outboundOperation verifies the client behind a fetch/axios/http-shaped call. It
 // returns the operation name, its contract and binding evidence, and the index
 // of the destination argument, or ok=false when the binding is not verified or
 // the destination is not a positional URL (an axios config object).
@@ -27,6 +35,9 @@ func (f *flow) outboundOperation(call, fn, args *sitter.Node) (op, contract stri
 			return "", "", nil, -1, false
 		}
 		return "fetch", analysispacks.FetchURLContract, []analysis.Evidence{m.evidence("sink_binding", fn)}, 0, true
+	}
+	if op, contract, binding, dest, ok = f.nodeHTTPOperation(call, fn, first); ok {
+		return op, contract, binding, dest, true
 	}
 	parts := strings.Split(fn.Utf8Text(m.src), ".")
 	root := parts[0]
@@ -52,6 +63,76 @@ func (f *flow) outboundOperation(call, fn, args *sitter.Node) (op, contract stri
 		return "", "", nil, -1, false
 	}
 	return method, analysispacks.AxiosURLContract, []analysis.Evidence{m.evidence("sink_binding", imp.declaration), m.evidence("sink_binding", fn)}, 0, true
+}
+
+// nodeHTTPOperation verifies http.get/request and https.get/request (node: variants too),
+// including CommonJS destructuring `const {get}=require('http')`.
+func (f *flow) nodeHTTPOperation(call, fn, first *sitter.Node) (op, contract string, binding []analysis.Evidence, dest int, ok bool) {
+	m := f.module
+	var imp importBinding
+	var method string
+	switch fn.Kind() {
+	case "member_expression":
+		obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+		if obj == nil || prop == nil || obj.Kind() != "identifier" {
+			return "", "", nil, -1, false
+		}
+		method = prop.Utf8Text(m.src)
+		if method != "get" && method != "request" {
+			return "", "", nil, -1, false
+		}
+		root := obj.Utf8Text(m.src)
+		var imported bool
+		imp, imported = m.imports[root]
+		if !imported || !nodeHTTPModule(imp.module) || (imp.name != "default" && imp.name != "*") || shadowed(call, root, m.src) || bindingReassigned(m, root) {
+			return "", "", nil, -1, false
+		}
+	case "identifier":
+		method = fn.Utf8Text(m.src)
+		if method != "get" && method != "request" {
+			return "", "", nil, -1, false
+		}
+		var imported bool
+		imp, imported = m.imports[method]
+		if !imported || !nodeHTTPModule(imp.module) || (imp.name != "get" && imp.name != "request") || shadowed(call, method, m.src) || bindingReassigned(m, method) {
+			return "", "", nil, -1, false
+		}
+	default:
+		return "", "", nil, -1, false
+	}
+	label := "http"
+	if strings.Contains(imp.module, "https") {
+		label = "https"
+	}
+	evidence := []analysis.Evidence{m.evidence("sink_binding", imp.declaration), m.evidence("sink_binding", fn)}
+	// options-only form still uses argument 0; destination fields are projected later.
+	if first != nil && first.Kind() == "object" {
+		return label + "." + method, analysispacks.NodeHTTPURLContract, evidence, 0, true
+	}
+	return label + "." + method, analysispacks.NodeHTTPURLContract, evidence, 0, true
+}
+
+// httpOptionsDestination keeps only options fields that select host/URL.
+func (f *flow) httpOptionsDestination(options *sitter.Node, v value) value {
+	if options == nil || options.Kind() != "object" {
+		return v
+	}
+	out := value{}
+	for i := uint(0); i < options.NamedChildCount(); i++ {
+		pair := options.NamedChild(i)
+		if pair.Kind() != "pair" {
+			continue
+		}
+		key, val := pair.ChildByFieldName("key"), pair.ChildByFieldName("value")
+		if key == nil || val == nil {
+			continue
+		}
+		switch key.Utf8Text(f.module.src) {
+		case "url", "href", "host", "hostname", "path", "port", "protocol":
+			out = combine(out, f.eval(val))
+		}
+	}
+	return out
 }
 
 // destinationOrigin classifies what the bounded flow established for the

@@ -918,7 +918,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	}
 	var outbound *analysis.OutboundFacts
 	var outboundBinding []analysis.Evidence
-	if name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") {
+	httpClient := name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") ||
+		strings.HasSuffix(name, ".get") || strings.HasSuffix(name, ".request") || name == "get" || name == "request"
+	if httpClient {
 		kind = "outbound_http_candidate"
 		op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
 		var destNode *sitter.Node
@@ -927,6 +929,16 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			destNode, destValue = args.NamedChild(0), values[0]
 			if dest > 0 && dest < len(values) {
 				destNode, destValue = args.NamedChild(uint(dest)), values[dest]
+			}
+		}
+		if verified && (strings.HasPrefix(op, "http.") || strings.HasPrefix(op, "https.")) && destNode != nil && destNode.Kind() == "object" {
+			destValue = f.httpOptionsDestination(destNode, destValue)
+		}
+		if !verified {
+			// Bare get/request identifiers without a verified http binding are ordinary calls.
+			// Unverified http.get / axios remain outbound observations (like a local fake client).
+			if name == "get" || name == "request" {
+				kind = ""
 			}
 		}
 		outbound = &analysis.OutboundFacts{DestinationOrigin: f.destinationOrigin(n, destNode, destValue)}

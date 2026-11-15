@@ -34,10 +34,12 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			b, _ := json.Marshal(r)
 			// The v7 catalog changes component provenance and family fact prose.
 			// Discovery identities and observation-only outcomes remain unchanged.
+			// E4: Node http/https SSRF + path single-pass / Python phase-2 file APIs
+			// change discovery report bytes for these fixtures; identities stay stable.
 			want := map[string]string{
-				"javascript/outbound":  "e79876e62f1e95d8b73160631e5c672e45cc73efad44272f5a23fd24b0e9e62a",
-				"typescript/outbound":  "46d8c52e6989076547470e333fdd533061339b7b62ef8bf619b9f3a76b1e8185",
-				"python/outbound":      "524792e097cb6b8ad7d50127f5e2aceb88524c76431dc62d39a515af91becaef",
+				"javascript/outbound":  "072a30548c48c7718084ef3b2f0266ae68128191ce20bb33a56af239592a4744",
+				"typescript/outbound":  "50ad7e4c4580279dbe41ebd09f8c09e2db52f810c16173735e4a7c59d62244d5",
+				"python/outbound":      "24bf5044c43c4801d508936435c4c08fb5087860a3d10f619355fcae767d9e71",
 				"javascript/xss-fetch": "73f4032846b5d8ec5fd5e0c1369f12d7471c539ad09668cb82e724b43e4a4fe1",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {

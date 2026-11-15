@@ -6,14 +6,14 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, evidence wire v7, precise JavaScript conditional flow and guidance-owned fact codes on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
+All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna` on the `node-inputs-and-file-apis` branch (E4: shared Express middleware-chain / URL/upload inputs, phase-2 file APIs, Node `http`/`https` SSRF). The target remained clean. These are static source judgments.
 
-- **Records:** 222. **Judged:** 134, in 134 requests (698,288 input tokens).
-- **Outcomes among judged records:** 21 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 112 inconclusive (Review).
-- **Unassessed records shown:** 88; provider/decoder failures: 0.
-- **Wrapped SSRF:** transparent async forwarding resolves at `utils.asyncHandler`; the remaining multipart upload factory is unresolved, so `routes/profileImageUrlUpload.ts:24` remains Review. The largest NoSQL request, `order.ts:164`, fits without shedding evidence and retains its claim blockers. Precise conditional modeling removed the generic branch blocker from the `likeProductReviews.ts` NoSQL records, which are now confirmed; `orderHistory.ts:36` is Review on a borderline source-coverage answer.
+- **Records:** 246. **Judged:** 153, in 153 requests (758,312 input tokens).
+- **Outcomes among judged records:** 22 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 130 inconclusive (Review).
+- **Unassessed records shown:** 93; provider/decoder failures: 0.
+- **E4 deltas:** shared middleware-chain stages and `source.node-input-v2` URL/upload facts expand validation/XSS coverage (e.g. dataErasure). Multipart `uploadToMemory.single('file')` remains an unresolved factory witness. `order.ts:164` NoSQL request accounting follows the shared input capability.
 
-[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
+[E4 contract](../../../.zazz/specifications/shared-node-inputs-and-file-apis.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

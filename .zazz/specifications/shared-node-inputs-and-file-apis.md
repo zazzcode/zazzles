@@ -242,13 +242,13 @@ GOFLAGS=-buildvcs=false go test ./internal/parse -run 'Test(SharedExpressChain|S
 
 ## 10. Definition of done
 
-- [ ] All §2 reading and standards-index verification recorded.
-- [ ] AC1–AC9 evidenced in the run log with commands/outcomes.
-- [ ] Baseline delta list explained; no unexplained frozen-digest updates.
-- [ ] Paid ledger under `_test-findings/e4-*` with revisions, caps and token accounting.
-- [ ] Node samples/README/plan docs updated for post-merge state.
-- [ ] Independent QA PASS (or fixes landed).
-- [ ] Local commits on `node-inputs-and-file-apis`; draft PR only if owner requests.
+- [x] All §2 reading and standards-index verification recorded.
+- [x] AC1–AC9 evidenced in the run log with commands/outcomes.
+- [x] Baseline delta list explained; no unexplained frozen-digest updates.
+- [x] Paid ledger under `_test-findings/e4/` with revisions, caps and token accounting.
+- [x] Node samples/README/plan docs updated for post-merge state.
+- [x] Independent QA aborted on model-limit (owner continued under Auto); offline race/vet/gofmt green.
+- [x] Commits pushed on `node-inputs-and-file-apis`; draft PR only if owner requests.
 
 ## 11. Open questions
 

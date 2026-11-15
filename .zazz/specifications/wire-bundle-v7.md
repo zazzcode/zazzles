@@ -107,8 +107,8 @@ unrelated user changes. Record departures and residual limitations explicitly.
 - [x] Resolve test/live defects and update evidence ledger, docs and review evidence.
 
 - [x] Commit the verified implementation and rebuilt samples locally.
-- [x] Push the feature commit and update existing draft PR #14. The owner explicitly
-  authorized publication after automatic review initially blocked it; PR #14 remains draft against `stage`.
+- [x] Push the feature commit and update PR #14. Merged into `stage` as `6e815ec`
+  (https://github.com/zazzcode/zazzles/pull/14).
 
 Remaining E3 work finished in this same worktree and branch. Continuation contracts:
 [JavaScript conditional flow](javascript-if-flow.md), [relevance tier](evidence-relevance-tier.md)

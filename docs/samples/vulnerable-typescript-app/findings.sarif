@@ -3240,61 +3240,7 @@
             {
               "level": "note",
               "message": {
-                "text": "POST /api/login: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "GET /api/ping: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "GET /api/files: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "GET /api/search: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
                 "text": "POST /api/calculate: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "POST /api/calculate: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "DELETE /api/admin/users/:id: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "GET /api/users/:id: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "POST /api/parse-xml: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "POST /api/parse-yaml: semantic assessment not_run"
               }
             },
             {
@@ -3312,31 +3258,7 @@
             {
               "level": "note",
               "message": {
-                "text": "POST /api/register: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
                 "text": "POST /api/validate-email: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "POST /api/validate-email: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "GET /redirect: semantic assessment not_run"
-              }
-            },
-            {
-              "level": "note",
-              "message": {
-                "text": "POST /api/merge: semantic assessment not_run"
               }
             },
             {
@@ -3950,18 +3872,8 @@
           "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
           "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
           "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
-          "Analyzer family selection: skipped [], only [sql,nosql,xss,command,path,logging,ssrf]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.",
-          "Judged 6 distinct candidate signatures across 6 total entry contexts (0 derived across equivalent entry contexts).",
-          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 6; reported input tokens 26019; unknown-usage attempts 0. "
-        ],
-        "scan.onlyFamilies": [
-          "sql",
-          "nosql",
-          "xss",
-          "command",
-          "path",
-          "logging",
-          "ssrf"
+          "Judged 19 distinct candidate signatures across 19 total entry contexts (0 derived across equivalent entry contexts).",
+          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 1000000; requests remain sequential. Attempts 19; reported input tokens 61777; unknown-usage attempts 0. "
         ],
         "scan.selectedRoute": "",
         "scan.selectedScope": {}
@@ -4272,8 +4184,8 @@
               ]
             }
           ],
-          "kind": "review",
-          "level": "note",
+          "kind": "fail",
+          "level": "warning",
           "locations": [
             {
               "logicalLocations": [
@@ -4284,7 +4196,7 @@
                 }
               ],
               "message": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Keep credential and personal-data content out of logs"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -4298,67 +4210,67 @@
             }
           ],
           "message": {
-            "text": "POST /api/login: Possible sensitive data in a log entry [needs_evidence]. A verified logging call receives a request value whose field name or container suggests credentials or personal data, or that passes through an unresolved transformation. Confirm what the value contains and whether redaction applies before changing behavior. A field name is a hint, not proof. Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class Inconclusive, content yes, redaction no). Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
+            "text": "POST /api/login: Sensitive data written to logs, supported by source analysis [confirmed_vulnerability]. The supplied source and logging-specific assessment establish that credential or personal-data content reaches log output without effective redaction. Remove it from the log or log a non-revealing fact instead. Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class credential, content yes, redaction no). Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "27497b5cd7d5b84b411f4a4a83ef838e6db18b431ab491d522b75794e0109f4d",
+              "request_digest": "17504b4320bfcabfe73480eaceee07d620baa7340fcb40aeb0699993901fff0b",
               "answer_details": {
                 "content_exposure": {
                   "choice": "yes",
-                  "confidence": 0.63,
+                  "confidence": 0.64,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0.75
+                      "probability": 0.76
                     },
                     {
                       "value": "no",
-                      "probability": 0.11
+                      "probability": 0.08
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.14
+                      "probability": 0.16
                     }
                   ]
                 },
                 "data_class": {
-                  "choice": "unknown",
-                  "confidence": 0.28,
+                  "choice": "credential",
+                  "confidence": 0.44,
                   "probabilities": [
                     {
                       "value": "credential",
-                      "probability": 0.43
+                      "probability": 0.58
                     },
                     {
                       "value": "personal_data",
-                      "probability": 0.08
-                    },
-                    {
-                      "value": "other",
                       "probability": 0.03
                     },
                     {
+                      "value": "other",
+                      "probability": 0.01
+                    },
+                    {
                       "value": "unknown",
-                      "probability": 0.46
+                      "probability": 0.38
                     }
                   ]
                 },
                 "log_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.63,
+                  "confidence": 0.65,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.72
+                      "probability": 0.74
                     },
                     {
                       "value": "protected",
-                      "probability": 0.02
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.26
+                      "probability": 0.25
                     },
                     {
                       "value": "not_applicable",
@@ -4368,7 +4280,7 @@
                 },
                 "redaction": {
                   "choice": "no",
-                  "confidence": 0.93,
+                  "confidence": 0.92,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -4376,11 +4288,11 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.95
+                      "probability": 0.94
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.04
                     },
                     {
                       "value": "not_applicable",
@@ -4389,10 +4301,10 @@
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "confirmed_vulnerability",
               "answers": {
                 "content_exposure": "yes",
-                "data_class": "unknown",
+                "data_class": "credential",
                 "log_exposure": "vulnerable",
                 "redaction": "no"
               },
@@ -4404,8 +4316,8 @@
               "provider": "openai",
               "model": "gpt-6-luna",
               "question_version": "log-components-v2",
-              "protection": "uncertain",
-              "reason": "Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
+              "protection": "insufficient",
+              "reason": "Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
             },
             "scan.coverageGaps": [
               {
@@ -4500,20 +4412,25 @@
               "use_id": "candidate:v1:e7784c886eb1e43f8f4b5f6942a28fde1e5572beaf11d367faf3fa5a1e81f5a6",
               "entry_id": "entry:v1:5e98b68ea5735609d3baedb8c75ac8615aac63dbeea2bab0bbc40bf781e63fea",
               "invocation_context_id": "invocation:v1:39b10430df62efa1789ffd5849e48858b2bafe5813aa78e54e2d7a2366a0ea8a",
-              "record_type": "analysis",
-              "status": "needs_evidence",
-              "title": "Possible sensitive data in a log entry",
-              "summary": "A verified logging call receives a request value whose field name or container suggests credentials or personal data, or that passes through an unresolved transformation. Confirm what the value contains and whether redaction applies before changing behavior. A field name is a hint, not proof.",
+              "record_type": "finding",
+              "status": "confirmed_vulnerability",
+              "title": "Sensitive data written to logs, supported by source analysis",
+              "summary": "The supplied source and logging-specific assessment establish that credential or personal-data content reaches log output without effective redaction. Remove it from the log or log a non-revealing fact instead.",
               "input_validation": "Field validation is reported separately; it does not change what this log line contains.",
-              "use_protection": "Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class Inconclusive, content yes, redaction no). Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts.",
+              "use_protection": "Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class credential, content yes, redaction no). Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
-                "title": "Resolve the specific claim blockers",
+                "title": "Keep credential and personal-data content out of logs",
                 "actions": [
-                  "Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect.",
-                  "Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
+                  "Change the observed operation at src/server.ts:74: console.log('Query:', query)",
+                  "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+                  "Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead.",
+                  "Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values.",
+                  "If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value.",
+                  "Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead."
                 ],
-                "example_status": "no patch proposed while the claim is inconclusive"
+                "illustrative_example": "// Illustrative: log a fact about the credential, not the credential.\nconsole.info('login attempt', { username, passwordProvided: typeof password === 'string' \u0026\u0026 password.length \u003e 0 });",
+                "example_status": "illustrative_template; not a verified application patch"
               }
             },
             "scan.inputFacts": {
@@ -4724,12 +4641,17 @@
             "scan.invocationContextId": "invocation:v1:39b10430df62efa1789ffd5849e48858b2bafe5813aa78e54e2d7a2366a0ea8a",
             "scan.kind": "log_sink_candidate",
             "scan.recommendations": {
-              "title": "Resolve the specific claim blockers",
+              "title": "Keep credential and personal-data content out of logs",
               "actions": [
-                "Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect.",
-                "Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
+                "Change the observed operation at src/server.ts:74: console.log('Query:', query)",
+                "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+                "Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead.",
+                "Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values.",
+                "If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value.",
+                "Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead."
               ],
-              "example_status": "no patch proposed while the claim is inconclusive"
+              "illustrative_example": "// Illustrative: log a fact about the credential, not the credential.\nconsole.info('login attempt', { username, passwordProvided: typeof password === 'string' \u0026\u0026 password.length \u003e 0 });",
+              "example_status": "illustrative_template; not a verified application patch"
             },
             "scan.reviewStatus": "not_run",
             "scan.route": "POST /api/login",
@@ -4866,12 +4788,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/login: Request-field validation evidence is incomplete [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/login: Request-field validation evidence is incomplete [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "1847e4f9448a8cb1608c8b2aa5e55af5047f2016e31c2257d1ca57a18c9bfb7e",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 0.98,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 0.99
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.75,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.03
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.15
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.81
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 70,
+                    "end_line": 70,
+                    "start_byte": 2277,
+                    "end_byte": 2285
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 70,
+                    "end_line": 70,
+                    "start_byte": 2277,
+                    "end_byte": 2285
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 70,
+                    "end_line": 70,
+                    "start_byte": 2277,
+                    "end_byte": 2285
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 70,
+                    "end_line": 70,
+                    "start_byte": 2277,
+                    "end_byte": 2285
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2818,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -4956,17 +4995,21 @@
               "entry_id": "entry:v1:5e98b68ea5735609d3baedb8c75ac8615aac63dbeea2bab0bbc40bf781e63fea",
               "invocation_context_id": "invocation:v1:39b10430df62efa1789ffd5849e48858b2bafe5813aa78e54e2d7a2366a0ea8a",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation evidence is incomplete",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.body is read and no handler or applicable middleware validator handles it",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.body is read and no handler or applicable middleware validator handles it Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:70: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:70: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:70: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:70: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:70: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -5064,7 +5107,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:70: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:70: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:70: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:70: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:70: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -5292,11 +5339,11 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "2e5aa1559f3ab87398b1625c8295246946e50081dfc5628f2ebaeb89a6069513",
+              "request_digest": "f222d9fd7611689f458d4ec7bcae8094b05ddc248a4911de3004f924188bbfa2",
               "answer_details": {
                 "argument_control": {
                   "choice": "not_applicable",
-                  "confidence": 0.92,
+                  "confidence": 0.85,
                   "probabilities": [
                     {
                       "value": "unsafe",
@@ -5308,33 +5355,33 @@
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.94
+                      "probability": 0.89
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.05
+                      "probability": 0.1
                     }
                   ]
                 },
                 "executable_control": {
                   "choice": "not_applicable",
-                  "confidence": 0.79,
+                  "confidence": 0.84,
                   "probabilities": [
                     {
                       "value": "unsafe",
-                      "probability": 0.04
+                      "probability": 0.02
                     },
                     {
                       "value": "constrained",
-                      "probability": 0.1
+                      "probability": 0.09
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.84
+                      "probability": 0.88
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.01
                     }
                   ]
                 },
@@ -5366,7 +5413,7 @@
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "not_applicable",
@@ -5374,7 +5421,7 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 }
@@ -5953,12 +6000,129 @@
             }
           ],
           "message": {
-            "text": "GET /api/ping: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "GET /api/ping: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "dba69966969dc0f08f164255550fed6bb406280ee3dc1ea91d14c764226722d4",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 0.98,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 0.99
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.87,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.09
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.9
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 88,
+                    "end_line": 88,
+                    "start_byte": 3062,
+                    "end_byte": 3076
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 88,
+                    "end_line": 88,
+                    "start_byte": 3062,
+                    "end_byte": 3076
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 88,
+                    "end_line": 88,
+                    "start_byte": 3062,
+                    "end_byte": 3076
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 88,
+                    "end_line": 88,
+                    "start_byte": 3062,
+                    "end_byte": 3076
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2766,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -6043,17 +6207,21 @@
               "entry_id": "entry:v1:723ff1daa3665505d93a23c701d8e467f3ced59c5f3a53e8e4438649e68052e5",
               "invocation_context_id": "invocation:v1:3e56cf2a7295d3d7a634d6f34dddd4bcbff677da890fd264cee6832794fd1fa7",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.query.host before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.query.host before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:88: req.query.host. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:88: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:88: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:88: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:88: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -6151,7 +6319,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:88: req.query.host. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:88: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:88: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:88: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:88: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -6379,11 +6551,11 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "969a0a87835a91b4b31e61189b3b8bba9a81aa9df956f96f666e85adfe4c6a77",
+              "request_digest": "d7ae8d027e15646d190dd156cc11814a802e370f1b191991722271f144f63acd",
               "answer_details": {
                 "containment_control": {
                   "choice": "none",
-                  "confidence": 0.98,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
@@ -6391,7 +6563,7 @@
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "resolved_boundary",
@@ -6399,21 +6571,21 @@
                     },
                     {
                       "value": "none",
-                      "probability": 0.98
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.48,
+                  "confidence": 0.84,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.61
+                      "probability": 0.88
                     },
                     {
                       "value": "protected",
@@ -6425,13 +6597,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.38
+                      "probability": 0.11
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.55,
+                  "confidence": 0.76,
                   "probabilities": [
                     {
                       "value": "complete",
@@ -6439,11 +6611,11 @@
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.7
+                      "probability": 0.84
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.29
+                      "probability": 0.15
                     }
                   ]
                 }
@@ -6455,7 +6627,7 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 5268,
+                "input_tokens": 5328,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -7109,11 +7281,11 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "a15e2c4784837b9159c4b380f6cd1cb37559173e6a020994881a11a879ef2039",
+              "request_digest": "f5d08cb796f556a669e2b6dc1c9be37393231618d4e3adc23c24465e41308a3c",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.59,
+                  "confidence": 0.39,
                   "probabilities": [
                     {
                       "value": "adequate",
@@ -7121,21 +7293,21 @@
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.03
+                      "probability": 0.05
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.69
+                      "probability": 0.54
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.27
+                      "probability": 0.4
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "unknown",
-                  "confidence": 0.99,
+                  "confidence": 0.98,
                   "probabilities": [
                     {
                       "value": "html_text",
@@ -7147,7 +7319,7 @@
                     },
                     {
                       "value": "url",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "script",
@@ -7175,13 +7347,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.99
+                      "probability": 0.98
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.75,
+                  "confidence": 0.73,
                   "probabilities": [
                     {
                       "value": "effective",
@@ -7189,20 +7361,20 @@
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.01
+                      "probability": 0.04
                     },
                     {
                       "value": "absent",
-                      "probability": 0.81
+                      "probability": 0.8
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.17
+                      "probability": 0.15
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
-                  "choice": "unknown",
+                  "choice": "no",
                   "confidence": 0.35,
                   "probabilities": [
                     {
@@ -7211,33 +7383,33 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.41
+                      "probability": 0.57
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.57
+                      "probability": 0.41
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "unknown",
-                  "confidence": 0.92,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.04
+                      "probability": 0.03
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.94
+                      "probability": 0.97
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 }
@@ -7282,7 +7454,7 @@
                 "encoding_adequacy": "not_present",
                 "output_context": "unknown",
                 "sanitizer_effectiveness": "absent",
-                "xss_all_paths_protected": "unknown",
+                "xss_all_paths_protected": "no",
                 "xss_exposure": "unknown"
               },
               "usage": {
@@ -7405,7 +7577,7 @@
                   "Resolve render_protection_unresolved at src/server.ts:108: A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence.",
                   "Resolve storage_origin_unresolved at src/server.ts:108: No complete source-to-storage write link is established.",
                   "Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.",
-                  "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=unknown; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers."
+                  "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -7530,7 +7702,7 @@
                 "Resolve render_protection_unresolved at src/server.ts:108: A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence.",
                 "Resolve storage_origin_unresolved at src/server.ts:108: No complete source-to-storage write link is established.",
                 "Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.",
-                "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=unknown; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers."
+                "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -7723,12 +7895,129 @@
             }
           ],
           "message": {
-            "text": "GET /api/files: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "GET /api/files: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "60929ceff3ba4679ea47d8f29a3a3fcadd93b3847dc4761d28b06e427d2b9fa8",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.79,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.03
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.12
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.84
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 101,
+                    "end_line": 101,
+                    "start_byte": 3501,
+                    "end_byte": 3519
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 101,
+                    "end_line": 101,
+                    "start_byte": 3501,
+                    "end_byte": 3519
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 101,
+                    "end_line": 101,
+                    "start_byte": 3501,
+                    "end_byte": 3519
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 101,
+                    "end_line": 101,
+                    "start_byte": 3501,
+                    "end_byte": 3519
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2761,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -7813,17 +8102,21 @@
               "entry_id": "entry:v1:e9911545e3469b4d7d8c3504458ac5edb089fe5b0364f39fe55d8e7264a073d1",
               "invocation_context_id": "invocation:v1:0b9ba1c95b33454cc31672326b007129339a196ee64e98b9a4ba487db523883d",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.query.filename before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.query.filename before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:101: req.query.filename. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:101: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:101: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:101: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:101: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -7921,7 +8214,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:101: req.query.filename. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:101: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:101: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:101: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:101: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -8149,11 +8446,11 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "d305ba33a5b6a85543388b4d57f44a5eafac0f1b5fcdff50601a9f46b6c8fd8c",
+              "request_digest": "5f6300f09aa29c69155b71262e983590395b4ee24499bcec253b00d685d58832",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.97,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "adequate",
@@ -8161,11 +8458,11 @@
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.98
+                      "probability": 0.97
                     },
                     {
                       "value": "unknown",
@@ -8243,7 +8540,7 @@
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.73,
+                  "confidence": 0.77,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -8251,29 +8548,29 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.82
+                      "probability": 0.85
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.17
+                      "probability": 0.14
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.69,
+                  "confidence": 0.81,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.77
+                      "probability": 0.86
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.22
+                      "probability": 0.14
                     },
                     {
                       "value": "not_applicable",
@@ -8697,12 +8994,129 @@
             }
           ],
           "message": {
-            "text": "GET /api/search: Request-field validation evidence is incomplete [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "GET /api/search: Request-field validation evidence is incomplete [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "9d658eb7bad4ba50f2813b0c59c0494dd6dd5a81cca1bfec6cf821f7060819f6",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 0.94,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0.03
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 0.97
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.83,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.1
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.87
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 115,
+                    "end_line": 115,
+                    "start_byte": 3997,
+                    "end_byte": 4012
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 115,
+                    "end_line": 115,
+                    "start_byte": 3997,
+                    "end_byte": 4012
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 115,
+                    "end_line": 115,
+                    "start_byte": 3997,
+                    "end_byte": 4012
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 115,
+                    "end_line": 115,
+                    "start_byte": 3997,
+                    "end_byte": 4012
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2701,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -8787,17 +9201,21 @@
               "entry_id": "entry:v1:7db89449594eed39f52597179552a20254cf6d93f7ac360792c32dbe8dd28d81",
               "invocation_context_id": "invocation:v1:3b79f6cf5abdf2e1018a9cfd74abd6820a1781be6bcab6ff68d254d1797ec003",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation evidence is incomplete",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.query.query is read and no handler or applicable middleware validator handles it",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.query.query is read and no handler or applicable middleware validator handles it Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:115: req.query.query. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:115: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:115: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:115: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:115: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -8895,7 +9313,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:115: req.query.query. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:115: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:115: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:115: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:115: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -9083,23 +9505,23 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "d985d0959039505b09e18d19fb6c06ff59536f7d81195966a222840b281ac84f",
+              "request_digest": "3c965b80f21386b092ff3c892e8185934511e17e83e5c673f373ad0eafd2633a",
               "answer_details": {
                 "destination_control": {
                   "choice": "full_url",
-                  "confidence": 0.99,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.99
+                      "probability": 0.97
                     },
                     {
                       "value": "host",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "path_or_query",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "none",
@@ -9139,19 +9561,19 @@
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.77,
+                  "confidence": 0.48,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.06
+                      "probability": 0.1
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.85
+                      "probability": 0.65
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.09
+                      "probability": 0.25
                     }
                   ]
                 }
@@ -10254,12 +10676,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/calculate: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/calculate: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "1e64dcabce8afd4195b8ac8a7696fdd1693f29c851ee67ee107052d6a69a08a5",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 0.99,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 0.99
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.96,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.97
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 134,
+                    "end_line": 134,
+                    "start_byte": 4701,
+                    "end_byte": 4709
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 134,
+                    "end_line": 134,
+                    "start_byte": 4701,
+                    "end_byte": 4709
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 134,
+                    "end_line": 134,
+                    "start_byte": 4701,
+                    "end_byte": 4709
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 134,
+                    "end_line": 134,
+                    "start_byte": 4701,
+                    "end_byte": 4709
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2769,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -10366,17 +10905,21 @@
               "entry_id": "entry:v1:7196eea1ccb98ad5a82925d77b50ce030b6050d16af086446bf1ae3085a779b9",
               "invocation_context_id": "invocation:v1:dafd8984e70ab4afbd33c78a6d3d35db7fe4621dd954bb607a7cd22927815965",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:134: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:134: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:134: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:134: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:134: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -10474,7 +11017,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:134: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:134: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:134: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:134: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:134: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -10613,12 +11160,129 @@
             }
           ],
           "message": {
-            "text": "DELETE /api/admin/users/:id: Request-field validation evidence is incomplete [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "DELETE /api/admin/users/:id: Request-field validation evidence is incomplete [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "76250ba53203902909655f832acbcdf5149f0956b71481365a71ec7b0e83f439",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.76,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.15
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.82
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 146,
+                    "end_line": 146,
+                    "start_byte": 5055,
+                    "end_byte": 5068
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 146,
+                    "end_line": 146,
+                    "start_byte": 5055,
+                    "end_byte": 5068
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 146,
+                    "end_line": 146,
+                    "start_byte": 5055,
+                    "end_byte": 5068
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 146,
+                    "end_line": 146,
+                    "start_byte": 5055,
+                    "end_byte": 5068
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2776,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -10703,17 +11367,21 @@
               "entry_id": "entry:v1:a93a2e450b2de33629a8572922f2303b6bdc2a50f3db0e27e78185eb30332aa9",
               "invocation_context_id": "invocation:v1:2a285da1b2a24bc196068281f049eab0fdd4221852eb032f73d60d4e28b784fe",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation evidence is incomplete",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id is read and no handler or applicable middleware validator handles it",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id is read and no handler or applicable middleware validator handles it Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:146: req.params.id. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:146: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:146: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:146: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:146: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -10811,7 +11479,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:146: req.params.id. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:146: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:146: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:146: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:146: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -10935,12 +11607,129 @@
             }
           ],
           "message": {
-            "text": "GET /api/users/:id: Request-field validation evidence is incomplete [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "GET /api/users/:id: Request-field validation evidence is incomplete [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "38d66bde6970f2b21dece23ea086688296949300ae9cff881daa8e66461eefc4",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.8,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.13
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.85
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 159,
+                    "end_line": 159,
+                    "start_byte": 5541,
+                    "end_byte": 5554
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 159,
+                    "end_line": 159,
+                    "start_byte": 5541,
+                    "end_byte": 5554
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 159,
+                    "end_line": 159,
+                    "start_byte": 5541,
+                    "end_byte": 5554
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 159,
+                    "end_line": 159,
+                    "start_byte": 5541,
+                    "end_byte": 5554
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2747,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -11025,17 +11814,21 @@
               "entry_id": "entry:v1:601037dbbada45c49ec5a92e510672ce8d8024527de7b553b805f269229581c1",
               "invocation_context_id": "invocation:v1:0b4ea2b34561acb660a9b0357213a8c035b8137e99b5dc3b41e30f29c2aa8eb4",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation evidence is incomplete",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id is read and no handler or applicable middleware validator handles it",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.params.id is read and no handler or applicable middleware validator handles it Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:159: req.params.id. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:159: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:159: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:159: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:159: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -11133,7 +11926,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:159: req.params.id. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:159: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:159: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:159: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:159: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -11257,12 +12054,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/parse-xml: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/parse-xml: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "cec57567f2b744b06c6959aab8c2646b1190fb1b6a09395cb3dfbed075da1b69",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.89,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.06
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.92
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 171,
+                    "end_line": 171,
+                    "start_byte": 5958,
+                    "end_byte": 5966
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 171,
+                    "end_line": 171,
+                    "start_byte": 5958,
+                    "end_byte": 5966
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 171,
+                    "end_line": 171,
+                    "start_byte": 5958,
+                    "end_byte": 5966
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 171,
+                    "end_line": 171,
+                    "start_byte": 5958,
+                    "end_byte": 5966
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2742,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -11347,17 +12261,21 @@
               "entry_id": "entry:v1:f34a758adc44f6c3f702adee418d35acfb5536ae52f31070d221e29544372755",
               "invocation_context_id": "invocation:v1:d78a075e4914e626475c470357993de8d8b97ba07f23db37a1fc01e5443be362",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:171: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:171: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:171: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:171: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:171: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -11455,7 +12373,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:171: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:171: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:171: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:171: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:171: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -12048,12 +12970,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/parse-yaml: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/parse-yaml: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "6878ddc9cda6650d98a28c4d7b5baff75f048f859c3b53cdb8ee0cab1303c349",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.93,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.95
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.02
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 184,
+                    "end_line": 184,
+                    "start_byte": 6361,
+                    "end_byte": 6369
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 184,
+                    "end_line": 184,
+                    "start_byte": 6361,
+                    "end_byte": 6369
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 184,
+                    "end_line": 184,
+                    "start_byte": 6361,
+                    "end_byte": 6369
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 184,
+                    "end_line": 184,
+                    "start_byte": 6361,
+                    "end_byte": 6369
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2782,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -12160,17 +13199,21 @@
               "entry_id": "entry:v1:989d70ebdf9d9db2c2568f5025622024278fd06b7a780c7213b33b619e0aae71",
               "invocation_context_id": "invocation:v1:02fd9cf186c14e0c816f6462f3cbef64d669fda7175f3b3d004dff5581590b31",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:184: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:184: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:184: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:184: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:184: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -12268,7 +13311,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:184: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:184: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:184: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:184: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:184: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -12808,12 +13855,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/register: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/register: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "fdad48e0e2519abbf7a403b55597bb0e734db82ef33975a49150c68ecaa65d51",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.63,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.24
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.72
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.02
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 199,
+                    "end_line": 199,
+                    "start_byte": 6824,
+                    "end_byte": 6832
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 199,
+                    "end_line": 199,
+                    "start_byte": 6824,
+                    "end_byte": 6832
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 199,
+                    "end_line": 199,
+                    "start_byte": 6824,
+                    "end_byte": 6832
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 199,
+                    "end_line": 199,
+                    "start_byte": 6824,
+                    "end_byte": 6832
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2712,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -12898,17 +14062,21 @@
               "entry_id": "entry:v1:16542b54144492ce8e99c45ce99a3d5cde4d835658216b65144a31c982848c90",
               "invocation_context_id": "invocation:v1:7eca1646c69855b19d6536054aa1383cb96b66ea22558493248b18f54fc97c9c",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:199: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:199: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:199: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:199: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:199: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -13006,7 +14174,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:199: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:199: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:199: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:199: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:199: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -13594,12 +14766,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/validate-email: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/validate-email: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "18b2c8797eb2646816a15ecd205abe5d2a4e6864fbcbc6186cf034332b597a9b",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.95,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.96
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 221,
+                    "end_line": 221,
+                    "start_byte": 7444,
+                    "end_byte": 7452
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 221,
+                    "end_line": 221,
+                    "start_byte": 7444,
+                    "end_byte": 7452
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 221,
+                    "end_line": 221,
+                    "start_byte": 7444,
+                    "end_byte": 7452
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 221,
+                    "end_line": 221,
+                    "start_byte": 7444,
+                    "end_byte": 7452
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2744,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -13684,17 +14973,21 @@
               "entry_id": "entry:v1:21204a2c6788135a6b889fcaf5006a2b53007f50734829b945acfd596b54a72b",
               "invocation_context_id": "invocation:v1:a752569f93e31ee07e4e904a4070c72c631d50e3f94605affd0b4c50442af4c7",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:221: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:221: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:221: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:221: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:221: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -13792,7 +15085,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:221: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:221: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:221: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:221: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:221: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -13916,12 +15213,129 @@
             }
           ],
           "message": {
-            "text": "GET /redirect: Request-field validation evidence is incomplete [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "GET /redirect: Request-field validation evidence is incomplete [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "db2126c95084577a620fe35c38ae2444920688c139caf8b7e46c99fdfd3c056c",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.8,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.01
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.13
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.85
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 237,
+                    "end_line": 237,
+                    "start_byte": 8063,
+                    "end_byte": 8076
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 237,
+                    "end_line": 237,
+                    "start_byte": 8063,
+                    "end_byte": 8076
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 237,
+                    "end_line": 237,
+                    "start_byte": 8063,
+                    "end_byte": 8076
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 237,
+                    "end_line": 237,
+                    "start_byte": 8063,
+                    "end_byte": 8076
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2683,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -14006,17 +15420,21 @@
               "entry_id": "entry:v1:9fa4076b7f89a6ca547e69389b378157ee1a50c478c08d1d0b0fb034e95015b3",
               "invocation_context_id": "invocation:v1:46ca39a239d5ae0a7a577b66466dc0135326a2e38223c724897d54865b5312c3",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation evidence is incomplete",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.query.url is read and no handler or applicable middleware validator handles it",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.query.url is read and no handler or applicable middleware validator handles it Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:237: req.query.url. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:237: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:237: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:237: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:237: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -14114,7 +15532,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:237: req.query.url. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:237: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:237: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:237: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:237: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -14932,12 +16354,129 @@
             }
           ],
           "message": {
-            "text": "POST /api/merge: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "POST /api/merge: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "11ae139220d3bf34fd6c028e2ec60aff902ec7fe5375a6e45ccd207c3891caa9",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 1
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.79,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.13
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.84
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 244,
+                    "end_line": 244,
+                    "start_byte": 8297,
+                    "end_byte": 8305
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 244,
+                    "end_line": 244,
+                    "start_byte": 8297,
+                    "end_byte": 8305
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 244,
+                    "end_line": 244,
+                    "start_byte": 8297,
+                    "end_byte": 8305
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "src/server.ts",
+                    "start_line": 244,
+                    "end_line": 244,
+                    "start_byte": 8297,
+                    "end_byte": 8305
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2697,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -15022,17 +16561,21 @@
               "entry_id": "entry:v1:b09f0e06a06ccbc214dfb0929f4c8233285a9a09ac4526e1b2a68556001caa51",
               "invocation_context_id": "invocation:v1:d4355daeed5e332c6f4b4d29271e35ded5c4e9e802fe33492e568af96897422c",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: a call receives req.body before the sink, and that call is not a proven validator Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at src/server.ts:244: req.body. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at src/server.ts:244: input_source",
+                  "Resolve validation_evidence_missing at src/server.ts:244: field_policy",
+                  "Resolve validation_evidence_missing at src/server.ts:244: invoked_callable",
+                  "Resolve validation_evidence_missing at src/server.ts:244: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
@@ -15130,7 +16673,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at src/server.ts:244: req.body. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at src/server.ts:244: input_source",
+                "Resolve validation_evidence_missing at src/server.ts:244: field_policy",
+                "Resolve validation_evidence_missing at src/server.ts:244: invoked_callable",
+                "Resolve validation_evidence_missing at src/server.ts:244: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -15182,8 +16729,8 @@
           "rules": [
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect.\n- Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect. Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
+                "markdown": "Keep credential and personal-data content out of logs\n\n- Change the observed operation at src/server.ts:74: console.log('Query:', query)\n- Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.\n- Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead.\n- Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values.\n- If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value.\n- Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead.\n\nIllustrative example (unverified):\n\n```\n// Illustrative: log a fact about the credential, not the credential.\nconsole.info('login attempt', { username, passwordProvided: typeof password === 'string' \u0026\u0026 password.length \u003e 0 });\n```\n",
+                "text": "Keep credential and personal-data content out of logs. Change the observed operation at src/server.ts:74: console.log('Query:', query) Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change. Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead. Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values. If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value. Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead."
               },
               "id": "scan/sensitive-data-logging",
               "properties": {
@@ -15193,13 +16740,13 @@
                 ]
               },
               "shortDescription": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Keep credential and personal-data content out of logs"
               }
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at src/server.ts:70: req.body. Its current Review status does not establish a code defect.\n- Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at src/server.ts:70: req.body. Its current Review status does not establish a code defect. Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at src/server.ts:70: req.body. Its current Review status does not establish a code defect.\n- Resolve validation_evidence_missing at src/server.ts:70: input_source\n- Resolve validation_evidence_missing at src/server.ts:70: field_policy\n- Resolve validation_evidence_missing at src/server.ts:70: invoked_callable\n- Resolve validation_evidence_missing at src/server.ts:70: control_flow\n- Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at src/server.ts:70: req.body. Its current Review status does not establish a code defect. Resolve validation_evidence_missing at src/server.ts:70: input_source Resolve validation_evidence_missing at src/server.ts:70: field_policy Resolve validation_evidence_missing at src/server.ts:70: invoked_callable Resolve validation_evidence_missing at src/server.ts:70: control_flow Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               },
               "id": "scan/input-validation",
               "properties": {
@@ -15246,8 +16793,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at src/server.ts:108: res.send(data). Its current Review status does not establish a code defect.\n- Resolve render_protection_unresolved at src/server.ts:108: A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence.\n- Resolve storage_origin_unresolved at src/server.ts:108: No complete source-to-storage write link is established.\n- Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.\n- Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=unknown; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at src/server.ts:108: res.send(data). Its current Review status does not establish a code defect. Resolve render_protection_unresolved at src/server.ts:108: A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence. Resolve storage_origin_unresolved at src/server.ts:108: No complete source-to-storage write link is established. Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved. Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=unknown; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at src/server.ts:108: res.send(data). Its current Review status does not establish a code defect.\n- Resolve render_protection_unresolved at src/server.ts:108: A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence.\n- Resolve storage_origin_unresolved at src/server.ts:108: No complete source-to-storage write link is established.\n- Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.\n- Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at src/server.ts:108: res.send(data). Its current Review status does not establish a code defect. Resolve render_protection_unresolved at src/server.ts:108: A source path reaches raw output without modeled context-appropriate encoding or sanitization; unresolved sibling paths remain in the evidence. Resolve storage_origin_unresolved at src/server.ts:108: No complete source-to-storage write link is established. Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved. Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=unknown; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=unknown, protection=raw. Do not infer a code repair from contradictory answers."
               },
               "id": "scan/xss-output-protection",
               "properties": {

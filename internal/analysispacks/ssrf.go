@@ -15,9 +15,10 @@ const (
 	FetchURLContract      = "fetch-url-v1"
 	AxiosURLContract      = "axios-url-v1"
 	PythonHTTPURLContract = "python-http-url-v1"
+	NodeHTTPURLContract   = "node-http-url-v1"
 )
 
-var ssrfContractIDs = []string{FetchURLContract, AxiosURLContract, PythonHTTPURLContract}
+var ssrfContractIDs = []string{FetchURLContract, AxiosURLContract, PythonHTTPURLContract, NodeHTTPURLContract}
 
 // SSRFContract returns a copy of the supported operation contract by verified ID.
 func SSRFContract(id string) *analysis.APIModel {
@@ -32,6 +33,9 @@ func SSRFContract(id string) *analysis.APIModel {
 	case PythonHTTPURLContract:
 		return &analysis.APIModel{ID: id, Library: "python-http", Reference: "https://requests.readthedocs.io/en/latest/api/#requests.request",
 			Semantics: "requests.get/post/put/patch/delete/head/options(url, ...), requests.request(method, url, ...), the same httpx functions, and urllib.request.urlopen(url) request the URL given by the url argument; data, json, params and headers do not change the destination host. requests and urllib follow redirects by default (httpx does not unless follow_redirects=True), so a permitted first host can redirect elsewhere. urllib.request.urlopen also opens file: and ftp: URLs." + common}
+	case NodeHTTPURLContract:
+		return &analysis.APIModel{ID: id, Library: "http", Reference: "https://nodejs.org/api/http.html#httpgeturl-options-callback",
+			Semantics: "Node.js http.get/request and https.get/request (including node:http / node:https) request the destination given by a URL string, a WHATWG URL object, or options.href/url/host/hostname/path/port/protocol. Forms: get/request(url[, options][, callback]) and get/request(options[, callback]). Method, headers and body/Agent options do not change the destination host by themselves. An options object spread or dynamic Agent is unresolved. Absolute URL strings choose scheme and host; relative URLs are not valid for these APIs without a host in options. Redirects are not followed by default." + common}
 	}
 	return nil
 }
@@ -78,6 +82,7 @@ var ssrfOwners = map[string]string{
 	FetchURLContract:      "internal/parse/outbound_ssrf.go",
 	AxiosURLContract:      "internal/parse/outbound_ssrf.go",
 	PythonHTTPURLContract: "internal/parse/python_frameworks.go",
+	NodeHTTPURLContract:   "internal/parse/outbound_ssrf.go",
 }
 
 // ssrfDescriptors creates every SSRF component. They are separate from the
@@ -101,7 +106,7 @@ func ssrfDescriptors() ([]Component, error) {
 	evidence.Dependencies = []Requirement{{flowID(f), "1"}}
 	evidence.Required = []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "destination_operand"}
 	flow := base("flow.ssrf", "compiled_capability", "internal/parse/outbound_ssrf.go + internal/parse/python_frameworks.go", f.Kinds, "")
-	flow.Limits = append(flow.Limits, "the destination slot only: fetch argument 0, axios URL argument, Python url argument or keyword; a config-object URL stays an observation")
+	flow.Limits = append(flow.Limits, "the destination slot only: fetch argument 0, axios URL argument, Node http/https URL or options host fields, Python url argument or keyword; an opaque axios config-object URL stays an observation")
 	out := []Component{pack, claim, evidence, flow}
 	for _, language := range f.Languages {
 		if language == lang.TypeScript {
@@ -123,7 +128,7 @@ func ssrfDescriptors() ([]Component, error) {
 		out = append(out, v)
 	}
 	input := nodeInputComponent()
-	input.ID = "source.node-input-ssrf-v1"
+	input.ID = "source.node-input-ssrf-v2"
 	input.Applicability = []string{"ssrf_candidate"}
 	input.Compatibility = protocols
 	input.Tests = []string{"TestSSRFComponentSelection"}

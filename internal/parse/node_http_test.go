@@ -3,6 +3,8 @@ package parse
 import (
 	"strings"
 	"testing"
+
+	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
 func TestNodeHTTPInputs(t *testing.T) {
@@ -178,4 +180,58 @@ func TestNodeRegistrationBoundaries(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSharedNodeURLUpload(t *testing.T) {
+	t.Run("originalUrl xss origin", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `const express=require('express');const app=express();app.get('/x',(req,res)=>res.send(req.originalUrl));`)
+		r, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		u := kindUse(t, r, "xss_candidate")
+		if u.InputFacts == nil || len(u.InputFacts.Values) == 0 || u.InputFacts.Version != 1 {
+			t.Fatalf("input facts missing: %+v", u.InputFacts)
+		}
+		if u.InputFacts.Values[0].Origin != "http.original_url" {
+			t.Fatalf("origin=%q want http.original_url", u.InputFacts.Values[0].Origin)
+		}
+	})
+	t.Run("upload filename origin", func(t *testing.T) {
+		root := t.TempDir()
+		writeSource(t, root, "server.js", `
+const express=require('express');
+const multer=require('multer');
+const path=require('path');
+const fs=require('fs');
+const app=express();
+const upload=multer({storage:multer.memoryStorage()});
+const ROOT='/tmp/uploads';
+app.post('/up',upload.single('f'),(req,res)=>{fs.writeFileSync(path.join(ROOT,req.file.originalname),req.file.buffer);res.end()});
+`)
+		r, err := Analyze(root, "server.js")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var pathUse *analysis.CandidateUse
+		for i := range r.Uses {
+			if r.Uses[i].Kind == "path_traversal_candidate" {
+				pathUse = &r.Uses[i]
+				break
+			}
+		}
+		if pathUse == nil || pathUse.InputFacts == nil {
+			t.Fatalf("path use missing: %+v", r.Uses)
+		}
+		found := false
+		for _, v := range pathUse.InputFacts.Values {
+			if v.Origin == "http.upload_filename" {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("upload_filename origin missing: %+v", pathUse.InputFacts.Values)
+		}
+	})
 }

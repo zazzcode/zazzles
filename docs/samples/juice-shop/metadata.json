@@ -1,31 +1,31 @@
 {
   "date": "2026-11-15",
   "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
-  "scanner_revision": "analyzer-assessment-coverage dec3b30 (evidence wire v7 with JavaScript conditional flow and fact codes; see wire-bundle-v7 verification record)",
+  "scanner_revision": "node-inputs-and-file-apis e06d72f (E4 shared Node inputs + phase-2 file APIs + Node http/https SSRF; see shared-node-inputs-and-file-apis)",
   "evaluation_mode": "fresh gpt-6-luna scan: all analyzers",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "positions": 222,
-  "provider_requests": 134,
-  "input_tokens": 698288,
-  "published_records": 222,
+  "positions": 246,
+  "provider_requests": 153,
+  "input_tokens": 758312,
+  "published_records": 246,
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "runtime_confirmation": "none; static source judgments only",
   "outcomes": {
-    "needs_evidence": 112,
-    "confirmed_vulnerability": 21,
+    "needs_evidence": 130,
+    "confirmed_vulnerability": 22,
     "poor_practice": 1
   },
-  "not_run": 88,
+  "not_run": 93,
   "failed": 0,
   "previous": {
     "date": "2026-11-15",
-    "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
+    "scanner_revision": "analyzer-assessment-coverage dec3b30 (evidence wire v7 with JavaScript conditional flow and fact codes; see wire-bundle-v7 verification record)",
     "provider_requests": 134,
-    "input_tokens": 709889,
+    "input_tokens": 698288,
     "outcomes": {
-      "needs_evidence": 114,
-      "confirmed_vulnerability": 19,
+      "needs_evidence": 112,
+      "confirmed_vulnerability": 21,
       "poor_practice": 1
     }
   }

@@ -33,7 +33,6 @@ type value struct {
 	gaps          []analysis.Gap
 }
 type flow struct {
-	pathOnly     bool
 	constants    registrationSeeds
 	client       *clientContext
 	response     string
@@ -63,10 +62,6 @@ type flow struct {
 	// conditions, when set, collects the modeled conditionals of a helper body so
 	// the helper keeps its precision policy for tests that may guard content.
 	conditions *[]modeledCondition
-	// urlSources makes the request URL members (path, url, originalUrl, baseUrl)
-	// request sources. It is set only on the path-only second pass of a handler, so no
-	// other analyzer's dependencies or request bytes change.
-	urlSources bool
 }
 
 // modeledCondition is one conditional the flow modeled precisely: its test and
@@ -165,7 +160,7 @@ func (f *flow) statement(n *sitter.Node) bool {
 		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && f.module.nodeProcessExit(n.NamedChild(0)))
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
-		if f.pathOnly && f.pathArchiveForOf(n) {
+		if f.pathArchiveForOf(n) {
 			return false
 		}
 		if !f.clientForOf(n) {
@@ -320,16 +315,46 @@ func (f *flow) branches(n *sitter.Node) {
 			}
 		}
 	} else {
-		for j := uint(0); j < n.NamedChildCount(); j++ {
-			c := n.NamedChild(j)
-			switch c.Kind() {
-			case "statement_block":
-				run(c, nil)
-			case "else_clause", "catch_clause", "finally_clause":
-				if body := c.ChildByFieldName("body"); body != nil {
-					run(body, nil)
-				} else if c.NamedChildCount() > 0 {
-					run(c.NamedChild(c.NamedChildCount()-1), nil)
+		switch n.Kind() {
+		case "switch_statement":
+			// Case/default bodies are field-named "body" (possibly several); they are
+			// never statement_block children of the switch itself.
+			if body := n.ChildByFieldName("body"); body != nil {
+				for j := uint(0); j < body.NamedChildCount(); j++ {
+					c := body.NamedChild(j)
+					if c.Kind() != "switch_case" && c.Kind() != "switch_default" {
+						continue
+					}
+					if value := c.ChildByFieldName("value"); value != nil {
+						f.eval(value)
+					}
+					for k := uint(0); k < c.ChildCount(); k++ {
+						child := c.Child(k)
+						if !child.IsNamed() || c.FieldNameForChild(uint32(k)) != "body" {
+							continue
+						}
+						run(child, nil)
+					}
+				}
+			}
+		case "labeled_statement", "while_statement", "for_statement", "do_statement", "for_in_statement":
+			// Brace-less loop/label bodies are expression_statement (or other
+			// non-block) under the "body" field; the generic walk below misses them.
+			if body := n.ChildByFieldName("body"); body != nil {
+				run(body, nil)
+			}
+		default:
+			for j := uint(0); j < n.NamedChildCount(); j++ {
+				c := n.NamedChild(j)
+				switch c.Kind() {
+				case "statement_block":
+					run(c, nil)
+				case "else_clause", "catch_clause", "finally_clause":
+					if body := c.ChildByFieldName("body"); body != nil {
+						run(body, nil)
+					} else if c.NamedChildCount() > 0 {
+						run(c.NamedChild(c.NamedChildCount()-1), nil)
+					}
 				}
 			}
 		}
@@ -446,10 +471,8 @@ func (f *flow) eval(n *sitter.Node) value {
 			return v
 		}
 	}
-	if f.pathOnly {
-		if v, ok := f.pathArchiveValue(n); ok {
-			return v
-		}
+	if v, ok := f.pathArchiveValue(n); ok {
+		return v
 	}
 	switch n.Kind() {
 	case "identifier", "shorthand_property_identifier":
@@ -463,11 +486,6 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return value{gaps: []analysis.Gap{f.gap("unknown_value", "unresolved local value: "+n.Utf8Text(src), n)}}
 	case "member_expression", "subscript_expression":
-		if f.urlSources && n.Kind() == "member_expression" {
-			if obj, prop := n.ChildByFieldName("object"), n.ChildByFieldName("property"); obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(src) == f.request && requestURLMembers[prop.Utf8Text(src)] {
-				return value{deps: []analysis.Dependency{{Source: f.module.evidence("input_source", n), Transfers: []analysis.Evidence{}}}}
-			}
-		}
 		partField := f.partField(n)
 		if (partField != nil || isRequestField(n, src, f.request) || f.hapiPayload(n)) && f.nodeFieldAvailable(n) {
 			sourceNode := n
@@ -646,7 +664,8 @@ func isRequestField(n *sitter.Node, src []byte, req string) bool {
 	prop := n.ChildByFieldName("property")
 	if obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(src) == req {
 		switch prop.Utf8Text(src) {
-		case "body", "query", "params", "headers", "cookies":
+		case "body", "query", "params", "headers", "cookies", "payload",
+			"path", "url", "originalUrl", "baseUrl", "file", "files":
 			return true
 		}
 	}
@@ -658,7 +677,8 @@ func isRequestField(n *sitter.Node, src []byte, req string) bool {
 			prop := obj.ChildByFieldName("property")
 			if root != nil && prop != nil && root.Kind() == "identifier" && root.Utf8Text(src) == req {
 				switch prop.Utf8Text(src) {
-				case "body", "query", "params", "headers", "cookies":
+				case "body", "query", "params", "headers", "cookies", "payload",
+					"path", "url", "originalUrl", "baseUrl", "file", "files":
 					return true
 				}
 			}
@@ -886,9 +906,13 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	}
 	var outbound *analysis.OutboundFacts
 	var outboundBinding []analysis.Evidence
-	if name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") {
+	op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
+	// Name-shaped clients (fetch/axios/http/https.*) stay outbound observations even when
+	// the binding is shadowed; never treat every unrelated `.get` / `.request` as outbound.
+	isNamedClient := name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") ||
+		strings.HasPrefix(name, "http.") || strings.HasPrefix(name, "https.")
+	if verified || isNamedClient {
 		kind = "outbound_http_candidate"
-		op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
 		var destNode *sitter.Node
 		destValue := value{}
 		if args != nil && args.NamedChildCount() > 0 && len(values) > 0 {
@@ -896,6 +920,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			if dest > 0 && dest < len(values) {
 				destNode, destValue = args.NamedChild(uint(dest)), values[dest]
 			}
+		}
+		if verified && (strings.HasPrefix(op, "http.") || strings.HasPrefix(op, "https.")) && destNode != nil && destNode.Kind() == "object" {
+			destValue = f.httpOptionsDestination(destNode, destValue)
 		}
 		outbound = &analysis.OutboundFacts{DestinationOrigin: f.destinationOrigin(n, destNode, destValue)}
 		if verified && outbound.DestinationOrigin == analysis.DestinationRequest {

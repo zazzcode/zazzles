@@ -78,6 +78,14 @@ func TestSSRFCandidates(t *testing.T) {
 		{"local axios object", map[string]string{"server.js": "const express=require('express');const axios={get:x=>x};const app=express();app.get('/x',(req,res)=>{axios.get(req.query.url);res.send('ok')});"}, ""},
 		{"axios config object", map[string]string{"server.js": "const express=require('express');const axios=require('axios');const app=express();app.get('/x',(req,res)=>{axios({url:req.query.url});res.send('ok')});"}, ""},
 		{"fixed destination", map[string]string{"server.js": "const express=require('express');const app=express();app.post('/x',(req,res)=>{fetch('https://api.invalid/x',{method:'POST',body:req.body.v});res.send('ok')});"}, ""},
+		{"node http.get url", map[string]string{"server.js": "const express=require('express');const http=require('http');const app=express();app.get('/x',(req,res)=>{http.get(req.query.url,()=>{});res.send('ok')});"}, "node-http-url-v1"},
+		{"node https.request url", map[string]string{"server.js": "const express=require('express');const https=require('https');const app=express();app.get('/x',(req,res)=>{https.request(req.query.url,()=>{});res.send('ok')});"}, "node-http-url-v1"},
+		{"node http.get URL object", map[string]string{"server.js": "const express=require('express');const http=require('http');const app=express();app.get('/x',(req,res)=>{http.get(new URL(req.query.url),()=>{});res.send('ok')});"}, "node-http-url-v1"},
+		{"node http.get options host", map[string]string{"server.js": "const express=require('express');const http=require('http');const app=express();app.get('/x',(req,res)=>{http.get({host:req.query.host,path:'/'},()=>{});res.send('ok')});"}, "node-http-url-v1"},
+		{"node http destructured get", map[string]string{"server.js": "const express=require('express');const {get}=require('http');const app=express();app.get('/x',(req,res)=>{get(req.query.url,()=>{});res.send('ok')});"}, "node-http-url-v1"},
+		{"node:https require", map[string]string{"server.js": "const express=require('express');const https=require('node:https');const app=express();app.get('/x',(req,res)=>{https.get(req.query.url,()=>{});res.send('ok')});"}, "node-http-url-v1"},
+		{"shadowed http", map[string]string{"server.js": "const express=require('express');const http={get:x=>x};const app=express();app.get('/x',(req,res)=>{http.get(req.query.url);res.send('ok')});"}, ""},
+		{"http fixed host", map[string]string{"server.js": "const express=require('express');const http=require('http');const app=express();app.get('/x',(req,res)=>{http.get('https://api.invalid/'+req.query.path,()=>{});res.send('ok')});"}, "node-http-url-v1"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			uses := outboundUses(t, tt.files)

@@ -10,6 +10,9 @@ const (
 	PathSlotOption  = "option"
 	// PathSlotArchive is the archive whose stored entry names become path components.
 	PathSlotArchive = "archive"
+	// PathSlotDestination is a second independent file-path operand (copy/rename/move dest).
+	// A guard on PathSlotFile never covers this slot.
+	PathSlotDestination = "destination"
 )
 
 // Path guard kinds classify a control that mentions a path value. Only the
@@ -157,7 +160,7 @@ func (p *PathFacts) Validate(deps, context int) error {
 	slots := map[string]bool{}
 	for _, o := range p.Operands {
 		switch o.Slot {
-		case PathSlotFile, PathSlotContent, PathSlotOption, PathSlotArchive:
+		case PathSlotFile, PathSlotContent, PathSlotOption, PathSlotArchive, PathSlotDestination:
 		default:
 			return fmt.Errorf("invalid path operand slot %q", o.Slot)
 		}
@@ -200,7 +203,7 @@ func (p *PathFacts) Validate(deps, context int) error {
 		}
 	}
 	for _, f := range p.Paths {
-		if f.Dependency < 0 || f.Dependency >= deps || (f.Operand != PathSlotFile && f.Operand != PathSlotArchive) {
+		if f.Dependency < 0 || f.Dependency >= deps || (f.Operand != PathSlotFile && f.Operand != PathSlotArchive && f.Operand != PathSlotDestination) {
 			return fmt.Errorf("path flow references a missing dependency or a non-path operand")
 		}
 		switch f.Protection {

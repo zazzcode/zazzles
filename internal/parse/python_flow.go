@@ -191,13 +191,25 @@ func (f *pythonFlow) parameters(fn *sitter.Node) {
 		}
 		if f.route.route.Framework == "fastapi" || strings.Contains(f.route.route.PathPattern, "<"+key+">") || strings.Contains(f.route.route.PathPattern, ":"+key+">") {
 			container := "query"
-			if strings.Contains(pyText(f.module, p), "Body(") {
+			paramText := pyText(f.module, p)
+			typ := pyText(f.module, p.ChildByFieldName("type"))
+			if strings.Contains(paramText, "Body(") {
 				container = "body"
+			}
+			// FastAPI UploadFile / File() uploads are file fields, not query scalars.
+			if typ == "UploadFile" || strings.HasSuffix(typ, ".UploadFile") || strings.Contains(paramText, "File(") || f.qualified(typ) == "fastapi.UploadFile" || f.qualified(typ) == "starlette.datastructures.UploadFile" {
+				container = "files"
 			}
 			binding := httpInput("http."+container, key, f.module.evidence("input_binding", p))
 			f.invocation.Inputs = append(f.invocation.Inputs, binding)
 			v := f.source(p, inputRole(binding.Role), binding.Parameter)
-			typ := pyText(f.module, p.ChildByFieldName("type"))
+			if container == "files" {
+				// Keep files container so .filename / .save follow uploadReceiver rules.
+				for i := range v.deps {
+					v.deps[i].container = "files"
+					v.deps[i].key = key
+				}
+			}
 			if f.route.route.Framework == "fastapi" && (typ == "int" || typ == "float" || typ == "bool") {
 				v = pyProtect(v, "numeric")
 			}

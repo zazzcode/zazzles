@@ -5,7 +5,7 @@ import sitter "github.com/tree-sitter/go-tree-sitter"
 // pathImmediate executes only a syntactically immediate function invocation,
 // preserving its lexical request/response bindings. Deferred callbacks stay gaps.
 func (f *flow) pathImmediate(call *sitter.Node) (value, bool) {
-	if !f.pathOnly || f.depth >= 3 {
+	if f.depth >= 3 {
 		return value{}, false
 	}
 	fn := call.ChildByFieldName("function")

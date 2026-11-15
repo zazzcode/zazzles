@@ -64,9 +64,12 @@ and affected live trace re-recording remain explicit unchecked next-session item
 - The NoSQL `typeof` selector witness requires the excluding polarity.
 - The shared guard engine credits each exiting link of an else-if chain.
 
-Recorded limits: `switch` case bodies, labeled non-block statements and brace-less loop bodies
-are not traversed; `break`/`continue` count as continuing (false-positive direction only);
-winston/Sequelize bound through `require` destructuring are not verified bindings.
+Recorded limits (pre-E4): `switch` case bodies, labeled non-block statements and brace-less
+loop bodies were not traversed; winston/Sequelize `require` destructuring was unbound.
+E4 closes those discovery/binding holes under may-path `branches` (see
+[shared-node-inputs-and-file-apis](shared-node-inputs-and-file-apis.md) AC6). Remaining:
+`break`/`continue` still count as continuing (false-positive direction only); switch/loop
+control stays may-path (`unsupported_control_flow`), not precise polarity like `if`.
 
 ## Work checklist
 

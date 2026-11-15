@@ -95,9 +95,12 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 - NoSQL injection (MongoDB-style databases)
 - Cross-site scripting (XSS): server-rendered, stored, and browser/DOM
 - Command injection
-- Path traversal, including Zip Slip when extracting uploaded archives
-- Server-side request forgery (SSRF) when a verified `fetch`, `axios` or Python HTTP client call takes
-  its destination from the request; other outbound calls are grouped observations for review
+- Path traversal and unsafe file/archive use: Node `fs` reads/writes (including `open`, `copyFile`,
+  and `rename`), Zip Slip when extracting uploaded archives, Python `FileResponse` / upload
+  filenames, `shutil` copy/move, and `tarfile.extractall` (with explicit filter/runtime facts)
+- Server-side request forgery (SSRF) when a verified `fetch`, `axios`, Node `http`/`https`, or
+  Python HTTP client call takes its destination from the request; other outbound calls are grouped
+  observations for review
 
 **Good-practice checks**
 
@@ -107,8 +110,10 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 
 **How it finds problems**
 
-- Finds entry points: web routes, browser events, GraphQL and gRPC
-- Follows request input to the sensitive operation it reaches
+- Finds entry points: web routes (including each stage of an Express middleware chain), browser
+  events, GraphQL and gRPC
+- Follows request input to the sensitive operation it reaches, including URL fields
+  (`path` / `url` / `originalUrl`) and verified upload filename or file content on Node apps
 - Notices the checks on the way, such as `if` guards and allow-lists. In JavaScript and TypeScript it
   follows each side of an `if`/`else` separately, so a check on one branch never protects another
 - Reads each library's version for the part of a monorepo being analyzed
@@ -120,6 +125,23 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 
 - HTML to read, JSON for tools and coding agents, SARIF for security platforms
 - Saved even when part of the assessment could not be completed
+
+**How we measure efficacy**
+
+The useful metric is not “every bug in every sample app.” It is: for each analyzer we ship, do we
+confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
+or inconclusive cases in Review/Protected instead of inventing reds?
+
+On the current Node sample rebuild (Juice Shop, Node.js Goof, Vulnerable TypeScript app, and
+vuln-demo-app), that in-scope catch is complete for the families above: the cataloged XSS, SQL,
+NoSQL, command, path/Zip Slip, logging, and SSRF required positives are confirmed. Cases the answer
+keys mark as Review stay Review (for example Juice Shop subtitle XSS). Defects outside those
+analyzers—authentication, IDOR, `eval`/code injection, open redirect, secrets, cookie flags, and
+most Juice Shop challenge categories—are **not covered** yet; a clean row there is not a pass.
+
+Details and per-app expected-vs-actual tables live in
+[vulnerable sample applications](.zazz/project/vulnerable-sample-apps.md). Sample HTML reports are
+snapshots of those runs, not a claim of whole-application security.
 
 **Not yet available:** dependency auditing, a separate Inspect report, automated fixes and scheduled runs.
 The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
@@ -291,9 +313,10 @@ Explore existing reports without installing Zazzles or making API calls:
 | Vulnerable TypeScript app | Command injection at `/api/ping`, reflected XSS, and logging | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [Sample notes](docs/samples/vulnerable-typescript-app/README.md) |
 | VulnPy | Shared Python sinks across framework adapters | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes](docs/samples/vulnpy/README.md) |
 
-The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF, target revisions,
-source-reviewed expectations, and known misses. These are historical snapshots; their notes identify
-the scanner and target versions used. They may predate the current analyzer coverage.
+The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. Compare counts
+against the [expected-vs-actual tables](.zazz/project/vulnerable-sample-apps.md)—efficacy is
+in-scope analyzer catch on those keys, not total bugs in each app. Notes identify scanner and target
+versions; older snapshots may predate current coverage.
 
 ### Verify a sample finding yourself
 

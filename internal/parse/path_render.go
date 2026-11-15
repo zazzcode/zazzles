@@ -61,9 +61,6 @@ func (f *flow) pathLayoutValue(options *sitter.Node) (value, *sitter.Node, bool)
 }
 
 func (f *flow) pathRenderCall(call, fn, args *sitter.Node) bool {
-	if !f.pathOnly {
-		return false
-	}
 	if fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() < 2 {
 		return false
 	}

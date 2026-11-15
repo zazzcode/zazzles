@@ -6,13 +6,13 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Security sink families; standalone input validation excluded were run at pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna`, evidence wire v7, precise JavaScript conditional flow and guidance-owned fact codes on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
+All analyzers were run at pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna`, including
+standalone input validation and Node `http`/`https` SSRF where those sinks exist. The target remained
+clean. These are static source judgments.
 
-- **Records:** 24. **Judged:** 6, in 6 requests (26,019 input tokens).
-- **Outcomes among judged records:** 4 confirmed vulnerabilities, 0 poor practice, 0 protected, 0 not applicable, 2 inconclusive (Review).
-- **Unassessed records shown:** 18; provider/decoder failures: 0.
-
-[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
+- **Records:** 24. **Judged:** 19, in 19 requests (61,777 input tokens).
+- **Outcomes among judged records:** 5 confirmed vulnerabilities, 0 poor practice, 0 protected, 0 not applicable, 14 inconclusive (Review).
+- **Unassessed records shown:** 5; provider/decoder failures: 0.
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

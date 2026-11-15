@@ -9,7 +9,10 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-var requestContainers = map[string]bool{"body": true, "query": true, "params": true, "headers": true, "cookies": true}
+var requestContainers = map[string]bool{
+	"body": true, "query": true, "params": true, "headers": true, "cookies": true, "payload": true,
+	"path": true, "url": true, "originalUrl": true, "baseUrl": true, "file": true, "files": true,
+}
 
 // morgan's predefined formats all include :url, which is the original URL with its query string.
 var urlLogFormats = map[string]bool{"combined": true, "common": true, "dev": true, "short": true, "tiny": true}

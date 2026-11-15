@@ -55,4 +55,5 @@ argument, and `db.run` executes every statement in that text. `queryAll(sql)` pa
 | `DEMO-SQL-N01`, `POST /notes` (`:208`) | Literal SQL with `?` placeholders; `title` and `body` are bound values. |
 | `DEMO-SQL-N02`, `GET /notes`, `GET /admin/users`, seed SQL | Literal SQL with no request data. |
 
-Other README categories (SSRF, IDOR, missing admin authorization) are out of scope here.
+SSRF on `POST /fetch` (`server.js:232` `http.get(url)`) is confirmed under E4 contract
+`node-http-url-v1`. IDOR and missing admin authorization remain out of scope here.

@@ -284,7 +284,7 @@ func TestConditionalValueIsolation(t *testing.T) {
 	}
 	for _, body := range []string{
 		"for(const x of list()){db.query('S '+req.query.q)}",
-		// Case bodies are not traversed (a recorded limit); the gap reaches later code.
+		// Case bodies are traversed under branches; the may-path gap still reaches later code.
 		"let v=req.query.q;switch(req.query.m){case 'a':v=req.query.b}db.query('S '+v)",
 		"try{db.query('S '+req.query.q)}finally{res.end()}",
 		"while(c()){db.query('S '+req.query.q)}",
@@ -497,4 +497,42 @@ app.get('/broken',(req,res)=>{const cmd=req.query.c;if(!cmd){return res.sendStat
 	}
 	// A continuing middle arm ends the chain: the allowlist after it guards only its own path.
 	requireGuards(t, "/broken", uses["/broken"])
+}
+
+func TestSwitchAndLoopBodies(t *testing.T) {
+	sql := func(t *testing.T, body string) []analysis.CandidateUse {
+		t.Helper()
+		name, src := conditionalHandler("js", "", body)
+		return usesOfKind(conditionalReport(t, name, src), "sql_query_candidate")
+	}
+	cases := []struct {
+		name, body string
+	}{
+		{"switch case sink", "switch(req.query.m){case 'a':db.query('S '+req.query.q);break;default:res.end()}"},
+		{"switch default sink", "switch(req.query.m){case 'a':res.end();break;default:db.query('S '+req.query.q)}"},
+		// A lone `label: expr` inside arrow braces parses as an object literal; keep a
+		// sibling statement so the grammar emits labeled_statement.
+		{"labeled expression sink", "res.set('X','1');label: db.query('S '+req.query.q)"},
+		{"brace-less while", "while(c()) db.query('S '+req.query.q)"},
+		{"brace-less for", "for(;;) db.query('S '+req.query.q)"},
+		{"brace-less do-while", "do db.query('S '+req.query.q); while(c())"},
+		{"brace-less for-of", "for(const x of list()) db.query('S '+req.query.q)"},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			uses := sql(t, tt.body)
+			if len(uses) != 1 || len(uses[0].Dependencies) == 0 {
+				t.Fatalf("sink inside %s not discovered: %+v", tt.name, uses)
+			}
+			if !gapKind(uses[0].Gaps, "unsupported_control_flow") {
+				t.Fatalf("may-path control gap missing for %s: %+v", tt.name, uses[0].Gaps)
+			}
+		})
+	}
+	t.Run("braced while still discovered", func(t *testing.T) {
+		uses := sql(t, "while(c()){db.query('S '+req.query.q)}")
+		if len(uses) != 1 || !gapKind(uses[0].Gaps, "unsupported_control_flow") {
+			t.Fatalf("uses %+v", uses)
+		}
+	})
 }

@@ -45,12 +45,12 @@ all its syntax, APIs, or vulnerable paths are covered.
 | **Sensitive-data logging** | JS/TS/Python supported logger calls and access-log credential exposure; data class, content, and redaction assessed separately | [Logging contract](../specifications/sensitive-data-logging.md) |
 | **Cross-site scripting** | Supported server/template and stored-value claims, browser/DOM/framework sinks, and selected JS/TS API-to-browser links; general Python-to-browser linkage remains planned | [XSS rules](../../docs/analysis/xss.md), [hardening results](../evaluation/xss-hardening-results.md) |
 | **Command injection** | Node `child_process` and Python `os`/`subprocess` contracts; shell syntax, executable selection, arguments, and control coverage | [Command results](../evaluation/command-injection-results.md) |
-| **Path traversal** | Supported Node/Python file operands, file serving, archive opens/extraction, Zip Slip, and render-layout paths; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md) |
-| **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Python `requests`/`httpx`/`urllib` calls with a request-derived destination | [Outbound contract](../specifications/components-03-outbound.md), [assessment coverage](../specifications/analyzer-assessment-coverage.md) |
+| **Path traversal** | Supported Node/Python file operands (including `fs.open`/`copyFile`/`rename`, Starlette/FastAPI `FileResponse`/`UploadFile`, `shutil` copy/move, `tarfile.extractall` with filter facts), file serving, archive opens/extraction, Zip Slip, and render-layout paths; dual-path independence; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Node `http`/`https`/`node:http`/`node:https` and Python `requests`/`httpx`/`urllib` calls with a request-derived destination | [Outbound contract](../specifications/components-03-outbound.md), [assessment coverage](../specifications/analyzer-assessment-coverage.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
 | **Entry discovery and bounded flow** | Source inventory; shared entry/registration/dispatch/callable records; supported HTTP, browser events, finite dynamic routes, Node Apollo GraphQL, and Node unary gRPC | [Entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
 | **JavaScript conditional flow** | Precise JS/TS `if`/`else if`/`else`: arm polarity, exits including `process.exit`, isolated joins, block scoping. A guard on one arm never protects a sibling arm or later code. Loops, `switch`, `try`/`finally` and request rebinding keep a conservative fallback | [Analysis rules](../../docs/analysis/README.md#javascript-conditional-flow), [contract](../specifications/javascript-if-flow.md) |
 | **Evidence wire v7** | Always-compact requests with evidence IDs, character-column locators, one obligation ledger, a role budget with visible omissions and an `evidence_too_large` floor. Transparent wrappers and header-only middleware summaries. Guidance-owned fact codes. Largest sample request about 59 KB | [Wire v7 contract](../specifications/wire-bundle-v7.md), [verification](../evaluation/wire-bundle-v7-results.md) |
-| **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins, types, transfers, controls, and lifecycle stages; Python remains on its existing adapters | [Node refactor results](../evaluation/node-input-refactor-results.md) |
+| **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins (including URL path/url/originalUrl/baseUrl and verified upload filename/content), types, transfers, controls, lifecycle stages, and Express non-final middleware-chain sibling entries; Python remains on its existing adapters | [Node refactor results](../evaluation/node-input-refactor-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
 | **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
 | **Decision-model assessment** | OpenAI Luna Decisions is primary; optional Gemini and stub-tested Jev adapters use the shared evidence gates and one model selection per scan, without fallback | [Model setup](../../docs/decision-models.md) |
 | **Assessment scheduling and family selection** | Primary security sinks precede standalone validation; zero-call observations consume no request slots; canonical `--only-family` / `--skip-family` flags and environment defaults | [E1 contract](../specifications/analyzer-engine-hardening.md) |
@@ -62,14 +62,17 @@ all its syntax, APIs, or vulnerable paths are covered.
 
 ## Active delivery: analyzer engine hardening
 
-E1 (scheduling, family filters, context reuse) and E2 (shared guard and workspace-manifest
-engine) are merged. E3 (evidence wire v7, assessment coverage, JavaScript conditional flow and
-fact-code consolidation) is complete on `analyzer-assessment-coverage`, in draft PR #14 for human
-review.
+E1 (scheduling, family filters, context reuse), E2 (shared guard and workspace-manifest
+engine), and E3 (evidence wire v7, assessment coverage, JavaScript conditional flow and
+fact-code consolidation) are merged into `stage` via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
+(`6e815ec`).
 
-**Next work item:** E4 shared Node inputs and file APIs. It runs in its own worktree and branch,
-cut from `stage` after E3 merges. The handoff in the container root lists the open items E3 hands
-over.
+**E4 complete on branch `node-inputs-and-file-apis` (base `6e815ec`).** Shared Express
+middleware-chain / URL/upload inputs, path second-pass retirement, phase-2 file APIs, and Node
+`http`/`https` SSRF are implemented; Node sample reports republished under a 350-request
+`gpt-6-luna` cap (250 charged, 250 exact replays). Draft PR targeting `stage` is the remaining
+integration step. Contract:
+[shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md).
 
 Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
 is one record near the soft threshold and none over the limit. The full v7 re-recording of the 260
@@ -88,8 +91,8 @@ sets the dependency order. Each remaining slice requires its dedicated executabl
 | Slice | Planned outcome | State |
 |---|---|---|
 | **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators including exiting else-if links, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Merged; [contract](../specifications/shared-guard-and-manifest-engine.md) |
-| **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Complete in `analyzer-assessment-coverage` (draft PR #14); [contract](../specifications/wire-bundle-v7.md) |
-| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` miss) | Next, in its own worktree and branch after E3 merges |
+| **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Merged via [PR #14](https://github.com/zazzcode/zazzles/pull/14); [contract](../specifications/wire-bundle-v7.md) |
+| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` confirmed) | Complete on `node-inputs-and-file-apis` (paid Node rebuild 250/350 `gpt-6-luna`, exact replay 250/250); draft PR to `stage` pending; [contract](../specifications/shared-node-inputs-and-file-apis.md) |
 
 The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
 boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.

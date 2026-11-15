@@ -157,7 +157,8 @@ func requestFieldNode(n *sitter.Node, src []byte, req string) *sitter.Node {
 			baseProp := obj.ChildByFieldName("property")
 			if base != nil && baseProp != nil && base.Kind() == "identifier" && base.Utf8Text(src) == req {
 				switch baseProp.Utf8Text(src) {
-				case "body", "payload", "query", "params", "headers", "cookies":
+				case "body", "payload", "query", "params", "headers", "cookies",
+					"path", "url", "originalUrl", "baseUrl", "file", "files":
 					found = cur
 					return
 				}

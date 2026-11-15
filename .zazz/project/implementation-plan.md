@@ -67,11 +67,11 @@ engine), and E3 (evidence wire v7, assessment coverage, JavaScript conditional f
 fact-code consolidation) are merged into `stage` via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
 (`6e815ec`).
 
-**E4 complete on branch `node-inputs-and-file-apis` (base `6e815ec`).** Shared Express
-middleware-chain / URL/upload inputs, path second-pass retirement, phase-2 file APIs, and Node
-`http`/`https` SSRF are implemented; Node sample reports republished under a 350-request
-`gpt-6-luna` cap (250 charged, 250 exact replays). Draft PR targeting `stage` is the remaining
-integration step. Contract:
+**E4 merged into `stage` via [PR #15](https://github.com/zazzcode/zazzles/pull/15)
+(`eafabcc`, base `6e815ec`).** Shared Express middleware-chain / URL/upload inputs, path
+second-pass retirement, phase-2 file APIs, and Node `http`/`https` SSRF are in `stage`; Node
+sample reports republished under a 350-request `gpt-6-luna` cap (250 charged, 250 exact
+replays). Contract:
 [shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md).
 
 Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
@@ -92,7 +92,7 @@ sets the dependency order. Each remaining slice requires its dedicated executabl
 |---|---|---|
 | **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators including exiting else-if links, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Merged; [contract](../specifications/shared-guard-and-manifest-engine.md) |
 | **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Merged via [PR #14](https://github.com/zazzcode/zazzles/pull/14); [contract](../specifications/wire-bundle-v7.md) |
-| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` confirmed) | Complete on `node-inputs-and-file-apis` (paid Node rebuild 250/350 `gpt-6-luna`, exact replay 250/250); draft PR to `stage` pending; [contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` confirmed) | Merged via [PR #15](https://github.com/zazzcode/zazzles/pull/15) (`eafabcc`); paid Node rebuild 250/350 `gpt-6-luna`, exact replay 250/250; [contract](../specifications/shared-node-inputs-and-file-apis.md) |
 
 The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
 boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.

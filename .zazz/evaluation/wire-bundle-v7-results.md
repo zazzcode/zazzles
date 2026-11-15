@@ -136,3 +136,87 @@ paired ablation evidence before adopting a relevance filter.
 
 These numbers describe the verified core-v7 baseline, not the unverified local S4
 prototype. The owner deferred all further paid calibration until the next session.
+
+## S4 and broader W6
+
+E3 continuation, 2026-11-15. Scanner commits `fcd3b0e` (S4 + W6) and `dec3b30` (else-if guard
+links). Contracts: [JavaScript conditional flow](../specifications/javascript-if-flow.md),
+[relevance tier](../specifications/evidence-relevance-tier.md),
+[data-path slicing](../specifications/data-path-slicing.md).
+
+### Offline request deltas (core v7 audit → final)
+
+- **Candidates:** 4,405 before and after; every location keeps its candidate count; no Python
+  request changed.
+- **Assessed sample requests that changed:**
+
+  | App | Validation | Log | NoSQL | Path | SQL | SSRF | XSS | Command |
+  |---|---:|---:|---:|---:|---:|---:|---:|---:|
+  | Juice Shop | 72 | 2 | 14 | 12 | 3 | 1 | 4 | – |
+  | Goof | 3 | – | 3 | 1 | – | – | 10 | 1 |
+  | demo | 1 | – | – | – | 5 | – | 4 | – |
+  | TypeScript app | 3 | 1 | – | – | – | – | 1 | – |
+
+  Observation-only records (grouped outbound, `xss_data`) changed candidate ID only.
+- **Removed:** generic `unsupported_control_flow` and `branch_exit` gaps at modeled `if`
+  statements (161 and 111 in Juice Shop), and the duplicated context and gaps of the old
+  shared-flow fallback.
+- **Added:** arm preconditions; honest `unsupported_write` and metadata-ambiguity gaps; W6
+  fact codes with their notes.
+- **Sizes:** Juice Shop request bytes −1.1%. `order.ts:164` 61,735 → 59,057, still the only
+  sample request above 55,000 bytes; none above the limit.
+- **Broader W6:** byte-neutral on affected requests.
+- **Frozen expectations re-recorded with reasons:** string-flow goldens (W6);
+  command-predecessor and SQL baselines for GraphQL/gRPC (gap removal, `conditional_false_test`,
+  scope code); outbound predecessor SQL/NoSQL (W6).
+
+### Independent QA
+
+A read-only reviewer confirmed three defects, each fixed with regressions:
+
+1. GraphQL/gRPC promotion lost the polarity of a false precondition.
+2. The NoSQL `typeof` witness ignored polarity.
+3. The `branches` fallback carried arm preconditions out of loop/try bodies.
+
+The handler limits it noted (`switch` cases, labeled statements, brace-less loops) are recorded
+and handed to E4.
+
+### Paid evidence (new ledger `_test-findings/e3-s4`, owner cap 400 `gpt-6-luna`, no fallback)
+
+**Calibration.** The fixture is reproduced in the S4 contract's acceptance. 16 answers; 2 SQL
+records failed before a model call because `require`-destructured Sequelize has no verified
+binding. 12 of 14 declared expectations met:
+
+- Protected: finite command allowlist (shell syntax 0.41/0.41, coverage complete 0.65), NoSQL
+  `typeof` rejection, path finite allowlist, SSRF scheme+host allowlist.
+- Confirmed: every presence-only, non-exiting, sibling-arm and raw case.
+
+Misses:
+
+- **TypeScript else-if allowlist** confirmed: the guard engine credited only the first link.
+  Fixed in `dec3b30`; no sample request changed.
+- **Strict-arm guarded `exec`** beside an unguarded sibling `exec`: judged vulnerable (0.67)
+  although the facts show a terminating guard. This is model judgment in the conservative
+  direction; gates are unchanged.
+
+**JavaScript sample rebuild.** Juice Shop 134, Goof 18, TypeScript app 6, demo 12: 170
+requests, no provider/decoder failures, targets clean at pins. Changes versus core v7:
+
+| Record | Core v7 → now | Reason |
+|---|---|---|
+| Juice Shop `likeProductReviews.ts:25/35/43` NoSQL | Review → confirmed | S4 removed the generic `unknown_control_effect` blocker; the model's vulnerable answer is unchanged |
+| Juice Shop `orderHistory.ts:36` NoSQL | confirmed → Review | Borderline `source_coverage` (yes 0.48 → unknown 0.51) |
+| Goof `routes/index.js:204` `Todo.findById(req.params.id)` | Review → protected | Source-correct: Express path parameters are strings |
+| Goof `views/edit.ejs:20` XSS | protected → Review | Per-path answer unknown (0.36) |
+| TypeScript app `server.ts:74` logging | confirmed → Review | `data_class` unknown (0.46) |
+
+**Charged total:** 188 of 400 (18 calibration + 170 rebuild).
+
+**Exact replay:** 406 of 406 at the final HEAD — 170 fresh JavaScript decisions, plus 236 core
+Python decisions whose requests are byte-unchanged.
+
+**Published samples:** Juice Shop, Goof and the TypeScript app are republished from these runs.
+The Python samples keep their core v7 judgments; re-rendering them produced identical bytes.
+
+**Not done:** the full v7 re-recording of 260 historical VulnPy path contexts needs its own cap.
+The E4 all-app rebuild subsumes it.

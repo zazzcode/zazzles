@@ -8,12 +8,12 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Security sink families; standalone input validation excluded were run at pinned revision `add14ba59e98` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
+Security sink families; standalone input validation excluded were run at pinned revision `add14ba59e98` with OpenAI `gpt-6-luna`, evidence wire v7, precise JavaScript conditional flow and guidance-owned fact codes on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 29. **Judged:** 18, in 18 requests (96,588 input tokens).
+- **Records:** 29. **Judged:** 18, in 18 requests (96,639 input tokens).
 - **Outcomes among judged records:** 5 confirmed vulnerabilities, 0 poor practice, 2 protected, 0 not applicable, 11 inconclusive (Review).
 - **Unassessed records shown:** 11; provider/decoder failures: 0.
-- **Zip Slip:** the uploaded archive extraction at `routes/index.js:270` is confirmed vulnerable under the verified adm-zip contract; the unchanged answer-consistency gate accepted the fresh traversal/containment answers.
+- **Zip Slip:** the uploaded archive extraction at `routes/index.js:270` is confirmed vulnerable under the verified adm-zip contract; the unchanged answer-consistency gate accepted the fresh traversal/containment answers. `Todo.findById(req.params.id)` at `routes/index.js:204` is protected for operator injection (Express path parameters are strings).
 
 [Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 

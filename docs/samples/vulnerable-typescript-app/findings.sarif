@@ -381,17 +381,6 @@
                       "start_byte": 2186,
                       "end_byte": 2935
                     }
-                  },
-                  {
-                    "kind": "unsupported_control_flow",
-                    "detail": "statement not traversed: if_statement",
-                    "at": {
-                      "file": "src/server.ts",
-                      "start_line": 77,
-                      "end_line": 83,
-                      "start_byte": 2605,
-                      "end_byte": 2932
-                    }
                   }
                 ]
               },
@@ -430,17 +419,6 @@
                       "end_line": 167,
                       "start_byte": 5459,
                       "end_byte": 5811
-                    }
-                  },
-                  {
-                    "kind": "unsupported_control_flow",
-                    "detail": "statement not traversed: if_statement",
-                    "at": {
-                      "file": "src/server.ts",
-                      "start_line": 162,
-                      "end_line": 166,
-                      "start_byte": 5707,
-                      "end_byte": 5808
                     }
                   }
                 ]
@@ -735,17 +713,6 @@
                       "end_line": 155,
                       "start_byte": 4964,
                       "end_byte": 5388
-                    }
-                  },
-                  {
-                    "kind": "unsupported_control_flow",
-                    "detail": "statement not traversed: if_statement",
-                    "at": {
-                      "file": "src/server.ts",
-                      "start_line": 149,
-                      "end_line": 154,
-                      "start_byte": 5210,
-                      "end_byte": 5385
                     }
                   }
                 ]
@@ -3481,26 +3448,6 @@
             {
               "level": "warning",
               "message": {
-                "text": "POST /api/login: unsupported_control_flow: statement not traversed: if_statement"
-              },
-              "properties": {
-                "scan.coverageGap": {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 77,
-                    "end_line": 83,
-                    "start_byte": 2605,
-                    "end_byte": 2932
-                  }
-                },
-                "scan.entryId": "entry:v1:5e98b68ea5735609d3baedb8c75ac8615aac63dbeea2bab0bbc40bf781e63fea"
-              }
-            },
-            {
-              "level": "warning",
-              "message": {
                 "text": "GET /api/users/:id: middleware_unresolved: effective middleware/guard chain is not modeled"
               },
               "properties": {
@@ -3513,26 +3460,6 @@
                     "end_line": 167,
                     "start_byte": 5459,
                     "end_byte": 5811
-                  }
-                },
-                "scan.entryId": "entry:v1:601037dbbada45c49ec5a92e510672ce8d8024527de7b553b805f269229581c1"
-              }
-            },
-            {
-              "level": "warning",
-              "message": {
-                "text": "GET /api/users/:id: unsupported_control_flow: statement not traversed: if_statement"
-              },
-              "properties": {
-                "scan.coverageGap": {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 162,
-                    "end_line": 166,
-                    "start_byte": 5707,
-                    "end_byte": 5808
                   }
                 },
                 "scan.entryId": "entry:v1:601037dbbada45c49ec5a92e510672ce8d8024527de7b553b805f269229581c1"
@@ -3713,26 +3640,6 @@
                     "end_line": 155,
                     "start_byte": 4964,
                     "end_byte": 5388
-                  }
-                },
-                "scan.entryId": "entry:v1:a93a2e450b2de33629a8572922f2303b6bdc2a50f3db0e27e78185eb30332aa9"
-              }
-            },
-            {
-              "level": "warning",
-              "message": {
-                "text": "DELETE /api/admin/users/:id: unsupported_control_flow: statement not traversed: if_statement"
-              },
-              "properties": {
-                "scan.coverageGap": {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 149,
-                    "end_line": 154,
-                    "start_byte": 5210,
-                    "end_byte": 5385
                   }
                 },
                 "scan.entryId": "entry:v1:a93a2e450b2de33629a8572922f2303b6bdc2a50f3db0e27e78185eb30332aa9"
@@ -4045,7 +3952,7 @@
           "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
           "Analyzer family selection: skipped [], only [sql,nosql,xss,command,path,logging,ssrf]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.",
           "Judged 6 distinct candidate signatures across 6 total entry contexts (0 derived across equivalent entry contexts).",
-          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 6; reported input tokens 26044; unknown-usage attempts 0. "
+          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 6; reported input tokens 26019; unknown-usage attempts 0. "
         ],
         "scan.onlyFamilies": [
           "sql",
@@ -4365,8 +4272,8 @@
               ]
             }
           ],
-          "kind": "fail",
-          "level": "warning",
+          "kind": "review",
+          "level": "note",
           "locations": [
             {
               "logicalLocations": [
@@ -4377,7 +4284,7 @@
                 }
               ],
               "message": {
-                "text": "Keep credential and personal-data content out of logs"
+                "text": "Resolve the specific claim blockers"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -4391,89 +4298,89 @@
             }
           ],
           "message": {
-            "text": "POST /api/login: Sensitive data written to logs, supported by source analysis [confirmed_vulnerability]. The supplied source and logging-specific assessment establish that credential or personal-data content reaches log output without effective redaction. Remove it from the log or log a non-revealing fact instead. Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class credential, content yes, redaction no). Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
+            "text": "POST /api/login: Possible sensitive data in a log entry [needs_evidence]. A verified logging call receives a request value whose field name or container suggests credentials or personal data, or that passes through an unresolved transformation. Confirm what the value contains and whether redaction applies before changing behavior. A field name is a hint, not proof. Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class Inconclusive, content yes, redaction no). Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "b0f82e4d30a59077496cb85101ca36026c5efaa43db020f345a6b27f20b61ad7",
+              "request_digest": "27497b5cd7d5b84b411f4a4a83ef838e6db18b431ab491d522b75794e0109f4d",
               "answer_details": {
                 "content_exposure": {
                   "choice": "yes",
-                  "confidence": 0.45,
+                  "confidence": 0.63,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0.63
+                      "probability": 0.75
                     },
                     {
                       "value": "no",
-                      "probability": 0.13
+                      "probability": 0.11
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.24
+                      "probability": 0.14
                     }
                   ]
                 },
                 "data_class": {
-                  "choice": "credential",
-                  "confidence": 0.41,
+                  "choice": "unknown",
+                  "confidence": 0.28,
                   "probabilities": [
                     {
                       "value": "credential",
-                      "probability": 0.56
+                      "probability": 0.43
                     },
                     {
                       "value": "personal_data",
-                      "probability": 0.05
+                      "probability": 0.08
                     },
                     {
                       "value": "other",
-                      "probability": 0.02
+                      "probability": 0.03
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.37
+                      "probability": 0.46
                     }
                   ]
                 },
                 "log_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.52,
+                  "confidence": 0.63,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.64
+                      "probability": 0.72
                     },
                     {
                       "value": "protected",
-                      "probability": 0.03
+                      "probability": 0.02
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.32
+                      "probability": 0.26
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "redaction": {
                   "choice": "no",
-                  "confidence": 0.89,
+                  "confidence": 0.93,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0.02
+                      "probability": 0.01
                     },
                     {
                       "value": "no",
-                      "probability": 0.92
+                      "probability": 0.95
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.05
+                      "probability": 0.03
                     },
                     {
                       "value": "not_applicable",
@@ -4482,23 +4389,23 @@
                   ]
                 }
               },
-              "finding_status": "confirmed_vulnerability",
+              "finding_status": "needs_evidence",
               "answers": {
                 "content_exposure": "yes",
-                "data_class": "credential",
+                "data_class": "unknown",
                 "log_exposure": "vulnerable",
                 "redaction": "no"
               },
               "usage": {
-                "input_tokens": 3379,
+                "input_tokens": 3355,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
               "question_version": "log-components-v2",
-              "protection": "insufficient",
-              "reason": "Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
+              "protection": "uncertain",
+              "reason": "Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
             },
             "scan.coverageGaps": [
               {
@@ -4580,17 +4487,6 @@
                     "start_byte": 2186,
                     "end_byte": 2935
                   }
-                },
-                {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 77,
-                    "end_line": 83,
-                    "start_byte": 2605,
-                    "end_byte": 2932
-                  }
                 }
               ]
             },
@@ -4604,25 +4500,20 @@
               "use_id": "candidate:v1:e7784c886eb1e43f8f4b5f6942a28fde1e5572beaf11d367faf3fa5a1e81f5a6",
               "entry_id": "entry:v1:5e98b68ea5735609d3baedb8c75ac8615aac63dbeea2bab0bbc40bf781e63fea",
               "invocation_context_id": "invocation:v1:39b10430df62efa1789ffd5849e48858b2bafe5813aa78e54e2d7a2366a0ea8a",
-              "record_type": "finding",
-              "status": "confirmed_vulnerability",
-              "title": "Sensitive data written to logs, supported by source analysis",
-              "summary": "The supplied source and logging-specific assessment establish that credential or personal-data content reaches log output without effective redaction. Remove it from the log or log a non-revealing fact instead.",
+              "record_type": "analysis",
+              "status": "needs_evidence",
+              "title": "Possible sensitive data in a log entry",
+              "summary": "A verified logging call receives a request value whose field name or container suggests credentials or personal data, or that passes through an unresolved transformation. Confirm what the value contains and whether redaction applies before changing behavior. A field name is a hint, not proof.",
               "input_validation": "Field validation is reported separately; it does not change what this log line contains.",
-              "use_protection": "Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class credential, content yes, redaction no). Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation.",
+              "use_protection": "Logging evidence: request body field password has a credential field-name hint and its content is written to the log. Assessed logging exposure: vulnerable (data class Inconclusive, content yes, redaction no). Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
-                "title": "Keep credential and personal-data content out of logs",
+                "title": "Resolve the specific claim blockers",
                 "actions": [
-                  "Change the observed operation at src/server.ts:74: console.log('Query:', query)",
-                  "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
-                  "Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead.",
-                  "Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values.",
-                  "If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value.",
-                  "Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead."
+                  "Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect.",
+                  "Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
                 ],
-                "illustrative_example": "// Illustrative: log a fact about the credential, not the credential.\nconsole.info('login attempt', { username, passwordProvided: typeof password === 'string' \u0026\u0026 password.length \u003e 0 });",
-                "example_status": "illustrative_template; not a verified application patch"
+                "example_status": "no patch proposed while the claim is inconclusive"
               }
             },
             "scan.inputFacts": {
@@ -4833,17 +4724,12 @@
             "scan.invocationContextId": "invocation:v1:39b10430df62efa1789ffd5849e48858b2bafe5813aa78e54e2d7a2366a0ea8a",
             "scan.kind": "log_sink_candidate",
             "scan.recommendations": {
-              "title": "Keep credential and personal-data content out of logs",
+              "title": "Resolve the specific claim blockers",
               "actions": [
-                "Change the observed operation at src/server.ts:74: console.log('Query:', query)",
-                "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
-                "Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead.",
-                "Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values.",
-                "If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value.",
-                "Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead."
+                "Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect.",
+                "Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
               ],
-              "illustrative_example": "// Illustrative: log a fact about the credential, not the credential.\nconsole.info('login attempt', { username, passwordProvided: typeof password === 'string' \u0026\u0026 password.length \u003e 0 });",
-              "example_status": "illustrative_template; not a verified application patch"
+              "example_status": "no patch proposed while the claim is inconclusive"
             },
             "scan.reviewStatus": "not_run",
             "scan.route": "POST /api/login",
@@ -5000,17 +4886,6 @@
                 }
               },
               {
-                "kind": "unsupported_control_flow",
-                "detail": "statement not traversed: if_statement",
-                "at": {
-                  "file": "src/server.ts",
-                  "start_line": 77,
-                  "end_line": 83,
-                  "start_byte": 2605,
-                  "end_byte": 2932
-                }
-              },
-              {
                 "kind": "input_validation_absent",
                 "detail": "req.body is read and no handler or applicable middleware validator handles it",
                 "at": {
@@ -5067,17 +4942,6 @@
                     "start_byte": 2186,
                     "end_byte": 2935
                   }
-                },
-                {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 77,
-                    "end_line": 83,
-                    "start_byte": 2605,
-                    "end_byte": 2932
-                  }
                 }
               ]
             },
@@ -5087,8 +4951,8 @@
               "type_ids": [
                 "input-validation"
               ],
-              "id": "finding:candidate:v1:6b579be74cf17d843002fd2e8038acfb8d06d7f50b500c13799de8c42279c9ae",
-              "use_id": "candidate:v1:6b579be74cf17d843002fd2e8038acfb8d06d7f50b500c13799de8c42279c9ae",
+              "id": "finding:candidate:v1:189b0bdf239d391c0fd5e205d1812aa78f8f12a2ac84e8fab1b31ff75f6dd038",
+              "use_id": "candidate:v1:189b0bdf239d391c0fd5e205d1812aa78f8f12a2ac84e8fab1b31ff75f6dd038",
               "entry_id": "entry:v1:5e98b68ea5735609d3baedb8c75ac8615aac63dbeea2bab0bbc40bf781e63fea",
               "invocation_context_id": "invocation:v1:39b10430df62efa1789ffd5849e48858b2bafe5813aa78e54e2d7a2366a0ea8a",
               "record_type": "analysis",
@@ -5207,7 +5071,7 @@
             "scan.reviewStatus": "not_run",
             "scan.route": "POST /api/login",
             "scan.runtimeConfirmation": "not_run",
-            "scan.useId": "candidate:v1:6b579be74cf17d843002fd2e8038acfb8d06d7f50b500c13799de8c42279c9ae"
+            "scan.useId": "candidate:v1:189b0bdf239d391c0fd5e205d1812aa78f8f12a2ac84e8fab1b31ff75f6dd038"
           },
           "relatedLocations": [
             {
@@ -5237,21 +5101,6 @@
                 "region": {
                   "endLine": 84,
                   "startLine": 69
-                }
-              }
-            },
-            {
-              "id": 2,
-              "message": {
-                "text": "control_statement"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/server.ts"
-                },
-                "region": {
-                  "endLine": 83,
-                  "startLine": 77
                 }
               }
             }
@@ -7260,11 +7109,11 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "cab04630981187b9a4fdf1824cf04ef9247601486d3620c7f43ba5d7bcf7ed2f",
+              "request_digest": "a15e2c4784837b9159c4b380f6cd1cb37559173e6a020994881a11a879ef2039",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.35,
+                  "confidence": 0.59,
                   "probabilities": [
                     {
                       "value": "adequate",
@@ -7272,21 +7121,21 @@
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.07
+                      "probability": 0.03
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.51
+                      "probability": 0.69
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.41
+                      "probability": 0.27
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "unknown",
-                  "confidence": 1,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "html_text",
@@ -7298,7 +7147,7 @@
                     },
                     {
                       "value": "url",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "script",
@@ -7326,13 +7175,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 1
+                      "probability": 0.99
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.73,
+                  "confidence": 0.75,
                   "probabilities": [
                     {
                       "value": "effective",
@@ -7340,11 +7189,11 @@
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.02
+                      "probability": 0.01
                     },
                     {
                       "value": "absent",
-                      "probability": 0.8
+                      "probability": 0.81
                     },
                     {
                       "value": "unknown",
@@ -7354,7 +7203,7 @@
                 },
                 "xss_all_paths_protected": {
                   "choice": "unknown",
-                  "confidence": 0.34,
+                  "confidence": 0.35,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -7362,33 +7211,33 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.42
+                      "probability": 0.41
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.56
+                      "probability": 0.57
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "unknown",
-                  "confidence": 1,
+                  "confidence": 0.92,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0
+                      "probability": 0.04
                     },
                     {
                       "value": "protected",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 1
+                      "probability": 0.94
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 }
@@ -7437,7 +7286,7 @@
                 "xss_exposure": "unknown"
               },
               "usage": {
-                "input_tokens": 3989,
+                "input_tokens": 3988,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -7481,17 +7330,6 @@
                   "end_line": 111,
                   "start_byte": 3417,
                   "end_byte": 3858
-                }
-              },
-              {
-                "kind": "unsupported_control_flow",
-                "detail": "statement not traversed: if_statement",
-                "at": {
-                  "file": "src/server.ts",
-                  "start_line": 105,
-                  "end_line": 109,
-                  "start_byte": 3741,
-                  "end_byte": 3849
                 }
               }
             ],
@@ -7549,8 +7387,8 @@
               "type_ids": [
                 "stored-xss"
               ],
-              "id": "finding:candidate:v1:fc5caf14446b0c5bbe3f3256a52c3f892131f8cbd2c00cbaacfe5197e9e86545",
-              "use_id": "candidate:v1:fc5caf14446b0c5bbe3f3256a52c3f892131f8cbd2c00cbaacfe5197e9e86545",
+              "id": "finding:candidate:v1:170fc7d6dad35563cca5f4f4ef7420ab843230776f1c0978f89b6c523c6b77a4",
+              "use_id": "candidate:v1:170fc7d6dad35563cca5f4f4ef7420ab843230776f1c0978f89b6c523c6b77a4",
               "entry_id": "entry:v1:e9911545e3469b4d7d8c3504458ac5edb089fe5b0364f39fe55d8e7264a073d1",
               "invocation_context_id": "invocation:v1:0b9ba1c95b33454cc31672326b007129339a196ee64e98b9a4ba487db523883d",
               "record_type": "analysis",
@@ -7708,7 +7546,7 @@
             "scan.route": "GET /api/files",
             "scan.runtimeConfirmation": "not_run",
             "scan.scope": "Bounded source-to-rendering flow; output context and protections are scoped to this sink.",
-            "scan.useId": "candidate:v1:fc5caf14446b0c5bbe3f3256a52c3f892131f8cbd2c00cbaacfe5197e9e86545"
+            "scan.useId": "candidate:v1:170fc7d6dad35563cca5f4f4ef7420ab843230776f1c0978f89b6c523c6b77a4"
           },
           "relatedLocations": [
             {
@@ -7759,14 +7597,14 @@
             {
               "id": 3,
               "message": {
-                "text": "control_statement"
+                "text": "branch_false_precondition"
               },
               "physicalLocation": {
                 "artifactLocation": {
                   "uri": "src/server.ts"
                 },
                 "region": {
-                  "endLine": 109,
+                  "endLine": 105,
                   "startLine": 105
                 }
               }
@@ -10795,17 +10633,6 @@
                 }
               },
               {
-                "kind": "unsupported_control_flow",
-                "detail": "statement not traversed: if_statement",
-                "at": {
-                  "file": "src/server.ts",
-                  "start_line": 149,
-                  "end_line": 154,
-                  "start_byte": 5210,
-                  "end_byte": 5385
-                }
-              },
-              {
                 "kind": "input_validation_absent",
                 "detail": "req.params.id is read and no handler or applicable middleware validator handles it",
                 "at": {
@@ -10862,17 +10689,6 @@
                     "start_byte": 4964,
                     "end_byte": 5388
                   }
-                },
-                {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 149,
-                    "end_line": 154,
-                    "start_byte": 5210,
-                    "end_byte": 5385
-                  }
                 }
               ]
             },
@@ -10882,8 +10698,8 @@
               "type_ids": [
                 "input-validation"
               ],
-              "id": "finding:candidate:v1:b5a3c3851312caf6db97ab6b25725875b91f498511d18da83973433e676768de",
-              "use_id": "candidate:v1:b5a3c3851312caf6db97ab6b25725875b91f498511d18da83973433e676768de",
+              "id": "finding:candidate:v1:9e869b22e9fd69bca9a83a36e1b17b9a6eaf04357c60bdbac1351e72e3f9b442",
+              "use_id": "candidate:v1:9e869b22e9fd69bca9a83a36e1b17b9a6eaf04357c60bdbac1351e72e3f9b442",
               "entry_id": "entry:v1:a93a2e450b2de33629a8572922f2303b6bdc2a50f3db0e27e78185eb30332aa9",
               "invocation_context_id": "invocation:v1:2a285da1b2a24bc196068281f049eab0fdd4221852eb032f73d60d4e28b784fe",
               "record_type": "analysis",
@@ -11002,7 +10818,7 @@
             "scan.reviewStatus": "not_run",
             "scan.route": "DELETE /api/admin/users/:id",
             "scan.runtimeConfirmation": "not_run",
-            "scan.useId": "candidate:v1:b5a3c3851312caf6db97ab6b25725875b91f498511d18da83973433e676768de"
+            "scan.useId": "candidate:v1:9e869b22e9fd69bca9a83a36e1b17b9a6eaf04357c60bdbac1351e72e3f9b442"
           },
           "relatedLocations": [
             {
@@ -11032,21 +10848,6 @@
                 "region": {
                   "endLine": 155,
                   "startLine": 145
-                }
-              }
-            },
-            {
-              "id": 2,
-              "message": {
-                "text": "control_statement"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/server.ts"
-                },
-                "region": {
-                  "endLine": 154,
-                  "startLine": 149
                 }
               }
             }
@@ -11154,17 +10955,6 @@
                 }
               },
               {
-                "kind": "unsupported_control_flow",
-                "detail": "statement not traversed: if_statement",
-                "at": {
-                  "file": "src/server.ts",
-                  "start_line": 162,
-                  "end_line": 166,
-                  "start_byte": 5707,
-                  "end_byte": 5808
-                }
-              },
-              {
                 "kind": "input_validation_absent",
                 "detail": "req.params.id is read and no handler or applicable middleware validator handles it",
                 "at": {
@@ -11221,17 +11011,6 @@
                     "start_byte": 5459,
                     "end_byte": 5811
                   }
-                },
-                {
-                  "kind": "unsupported_control_flow",
-                  "detail": "statement not traversed: if_statement",
-                  "at": {
-                    "file": "src/server.ts",
-                    "start_line": 162,
-                    "end_line": 166,
-                    "start_byte": 5707,
-                    "end_byte": 5808
-                  }
                 }
               ]
             },
@@ -11241,8 +11020,8 @@
               "type_ids": [
                 "input-validation"
               ],
-              "id": "finding:candidate:v1:1b2c521003787c198895b61e0fde7d578b7c6aafaf3bc36bd9bbbe01f3a65831",
-              "use_id": "candidate:v1:1b2c521003787c198895b61e0fde7d578b7c6aafaf3bc36bd9bbbe01f3a65831",
+              "id": "finding:candidate:v1:6b4733827cfa323cc31b568e744b4fdff078654d51b7eae44db73656e4d6ca60",
+              "use_id": "candidate:v1:6b4733827cfa323cc31b568e744b4fdff078654d51b7eae44db73656e4d6ca60",
               "entry_id": "entry:v1:601037dbbada45c49ec5a92e510672ce8d8024527de7b553b805f269229581c1",
               "invocation_context_id": "invocation:v1:0b4ea2b34561acb660a9b0357213a8c035b8137e99b5dc3b41e30f29c2aa8eb4",
               "record_type": "analysis",
@@ -11361,7 +11140,7 @@
             "scan.reviewStatus": "not_run",
             "scan.route": "GET /api/users/:id",
             "scan.runtimeConfirmation": "not_run",
-            "scan.useId": "candidate:v1:1b2c521003787c198895b61e0fde7d578b7c6aafaf3bc36bd9bbbe01f3a65831"
+            "scan.useId": "candidate:v1:6b4733827cfa323cc31b568e744b4fdff078654d51b7eae44db73656e4d6ca60"
           },
           "relatedLocations": [
             {
@@ -11391,21 +11170,6 @@
                 "region": {
                   "endLine": 167,
                   "startLine": 158
-                }
-              }
-            },
-            {
-              "id": 2,
-              "message": {
-                "text": "control_statement"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/server.ts"
-                },
-                "region": {
-                  "endLine": 166,
-                  "startLine": 162
                 }
               }
             }
@@ -15418,8 +15182,8 @@
           "rules": [
             {
               "help": {
-                "markdown": "Keep credential and personal-data content out of logs\n\n- Change the observed operation at src/server.ts:74: console.log('Query:', query)\n- Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.\n- Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead.\n- Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values.\n- If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value.\n- Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead.\n\nIllustrative example (unverified):\n\n```\n// Illustrative: log a fact about the credential, not the credential.\nconsole.info('login attempt', { username, passwordProvided: typeof password === 'string' \u0026\u0026 password.length \u003e 0 });\n```\n",
-                "text": "Keep credential and personal-data content out of logs. Change the observed operation at src/server.ts:74: console.log('Query:', query) Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change. Remove the value from the log entry, or log a non-revealing fact (presence, length, match result, or a non-reversible identifier) instead. Log an allowlist of fields rather than whole request bodies, queries, or header sets. Never log Authorization or Cookie header values. If redaction is required, apply a verified redaction before the logger call or in the logger's configuration, and test that emitted lines no longer contain the value. Do not send credentials in URL query strings; access logs, proxies, and browser history record URLs. Use a request body or header instead."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect.\n- Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at src/server.ts:74: console.log('Query:', query). Its current Review status does not establish a code defect. Reconcile the semantic assessment with this exact source claim: Exposure answer is not supported by consistent data-class, content and redaction answers, or contradicts the scanner's non-content facts."
               },
               "id": "scan/sensitive-data-logging",
               "properties": {
@@ -15429,7 +15193,7 @@
                 ]
               },
               "shortDescription": {
-                "text": "Keep credential and personal-data content out of logs"
+                "text": "Resolve the specific claim blockers"
               }
             },
             {

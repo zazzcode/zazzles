@@ -6,12 +6,12 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
+All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, evidence wire v7, precise JavaScript conditional flow and guidance-owned fact codes on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
 
-- **Records:** 222. **Judged:** 134, in 134 requests (709,889 input tokens).
-- **Outcomes among judged records:** 19 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 114 inconclusive (Review).
+- **Records:** 222. **Judged:** 134, in 134 requests (698,288 input tokens).
+- **Outcomes among judged records:** 21 confirmed vulnerabilities, 1 poor practice, 0 protected, 0 not applicable, 112 inconclusive (Review).
 - **Unassessed records shown:** 88; provider/decoder failures: 0.
-- **Wrapped SSRF:** transparent async forwarding resolves at `utils.asyncHandler`; the remaining multipart upload factory is unresolved, so `routes/profileImageUrlUpload.ts:24` remains Review. The largest NoSQL request, `order.ts:164`, now fits without shedding evidence and retains its claim blockers.
+- **Wrapped SSRF:** transparent async forwarding resolves at `utils.asyncHandler`; the remaining multipart upload factory is unresolved, so `routes/profileImageUrlUpload.ts:24` remains Review. The largest NoSQL request, `order.ts:164`, fits without shedding evidence and retains its claim blockers. Precise conditional modeling removed the generic branch blocker from the `likeProductReviews.ts` NoSQL records, which are now confirmed; `orderHistory.ts:36` is Review on a borderline source-coverage answer.
 
 [Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
 

@@ -48,28 +48,32 @@ all its syntax, APIs, or vulnerable paths are covered.
 | **Path traversal** | Supported Node/Python file operands, file serving, archive opens/extraction, Zip Slip, and render-layout paths; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md) |
 | **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Python `requests`/`httpx`/`urllib` calls with a request-derived destination | [Outbound contract](../specifications/components-03-outbound.md), [assessment coverage](../specifications/analyzer-assessment-coverage.md) |
 | **Entry discovery and bounded flow** | Source inventory; shared entry/registration/dispatch/callable records; supported HTTP, browser events, finite dynamic routes, Node Apollo GraphQL, and Node unary gRPC | [Entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
+| **JavaScript conditional flow** | Precise JS/TS `if`/`else if`/`else`: arm polarity, exits including `process.exit`, isolated joins, block scoping. A guard on one arm never protects a sibling arm or later code. Loops, `switch`, `try`/`finally` and request rebinding keep a conservative fallback | [Analysis rules](../../docs/analysis/README.md#javascript-conditional-flow), [contract](../specifications/javascript-if-flow.md) |
+| **Evidence wire v7** | Always-compact requests with evidence IDs, character-column locators, one obligation ledger, a role budget with visible omissions and an `evidence_too_large` floor. Transparent wrappers and header-only middleware summaries. Guidance-owned fact codes. Largest sample request about 59 KB | [Wire v7 contract](../specifications/wire-bundle-v7.md), [verification](../evaluation/wire-bundle-v7-results.md) |
 | **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins, types, transfers, controls, and lifecycle stages; Python remains on its existing adapters | [Node refactor results](../evaluation/node-input-refactor-results.md) |
 | **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
 | **Decision-model assessment** | OpenAI Luna Decisions is primary; optional Gemini and stub-tested Jev adapters use the shared evidence gates and one model selection per scan, without fallback | [Model setup](../../docs/decision-models.md) |
 | **Assessment scheduling and family selection** | Primary security sinks precede standalone validation; zero-call observations consume no request slots; canonical `--only-family` / `--skip-family` flags and environment defaults | [E1 contract](../specifications/analyzer-engine-hardening.md) |
 | **Equivalent-context reuse** | Scan-local reuse only for conservatively equivalent requests; retain each entry's finding, provenance, policy evaluation, and existing exact-request identity; derived records add no usage | [E1 contract and measured limits](../specifications/analyzer-engine-hardening.md#6-acceptance-criteria-slice-e1) |
 | **Request and rate controls** | Per-run assessment cap and optional shared RPM/TPM pacing; disabled pacing skips clock/window work. Spending is managed in the provider console; local dollar budgets/pricing are removed | [Limits contract](../specifications/decision-model-limits.md) |
-| **Embedded analysis knowledge** | Versioned catalog selection and provenance for SQL, NoSQL, validation, XSS, command, path, and outbound observations; logging still uses its existing judge-owned protocol | [Catalog architecture](../architecture/analysis-packs.md), [path contract](../specifications/path-traversal.md) |
+| **Embedded analysis knowledge** | Versioned catalog selection and provenance for SQL, NoSQL, validation, XSS, command, path, logging and outbound observations; fixed query/middleware fact interpretation in `internal/guidelines/facts.md` | [Catalog architecture](../architecture/analysis-packs.md), [path contract](../specifications/path-traversal.md) |
 | **Evidence validation and exact replay** | Source-backed completeness/consistency gates, request traces, and exact-match offline replay; confidence cannot supply missing evidence | [Trace architecture](../architecture/trace-judgment.md), [report contract](../architecture/reporting-and-sarif.md) |
 | **Reports and artifacts** | Canonical JSON, standalone HTML, SARIF, entry selection, findings/Review/Protected presentation, saved-report export, and historical schema compatibility; artifacts can be retained in CI | [Running guide](../../docs/running-scans.md), [CI artifacts](../../docs/ci.md) |
 
 ## Active delivery: analyzer engine hardening
 
-E1 scheduling, family filters, and conservative context reuse and the E2 shared guard and
-workspace-manifest engine are implemented and verified in `analyzer-engine-hardening`, pending
-human integration review. The same worktree includes the owner-requested removal of dollar
-budgeting, Luna-first configuration, user-focused README, and separate contributor setup. E3 and E4
-are planned for their own worktrees.
+E1 (scheduling, family filters, context reuse) and E2 (shared guard and workspace-manifest
+engine) are merged. E3 (evidence wire v7, assessment coverage, JavaScript conditional flow and
+fact-code consolidation) is complete on `analyzer-assessment-coverage`, in draft PR #14 for human
+review.
 
-The original shared-sink call-reduction forecast did not account for different framework inputs,
-transfers, controls, or route-dependent behavior. Reuse preserves those distinctions and has no
-fixed compression target. The [contract](../specifications/analyzer-engine-hardening.md) and local
-run log record the actual tests, external partition, performance checks, and verification outcomes.
+**Next work item:** E4 shared Node inputs and file APIs. It runs in its own worktree and branch,
+cut from `stage` after E3 merges. The handoff in the container root lists the open items E3 hands
+over.
+
+Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
+is one record near the soft threshold and none over the limit. The full v7 re-recording of the 260
+historical VulnPy path contexts needs its own owner cap.
 
 <a id="future-capability-branches"></a>
 <a id="ordered-specification-backlog"></a>
@@ -83,9 +87,9 @@ sets the dependency order. Each remaining slice requires its dedicated executabl
 
 | Slice | Planned outcome | State |
 |---|---|---|
-| **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Implemented and verified in this worktree; [contract](../specifications/shared-guard-and-manifest-engine.md) |
-| **E3 — Wire bundle and catalog consolidation** | Coordinate the wire/protocol update, compact repeated material, use direct evidence references for command/path facts, synchronize contract prose, and migrate logging into the catalog | Planned blueprint |
-| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage | Planned blueprint |
+| **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators including exiting else-if links, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Merged; [contract](../specifications/shared-guard-and-manifest-engine.md) |
+| **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Complete in `analyzer-assessment-coverage` (draft PR #14); [contract](../specifications/wire-bundle-v7.md) |
+| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage | Next, in its own worktree and branch after E3 merges |
 
 The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
 boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.
@@ -178,4 +182,4 @@ These anchors preserve older links; the completed and planned tables above own c
 
 ## Evidence wire v7
 
-The [E3 contract](../specifications/wire-bundle-v7.md) coordinates compact requests, evidence references, catalog-backed logging and transparent wrapper dispatch in `analyzer-assessment-coverage`. Its checklist tracks validation and the same-branch flow/relevance follow-ups.
+The [E3 contract](../specifications/wire-bundle-v7.md) coordinates compact requests, evidence references, catalog-backed logging and transparent wrapper dispatch in `analyzer-assessment-coverage`. Its checklist records the completed JavaScript conditional flow, broader W6, the citation decision (retention proxy accepted) and the measured S1/S2/S5 deferrals.

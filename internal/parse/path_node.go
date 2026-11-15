@@ -34,8 +34,8 @@ var nodeFSOps = map[string]struct {
 	"openSync":          {"read", false, false, false},
 	"copyFile":          {"write", false, true, true},
 	"copyFileSync":      {"write", false, false, true},
-	"rename":     {"write", false, true, true},
-	"renameSync": {"write", false, false, true},
+	"rename":            {"write", false, true, true},
+	"renameSync":        {"write", false, false, true},
 }
 
 func fsCoreModule(module string) (core, promises bool) {

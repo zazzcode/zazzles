@@ -8,8 +8,8 @@ const PathProtocol = "path-components-v2"
 // Operation-contract identifiers. Each is selected only after the parser
 // verified the actual import or builtin binding of the called filesystem API.
 const (
-	UnzipperEntryContract = "unzipper-entry-write-v1"
-	HbsLayoutContract     = "hbs-render-layout-v1"
+	UnzipperEntryContract    = "unzipper-entry-write-v1"
+	HbsLayoutContract        = "hbs-render-layout-v1"
 	NodeFSContract           = "node-fs-file-v1"
 	PythonOpenContract       = "python-open-file-v1"
 	PythonPathlibContract    = "python-pathlib-file-v1"
@@ -116,16 +116,16 @@ func PathChoices(name string) []map[string]string {
 }
 
 var pathOwners = map[string]string{
-	UnzipperEntryContract: "internal/parse/path_unzipper.go",
-	HbsLayoutContract:     "internal/parse/path_render.go",
-	NodeFSContract:        "internal/parse/path_node.go",
-	PythonOpenContract:    "internal/parse/python_path.go",
-	PythonPathlibContract: "internal/parse/python_path.go",
-	PythonArchiveContract: "internal/parse/python_path.go",
-	PythonSaveContract:    "internal/parse/python_path.go",
-	ExpressSendContract:   "internal/parse/path_node.go",
-	AdmZipContract:        "internal/parse/path_archive.go",
-	PythonOSFileContract:  "internal/parse/python_path.go",
+	UnzipperEntryContract:    "internal/parse/path_unzipper.go",
+	HbsLayoutContract:        "internal/parse/path_render.go",
+	NodeFSContract:           "internal/parse/path_node.go",
+	PythonOpenContract:       "internal/parse/python_path.go",
+	PythonPathlibContract:    "internal/parse/python_path.go",
+	PythonArchiveContract:    "internal/parse/python_path.go",
+	PythonSaveContract:       "internal/parse/python_path.go",
+	ExpressSendContract:      "internal/parse/path_node.go",
+	AdmZipContract:           "internal/parse/path_archive.go",
+	PythonOSFileContract:     "internal/parse/python_path.go",
 	FlaskSendContract:        "internal/parse/python_path.go",
 	StarletteFileContract:    "internal/parse/python_path.go",
 	PythonShutilContract:     "internal/parse/python_path.go",

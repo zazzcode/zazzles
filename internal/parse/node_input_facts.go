@@ -118,6 +118,7 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 	// semantic question. Unknown bodies, not unknown safety, are completeness gaps.
 	u.InputFacts = facts
 }
+
 // nodeURLUploadOrigin maps Express URL/upload request members to acquisition origins.
 // property is set for req.file.<property> / req.files.<property> projections.
 func nodeURLUploadOrigin(member, property string) string {

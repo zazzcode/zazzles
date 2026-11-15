@@ -33,7 +33,6 @@ type value struct {
 	gaps          []analysis.Gap
 }
 type flow struct {
-	pathOnly     bool
 	constants    registrationSeeds
 	client       *clientContext
 	response     string
@@ -63,10 +62,6 @@ type flow struct {
 	// conditions, when set, collects the modeled conditionals of a helper body so
 	// the helper keeps its precision policy for tests that may guard content.
 	conditions *[]modeledCondition
-	// urlSources makes the request URL members (path, url, originalUrl, baseUrl)
-	// request sources. It is set only on the path-only second pass of a handler, so no
-	// other analyzer's dependencies or request bytes change.
-	urlSources bool
 }
 
 // modeledCondition is one conditional the flow modeled precisely: its test and
@@ -165,7 +160,7 @@ func (f *flow) statement(n *sitter.Node) bool {
 		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && f.module.nodeProcessExit(n.NamedChild(0)))
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
-		if f.pathOnly && f.pathArchiveForOf(n) {
+		if f.pathArchiveForOf(n) {
 			return false
 		}
 		if !f.clientForOf(n) {
@@ -476,10 +471,8 @@ func (f *flow) eval(n *sitter.Node) value {
 			return v
 		}
 	}
-	if f.pathOnly {
-		if v, ok := f.pathArchiveValue(n); ok {
-			return v
-		}
+	if v, ok := f.pathArchiveValue(n); ok {
+		return v
 	}
 	switch n.Kind() {
 	case "identifier", "shorthand_property_identifier":
@@ -493,11 +486,6 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return value{gaps: []analysis.Gap{f.gap("unknown_value", "unresolved local value: "+n.Utf8Text(src), n)}}
 	case "member_expression", "subscript_expression":
-		if f.urlSources && n.Kind() == "member_expression" {
-			if obj, prop := n.ChildByFieldName("object"), n.ChildByFieldName("property"); obj != nil && prop != nil && obj.Kind() == "identifier" && obj.Utf8Text(src) == f.request && requestURLMembers[prop.Utf8Text(src)] {
-				return value{deps: []analysis.Dependency{{Source: f.module.evidence("input_source", n), Transfers: []analysis.Evidence{}}}}
-			}
-		}
 		partField := f.partField(n)
 		if (partField != nil || isRequestField(n, src, f.request) || f.hapiPayload(n)) && f.nodeFieldAvailable(n) {
 			sourceNode := n
@@ -918,11 +906,13 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	}
 	var outbound *analysis.OutboundFacts
 	var outboundBinding []analysis.Evidence
-	httpClient := name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") ||
-		strings.HasSuffix(name, ".get") || strings.HasSuffix(name, ".request") || name == "get" || name == "request"
-	if httpClient {
+	op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
+	// Name-shaped clients (fetch/axios/http/https.*) stay outbound observations even when
+	// the binding is shadowed; never treat every unrelated `.get` / `.request` as outbound.
+	isNamedClient := name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") ||
+		strings.HasPrefix(name, "http.") || strings.HasPrefix(name, "https.")
+	if verified || isNamedClient {
 		kind = "outbound_http_candidate"
-		op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
 		var destNode *sitter.Node
 		destValue := value{}
 		if args != nil && args.NamedChildCount() > 0 && len(values) > 0 {
@@ -933,13 +923,6 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		}
 		if verified && (strings.HasPrefix(op, "http.") || strings.HasPrefix(op, "https.")) && destNode != nil && destNode.Kind() == "object" {
 			destValue = f.httpOptionsDestination(destNode, destValue)
-		}
-		if !verified {
-			// Bare get/request identifiers without a verified http binding are ordinary calls.
-			// Unverified http.get / axios remain outbound observations (like a local fake client).
-			if name == "get" || name == "request" {
-				kind = ""
-			}
 		}
 		outbound = &analysis.OutboundFacts{DestinationOrigin: f.destinationOrigin(n, destNode, destValue)}
 		if verified && outbound.DestinationOrigin == analysis.DestinationRequest {

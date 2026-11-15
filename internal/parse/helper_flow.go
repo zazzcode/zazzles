@@ -45,7 +45,9 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	}
 	if f.helpers.budget <= 0 || f.depth >= 3 {
 		kind := "helper_call_limit"
-		if f.pathOnly && pathUnrelatedHelper(args, helper) {
+		// Unrelated helpers that cannot close over request data are not path blockers
+		// (path_modeled.go); keep that classification on the shared single pass.
+		if pathUnrelatedHelper(args, helper) {
 			kind = "path_unrelated_helper_limit"
 		}
 		f.gaps = append(f.gaps, f.gap(kind, "helper call expansion reached its depth or count limit: "+name, call))
@@ -58,8 +60,6 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	f.context = append(f.context, hm.evidence("helper_definition", helper))
 	before := len(f.gaps)
 	child := flow{
-		pathOnly:     f.pathOnly,
-		urlSources:   f.urlSources,
 		client:       f.client,
 		registration: f.registration,
 		module:       hm,
@@ -77,7 +77,9 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	unbound := false
 	for i, p := range params {
 		if i < len(args) {
-			if f.urlSources && f.request != "" && call.ChildByFieldName("arguments") != nil {
+			// Passing the request object into a helper rebinds the request name so
+			// req.path / req.file / … stay shared acquisition sources in the callee.
+			if f.request != "" && call.ChildByFieldName("arguments") != nil {
 				if argNode := call.ChildByFieldName("arguments").NamedChild(uint(i)); argNode != nil && argNode.Kind() == "identifier" && argNode.Utf8Text(f.module.src) == f.request {
 					child.request = p.name
 				}

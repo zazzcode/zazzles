@@ -1,7 +1,6 @@
 package parse
 
 import (
-	"encoding/json"
 	"regexp"
 	"sort"
 	"strings"
@@ -55,7 +54,7 @@ func (s *moduleSet) mongooseQueryContext(use *analysis.CandidateUse) {
 		use.Context = append(use.Context, e)
 		use.Completeness.Evidence[e.Kind] = append(use.Completeness.Evidence[e.Kind], e)
 	}
-	if version, evidence := s.mongooseDeclaredVersion(); version != "" {
+	if version, evidence := s.mongooseDeclaredVersion(m.file); version != "" {
 		use.Context = append(use.Context, evidence)
 		use.Completeness.Evidence[evidence.Kind] = append(use.Completeness.Evidence[evidence.Kind], evidence)
 		if version == "4.2.4" {
@@ -87,15 +86,13 @@ func contractWrittenBefore(m *sourceModule, name string, site *sitter.Node) bool
 
 var mongooseManifestPin = regexp.MustCompile(`"mongoose"\s*:\s*"([0-9]+\.[0-9]+\.[0-9]+)"`)
 
-func (s *moduleSet) mongooseDeclaredVersion() (string, analysis.Evidence) {
-	e, ok := s.readText("package.json")
-	if !ok {
+func (s *moduleSet) mongooseDeclaredVersion(file string) (string, analysis.Evidence) {
+	declared, manifest := s.declaration(file, "mongoose")
+	if declared == "" {
 		return "", analysis.Evidence{}
 	}
-	var manifest struct {
-		Dependencies map[string]string `json:"dependencies"`
-	}
-	if json.Unmarshal([]byte(e.Text), &manifest) != nil {
+	e, ok := s.readBounded(manifest, maxPackageFileBytes)
+	if !ok {
 		return "", analysis.Evidence{}
 	}
 	matches := mongooseManifestPin.FindAllStringSubmatchIndex(e.Text, -1)
@@ -104,7 +101,7 @@ func (s *moduleSet) mongooseDeclaredVersion() (string, analysis.Evidence) {
 	}
 	match := matches[0]
 	version := e.Text[match[2]:match[3]]
-	if manifest.Dependencies["mongoose"] != version || s.packageVersion("mongoose") != version {
+	if declared != version || s.packageVersion(file, "mongoose") != version {
 		return "", analysis.Evidence{}
 	}
 	return version, textRange(e, match[0], match[1], "model_dependency_version")

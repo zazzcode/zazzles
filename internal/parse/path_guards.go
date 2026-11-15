@@ -19,72 +19,6 @@ type pathGuardScan struct {
 	seen     map[int]bool
 }
 
-// derive extends names with variables initialized from a known name
-// (`const rel = path.relative(root, full)`) so a check on the derived value is
-// attributed to the operand it came from; defs keeps each derived definition.
-func (g *pathGuardScan) derive(scope *sitter.Node, names map[string]bool, defs map[string]string, defNodes map[string]*sitter.Node) {
-	list := func() []string {
-		out := make([]string, 0, len(names))
-		for name := range names {
-			out = append(out, name)
-		}
-		sort.Strings(out)
-		return out
-	}
-	for round := 0; round < 4; round++ {
-		changed := false
-		var walk func(*sitter.Node)
-		walk = func(n *sitter.Node) {
-			if n.Kind() == "variable_declarator" {
-				id, v := n.ChildByFieldName("name"), n.ChildByFieldName("value")
-				if id != nil && v != nil && id.Kind() == "identifier" {
-					name := id.Utf8Text(g.m.src)
-					if !names[name] && mentionsAny(v.Utf8Text(g.m.src), list()) {
-						names[name] = true
-						defs[name] = v.Utf8Text(g.m.src)
-						defNodes[name] = v
-						changed = true
-					}
-				}
-			}
-			for i := uint(0); i < n.NamedChildCount(); i++ {
-				walk(n.NamedChild(i))
-			}
-		}
-		walk(scope)
-		if !changed {
-			return
-		}
-	}
-}
-
-// assignedBetween reports an assignment to one of the mentioned names between a
-// control and the call, which makes the control inspect a different value.
-func (g *pathGuardScan) assignedBetween(scope *sitter.Node, from, to uint, mentioned []string) bool {
-	found := false
-	var walk func(*sitter.Node)
-	walk = func(n *sitter.Node) {
-		if found || n.EndByte() <= from || n.StartByte() >= to {
-			return
-		}
-		if n.Kind() == "assignment_expression" || n.Kind() == "augmented_assignment_expression" {
-			left := n.ChildByFieldName("left")
-			if left != nil && left.Kind() == "identifier" && n.StartByte() >= from {
-				for _, name := range mentioned {
-					if left.Utf8Text(g.m.src) == name {
-						found = true
-					}
-				}
-			}
-		}
-		for i := uint(0); i < n.NamedChildCount(); i++ {
-			walk(n.NamedChild(i))
-		}
-	}
-	walk(scope)
-	return found
-}
-
 // localFunctionName names a function declared locally: a function declaration or
 // a function expression assigned to a variable.
 func localFunctionName(m *sourceModule, fn *sitter.Node) string {
@@ -144,13 +78,8 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 			collect(first)
 		}
 	}
-	scope := call
-	for p := call.Parent(); p != nil; p = p.Parent() {
-		scope = p
-		if isFunction(p) || p.Kind() == "function_declaration" {
-			break
-		}
-	}
+	lang := m.guardLang()
+	scope := lang.scope(call)
 	type depNames struct {
 		idx   int
 		names map[string]bool
@@ -170,7 +99,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 		for _, name := range commandDepNames(d) {
 			names[name] = true
 		}
-		scan.derive(scope, names, defs, defNodes)
+		lang.derive(scope, names, defs, defNodes)
 		list := make([]string, 0, len(names))
 		for name := range names {
 			list = append(list, name)
@@ -218,7 +147,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 					mentioned = append(mentioned, name)
 				}
 			}
-			if scan.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
+			if lang.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
 				continue
 			}
 			covered[d.idx] = true
@@ -237,35 +166,9 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 		scan.guards = append(scan.guards, ev)
 	}
 	climb := func(start *sitter.Node) *sitter.Node {
-		child := start
-		for p := start.Parent(); p != nil; p = p.Parent() {
-			switch p.Kind() {
-			case "statement_block", "program":
-				for i := uint(0); i < p.NamedChildCount(); i++ {
-					sib := p.NamedChild(i)
-					if sib.StartByte() >= child.StartByte() {
-						break
-					}
-					if sib.Kind() == "if_statement" && alwaysExits(sib.ChildByFieldName("consequence")) {
-						consider("terminating_guard", guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte())
-					}
-				}
-			case "if_statement":
-				cond, cons := p.ChildByFieldName("condition"), p.ChildByFieldName("consequence")
-				if cond != nil && cons != nil {
-					if child.StartByte() >= cons.StartByte() && child.EndByte() <= cons.EndByte() {
-						consider("enclosing_guard", guardEnforcesWhenTrue, cond, cond, cond.EndByte())
-					} else if alt := p.ChildByFieldName("alternative"); alt != nil && child.StartByte() >= alt.StartByte() && child.EndByte() <= alt.EndByte() {
-						consider("enclosing_guard", guardRejectsWhenTrue, cond, cond, cond.EndByte())
-					}
-				}
-			}
-			child = p
-			if isFunction(p) || p.Kind() == "function_declaration" {
-				return p
-			}
-		}
-		return nil
+		return lang.climb(start, func(site guardSite) {
+			consider(site.Kind, site.Polarity, site.Cond, site.Whole, site.End)
+		})
 	}
 	helper := climb(call)
 	scan.checkHelperCallers(u, helper, climb)
@@ -273,24 +176,8 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 }
 
 func (scan *pathGuardScan) checkHelperCallers(u *analysis.CandidateUse, helper *sitter.Node, climb func(*sitter.Node) *sitter.Node) {
-	m, info := scan.m, scan.info
-	name := localFunctionName(m, helper)
-	if name == "" {
-		return
-	}
-	var sites []*sitter.Node
-	for _, e := range u.Context {
-		if e.Kind != "handler" && e.Kind != "path_handler" {
-			continue
-		}
-		if body := nodeAt(m.tree.RootNode(), e.Span.StartByte, e.Span.EndByte); body != nil && e.Span.File == m.file {
-			walkCalls(body, func(c *sitter.Node) {
-				if fn := c.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" && fn.Utf8Text(m.src) == name && !(c.StartByte() >= helper.StartByte() && c.EndByte() <= helper.EndByte()) {
-					sites = append(sites, c)
-				}
-			})
-		}
-	}
+	info := scan.info
+	sites := jsHelperCallSites(scan.m, u.Context, helper)
 	if len(sites) > 1 {
 		for _, site := range sites {
 			before := len(scan.guards)

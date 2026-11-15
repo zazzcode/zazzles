@@ -1,41 +1,6 @@
 package parse
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
-func (s *moduleSet) packageVersion(name string) string {
-	// A lockfile is authoritative for resolved versions. A literal manifest pin
-	// is accepted only when no lock entry exists; ranges never establish a version.
-	if file, ok := s.readText("package-lock.json"); ok {
-		var lock struct {
-			Packages map[string]struct {
-				Version string `json:"version"`
-			} `json:"packages"`
-			Dependencies map[string]struct {
-				Version string `json:"version"`
-			} `json:"dependencies"`
-		}
-		if json.Unmarshal([]byte(file.Text), &lock) == nil {
-			if p := lock.Packages["node_modules/"+name]; p.Version != "" {
-				return p.Version
-			}
-			if p := lock.Dependencies[name]; p.Version != "" {
-				return p.Version
-			}
-		}
-	}
-	if file, ok := s.readText("package.json"); ok {
-		var manifest struct {
-			Dependencies map[string]string `json:"dependencies"`
-		}
-		if json.Unmarshal([]byte(file.Text), &manifest) == nil {
-			return manifest.Dependencies[name]
-		}
-	}
-	return ""
-}
+import "fmt"
 
 // sanitizerAdvisory is a published bypass of a sanitizer's default configuration.
 // It applies only to an exact resolved version in [introduced, fixed); a version
@@ -52,9 +17,10 @@ var sanitizerAdvisories = []sanitizerAdvisory{
 	{"sanitize-html", "CVE-2026-44990", [3]int{2, 17, 3}, [3]int{2, 17, 4}, "https://github.com/advisories/GHSA-rpr9-rxv7-x643", "default options pass xmp raw text through as live markup"},
 }
 
-// bypassAdvisory returns the advisory affecting the pinned version of a library.
-func (s *moduleSet) bypassAdvisory(library string) (sanitizerAdvisory, bool) {
-	version, ok := exactVersion(s.packageVersion(library))
+// bypassAdvisory returns the advisory affecting the version of a library that
+// the source file resolves to (nearest workspace manifest or lockfile).
+func (s *moduleSet) bypassAdvisory(file, library string) (sanitizerAdvisory, bool) {
+	version, ok := exactVersion(s.packageVersion(file, library))
 	if !ok {
 		return sanitizerAdvisory{}, false
 	}

@@ -1,15 +1,126 @@
 # Zazzles
 
-Zazzles analyzes application source to help developers find security problems, understand existing
-protection, and make well-supported fixes. It combines static analysis with OpenAI Luna Decisions
-and produces reports with code evidence, assessment results, and remediation guidance.
+**Scan and inspect your application or microservice code, then make it secure and reliable.**
 
-**Available today:** a command-line scanner for supported JavaScript, TypeScript, and Python
-applications. Zazzles is under active development. Analysis is bounded to modeled frameworks and
-operations; unresolved behavior stays visible in the report.
+Zazzles reviews application and microservice code for two kinds of problems:
 
-[Get started](#quick-start) · [Explore sample reports](#saved-results) ·
-[Understand results](#interpret-results) · [Contributor guide](docs/contributing.md)
+- **Security vulnerabilities** in your own source code and in the libraries your project depends on.
+- **Poor practice** that weakens security, reliability or functionality. Examples are missing or weak
+  input validation, unsafe query and command construction, and sensitive data written to logs. These
+  are worth fixing even when no one has shown an exploit.
+
+Every result points at the exact line of source. It explains the protection that is already there and
+says what to change. Coding agents can then make small, focused repairs that keep the application's
+intended behavior, check their own work, and hand a pull request to a person to review.
+
+Many scanners show where a problem is and the path an input takes to reach it. Zazzles adds a
+**decision model** that judges what the code actually does, and a scanner that checks the model's work:
+
+- **The model is the judge.** For each sensitive operation it answers specific questions. Can a request
+  value do harm here? Is the guard or validation already in place adequate? Those answers decide
+  whether a result is a vulnerability or is protected.
+- **The scanner is the referee.** It supplies the evidence and checks each answer before it counts:
+  - An answer that contradicts the source is rejected. An example is "not applicable" when a request
+    value plainly reaches the operation.
+  - A vulnerability needs complete evidence for that path. Unresolved gaps on the path keep the
+    result in Review.
+  - Protection needs a control that covers every path the request value can take. A confident answer
+    never fills a missing fact.
+- **Some poor practice needs no model.** Rules over the source establish certain problems directly.
+  A SQL query built by string concatenation is one. It is reported without anyone proving an exploit.
+- **Not knowing is a result.** Anything unresolved is marked **Review**. A clean report is never
+  presented as proof that code is safe.
+
+Every result keeps its evidence trail:
+
+- where the input enters the application,
+- the path the value takes to a sensitive operation,
+- the checks it passes along the way, and
+- anything the scanner could not resolve.
+
+[Get started](#quick-start) · [What exists today](#what-exists-today) · [Explore sample reports](#saved-results) ·
+[Understand results](#interpret-results) · [Roadmap](.zazz/project/implementation-plan.md) ·
+[Contributor guide](docs/contributing.md)
+
+<a id="project-goals-scan-inspect-audit-and-fix"></a>
+<a id="project-goals-scan-audit-and-fix"></a>
+<a id="project-goals-scan-quality-audit-and-fix"></a>
+
+## The vision: Scan, Inspect, Audit and Fix
+
+| Capability | What it does | Status |
+|---|---|---|
+| **Scan** | Finds security vulnerabilities in your code and judges whether existing protection is adequate | Available for supported JavaScript, TypeScript and Python |
+| **Inspect** | Reviews code for poor practice in validation, query and command construction, logging and reliability | Partly available: practice checks ship inside Scan; a distinct Inspect workflow is planned |
+| **Audit** | Finds known vulnerabilities in your dependencies and guides upgrades, using ecosystem tools such as `npm audit` and `pip-audit`, with SBOM artifacts | Planned |
+| **Fix** | Provides agent skills and automation so coding agents can read findings and deficiencies, repair the code, upgrade libraries, verify the changes and prepare a pull request for review | Planned |
+
+The capabilities can be used alone or together, on demand or on a schedule. Fix can start from a saved
+report or from an issue you describe.
+
+Two principles shape the results:
+
+- **Name the real problem.** An unsafe query *construction* is reported as that. It is not quietly
+  promoted to a confirmed injection.
+- **Keep serious risks visible.** Security problems should be easy to prioritize and not buried under
+  routine quality notes.
+
+The [philosophy](docs/philosophy.md) explains how fixes should preserve behavior and existing
+protection. The [implementation plan](.zazz/project/implementation-plan.md) holds the detailed roadmap
+and delivery status.
+
+<a id="what-exists-today"></a>
+<a id="scan-current-implementation"></a>
+<a id="entry-use-cases-and-delivery-status"></a>
+
+## What exists today
+
+Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications.
+
+- It reads source only. It does not run your app or install its dependencies.
+- It covers the frameworks and operations it models. Anything else is reported as unresolved,
+  not silently skipped.
+
+**The decision model**
+
+- Judges whether each finding is a real vulnerability and whether existing protection is adequate
+- OpenAI Luna is the primary model; Google Gemini is optional
+- One model is used for a whole scan, with no automatic fallback
+- A request cap and optional rate limits keep runs predictable
+- Equivalent contexts share one decision to save calls
+
+**Security checks**
+
+- SQL injection
+- NoSQL injection (MongoDB-style databases)
+- Cross-site scripting (XSS): server-rendered, stored, and browser/DOM
+- Command injection
+- Path traversal, including Zip Slip when extracting uploaded archives
+- Outbound HTTP calls (recorded for review; no verdict yet)
+
+**Good-practice checks**
+
+- Input validation
+- Safe construction of queries and other destination calls
+- Sensitive data written to logs
+
+**How it finds problems**
+
+- Finds entry points: web routes, browser events, GraphQL and gRPC
+- Follows request input to the sensitive operation it reaches
+- Notices the checks on the way, such as `if` guards and allow-lists
+- Reads each library's version for the part of a monorepo being analyzed
+- Checks each model answer against the source facts and the evidence supplied before it counts
+- Can replay a saved decision offline to reproduce a result
+
+**Reports**
+
+- HTML to read, JSON for tools and coding agents, SARIF for security platforms
+- Saved even when part of the assessment could not be completed
+
+**Not yet available:** dependency auditing, a separate Inspect report, automated fixes and scheduled runs.
+The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
+exactly which languages, frameworks and operations each analyzer supports, with its limits.
 
 ## How it works
 
@@ -78,8 +189,32 @@ set +a
 
 The scanner reads process environment variables; it does not load `.env` automatically. OpenAI Luna
 is the primary model used for development and calibration. Manage spending in your API account;
-no local pricing or rate configuration is needed. The [decision-model guide](docs/decision-models.md)
-covers optional providers and RPM/TPM settings.
+no local pricing or rate configuration is needed.
+
+#### Optional: use Google Gemini Decisions instead
+
+Use one model per scan. To use Google Gemini:
+
+1. Create an API key in [Google AI Studio](https://aistudio.google.com/api-keys).
+2. In your `.env`, set the key and select the Gemini model. Keep only one `JUDGE_DECISION_MODEL`
+   line in the file.
+
+   ```dotenv
+   JUDGE_DECISION_MODEL=gemini-decision-1
+   GEMINI_API_KEY=your-gemini-api-key
+   ```
+
+3. Load the file in a fresh shell so an earlier OpenAI value is not left behind, then scan with the
+   matching provider:
+
+   ```bash
+   ./bin/scan --analyze --judge gemini --judge-limit 10 \
+     --output-dir "$HOME/zazzles-findings" /absolute/path/to/your/app
+   ```
+
+The provider you pass to `--judge` must match the model in `JUDGE_DECISION_MODEL`. Zazzles never falls
+back to another provider automatically. The [decision-model guide](docs/decision-models.md) covers
+these options, plus RPM/TPM pacing and the Jev adapter.
 
 <a id="run"></a>
 
@@ -185,28 +320,6 @@ A fresh model response may be inconclusive; inspect its reason rather than treat
 Keep vulnerable baselines unchanged and make repairs in a separate copy. The
 [reference policy](docs/samples/reference-policy.md) explains baseline hashes and verification.
 
-<a id="scan-current-implementation"></a>
-<a id="entry-use-cases-and-delivery-status"></a>
-
-The [implementation plan](.zazz/project/implementation-plan.md#supported-capability-checklist)
-tracks supported analyzers, language coverage, limitations, and delivery status.
-
-## Project goals: Scan, Inspect, Audit and Fix
-
-<a id="project-goals-scan-audit-and-fix"></a>
-<a id="project-goals-scan-quality-audit-and-fix"></a>
-
-| Capability | Purpose | Status |
-|---|---|---|
-| **Scan** | Assess application security using source evidence | Available; coverage tracked in the implementation plan |
-| **Inspect** | Assess code quality and conformance to engineering standards | Planned; existing practice checks provide a foundation |
-| **Audit** | Assess dependency vulnerabilities through ecosystem tooling | Planned |
-| **Fix** | Help coding agents make, test, and reassess repairs for human review | Planned |
-
-These capabilities are intended to work independently or in a combined remediation workflow.
-Fix should also accept an existing report or user-specified issue. The
-[project plan](.zazz/project/implementation-plan.md) owns the detailed roadmap.
-
 ## Contributing
 
 See the [contributor setup and notes](docs/contributing.md) for development prerequisites, tests,
@@ -220,3 +333,4 @@ adopting the project's contributor workflow.
 - [Sample reports and verification](docs/samples/README.md)
 - [Technical approach](docs/technical-approach.md) and [analysis rules](docs/analysis/README.md)
 - [CI integration](docs/ci.md) and [documentation index](docs/README.md)
+- [Implementation plan and roadmap](.zazz/project/implementation-plan.md)

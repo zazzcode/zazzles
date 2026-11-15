@@ -1,5 +1,20 @@
 # OWASP Juice Shop sample
 
+
+## Path traversal and Zip Slip results (2026-11-14)
+
+[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+
+A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
+`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use
+it alongside the main report above. Static source judgments only; nothing was run or exploited.
+
+Twelve file operations were judged in 12 requests (150,844 input tokens).
+
+- **Zip Slip:** `routes/fileUpload.ts:34` writes uploaded archive entries with `fs.createWriteStream`. This is a **confirmed vulnerability**.
+- **Layout path:** both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**.
+- **Review (9):** file serving and reads such as `routes/fileServer.ts`, `keyServer.ts`, `logfileServer.ts`, `quarantineServer.ts`, `server.ts:277`, `profileImageFileUpload.ts`, `profileImageUrlUpload.ts`, `vulnCodeSnippet.ts` and `vulnCodeFixes.ts`. The model did not establish a vulnerability or protection from the supplied evidence, so each stays a question to investigate.
+
 ## Command-injection acceptance scan (2026-11-07)
 
 The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner

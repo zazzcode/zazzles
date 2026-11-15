@@ -60,10 +60,11 @@ all its syntax, APIs, or vulnerable paths are covered.
 
 ## Active delivery: analyzer engine hardening
 
-E1 scheduling, family filters, and conservative context reuse are implemented and verified in
-`analyzer-engine-hardening`, pending human integration review. The same worktree includes the
-owner-requested removal of dollar budgeting, Luna-first configuration, user-focused README, and
-separate contributor setup. E2–E4 are planned, not completed by this delivery.
+E1 scheduling, family filters, and conservative context reuse and the E2 shared guard and
+workspace-manifest engine are implemented and verified in `analyzer-engine-hardening`, pending
+human integration review. The same worktree includes the owner-requested removal of dollar
+budgeting, Luna-first configuration, user-focused README, and separate contributor setup. E3 and E4
+are planned for their own worktrees.
 
 The original shared-sink call-reduction forecast did not account for different framework inputs,
 transfers, controls, or route-dependent behavior. Reuse preserves those distinctions and has no
@@ -82,7 +83,7 @@ sets the dependency order. Each remaining slice requires its dedicated executabl
 
 | Slice | Planned outcome | State |
 |---|---|---|
-| **E2 — Shared guards and workspace manifests** | Reuse AST polarity/termination logic across analyzers; improve command guard coverage; resolve nearest package manifests and workspace lockfiles | Planned blueprint |
+| **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Implemented and verified in this worktree; [contract](../specifications/shared-guard-and-manifest-engine.md) |
 | **E3 — Wire bundle and catalog consolidation** | Coordinate the wire/protocol update, compact repeated material, use direct evidence references for command/path facts, synchronize contract prose, and migrate logging into the catalog | Planned blueprint |
 | **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage | Planned blueprint |
 

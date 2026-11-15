@@ -29,7 +29,7 @@ Eliminate cross-analyzer scheduling bugs, redundant multi-context model calls, a
 | Slice | Contract Status | Analyzer Scope | Observable Outcome | Wire-Digest Impact |
 | --- | --- | --- | --- | --- |
 | **E1: Scheduling, Family Filters & Context Dedupe** | **Full executable spec in §§1–12 below** | `[All Analyzers]` | Eligibility-aware `--judge-limit` (never burned by zero-call observations), `xss`/`logging` prioritized ahead of standalone `input-validation`, general `--skip-family` / `--only-family`, and default-on **Canonical Payload-Digest Context Deduplication** (`derived_from` provenance, measured VulnPy partition: 260 contexts remain distinct) | **Zero** (`request_digest` unchanged for every candidate) |
-| **E2: Shared AST Guard & Workspace Manifest Engine** | Scoped blueprint; author dedicated spec slice before coding | **Command**, **Path**, **Validation**, **XSS**, **NoSQL** | Extract `internal/parse/guard_climb.go` from Path's polarity/conjunction/terminator engine to fix JS Command `else`-branch guards and Python Command `abort()`/`HTTPException` guards; upgrade `packageVersion` (`xss_versions.go`) to walk nearest ancestor `package.json` + workspace lockfiles | Changes only candidates whose static guard or version facts actually change |
+| **E2: Shared AST Guard & Workspace Manifest Engine** | **Executable contract: [shared-guard-and-manifest-engine.md](shared-guard-and-manifest-engine.md); implemented in this worktree** | **Command**, **Path**, **Validation**, **XSS**, **NoSQL** | Extract `internal/parse/guard_climb.go` from Path's polarity/conjunction/terminator engine to fix JS Command `else`-branch guards and Python Command `abort()`/`HTTPException` guards; upgrade `packageVersion` (`xss_versions.go`) to walk nearest ancestor `package.json` + workspace lockfiles | Changes only candidates whose static guard or version facts actually change |
 | **E3: Wire Bundle v7 & Catalog Sync** | Scoped blueprint; author dedicated spec slice before coding | `[All Analyzers]` | Single coordinated bump (`evidence_version: 7`, family `-v2`/`-v3` protocols): always-on `compact_wire`, drop duplicate `evidence_roles`, omit 64-hex component digests from prompt, project `CommandFacts`/`PathFacts` offsets to `eN` refs, sync `NodeFSContract`/`path_*.md` prose, migrate `log-use-v1` to `analysispacks` (`-25–35%` input tokens/call); update `TestOutboundPredecessorRequests` & `TestCommandPredecessorRequests` | Intentional one-time protocol bump; old traces remain readable on historical exports |
 | **E4: Shared Node Chain/URL Inputs & Phase-2 File APIs** | Scoped blueprint; author dedicated spec slice before coding | `[All Node Analyzers]` + **Path** | Promote Express non-final chain handlers & `req.path`/`url`/`files` into `source.node-input-v2` (removing Path's double handler pass and exposing middleware/URL sinks to XSS, Command, SQL, NoSQL); add Starlette/FastAPI `FileResponse` + `UploadFile`, `fs.open/copyFile/rename`, `shutil`, and `tarfile.extractall` (`filter='data'`) | Additive new candidates + `source.node-input-v2` |
 
@@ -281,3 +281,15 @@ Skills: `spec-driven`, `doc-check`. Never read or print `.env`; zero paid live A
 **Summary.** Apply family environment defaults only in judged analysis while rejecting explicit offline filters. Keep route coordinates when code reads unsupported request metadata or passes/aliases the request object. Receiver matching is compiled once per candidate. Existing equivalent-route reuse and exact requests remain unchanged.
 
 **Verification Impact.** Regress offline analysis/list/routes with malformed family environment defaults, explicit offline rejection, Express whole-route inspection and Flask `url_rule`. Repeat changed-package race checks and a fresh-source path-traversal replay on the pinned TypeScript sample.
+
+### 2026-11-14 — Slice E2 contract authored and implemented
+
+**Source.** Owner request to author a bounded E2 specification, implement and verify it in this worktree (E1 and E2 share the branch; E3 and E4 move to new worktrees), then confirm behavior with offline tests and a small paid live run.
+
+**Changed Sections.** Roadmap row for E2 now links the executable [E2 contract](shared-guard-and-manifest-engine.md).
+
+**Rationale.** The milestone required a dedicated spec slice before coding. Validation and SQL/NoSQL claim guards have no consumer for a guard-climbing engine today, so the E2 contract keeps them out of scope rather than add an unused abstraction.
+
+**Summary.** E2 extracts one guard engine used by Command and Path, adds nearest-workspace manifest and lockfile resolution used by Path, XSS and NoSQL, and records its measured effect: no request-digest change across 3,795 candidates on the sample apps and fixtures, 360/360 saved path replays unchanged.
+
+**Verification Impact.** See the E2 contract and the local run log.

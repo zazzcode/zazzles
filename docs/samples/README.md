@@ -16,6 +16,14 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [findings.json](vulnpy/findings.json) | [findings.sarif](vulnpy/findings.sarif) |
 
+Five samples also have a **path-traversal and Zip Slip** report in their `path-traversal/` folder:
+[Juice Shop](juice-shop/path-traversal/findings.html), [Node.js Goof](nodejs-goof/path-traversal/findings.html),
+[Vulnerable TypeScript app](vulnerable-typescript-app/path-traversal/findings.html),
+[ThreatByte](ThreatByte/path-traversal/findings.html) and
+[Vulnerable Flask App](vulnerable-flask-app/path-traversal/findings.html). Each ran only the path
+analyzer with `gpt-6-luna` on the pinned revision. VulnPy's 260 path contexts and the Python insecure app
+(no file operations) are not republished here.
+
 The reports include XSS discovery and the **Hide protected results** remediation
 filter. Server/API routes and browser/client-side sources have separate sections and headings.
 [Source-reviewed answer keys and remediation-copy policy](reference-policy.md) explain why specific

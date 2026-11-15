@@ -2,6 +2,19 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
+## Path traversal and Zip Slip results (2026-11-14)
+
+[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+
+A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
+`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use it alongside
+the main report above. Static source judgments only; nothing was run or exploited.
+
+Three file operations were judged in three requests (20,295 input tokens).
+
+- **Confirmed vulnerabilities (2):** the `open` calls at `vulnerable-flask-app.py:77` and `:129`.
+- **Review (1):** the `FileStorage.save` upload at line 209.
+
 Target: [retained upstream fork](https://github.com/ikpehlivan/Vulnerable-Flask-App), GPL-3.0,
 pinned at the original author's last commit `a67cbe5`. The author's repository is deleted; the
 handoff verified the retained tree against two other forks. Upstream source excerpts retain their

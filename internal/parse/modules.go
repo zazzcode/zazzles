@@ -51,6 +51,7 @@ type moduleSet struct {
 	modelEvidence  map[string][]analysis.Evidence
 	mountedOrigins map[string]bool
 	textSources    map[string]analysis.Evidence
+	packageFiles   map[string]*packageFile
 	contextLimits  []analysis.Gap
 	contextFields  []string
 	root           string

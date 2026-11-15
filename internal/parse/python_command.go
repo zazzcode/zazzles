@@ -369,6 +369,39 @@ func (f *pythonFlow) commandCall(call, fn *sitter.Node) (pythonValue, bool) {
 			guards = append(guards, e)
 		}
 	}
+	// Controls the flow cannot see: a dominating `if` whose body ends the request
+	// through a verified abort or exit call. The flow models return and raise.
+	scan := newCommandGuardScan(f.guardLang(), call, f.pyHelperCallSites)
+	for _, site := range scan.collect(nil, u.Dependencies, func(site guardSite) bool {
+		return site.Kind == terminatingGuardKind && !guardRecorded(guards, f.module.evidence(site.Kind, site.Cond))
+	}) {
+		ev := f.module.evidence(commandGuardEvidenceKind(site), site.Whole)
+		if !guardRecorded(guards, ev) {
+			guardIndex = append(guardIndex, len(u.Context))
+			u.Context = append(u.Context, ev)
+			guards = append(guards, ev)
+		}
+	}
+	var conditions []*sitter.Node
+	for _, g := range guards {
+		if n := nodeAt(f.module.tree.RootNode(), g.Span.StartByte, g.Span.EndByte); n != nil {
+			if n.Kind() == "if_statement" {
+				// A terminating guard is recorded as the whole statement; only its test names a list.
+				n = n.ChildByFieldName("condition")
+			}
+			if n != nil {
+				conditions = append(conditions, n)
+			}
+		}
+	}
+	for _, decl := range collectionDefinitions(conditions, f.module.src, func(name string) *sitter.Node {
+		if pyConstantCollection(f.module, name) {
+			return pyModuleVarDecl(f.module, name)
+		}
+		return nil
+	}) {
+		u.Context = append(u.Context, f.module.evidence("allowlist_definition", decl))
+	}
 	base = len(u.Context)
 	u.Context = append(u.Context, b.context...)
 	for i := range u.Command.Operands {
@@ -376,8 +409,18 @@ func (f *pythonFlow) commandCall(call, fn *sitter.Node) (pythonValue, bool) {
 			u.Command.Operands[i].Context[j] += base
 		}
 	}
-	f.completePythonCommand(u, call, all, guards, guardIndex, b.names)
+	f.completePythonCommand(u, call, all, guards, guardIndex, scan.derived(u.Dependencies), b.names)
 	return pythonValue{}, true
+}
+
+// guardRecorded reports an evidence record over the same source span.
+func guardRecorded(guards []analysis.Evidence, e analysis.Evidence) bool {
+	for _, g := range guards {
+		if g.Span.File == e.Span.File && g.Span.StartByte == e.Span.StartByte && g.Span.EndByte == e.Span.EndByte {
+			return true
+		}
+	}
+	return false
 }
 
 func (b *pyCommandBuilder) has(slot string) bool {
@@ -416,7 +459,7 @@ var pythonCommandBlockers = map[string]bool{
 
 // completePythonCommand assembles the claim-scoped completeness for a Python
 // use at the point where its flow, guards and operands are known.
-func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitter.Node, operands pythonValue, guards []analysis.Evidence, guardIndex []int, names map[string]bool) {
+func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitter.Node, operands pythonValue, guards []analysis.Evidence, guardIndex []int, derived [][]string, names map[string]bool) {
 	blockers := []analysis.Gap{}
 	coverage := []analysis.Gap{}
 	transfers := []analysis.Evidence{}
@@ -446,7 +489,7 @@ func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitte
 	for _, t := range transfers {
 		c.ModelFacts = append(c.ModelFacts, "Supported transfer "+t.Kind+" "+t.Text+" at "+t.Span.File+" carries its operand into the result without a modeled constraint; it is not a validator.")
 	}
-	finishCommandPaths(u, c, guards, guardIndex, func(g analysis.Gap, d analysis.Dependency) bool {
+	finishCommandPaths(u, c, guards, guardIndex, derived, func(g analysis.Gap, d analysis.Dependency) bool {
 		return gapTouchesDependency(g, d) || pythonGapTouches(g, d)
 	})
 	u.Completeness = c

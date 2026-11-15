@@ -19,6 +19,12 @@ var pugOutput = regexp.MustCompile(`([!#])\{([^}]+)\}`)
 var simpleTemplateField = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$`)
 
 func (s *moduleSet) readText(file string) (analysis.Evidence, bool) {
+	return s.readBounded(file, 2<<20)
+}
+
+// readBounded reads a regular file inside the scan root, outside skipped
+// directories and symlink escapes, no larger than limit bytes.
+func (s *moduleSet) readBounded(file string, limit int64) (analysis.Evidence, bool) {
 	file = filepath.ToSlash(filepath.Clean(file))
 	if file == "." || filepath.IsAbs(file) || strings.HasPrefix(file, "../") {
 		return analysis.Evidence{}, false
@@ -44,7 +50,7 @@ func (s *moduleSet) readText(file string) (analysis.Evidence, bool) {
 		return analysis.Evidence{}, false
 	}
 	info, err := os.Stat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Size() > 2<<20 {
+	if err != nil || !info.Mode().IsRegular() || info.Size() > limit {
 		return analysis.Evidence{}, false
 	}
 	data, err := os.ReadFile(path)

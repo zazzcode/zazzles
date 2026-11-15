@@ -12,16 +12,6 @@ import (
 // destination (CVE-2018-1002204).
 var admZipFixed = [3]int{0, 4, 11}
 
-// declarationEvidence anchors a dependency fact to the manifest it came from.
-func (s *moduleSet) declarationEvidence(pkg, version string) (analysis.Evidence, bool) {
-	e, ok := s.readText("package.json")
-	if !ok {
-		return analysis.Evidence{}, false
-	}
-	e.Kind, e.Text = "dependency_declaration", fmt.Sprintf("%q resolves to %q", pkg, version)
-	return e, true
-}
-
 // admZipConstructor returns the AdmZip(...) call whose result the receiver
 // identifier holds, when AdmZip is a verified require/import of adm-zip.
 func admZipConstructor(m *sourceModule, call *sitter.Node, receiver string) *sitter.Node {
@@ -94,7 +84,8 @@ func (f *flow) archiveExtract(call, fn, args *sitter.Node) bool {
 	if !b.request {
 		return true
 	}
-	declared := f.set.packageVersion("adm-zip")
+	resolution := f.set.resolvePackage(m.file, "adm-zip")
+	declared := resolution.Version
 	assessment := "unknown_version"
 	if parsed, ok := exactVersion(declared); ok {
 		assessment = "fixed_version"
@@ -103,7 +94,7 @@ func (f *flow) archiveExtract(call, fn, args *sitter.Node) bool {
 		}
 	}
 	extractorContext := len(b.context)
-	if declaration, ok := f.set.declarationEvidence("adm-zip", declared); ok && declared != "" {
+	if declaration, ok := f.set.declarationEvidence(m.file, "adm-zip", resolution); ok && declared != "" {
 		b.context = append(b.context, declaration)
 	} else {
 		b.context = append(b.context, m.evidence("dependency_declaration", ctor))

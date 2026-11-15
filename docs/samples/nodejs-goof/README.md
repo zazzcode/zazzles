@@ -11,6 +11,20 @@ The local reference checkout is `<DEV_ROOT>/nodejs-goof`; see the
 The checkout was clean when inspected. Its README, package manifest, route registrations,
 handlers and templates supplied the initial case inventory.
 
+
+## Path traversal and Zip Slip results (2026-11-14)
+
+[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+
+A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
+`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use
+it alongside the main report above. Static source judgments only; nothing was run or exploited.
+
+One file operation was judged in one request (12,969 input tokens).
+
+- **Zip Slip candidate:** `routes/index.js:270` calls `adm-zip` `extractAllTo` on an uploaded archive. The scanner establishes the installed version as `adm-zip` 0.4.7, which is before the 0.4.11 fix.
+- **Result: Review, not a finding.** The model answered "not applicable" for the traversal question (confidence 0.57 against 0.33 for vulnerable). That contradicts the source facts, so the evidence gate refused to classify it. A second identical request gave the same answer. This is a known gap: the source supports Zip Slip here, but the model's answer does not yet, and no status is claimed.
+
 ## Command-injection acceptance scan (2026-11-07)
 
 The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner

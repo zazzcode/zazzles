@@ -72,7 +72,7 @@ func (f *flow) pathRenderCall(call, fn, args *sitter.Node) bool {
 		return false
 	}
 	engine, _, config := f.renderSettings()
-	if engine != "hbs" || f.set.packageVersion("hbs") == "" {
+	if engine != "hbs" || f.set.packageVersion(f.module.file, "hbs") == "" {
 		return false
 	}
 	// A custom renderer registered under the extension does not inherit hbs semantics.

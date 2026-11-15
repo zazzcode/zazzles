@@ -107,13 +107,13 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 			continue
 		}
 		if mode == "markdown" {
-			if _, ok := f.set.bypassAdvisory("marked"); ok {
+			if _, ok := f.set.bypassAdvisory(m.file, "marked"); ok {
 				mode = "ineffective"
 			}
 		}
 		if mode == "sanitize_html" {
 			mode = "sanitize"
-			if _, ok := f.set.bypassAdvisory("sanitize-html"); ok {
+			if _, ok := f.set.bypassAdvisory(m.file, "sanitize-html"); ok {
 				mode = "ineffective"
 			}
 		}

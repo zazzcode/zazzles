@@ -21,6 +21,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 - [Path Traversal Analyzer](path-traversal.md) — JS/TS/Python filesystem, Zip Slip (`adm-zip`/`unzipper`) and `hbs` layout containment analysis; implemented and live-verified across all eight sample apps.
 - [Path Traversal Tier-1 Hardening](path-traversal-hardening.md) — AST branch-polarity/conjunction soundness, normalization-sensitive substring policy, false-protection closures, guarded constant/import excerpt injection, determinism and file-size split; implemented and live-verified.
 - [Cross-Analyzer Engine Hardening](analyzer-engine-hardening.md) — milestone specification index (`E1`–`E4`) and executable Slice `E1` contract (`--only-family`/`--skip-family`, `--judge-limit` XSS/Logging priority & zero-call observation handling, and default-on context deduplication) for execution after `path-traversal` merges to `stage`.
+- [Shared Guard & Workspace Manifest Engine](shared-guard-and-manifest-engine.md) — Slice `E2` contract: one lexical guard engine (polarity, terminators, derived values, reassignment, helper call sites) for Command and Path, allow-list definition evidence, and nearest-workspace manifest/lockfile version resolution for Path, XSS and NoSQL; implemented and verified in the `analyzer-engine-hardening` worktree.
 
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
 

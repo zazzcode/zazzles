@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-14",
+  "target": "vulnerable-flask-app",
+  "target_revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
+  "scanner_branch": "analyzer-engine-hardening (E1 + E2)",
+  "evaluation_mode": "path-traversal family only (--only-family path); other families not run",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "path_candidates": 3,
+  "provider_requests": 3,
+  "input_tokens": 20295,
+  "outcomes": {
+    "confirmed_vulnerability": 2,
+    "needs_evidence": 1
+  },
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "runtime_confirmation": "none; static source judgments only"
+}

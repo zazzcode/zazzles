@@ -71,7 +71,9 @@ and record how many were omitted.
 Markdown with marked's `sanitize` option is an unsafe-rendering contract for versions with a listed advisory
 (see [upstream PR 592](https://github.com/markedjs/marked/pull/592)). Sanitizer bypasses come from a cited advisory table in `internal/parse/xss_versions.go`. An advisory applies only to
 an exact resolved version in its affected range, and only to a call with default options; a version range or
-custom options never match. It currently lists marked before 0.3.6
+custom options never match. The version is resolved for the source file that calls the library: a lockfile from
+the nearest workspace upward (npm, pnpm, Yarn) is authoritative, otherwise the nearest ancestor `package.json`
+that declares the dependency supplies a literal pin, so monorepo workspaces resolve independently. It currently lists marked before 0.3.6
 ([CVE-2016-10531](https://github.com/advisories/GHSA-vfvf-mqq8-rwqc)), sanitize-html before 1.4.3
 ([CVE-2016-1000237](https://advisories.gitlab.com/pkg/npm/sanitize-html/CVE-2016-1000237)) and sanitize-html 2.17.3
 ([CVE-2026-44990](https://github.com/advisories/GHSA-rpr9-rxv7-x643)). Advisories that need non-default options are

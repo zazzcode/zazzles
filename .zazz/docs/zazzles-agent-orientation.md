@@ -5,16 +5,14 @@ Follow only the section links relevant to the task; linked documents are not aut
 
 ## Current work
 
-The assigned worktree/branch is `path-traversal`. Shared Gemini support for **all analyzers** is
-implemented with a [passing two-request live sample](../evaluation/gemini-decisions-results.md#scope-and-outcome).
-Path traversal implementation, [Tier-1 soundness/determinism hardening](../specifications/path-traversal-hardening.md),
-and [shared rate/spend configuration](../specifications/decision-model-limits.md) are implemented and verified
-under the [analyzer contract](../specifications/path-traversal.md#1-capability-and-prerequisite) and
-[results](../evaluation/path-traversal-results.md): all 204 positive sample contexts, 4/4 sample protected
-controls, 78/78 portable controls, 11/11 live adversarial controls and 360 exact replays pass, alongside
-the full 9-package `-race` suite. Higher-difficulty cross-analyzer improvements are ranked in the
-[hardening and wire-efficiency proposal](../project/analyzer-hardening-and-wire-efficiency-proposal.md).
-Human review remains open. Read the ignored `.zazz/ephemeral/path-traversal-run-log.md` on resume if present.
+The assigned worktree/branch is `analyzer-engine-hardening`. It carries the verified
+[hardening milestone](../specifications/analyzer-engine-hardening.md): slice E1 (scheduling, family
+filters, conservative context reuse) and slice E2 (the [shared guard and workspace-manifest
+engine](../specifications/shared-guard-and-manifest-engine.md)), plus the earlier path-traversal
+work they build on ([results](../evaluation/path-traversal-results.md)). E3 (wire bundle v7) and E4
+(shared Node inputs and file APIs) are planned for their own worktrees and need their own contracts
+([proposal](../project/analyzer-hardening-and-wire-efficiency-proposal.md)). Human review remains
+open. Read the ignored `.zazz/ephemeral/analyzer-engine-hardening-run-log.md` on resume if present.
 Preserve concurrent user edits, especially local credentials. No live Jev evaluation is assigned.
 
 ## Code structure

@@ -2,6 +2,20 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
+## Path traversal and Zip Slip results (2026-11-14)
+
+[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+
+A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
+`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use it alongside
+the main report above. Static source judgments only; nothing was run or exploited.
+
+Five file operations were judged in five requests (38,347 input tokens).
+
+- **Confirmed vulnerability (1):** the upload `FileStorage.save` at `server/routes.py:264`.
+- **Protected (2):** the `send_from_directory` calls at lines 302 and 334. Protection applies to those calls only.
+- **Review (2):** `send_from_directory` at line 309 and `os.remove` at line 364.
+
 Target: [anotherik/ThreatByte](https://github.com/anotherik/ThreatByte), MIT, pinned at
 `ede28f2`. The source checkout was clean before and after analysis. Upstream source excerpts retain
 their authorship; this is a scanner evaluation, not a remediation of the vulnerable application.

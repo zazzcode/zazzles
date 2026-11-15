@@ -10,13 +10,6 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-type guardPolarity int
-
-const (
-	guardRejectsWhenTrue  guardPolarity = iota // if (cond) { return/throw/abort }
-	guardEnforcesWhenTrue                      // if (cond) { sink } inside consequence
-)
-
 // pathGuardInfo records, while the syntax context is available, the kind of
 // each guard and which dependencies' derived values it mentions. The assembly
 // reads it back when it attaches guards to flows.

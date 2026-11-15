@@ -1,5 +1,18 @@
 # Vulnerable TypeScript app sample
 
+
+## Path traversal and Zip Slip results (2026-11-14)
+
+[HTML](path-traversal/findings.html) · [JSON](path-traversal/findings.json) · [SARIF](path-traversal/findings.sarif) · [Provenance](path-traversal/metadata.json)
+
+A separate scan of the pinned revision with only the path-traversal analyzer enabled and OpenAI
+`gpt-6-luna` (`--only-family path`). Other analyzers were not run for this report, so use
+it alongside the main report above. Static source judgments only; nothing was run or exploited.
+
+One file operation was judged in one request (8,813 input tokens).
+
+- `GET /api/files` reads a request-controlled filename through `path.join` and `fs.readFile` at `src/server.ts:104`. This is a **confirmed vulnerability**.
+
 ## Command-injection acceptance scan (2026-11-07)
 
 The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner
@@ -31,4 +44,4 @@ their earlier versions remain in Git history. No live model calls were made for 
 session. Source-reviewed expected properties are in the reference above, not inferred from finding
 counts or comments. See the [static baseline/copy policy](../reference-policy.md).
 
-Upstream source excerpts are attributed under the [included license](UPSTREAM-LICENSE.txt).
+Upstream source excerpts belong to the upstream authors; the upstream repository ships no license file, so none is included here.

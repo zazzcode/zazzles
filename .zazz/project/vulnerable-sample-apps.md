@@ -35,7 +35,7 @@ means Zazzles has no analyzer for that family yet, so no result says nothing abo
 | Reflected XSS, attribute (`DEMO-XSS-04`) | `GET /search`, `:166` | Confirmed |
 | Reflected XSS (`DEMO-XSS-05`) | `POST /fetch`, `:236` | Confirmed |
 | SQL injection (`DEMO-SQL-01` to `05`) | `/login`, `/search`, `/api/users/:id`, `/api/notes/:id`, `DELETE /admin/users/:id` | Confirmed, all five |
-| SSRF | `POST /fetch`, `:232` `http.get(url)` | Not covered: Node `http`/`https` clients are not yet SSRF contracts (only `fetch`/`axios`) |
+| SSRF | `POST /fetch`, `:232` `http.get(url)` | Not covered: Node `http`/`https` clients are not yet SSRF contracts (only `fetch`/`axios`). Planned E4 deliverable |
 | IDOR, missing admin authorization | `/api/*`, `/admin/users` | Not covered |
 
 Not expected: bound `POST /notes` SQL and escaped remote body output produce no finding. `/login` and `/admin/users` output stays

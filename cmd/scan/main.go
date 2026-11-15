@@ -55,7 +55,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		discoveryLimit = flags.Int("discovery-limit", 3, "maximum additional model discovery requests with --discover-routes, no retries")
 		judgeLimit     = flags.Int("judge-limit", 10, "maximum judge requests per run, no retries")
 		asSARIF        = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
-		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families not to judge in this run; supported: input-validation (records stay not_run and the report states the family was not used)")
+		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families to exclude: sql,nosql,xss,command,path,logging,input-validation,outbound")
+		onlyFamily     = flags.String("only-family", "", "comma-separated analyzer families to judge exclusively")
 		traceDir       = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
 		asJSON         = flags.Bool("json", false, "emit machine-readable JSON instead of text")
 	)
@@ -75,7 +76,14 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	explicitOutputDir := false
 	explicitDiscoveryLimit := false
+	explicitSkipFamily, explicitOnlyFamily := false, false
 	flags.Visit(func(f *flag.Flag) {
+		if f.Name == "skip-family" {
+			explicitSkipFamily = true
+		}
+		if f.Name == "only-family" {
+			explicitOnlyFamily = true
+		}
 		if f.Name == "discovery-limit" {
 			explicitDiscoveryLimit = true
 		}
@@ -120,11 +128,21 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "scan: --trace-dir requires --analyze with --judge")
 		return exitUsage
 	}
+	if *analyzeMode && *judgeProvider != "" {
+		if !explicitSkipFamily {
+			*skipFamily = os.Getenv("JUDGE_SKIP_FAMILY")
+		}
+		if !explicitOnlyFamily {
+			*onlyFamily = os.Getenv("JUDGE_ONLY_FAMILY")
+		}
+	}
 	skipped, err := parseSkipFamilies(*skipFamily)
-	if err != nil || (len(skipped) > 0 && (!*analyzeMode || *judgeProvider == "")) {
-		fmt.Fprintln(stderr, "scan: --skip-family requires --analyze with --judge and supports: input-validation")
+	only, onlyErr := parseSkipFamilies(*onlyFamily)
+	if err != nil || onlyErr != nil || len(skipped) > 0 && len(only) > 0 || (len(skipped) > 0 || len(only) > 0) && (!*analyzeMode || *judgeProvider == "") {
+		fmt.Fprintln(stderr, "scan: family filters require --analyze with --judge; --only-family and --skip-family are mutually exclusive and accept sql,nosql,xss,command,path,logging,input-validation,outbound")
 		return exitUsage
 	}
+
 	if *entryKind != "" && !analysis.KnownEntryKind(*entryKind) {
 		fmt.Fprintln(stderr, "scan: invalid entry kind")
 		return exitUsage
@@ -139,7 +157,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 				return exitUsage
 			}
 		}
-		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit}, limits)
+		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, only, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit}, limits)
 	}
 	if *routes {
 		return runRoutes(flags.Arg(0), *asJSON, stdout, stderr)

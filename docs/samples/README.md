@@ -16,6 +16,11 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [findings.json](vulnpy/findings.json) | [findings.sarif](vulnpy/findings.sarif) |
 
+All seven reports were rebuilt on 2026-11-14 with the current scanner and `gpt-6-luna`: every analyzer
+on six samples, and command, SQL and XSS on VulnPy. Path traversal and Zip Slip results now appear
+inside each report. Each sample's README has a **Current report** section with its counts and notable
+results.
+
 The reports include XSS discovery and the **Hide protected results** remediation
 filter. Server/API routes and browser/client-side sources have separate sections and headings.
 [Source-reviewed answer keys and remediation-copy policy](reference-policy.md) explain why specific

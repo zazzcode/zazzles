@@ -198,50 +198,12 @@ func (f *pythonFlow) pyConstantPath(m *pythonModule, n *sitter.Node, depth int) 
 	return false
 }
 
-// pyAlwaysExits reports a block that cannot fall through: a return, a raise, an
-// abort call or an if/else whose every branch exits.
-func (f *pythonFlow) pyAlwaysExits(n *sitter.Node) bool {
-	if n == nil {
-		return false
-	}
-	m := f.module
-	switch n.Kind() {
-	case "return_statement", "raise_statement":
-		return true
-	case "expression_statement":
-		for i := uint(0); i < n.NamedChildCount(); i++ {
-			c := n.NamedChild(i)
-			if c.Kind() == "call" {
-				switch f.qualified(pyText(m, c.ChildByFieldName("function"))) {
-				case "flask.abort", "werkzeug.exceptions.abort", "sys.exit", "fastapi.HTTPException":
-					return true
-				}
-			}
-		}
-	case "block":
-		for i := uint(0); i < n.NamedChildCount(); i++ {
-			if f.pyAlwaysExits(n.NamedChild(i)) {
-				return true
-			}
-		}
-	case "if_statement":
-		alt := n.ChildByFieldName("alternative")
-		return alt != nil && f.pyAlwaysExits(n.ChildByFieldName("consequence")) && f.pyAlwaysExits(alt.ChildByFieldName("body"))
-	}
-	return false
-}
-
 // pythonPathGuards finds statements that dominate or enclose the call and
 // mention a request-derived path value, and classifies each with AST polarity.
 func (f *pythonFlow) pythonPathGuards(call *sitter.Node, u *analysis.CandidateUse, operand map[string]bool, info *pathGuardInfo) ([]analysis.Evidence, []analysis.Evidence) {
 	m := f.module
-	scope := call
-	for p := call.Parent(); p != nil; p = p.Parent() {
-		scope = p
-		if p.Kind() == "function_definition" {
-			break
-		}
-	}
+	lang := f.guardLang()
+	scope := lang.scope(call)
 	type depNames struct {
 		idx   int
 		names map[string]bool
@@ -261,7 +223,7 @@ func (f *pythonFlow) pythonPathGuards(call *sitter.Node, u *analysis.CandidateUs
 		for _, name := range commandDepNames(d) {
 			names[name] = true
 		}
-		f.deriveNames(scope, names, defs, defNodes)
+		lang.derive(scope, names, defs, defNodes)
 		list := make([]string, 0, len(names))
 		for name := range names {
 			list = append(list, name)
@@ -311,7 +273,7 @@ func (f *pythonFlow) pythonPathGuards(call *sitter.Node, u *analysis.CandidateUs
 					mentioned = append(mentioned, name)
 				}
 			}
-			if f.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
+			if lang.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
 				continue
 			}
 			covered[d.idx] = true
@@ -330,66 +292,28 @@ func (f *pythonFlow) pythonPathGuards(call *sitter.Node, u *analysis.CandidateUs
 		guards = append(guards, ev)
 	}
 	climb := func(start *sitter.Node) *sitter.Node {
-		child := start
-		for p := start.Parent(); p != nil; p = p.Parent() {
-			switch p.Kind() {
-			case "block", "module":
-				for i := uint(0); i < p.NamedChildCount(); i++ {
-					sib := p.NamedChild(i)
-					if sib.StartByte() >= child.StartByte() {
-						break
-					}
-					if sib.Kind() == "if_statement" && f.pyAlwaysExits(sib.ChildByFieldName("consequence")) {
-						consider("terminating_guard", guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte())
-					}
-				}
-			case "if_statement":
-				cond, consequence := p.ChildByFieldName("condition"), p.ChildByFieldName("consequence")
-				if cond != nil && consequence != nil {
-					if child.StartByte() >= consequence.StartByte() && child.EndByte() <= consequence.EndByte() {
-						consider("enclosing_guard", guardEnforcesWhenTrue, cond, cond, cond.EndByte())
-					} else if alt := p.ChildByFieldName("alternative"); alt != nil && alt.Kind() == "else_clause" && child.StartByte() >= alt.StartByte() && child.EndByte() <= alt.EndByte() {
-						consider("enclosing_guard", guardRejectsWhenTrue, cond, cond, cond.EndByte())
-					}
-				}
-			}
-			child = p
-			if p.Kind() == "function_definition" {
-				return p
-			}
-		}
-		return nil
+		return lang.climb(start, func(site guardSite) {
+			consider(site.Kind, site.Polarity, site.Cond, site.Whole, site.End)
+		})
 	}
 	helper := climb(call)
-	if helper != nil && f.route.fn != nil && helper.StartByte() != f.route.fn.StartByte() && f.route.module == m {
-		if id := helper.ChildByFieldName("name"); id != nil {
-			name := pyText(m, id)
-			var sites []*sitter.Node
-			pyWalk(f.route.fn, func(n *sitter.Node) {
-				if n.Kind() == "call" {
-					if fn := n.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" && pyText(m, fn) == name {
-						sites = append(sites, n)
-					}
+	sites := f.pyHelperCallSites(helper)
+	if len(sites) > 1 {
+		for _, site := range sites {
+			before := len(guards)
+			climb(site)
+			siteEnforcing := false
+			for _, g := range guards[before:] {
+				if analysis.EnforcingPathGuard(info.kinds[guardKey(g)]) {
+					siteEnforcing = true
 				}
-			})
-			if len(sites) > 1 {
-				for _, site := range sites {
-					before := len(guards)
-					climb(site)
-					siteEnforcing := false
-					for _, g := range guards[before:] {
-						if analysis.EnforcingPathGuard(info.kinds[guardKey(g)]) {
-							siteEnforcing = true
-						}
-					}
-					if !siteEnforcing {
-						info.ambiguousCallers = true
-					}
-				}
-			} else if len(sites) == 1 {
-				climb(sites[0])
+			}
+			if !siteEnforcing {
+				info.ambiguousCallers = true
 			}
 		}
+	} else if len(sites) == 1 {
+		climb(sites[0])
 	}
 	// Also attach verified import declaration for any terminating abort/HTTPException
 	// used inside dominating guards so the model knows abort(403) does not fall through.
@@ -411,55 +335,4 @@ func (f *pythonFlow) pythonPathGuards(call *sitter.Node, u *analysis.CandidateUs
 		}
 	}
 	return guards, declEvidence
-}
-
-// deriveNames extends names with variables assigned from a known name.
-func (f *pythonFlow) deriveNames(scope *sitter.Node, names map[string]bool, defs map[string]string, defNodes map[string]*sitter.Node) {
-	m := f.module
-	for round := 0; round < 4; round++ {
-		changed := false
-		pyWalk(scope, func(n *sitter.Node) {
-			if n.Kind() != "assignment" {
-				return
-			}
-			left, right := n.ChildByFieldName("left"), n.ChildByFieldName("right")
-			if left == nil || right == nil || left.Kind() != "identifier" {
-				return
-			}
-			name := pyText(m, left)
-			list := make([]string, 0, len(names))
-			for known := range names {
-				list = append(list, known)
-			}
-			sort.Strings(list)
-			if !names[name] && mentionsAny(pyText(m, right), list) {
-				names[name] = true
-				defs[name] = pyText(m, right)
-				defNodes[name] = right
-				changed = true
-			}
-		})
-		if !changed {
-			return
-		}
-	}
-}
-
-// assignedBetween reports an assignment to one of the mentioned names between a
-// control and the call, which makes the control inspect a different value.
-func (f *pythonFlow) assignedBetween(scope *sitter.Node, from, to uint, mentioned []string) bool {
-	found := false
-	pyWalk(scope, func(n *sitter.Node) {
-		if found || n.Kind() != "assignment" && n.Kind() != "augmented_assignment" || n.StartByte() < from || n.EndByte() > to {
-			return
-		}
-		if left := n.ChildByFieldName("left"); left != nil && left.Kind() == "identifier" {
-			for _, name := range mentioned {
-				if pyText(f.module, left) == name {
-					found = true
-				}
-			}
-		}
-	})
-	return found
 }

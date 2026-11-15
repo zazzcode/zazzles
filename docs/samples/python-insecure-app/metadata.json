@@ -1,17 +1,16 @@
 {
   "target": "python-insecure-app",
   "revision": "b188493768ca2c1ef003e08148fb2e4577219c36",
-  "adapter": "python-adapter-v1",
   "assessment": "gpt-6-luna; exact-request replay only",
-  "entries": 1,
-  "client_entries": 0,
-  "records": 2,
-  "assessed": 2,
   "outcomes": {
-    "confirmed_vulnerability": 1,
-    "needs_evidence": 1
+    "confirmed_vulnerability": 0,
+    "poor_practice": 0,
+    "protected_for_claim": 0,
+    "inconclusive_review": 2,
+    "not_run": 0,
+    "failed": 0
   },
-  "runtime_confirmation": false,
+  "runtime_confirmation": "none; static source judgments only",
   "independent_findings_review": "Source-reviewed cases; not exhaustive audit",
   "source_reference": "reference.md",
   "case_inventory": "cases.json",
@@ -19,8 +18,21 @@
     "Semgrep CE 1.183.0 / 20261101 snapshot",
     "Bearer e3753de / rules 82c335f"
   ],
-  "raw_run": "run-827425408",
   "verification": "Fresh clean upstream clone at the same pinned revision; initial source hashes matched.",
-  "evidence_version": 2,
-  "presentation_version": 5
+  "date": "2026-11-14",
+  "target_revision": "b188493768ca2c1ef003e08148fb2e4577219c36",
+  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+  "evaluation_mode": "full source-transmitting judged scan of every analyzer",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "provider_requests": 2,
+  "input_tokens": 10136,
+  "positions": 2,
+  "published_records": 2,
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "previous": {
+    "revision": "b188493768ca2c1ef003e08148fb2e4577219c36",
+    "assessment": "gpt-6-luna; exact-request replay only",
+    "raw_run": "run-827425408"
+  }
 }

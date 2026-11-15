@@ -11,7 +11,7 @@ After compiling and [configuring required model assessment](decision-models.md),
 outside the worktree and run a model-assessed scan:
 
 ```bash
-export SCAN_FINDINGS_DIR="$HOME/Dev/zazzcode/zazzles/_test-findings"
+export SCAN_FINDINGS_DIR="$HOME/zazzles-findings"
 ./bin/scan --analyze --entry server.ts \
   --judge openai --judge-model gpt-6-luna --judge-limit 10 /path/to/juice-shop
 ./bin/scan --analyze --entry src/server.ts \
@@ -157,10 +157,21 @@ reported as an SQL call; if it carries a hinted request field, it is a sensitive
 Use `--route /rest/user/login` to select an exact path pattern before model requests.
 Offline assessment is `not_run`. For provider selection and key instructions, including personal-key
 ownership and Jev configuration, see [decision-model setup](decision-models.md).
-`--judge openai|gemini|jev` explicitly transmits bounded evidence; `--judge-limit` caps requests (default 10,
-no retries). A requested judge failure, skipped oversized payload or exhausted request cap exits 1
+`--judge openai` uses the primary OpenAI Luna Decisions model and transmits bounded evidence;
+`--judge-limit` caps assessment requests (default 10, no retries). Manage spending in your API account. A requested judge failure, skipped oversized payload or exhausted request cap exits 1
 with its report retained. Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
+
+Use `--only-family path,command` or `--skip-family input-validation,outbound` to scope model
+assessment. The flags are mutually exclusive and accept `sql`, `nosql`, `xss`, `command`, `path`,
+`logging`, `input-validation`, and `outbound`; `JUDGE_ONLY_FAMILY` / `JUDGE_SKIP_FAMILY` supply defaults.
+Excluded model assessments remain unrun without causing exit 1. Existing deterministic practice
+findings are retained.
+Primary security sinks, including XSS and logging, run before standalone validation. Zero-call
+observations use no request slots, though requested outbound assessment remains incomplete unless
+explicitly excluded. Equivalent entry contexts share one completed decision while preserving each
+entry's finding, exact request digest and `deduplicated_from` provenance; derived records carry no
+additional usage. Report limitations show the scope and distinct/derived counts.
 
 ## Explicit route validation checks
 

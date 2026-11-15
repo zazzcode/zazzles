@@ -42,6 +42,15 @@ source facts before classification:
   type test, cast, annotation, length limit, blacklist replacement, exception handling or unrelated
   hashing never counts. Presence-only tests (`is not None`, truthiness, method/version checks) are
   not guards. Fixed absolute executables avoid PATH selection; a bare name stays unresolved.
+- Guards are collected by one shared lexical engine for JavaScript, TypeScript and Python. A
+  condition counts for the operand it mentions (or a value computed from it) only in the polarity the
+  code gives it: an `if` whose body always ends the request (`return`, `throw`, `process.exit`, a
+  verified `abort()`/`sys.exit()`) guards later code; a test whose body contains the call is enforced
+  when true; a test on the `else` side is recorded as a false-branch fact (`branch_false_precondition`),
+  never as an enforced control. A reassignment of the operand between the guard and the call
+  invalidates the guard. A guard in the single caller of a local helper applies; with several callers
+  only guards every caller shares apply. The contents of a module-level allow-list that a guard tests
+  are supplied as evidence so the model can judge the guard.
 - A path guarded by a control the scanner cannot judge can still be answered vulnerable; adequacy is
   the model's recorded decision, and the guard evidence is shown with the record.
 - Unknown utility options are Review: no CWE-88 finding is made without established option or

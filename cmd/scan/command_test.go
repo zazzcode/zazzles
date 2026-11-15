@@ -129,7 +129,7 @@ func TestCommandCLI(t *testing.T) {
 		}
 		limited := false
 		for _, l := range r.Limitations {
-			limited = limited || strings.Contains(l, "input-validation analyzer was not used")
+			limited = limited || strings.Contains(l, "input-validation analyzer was not used") || strings.Contains(l, "Analyzer family selection")
 		}
 		html, _ := os.ReadFile(filepath.Join(filepath.Dir(runs[0]), "findings.html"))
 		sarif, _ := os.ReadFile(filepath.Join(filepath.Dir(runs[0]), "findings.sarif"))
@@ -138,7 +138,7 @@ func TestCommandCLI(t *testing.T) {
 		}
 	})
 	t.Run("option validation", func(t *testing.T) {
-		for _, args := range [][]string{{"--analyze", "--skip-family", "input-validation", root}, {"--analyze", "--judge", "openai", "--skip-family", "xss", root}} {
+		for _, args := range [][]string{{"--analyze", "--skip-family", "input-validation", root}, {"--analyze", "--judge", "openai", "--skip-family", "unknown", root}} {
 			var out, errOut bytes.Buffer
 			if code := run(args, &out, &errOut); code != exitUsage {
 				t.Fatalf("%v exit %d", args, code)

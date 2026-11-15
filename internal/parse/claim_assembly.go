@@ -21,6 +21,9 @@ type claimHooks struct {
 	// finish records per-path protection from the guards found (guardIndex[i] is the use.Context index of guards[i]).
 	finish   func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int)
 	contract func(*analysis.CandidateUse) *analysis.APIModel
+	// resolve optionally moves coverage gaps that the guard evidence settles into the
+	// resolved list; a family that does not supply it keeps every gap as coverage.
+	resolve func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence)
 	// chainGapCovered optionally accepts additional chain/context gaps that do not
 	// concern the claim's operand; the operation's own request value never does.
 	chainGapCovered func(u *analysis.CandidateUse, g analysis.Gap) bool
@@ -164,6 +167,9 @@ func (s *moduleSet) assembleClaims(report *analysis.AnalysisReport, h claimHooks
 				}
 			}
 			c.Coverage = remaining
+		}
+		if h.resolve != nil {
+			h.resolve(u, c, guards)
 		}
 		for _, t := range transforms {
 			c.ModelFacts = append(c.ModelFacts, "Supported transfer "+t.Text+" at "+t.Span.File+" carries its receiver into the result; judge whether its pattern constrains the value. The transfer is not a validator by itself.")

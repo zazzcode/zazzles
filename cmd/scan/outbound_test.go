@@ -147,14 +147,18 @@ def validation():
 					t.Fatal(err)
 				}
 				expected := 0
-				for i, u := range order {
+				requestIndex := 0
+				for _, u := range order {
 					var actual analysis.CandidateUse
 					for _, v := range got.Uses {
 						if v.ID == u.ID {
 							actual = v
 						}
 					}
-					if i >= limit {
+					if u.Kind != "outbound_http_candidate" && u.Kind != "xss_data_candidate" {
+						requestIndex++
+					}
+					if u.Kind != "outbound_http_candidate" && u.Kind != "xss_data_candidate" && requestIndex > limit {
 						if actual.Assessment.Status != "not_run" || actual.Assessment.Reason != "judge request limit reached" {
 							t.Fatal("cap scheduling changed")
 						}

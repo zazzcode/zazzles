@@ -2,29 +2,16 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
-Target: [retained upstream fork](https://github.com/ikpehlivan/Vulnerable-Flask-App), GPL-3.0,
-pinned at the original author's last commit `a67cbe5`. The author's repository is deleted; the
-handoff verified the retained tree against two other forks. Upstream source excerpts retain their
-authorship and licensing. The checkout stayed clean and unchanged.
+## Current report (rebuilt 2026-11-14)
 
-The report has 19 route/method entries and 24 records, all assessed with `gpt-6-luna`. Four static
-vulnerabilities match source review: percent-built SQL and raw HTML flows at `/welcome2`, `/hello`
-and the `/get_users` exception return. `/welcome` returns JSON and remains an XSS negative.
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-The [eight-case inventory](cases.json) passes, including four reviewed positive discovery cases.
-[Source review](reference.md), [hashes](source-hashes.json), [metadata](metadata.json),
-[Semgrep](semgrep/baseline.json) and [Bearer](bearer/baseline.json) are retained. Semgrep reports 17
-results across SQL, HTML responses and several families outside this slice; Bearer reports two,
-SQL and pickle. Raw tool result totals are not independent vulnerability counts.
+Every analyzer was run on the pinned revision `a67cbe590698` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
 
-Database-result logging is Review because fields/content are unresolved. Logging a literal internal
-mailbox proves the emission but not private/person-identifying sensitivity; its initial model
-classification was stronger than the independent evidence, so a generic static blocker keeps Review.
-Arbitrary `data` logging is not mislabeled a PII leak. Unknown subprocess return content remains
-Review; command injection, traversal, deserialization and the other planned families are out of scope.
+- **Records:** 30. **Judged:** 30, in 30 requests (138,679 input tokens).
+- **Outcomes:** 8 confirmed vulnerabilities, 0 poor practice, 0 protected, 22 inconclusive (Review).
+- **Path traversal (3 judged):** the `open` calls at `vulnerable-flask-app.py:77` and `:129` are **confirmed vulnerabilities**; the `FileStorage.save` upload at line 209 stays **Review**.
+- **Command injection:** two records are **confirmed vulnerabilities**.
 
-```sh
-python3 docs/samples/evaluate-python.py vulnerable-flask-app docs/samples/vulnerable-flask-app/findings.json
-```
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 
-Upstream license: [source license text](SOURCE-LICENSE.txt).

@@ -1,5 +1,21 @@
 # OWASP Juice Shop sample
 
+
+
+## Current report (rebuilt 2026-11-14)
+
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+
+Every analyzer was run on the pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+
+- **Records:** 223. **Judged:** 128, in 128 requests (1,087,834 input tokens).
+- **Outcomes:** 19 confirmed vulnerabilities, 0 poor practice, 0 protected, 109 inconclusive (Review).
+- **Path traversal and Zip Slip (12 judged):** the upload Zip Slip at `routes/fileUpload.ts:34` and both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**. The other nine (file serving and reads) stay **Review**.
+- **Not assessed by design (90):** 66 outbound HTTP observations, 23 API-data records with no rendering claim, and one NoSQL record at `routes/order.ts:164` whose evidence exceeds the 64 KiB request limit.
+- **Failed before any model call (5):** model component selection needs a verified API binding for `routes/orderHistory.ts` (lines 17 and 36), `routes/createProductReviews.ts:23`, and `routes/chat.ts` (lines 117 and 123). They remain unassessed, not safe.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
+
 ## Command-injection acceptance scan (2026-11-07)
 
 The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner

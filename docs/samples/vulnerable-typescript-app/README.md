@@ -1,5 +1,21 @@
 # Vulnerable TypeScript app sample
 
+
+
+## Current report (rebuilt 2026-11-14)
+
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+
+Every analyzer was run on the pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+
+- **Records:** 24. **Judged:** 18, in 18 requests (82,948 input tokens).
+- **Outcomes:** 4 confirmed vulnerabilities, 0 poor practice, 0 protected, 14 inconclusive (Review).
+- **Command injection:** `GET /api/ping` at `src/server.ts:90` is a **confirmed vulnerability**.
+- **Path traversal:** `GET /api/files` at `src/server.ts:104` is a **confirmed vulnerability**.
+- **Not assessed by design (6):** one outbound HTTP observation and five API-data records with no rendering claim.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
+
 ## Command-injection acceptance scan (2026-11-07)
 
 The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner
@@ -31,4 +47,4 @@ their earlier versions remain in Git history. No live model calls were made for 
 session. Source-reviewed expected properties are in the reference above, not inferred from finding
 counts or comments. See the [static baseline/copy policy](../reference-policy.md).
 
-Upstream source excerpts are attributed under the [included license](UPSTREAM-LICENSE.txt).
+Upstream source excerpts belong to the upstream authors; the upstream repository ships no license file, so none is included here.

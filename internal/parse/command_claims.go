@@ -160,13 +160,17 @@ func mentionsAny(text string, names []string) bool {
 // finishCommandPaths records, per path, the guards found for that
 // dependency and whether an unresolved transfer blocks it. A guard that does
 // not mention a dependency never covers it; adequacy is never decided here.
-// guardContext[i] is the use.Context index of guards[i].
-func finishCommandPaths(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, touches func(analysis.Gap, analysis.Dependency) bool) {
+// guardContext[i] is the use.Context index of guards[i]; derived[d] lists the
+// names of values computed from dependency d that a guard may test instead.
+func finishCommandPaths(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, derived [][]string, touches func(analysis.Gap, analysis.Dependency) bool) {
 	f := u.Command
 	for i := range f.Paths {
 		p := &f.Paths[i]
 		dep := u.Dependencies[p.Dependency]
 		names := commandDepNames(dep)
+		if p.Dependency < len(derived) {
+			names = append(names, derived[p.Dependency]...)
+		}
 		var controls []int
 		for j, g := range guards {
 			if mentionsAny(g.Text, names) {
@@ -220,12 +224,49 @@ func (s *moduleSet) assembleCommandClaims(report *analysis.AnalysisReport) {
 		},
 		complete: commandCompleteness,
 		finish: func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int) {
-			finishCommandPaths(u, c, guards, guardIndex, func(g analysis.Gap, d analysis.Dependency) bool { return gapTouchesDependency(g, d) })
+			finishCommandPaths(u, c, guards, guardIndex, s.commandDerivedNames(u), func(g analysis.Gap, d analysis.Dependency) bool { return gapTouchesDependency(g, d) })
 		},
 		contract: func(u *analysis.CandidateUse) *analysis.APIModel {
 			return analysispacks.CommandContract(u.Command.ContractID)
 		},
+		resolve: s.resolveGuardedControlFlow,
 	})
+}
+
+// guardControlFlowGaps are the control-flow limitations the handler walk records
+// for an `if` statement it does not traverse.
+var guardControlFlowGaps = map[string]bool{"unsupported_control_flow": true, "branch_exit": true, "unknown_control_effect": true}
+
+// resolveGuardedControlFlow settles the control-flow gaps recorded on a
+// terminating guard the guard engine verified: an `if` with no alternative whose
+// consequence always exits has no effect on later code except ending the
+// request, which the guard evidence states. Gaps anywhere else stay as coverage.
+func (s *moduleSet) resolveGuardedControlFlow(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence) {
+	settled := func(g analysis.Gap) bool {
+		if !guardControlFlowGaps[g.Kind] {
+			return false
+		}
+		for _, e := range guards {
+			if e.Kind != terminatingGuardKind || e.Span.File != g.At.File || e.Span.StartByte != g.At.StartByte || e.Span.EndByte != g.At.EndByte {
+				continue
+			}
+			if m := s.modules[e.Span.File]; m != nil {
+				if n := nodeAt(m.tree.RootNode(), e.Span.StartByte, e.Span.EndByte); n != nil && n.Kind() == "if_statement" && n.ChildByFieldName("alternative") == nil {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	remaining := []analysis.Gap{}
+	for _, g := range c.Coverage {
+		if settled(g) {
+			c.Resolved = append(c.Resolved, g)
+		} else {
+			remaining = append(remaining, g)
+		}
+	}
+	c.Coverage = remaining
 }
 
 func dedupeGaps(in []analysis.Gap) []analysis.Gap {
@@ -321,8 +362,9 @@ func (s *moduleSet) touchesAnyDependency(g analysis.Gap, u analysis.CandidateUse
 }
 
 // commandGuards finds statements that dominate or enclose the process call
-// and mention a request-derived operand identifier or source. It also
-// returns supported regex-capture transfers on operand paths.
+// and mention a request-derived operand identifier, source or value derived
+// from one, in the polarity the code gives them. It also returns supported
+// regex-capture transfers on operand paths.
 func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms []analysis.Evidence) {
 	m := s.modules[u.Sink.Span.File]
 	if m == nil {
@@ -349,57 +391,31 @@ func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms 
 	if args != nil {
 		collect(args)
 	}
-	for _, d := range u.Dependencies {
-		for _, name := range commandDepNames(d) {
-			names[name] = true
-		}
-	}
-	mentions := func(cond *sitter.Node) bool {
-		if cond == nil {
-			return false
-		}
-		list := make([]string, 0, len(names))
-		for name := range names {
-			list = append(list, name)
-		}
-		text := cond.Utf8Text(m.src)
-		return mentionsAny(text, list) && !presenceOnlyCondition(text, list)
-	}
+	scan := newCommandGuardScan(m.guardLang(), call, func(helper *sitter.Node) []*sitter.Node { return jsHelperCallSites(m, u.Context, helper) })
 	seen := map[int]bool{}
-	add := func(kind string, n *sitter.Node) {
-		if !seen[int(n.StartByte())] {
-			seen[int(n.StartByte())] = true
-			guards = append(guards, m.evidence(kind, n))
+	var conditions []*sitter.Node
+	for _, site := range scan.collect(names, u.Dependencies, nil) {
+		if !seen[int(site.Whole.StartByte())] {
+			seen[int(site.Whole.StartByte())] = true
+			guards = append(guards, m.evidence(commandGuardEvidenceKind(site), site.Whole))
+			conditions = append(conditions, site.Cond)
 		}
 	}
-	child := call
-	scope := call.Parent()
-	for p := call.Parent(); p != nil; p = p.Parent() {
-		switch p.Kind() {
-		case "statement_block", "program":
-			for i := uint(0); i < p.NamedChildCount(); i++ {
-				sib := p.NamedChild(i)
-				if sib.StartByte() >= child.StartByte() {
-					break
-				}
-				if sib.Kind() == "if_statement" && mentions(sib.ChildByFieldName("condition")) && alwaysExits(sib.ChildByFieldName("consequence")) {
-					add("terminating_guard", sib)
-				}
-			}
-		case "if_statement":
-			cond := p.ChildByFieldName("condition")
-			if cond != nil && int(child.StartByte()) >= int(cond.EndByte()) && mentions(cond) {
-				add("enclosing_guard", cond)
-			}
+	for _, decl := range collectionDefinitions(conditions, m.src, func(name string) *sitter.Node {
+		if constantCollection(m, name) {
+			return jsTopDeclarationNode(m, name)
 		}
-		child = p
-		if isFunction(p) || p.Kind() == "function_declaration" {
-			scope = p
-			break
-		}
+		return nil
+	}) {
+		u.Context = append(u.Context, m.evidence("allowlist_definition", decl))
+	}
+	// A call outside any function is scanned within its own parent only, as before.
+	regexScope := scan.scope
+	if regexScope.Kind() == "program" {
+		regexScope = call.Parent()
 	}
 	// Supported regex capture: receiver.match(<regex literal>)[n].
-	walkCalls(scope, func(c *sitter.Node) {
+	walkCalls(regexScope, func(c *sitter.Node) {
 		fn := c.ChildByFieldName("function")
 		if fn == nil || fn.Kind() != "member_expression" {
 			return
@@ -421,28 +437,6 @@ func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms 
 		}
 	})
 	return guards, transforms
-}
-
-func alwaysExits(n *sitter.Node) bool {
-	if n == nil {
-		return false
-	}
-	switch n.Kind() {
-	case "return_statement", "throw_statement":
-		return true
-	case "statement_block":
-		for i := uint(0); i < n.NamedChildCount(); i++ {
-			if alwaysExits(n.NamedChild(i)) {
-				return true
-			}
-		}
-	case "if_statement":
-		alt := n.ChildByFieldName("alternative")
-		if alt != nil && alt.NamedChildCount() > 0 {
-			return alwaysExits(n.ChildByFieldName("consequence")) && alwaysExits(alt.NamedChild(alt.NamedChildCount()-1))
-		}
-	}
-	return false
 }
 
 // commandTransportMiddleware are libraries whose middleware populate req.session,
@@ -470,4 +464,17 @@ func (s *moduleSet) withoutTransportOnlyGaps(gaps []analysis.Gap) []analysis.Gap
 		out = append(out, g)
 	}
 	return out
+}
+
+// commandDerivedNames recomputes the derived names of a Node command use's dependencies.
+func (s *moduleSet) commandDerivedNames(u *analysis.CandidateUse) [][]string {
+	m := s.modules[u.Sink.Span.File]
+	if m == nil {
+		return nil
+	}
+	call := nodeAt(m.tree.RootNode(), u.Sink.Span.StartByte, u.Sink.Span.EndByte)
+	if call == nil {
+		return nil
+	}
+	return newCommandGuardScan(m.guardLang(), call, func(helper *sitter.Node) []*sitter.Node { return jsHelperCallSites(m, u.Context, helper) }).derived(u.Dependencies)
 }

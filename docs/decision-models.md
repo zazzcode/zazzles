@@ -6,9 +6,9 @@
 
 Decision-model assessment is required and core to Zazzles' security-assessment workflow. The scanner
 builds source-backed traces and operation/guard evidence for the model to judge.
-The shared judge supports OpenAI Decisions using Luna (`gpt-6-luna`) and Google Gemini Decisions
-using `gemini-decision-1`. Jev has an adapter with local stub coverage; it has not been live-validated
-in this delivery. Model answers cannot replace missing source facts or override claim blockers.
+OpenAI Luna Decisions (`gpt-6-luna`, `--judge openai`) is the primary model used for
+development and calibration. Google Gemini Decisions is an optional shared adapter; Jev has local
+stub coverage. Model answers cannot replace missing source facts or override claim blockers.
 
 Inventory, evidence extraction, deterministic practice checks, saved-report rendering and local tests
 can run without an API key. Those are useful inspection/development modes; they do not complete the
@@ -37,13 +37,12 @@ explicit CLI selection still works; OpenAI defaults to `gpt-6-luna`, Gemini to `
 and Jev requires an explicit model. Keys do not select a provider and can coexist. No `--judge`
 means no model requests, even with a configured model/key.
 
-For Google, create an API key in [Google AI Studio](https://aistudio.google.com/api-keys).
-The key is shared across Gemini models, but Zazzles accepts only `gemini-decision-1`. It sends the
-model explicitly to `/v1beta/decisions` using Google's API-key header. The current Go integration
-uses the documented REST API: the latest released Go GenAI SDK checked (v1.77.0) lacks Decisions;
-Google's Python/JS SDK examples require 3.2+. See the
-[official model](https://aistudio.google.com/docs/models/gemini-decision-1) and
-[Decisions API](https://aistudio.google.com/docs/decisions-api).
+For the primary OpenAI setup, use your OpenAI API account key as `OPENAI_API_KEY` and set
+`JUDGE_DECISION_MODEL=gpt-6-luna`. Manage spending in your API account. No local pricing or
+rate configuration is required to start scanning.
+
+For optional Gemini use, create a key in [Google AI Studio](https://aistudio.google.com/api-keys),
+set `GEMINI_API_KEY` and select `JUDGE_DECISION_MODEL=gemini-decision-1` with `--judge gemini`.
 
 To switch, edit the one model assignment and use the matching `--judge`. A fresh subshell avoids
 stale exported variables. Removing/commenting a key or model in `.env` does not unset an existing
@@ -53,50 +52,19 @@ settings (`SCAN_OPENAI_MODEL`, `SCAN_GEMINI_MODEL`, `SCAN_JEV_MODEL`) must remai
 
 ## Rate and spending configuration
 
-A funded account is separate from source-transmission permission. Requests remain sequential. Set limits
-through process environment or flags; flags take precedence. The scanner does not auto-load `.env`.
-Loading settings never enables paid calls: `--judge` remains explicit.
+Manage API spending and quotas in the provider account. For ordinary OpenAI Luna scans,
+use `--judge openai` with a request cap; optional RPM/TPM settings handle quota pacing.
+`--judge-limit N` (or `JUDGE_LIMIT`, default 10) caps assessment requests per scan, with no retries.
+Equivalent entry contexts share one request. Zero-call observations do not consume the cap.
+Optional route discovery has its own request allowance.
 
-| Flag | Environment | Default |
-|---|---|---|
-| `--judge-limit` | `JUDGE_LIMIT` | 10 assessment requests; discovery retains its separate request allowance |
-| `--judge-budget-usd` | `JUDGE_BUDGET_USD` | 0 (disabled) |
-| `--judge-input-usd-per-million` | `JUDGE_INPUT_USD_PER_MILLION` | Required when the budget is positive |
-| `--judge-rpm` | `JUDGE_RPM` | 0 (local pacing disabled) |
-| `--judge-tpm` | `JUDGE_TPM` | 0 (local pacing disabled) |
-
-Budget and pacing state is shared by discovery and all assessment families for **one scan/process**.
-It does not combine separate scans or impose an account/day cap. The local spending guard reserves
-maximum input cost **before** each request and reconciles valid usage; failed/missing-usage calls retain
-the reservation. Known billing bounds cover `gemini-decision-1` and OpenAI `gpt-6-luna` Decisions;
-other provider/models fail closed when a dollar budget is enabled. Configure the highest applicable
-input price, including cache-write, long-context and regional premiums. Correct prices/provider bounds
-are required; keep provider account controls in place. This is not a provider billing lock.
-
-TPM uses request UTF-8 bytes plus a 4,096-token framing allowance as a local estimate, then retains the
-larger of that estimate and reported usage for the rolling minute. It is not an authoritative tokenizer
-or account quota measurement. RPM/TPM waits are cancellable; an oversized request stops explicitly.
-Authentication, rate and transport failures stop subsequent calls without retry or fallback. Refused
-records remain unjudged, reports retain settings/accounting, and an incomplete scan exits nonzero.
-
-Example for a verified paid Gemini project (check your active quotas first):
-
-```bash
-scan --analyze --judge gemini --judge-limit 100 \
-  --judge-budget-usd 10 --judge-input-usd-per-million 0.10 \
-  --judge-rpm 60 --judge-tpm 600000 /path/to/app
-```
-
-[Google pricing](https://aistudio.google.com/docs/pricing#gemini-decision) lists $0.10/million input;
-[Google quotas](https://aistudio.google.com/docs/rate-limits#gemini-decision) vary by project/tier.
-For Luna, a conservative $0.30/million input example covers the documented current
-[cache-write/long-context/regional premiums](https://developers.openai.com/api/docs/models/gpt-6-luna);
-verify the maximum applicable rate for your account. Prices are explicit, not auto-discovered.
-
-These controls are implemented in the continuation checkpoint and have scoped offline test evidence;
-final full verification is pending at the owner's request. See the
-[contract](../.zazz/specifications/decision-model-limits.md) and
-[checkpoint results](../.zazz/evaluation/path-traversal-results.md).
+Optional `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pace requests against
+provider quotas. Both default to zero (disabled), and flags override environment settings.
+Discovery and assessment share one rolling rate window. TPM uses request bytes plus a framing
+allowance as a conservative local estimate and reconciles reported input usage; it is not a provider
+tokenizer. Oversized requests stop explicitly, and waits can be canceled. With pacing disabled,
+the scanner skips rate-window bookkeeping. Spending is managed in the provider console; the
+scanner has no dollar budget or token-price configuration.
 
 ## Scope a live run
 
@@ -174,17 +142,28 @@ a non-assessable error without a request body. SQL validation/construction quest
 destination security. Static `analysis_components` metadata describes observation scope only.
 
 A requested scan with an unassessed outbound observation remains incomplete and exits 1 while saving
-its Review record. The conservative request-limit schedule still counts candidate positions, including
-observations; it does not promise that every unused HTTP slot will be reassigned. Supported families
-continue under the same cap. Structural-only scans do not request model completion. Saved historical
+its Review record. Zero-call observations consume no request slots. Use `--skip-family outbound` to exclude
+that unimplemented assessment explicitly; excluded records remain Review without making the scan incomplete. Structural-only scans do not request model completion. Saved historical
 generic answers, versions and statuses remain intact on export; they are not rewritten or replayed
 onto new evidence. Full SSRF, exfiltration and browser-security assessment require separate contracts.
 
 ## Request granularity
 
-The scanner sends one request per candidate use with that analyzer's applicable atomic questions
-sharing its evidence slice. For example, command execution asks separately about shell syntax,
-executable selection, arguments and coverage within one request. Different analyzers/candidates
-are assessed separately, even when their source slices overlap. All use the same scan-wide selected
-provider/model; no analyzer-specific fallback or whole-subgraph cross-analyzer batch is implemented.
-Google probability maps and confidence are retained for audit and never close static blockers.
+The scanner sends one request per distinct equivalent candidate context, with that analyzer's
+applicable questions sharing its evidence slice. Primary security sinks (SQL, NoSQL, command, path,
+XSS and logging) run before standalone input-validation checks, preserving order within each tier.
+
+Within a scan, equivalent provider payloads share a completed decision after candidate and route
+coordinates are normalized. Callable, sink, transfers, input controls/stages, converters, gaps,
+selected components, questions and model remain part of the equivalence key. Derived siblings keep
+separate candidate/entry IDs and exact request digests, record `deduplicated_from`, rerun scanner
+policy independently, and have no billed usage assigned. `--trace-dir` saves a replayable exact
+trace for each sibling. There is no persistent answer cache or cross-analyzer batch.
+
+Use `--only-family path,command` to judge selected families, or `--skip-family outbound,xss`
+to exclude families. Names are `sql`, `nosql`, `xss`, `command`, `path`, `logging`,
+`input-validation`, and `outbound`. The flags are mutually exclusive; `JUDGE_ONLY_FAMILY` and
+`JUDGE_SKIP_FAMILY` provide defaults. Excluded model assessments remain unrun; existing deterministic practice findings are retained,
+with scope and deduplication accounting in report limitations. All analyzers use the same scan-wide
+provider/model with no automatic fallback. Optional Google probability/confidence metadata never
+closes static blockers.

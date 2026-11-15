@@ -1,6 +1,6 @@
 # Cross-Analyzer Engine Hardening — Milestone Specification Index & Slice 1 Contract
 
-**Worktree / branch:** `analyzer-engine-hardening` (future branch from `stage` after `path-traversal` merges; authored as a planning/contract artifact on `path-traversal`)  
+**Worktree / branch:** `analyzer-engine-hardening` (assigned feature worktree)
 **Feature:** Shared Analysis Engine — Scheduling, Context Deduplication, AST Guards, and Wire Bundle v7  
 **Milestone:** Native Scan — Engine Hardening (`N/A` calendar milestone)  
 **Deliverable:** Milestone Index + Slice 1 (`scan-scheduling-and-context-dedupe`) Executable Contract  
@@ -9,7 +9,7 @@
 **Delivery topology:** Milestone branch `analyzer-engine-hardening` with four ordered, independently checkpointed slices (or sibling branches if the Deliverable Owner prefers separate PRs per slice)  
 **Review artifact:** One draft PR per approved topology targeting `stage`  
 **Approved review shape:** Sequenced milestone slices (`E1` Scheduling & Dedupe -> `E2` Shared AST Guard & Workspace Manifests -> `E3` Wire Bundle v7 -> `E4` Node Chain/URL Promotion & Phase-2 File Contracts)  
-**Decomposition rationale:** Grouping `E1`–`E4` in strict dependency order prevents invalidating saved decision traces more than once: `E1` cuts multi-adapter live call counts by up to 96.9% *without* changing any candidate's `request_digest`; `E2` upgrades static guard/manifest facts; `E3` performs a single coordinated `-v2`/`evidence_version: 7` wire-format bump across all families; `E4` widens cross-analyzer entry reachability once per-call cost and deduplication are in place.  
+**Decomposition rationale:** Grouping `E1`–`E4` in strict dependency order prevents invalidating saved decision traces more than once: `E1` reduces equivalent-context calls conservatively *without* changing any candidate's `request_digest`; `E2` upgrades static guard/manifest facts; `E3` performs a single coordinated `-v2`/`evidence_version: 7` wire-format bump across all families; `E4` widens cross-analyzer entry reachability once per-call cost and deduplication are in place.
 **Integration branch:** `stage`  
 **Merge policy:** PR review required — agents commit/push feature branches only; never merge to `stage`  
 **Drafted:** 2026-11-14  
@@ -28,8 +28,8 @@ Eliminate cross-analyzer scheduling bugs, redundant multi-context model calls, a
 
 | Slice | Contract Status | Analyzer Scope | Observable Outcome | Wire-Digest Impact |
 | --- | --- | --- | --- | --- |
-| **E1: Scheduling, Family Filters & Context Dedupe** | **Full executable spec in §§1–12 below** | `[All Analyzers]` | Eligibility-aware `--judge-limit` (never burned by zero-call observations), `xss`/`logging` prioritized ahead of standalone `input-validation`, general `--skip-family` / `--only-family`, and default-on **Canonical Payload-Digest Context Deduplication** (`derived_from` provenance, cutting VulnPy 260 -> 8 calls) | **Zero** (`request_digest` unchanged for every candidate) |
-| **E2: Shared AST Guard & Workspace Manifest Engine** | Scoped blueprint; author dedicated spec slice before coding | **Command**, **Path**, **Validation**, **XSS**, **NoSQL** | Extract `internal/parse/guard_climb.go` from Path's polarity/conjunction/terminator engine to fix JS Command `else`-branch guards and Python Command `abort()`/`HTTPException` guards; upgrade `packageVersion` (`xss_versions.go`) to walk nearest ancestor `package.json` + workspace lockfiles | Changes only candidates whose static guard or version facts actually change |
+| **E1: Scheduling, Family Filters & Context Dedupe** | **Full executable spec in §§1–12 below** | `[All Analyzers]` | Eligibility-aware `--judge-limit` (never burned by zero-call observations), `xss`/`logging` prioritized ahead of standalone `input-validation`, general `--skip-family` / `--only-family`, and default-on **Canonical Payload-Digest Context Deduplication** (`derived_from` provenance, measured VulnPy partition: 260 contexts remain distinct) | **Zero** (`request_digest` unchanged for every candidate) |
+| **E2: Shared AST Guard & Workspace Manifest Engine** | **Executable contract: [shared-guard-and-manifest-engine.md](shared-guard-and-manifest-engine.md); implemented in this worktree** | **Command**, **Path**, **Validation**, **XSS**, **NoSQL** | Extract `internal/parse/guard_climb.go` from Path's polarity/conjunction/terminator engine to fix JS Command `else`-branch guards and Python Command `abort()`/`HTTPException` guards; upgrade `packageVersion` (`xss_versions.go`) to walk nearest ancestor `package.json` + workspace lockfiles | Changes only candidates whose static guard or version facts actually change |
 | **E3: Wire Bundle v7 & Catalog Sync** | Scoped blueprint; author dedicated spec slice before coding | `[All Analyzers]` | Single coordinated bump (`evidence_version: 7`, family `-v2`/`-v3` protocols): always-on `compact_wire`, drop duplicate `evidence_roles`, omit 64-hex component digests from prompt, project `CommandFacts`/`PathFacts` offsets to `eN` refs, sync `NodeFSContract`/`path_*.md` prose, migrate `log-use-v1` to `analysispacks` (`-25–35%` input tokens/call); update `TestOutboundPredecessorRequests` & `TestCommandPredecessorRequests` | Intentional one-time protocol bump; old traces remain readable on historical exports |
 | **E4: Shared Node Chain/URL Inputs & Phase-2 File APIs** | Scoped blueprint; author dedicated spec slice before coding | `[All Node Analyzers]` + **Path** | Promote Express non-final chain handlers & `req.path`/`url`/`files` into `source.node-input-v2` (removing Path's double handler pass and exposing middleware/URL sinks to XSS, Command, SQL, NoSQL); add Starlette/FastAPI `FileResponse` + `UploadFile`, `fs.open/copyFile/rename`, `shutil`, and `tarfile.extractall` (`filter='data'`) | Additive new candidates + `source.node-input-v2` |
 
@@ -44,7 +44,7 @@ Eliminate cross-analyzer scheduling bugs, redundant multi-context model calls, a
 ### 1.b Prior Contracts Establishing Explicit Baselines Being Updated
 
 - [.zazz/specifications/components-03-outbound.md §4 Decisions](components-03-outbound.md#4-decisions-and-explicit-behavior-boundary) and [§6 Acceptance O4](components-03-outbound.md#6-acceptance-criteria) — **CRITICAL:** `O4` (`cmd/scan/outbound_test.go:157`) intentionally froze conservative candidate-index `--judge-limit` counting where `outbound_http_candidate` occupied capped slots. Slice E1 explicitly supersedes that rule so zero-call observations never consume `--judge-limit` HTTP request budget while still keeping requested scans with unassessed outbound observations incomplete (`exit 1`)!
-- [.zazz/specifications/decision-model-limits.md](decision-model-limits.md) — shared `requestLimiter` accounting (`JUDGE_LIMIT`, `JUDGE_BUDGET_USD`, `JUDGE_RPM`, `JUDGE_TPM`).
+- [.zazz/specifications/decision-model-limits.md](decision-model-limits.md) — shared `requestLimiter` accounting (`JUDGE_LIMIT`, `JUDGE_RPM`, `JUDGE_TPM`).
 - [.zazz/architecture/reporting-and-sarif.md](../architecture/reporting-and-sarif.md) — schema-4 compatibility and `Enrich()` invariants.
 
 ### 1.c Standards
@@ -71,7 +71,7 @@ Per `.zazz/standards/index.yaml`:
 ## 2. Invariants (Slice E1)
 
 1. **Zero `request_digest` or wire-payload byte changes.** `TestOutboundPredecessorRequests`, `TestCommandPredecessorRequests`, and all 360 saved `path-traversal` exact replays MUST pass without changing a single byte of any provider request body.
-2. **Sound equivalence key (`NormalizedContextDigest`) — never conflate distinct entry controls.** Two candidates may share one model call ONLY when their exact provider request payloads are byte-identical **after** normalizing invocation/entry/candidate IDs and entry registration coordinates, proving identical `(model, protocol, selected_components, guidelines, questions, callable_id, sink, api_model, claim_facts, dependency_source_expressions_and_transfers, applicable_entry_controls_and_stages, blocking_gaps, coverage_gaps)`. If one route has an auth/validator middleware, a Flask `<int:id>` vs `<path:p>` converter, a different `InputFacts` stage, or VulnPy WSGI `PATH_INFO` comprehension vs Flask `request.args`, their normalized payloads differ and they MUST be judged independently!
+2. **Sound equivalence key (`NormalizedContextDigest`) — never conflate distinct entry controls.** Two candidates may share one model call ONLY when their exact provider request payloads are byte-identical **after** normalizing invocation/entry/candidate IDs and eligible literal entry registration coordinates, conservatively proving identical `(model, protocol, selected_components, guidelines, questions, callable_id, sink, api_model, claim_facts, dependency_source_expressions_and_transfers, applicable_entry_controls_and_stages, blocking_gaps, coverage_gaps)`. If one route has an auth/validator middleware, a Flask `<int:id>` vs `<path:p>` converter, a different `InputFacts` stage, or VulnPy WSGI `PATH_INFO` comprehension vs Flask `request.args`, their normalized payloads differ and they MUST be judged independently!
 3. **Deduplicated siblings preserve distinct candidate/entry findings and explicit provenance.** Every sibling `CandidateUse` keeps its own `ID`, `EntryID`, `InvocationContextID`, and `RequestDigest` (its own exact request digest), plus `Assessment.DeduplicatedFrom = canonicalUse.ID` (`Status: "completed"`). `report.Enrich()` emits per-entry findings for all siblings while stating in `Assessment` / report `Limitations` how many distinct signatures were judged vs. derived.
 4. **Unassessed observations never consume `--judge-limit`, yet requested-scan incompleteness (`exit 1`) still holds.** Skipping zero-call candidates (`outbound_http_candidate`, `xss_data_candidate`) before incrementing `requestIndex` frees `--judge-limit` for real HTTP calls, while `outbound_http_candidate` still records `Status: "not_run"` (`Reason: OutboundNotAssessed`) and still causes a `--judge` scan containing outbound observations to exit `1` unless `outbound` is explicitly skipped via `--skip-family outbound`.
 5. **Mutual exclusion & canonical naming on family filters.** `--only-family` and `--skip-family` accept canonical family names (`sql`, `nosql`, `xss`, `command`, `path`, `logging`, `input-validation`, `outbound`); specifying both `--only-family` and `--skip-family` (or an unknown family name) exits `2` (`exitUsage`) before scanning.
@@ -86,7 +86,7 @@ Single coherent slice (`[CLI+JUDGE+ANALYSIS+REPORT+DOC]`) on branch `analyzer-en
 
 ### Strict Scope Constraint
 
-Only `cmd/scan/`, `internal/analysis/`, `internal/analysispacks/`, `internal/judge/`, `internal/report/`, `docs/`, `README.md`, and `.zazz/` may be modified. Do NOT touch `internal/parse/` or embedded guideline/contract prose in Slice E1.
+Only `cmd/scan/`, `internal/analysis/`, `internal/analysispacks/`, `internal/judge/`, `internal/report/`, `docs/`, `README.md`, `.env.sample`, and `.zazz/` may be modified. Do NOT touch `internal/parse/` or embedded guideline/contract prose in Slice E1.
 
 ### In Scope
 
@@ -114,14 +114,14 @@ Only `cmd/scan/`, `internal/analysis/`, `internal/analysispacks/`, `internal/jud
 
 ### D-1 — Normalized Wire-Payload Signature vs. Ad Hoc Struct Hashing for Context Deduplication
 
-**Decision.** Compute the context-equivalence signature in `internal/judge/schedule.go` directly from `wireBundle(use)` + selected `analysispacks.ForUse(use)` material after stripping only candidate-identity / entry-coordinate fields (`candidate_id`, `entry`, `entry_id`, `invocation_context_id`, `registration_id`, `dispatch_binding_id`, `instance_id`, `http.path`, `http.source_path`, `http.method`, and `entry_registration` / `route_registration` excerpt spans when no entry-level `controls`/`stages`/`entry_gaps`/`dispatch_gaps` reference them) while **retaining** `callable_id`, all `sink` / `dependencies` / `transfers` / `guard` / `control_flow` / `input_facts.controls` / `input_facts.stages` / `blocking_gaps` / `coverage_gaps` / `path` / `command` / `xss` / `api_model` bytes!  
+**Decision.** Hash the selected provider payload, including model, protocol/questions and selected interpretation material. Normalize known candidate/invocation IDs and literal route coordinates conservatively. Keep registration syntax, middleware arguments, converters and all source/transfer/control/gap facts. Registration evidence referenced by controls, stages or unresolved entry/dispatch gaps retains its coordinates; exact resolved gaps may normalize registration coordinates while keeping their kind/detail. Rewrite a route string only when it is the single unambiguous first argument; unknown/dynamic syntax remains distinct. Retain HTTP methods and framework facts. If source may inspect route metadata (including destructuring or computed access), preserve route coordinates too. Unknown syntax may prevent reuse. Expand source-excerpt references inside the ordered wire evidence table while retaining evidence IDs and order, without changing transmitted payloads. Canonical CLI slugs map `validation` to `input-validation` and include legacy logging/data-only XSS records.
 **Why.** Hand-picking Go struct fields per analyzer risks forgetting a family-specific field (e.g., `XSS.OutputContext`, `InputFacts.Values[i].InitialType`, or SQL `Check.Fields`) and falsely merging two non-equivalent contexts. Normalizing the actual `wireBundle` guarantees that **anything visible to the model about the callable, input types/stages, guards, transfers, or sink** is automatically part of the hash across all 7 analyzers!  
 **Rejected alternative.** Deduplicating by `(callable_id, sink.span)` alone — rejected because one route mounted with auth/validator middleware or `<int:id>` conversion and another mounted raw share `(callable_id, sink.span)` while having different security outcomes.
 
 ### D-2 — Keep Exact Per-Candidate `DecisionTrace` Compatibility via `--trace-dir`
 
-**Decision.** For the canonical candidate of an equivalence group, execute `AssessTrace` normally (consuming 1 `--judge-limit` slot and 1 HTTP request) and write its exact `DecisionTrace`. For equivalent sibling candidates, copy `Answers`, `AnswerDetails`, and `Model` (`Usage` set to `0` so token/spend totals are never double-counted!), set `DeduplicatedFrom = canonical.ID`, compute the sibling's own `RequestDigest`, and run `applyPolicy(siblingUse, &siblingAssessment)` independently in Go!  
-**Why.** Running `applyPolicy` independently on every sibling guarantees Go's deterministic evidence gates validate each sibling's own `CandidateUse` invariants, and setting sibling `Usage = 0` keeps `LimitSummary()` token/dollar accounting 100% honest.
+**Decision.** For the canonical candidate of an equivalence group, execute `AssessTrace` normally (consuming 1 `--judge-limit` slot and 1 HTTP request) and write its exact `DecisionTrace`. For equivalent sibling candidates, copy `Answers`, `AnswerDetails`, and `Model` (`Usage` set to `nil` so token totals are never double-counted), set `DeduplicatedFrom = canonical.ID`, compute the sibling's own `RequestDigest`, and run `applyPolicy(siblingUse, &siblingAssessment)` independently in Go!
+**Why.** Running `applyPolicy` independently on every sibling guarantees Go's deterministic evidence gates validate each sibling's own `CandidateUse` invariants, and setting sibling `Usage = nil` keeps token accounting single-counted.
 
 ### D-3 — Three-Tier Assessment Priority Queue & Zero-Slot Observation Skipping
 
@@ -144,13 +144,13 @@ Only `cmd/scan/`, `internal/analysis/`, `internal/analysispacks/`, `internal/jud
 
 ## 6. Acceptance Criteria (Slice E1)
 
-- **AC1 — Zero-call observations consume zero `--judge-limit` slots while preserving incomplete-scan `exit 1`.** On a mixed fixture with 5 `outbound_http_candidate` uses, 1 `xss_data_candidate` use, 1 `sql_query_candidate`, and 1 `xss_candidate`, running `scan --analyze --judge openai --judge-limit 2` makes exactly **2 HTTP calls** (judging both SQL and XSS to `completed`), marks the 5 outbound and 1 data-only uses `not_run` without `"judge request limit reached"`, and exits `1` because requested outbound assessment is unimplemented (`exit 0` when `--skip-family outbound` is passed and no `xss_data_candidate` fails completeness). Verified by updated `TestMixedAssessmentWithOutboundObservations` and `TestSchedulePriorityAndObservationSlots` in `cmd/scan/`.
+- **AC1 — Zero-call observations consume zero `--judge-limit` slots while preserving incomplete-scan `exit 1`.** On a mixed fixture with 5 `outbound_http_candidate` uses, 1 `xss_data_candidate` use, 1 `sql_query_candidate`, and 1 `xss_candidate`, running `scan --analyze --judge openai --judge-limit 2` makes exactly **2 HTTP calls** (judging both SQL and XSS to `completed`), marks the 5 outbound and 1 data-only uses `not_run` without `"judge request limit reached"`, and exits `1` because requested outbound assessment is unimplemented (`exit 0` when `--skip-family outbound` is passed and no `xss_data_candidate` fails completeness). Verified by updated `TestMixedAssessmentWithOutboundObservations` and `TestSchedulePriorityAndObservationSlots` across `cmd/scan/` and `internal/judge/`.
 - **AC2 — General `--only-family` and `--skip-family` CLI & env filtering.** `--only-family path,command` judges only path and command candidates and marks other families `not_run` with `"<family> analyzer not used for this run (--only-family ...)"` (without setting `failed = true` for excluded families); `--skip-family input-validation,outbound,xss` skips all named families; combining `--only-family` and `--skip-family` or passing an unknown family exits `2`. Verified by `TestCLIFamilySelection` in `cmd/scan/schedule_cli_test.go`.
 - **AC3 — Equivalent multi-context callables deduplicate HTTP calls; distinct entry controls do NOT.**
   1. A shared handler registered across 5 HTTP routes with identical input bindings and zero route-specific controls makes **1 HTTP call** (`--judge-limit 1` succeeds with `exit 0`!), marks 1 canonical use (`Usage["input_tokens"] > 0`, `DeduplicatedFrom == ""`) and 4 derived siblings (`DeduplicatedFrom == canonical.ID`, `Usage == nil`, independent `applyPolicy` verdict), and emits all 5 route findings in JSON, HTML, and SARIF.
   2. When 1 of the 5 routes attaches a route-specific validator/auth middleware, a different Flask route converter (`<int:id>` vs `<path:id>`), or a distinct input transfer (such as VulnPy WSGI `PATH_INFO` comprehension vs Flask `request.args`), `EquivalenceSignature` produces **2 distinct signatures** and makes **2 HTTP calls**.
-  3. Across parsed VulnPy (`260` path candidates), `EquivalenceSignature` partitions into `<= 15` distinct signatures while keeping WSGI `templating.py:27` strictly separate from `pt.py` sinks.
-  Verified by `TestEquivalenceSignatureSoundness` and `TestVulnPySignaturePartition` in `internal/judge/schedule_test.go`.
+  3. Across parsed VulnPy (`260` path candidates), record the measured conservative signature partition (currently `260`), keeping different framework inputs, GET/POST source expressions, and WSGI `templating.py:27` strictly separate from `pt.py` sinks. No fixed compression ratio overrides payload-equivalence soundness. The original `<= 15` forecast counted shared sinks without accounting for distinct source and invocation facts and is superseded by owner-approved measured results.
+  Verified by `TestEquivalenceSignatureSoundness`, `TestEquivalentContextsKeepSecurityDifferences`, and `TestParsedRouteControlsSplitSignatures` in `internal/judge/schedule_test.go`, plus the local external-corpus partition check recorded in the run log.
 - **AC4 — Predecessor request bytes, build, vet, format, docs, and full `-race` pass.** `TestOutboundPredecessorRequests`, `TestCommandPredecessorRequests`, `go build ./...`, `go vet ./...`, `gofmt -l cmd internal`, `go test -race ./... -count=1`, and `check-docs.py` all pass with zero errors.
 
 ---
@@ -158,7 +158,7 @@ Only `cmd/scan/`, `internal/analysis/`, `internal/analysispacks/`, `internal/jud
 ## 7. Test Strategy
 
 - `TestEquivalenceSignatureSoundness` (`internal/judge/schedule_test.go`) — table-driven matrix testing identical Express/Flask multi-route registrations (merge) vs. route middleware, parameter destructuring vs. query, Flask converter differences, and GraphQL vs. HTTP exposure of the same function (split).
-- `TestScheduleDeduplicationAccounting` (`internal/judge/schedule_test.go`) — `httptest` server asserting exact HTTP call count, single-counted token/USD budget reservation in `requestLimiter`, independent `applyPolicy` execution per sibling, and `LimitSummary()` reporting `"judged M distinct signatures (K derived across equivalent entry contexts)"`.
+- `TestScheduleDeduplicationAccounting` (`internal/judge/schedule_test.go`) — `httptest` server asserting exact HTTP call count, single-counted requests/token usage in `requestLimiter`, independent `applyPolicy` execution per sibling, and `LimitSummary()` reporting `"judged M distinct signatures (K derived across equivalent entry contexts)"`.
 - `TestCLIFamilySelection` & `TestSchedulePriorityAndObservationSlots` (`cmd/scan/schedule_cli_test.go`) — end-to-end CLI flag/env precedence, exit codes (`0`, `1`, `2`), XSS/Logging priority ahead of `input_validation_candidate`, and JSON/HTML/SARIF `Limitations` parity.
 
 ---
@@ -193,7 +193,7 @@ func AssessableUse(u analysis.CandidateUse) bool {
 
 // EquivalenceSignature returns a deterministic SHA-256 over the candidate's selected
 // pack/protocol/questions and normalized wire bundle (retaining callable, sink, input
-// stages/controls, transfers, guards and gaps while stripping per-entry registration IDs).
+// stages/controls, transfers, guards and gaps while conservatively normalizing per-entry registration IDs).
 func (c *Client) EquivalenceSignature(u analysis.CandidateUse) (string, error) {
 	// Returns ("", err) if payload construction fails, forcing normal per-use error handling.
 	return "", nil
@@ -204,12 +204,12 @@ func (c *Client) EquivalenceSignature(u analysis.CandidateUse) (string, error) {
 
 ## 9. Definition Of Done (Slice E1)
 
-- [ ] All §1 required reading and `.zazz/standards/index.yaml` verified.
-- [ ] `TestOutboundPredecessorRequests` and `TestCommandPredecessorRequests` pass unchanged.
-- [ ] AC1–AC4 tests green under `GOFLAGS=-buildvcs=false go test -race ./... -count=1`.
-- [ ] `go build ./...`, `go vet ./...`, `gofmt -l cmd internal` (empty), and `check-docs.py` exit 0.
-- [ ] Zero working-doc tokens (`AC-`, `D-`, `OQ-`, `SPEC`, `INVARIANT`) in Go source or tests.
-- [ ] Independent fresh-context Verifier sub-agent returns PASS on AC1–AC4.
+- [x] All §1 required reading and `.zazz/standards/index.yaml` verified.
+- [x] `TestOutboundPredecessorRequests` and `TestCommandPredecessorRequests` pass unchanged.
+- [x] AC1–AC4 tests green under `GOFLAGS=-buildvcs=false go test -race ./... -count=1`.
+- [x] `go build ./...`, `go vet ./...`, `gofmt -l cmd internal` (empty), and `check-docs.py` exit 0.
+- [x] Zero working-doc tokens (`AC-`, `D-`, `OQ-`, `SPEC`, `INVARIANT`) in Go source or tests.
+- [x] Independent fresh-context Verifier sub-agent returns PASS on AC1–AC4.
 
 ---
 
@@ -244,4 +244,52 @@ Skills: `spec-driven`, `doc-check`. Never read or print `.env`; zero paid live A
 
 ## 13. Implementation And Review Change Log
 
-No changes recorded.
+### 2026-11-14 — Conservative equivalence and primary model documentation
+
+**Source.** Owner steering during implementation: keep conservative matching and replace the projected compression target with measured results; use OpenAI Luna as the primary documented model and reduce cost-control emphasis.
+
+**Changed Sections.** Roadmap, equivalence decision, acceptance and verification criteria.
+
+**Rationale.** The original 260-to-eight/≤15 estimate counted sink sites while the executable soundness rule retains different framework inputs, source expressions, transfers and invocation facts. Those contexts cannot all merge under payload equality.
+
+**Summary.** Owner additionally requested a human-focused README, accurate first-run/sample verification instructions, separate contributor setup, and a Luna-first `.env.sample` with optional pacing disabled. Preserve security facts and registration policy syntax, normalize only proven identity coordinates, and record the actual corpus partition rather than enforcing a compression ratio. Keep E2–E4 deferred. Present account-level spending controls and the ordinary request cap first; local dollar budgets/pricing are removed; only optional RPM/TPM pacing remains.
+
+**Verification Impact.** Add parsed middleware/converter separation, input/control/source matrices, exact sibling replay and usage/export tests; record external partition and normalization benchmark in the local run log. No provider request bytes or parser facts change.
+
+
+### 2026-11-14 — Remove local spending management
+
+**Source.** Owner requested a fast, simple scanner with spending managed in the model console and only RPM/TPM quota settings in code.
+
+**Changed Sections.** Implementation scope includes existing CLI/judge limiter files and tests, `.env.sample`, contributor/setup guides, and the [limits contract](decision-model-limits.md).
+
+**Rationale.** Local dollar reservations, provider billing tables and configurable prices duplicate account controls and complicate setup.
+
+**Summary.** Remove dollar-budget and input-price flags/environment handling, currency accounting and billing-bound tables. Retain request caps, optional shared RPM/TPM pacing, cancellation, failure reporting and token usage. Disabled pacing skips clock/window maintenance. Rewrite README for user setup/results/sample verification and separate contributor guidance.
+
+**Verification Impact.** Replace currency tests with request/rate configuration, shared fake-clock windows, TPM refusal and three-format incompleteness tests; verify removed flags reject usage and stale pricing environment variables have no effect. Repeat changed-package race/build/vet/docs checks; preserve provider request bytes and saved replay.
+
+
+### 2026-11-14 — Final review edge cases
+
+**Source.** Independent standards/spec review before the owner-authorized commit, push and draft PR.
+
+**Changed Sections.** Family-filter configuration and equivalence soundness.
+
+**Rationale.** Judge-only family environment defaults must not block offline modes. Unsupported request-property reads and whole-request escapes can expose route-dependent behavior even when the known path/url names are absent.
+
+**Summary.** Apply family environment defaults only in judged analysis while rejecting explicit offline filters. Keep route coordinates when code reads unsupported request metadata or passes/aliases the request object. Receiver matching is compiled once per candidate. Existing equivalent-route reuse and exact requests remain unchanged.
+
+**Verification Impact.** Regress offline analysis/list/routes with malformed family environment defaults, explicit offline rejection, Express whole-route inspection and Flask `url_rule`. Repeat changed-package race checks and a fresh-source path-traversal replay on the pinned TypeScript sample.
+
+### 2026-11-14 — Slice E2 contract authored and implemented
+
+**Source.** Owner request to author a bounded E2 specification, implement and verify it in this worktree (E1 and E2 share the branch; E3 and E4 move to new worktrees), then confirm behavior with offline tests and a small paid live run.
+
+**Changed Sections.** Roadmap row for E2 now links the executable [E2 contract](shared-guard-and-manifest-engine.md).
+
+**Rationale.** The milestone required a dedicated spec slice before coding. Validation and SQL/NoSQL claim guards have no consumer for a guard-climbing engine today, so the E2 contract keeps them out of scope rather than add an unused abstraction.
+
+**Summary.** E2 extracts one guard engine used by Command and Path, adds nearest-workspace manifest and lockfile resolution used by Path, XSS and NoSQL, and records its measured effect: no request-digest change across 3,795 candidates on the sample apps and fixtures, 360/360 saved path replays unchanged.
+
+**Verification Impact.** See the E2 contract and the local run log.

@@ -38,7 +38,7 @@ cp .env.sample .env  # New setups only; do not overwrite an existing .env.
 Set the output root in `.env`, adjusting the path for your checkout layout:
 
 ```bash
-SCAN_FINDINGS_DIR="$HOME/Dev/zazzcode/zazzles/_test-findings"
+SCAN_FINDINGS_DIR="$HOME/zazzles-findings"
 ```
 
 Load your own trusted `.env` in bash or zsh before running scan:
@@ -54,5 +54,6 @@ shell use; CI should set environment variables and secrets through its workflow 
 
 
 Continue with [required decision-model setup](decision-models.md) before a security assessment.
-Select one `JUDGE_DECISION_MODEL` for all analyzers: OpenAI `gpt-6-luna` or Google
-`gemini-decision-1`, with the matching explicit `--judge` provider. Model judgment is core to that workflow; evidence-only inspection and rendering do not require API calls.
+The primary setup uses `JUDGE_DECISION_MODEL=gpt-6-luna`, `OPENAI_API_KEY`, and `--judge openai`
+for all analyzers. Manage API spending in your account; `--judge-limit` optionally bounds each run.
+The decision-model guide covers alternative providers. Evidence inspection and rendering need no API calls.

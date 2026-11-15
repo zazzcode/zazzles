@@ -4,12 +4,28 @@
 [Capability inventory](../../../.zazz/evaluation/nodejs-goof-capabilities.md) ·
 [Independent XSS answer key](xss-answer-key.md)
 
+## Current report (rebuilt 2026-11-14)
+
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+
+Every analyzer was run on the pinned revision `add14ba59e98` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+
+- **Records:** 29. **Judged:** 29, in 29 requests (234,617 input tokens).
+- **Outcomes:** 3 confirmed vulnerabilities, 0 poor practice, 2 protected, 24 inconclusive (Review).
+- **Command injection:** `POST /create` at `routes/index.js:174` is a **confirmed vulnerability**.
+- **Zip Slip candidate:** `routes/index.js:270` calls `adm-zip` `extractAllTo` on an uploaded archive, and the scanner establishes `adm-zip` 0.4.7 (before the 0.4.11 fix). The result is **Review, not a finding**: the model answered "not applicable" twice (identical answers) and the evidence gate refused to classify an answer that contradicts the source. It is tracked in the [handoff](../../../HANDOFF-js-guard-confidence.md#7-second-open-item-goof-zip-slip-is-review-not-a-finding).
+- **Protected (2):** scoped to the named claims; see the report.
+
+Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
+
 Added 2026-11-01 from [Snyk Labs Node.js Goof](https://github.com/snyk-labs/nodejs-goof),
 package version `1.0.1`, revision `add14ba59e98240d9e00a235dd7d42cd61ae9912`.
 The local reference checkout is `<DEV_ROOT>/nodejs-goof`; see the
 [workspace convention](../../../.zazz/docs/zazzles-agent-orientation.md#portable-workspace-and-dev_root).
 The checkout was clean when inspected. Its README, package manifest, route registrations,
 handlers and templates supplied the initial case inventory.
+
+
 
 ## Command-injection acceptance scan (2026-11-07)
 

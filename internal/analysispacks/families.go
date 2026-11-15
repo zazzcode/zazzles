@@ -252,3 +252,33 @@ func flowID(f *Family) string {
 	}
 	return "flow.local"
 }
+
+// FamilySlugForKind returns the canonical CLI name of a candidate family.
+func FamilySlugForKind(kind string) string {
+	switch kind {
+	case "log_sink_candidate":
+		return "logging"
+	case "xss_data_candidate":
+		return "xss"
+	}
+	if f := FamFamily(kind); f != nil {
+		if f.Name == "validation" {
+			return "input-validation"
+		}
+		return f.Name
+	}
+	return ""
+}
+
+// ValidCLIFamily reports whether name is a canonical analyzer selection.
+func ValidCLIFamily(name string) bool {
+	if name == "logging" {
+		return true
+	}
+	for _, f := range Families() {
+		if FamilySlugForKind(f.Kinds[0]) == name {
+			return true
+		}
+	}
+	return false
+}

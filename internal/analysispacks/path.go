@@ -10,18 +10,21 @@ const PathProtocol = "path-components-v2"
 const (
 	UnzipperEntryContract = "unzipper-entry-write-v1"
 	HbsLayoutContract     = "hbs-render-layout-v1"
-	NodeFSContract        = "node-fs-file-v1"
-	PythonOpenContract    = "python-open-file-v1"
-	PythonPathlibContract = "python-pathlib-file-v1"
-	PythonArchiveContract = "python-archive-open-v1"
-	PythonSaveContract    = "werkzeug-file-save-v1"
-	ExpressSendContract   = "express-send-file-v1"
-	AdmZipContract        = "adm-zip-extract-v1"
-	PythonOSFileContract  = "python-os-file-v1"
-	FlaskSendContract     = "flask-send-file-v1"
+	NodeFSContract           = "node-fs-file-v1"
+	PythonOpenContract       = "python-open-file-v1"
+	PythonPathlibContract    = "python-pathlib-file-v1"
+	PythonArchiveContract    = "python-archive-open-v1"
+	PythonSaveContract       = "werkzeug-file-save-v1"
+	ExpressSendContract      = "express-send-file-v1"
+	AdmZipContract           = "adm-zip-extract-v1"
+	PythonOSFileContract     = "python-os-file-v1"
+	FlaskSendContract        = "flask-send-file-v1"
+	StarletteFileContract    = "starlette-file-response-v1"
+	PythonShutilContract     = "python-shutil-file-v1"
+	PythonTarExtractContract = "python-tarfile-extract-v1"
 )
 
-var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, UnzipperEntryContract, HbsLayoutContract}
+var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract}
 
 // PathContract returns a copy of the supported operation contract by verified ID.
 // Semantics follow the cited official documentation; the declared platform is a
@@ -36,7 +39,7 @@ func PathContract(id string) *analysis.APIModel {
 
 	case NodeFSContract:
 		return &analysis.APIModel{ID: id, Library: "fs", Reference: "https://nodejs.org/api/fs.html#fsreadfilepath-options-callback",
-			Semantics: "fs.readFile, readFileSync, writeFile, writeFileSync, appendFile, appendFileSync, createReadStream, createWriteStream, unlink, unlinkSync, rm and rmSync take the file path as their first argument; fs/promises (fs.promises) readFile, writeFile, appendFile, unlink and rm do the same; the second argument of writeFile and appendFile forms is the data written, a separate operand and never a path source, and encoding, mode, flag and callback arguments are configuration or output, not a path. A string path is interpreted relative to the process working directory when it is not absolute and is not resolved against any directory by the API. path.join concatenates its segments and normalizes them, so an absolute later segment is appended rather than replacing the earlier segments, while '..' segments can still climb above the earlier segments; path.resolve processes right to left, so an absolute later segment replaces everything before it; path.normalize resolves '.' and '..' lexically without a root. None of join, resolve or normalize checks containment within a directory, and all three are lexical: only fs.realpath and fs.promises.realpath resolve symbolic links. This contract is not evidence of the deployed platform."}
+			Semantics: "fs.readFile, readFileSync, writeFile, writeFileSync, appendFile, appendFileSync, createReadStream, createWriteStream, unlink, unlinkSync, rm, rmSync, open, openSync, copyFile, copyFileSync, rename and renameSync take a file path as their first argument; fs/promises (fs.promises) readFile, writeFile, appendFile, unlink, rm, open, copyFile and rename do the same; the second argument of writeFile and appendFile forms is the data written, a separate operand and never a path source; copyFile/rename forms take a second independent destination path operand (a guard on the source never covers the destination); open returns a file descriptor or FileHandle that is not path text; encoding, mode, flag and callback arguments are configuration or output, not a path. A string path is interpreted relative to the process working directory when it is not absolute and is not resolved against any directory by the API. path.join concatenates its segments and normalizes them, so an absolute later segment is appended rather than replacing the earlier segments, while '..' segments can still climb above the earlier segments; path.resolve processes right to left, so an absolute later segment replaces everything before it; path.normalize resolves '.' and '..' lexically without a root. None of join, resolve or normalize checks containment within a directory, and all three are lexical: only fs.realpath and fs.promises.realpath resolve symbolic links. This contract is not evidence of the deployed platform."}
 	case PythonOpenContract:
 		return &analysis.APIModel{ID: id, Library: "open", Reference: "https://docs.python.org/3/library/functions.html#open",
 			Semantics: "The builtin open and io.open take the file as their first positional argument or the file keyword; the mode argument (default read, 'w', 'a', 'x' and '+' variants write or create) selects read or write and is not a path. Text written through the returned object is a separate operand and never a path source. A relative file is resolved against the process working directory. os.path.join returns the later segment alone when it is absolute, so a request value can replace a trusted base; '..' segments stay in the string until a normalization call. os.path.normpath and abspath are lexical; os.path.realpath also resolves symbolic links. None of join, normpath, abspath or realpath checks containment. A function, import or assignment named open that shadows the builtin does not carry this contract. This contract is not evidence of the deployed platform."}
@@ -61,6 +64,15 @@ func PathContract(id string) *analysis.APIModel {
 	case PythonSaveContract:
 		return &analysis.APIModel{ID: id, Library: "werkzeug", Reference: "https://werkzeug.palletsprojects.com/en/stable/datastructures/#werkzeug.datastructures.FileStorage.save",
 			Semantics: "FileStorage.save(dst) on an object taken from request.files writes the uploaded stream to dst; a string or path-like dst is the file path operand, the stream content is separate data, and a file object dst is not a path. save does not check or sanitize dst, and FileStorage.filename is the client-supplied name, unmodified, so it may contain separators and '..'. werkzeug.utils.secure_filename reduces a name to one component of ASCII letters, digits and '._-' by replacing separators and stripping leading and trailing dots and underscores; the result cannot contain a path separator or '..', and may be empty. Joining a secure_filename result to a fixed directory therefore cannot leave that directory lexically. Neither save nor secure_filename resolves symbolic links. This contract is not evidence of the deployed platform."}
+	case StarletteFileContract:
+		return &analysis.APIModel{ID: id, Library: "starlette", Reference: "https://www.starlette.io/responses/#fileresponse",
+			Semantics: "starlette.responses.FileResponse and fastapi.responses.FileResponse stream the file named by their first positional argument or the path keyword; headers, media_type, filename and background are not path operands. A relative path is resolved against the process working directory with no containment check. FastAPI re-exports Starlette's FileResponse; both share this contract when the import binding is verified. This contract is not evidence of the deployed platform."}
+	case PythonShutilContract:
+		return &analysis.APIModel{ID: id, Library: "shutil", Reference: "https://docs.python.org/3/library/shutil.html#shutil.copy",
+			Semantics: "shutil.copy, copy2, copyfile and move take a source path (src) and a destination path (dst) as independent file-path operands; a guard or trusted constant on src never contains a request-controlled dst, and vice versa. Relative paths resolve against the process working directory. copy/copy2 may follow directory destinations; the selected path text remains the operands. This contract is not evidence of the deployed platform."}
+	case PythonTarExtractContract:
+		return &analysis.APIModel{ID: id, Library: "tarfile", Reference: "https://docs.python.org/3/library/tarfile.html#tarfile.TarFile.extractall",
+			Semantics: "TarFile.extractall([path='.', *, members=None, filter=None]) writes archive members under path. When the archive was opened from request-derived bytes or a request path, stored member names are request-derived path components (Zip Slip shape); path is the destination root operand. The filter argument (added in Python 3.12) selects extraction policy: absent or None on 3.12–3.13 behaves as fully_trusted; Python 3.14 defaults to filter='data'. Missing filter facts on unknown runtime versions are unresolved policy, not assumed safety. filter='data' reduces risk but does not eliminate symlink/race issues. This contract is not evidence of the deployed platform."}
 	}
 	return nil
 }
@@ -114,5 +126,8 @@ var pathOwners = map[string]string{
 	ExpressSendContract:   "internal/parse/path_node.go",
 	AdmZipContract:        "internal/parse/path_archive.go",
 	PythonOSFileContract:  "internal/parse/python_path.go",
-	FlaskSendContract:     "internal/parse/python_path.go",
+	FlaskSendContract:        "internal/parse/python_path.go",
+	StarletteFileContract:    "internal/parse/python_path.go",
+	PythonShutilContract:     "internal/parse/python_path.go",
+	PythonTarExtractContract: "internal/parse/python_path.go",
 }

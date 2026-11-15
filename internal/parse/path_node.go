@@ -15,19 +15,27 @@ var nodeFSOps = map[string]struct {
 	write bool
 	// promisesToo marks operations that also exist in fs/promises.
 	promisesToo bool
+	// dualPath marks copy/rename-style ops whose second argument is an independent path.
+	dualPath bool
 }{
-	"readFile":          {"read", false, true},
-	"readFileSync":      {"read", false, false},
-	"writeFile":         {"write", true, true},
-	"writeFileSync":     {"write", true, false},
-	"appendFile":        {"write", true, true},
-	"appendFileSync":    {"write", true, false},
-	"createReadStream":  {"read", false, false},
-	"createWriteStream": {"write", false, false},
-	"unlink":            {"delete", false, true},
-	"unlinkSync":        {"delete", false, false},
-	"rm":                {"delete", false, true},
-	"rmSync":            {"delete", false, false},
+	"readFile":          {"read", false, true, false},
+	"readFileSync":      {"read", false, false, false},
+	"writeFile":         {"write", true, true, false},
+	"writeFileSync":     {"write", true, false, false},
+	"appendFile":        {"write", true, true, false},
+	"appendFileSync":    {"write", true, false, false},
+	"createReadStream":  {"read", false, false, false},
+	"createWriteStream": {"write", false, false, false},
+	"unlink":            {"delete", false, true, false},
+	"unlinkSync":        {"delete", false, false, false},
+	"rm":                {"delete", false, true, false},
+	"rmSync":            {"delete", false, false, false},
+	"open":              {"read", false, true, false},
+	"openSync":          {"read", false, false, false},
+	"copyFile":          {"write", false, true, true},
+	"copyFileSync":      {"write", false, false, true},
+	"rename":     {"write", false, true, true},
+	"renameSync": {"write", false, false, true},
 }
 
 func fsCoreModule(module string) (core, promises bool) {
@@ -207,8 +215,9 @@ func (b *jsPathBuilder) operand(slot, kind string, n *sitter.Node, v value) {
 	}
 	o.Context = append(o.Context, len(b.context))
 	b.context = append(b.context, b.f.module.evidence(kind, n))
+	pathSlot := slot == analysis.PathSlotFile || slot == analysis.PathSlotArchive || slot == analysis.PathSlotDestination
 	for _, d := range v.deps {
-		if (slot == analysis.PathSlotFile || slot == analysis.PathSlotArchive) && !requestOrigin(d) {
+		if pathSlot && !requestOrigin(d) {
 			// A stored, file, API or browser value is not a request field: second-order
 			// flows need their own write-side evidence and are never invented here.
 			continue
@@ -216,13 +225,13 @@ func (b *jsPathBuilder) operand(slot, kind string, n *sitter.Node, v value) {
 		d.SinkSlot = slot
 		idx := len(b.deps)
 		o.Dependencies = append(o.Dependencies, idx)
-		if slot == analysis.PathSlotFile || slot == analysis.PathSlotArchive {
+		if pathSlot {
 			b.facts.Paths = append(b.facts.Paths, analysis.PathFlow{Dependency: idx, Operand: slot, Protection: "raw", Transforms: pathTransforms(d), Root: pathRoot(d)})
 			b.request = true
 		}
 		b.deps = append(b.deps, d)
 	}
-	if slot == analysis.PathSlotFile || slot == analysis.PathSlotArchive {
+	if pathSlot {
 		b.gaps = append(b.gaps, v.gaps...)
 	}
 	b.facts.Operands = append(b.facts.Operands, o)
@@ -348,10 +357,21 @@ func (f *flow) pathCall(call, fn, args *sitter.Node) bool {
 		b.facts.Extractor = &analysis.PathExtractor{Library: "unzipper", Assessment: "caller_entry_path", Context: index}
 	}
 	b.operand(analysis.PathSlotFile, "path_operand", pathNode, pathValue)
+	rest := nodes[1:]
+	if spec.dualPath && len(rest) > 0 {
+		dest := rest[0]
+		if dest.Kind() == "spread_element" {
+			b.gap("path_spread_unresolved", "spread destination argument to a filesystem call is not modeled", dest)
+			if dest.NamedChildCount() > 0 {
+				dest = dest.NamedChild(0)
+			}
+		}
+		b.operand(analysis.PathSlotDestination, "path_destination", dest, f.quiet(dest))
+		rest = rest[1:]
+	}
 	if !b.request {
 		return true // a constant or non-request path is not a candidate
 	}
-	rest := nodes[1:]
 	if spec.write && len(rest) > 0 {
 		b.operand(analysis.PathSlotContent, "path_content", rest[0], f.quiet(rest[0]))
 		rest = rest[1:]

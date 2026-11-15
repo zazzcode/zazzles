@@ -172,6 +172,10 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		// read or write method carries the effective path.
 		v.binding = "pathlib_path"
 	}
+	if strings.HasPrefix(q, "tarfile.") && pyArchiveOpens[q] != "" {
+		// Opened TarFile carries archive provenance into extractall.
+		v.binding = "tarfile_archive"
+	}
 	return v
 }
 func (f *pythonFlow) builtin(name string) bool {

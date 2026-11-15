@@ -61,14 +61,15 @@ func (b *pyPathBuilder) operand(slot, kind string, n *sitter.Node, v pythonValue
 	}
 	o.Context = append(o.Context, len(b.context))
 	b.context = append(b.context, b.f.module.evidence(kind, n))
+	pathSlot := slot == analysis.PathSlotFile || slot == analysis.PathSlotArchive || slot == analysis.PathSlotDestination
 	for _, d := range v.deps {
-		if slot == analysis.PathSlotFile && !requestOrigin(d.dep) {
+		if pathSlot && !requestOrigin(d.dep) {
 			continue // a stored, file or API value is not a request field
 		}
 		d.dep.SinkSlot = slot
 		idx := len(b.deps)
 		o.Dependencies = append(o.Dependencies, idx)
-		if slot == analysis.PathSlotFile {
+		if pathSlot {
 			b.facts.Paths = append(b.facts.Paths, analysis.PathFlow{Dependency: idx, Operand: slot, Protection: "raw", Transforms: pathTransforms(d.dep), Root: pathRoot(d.dep)})
 			b.request = true
 			b.names[d.container+"."+d.key] = true
@@ -79,7 +80,7 @@ func (b *pyPathBuilder) operand(slot, kind string, n *sitter.Node, v pythonValue
 		}
 		b.deps = append(b.deps, d)
 	}
-	if slot == analysis.PathSlotFile {
+	if pathSlot {
 		pyWalk(n, func(c *sitter.Node) {
 			if c.Kind() == "identifier" {
 				b.names[pyText(b.f.module, c)] = true
@@ -121,7 +122,7 @@ func (f *pythonFlow) rootImportEvidence(name string, fn *sitter.Node) []analysis
 // pathOperation resolves the called function or method to a verified read/write/delete
 // of the supported open/io.open/pathlib/os/flask/archive contracts. Shadowing,
 // imports, aliases and local modules are verified; a wrapper or fake object is not.
-func (f *pythonFlow) pathOperation(call, fn *sitter.Node, receiver pythonValue, object *sitter.Node, method string) (op, contract, role string, path *sitter.Node, content *sitter.Node, evidence []analysis.Evidence, ok bool) {
+func (f *pythonFlow) pathOperation(call, fn *sitter.Node, receiver pythonValue, object *sitter.Node, method string) (op, contract, role string, path, dest, content *sitter.Node, evidence []analysis.Evidence, ok bool) {
 	m := f.module
 	name := pyText(m, fn)
 	positional := pyArgs(call)
@@ -137,17 +138,17 @@ func (f *pythonFlow) pathOperation(call, fn *sitter.Node, receiver pythonValue, 
 		if path = argument(0, "file"); path == nil || path.Kind() == "list_splat" {
 			return
 		}
-		return "open", analysispacks.PythonOpenContract, f.openRole(call, argument(1, "mode")), path, nil, []analysis.Evidence{m.evidence("sink_binding", fn)}, true
+		return "open", analysispacks.PythonOpenContract, f.openRole(call, argument(1, "mode")), path, nil, nil, []analysis.Evidence{m.evidence("sink_binding", fn)}, true
 	case q == "io.open":
 		if path = argument(0, "file"); path == nil || path.Kind() == "list_splat" || f.set.commandTampered(m, "io") {
 			return
 		}
-		return "io.open", analysispacks.PythonOpenContract, f.openRole(call, argument(1, "mode")), path, nil, f.rootImportEvidence(name, fn), true
+		return "io.open", analysispacks.PythonOpenContract, f.openRole(call, argument(1, "mode")), path, nil, nil, f.rootImportEvidence(name, fn), true
 	case q == "os.remove" || q == "os.unlink":
 		if path = argument(0, "path"); path == nil || path.Kind() == "list_splat" || f.set.commandTampered(m, "os") {
 			return
 		}
-		return q, analysispacks.PythonOSFileContract, "delete", path, nil, f.rootImportEvidence(name, fn), true
+		return q, analysispacks.PythonOSFileContract, "delete", path, nil, nil, f.rootImportEvidence(name, fn), true
 	case q == "flask.send_file" || q == "flask.send_from_directory":
 		if f.set.commandTampered(m, "flask") {
 			return
@@ -160,17 +161,36 @@ func (f *pythonFlow) pathOperation(call, fn *sitter.Node, receiver pythonValue, 
 		if path == nil || path.Kind() == "list_splat" {
 			return
 		}
-		return q, analysispacks.FlaskSendContract, "read", path, nil, f.rootImportEvidence(name, fn), true
+		return q, analysispacks.FlaskSendContract, "read", path, nil, nil, f.rootImportEvidence(name, fn), true
+	case q == "starlette.responses.FileResponse" || q == "fastapi.responses.FileResponse":
+		if path = argument(0, "path"); path == nil || path.Kind() == "list_splat" || f.set.commandTampered(m, strings.Split(q, ".")[0]) {
+			return
+		}
+		return q, analysispacks.StarletteFileContract, "read", path, nil, nil, f.rootImportEvidence(name, fn), true
+	case q == "shutil.copy" || q == "shutil.copy2" || q == "shutil.copyfile" || q == "shutil.move":
+		if f.set.commandTampered(m, "shutil") {
+			return
+		}
+		path = argument(0, "src")
+		dest = argument(1, "dst")
+		if path == nil || dest == nil || path.Kind() == "list_splat" || dest.Kind() == "list_splat" {
+			return
+		}
+		return q, analysispacks.PythonShutilContract, "write", path, dest, nil, f.rootImportEvidence(name, fn), true
 	case pyArchiveOpens[q] != "":
 		if path = argument(0, pyArchiveOpens[q]); path == nil || path.Kind() == "list_splat" || f.set.commandTampered(m, strings.Split(q, ".")[0]) {
 			return
 		}
-		return q, analysispacks.PythonArchiveContract, f.openRole(call, argument(1, "mode")), path, nil, f.rootImportEvidence(name, fn), true
+		return q, analysispacks.PythonArchiveContract, f.openRole(call, argument(1, "mode")), path, nil, nil, f.rootImportEvidence(name, fn), true
+	case method == "extractall" && object != nil && fn.Kind() == "attribute" && tarfileReceiver(receiver):
+		// path may be nil (defaults to '.'); archive members come from the TarFile receiver.
+		path = argument(0, "path")
+		return "tarfile.TarFile.extractall", analysispacks.PythonTarExtractContract, "write", path, nil, nil, []analysis.Evidence{m.evidence("sink_binding", object), m.evidence("sink_binding", fn)}, true
 	case method == "save" && object != nil && fn.Kind() == "attribute" && uploadReceiver(receiver):
 		if path = argument(0, "dst"); path == nil || path.Kind() == "list_splat" {
 			return
 		}
-		return "werkzeug.FileStorage.save", analysispacks.PythonSaveContract, "write", path, nil, []analysis.Evidence{m.evidence("sink_binding", object), m.evidence("sink_binding", fn)}, true
+		return "werkzeug.FileStorage.save", analysispacks.PythonSaveContract, "write", path, nil, nil, []analysis.Evidence{m.evidence("sink_binding", object), m.evidence("sink_binding", fn)}, true
 	case receiver.binding == "pathlib_path" && object != nil:
 		spec, known := pyPathlibOps[method]
 		if !known || f.set.commandTampered(m, "pathlib") {
@@ -183,9 +203,14 @@ func (f *pythonFlow) pathOperation(call, fn *sitter.Node, receiver pythonValue, 
 		if spec.content != "" {
 			content = argument(0, "data")
 		}
-		return "pathlib.Path." + method, analysispacks.PythonPathlibContract, role, object, content, []analysis.Evidence{m.evidence("sink_binding", object)}, true
+		return "pathlib.Path." + method, analysispacks.PythonPathlibContract, role, object, nil, content, []analysis.Evidence{m.evidence("sink_binding", object)}, true
 	}
 	return
+}
+
+// tarfileReceiver reports a TarFile opened through a verified tarfile binding.
+func tarfileReceiver(v pythonValue) bool {
+	return v.binding == "tarfile_archive"
 }
 
 // uploadReceiver reports a value taken from request.files: a werkzeug FileStorage.
@@ -223,7 +248,7 @@ func (f *pythonFlow) verifiedSanitizers(d analysis.Dependency) []analysis.Eviden
 // path operand of a verified filesystem call. It is additive: the call is then
 // handled exactly as before.
 func (f *pythonFlow) pathCall(call, fn *sitter.Node, receiver pythonValue, object *sitter.Node, method string) {
-	op, contract, role, pathNode, contentNode, binding, ok := f.pathOperation(call, fn, receiver, object, method)
+	op, contract, role, pathNode, destNode, contentNode, binding, ok := f.pathOperation(call, fn, receiver, object, method)
 	if !ok {
 		return
 	}
@@ -236,7 +261,21 @@ func (f *pythonFlow) pathCall(call, fn *sitter.Node, receiver pythonValue, objec
 			b.gaps = append(b.gaps, f.gap("path_spread_unresolved", "*args/**kwargs in a filesystem call are not modeled", c))
 		}
 	}
-	b.operand(analysis.PathSlotFile, "path_operand", pathNode, f.quiet(pathNode))
+	if contract == analysispacks.PythonTarExtractContract {
+		// Destination root + archive (receiver) as Zip Slip-shaped operands.
+		if pathNode != nil {
+			b.operand(analysis.PathSlotFile, "path_operand", pathNode, f.quiet(pathNode))
+		} else {
+			b.operand(analysis.PathSlotFile, "path_operand", call, pythonValue{constant: true, literal: "."})
+		}
+		b.operand(analysis.PathSlotArchive, "path_archive", object, receiver)
+		f.recordTarFilter(call, b)
+	} else {
+		b.operand(analysis.PathSlotFile, "path_operand", pathNode, f.quiet(pathNode))
+		if destNode != nil {
+			b.operand(analysis.PathSlotDestination, "path_destination", destNode, f.quiet(destNode))
+		}
+	}
 	if !b.request {
 		return
 	}
@@ -269,6 +308,9 @@ func (f *pythonFlow) pathCall(call, fn *sitter.Node, receiver pythonValue, objec
 			u.Path.Operands[i].Context[j] += base
 		}
 	}
+	if u.Path.Extractor != nil {
+		u.Path.Extractor.Context += base
+	}
 	info := newPathGuardInfo()
 	guards, declEvidence := f.pythonPathGuards(call, u, b.names, info)
 	u.Context = append(u.Context, declEvidence...)
@@ -292,7 +334,7 @@ func (f *pythonFlow) pathCall(call, fn *sitter.Node, receiver pythonValue, objec
 		}
 	}
 	for i, d := range u.Dependencies {
-		if d.SinkSlot != analysis.PathSlotFile {
+		if d.SinkSlot != analysis.PathSlotFile && d.SinkSlot != analysis.PathSlotDestination && d.SinkSlot != analysis.PathSlotArchive {
 			continue
 		}
 		sanitizers := f.verifiedSanitizers(d)
@@ -319,4 +361,26 @@ func (f *pythonFlow) pathCall(call, fn *sitter.Node, receiver pythonValue, objec
 		u.Context = append(u.Context, g)
 	}
 	f.completePythonPath(u, call, all, guards, guardIndex, b.names, info)
+}
+
+// recordTarFilter captures extractall filter= facts. Missing/dynamic filters stay
+// unresolved policy (3.12–3.13 vs 3.14 defaults); never invent safety.
+func (f *pythonFlow) recordTarFilter(call *sitter.Node, b *pyPathBuilder) {
+	filter := pyKeywordIn(f.module, call, "filter")
+	if filter == nil {
+		b.gaps = append(b.gaps, f.gap("tar_filter_unresolved", "tarfile.extractall filter absent; Python <3.14 defaults differ from 3.14 filter='data'", call))
+		idx := len(b.context)
+		b.context = append(b.context, f.module.evidence("tar_filter_absent", call))
+		b.facts.Extractor = &analysis.PathExtractor{Library: "tarfile", Assessment: "unknown_version", Context: idx}
+		return
+	}
+	idx := len(b.context)
+	b.context = append(b.context, f.module.evidence("tar_filter", filter))
+	declared := ""
+	if text, ok := pyLiteral(f.module, filter); ok {
+		declared = "filter=" + text
+	} else {
+		b.gaps = append(b.gaps, f.gap("tar_filter_unresolved", "tarfile.extractall filter is dynamic", filter))
+	}
+	b.facts.Extractor = &analysis.PathExtractor{Library: "tarfile", Declared: declared, Assessment: "unknown_version", Context: idx}
 }

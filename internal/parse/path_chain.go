@@ -15,11 +15,13 @@ var sensitiveMiddlewareCallees = map[string]bool{
 	"extractAllTo": true, "extractAllToAsync": true,
 	"query": true, "exec": true, "execSync": true, "execFile": true, "execFileSync": true,
 	"spawn": true, "spawnSync": true,
-	"send": true, "json": true, "write": true, "end": true, "redirect": true,
+	// XSS-shaped response bodies (not bare res.end()/write() which almost every mw uses).
+	"send": true, "json": true,
 	"find": true, "findOne": true, "findAll": true, "findById": true, "findByPk": true,
-	"info": true, "error": true, "warn": true, "debug": true, "verbose": true, "silly": true, "log": true,
-	"get": true, "request": true, "post": true, "put": true, "patch": true, "delete": true,
+	"info": true, "error": true, "warn": true, "debug": true, "verbose": true, "silly": true,
 	"createLogger": true,
+	// Outbound clients (not Express router verbs).
+	"fetch": true, "axios": true,
 }
 
 // mayContainPathSink checks whether a middleware function or its reachable local

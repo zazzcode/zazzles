@@ -14,7 +14,8 @@ func (f *pythonFlow) frameworkCall(n *sitter.Node, q string, nodes []*sitter.Nod
 		return f.source(n, "json", ""), true
 	case "sqlite3.connect", "psycopg.connect", "psycopg2.connect", "pymysql.connect", "mysql.connector.connect":
 		return pythonValue{binding: "db_connection", driver: strings.TrimSuffix(q, ".connect"), evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}, true
-	case "flask.redirect", "flask.send_file", "flask.send_from_directory":
+	case "flask.redirect", "flask.send_file", "flask.send_from_directory",
+		"starlette.responses.FileResponse", "fastapi.responses.FileResponse":
 		return pythonValue{rendered: true, binding: "non_html"}, true
 	case "flask.jsonify":
 		v := all

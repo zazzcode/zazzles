@@ -1,17 +1,15 @@
 # Shared Node inputs and phase-2 file APIs (E4)
 
-**Worktree / branch:** `node-inputs-and-file-apis` (base `6e815ec`, E3 merge into `stage` via PR https://github.com/zazzcode/zazzles/pull/14)
+**Status:** Merged into `stage` via https://github.com/zazzcode/zazzles/pull/15 (`eafabcc`, 2026-11-15)
+**Feature branch (historical):** `node-inputs-and-file-apis` (base `6e815ec`)
 **Feature:** Shared Express middleware-chain / URL / upload acquisition, phase-2 file APIs, and Node core `http`/`https` SSRF
 **Milestone:** Analyzer engine hardening — Slice E4
 **Deliverable:** Executable E4 contract
 **Project Owner / Deliverable Owner:** Human owner
-**Delivery topology:** Single feature worktree and branch; one draft PR targeting `stage` after offline + paid acceptance
+**Delivery topology:** Completed as one feature branch and one PR into `stage`
 **Integration branch:** `stage`
-**Merge policy:** Agents commit (and may push when asked) the feature branch only; humans review and merge
 **Drafted:** 2026-11-15
-**Shared run log:** `.zazz/ephemeral/shared-node-inputs-and-file-apis-run-log.md`
-**Execution tracking:** Local run log only
-**Implementation coordination:** Lead Agent working alone in this worktree
+**Shared run log:** `.zazz/ephemeral/shared-node-inputs-and-file-apis-run-log.md` (historical, gitignored)
 **Companion skills:** `spec-driven`, `doc-check`
 
 ---
@@ -78,7 +76,7 @@ Node.js GitHub sample presentations from a capped `gpt-6-luna` rebuild.
 
 ### Approved review shape
 
-One feature branch `node-inputs-and-file-apis` and one draft PR targeting `stage` after acceptance.
+Completed: feature branch `node-inputs-and-file-apis` merged to `stage` via PR #15.
 
 ### Strict scope directories
 
@@ -248,7 +246,7 @@ GOFLAGS=-buildvcs=false go test ./internal/parse -run 'Test(SharedExpressChain|S
 - [x] Paid ledger under `_test-findings/e4/` with revisions, caps and token accounting.
 - [x] Node samples/README/plan docs updated for post-merge state.
 - [x] Independent QA aborted on model-limit (owner continued under Auto); offline race/vet/gofmt green.
-- [x] Commits pushed on `node-inputs-and-file-apis`; draft PR only if owner requests.
+- [x] Merged to `stage` via PR #15 (`eafabcc`).
 
 ## 11. Open questions
 

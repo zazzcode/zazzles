@@ -5,17 +5,15 @@ Follow only the section links relevant to the task; linked documents are not aut
 
 ## Current work
 
-The assigned `node-inputs-and-file-apis` worktree carries the
-[E4 shared Node inputs and file APIs contract](../specifications/shared-node-inputs-and-file-apis.md)
-(Express middleware-chain entries, `source.node-input-v2` URL/upload facts, phase-2 file APIs,
-Node `http`/`https` SSRF, flow/require open items). Execution history belongs in
-`.zazz/ephemeral/shared-node-inputs-and-file-apis-run-log.md`.
-
-E1–E3 are merged into `stage` via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
-(`6e815ec`). Historical E3 contracts and the
-[v7 verification record](../evaluation/wire-bundle-v7-results.md) remain the byte/paid-run
-reference for wire format. Preserve concurrent user edits and local credentials;
-no live Jev evaluation or provider fallback is assigned.
+E1–E4 are on `stage`: E1–E3 via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
+(`6e815ec`); E4 (shared Node middleware-chain / URL/upload inputs, phase-2 file APIs, Node
+`http`/`https` SSRF) via [PR #15](https://github.com/zazzcode/zazzles/pull/15) (`eafabcc`).
+Contract and results:
+[shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md),
+[results](../evaluation/shared-node-inputs-and-file-apis-results.md). Historical E3
+[v7 verification](../evaluation/wire-bundle-v7-results.md) remains the wire-format paid-run
+reference. Preserve concurrent user edits and local credentials; no live Jev evaluation or
+provider fallback is assigned.
 
 ## Code structure
 

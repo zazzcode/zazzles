@@ -1,6 +1,7 @@
 # E4 results — shared Node inputs and file APIs
 
-**Branch:** `node-inputs-and-file-apis` (base `6e815ec`)  
+**Merged:** [PR #15](https://github.com/zazzcode/zazzles/pull/15) into `stage` (`eafabcc`, 2026-11-15)  
+**Feature branch (historical):** `node-inputs-and-file-apis` (base `6e815ec`)  
 **Paid ledger:** `_test-findings/e4/request-ledger.json`  
 **Model / cap:** OpenAI `gpt-6-luna`, 350; **charged 250**; exact replay **250/250**.
 

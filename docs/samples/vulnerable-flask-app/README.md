@@ -6,13 +6,19 @@
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Security sink families; standalone input validation excluded were run at pinned revision `a67cbe590698` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
+Fresh **all-family** OpenAI `gpt-6-luna` assessment after the shared Python input refactor,
+including standalone input validation, at pinned target revision `a67cbe590698`.
+Canonical JSON and both exported views preserve the same source evidence and model decisions.
 
-- **Records:** 30. **Judged:** 13, in 13 requests (49,487 input tokens).
-- **Outcomes among judged records:** 8 confirmed vulnerabilities, 0 poor practice, 0 protected, 0 not applicable, 5 inconclusive (Review).
-- **Unassessed records shown:** 17; provider/decoder failures: 0.
+- **Records / completed assessments:** 30 / 30.
+- **Provider requests:** 30 (98,624 input tokens); no fallback or automatic retries.
+- **Report outcomes:** 8 confirmed_vulnerability, 22 needs_evidence.
+- **Unassessed / failed:** 0 / 0.
+- **Verification:** every decision replays against fresh source; JSON/HTML/SARIF statuses agree.
 
-[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
+These are static source judgments, with existing Review gaps retained. Future routine Python
+comparisons use `--skip-family input-validation`; this full run includes it.
+See [Python refactor verification](../../../.zazz/evaluation/python-input-refactor-results.md).
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

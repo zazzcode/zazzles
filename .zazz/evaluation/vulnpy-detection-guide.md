@@ -5,6 +5,15 @@
 [ThreatByte guide](threatbyte-detection-guide.md) ·
 [FastAPI answer guide](python-insecure-app-detection-guide.md)
 
+## Current source-reference reconciliation
+
+The 2026-11-15 full Python verification preserves all six positive expectations. The Jinja
+positive is anchored to its actual raw template output at `apps/templates/jinja/xss.html:30`;
+`apps/flask_app.py:19` is the render call, not the output sink. Four historical warning
+controls now accept source-backed resolved dispatch or an explicit gap, and fail when both
+are absent. See the [source corrections](../../docs/samples/vulnpy/reference.md#current-source-anchor-and-coverage-corrections).
+Historical baseline/gap statements below retain their original scoped meaning.
+
 ## Purpose
 
 Use this living guide to expand Zazzles coverage without changing expected answers to match current

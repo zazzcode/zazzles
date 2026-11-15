@@ -87,8 +87,8 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		roots = append(roots, extra...)
 	}
 	if use.InputFacts != nil {
-		if language == lang.Python || use.InputFacts.Validate(use.Dependencies) != nil || (use.EntryFacts != nil && (use.EntryFacts.Kind != use.InputFacts.Acquisition || use.EntryFacts.Location.Span != use.InputFacts.Binding.Span || use.EntryFacts.Location.SHA256 != use.InputFacts.Binding.SHA256)) {
-			return nil, fmt.Errorf("invalid Node input facts")
+		if use.InputFacts.Validate(use.Dependencies) != nil || (use.EntryFacts != nil && (use.EntryFacts.Kind != use.InputFacts.Acquisition || use.EntryFacts.Location.Span != use.InputFacts.Binding.Span || use.EntryFacts.Location.SHA256 != use.InputFacts.Binding.SHA256)) {
+			return nil, fmt.Errorf("invalid input facts")
 		}
 		input := "source.node-input-v2"
 		switch family.Name {
@@ -96,6 +96,12 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			input = "source.node-input-path-v2"
 		case "ssrf":
 			input = "source.node-input-ssrf-v2"
+		}
+		if language == lang.Python {
+			if use.InputFacts.Acquisition != "http" || use.EntryFacts == nil || use.EntryFacts.HTTP == nil || use.InputFacts.Framework != use.EntryFacts.HTTP.Framework {
+				return nil, fmt.Errorf("invalid Python HTTP input binding")
+			}
+			input = "source.python-input-v1"
 		}
 		roots = append(roots, input)
 	}

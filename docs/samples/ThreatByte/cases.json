@@ -76,7 +76,7 @@
       "id": "TB-OUT-01",
       "file": "server/api/v1/api_v1.py",
       "line": 254,
-      "kind": "outbound_http_candidate",
+      "kind": "ssrf_candidate",
       "expect": "candidate"
     },
     {

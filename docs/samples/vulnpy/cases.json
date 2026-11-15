@@ -1,6 +1,6 @@
 {
   "revision": "b81885e58283a3449b578d20c20557aff637e5ea",
-  "scope": "Independent source expectations; six known positive misses remain failing coverage cases, not redefined negatives. Labels never enter model/detector inputs. Four controls verify explicit coverage warnings.",
+  "scope": "Independent pinned-source expectations: six positive sink locations and four explicit registration-disposition controls. A registration must have source-backed resolved dispatch or an explicit gap. Historical source anchors/dispositions are retained as corrections; labels never enter detector/model input.",
   "cases": [
     {
       "id": "VP-SQL-EXECUTE",
@@ -8,7 +8,7 @@
       "line": 37,
       "kind": "sql_query_candidate",
       "expect": "construction",
-      "known_gap": true
+      "known_gap": false
     },
     {
       "id": "VP-SQL-EXECUTEMANY",
@@ -16,7 +16,7 @@
       "line": 48,
       "kind": "sql_query_candidate",
       "expect": "construction",
-      "known_gap": true
+      "known_gap": false
     },
     {
       "id": "VP-SQL-EXECUTESCRIPT",
@@ -24,7 +24,7 @@
       "line": 59,
       "kind": "sql_query_candidate",
       "expect": "construction",
-      "known_gap": true
+      "known_gap": false
     },
     {
       "id": "VP-XSS-FLASK",
@@ -32,7 +32,7 @@
       "line": 57,
       "kind": "xss_candidate",
       "expect": "raw_xss",
-      "known_gap": true
+      "known_gap": false
     },
     {
       "id": "VP-XSS-FASTAPI",
@@ -40,43 +40,52 @@
       "line": 44,
       "kind": "xss_candidate",
       "expect": "raw_xss",
-      "known_gap": true
+      "known_gap": false
     },
     {
       "id": "VP-XSS-JINJA",
-      "file": "apps/flask_app.py",
-      "line": 19,
+      "file": "apps/templates/jinja/xss.html",
+      "line": 30,
       "kind": "xss_candidate",
       "expect": "raw_xss",
-      "known_gap": true
+      "known_gap": false,
+      "previous_location": {
+        "file": "apps/flask_app.py",
+        "line": 19,
+        "role": "template.render call; actual raw output is in the resolved template"
+      }
     },
     {
       "id": "VP-COVERAGE-24",
       "file": "src/vulnpy/fastapi/vulnerable.py",
       "line": 24,
       "kind": "dynamic_path",
-      "expect": "coverage_gap"
+      "expect": "registration_or_gap",
+      "previous_expect": "coverage_gap"
     },
     {
       "id": "VP-COVERAGE-32",
       "file": "src/vulnpy/fastapi/vulnerable.py",
       "line": 32,
       "kind": "dynamic_path",
-      "expect": "coverage_gap"
+      "expect": "registration_or_gap",
+      "previous_expect": "coverage_gap"
     },
     {
       "id": "VP-COVERAGE-33",
       "file": "src/vulnpy/flask/blueprint.py",
       "line": 33,
       "kind": "python_registration_unresolved",
-      "expect": "coverage_gap"
+      "expect": "registration_or_gap",
+      "previous_expect": "coverage_gap"
     },
     {
       "id": "VP-COVERAGE-61",
       "file": "src/vulnpy/flask/blueprint.py",
       "line": 61,
       "kind": "python_registration_unresolved",
-      "expect": "coverage_gap"
+      "expect": "registration_or_gap",
+      "previous_expect": "coverage_gap"
     }
   ]
 }

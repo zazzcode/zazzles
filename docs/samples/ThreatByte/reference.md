@@ -12,7 +12,7 @@ These labels are source-reviewed expectations, never scanner/model inputs.
 | TB-XSS-01 | `client/templates/dashboard.html`, `search_query \| safe` | Reflected raw HTML from request search, paired with escaped outputs. |
 | TB-XSS-02 | `client/templates/profile.html`, `user.country \| safe` | Stored raw HTML: signup/update writes country to users; profile reads users. Storage correlation must show write/read evidence and assumptions; unresolved identity remains Review. |
 | TB-XSS-03 | dashboard/profile escaped `{{ ... }}` | Protected only for established HTML-text or quoted non-active attribute contexts, verified Flask autoescape and complete origins. |
-| TB-OUT-01 | `server/api/v1/api_v1.py`, ProfilePicture `requests.get(picture_url)` | Request payload supplies destination. Outbound candidate; SSRF verdict expansion is out of scope. |
+| TB-OUT-01 | `server/api/v1/api_v1.py`, ProfilePicture `requests.get(picture_url)` | Request payload supplies `picture_url` directly to verified `requests.get`, with no pre-request destination constraint. Expect an SSRF candidate under the implemented Python HTTP URL contract; response MIME/status checks occur after the outbound request and cannot constrain its destination. |
 | TB-LOG-01 | update-profile `print(session)` | Whole-session logging: Review, not an established credential-content leak. |
 
 Semgrep reports SQL twice (construction and execution locations), MD5 and Dockerfile issues.

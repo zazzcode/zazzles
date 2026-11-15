@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Reconciled: 2026-11-14.** This document owns the functionality roadmap. **Implemented** means
+**Reconciled: 2026-11-15.** This document owns the functionality roadmap. **Implemented** means
 bounded code and verification exist in this checkout; it does not mean complete ecosystem coverage,
 a released version, or a merged feature branch. Contracts and evaluation records own detailed
 acceptance evidence. This roadmap does not authorize implementation or live model calls.
@@ -50,7 +50,8 @@ all its syntax, APIs, or vulnerable paths are covered.
 | **Entry discovery and bounded flow** | Source inventory; shared entry/registration/dispatch/callable records; supported HTTP, browser events, finite dynamic routes, Node Apollo GraphQL, and Node unary gRPC | [Entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
 | **JavaScript conditional flow** | Precise JS/TS `if`/`else if`/`else`: arm polarity, exits including `process.exit`, isolated joins, block scoping. A guard on one arm never protects a sibling arm or later code. Loops, `switch`, `try`/`finally` and request rebinding keep a conservative fallback | [Analysis rules](../../docs/analysis/README.md#javascript-conditional-flow), [contract](../specifications/javascript-if-flow.md) |
 | **Evidence wire v7** | Always-compact requests with evidence IDs, character-column locators, one obligation ledger, a role budget with visible omissions and an `evidence_too_large` floor. Transparent wrappers and header-only middleware summaries. Guidance-owned fact codes. Largest sample request about 59 KB | [Wire v7 contract](../specifications/wire-bundle-v7.md), [verification](../evaluation/wire-bundle-v7-results.md) |
-| **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins (including URL path/url/originalUrl/baseUrl and verified upload filename/content), types, transfers, controls, lifecycle stages, and Express non-final middleware-chain sibling entries; Python remains on its existing adapters | [Node refactor results](../evaluation/node-input-refactor-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins (including URL path/url/originalUrl/baseUrl and verified upload filename/content), types, transfers, controls, lifecycle stages, and Express non-final middleware-chain sibling entries | [Node refactor results](../evaluation/node-input-refactor-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Python input acquisition** | Existing bounded Python HTTP adapters emit the same optional origin/type/transfer schema as Node, with invocation-local acquisition and separate `source.python-input-v1` interpretation; runtime types remain unknown, existing sink contracts and behavior preserved; new dependency/lifecycle/discovery coverage remains deferred | [Python refactor contract](../specifications/python-input-refactor.md), [verification](../evaluation/python-input-refactor-results.md) |
 | **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
 | **Decision-model assessment** | OpenAI Luna Decisions is primary; optional Gemini and stub-tested Jev adapters use the shared evidence gates and one model selection per scan, without fallback | [Model setup](../../docs/decision-models.md) |
 | **Assessment scheduling and family selection** | Primary security sinks precede standalone validation; zero-call observations consume no request slots; canonical `--only-family` / `--skip-family` flags and environment defaults | [E1 contract](../specifications/analyzer-engine-hardening.md) |
@@ -75,8 +76,8 @@ replays). Contract:
 [shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md).
 
 Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
-is one record near the soft threshold and none over the limit. The full v7 re-recording of the 260
-historical VulnPy path contexts needs its own owner cap.
+is one record near the soft threshold and none over the limit. The user-authorized full Python
+validation below includes the 260 VulnPy path contexts and standalone input validation.
 
 <a id="future-capability-branches"></a>
 <a id="ordered-specification-backlog"></a>
@@ -93,6 +94,7 @@ sets the dependency order. Each remaining slice requires its dedicated executabl
 | **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators including exiting else-if links, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Merged; [contract](../specifications/shared-guard-and-manifest-engine.md) |
 | **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Merged via [PR #14](https://github.com/zazzcode/zazzles/pull/14); [contract](../specifications/wire-bundle-v7.md) |
 | **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` confirmed) | Merged via [PR #15](https://github.com/zazzcode/zazzles/pull/15) (`eafabcc`); paid Node rebuild 250/350 `gpt-6-luna`, exact replay 250/250; [contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Shared Python input/acquisition refactor** | Migrate existing Python HTTP adapters to language-neutral acquisition/origin/type/transfer facts; retain flow, sink contracts and coverage; refresh complete Python sample reports and metrics | Implemented on `python-input-refactor`; full test/race/vet/build and four-app structural parity passed. Full all-family Python validation completed: 3,354/3,354 paid assessments and exact replays, zero failures/mismatches; all four Python samples republished with metrics. Future routine runs skip standalone input validation; [contract](../specifications/python-input-refactor.md), [results](../evaluation/python-input-refactor-results.md). Human PR review/merge pending |
 
 The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
 boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.
@@ -104,7 +106,7 @@ approved implementation assignments.
 
 | Planned functionality | Intended outcome / remaining boundary |
 |---|---|
-| **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; shared Python input facts remain a separate migration |
+| **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; expanded dependency/lifecycle/discovery coverage remains a separate feature beyond shared Python input facts |
 | **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases; no implied DynamoDB or universal NoSQL support |
 | **Code injection and XXE** | Request-to-evaluation/code-generation and request-to-XML paths with verified operation/configuration contracts |
 | **Open redirect and SSRF** | Destination policies, verified URL slots, and complete security judgments beyond current outbound observations |

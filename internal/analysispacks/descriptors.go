@@ -172,6 +172,6 @@ func descriptors() ([]Component, error) {
 	out = append(out, ssrf...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
-	out = append(out, nodeInputComponent())
+	out = append(out, nodeInputComponent(), pythonInputComponent())
 	return out, nil
 }

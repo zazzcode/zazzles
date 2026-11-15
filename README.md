@@ -311,9 +311,12 @@ Explore existing reports without installing Zazzles or making API calls:
 | OWASP Juice Shop | Browser/server XSS and database operations | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [Sample notes](docs/samples/juice-shop/README.md) |
 | Node.js Goof | Command injection, XSS, and database review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [Sample notes](docs/samples/nodejs-goof/README.md) |
 | Vulnerable TypeScript app | Command injection at `/api/ping`, reflected XSS, and logging | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [Sample notes](docs/samples/vulnerable-typescript-app/README.md) |
-| VulnPy | Shared Python sinks across framework adapters | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes](docs/samples/vulnpy/README.md) |
+| VulnPy | Full all-family Python scan: 3,260 assessed contexts across the supported adapters | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes and full JSON/SARIF downloads](docs/samples/vulnpy/README.md) |
+| ThreatByte (Python) | Flask/RESTX SQL, reflected/stored XSS, SSRF and protected controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/ThreatByte/findings.html) · [Sample notes](docs/samples/ThreatByte/README.md) |
+| Python insecure app | FastAPI HTML/template construction | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/python-insecure-app/findings.html) · [Sample notes](docs/samples/python-insecure-app/README.md) |
+| Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |
 
-The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. Compare counts
+The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. VulnPy’s complete JSON/SARIF downloads are gzip-compressed to retain every record. Hosted previews update after changes merge into `stage`. Compare counts
 against the [expected-vs-actual tables](.zazz/project/vulnerable-sample-apps.md)—efficacy is
 in-scope analyzer catch on those keys, not total bugs in each app. Notes identify scanner and target
 versions; older snapshots may predate current coverage.

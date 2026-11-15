@@ -1,4 +1,4 @@
-# Handoff: JavaScript guard confidence and the Goof Zip Slip case
+# Handoff: JavaScript guard confidence, Goof Zip Slip and the Juice Shop unassessed cases
 
 **Status:** open follow-up from slice E2 ([contract](.zazz/specifications/shared-guard-and-manifest-engine.md)), pull request 13.
 **Branch where it was found:** `analyzer-engine-hardening`.
@@ -6,6 +6,9 @@
 
 Read [AGENTS.md](AGENTS.md) first. Do not print `.env` or credentials. Live model calls need an explicit,
 small request cap.
+
+This file has three parts: the JavaScript guard confidence problem (sections 1 to 6), the Goof Zip Slip case
+(section 7), and the Juice Shop records the rebuilt sample report leaves unassessed (sections 8 and 9).
 
 ## 1. The problem in one paragraph
 
@@ -166,3 +169,175 @@ Suggested steps, in the E3 catalog-sync scope (prose lives outside E2's allowed 
 | What the model receives | `internal/judge/entry_context.go`, `internal/judge/bundle.go` |
 | Command gate | `internal/judge/command.go` (policy section) |
 | adm-zip contract | `internal/analysispacks/path.go` |
+| MarsDB collection binding | `internal/parse/automatic_queries.go` (`collectionBinding`) |
+| Component selection failures | `internal/analysispacks/select.go` (`selectUse`) |
+| 64 KiB limit and payload build | `internal/judge/client.go` (`payload`, `payloadForm`), `internal/judge/bundle.go` |
+| Excerpts and helper context | `internal/parse/relevant_context.go`, `internal/parse/middleware_context.go` |
+
+## 8. Juice Shop: records the rebuilt report leaves unassessed
+
+The rebuilt [Juice Shop report](docs/samples/juice-shop/findings.html) judged 128 of 223 records. The other 95 fall
+into five groups. Each has a different cause, and only some are by design.
+
+| Group | Records | Cause | Fix size |
+|---|---:|---|---|
+| Request over 64 KiB | 1 | `routes/order.ts:164` sends 119 KB | medium (8.1) |
+| MarsDB binding not resolved | 3 | named import of a collection is not followed | small (8.2) |
+| Sequelize chat tool | 2 | no ORM contract; one record is a misread call | medium (8.3) |
+| Outbound `fetch` observations | 66 | 65 repeats of one call plus one real SSRF candidate | medium (8.4) |
+| Data-only XSS | 23 | API data is not linked to a rendering claim | large (8.5) |
+
+Work them in this order: 8.2, 8.1, 8.4, 8.3, 8.5. Every fix here can change request bytes, so list the changed
+candidates per sample application, as in section 5, and keep a live run to a few capped requests.
+
+### 8.1 The 119 KB request: do we need to send that much?
+
+**No.** The candidate is `db.ordersCollection.insert({ ... req.body ... })` at the end of a 155-line checkout
+handler. The question is small: can request data shape the stored document? The request is 119,336 bytes against a
+65,536 byte limit, so it is skipped with "evidence payload exceeds 64 KiB limit" and never judged.
+
+Measured on the current code (bytes inside the `use` object, 91,570 in total):
+
+| Section | Bytes | What is in it | Needed for this claim? |
+|---|---:|---|---|
+| `source_excerpts` | 29,774 | 57 excerpts (see below) | Mostly no |
+| `evidence` | 25,359 | 110 items; 5,343 middleware registrations, 3,000 helper definitions, 3,000 control statements | Partly |
+| `coverage_gaps` | 11,539 | 61 gaps | Duplicated noise |
+| `input_facts` | 4,616 | input origins and types | Yes |
+| `model_facts` | 3,753 | fixed explanatory sentences | Partly |
+| `trace_graph` | 3,615 | edges between evidence | Yes |
+| `blocking_gaps` | 3,427 | 18 gaps | Partly |
+| `evidence_coverage` + `evidence_roles` | 4,417 | the same role ledger twice | Duplicate (E3) |
+
+Another 28 KB sits outside `use`: guidelines, components and instructions (about 6.6 KB) and the JSON envelope.
+
+What the 57 excerpts contain:
+
+- **The handler itself:** 7,247 bytes for lines 33 to 187. Only the path from `req.body` to the inserted document
+  and the checks on it matter, and the handler has many unrelated Sequelize calls.
+- **Helper bodies that never touch the inserted document:** `lib/insecurity.ts`, `lib/utils.ts`,
+  `routes/verify.ts`, `lib/antiCheat.ts`, `lib/challengeUtils.ts`, `routes/metrics.ts`.
+- **Four Sequelize model classes** (`models/basket.ts`, `delivery.ts`, `quantity.ts`, `wallet.ts`). This is a MarsDB
+  insert, so they are irrelevant.
+- **About 30 `app.use(...)` lines from `server.ts`.** Most only set headers or serve files: `compression`, `cors`,
+  `helmet.*`, `featurePolicy`, `morgan`, `express.static`, `robots`, `i18n`. They cannot change `req.body`.
+  `bodyParser`, `jsonParser` and the `security.isAuthorized` mounts do matter.
+
+The gaps repeat. Of the 79, twelve are the same `unknown_control_effect` text and ten are the same
+`unsupported_control_flow` text, caused by the JavaScript `if` problem in section 3. Seven are
+`conditional_merge`, which is the same sentence at seven places.
+
+**Suggested approach, in this order. Measure the size after each step.**
+
+1. **Group repeated gaps.** One entry per `kind` and `detail`, with a list of spans. Expected saving: several KB.
+   Fixing the JavaScript `if` handling (section 4, option 1) removes most of them at the source.
+2. **Send only relevant excerpts.** Keep a helper or model definition only when a value on the claimed dependency
+   path, or a control on that path, goes through it. Drop definitions of calls whose arguments never carry the
+   dependency. Expected saving: 8 to 12 KB.
+3. **Classify middleware.** Extend the transport-only list used for the command claim
+   (`commandTransportMiddleware` in `internal/parse/command_claims.go`) into a shared notion of
+   "cannot change the request body or authorize". Send those as one summary line, not one excerpt each.
+4. **E3 compaction.** Always-on compaction, no duplicate `evidence_roles`, no 64-character digests in the prompt.
+   The proposal estimates 25 to 35 percent. Alone it takes this record from 119 KB to about 80 KB, which is still
+   over the limit, so steps 1 to 3 are needed as well.
+5. **Slice the handler** to the statements that can affect the dependency or the sink. Larger change; do it only if
+   steps 1 to 4 leave records over the limit.
+6. **Ladder instead of a hard stop.** If a record is still too large, drop coverage-only evidence first, then
+   excerpts furthest from the sink, and record an explicit gap such as "evidence omitted: 12 excerpts". Never drop
+   something that blocks the claim, and never hide the omission from the report.
+
+Acceptance: `routes/order.ts:164` builds a request under 64 KiB and receives one live judgment. No other candidate
+loses evidence that the existing model answers cite; check the saved replays and the per-sample digest differences.
+
+### 8.2 Three MarsDB records fail: named imports are not followed
+
+Affected: `routes/orderHistory.ts` lines 17 (`find`) and 36 (`update`), and `routes/createProductReviews.ts:23`
+(`insert`). All three fail with "NoSQL component selection needs verified API binding".
+
+Cause: `data/mongodb.ts` declares `export const ordersCollection = new MarsDB.Collection('orders')`. These routes use
+`import { ordersCollection } from '../data/mongodb'`. `collectionBinding` in
+[internal/parse/automatic_queries.go](internal/parse/automatic_queries.go) resolves the namespace form
+(`import * as db` then `db.ordersCollection`, which is why `routes/order.ts:164` resolves), and a collection declared in
+the same file. It does not resolve a single identifier that is a named import. Because no binding is found, the flow
+records `sink_binding_unverified` (`flow.go` line 760) and `selectUse` in
+[internal/analysispacks/select.go](internal/analysispacks/select.go) refuses the candidate.
+
+Fix: in the one-part case, when the name is an import binding of a relative module, switch `target` to
+`importModule(...)`, use the exported (original) name, add the import declaration as `sink_binding` evidence like the
+namespace branch does, then continue with the existing constructor and `marsdb` checks. Keep the aliasing, shadowing
+and re-export checks. Do not follow a name that is reassigned or exported more than once.
+
+Tests: named, aliased (`import { ordersCollection as orders }`) and re-exported imports resolve; a shadowed or
+reassigned name does not; a non-MarsDB constructor does not.
+
+Acceptance: the three records get the `marsdb-collection-v1` contract and are judged. Two live requests are enough
+(`--route` per record).
+
+### 8.3 Two Sequelize records in the chat tool
+
+Affected: `routes/chat.ts` lines 117 and 123, both `sql_query_candidate`.
+
+- **Line 123** is a `ProductModel.findAll` call whose `where` uses `Op.like` with a template string that embeds the
+  request `query` between `%` signs.
+  Sequelize binds `where` values, so this is not string-built SQL injection. The real issue is that `%` and `_` in
+  `query` act as wildcards, which is an input-validation or resource concern. There is no contract for ORM model
+  finders in the SQL family, so there is no verified binding.
+- **Line 117** is the `tool({ description, inputSchema, execute })` call that wraps it. Its sink text is the
+  whole `tool(...)` call, which is not a query. Find out why it became a `sql_query_candidate`. The `unsupported_callback`
+  and `control_flow_unresolved` gaps show the model-visible code is an `execute` callback, not an HTTP handler.
+
+Fix: (1) find why the `tool(...)` call is a SQL sink and stop treating it as one; (2) add a Sequelize finder contract
+(`findAll`, `findOne`, `findByPk`, `where` operators, `Op.like`) that states bound values and wildcard behavior; (3) make
+sure the finding names the real problem (wildcard handling), not SQL injection.
+
+Acceptance: line 117 is no longer a SQL candidate; line 123 is judged and, if protected from injection, is not reported
+as a SQL injection finding.
+
+### 8.4 Outbound observations: 65 repeats and one real SSRF candidate
+
+All 66 are `fetch` calls with no model assessment ("Outbound security assessment is not implemented"):
+
+- **65 are one call site**, in `lib/webhook.ts`, reported once for each of 65 entries that reach it. The URL comes from
+  configuration, not a request value.
+- **One is a real candidate:** `routes/profileImageUrlUpload.ts` fetches `req.body.imageUrl`. That is the classic
+  server-side request forgery (SSRF) pattern, and it is currently only an observation.
+
+Fix, in two steps:
+
+1. **Classify the operand.** Record whether the URL operand is constant, configuration-derived or request-derived,
+   using the same dependency facts other analyzers use. Report the 65 `lib/webhook.ts` records as one grouped
+   observation with its entry count, and leave the request-derived one prominent.
+2. **Add an SSRF assessment** for request-derived URL operands: a contract for `fetch`/`axios`/`got`/`http.request`,
+   questions about host and scheme control, allow-lists and redirects, and the same evidence gates. Start from the
+   [outbound contract](.zazz/specifications/components-03-outbound.md). This needs its own specification; scope the
+   first slice to operand classification and to one family, and keep "no verdict" for anything not request-derived.
+
+Acceptance: the 65 records collapse to one observation; `profileImageUrlUpload.ts` is judged once and is not hidden by
+the request limit.
+
+### 8.5 Data-only XSS: 23 records with no rendering claim
+
+These are API routes that return stored or computed data (for example `routes/vulnCodeSnippet.ts`,
+`routes/restoreProgress.ts`, `routes/vulnCodeFixes.ts`, `routes/wallet.ts`, `routes/b2bOrder.ts`). The scanner says "API
+data has no linked rendering claim to assess" because it does not know whether a browser renders the value as HTML.
+That is correct as a statement, and it is only a gap if the client does render it. Juice Shop's Angular client lives in
+`frontend/src/app`.
+
+Fix: extend the existing API-to-browser linkage (`xss_cross_tier*.go`, `xss_client*.go`) so a data route is linked to the
+Angular template or component that renders its response (`innerHTML`, `bypassSecurityTrustHtml`, interpolation). When a
+link exists, the data record becomes a rendering claim; when the client escapes the value, it becomes protected; when no
+client is found, it stays "not assessed" with that reason. Add a count of linked and unlinked routes to the report so the
+reviewer sees what is still open. This is the largest item; give it its own contract.
+
+## 9. Order of work and live-run budget
+
+1. 8.2 named-import binding (small, three records).
+2. 8.1 payload reduction, starting with grouping gaps and relevance filtering.
+3. 8.4 operand classification, then the SSRF assessment contract.
+4. 8.3 Sequelize finders and the `tool(...)` misdetection.
+5. Sections 1 to 6: JavaScript `if` modeling, sequenced with the E3 wire bump (it also shrinks the 8.1 payload).
+6. 8.5 and section 7 as separate slices.
+
+Keep live checks small: about one capped request per fixed record, 6 to 8 in total for sections 8.1 to 8.3, using
+`--route` or `--entry`. Rebuild the Juice Shop sample only after all of them land.
+

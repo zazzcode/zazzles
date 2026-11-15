@@ -110,23 +110,28 @@ unrelated user changes. Record departures and residual limitations explicitly.
 - [x] Push the feature commit and update existing draft PR #14. The owner explicitly
   authorized publication after automatic review initially blocked it; PR #14 remains draft against `stage`.
 
-Remaining E3 work must finish in this same worktree and branch before E3 merges.
-Paid calibration is deferred to the next session by owner instruction.
+Remaining E3 work finished in this same worktree and branch. Continuation contracts:
+[JavaScript conditional flow](javascript-if-flow.md), [relevance tier](evidence-relevance-tier.md)
+and [data-path slicing](data-path-slicing.md).
 
-Continuation contract: [JavaScript conditional flow](javascript-if-flow.md).
-The implementation prototype is checkpointed at the owner’s request; it is not yet fully verified.
-
-- [ ] JavaScript if modeling with guarded/unguarded regression pairs.
+- [x] JavaScript if modeling with guarded/unguarded regression pairs, independent QA and paid calibration.
 - [x] Re-measure the core-v7 baseline: only order.ts:164 (61,735 bytes) exceeds the proposed 90% soft threshold across 3,551 assessed sample previews. Re-measure again after S4 before adopting filtering.
-- [ ] Run paired ablation before helper/model relevance filtering.
-- [ ] Implement and validate data-path slicing after precise branch modeling.
+- [x] Re-measure after S4: still one record over the soft threshold and none over the limit.
+  S2/S5 relevance filtering is not adopted, so no ablation is needed; see the [decision](evidence-relevance-tier.md).
+- [x] Data-path slicing: contract authored, measured and deferred ([decision](data-path-slicing.md)).
 
 Remaining verification and product decisions:
 
 - [ ] Re-record the full historical path corpus under v7, including all 260 VulnPy path contexts.
-- [ ] Decide whether the retention proxy is sufficient or add answer citations so the original
-  citation-specific retention criterion can be checked directly.
-- [ ] Evaluate broader fixed query/middleware prose consolidation beyond the operand-family W6 implementation.
+  Deferred: these Python requests are byte-unchanged by the E3 continuation. Re-recording all 260
+  does not fit the 400-request cap alongside calibration and the JavaScript sample rebuild. It needs
+  its own owner cap.
+- [x] Citation decision: the owner accepted the proved 32 KiB decisive-evidence retention proxy as the
+  acceptance criterion. The citation-specific criterion is replaced by owner decision, not checked;
+  answers carry no citations.
+- [x] Broader W6: query/middleware fixed sentences became 14 fact codes. The guidance-owned
+  `internal/guidelines/facts.md` holds their interpretation, and a request sends only the notes it names.
+  Byte-neutral; the value is a single owner for each interpretation.
 
 ## Definition of done
 

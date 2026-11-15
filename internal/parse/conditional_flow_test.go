@@ -429,10 +429,10 @@ func TestConditionalPreconditionsDoNotLeak(t *testing.T) {
 	t.Run("NoSQL typeof witness needs the excluding polarity", func(t *testing.T) {
 		prelude := "const express=require('express');const app=express();const mongoose=require('mongoose');const Todo=mongoose.model('Todo',new mongoose.Schema({content:String}));"
 		for body, want := range map[string]int{
-			"if(typeof req.body.id!=='string'){return res.sendStatus(400)}Todo.findById(req.body.id).then(t=>res.json(t))":        1,
-			"if(typeof req.body.id==='string'){Todo.findById(req.body.id).then(t=>res.json(t))}else{res.sendStatus(400)}":         1,
-			"if(typeof req.body.id!=='string'){return Todo.findById(req.body.id).then(t=>res.json(t))}res.sendStatus(400)":        0,
-			"if(typeof req.body.id==='string'){res.sendStatus(400)}else{Todo.findById(req.body.id).then(t=>res.json(t))}":         0,
+			"if(typeof req.body.id!=='string'){return res.sendStatus(400)}Todo.findById(req.body.id).then(t=>res.json(t))":      1,
+			"if(typeof req.body.id==='string'){Todo.findById(req.body.id).then(t=>res.json(t))}else{res.sendStatus(400)}":       1,
+			"if(typeof req.body.id!=='string'){return Todo.findById(req.body.id).then(t=>res.json(t))}res.sendStatus(400)":      0,
+			"if(typeof req.body.id==='string'){res.sendStatus(400)}else{Todo.findById(req.body.id).then(t=>res.json(t))}":       0,
 			"if(typeof req.body.id!=='string'||x()){return res.sendStatus(400)}Todo.findById(req.body.id).then(t=>res.json(t))": 0,
 		} {
 			r := conditionalReport(t, "server.js", prelude+"app.post('/x',(req,res)=>{"+body+"});")
@@ -482,4 +482,19 @@ func TestConditionalInvocationPromotionKeepsPolarity(t *testing.T) {
 			t.Fatalf("%s: arm-only test promoted to invocation control: %v", body, controls(ctx))
 		}
 	}
+}
+
+// Calibration finding: every exiting test of an else-if chain guards later code.
+func TestElseIfChainTerminatingGuards(t *testing.T) {
+	uses := analyzeCommandRoutes(t, "server.js", jsCommandPrelude+`
+app.get('/chain',(req,res)=>{const cmd=req.query.c;if(!cmd){return res.sendStatus(400);}else if(!ALLOWED.has(cmd)){return res.sendStatus(403);}exec(cmd,()=>{});res.send('x');});
+app.get('/broken',(req,res)=>{const cmd=req.query.c;if(!cmd){return res.sendStatus(400);}else if(req.query.d){res.set('X','1');}else if(!ALLOWED.has(cmd)){return res.sendStatus(403);}exec(cmd,()=>{});res.send('x');});
+`)
+	// The presence-only test is not a command guard (existing policy); the allowlist link is.
+	requireGuards(t, "/chain", uses["/chain"], "terminating_guard: if(!ALLOWED.has(cmd))")
+	if commandProtection(uses["/chain"]) != "guarded" {
+		t.Fatalf("/chain protection %s", commandProtection(uses["/chain"]))
+	}
+	// A continuing middle arm ends the chain: the allowlist after it guards only its own path.
+	requireGuards(t, "/broken", uses["/broken"])
 }

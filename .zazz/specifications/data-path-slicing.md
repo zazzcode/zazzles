@@ -5,7 +5,7 @@
 S1 is part of the remaining E3 work in `analyzer-assessment-coverage`. The owner told us to measure
 it after precise JavaScript conditionals ([S4](javascript-if-flow.md)), then implement it or record a
 deferral with evidence. The
-[request-size design](../architecture/request-size-and-evidence-relevance.md#s1-data-path-slicing--proposed-separate-contract)
+[request-size design](../architecture/request-size-and-evidence-relevance.md#s1-data-path-slicing--deferred-separate-contract)
 owns the rationale.
 
 ## Proposed behavior, if it is adopted later

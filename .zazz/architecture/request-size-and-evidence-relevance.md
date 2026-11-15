@@ -143,12 +143,16 @@ Owned by the E3 contract; summarized here so the size design is in one place. Se
 - **W5.** Keep static fields before `use`, for provider prefix caching.
 - **Expected:** 25–35% fewer input bytes per request (proposal estimate; to be measured).
 
-### W6: Move fixed explanatory sentences out of each request — implemented for operand families
+### W6: Move fixed explanatory sentences out of each request — implemented
 
 The implemented scope removes Command/Path/SSRF interpretation already carried by structured
 platform/operand fields and selected guidance, with shared index/path interpretation in the static
-instruction. Candidate-specific transformation facts remain. Broader query/middleware sentence
-consolidation is not claimed by this bounded implementation.
+instruction. Candidate-specific transformation facts remain. The E3 continuation moved the query/middleware
+sentences to 14 fact codes owned by `internal/guidelines/facts.md`. A request carries the code with
+its exact expression and file, plus only the notes for the codes it names; an unknown code fails the
+request. Measured byte effect is neutral (about +90 to +340 bytes on affected requests, −127 on Juice
+Shop SQL), because each sentence appeared once per request before. Its value is one owner per
+interpretation.
 
 - **What:** `Completeness.ModelFacts` repeats fixed sentences per family (3,753 bytes on
   `order.ts:164`, much of it constant text such as the Express middleware scope explanation). Move
@@ -172,7 +176,7 @@ consolidation is not claimed by this bounded implementation.
   coordinates and condense afterwards. This moves bytes for every request: protocol bump.
 - **Measure first:** extend the digest tool to report the masked-whitespace share per section and sample.
 
-### S1: Data-path slicing — proposed (separate contract)
+### S1: Data-path slicing — deferred (separate contract)
 
 - **What:** send only the statements that carry the request value to the sink, plus every control that
   dominates the sink or a transfer on that path, instead of the whole handler body.
@@ -186,8 +190,9 @@ consolidation is not claimed by this bounded implementation.
   (`internal/parse/guard_climb.go`), so that dominating controls are known.
 - **Acceptance shape:** saved-answer stability on calibration pairs, guarded and unguarded variants per
   family, and a digest delta list.
+- **Status:** deferred after measurement; see the [S1 contract](../specifications/data-path-slicing.md).
 
-### S2: Relevance filter for helpers and models — proposed (soft tier)
+### S2: Relevance filter for helpers and models — not adopted (soft tier)
 
 - **What:** include a helper or model definition only when a value on the dependency path, or a control
   on that path, passes through it. Today `includeHelpers` (`internal/parse/check_context.go`) includes
@@ -218,7 +223,7 @@ source and gaps; serving files is not summarized by this implementation.
   library contract. A bare package name is not enough.
 - **Measure:** middleware bytes per request on Juice Shop and nodejs-goof.
 
-### S4: Remove repeated gaps at the source — planned (after E3 validation)
+### S4: Remove repeated gaps at the source — implemented
 
 - **What:** model JavaScript `if` statements precisely, as the Python `conditional` does
   (`internal/parse/python_control.go`), instead of falling to `branches` in `internal/parse/flow.go`,
@@ -226,6 +231,9 @@ source and gaps; serving files is not summarized by this implementation.
 - **Why:** this is both noise (it repeats in coverage and entry gaps) and an accuracy problem (see
   "Why size matters").
 - **Risk:** changes flow evidence for every JavaScript analyzer; the owner sequenced it after core E3 validation in the same worktree and branch.
+- **Delivered:** [JavaScript conditional flow](../specifications/javascript-if-flow.md). Modeled `if`
+  statements record arm preconditions instead of these gaps. Loops, `switch`, `try`/`finally` and
+  request rebinding keep the fallback.
 
 ### Rejected
 
@@ -296,7 +304,7 @@ Reordering outer JSON keys cannot move questions into that prefix. Keep the alre
 static-first input envelope and its ordering regression test; do not duplicate questions
 or claim cache savings from JSON key order. Record actual cached-token usage from live responses.
 
-### S5: Claim-relevant coverage gaps — proposed (accuracy-affecting)
+### S5: Claim-relevant coverage gaps — not adopted (accuracy-affecting)
 
 Coverage gaps are by definition not blockers, yet they reach the model in full. Send only those that
 touch a dependency, the sink, or a control on the path, and summarize the rest as counts by kind
@@ -355,6 +363,10 @@ Append one row per implemented or measured strategy. Do not rewrite earlier rows
 | 2026-11-15 | Final offline and paid verification | Measured | Standard-app reductions 24.6–43.1%; largest request 61,735 bytes, no sample shedding. 434/440 charged requests, 406 final decisions replayed exactly. Raw final usage reports zero cache-read tokens; no cache saving claimed. |
 
 | 2026-11-15 | Relevance pressure before S4 | Measured | Only one of 3,551 assessed-family sample previews exceeds the proposed 90% soft threshold: order.ts:164 at 61,735 bytes. Zero hard-limit exceedances. Re-measure after S4 before adopting broad lossy filtering. |
+
+| 2026-11-15 | S4 | Implemented and independently reviewed | Precise JS `if` modeling removed 161 `unsupported_control_flow` and 111 `branch_exit` gaps from Juice Shop requests; 4,405 candidates unchanged; no Python request changed. Juice Shop bytes −1.1%; `order.ts:164` 61,735 → about 59,100. Paid calibration recorded in the verification record. |
+| 2026-11-15 | W6 (query/middleware) | Implemented as guidance-owned fact codes | Byte-neutral on affected JS SQL/NoSQL/command/SSRF requests; single interpretation owner; unknown codes fail. |
+| 2026-11-15 | S1, S2, S5 after S4 | Measured; not adopted | 1 of 3,934 assessed sample requests over 55,000 bytes, 0 over the limit. Decisions: [relevance tier](../specifications/evidence-relevance-tier.md), [data-path slicing](../specifications/data-path-slicing.md). |
 
 Measured distributions and validation limits are in the [v7 verification record](../evaluation/wire-bundle-v7-results.md).
 

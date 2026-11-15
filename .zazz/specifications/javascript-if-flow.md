@@ -5,11 +5,11 @@
 Continue in `analyzer-assessment-coverage`, following the owner's core-first sequence
 and explicit instruction to defer paid requests until the next session. This is the
 next source-modeling slice after [wire v7](wire-bundle-v7.md), not E4. The
-[request-size design](../architecture/request-size-and-evidence-relevance.md#s4-remove-repeated-gaps-at-the-source--planned-after-e3-validation)
+[request-size design](../architecture/request-size-and-evidence-relevance.md#s4-remove-repeated-gaps-at-the-source--implemented)
 owns the rationale. Track execution in the shared assessment-coverage run log.
 
 Allowed paths: `internal/parse`, affected `internal/judge` frozen expectations,
-related analysis documentation and `.zazz`. No live calls this session. No new worktree,
+related analysis documentation and `.zazz`. No new worktree,
 branch, source slicing, helper filtering or new file API contracts.
 
 ## Behavior and invariants
@@ -42,19 +42,42 @@ branch, source slicing, helper filtering or new file API contracts.
 | Honest limits | Unsupported loop/rebinding/setter/browser cases retain uncertainty |
 | Determinism and deltas | Repeat request digest inventory, list changed records by app/family, explain additions/removals and re-record only intentional frozen expectations |
 | Offline integration | Scoped tests, full `go test -race ./... -count=1`, vet, format and docs checks |
-| Paid calibration — pending | Next-session owner budget; guarded/unguarded pairs and direct JS allowlist guard, with unchanged gates and recorded probabilities |
-| Fresh replay — pending | Only newly judged changed requests; never manufacture responses from historical traces |
+| Paid calibration | 18-candidate fixture under the 400 cap; 12 of 14 declared expectations met (2 extra file-content XSS records held at needs_evidence), misses analyzed (else-if guard fixed; strict-arm false positive is model judgment); probabilities recorded in the verification record |
+| Fresh replay | JavaScript samples re-judged with fresh traces and exact replay; Python samples are byte-unchanged and keep their judgments |
 
 The code can be implemented and verified offline now. Full behavioral calibration
 and affected live trace re-recording remain explicit unchecked next-session items.
 
+## Delivered behavior
+
+- `flow.conditional` forks isolated arms; preconditions are `branch_true_precondition` /
+  `branch_false_precondition`, which are path evidence and are not promoted invocation-wide.
+- Return, throw and unshadowed `process.exit` exit an arm; both exiting arms end discovery.
+- Joins tag arm-specific dependencies, join nested fields, keep metadata only on agreement and keep
+  path controls only when both arms carry them. Unmodeled heap writes in an arm stay gaps.
+- `let`/`const`/`class` are block scoped. The `branches` fallback resets context per body and never
+  carries a body's path control to later code. It keeps the request role on any feasible path.
+- Helper precision is unchanged: an exiting arm or a possibly content-guarding test keeps a
+  helper result a may-dependency.
+- GraphQL/gRPC promote only preconditions that every use carries and that hold at the end of the
+  walk, as `conditional_test` or `conditional_false_test`.
+- The NoSQL `typeof` selector witness requires the excluding polarity.
+- The shared guard engine credits each exiting link of an else-if chain.
+
+Recorded limits: `switch` case bodies, labeled non-block statements and brace-less loop bodies
+are not traversed; `break`/`continue` count as continuing (false-positive direction only);
+winston/Sequelize bound through `require` destructuring are not verified bindings.
+
 ## Work checklist
 
-- [ ] Implement supported conditional forks, polarity and terminating fallthrough.
-- [ ] Verify branch/value isolation and shared-family regressions offline.
-- [ ] Record final request deltas and intentional expectation changes.
-- [ ] Complete offline race/vet/format/doc checks and independent review.
-- [ ] Run next-session paid calibration and fresh affected-trace replay.
+- [x] Implement supported conditional forks, polarity and terminating fallthrough.
+- [x] Verify branch/value isolation and shared-family regressions offline
+  (`conditional_flow_test.go`, JS and TS; SQL, NoSQL, command, path, SSRF, logging, XSS).
+- [x] Record final request deltas and intentional expectation changes
+  ([verification](../evaluation/wire-bundle-v7-results.md#s4-and-broader-w6)).
+- [x] Complete offline race/vet/format/doc checks and independent review (three confirmed QA
+  defects fixed with regressions).
+- [x] Run paid calibration (16 answers) and fresh affected-trace re-recording of the JavaScript samples.
 
 ## Implementation and review change log
 
@@ -62,3 +85,9 @@ and affected live trace re-recording remain explicit unchecked next-session item
 this bounded source-flow slice offline; retain live acceptance as pending.
 
 2026-11-15: Owner requested a committed/pushed checkpoint of all work. The prototype is preserved for continuation; none of the unchecked S4 acceptance items is thereby completed.
+
+2026-11-15: Continuation session. Owner set a new 400-request gpt-6-luna cap, accepted the
+retention proxy instead of citations, extended W6 in E3, and asked for S1 to be measured, then decided.
+The prototype was rewritten and independently reviewed. The calibration miss on else-if guards was
+fixed in the shared guard engine; the strict-arm command false positive is model judgment and is
+recorded without gate tuning.

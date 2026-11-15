@@ -1,31 +1,31 @@
 {
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
-  "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+  "scanner_revision": "analyzer-assessment-coverage (MarsDB named imports, request budget, SSRF, Sequelize finders; see the pull request)",
   "evaluation_mode": "full source-transmitting judged scan of every analyzer",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "positions": 223,
-  "provider_requests": 128,
-  "input_tokens": 1087834,
-  "published_records": 223,
+  "positions": 222,
+  "provider_requests": 134,
+  "input_tokens": 1174169,
+  "published_records": 222,
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "runtime_confirmation": "none; static source judgments only",
   "previous": {
-    "date": "2026-11-07",
+    "date": "2026-11-14",
     "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
-    "scanner_revision": "6f5cb711fe06c6d538f636aaea9aad9b5500cbc9",
-    "evaluation_mode": "full source-transmitting judged scan",
-    "provider_requests": 117,
-    "input_tokens": 926572,
-    "retained_run": "run-1366234482"
+    "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+    "evaluation_mode": "full source-transmitting judged scan of every analyzer",
+    "provider_requests": 128,
+    "input_tokens": 1087834
   },
   "outcomes": {
-    "confirmed_vulnerability": 19,
-    "poor_practice": 0,
+    "confirmed_vulnerability": 20,
+    "poor_practice": 1,
     "protected_for_claim": 0,
-    "inconclusive_review": 109,
-    "not_run": 90,
-    "failed": 5
-  }
+    "inconclusive_review": 113,
+    "not_run": 88,
+    "failed": 0
+  },
+  "shown_findings": 158
 }

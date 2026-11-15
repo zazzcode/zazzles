@@ -2,17 +2,17 @@
 
 
 
-## Current report (rebuilt 2026-11-14)
+## Current report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
-Every analyzer was run on the pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-engine-hardening branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
+Every analyzer was run on the pinned revision `f189f521266f` with OpenAI `gpt-6-luna`, using the scanner from the analyzer-assessment-coverage branch. The target stayed clean. Static source judgments only; nothing was run or exploited.
 
-- **Records:** 223. **Judged:** 128, in 128 requests (1,087,834 input tokens).
-- **Outcomes:** 19 confirmed vulnerabilities, 0 poor practice, 0 protected, 109 inconclusive (Review).
-- **Path traversal and Zip Slip (12 judged):** the upload Zip Slip at `routes/fileUpload.ts:34` and both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**. The other nine (file serving and reads) stay **Review**.
-- **Not assessed by design (90):** 66 outbound HTTP observations, 23 API-data records with no rendering claim, and one NoSQL record at `routes/order.ts:164` whose evidence exceeds the 64 KiB request limit.
-- **Failed before any model call (5):** model component selection needs a verified API binding for `routes/orderHistory.ts` (lines 17 and 36), `routes/createProductReviews.ts:23`, and `routes/chat.ts` (lines 117 and 123). They remain unassessed, not safe.
+- **Records:** 222 (158 shown: the 65 `lib/webhook.ts` observations are one grouped observation). **Judged:** 134, in 134 requests (1,174,169 input tokens). **Failed:** 0. **Skipped for size:** 0.
+- **Outcomes:** 20 confirmed vulnerabilities, 1 poor practice (the `$where` construction at `routes/chat.ts:149`), 0 protected, 113 inconclusive (Review).
+- **Newly judged:** the MarsDB records at `routes/orderHistory.ts` (lines 17 and 36) and `routes/createProductReviews.ts:23` (now a **confirmed** NoSQL injection); `routes/order.ts:164`, which fits the request limit after 29 context evidence items were left out (listed in the record); the Sequelize finder at `routes/chat.ts:123` (bound `Op.like` values, Review); and the SSRF claim at `routes/profileImageUrlUpload.ts:24` (Review: its handler is wrapped by `utils.asyncHandler`, whose semantics are not modeled). The `tool(...)` call at `routes/chat.ts:117` is no longer a SQL record.
+- **Path traversal and Zip Slip:** the upload Zip Slip at `routes/fileUpload.ts:34` and both `hbs` layout calls in `routes/dataErasure.ts` (lines 107 and 123) are **confirmed vulnerabilities**; the other file operations stay **Review**.
+- **Not assessed by design (88):** 65 outbound observations of one call whose destination comes from the environment (shown once), and 23 API-data records with no rendering claim.
 
 Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
 

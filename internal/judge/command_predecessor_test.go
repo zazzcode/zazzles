@@ -11,8 +11,10 @@ import (
 
 // TestCommandPredecessorRequests freezes the effective decision-request bytes
 // of every existing family on current parsed fixtures. The digests were
-// recorded from the pre-command commit e12873c; command candidates are a new
-// family and are excluded from the comparison.
+// recorded from the pre-command commit e12873c; command and SSRF candidates are
+// new families and are excluded from the comparison. The javascript/outbound
+// baseline drops the one fetch observation that became an SSRF claim; its four
+// remaining observation lines are unchanged.
 func TestCommandPredecessorRequests(t *testing.T) {
 	type baseline struct {
 		count  int
@@ -29,7 +31,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 		"python/routes":               {5, "c4ab83af8da35abce5bf61b3961bd27c8ea8b58a6d0d7f7c1c8409d8a6bd6e40"},
 		"python/dynamic-vulnpy":       {31, "c679955d3a3676a570c8a2f9281bf54638d05b0beb679c5716a3978a38a3f58a"},
 		"javascript/xss-fetch":        {5, "cd41f16976985b7ab9b8fa2b9cc8ee247f1384cf330d22221868508f97221743"},
-		"javascript/outbound":         {5, "6723d63a902d3864956e8349eb61bb047c3c59e2f766b00fd3642aff8a7ada1c"},
+		"javascript/outbound":         {4, "7616f13e1350e438c8ff872759a2b58a948bf45f08379401a1f0a6c5c341718b"},
 	}
 	c, _ := New("openai", "fixture-model", "k")
 	for fixture, expected := range want {
@@ -40,7 +42,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 			}
 			lines := []string{}
 			for _, u := range r.Uses {
-				if u.Kind == "command_execution_candidate" {
+				if u.Kind == "command_execution_candidate" || u.Kind == "ssrf_candidate" {
 					continue
 				}
 				u = predecessorNodeUse(u)

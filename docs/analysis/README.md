@@ -10,6 +10,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Node input acquisition](node-inputs.md) | Transport-neutral value facts, bounded Express/Fastify/Hapi adapters and provisional model-assisted discovery |
 | [Database injection](database-injection.md) | SQL/NoSQL library contracts, source flow, branch constraints, and verdicts |
 | [Command injection](command-injection.md) | Verified Node/Python process APIs, shell/executable/argument facets, guards and outcomes |
+| [Server-side request forgery](ssrf.md) | Verified `fetch`/`axios`/Python HTTP clients, destination-operand origin, restrictions, grouped outbound observations and outcomes |
 | [Path traversal](path-traversal.md) | Verified Node `fs` and Python `open`/`pathlib` operations, effective path operands, containment controls and outcomes |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |

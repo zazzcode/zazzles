@@ -158,13 +158,13 @@ Use `--route /rest/user/login` to select an exact path pattern before model requ
 Offline assessment is `not_run`. For provider selection and key instructions, including personal-key
 ownership and Jev configuration, see [decision-model setup](decision-models.md).
 `--judge openai` uses the primary OpenAI Luna Decisions model and transmits bounded evidence;
-`--judge-limit` caps assessment requests (default 10, no retries). Manage spending in your API account. A requested judge failure, skipped oversized payload or exhausted request cap exits 1
+`--judge-limit` caps assessment requests (default 10, no retries). Manage spending in your API account. A requested judge failure, a record whose required evidence alone is over the request limit (`evidence_too_large`) or an exhausted request cap exits 1
 with its report retained. Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
 
 Use `--only-family path,command` or `--skip-family input-validation,outbound` to scope model
 assessment. The flags are mutually exclusive and accept `sql`, `nosql`, `xss`, `command`, `path`,
-`logging`, `input-validation`, and `outbound`; `JUDGE_ONLY_FAMILY` / `JUDGE_SKIP_FAMILY` supply defaults.
+`logging`, `input-validation`, `outbound`, and `ssrf`; `JUDGE_ONLY_FAMILY` / `JUDGE_SKIP_FAMILY` supply defaults.
 Excluded model assessments remain unrun without causing exit 1. Existing deterministic practice
 findings are retained.
 Primary security sinks, including XSS and logging, run before standalone validation. Zero-call
@@ -343,7 +343,7 @@ establish exhaustive accuracy or runtime exploitability. Mandatory rendered repo
 complete through bounded inspection of the user-opened localhost HTTP tab; human review/merge remains pending.
 
 
-Outbound uses are observations, not security verdicts. A requested model scan keeps them `not_run`
+A verified `fetch`, `axios` or Python `requests`/`httpx`/`urllib` call whose destination a request value reaches is an SSRF claim (`ssrf_candidate`) and is assessed. Every other outbound use is an observation, not a security verdict. A requested model scan keeps them `not_run`
 and in Review, makes no model calls for them, saves the incomplete report and exits 1. The existing
 candidate-position request cap remains conservative. Structural-only scanning completes normally;
 exporting a saved report preserves its historical answers. See [decision-model scope](decision-models.md#outbound-observations).

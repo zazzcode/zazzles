@@ -20,6 +20,8 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return componentQuestions(analysispacks.CommandQuestions())
 		case "path_traversal_candidate":
 			return componentQuestions(analysispacks.PathQuestions())
+		case "ssrf_candidate":
+			return componentQuestions(analysispacks.SSRFQuestions())
 		}
 	}
 	if use.Kind == "xss_candidate" {
@@ -42,6 +44,9 @@ func questionChoices(q question) []map[string]string {
 		return c
 	}
 	if c := analysispacks.PathChoices(q.name); c != nil {
+		return c
+	}
+	if c := analysispacks.SSRFChoices(q.name); c != nil {
 		return c
 	}
 	if c := xssChoices(q.name); c != nil {

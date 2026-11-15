@@ -460,6 +460,13 @@ var pythonCommandBlockers = map[string]bool{
 // completePythonCommand assembles the claim-scoped completeness for a Python
 // use at the point where its flow, guards and operands are known.
 func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitter.Node, operands pythonValue, guards []analysis.Evidence, guardIndex []int, derived [][]string, names map[string]bool) {
+	f.completePythonOperandClaim(u, call, operands, guards, guardIndex, derived, names, commandCompleteness, u.Command.Paths)
+}
+
+// completePythonOperandClaim is the shared Python assembly for families whose
+// facts hold source-to-operand paths (command, SSRF); paths is updated in place.
+func (f *pythonFlow) completePythonOperandClaim(u *analysis.CandidateUse, call *sitter.Node, operands pythonValue, guards []analysis.Evidence, guardIndex []int, derived [][]string, names map[string]bool,
+	complete func(*analysis.CandidateUse, map[string][]analysis.Evidence, []analysis.Gap, []analysis.Gap) *analysis.Completeness, paths []analysis.CommandPath) {
 	blockers := []analysis.Gap{}
 	coverage := []analysis.Gap{}
 	transfers := []analysis.Evidence{}
@@ -485,11 +492,11 @@ func (f *pythonFlow) completePythonCommand(u *analysis.CandidateUse, call *sitte
 		"control_flow":     append([]analysis.Evidence{f.module.evidence("operation", call)}, f.context...),
 		"transformation":   transfers,
 	}
-	c := commandCompleteness(u, extra, dedupeGaps(blockers), dedupeGaps(coverage))
+	c := complete(u, extra, dedupeGaps(blockers), dedupeGaps(coverage))
 	for _, t := range transfers {
 		c.ModelFacts = append(c.ModelFacts, "Supported transfer "+t.Kind+" "+t.Text+" at "+t.Span.File+" carries its operand into the result without a modeled constraint; it is not a validator.")
 	}
-	finishCommandPaths(u, c, guards, guardIndex, derived, func(g analysis.Gap, d analysis.Dependency) bool {
+	finishOperandPaths(u, paths, c, guards, guardIndex, derived, func(g analysis.Gap, d analysis.Dependency) bool {
 		return gapTouchesDependency(g, d) || pythonGapTouches(g, d)
 	})
 	u.Completeness = c

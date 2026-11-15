@@ -30,7 +30,7 @@ func TestCLIFamilySelection(t *testing.T) {
 			t.Fatalf("code=%d: %s", code, stderr.String())
 		}
 	}
-	for _, family := range []string{"sql", "nosql", "xss", "command", "path", "logging", "input-validation", "outbound"} {
+	for _, family := range []string{"sql", "nosql", "xss", "command", "path", "logging", "input-validation", "outbound", "ssrf"} {
 		if _, err := parseSkipFamilies(family); err != nil {
 			t.Error(err)
 		}
@@ -49,7 +49,7 @@ app.get('/scan',(req,res)=>{fs.readFileSync(req.query.file);cp.exec(req.query.cm
 		allowed                map[string]bool
 	}{
 		{"only", "--only-family", "path,command", "", map[string]bool{"path": true, "command": true}},
-		{"skip", "--skip-family", "outbound,input-validation,xss,logging", "", map[string]bool{"path": true, "command": true}},
+		{"skip", "--skip-family", "outbound,ssrf,input-validation,xss,logging", "", map[string]bool{"path": true, "command": true}},
 		{"environment", "", "path,command", "JUDGE_ONLY_FAMILY", map[string]bool{"path": true, "command": true}},
 		{"flag overrides environment", "--only-family", "path", "JUDGE_ONLY_FAMILY", map[string]bool{"path": true}},
 	} {

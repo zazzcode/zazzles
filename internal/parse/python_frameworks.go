@@ -111,10 +111,92 @@ func (f *pythonFlow) outboundCall(n *sitter.Node, q string, fn *sitter.Node, val
 	for _, d := range destination.deps {
 		requestDependent = requestDependent || d.dep.Source.Kind == "input_source" || d.dep.Source.Kind == "external_response_source" || d.dep.Source.Kind == "storage_source"
 	}
-	if requestDependent {
+	request := false
+	for _, d := range destination.deps {
+		request = request || d.dep.Source.Kind == "input_source"
+	}
+	if request {
+		f.pythonSSRF(n, q, fn, destination)
+	} else if requestDependent {
 		u := f.addUse("outbound_http_candidate", n, destination)
 		u.Context = append(u.Context, m.evidence("sink_binding", fn))
 		u.APIModel = analysispacks.OutboundContract(strings.Split(q, ".")[0])
+		u.Outbound = &analysis.OutboundFacts{DestinationOrigin: analysis.DestinationExternalData}
 	}
 	return pythonValue{binding: "http_response", evidence: []analysis.Evidence{m.evidence("external_exchange", n)}}
+}
+
+// pythonSSRF records a verified requests/httpx/urllib call whose destination a
+// request value reaches as an SSRF claim over that operand. Guards are found as
+// for Python command claims: flow preconditions and verified terminating ifs.
+func (f *pythonFlow) pythonSSRF(n *sitter.Node, q string, fn *sitter.Node, destination pythonValue) {
+	m := f.module
+	u := f.addUse("ssrf_candidate", n, destination)
+	for i := range u.Dependencies {
+		u.Dependencies[i].SinkSlot = analysis.OutboundSlotDestination
+	}
+	u.Outbound = &analysis.OutboundFacts{Operation: q, ContractID: analysispacks.PythonHTTPURLContract, DestinationOrigin: analysis.DestinationRequest}
+	for i := range u.Dependencies {
+		u.Outbound.Paths = append(u.Outbound.Paths, analysis.CommandPath{Dependency: i, Operand: analysis.OutboundSlotDestination})
+	}
+	u.APIModel = analysispacks.SSRFContract(analysispacks.PythonHTTPURLContract)
+	u.Context = append(u.Context, m.evidence("sink_binding", fn))
+	names := map[string]bool{}
+	for _, d := range u.Dependencies {
+		for _, name := range commandDepNames(d) {
+			names[name] = true
+		}
+	}
+	mentions := func(text string) bool {
+		for name := range names {
+			if name != "" && name != "." && strings.Contains(text, name) {
+				return true
+			}
+		}
+		return false
+	}
+	list := make([]string, 0, len(names))
+	for name := range names {
+		list = append(list, name)
+	}
+	var guards []analysis.Evidence
+	guardIndex := []int{}
+	for _, e := range f.context {
+		if (e.Kind == "branch_precondition" || e.Kind == "branch_false_precondition") && mentions(e.Text) && !presenceOnlyCondition(e.Text, list) {
+			guardIndex = append(guardIndex, len(u.Context))
+			u.Context = append(u.Context, e)
+			guards = append(guards, e)
+		}
+	}
+	scan := newCommandGuardScan(f.guardLang(), n, f.pyHelperCallSites)
+	for _, site := range scan.collect(nil, u.Dependencies, func(site guardSite) bool {
+		return site.Kind == terminatingGuardKind && !guardRecorded(guards, m.evidence(site.Kind, site.Cond))
+	}) {
+		ev := m.evidence(commandGuardEvidenceKind(site), site.Whole)
+		if !guardRecorded(guards, ev) {
+			guardIndex = append(guardIndex, len(u.Context))
+			u.Context = append(u.Context, ev)
+			guards = append(guards, ev)
+		}
+	}
+	var conditions []*sitter.Node
+	for _, g := range guards {
+		if c := nodeAt(m.tree.RootNode(), g.Span.StartByte, g.Span.EndByte); c != nil {
+			if c.Kind() == "if_statement" {
+				c = c.ChildByFieldName("condition")
+			}
+			if c != nil {
+				conditions = append(conditions, c)
+			}
+		}
+	}
+	for _, decl := range collectionDefinitions(conditions, m.src, func(name string) *sitter.Node {
+		if pyConstantCollection(m, name) {
+			return pyModuleVarDecl(m, name)
+		}
+		return nil
+	}) {
+		u.Context = append(u.Context, m.evidence("allowlist_definition", decl))
+	}
+	f.completePythonOperandClaim(u, n, destination, guards, guardIndex, scan.derived(u.Dependencies), names, ssrfCompleteness, u.Outbound.Paths)
 }

@@ -21,6 +21,9 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 	notifications := []any{}
 	successful := true
 	for i, use := range report.Uses {
+		if i < len(report.Findings) && report.Findings[i].GroupedInto != "" {
+			continue
+		}
 		id, cwe := ruleIdentity(use)
 		index, ok := indexes[id]
 		g := report.Findings[i].Recommendations
@@ -188,6 +191,8 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/sql-input-protection", "CWE-89"
 	case "nosql_query", "nosql_query_candidate":
 		return "scan/nosql-input-protection", "CWE-943"
+	case "ssrf_candidate":
+		return "scan/ssrf", "CWE-918"
 	case "path_traversal_candidate":
 		if isArchiveExtraction(use) {
 			return "scan/path-traversal-archive-extraction", "CWE-22"

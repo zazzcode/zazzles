@@ -17,6 +17,9 @@ func scopedGuidance(u analysis.CandidateUse, f analysis.Finding) Guidance {
 		if u.Kind == "path_traversal_candidate" {
 			return Guidance{Title: "Preserve the contained file operation", Actions: []string{"Preserve at " + at + " the enforcing control that rejects before " + pathSinkLabel(u) + ": the allow-list or the separator-bounded boundary check on the same value. Do not move the check after a decode, a reassignment or a different value.", "Keep regression tests for '..' segments, an absolute path, a sibling directory sharing the prefix and every branch or invocation that reaches this call; a control on one value or branch never protects another."}, ExampleStatus: "no repair proposed for a protected claim"}
 		}
+		if u.Kind == "ssrf_candidate" {
+			return Guidance{Title: "Preserve the restricted outbound destination", Actions: []string{"Preserve at " + at + " the URL parse and scheme/host allow-list on the same value that rejects before " + u.Sink.Text + ", and keep redirects disabled or re-checked.", "Keep regression tests for an internal address, userinfo (https://trusted@other), an alternative host form and a redirect; a control on one value or branch never protects another."}, ExampleStatus: "no repair proposed for a protected claim"}
+		}
 		if u.Kind == "command_execution_candidate" {
 			return Guidance{Title: "Preserve the constrained process invocation", Actions: []string{"Preserve at " + at + " the fixed trusted executable, the disabled shell and the rejecting guard that terminates before " + u.Sink.Text + ". Keep operands as separate arguments and keep the finite set of permitted values that cannot be option or shell syntax.", "Keep regression tests for every rejected value and for each branch or invocation that reaches this call; a constraint on one operand or branch never protects another."}, ExampleStatus: "no repair proposed for a protected claim"}
 		}
@@ -37,6 +40,9 @@ func scopedGuidance(u analysis.CandidateUse, f analysis.Finding) Guidance {
 	}
 	if u.Kind == "path_traversal_candidate" {
 		return pathFindingGuidance(u, at)
+	}
+	if u.Kind == "ssrf_candidate" && u.Outbound != nil {
+		return ssrfFindingGuidance(u, at)
 	}
 	if u.Kind == "input_validation_candidate" && u.Check != nil {
 		return Guidance{Title: "Enforce the declared field policy on the server", Actions: []string{

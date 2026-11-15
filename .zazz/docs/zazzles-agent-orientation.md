@@ -15,6 +15,10 @@ work they build on ([results](../evaluation/path-traversal-results.md)). E3 (wir
 open. Read the ignored `.zazz/ephemeral/analyzer-engine-hardening-run-log.md` on resume if present.
 Preserve concurrent user edits, especially local credentials. No live Jev evaluation is assigned.
 
+The `analyzer-assessment-coverage` worktree carries the [assessment coverage contract](../specifications/analyzer-assessment-coverage.md)
+(MarsDB named imports, request budget, outbound grouping and SSRF, Sequelize finders); run log
+`.zazz/ephemeral/analyzer-assessment-coverage-run-log.md`.
+
 ## Code structure
 
 | Path | Owns | Read more only when needed |
@@ -87,7 +91,7 @@ language coverage and limits; the [delivery checklist](../project/implementation
 owns branch outcomes. Implemented foundations include bounded JS/TS/Python analysis, shared entry/
 dispatch and schema4 reports; analyzers cover validation, SQL, MongoDB-style NoSQL (JS/TS), logging,
 XSS, command injection and path traversal (verified Node `fs`/Python `open`/`pathlib` operands; see
-[results](../evaluation/path-traversal-results.md)). Outbound is observation-only. Inspect/Audit/Fix workflows remain planned.
+[results](../evaluation/path-traversal-results.md)). Outbound is observation-only except SSRF claims for verified clients with a request-derived destination. Inspect/Audit/Fix workflows remain planned.
 
 For exact acceptance read only the matching record:
 [command results](../evaluation/command-injection-results.md),

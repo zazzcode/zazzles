@@ -131,6 +131,15 @@ func Families() []Family {
 			PolicyOwner: "internal/judge/path.go",
 		},
 		{
+			Name: "ssrf", Label: "Server-side request forgery", Kinds: []string{"ssrf_candidate"}, QuestionNames: ssrfQuestionNames(),
+			Languages:      []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python},
+			Entries:        []string{"entry.http", "entry.graphql", "entry.grpc"},
+			RequiresAPI:    true,
+			PythonHTTPOnly: true,
+			Pack:           "pack.ssrf", Claim: "claim.ssrf", Evidence: "evidence.ssrf",
+			PolicyOwner: "internal/judge/ssrf.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python},
 			// A standalone field claim needs an explicit/source-backed
@@ -178,6 +187,8 @@ func familyProtocol(name string) string {
 		return CommandProtocol
 	case "path":
 		return PathProtocol
+	case "ssrf":
+		return SSRFProtocol
 	}
 	return ""
 }
@@ -192,6 +203,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return CommandContract(id)
 	case "path":
 		return PathContract(id)
+	case "ssrf":
+		return SSRFContract(id)
 	}
 	return nil
 }
@@ -204,6 +217,8 @@ func contractIDs(f *Family) []string {
 		return commandContractIDs
 	case "path":
 		return pathContractIDs
+	case "ssrf":
+		return ssrfContractIDs
 	}
 	return noSQLContractIDs
 }
@@ -249,6 +264,9 @@ func flowID(f *Family) string {
 	}
 	if f.Name == "path" {
 		return "flow.path"
+	}
+	if f.Name == "ssrf" {
+		return "flow.ssrf"
 	}
 	return "flow.local"
 }

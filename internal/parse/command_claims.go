@@ -163,9 +163,14 @@ func mentionsAny(text string, names []string) bool {
 // guardContext[i] is the use.Context index of guards[i]; derived[d] lists the
 // names of values computed from dependency d that a guard may test instead.
 func finishCommandPaths(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, derived [][]string, touches func(analysis.Gap, analysis.Dependency) bool) {
-	f := u.Command
-	for i := range f.Paths {
-		p := &f.Paths[i]
+	finishOperandPaths(u, u.Command.Paths, c, guards, guardContext, derived, touches)
+}
+
+// finishOperandPaths applies the per-path guard and blocker rules to any family
+// whose facts hold source-to-operand paths; paths is updated in place.
+func finishOperandPaths(u *analysis.CandidateUse, paths []analysis.CommandPath, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, derived [][]string, touches func(analysis.Gap, analysis.Dependency) bool) {
+	for i := range paths {
+		p := &paths[i]
 		dep := u.Dependencies[p.Dependency]
 		names := commandDepNames(dep)
 		if p.Dependency < len(derived) {
@@ -200,7 +205,7 @@ func finishCommandPaths(u *analysis.CandidateUse, c *analysis.Completeness, guar
 	}
 	// A per-path summary so one unresolved sibling is not mistaken for the state of every path.
 	summary := []string{}
-	for _, p := range f.Paths {
+	for _, p := range paths {
 		summary = append(summary, "dependency "+itoa(p.Dependency)+" ("+u.Dependencies[p.Dependency].Source.Text+") -> "+p.Operand+": "+p.Protection)
 	}
 	if len(summary) > 0 {

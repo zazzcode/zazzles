@@ -53,16 +53,23 @@ func TestOutboundComponentSelection(t *testing.T) {
 					t.Fatal("original gaps lost")
 				}
 			} else {
+				// A Python observation remains only for a second-order destination;
+				// a request-derived destination is an SSRF claim.
 				for _, d := range u.Dependencies {
-					if d.Source.Text != "request.args" {
-						t.Fatalf("body/response mixed into destination: %+v", d)
+					if d.Source.Kind == "input_source" {
+						t.Fatalf("request value in a Python observation destination: %+v", d)
 					}
+				}
+				if u.Outbound == nil || u.Outbound.DestinationOrigin != analysis.DestinationExternalData {
+					t.Fatalf("Python observation origin: %+v", u.Outbound)
 				}
 			}
 		}
-		want := 5
+		// The verified fetch with a request destination is an SSRF claim in JS/TS;
+		// all three request-derived Python calls are.
+		want := 4
 		if strings.HasPrefix(fixture, "python") {
-			want = 3
+			want = 1
 		}
 		if found != want {
 			t.Fatalf("%s count=%d want%d", fixture, found, want)

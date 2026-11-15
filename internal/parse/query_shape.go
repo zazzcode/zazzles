@@ -109,9 +109,16 @@ func (f *flow) structureGaps(kind string, args *sitter.Node, values []value, cal
 	structure := false
 	switch kind {
 	case "sql_query_candidate":
-		if textDeps || strings.Contains(text, "Op.like") {
+		finder := false
+		if fn := call.ChildByFieldName("function"); fn != nil && args != nil {
+			finder = sequelizeFinderName(fn.Utf8Text(f.module.src)) && strings.Contains(ownArgumentText(args, f.module.src), "Op.like")
+		}
+		if textDeps && !finder {
 			structure = true
 			gaps = append(gaps, f.gap("query_text_interpolated", "request-controlled value is built into executable query text", call))
+		} else if strings.Contains(text, "Op.like") {
+			structure = true
+			gaps = append(gaps, f.gap("like_pattern_interpolated", "a value is built into a LIKE pattern; % and _ in it are wildcards unless escaped", call))
 		}
 	case "nosql_query_candidate":
 		if strings.Contains(text, "$where") {
@@ -237,8 +244,14 @@ func queryKind(name string, args *sitter.Node, src []byte, values []value) strin
 	if args != nil {
 		text = args.Utf8Text(src)
 	}
-	if strings.Contains(text, "Op.like") && (strings.Contains(text, "${") || strings.Contains(text, "+")) {
-		return "sql_query_candidate"
+	// A Sequelize LIKE pattern built from text is a candidate only on the finder
+	// call that owns it: text inside a nested function argument belongs to the
+	// calls in that function, never to an outer call that merely contains it.
+	if sequelizeFinderName(name) && args != nil {
+		own := ownArgumentText(args, src)
+		if strings.Contains(own, "Op.like") && (strings.Contains(own, "${") || strings.Contains(own, "+")) {
+			return "sql_query_candidate"
+		}
 	}
 	if !collectionWrite(name) {
 		return ""
@@ -324,4 +337,37 @@ func (f *flow) finishValidation() {
 			Assessment:   analysis.Assessment{Status: "not_run"},
 		})
 	}
+}
+
+// sequelizeFinders take a where object whose values Sequelize binds.
+var sequelizeFinders = []string{".findAll", ".findOne", ".findAndCountAll", ".count", ".findOrCreate"}
+
+func sequelizeFinderName(name string) bool {
+	for _, suffix := range sequelizeFinders {
+		if strings.HasSuffix(name, suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+// ownArgumentText returns an argument list's text without the bodies of nested
+// functions, so a callback's operations are not attributed to the outer call.
+func ownArgumentText(args *sitter.Node, src []byte) string {
+	var b strings.Builder
+	var walk func(*sitter.Node)
+	walk = func(n *sitter.Node) {
+		if isFunction(n) {
+			return
+		}
+		if n.ChildCount() == 0 {
+			b.WriteString(n.Utf8Text(src))
+			return
+		}
+		for i := uint(0); i < n.ChildCount(); i++ {
+			walk(n.Child(i))
+		}
+	}
+	walk(args)
+	return b.String()
 }

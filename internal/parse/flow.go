@@ -736,8 +736,28 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			kind = "sql_query_candidate"
 		}
 	}
+	var outbound *analysis.OutboundFacts
+	var outboundBinding []analysis.Evidence
 	if name == "fetch" || name == "axios" || strings.HasPrefix(name, "axios.") {
 		kind = "outbound_http_candidate"
+		op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
+		var destNode *sitter.Node
+		destValue := value{}
+		if args != nil && args.NamedChildCount() > 0 && len(values) > 0 {
+			destNode, destValue = args.NamedChild(0), values[0]
+			if dest > 0 && dest < len(values) {
+				destNode, destValue = args.NamedChild(uint(dest)), values[dest]
+			}
+		}
+		outbound = &analysis.OutboundFacts{DestinationOrigin: f.destinationOrigin(n, destNode, destValue)}
+		if verified && outbound.DestinationOrigin == analysis.DestinationRequest {
+			// A verified client with a request-derived destination is an SSRF claim
+			// over that operand only; other arguments are data, not destination control.
+			kind = "ssrf_candidate"
+			outbound.Operation, outbound.ContractID = op, contract
+			outboundBinding = binding
+			values = []value{destValue}
+		}
 	}
 	if kind != "" {
 		v := value{}
@@ -747,9 +767,19 @@ func (f *flow) evalCall(n *sitter.Node) value {
 				slot := "sql_options"
 				if i == 0 {
 					slot = "sql_text"
+					if sequelizeFinderName(name) {
+						// A finder's where object holds bound values, not SQL text.
+						slot = "finder_value"
+					}
 				}
 				for j := range a.deps {
 					a.deps[j].SinkSlot = slot
+				}
+			}
+			if kind == "ssrf_candidate" {
+				a.deps = append([]analysis.Dependency{}, a.deps...)
+				for j := range a.deps {
+					a.deps[j].SinkSlot = analysis.OutboundSlotDestination
 				}
 			}
 			v = combine(v, a)
@@ -757,12 +787,24 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		if len(v.deps) > 0 || len(v.gaps) > 0 || kind == "outbound_http_candidate" {
 			gaps := append(append([]analysis.Gap{}, f.gaps...), v.gaps...)
 			gaps = append(gaps, f.structureGaps(kind, args, values, n)...)
-			gaps = append(gaps, f.gap("sink_binding_unverified", "candidate API shape; library binding/argument roles require review", n))
-			if kind == "outbound_http_candidate" {
+			if kind != "ssrf_candidate" {
+				gaps = append(gaps, f.gap("sink_binding_unverified", "candidate API shape; library binding/argument roles require review", n))
+			}
+			if kind == "outbound_http_candidate" || kind == "ssrf_candidate" {
 				gaps = append(gaps, f.gap("external_response_unresolved", "remote response and asynchronous continuation are not modeled", n))
 			}
 			context := append([]analysis.Evidence{}, f.context...)
-			f.uses = append(f.uses, analysis.CandidateUse{ID: fmt.Sprintf("use:%s:%s:%d", f.invocation.ID, f.module.file, n.StartByte()), EntryID: f.entry.ID, InvocationContextID: f.invocation.ID, Kind: kind, Sink: f.module.evidence(kind, n), Dependencies: v.deps, Context: context, Gaps: gaps, Assessment: analysis.Assessment{Status: "not_run"}})
+			use := analysis.CandidateUse{ID: fmt.Sprintf("use:%s:%s:%d", f.invocation.ID, f.module.file, n.StartByte()), EntryID: f.entry.ID, InvocationContextID: f.invocation.ID, Kind: kind, Sink: f.module.evidence(kind, n), Dependencies: v.deps, Context: context, Gaps: gaps, Assessment: analysis.Assessment{Status: "not_run"}}
+			if kind == "ssrf_candidate" {
+				use.Context = append(use.Context, outboundBinding...)
+				for i := range v.deps {
+					outbound.Paths = append(outbound.Paths, analysis.CommandPath{Dependency: i, Operand: analysis.OutboundSlotDestination})
+				}
+			}
+			if outbound != nil {
+				use.Outbound = outbound
+			}
+			f.uses = append(f.uses, use)
 		}
 		// Response values are new external sources, never aliases of request arguments.
 		if modelCall {

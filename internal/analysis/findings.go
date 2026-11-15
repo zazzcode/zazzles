@@ -15,6 +15,11 @@ type Finding struct {
 	Protection          string         `json:"use_protection"`
 	Uncertainty         string         `json:"uncertainty"`
 	Recommendations     Recommendation `json:"recommendations"`
+	// GroupedUseIDs lists the other records an observation finding stands for:
+	// entries that reach the same call site. GroupedInto marks such a record with
+	// the finding that represents it; renderers show only the representative.
+	GroupedUseIDs []string `json:"grouped_use_ids,omitempty"`
+	GroupedInto   string   `json:"grouped_into,omitempty"`
 }
 
 // Recommendation describes actions to review; examples are never verified patches.

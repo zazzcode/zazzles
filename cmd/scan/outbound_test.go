@@ -44,7 +44,7 @@ func TestMixedAssessmentWithOutboundObservations(t *testing.T) {
 	root := t.TempDir()
 	files := map[string]string{
 		"server.js": `const express=require('express'); import {Sequelize} from 'sequelize';const sql=new Sequelize('sqlite::memory:'); const marsdb=require('marsdb'); const db=new marsdb.Collection('items'); const app=express();
-app.get('/mixed',(req,res)=>{fetch(req.query.url);sql.query('SELECT '+req.query.sql);db.find({name:req.query.name});res.send(req.query.html)});`,
+app.get('/mixed',(req,res)=>{fetch('https://target.invalid/hook',{method:'POST',body:req.query.url});sql.query('SELECT '+req.query.sql);db.find({name:req.query.name});res.send(req.query.html)});`,
 		"app.py": `from flask import Flask, request
 app = Flask(__name__)
 @app.get('/validation')
@@ -198,7 +198,9 @@ func TestOutboundObservationCLI(t *testing.T) {
 		code := run([]string{"--analyze", "--json", "--judge", provider, "--judge-model", "fixture-model", "--judge-limit", "100", "--output-dir", bundle, "../../internal/parse/testdata/javascript/outbound"}, &out, &stderr)
 		http.DefaultTransport = previous
 		stub.Close()
-		if code != exitError || calls != 0 {
+		// Observations make no call; the one verified fetch whose destination is a
+		// request value is an SSRF claim and is the only provider request.
+		if code != exitError || calls != 1 {
 			t.Fatalf("%s code=%d calls=%d stderr=%s", provider, code, calls, stderr.String())
 		}
 		files, err := filepath.Glob(filepath.Join(bundle, "outbound", "run-*", "findings.json"))

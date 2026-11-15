@@ -21,6 +21,9 @@ type DecisionTrace struct {
 	HTTPStatus      int                          `json:"http_status"`
 	RequestBytes    int                          `json:"request_bytes"`
 	ResponseBytes   int                          `json:"response_bytes"`
+	// EvidenceOmissions lists context evidence an over-limit request left out;
+	// the budget is deterministic, so a replay rebuilds the same request.
+	EvidenceOmissions []analysis.EvidenceOmission `json:"evidence_omissions,omitempty"`
 }
 
 // Replay applies the current decoder/policy to a saved decision only when its
@@ -28,15 +31,16 @@ type DecisionTrace struct {
 func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis.Assessment {
 	version := protocolVersion(use)
 	a := analysis.Assessment{Status: "failed", Provider: c.provider, Model: c.model, QuestionVersion: version}
-	payload, err := c.payload(use)
+	payload, omitted, err := c.budgetedPayload(use)
 	if err != nil || !sameRequest(payload, trace.Request) || trace.HTTPStatus != 200 || trace.QuestionVersion != version {
 		a.Reason = "Saved decision request does not exactly match the current evidence/protocol, or the response failed."
 		return a
 	}
-	if len(payload) > 64<<10 {
-		a.Reason = "evidence payload exceeds 64 KiB limit"
+	if len(payload) > requestLimit {
+		overLimit(&a, use, payload, omitted)
 		return a
 	}
+	a.EvidenceOmissions = omitted
 	a.RequestDigest = requestDigest(use, payload)
 	if trace.RequestDigest != "" && trace.RequestDigest != a.RequestDigest || trace.Components != nil && !reflect.DeepEqual(trace.Components, use.Components) {
 		a.Status = "failed"
@@ -60,12 +64,12 @@ func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis
 
 // Preview prepares the exact JSON request without making a network call.
 func (c *Client) Preview(use analysis.CandidateUse) (DecisionTrace, error) {
-	payload, err := c.payload(use)
+	payload, omitted, err := c.budgetedPayload(use)
 	if err != nil && analysispacks.ObservationOnly(use.Kind) {
 		return DecisionTrace{}, err
 	}
 	version := protocolVersion(use)
-	return DecisionTrace{QuestionVersion: version, Request: payload, RequestBytes: len(payload), RequestDigest: requestDigest(use, payload), Components: cloneComponents(use.Components)}, err
+	return DecisionTrace{QuestionVersion: version, Request: payload, RequestBytes: len(payload), RequestDigest: requestDigest(use, payload), Components: cloneComponents(use.Components), EvidenceOmissions: omitted}, err
 }
 
 // AssessTrace evaluates one use and returns its request/response evidence for

@@ -49,7 +49,7 @@ func descriptors() ([]Component, error) {
 		}},
 	}
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" {
+		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
 			continue
 		}
 		protocol := familyProtocol(f.Name)
@@ -76,7 +76,7 @@ func descriptors() ([]Component, error) {
 	flow := makeComponent("flow.local", "compiled_capability", "internal/parse/query_evidence.go + internal/parse/python_sql.go", allKinds, []string{SQLProtocol, NoSQLProtocol, ValidationProtocol}, "")
 	out = append(out, flow)
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" {
+		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
 			continue
 		}
 		seen := map[string]bool{}
@@ -116,11 +116,12 @@ func descriptors() ([]Component, error) {
 	for _, id := range sqlContractIDs[1:] {
 		contractOwners[id] = "internal/parse/python_sql.go"
 	}
+	contractOwners[SequelizeFinderContract] = "internal/parse/sequelize_finders.go"
 	for _, id := range noSQLContractIDs {
 		contractOwners[id] = "internal/parse/checks.go + internal/parse/mongoose_query_context.go"
 	}
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" {
+		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" {
 			continue
 		}
 		if !f.RequiresAPI {
@@ -157,6 +158,11 @@ func descriptors() ([]Component, error) {
 		return nil, err
 	}
 	out = append(out, path...)
+	ssrf, err := ssrfDescriptors()
+	if err != nil {
+		return nil, err
+	}
+	out = append(out, ssrf...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
 	out = append(out, nodeInputComponent())

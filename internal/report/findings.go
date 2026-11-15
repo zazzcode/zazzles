@@ -1,6 +1,7 @@
 package report
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -16,6 +17,7 @@ func Enrich(r *analysis.AnalysisReport) {
 	for _, u := range r.Uses {
 		r.Findings = append(r.Findings, describe(u))
 	}
+	groupObservations(r)
 }
 
 func describe(u analysis.CandidateUse) analysis.Finding {
@@ -97,7 +99,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		describePath(u, &f)
 	case "outbound_http_candidate":
 		f.Title = "Outbound request needs destination review"
-		f.Summary = "Scan recorded a possible outbound HTTP use. Verify the destination, request-value handling, and applicable restrictions; this is not a confirmed SSRF finding."
+		f.Summary = "Scan recorded a possible outbound HTTP use. Verify the destination, request-value handling, and applicable restrictions; this is not a confirmed SSRF finding." + destinationOriginText(u.Outbound)
+	case "ssrf_candidate":
+		describeSSRF(u, &f)
 	}
 	if (u.Kind == "sql_query_candidate" || u.Kind == "nosql_query_candidate") && len(u.Dependencies) == 0 {
 		f.Uncertainty += " No direct request-field dependency was resolved for this use; external control is not established."
@@ -110,6 +114,12 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		if strings.Contains(a.Reason, "analyzer not used for this run") {
 			f.Uncertainty += " " + a.Reason + "."
 		}
+		if strings.HasPrefix(a.Reason, "evidence_too_large:") {
+			f.Uncertainty += " The evidence this claim needs is larger than the request limit, so no request was sent (" + a.Reason + ")."
+		}
+	}
+	if n := len(a.EvidenceOmissions); n > 0 {
+		f.Uncertainty += fmt.Sprintf(" To fit the request limit, %d context evidence item(s) were left out of the request and are listed in the record's evidence_omissions; the assessment did not see them.", n)
 	}
 	if a.Status == "completed" {
 		if answer := a.Answers["validation"]; answer != "" {
@@ -122,6 +132,8 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 			f.Protection = "Field-policy enforcement: " + displayLabel(a.Protection) + ". " + a.Reason
 		} else if u.Kind == "command_execution_candidate" {
 			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
+		} else if u.Kind == "ssrf_candidate" {
+			f.Protection = "SSRF assessment: destination control " + displayLabel(a.Answers["destination_control"]) + ", restriction " + displayLabel(a.Answers["destination_restriction"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "path_traversal_candidate" {
 			f.Protection = "Path assessment: traversal " + displayLabel(a.Answers["path_traversal"]) + ", containment " + displayLabel(a.Answers["containment_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "xss_candidate" {
@@ -150,6 +162,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 			if u.Kind == "path_traversal_candidate" && u.Path != nil && a.QuestionVersion == analysispacks.PathProtocol && len(a.BlockingGaps) == 0 {
 				confirmPath(u, &f)
 			}
+			if u.Kind == "ssrf_candidate" && u.Outbound != nil && a.QuestionVersion == analysispacks.SSRFProtocol && len(a.BlockingGaps) == 0 {
+				confirmSSRF(u, &f)
+			}
 			if u.Completeness != nil && u.Completeness.ClaimKind == "injection" && len(a.BlockingGaps) == 0 && (a.Answers["injection_protection"] == "vulnerable" || a.Answers["injection_protection"] == "insufficient") {
 				f.RecordType = "finding"
 				f.Status = "confirmed_vulnerability"
@@ -165,6 +180,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		case "poor_practice":
 			if u.Kind == "path_traversal_candidate" && u.Path != nil && a.QuestionVersion == analysispacks.PathProtocol && len(a.BlockingGaps) == 0 {
 				confirmWeakPath(u, &f)
+			}
+			if u.Kind == "ssrf_candidate" && u.Outbound != nil && a.QuestionVersion == analysispacks.SSRFProtocol && len(a.BlockingGaps) == 0 {
+				confirmWeakSSRF(u, &f)
 			}
 			// Historical field-policy assessments keep their own protocol
 			// version; current ones carry the selected component protocol.
@@ -192,6 +210,10 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 			if u.Kind == "path_traversal_candidate" {
 				f.Title = "File path is contained"
 				f.Summary = "Source-backed containment on the same value and a consistent path assessment support protection of this file operation against traversal for the stated claim. Preserve the control; this does not assess other file operations, symbolic-link or race behavior, or authorization of the selected file."
+			}
+			if u.Kind == "ssrf_candidate" {
+				f.Title = "Outbound destination is restricted"
+				f.Summary = "A source-backed scheme and host restriction on the same value and a consistent SSRF assessment support protection of this outbound call for the stated claim. Preserve the control; this does not assess other calls, redirect targets beyond the supplied source or network policy."
 			}
 			if u.Kind == "command_execution_candidate" {
 				f.Title = "Process operands are constrained"

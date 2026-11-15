@@ -1,6 +1,17 @@
 package judge
 
-import "github.com/zazzcode/zazzles/internal/analysis"
+import (
+	"strings"
+
+	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
+)
+
+// finderRawSQL reports a raw SQL fragment in a finder call, which the finder
+// contract does not bind.
+func finderRawSQL(text string) bool {
+	return strings.Contains(text, ".literal(") || strings.Contains(text, "Op.literal")
+}
 
 // applyPolicy uses claim-scoped completeness when supplied. Legacy candidates
 // remain conservative until their dependency and binding evidence is assembled.
@@ -19,6 +30,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	}
 	if use.Kind == "path_traversal_candidate" {
 		applyPathPolicy(use, a)
+		return
+	}
+	if use.Kind == "ssrf_candidate" {
+		applySSRFPolicy(use, a)
 		return
 	}
 	if logUse(use) {
@@ -61,6 +76,9 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 				blockers = append(blockers, analysis.Gap{Kind: "injection_constraint_review", Detail: "Vulnerable answer requires independent review against supplied " + role + " evidence; no constraint bypass is established by this bounded policy", At: use.Sink.Span})
 			}
 		}
+	}
+	if c.ClaimKind == "injection" && use.APIModel != nil && use.APIModel.ID == analysispacks.SequelizeFinderContract && (a.Answers["injection_protection"] == "vulnerable" || a.Answers["injection_protection"] == "insufficient") && !finderRawSQL(use.Sink.Text) {
+		blockers = append(blockers, analysis.Gap{Kind: "finder_injection_inconsistent", Detail: "An injection answer for a Sequelize model finder needs raw SQL (Sequelize.literal, sequelize.literal or Op.literal) in the same call; where values, including Op.like operands, are bound. Unescaped % and _ in a LIKE pattern are a wildcard and input-validation concern, not SQL syntax control.", At: use.Sink.Span})
 	}
 	requiredRoles := append([]string{}, c.Required...)
 	if use.APIModel != nil && use.APIModel.ID == "mongoose-path-id-objectid-v1" {

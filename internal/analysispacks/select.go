@@ -91,8 +91,11 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			return nil, fmt.Errorf("invalid Node input facts")
 		}
 		input := "source.node-input-v1"
-		if family.Name == "path" {
+		switch family.Name {
+		case "path":
 			input = "source.node-input-path-v1"
+		case "ssrf":
+			input = "source.node-input-ssrf-v1"
 		}
 		roots = append(roots, input)
 	}

@@ -105,7 +105,7 @@ func (f *flow) statement(n *sitter.Node) bool {
 			}
 			return false
 		}
-		f.branches(n)
+		return f.conditional(n)
 	case "lexical_declaration", "variable_declaration":
 		for j := uint(0); j < n.NamedChildCount(); j++ {
 			d := n.NamedChild(j)

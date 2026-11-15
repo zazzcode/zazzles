@@ -110,10 +110,14 @@ unrelated user changes. Record departures and residual limitations explicitly.
 - [x] Push the feature commit and update existing draft PR #14. The owner explicitly
   authorized publication after automatic review initially blocked it; PR #14 remains draft against `stage`.
 
-Follow-ups remain in this same worktree and branch, sequenced after E3 validation:
+Remaining E3 work must finish in this same worktree and branch before E3 merges.
+Paid calibration is deferred to the next session by owner instruction.
+
+Continuation contract: [JavaScript conditional flow](javascript-if-flow.md).
+The implementation prototype is checkpointed at the owner’s request; it is not yet fully verified.
 
 - [ ] JavaScript if modeling with guarded/unguarded regression pairs.
-- [ ] Re-measure remaining large requests and determine relevance-filter need.
+- [x] Re-measure the core-v7 baseline: only order.ts:164 (61,735 bytes) exceeds the proposed 90% soft threshold across 3,551 assessed sample previews. Re-measure again after S4 before adopting filtering.
 - [ ] Run paired ablation before helper/model relevance filtering.
 - [ ] Implement and validate data-path slicing after precise branch modeling.
 
@@ -148,3 +152,7 @@ flow modeling and paid cap are pending; independent offline baseline work is aut
 2026-11-15: Independent QA added character-column locators for same-line evidence, unioned catalog obligations, stable inner dispatch, async-factory/recursive-wrapper rejection and exact-header middleware summaries. See [verification](../evaluation/wire-bundle-v7-results.md). Outer-key cache reordering and general source-whitespace trimming were rejected based on provider semantics and literal fidelity.
 
 2026-11-15: Final sample scope preserves VulnPy command/SQL/XSS publication and runs every analyzer on Juice Shop; other samples exclude standalone validation to stay within 440 requests. Final charged total 434, including interrupted allowance. All 406 final traces replay exactly. Optional flow/relevance work remains queued in this same branch. Full historical path-corpus re-recording is not claimed.
+
+2026-11-15: Owner confirmed all remaining E3 work stays on this worktree/branch and paid requests wait until the next session. A bounded S4 prototype was subsequently checkpointed at the owner’s request; no new S4-specific acceptance or live validation is claimed. The continuation handoff is `.zazz/ephemeral/HANDOFF-E3-remaining-work.md`. E4 has a first-draft handoff in the zazzles container root and remains separate after E3 merge.
+
+2026-11-15: Owner explicitly requested committing/pushing all pending work for a clean next-session start. The S4 source and contract are preserved as unfinished checkpoint work; dedicated regressions, full checks and live calibration remain unchecked.

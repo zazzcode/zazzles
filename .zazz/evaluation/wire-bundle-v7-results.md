@@ -125,3 +125,14 @@ or path slice was adopted.
 ## Follow-ups
 
 JavaScript if modeling follows E3 validation in this same worktree/branch. Helper/model relevance filtering requires paired ablation and a new contract after remeasurement. Data-path slicing follows precise branch modeling. None of those lossy changes is enabled by v7.
+
+## Relevance-pressure checkpoint before S4
+
+Among 3,551 assessed-family sample previews, only Juice Shop `routes/order.ts:164`
+(61,735 bytes) exceeds 55,000 bytes, 90% of the 65,536-byte limit (58,982.4), or
+60,000 bytes. None exceeds the hard limit. Broad lossy filtering is not justified
+by the current size distribution alone. Re-measure after S4 and obtain the required
+paired ablation evidence before adopting a relevance filter.
+
+These numbers describe the verified core-v7 baseline, not the unverified local S4
+prototype. The owner deferred all further paid calibration until the next session.

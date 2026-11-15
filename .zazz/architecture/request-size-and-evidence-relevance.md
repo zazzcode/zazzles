@@ -354,6 +354,8 @@ Append one row per implemented or measured strategy. Do not rewrite earlier rows
 
 | 2026-11-15 | Final offline and paid verification | Measured | Standard-app reductions 24.6–43.1%; largest request 61,735 bytes, no sample shedding. 434/440 charged requests, 406 final decisions replayed exactly. Raw final usage reports zero cache-read tokens; no cache saving claimed. |
 
+| 2026-11-15 | Relevance pressure before S4 | Measured | Only one of 3,551 assessed-family sample previews exceeds the proposed 90% soft threshold: order.ts:164 at 61,735 bytes. Zero hard-limit exceedances. Re-measure after S4 before adopting broad lossy filtering. |
+
 Measured distributions and validation limits are in the [v7 verification record](../evaluation/wire-bundle-v7-results.md).
 
 ## Open questions

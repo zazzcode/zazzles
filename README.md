@@ -81,7 +81,7 @@ and delivery status.
 
 Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications,
 including Express, Fastify, Hapi and **Next.js** (App Router and Pages Router; see
-[Next.js support](docs/nextjs-support.md)).
+[Next.js support](docs/nextjs-support.md) · [Code injection](docs/analysis/code-injection.md) · [Open redirect](docs/analysis/open-redirect.md)).
 
 - It reads source only. It does not run your app or install its dependencies.
 - It covers the frameworks and operations it models. Anything else is reported as unresolved,

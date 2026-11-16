@@ -223,6 +223,24 @@ func (f *flow) reactCall(n, fn, args *sitter.Node) (value, bool) {
 		return value{}, false
 	}
 	src := f.module.src
+	if fn.Kind() == "identifier" {
+		if imp, ok := f.module.imports[fn.Utf8Text(src)]; ok && imp.module == "react-redux" && (imp.name == "useSelector" || imp.name == "useStore") {
+			v := f.browserSource(n)
+			v.gaps = append(v.gaps, f.gap("react_shared_state_unresolved", "Redux state source; reducer transitions are unresolved", n))
+			if args.NamedChildCount() > 0 && isFunction(args.NamedChild(0)) {
+				return f.reactCallback(args.NamedChild(0), &v), true
+			}
+			return v, true
+		}
+	}
+	if f.set.zustandHook(f.module, fn) {
+		v := f.browserSource(n)
+		v.gaps = append(v.gaps, f.gap("react_shared_state_unresolved", "Zustand state source; updater transitions are unresolved", n))
+		if args.NamedChildCount() > 0 && isFunction(args.NamedChild(0)) {
+			return f.reactCallback(args.NamedChild(0), &v), true
+		}
+		return v, true
+	}
 	if v, ok := f.reactSetter(n, fn, args); ok {
 		return v, true
 	}
@@ -264,7 +282,9 @@ func (f *flow) reactCall(n, fn, args *sitter.Node) (value, bool) {
 		}
 		if strings.HasPrefix(fn.Utf8Text(src), "use") {
 			if imp, ok := f.module.imports[fn.Utf8Text(src)]; ok && imp.module == "react" && (imp.name == "useContext" || imp.name == "useSyncExternalStore") {
-				return value{gaps: []analysis.Gap{f.gap("react_shared_state_unresolved", "React context and external stores are not modeled", n)}}, true
+				v := f.browserSource(n)
+				v.gaps = append(v.gaps, f.gap("react_shared_state_unresolved", "React context/external store state is a browser state source; provider transitions are unresolved", n))
+				return v, true
 			}
 		}
 		return value{}, false

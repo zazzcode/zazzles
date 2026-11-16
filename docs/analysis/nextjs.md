@@ -21,7 +21,7 @@ and reference results are in [Next.js support](../nextjs-support.md).
    `http.cookies`, `http.path`, `http.url` and the upload origins. `input_facts.acquisition` stays
    `http` (it must equal the entry kind); initial types use `string`, `array`, `object` or `unknown`.
 4. **Model only verified awaits.** Awaiting a web-request read or a resolved local async helper is a
-   transfer. Every other `await` keeps `async_response_unresolved`.
+   transfer. Verified Prisma row operations are also modeled awaits. Every other `await` keeps `async_response_unresolved`.
 5. **Wrappers and middleware are authorization context.** A higher-order wrapper is resolved only
    when its returned function forwards the same request and context. Its checks, middleware
    redirects and header/cookie gates are context and practice evidence, never destination
@@ -62,3 +62,26 @@ sanitizers, Prisma stored and fetched-content links, `getServerSideProps` pages 
 offline answer key against the pinned reference sample when `ZAZZLES_NEXTJS_SAMPLE` names a clean
 checkout at `2d530ef`. Every fixture record must pass judge component selection, so a record that a
 model request would reject fails the test offline.
+
+## Phase 2 flow and practice boundaries
+
+Pages handler try/catch/finally bodies retain separate normal and exceptional bindings; catch guards
+are never borrowed from the try arm. One imported JSX component hop transfers explicit props, including
+browser effects. Layouts/templates are stages of their page invocation. `getInitialProps` supplies
+per-request props; `getStaticProps` is a build-time observation without request-source claims.
+Literal App Router export-star declarations expand bounded re-exports.
+
+React context, Redux and verified Zustand hooks are browser state sources; provider/reducer/updater
+transitions remain `react_shared_state_unresolved`. Literal raw-SQL writes link to Prisma fields only
+through physical table/column identities established by the Prisma schema. Dynamic SQL identifiers
+and ambiguous schemas remain unresolved.
+
+NX-BP-09/11/13/14/15/18/21/22 supplement the existing model-free practice checks. Cookie checks require
+a verified receiver. Sensitive row exposure requires schema-established sensitive columns and honors
+literal select projections. Action writes/returns and explicit client props are browser boundaries.
+Message sender and client-only authorization checks are Review observations, not vulnerability claims.
+Caching observations require a registered entry's actual user-context reads; a constant key named
+`users` is not a user-specific cache key.
+
+[Code injection](code-injection.md) and [open redirect](open-redirect.md) remain independent shared
+families. Their API semantics and verdict gates are not Next.js acquisition rules.

@@ -36,15 +36,24 @@ func (s *moduleSet) pagesPageEntries(out *analysis.AnalysisReport, m *sourceModu
 	if !routable {
 		return
 	}
-	var gssp, component *nextExport
+	var gssp, component, static *nextExport
 	exports := s.nextExports(m, 0)
 	for i := range exports {
 		switch exports[i].name {
-		case "getServerSideProps":
+		case "getStaticProps":
+			static = &exports[i]
+		case "getInitialProps", "getServerSideProps":
 			gssp = &exports[i]
 		case "default":
 			component = &exports[i]
 		}
+	}
+	if static != nil {
+		ps := &practiceSet{out: out, seen: map[string]bool{}}
+		ps.add("NEXT-BUILD", "Build-time page data", "observed", "getStaticProps executes at build/revalidation time; it is not a per-request input entry", pattern, m.evidence("build_time_entry", static.decl))
+	}
+	if gssp == nil {
+		gssp = s.pagesInitialProps(m, component)
 	}
 	if gssp == nil {
 		return
@@ -74,7 +83,7 @@ func (s *moduleSet) pagesPageEntries(out *analysis.AnalysisReport, m *sourceModu
 	}
 	hm, fn := res.module, res.fn
 	body := fn.ChildByFieldName("body")
-	r.Handler = analysis.Symbol{Name: "getServerSideProps", Kind: "function", Span: spanOf(hm.file, fn)}
+	r.Handler = analysis.Symbol{Name: gssp.name, Kind: "function", Span: spanOf(hm.file, fn)}
 	inputs := []analysis.InputBinding{}
 	req := ""
 	params := nextParams(fn, hm.src)
@@ -104,16 +113,22 @@ func (s *moduleSet) pagesPageEntries(out *analysis.AnalysisReport, m *sourceModu
 	evidence := hm.evidence("handler", body)
 	s.rememberNodeHTTP(e, m, hm, gssp.decl, body, req, "", context)
 	invocation := registerInvocation(out, e, &evidence, "filesystem_route", inputs, e.Gaps)
-	f := flow{module: hm, set: s, entry: e, invocation: invocation, registration: m,
+	entryIndex := len(out.Entries) - 1
+	f := flow{report: out, module: hm, set: s, entry: e, invocation: invocation, registration: m,
 		env: map[string]value{}, context: append([]analysis.Evidence{m.evidence("registration", gssp.decl), evidence}, context...),
 		gaps: append([]analysis.Gap{}, e.Gaps...), helpers: &helperExpansion{budget: 24, stack: map[string]bool{}}, facts: newInputFacts()}
 	f.seedInvocation()
+	f.nextData = true
 	f.statements(body)
+	f.nextData = false
 	// Stage 2: the page component renders with the returned props.
 	if component != nil && component.value != nil {
 		if cres := s.nextHandler(component.owner, component.value, 0); cres.fn != nil && cres.module == hm {
 			props := value{}
 			for _, ret := range f.returns {
+				if gssp.name == "getInitialProps" {
+					props = combine(props, ret)
+				}
 				if p, ok := ret.fields["props"]; ok {
 					props = combine(props, p)
 				}
@@ -149,7 +164,7 @@ func (s *moduleSet) pagesPageEntries(out *analysis.AnalysisReport, m *sourceModu
 	f.finishValidation()
 	out.Uses = append(out.Uses, f.uses...)
 	e.Gaps = append(e.Gaps, f.gaps[len(e.Gaps):]...)
-	out.Entries[len(out.Entries)-1].Gaps = e.Gaps
+	out.Entries[entryIndex].Gaps = e.Gaps
 	noteHTTPDeclaration(out, r, context)
 }
 

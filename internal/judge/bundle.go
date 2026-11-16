@@ -106,7 +106,9 @@ func wireBundle(use analysis.CandidateUse) any {
 		Path            any                 `json:"path,omitempty"`
 		InputFacts      any                 `json:"input_facts,omitempty"`
 		Outbound        any                 `json:"outbound,omitempty"`
-	}{invocation, 7, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false)}
+		Code            any                 `json:"code,omitempty"`
+		Redirect        any                 `json:"redirect,omitempty"`
+	}{invocation, 7, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false)}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {
@@ -136,4 +138,13 @@ func wireOutbound(use analysis.CandidateUse) *analysis.OutboundFacts {
 		return nil
 	}
 	return use.Outbound
+}
+
+func wireRedirect(u analysis.CandidateUse) *analysis.RedirectFacts {
+	if u.Redirect == nil {
+		return nil
+	}
+	copy := *u.Redirect
+	copy.RelatedUse = ""
+	return &copy
 }

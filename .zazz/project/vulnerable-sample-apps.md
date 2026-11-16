@@ -168,11 +168,13 @@ controls), not an exhaustive recall score for every vulnerability family adverti
 
 ## Other evaluated applications
 
-These Python applications were also fully reassessed in the same refactor validation. Their source
-guides own expectations; the metrics below record the fresh results.
+The Python applications below retain their earlier refactor validation. Commerce is a separate
+non-intentionally-vulnerable Next.js calibration target; its offline Review measurement is not a
+vulnerability-free certification. Source guides and evaluation records own expectations.
 
 | Application | Language | Source | Reference |
 |---|---|---|---|
+| Vercel Commerce | TypeScript / Next.js | [vercel/commerce at f7521d5](https://github.com/vercel/commerce/tree/f7521d57d29f0eb3d23c1399cf9bb299d61fcd21) | [Phase 2 measurement](../evaluation/nextjs-phase-2-results.md#non-intentionally-vulnerable-reference-d) |
 | ThreatByte | Python | [anotherik/ThreatByte](https://github.com/anotherik/ThreatByte) | [Detection guide](../evaluation/threatbyte-detection-guide.md) |
 | python-insecure-app | Python (FastAPI) | [trottomv/python-insecure-app](https://github.com/trottomv/python-insecure-app) | [Detection guide](../evaluation/python-insecure-app-detection-guide.md) |
 | Vulnerable-Flask-App | Python (Flask) | [ikpehlivan/Vulnerable-Flask-App](https://github.com/ikpehlivan/Vulnerable-Flask-App) | [Python results](../evaluation/python-support-results.md) |

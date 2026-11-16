@@ -1,9 +1,10 @@
 # Proposal: Next.js support, phase 2 (open items)
 
-**Status:** Session A implemented in PR #18. Sessions B–D are follow-on proposals for separate
-sessions and authorize no coding or paid calls until assigned.
+**Status:** Session A was delivered in PR #18. The owner assigned B–D with code/redirect in the
+`nextjs-support-phase-2` worktree. The [implementation contract](.zazz/specifications/nextjs-phase-2-and-code-redirect.md)
+and [results](.zazz/evaluation/nextjs-phase-2-results.md) own current implementation and acceptance.
 **Drafted:** 2026-11-16, at the end of the Next.js MVP session.
-**Base:** draft PR zazzcode/zazzles#18 (`nextjs-support-mvp`). Read its contract
+**Base:** merged PR zazzcode/zazzles#18 (`nextjs-support-mvp`). Read its contract
 `.zazz/specifications/nextjs-support.md` and the user docs `docs/nextjs-support.md` /
 `docs/analysis/nextjs.md` first.
 
@@ -26,7 +27,8 @@ scoped runs to fresh full paid scans of both apps, including standalone input va
 
 The [N5 closeout record](.zazz/specifications/nextjs-support.md#8-sample-publication-closeout) owns
 final counts, exact-replay and contributor-check evidence. Session A adds no analyzer features;
-Sessions B–D remain separate future deliverables. Human review and merge of PR #18 remain the owner step.
+Sessions B–D follow the owner-assigned combined contract linked above. PR #18 is merged; human review
+of this follow-on implementation remains the owner step.
 
 ## Session B: remaining practice checks (N6 rest; no model)
 

@@ -50,12 +50,14 @@ func (s *moduleSet) nextPractice(out *analysis.AnalysisReport, selected []string
 		return
 	}
 	ps := &practiceSet{out: out, seen: map[string]bool{}}
+	s.practiceBoundaries(ps)
 	entries := map[string]analysis.EntryPoint{}
 	for _, e := range out.Entries {
 		entries[e.ID] = e
 	}
 	for _, p := range s.next.projects {
 		s.practiceVersions(ps, p)
+		s.practiceConfigBoundaries(ps, p)
 		s.practiceRewrites(ps, p)
 		s.practiceSecurityHeaders(ps, p)
 		s.practiceMiddleware(ps, p, out)
@@ -67,8 +69,10 @@ func (s *moduleSet) nextPractice(out *analysis.AnalysisReport, selected []string
 			continue
 		}
 		client := reactClientModule(m) && moduleDirective(m) == "use client"
+		s.practiceModuleBoundaries(ps, m, client, out)
 		if client {
 			s.practiceClientModule(ps, m)
+			s.practiceClientAuthorization(ps, m, out)
 		}
 		if s.next.routeFiles[file] {
 			s.practiceRouteModule(ps, m)

@@ -62,9 +62,14 @@ var findingTypes = []analysis.FindingType{
 		Remediation:    "Resolve the source, operation, API behavior, and required protection before selecting a fix."},
 }
 
+var interpreterFindingTypes = []analysis.FindingType{
+	{ID: "code-injection", Label: "Code Injection", Coverage: "bounded interpreter operand analysis", Description: "Request text reaches an interpreter code operand.", Interpretation: "A verified code operand path is judged separately from data passed to fixed code.", Remediation: "Use a data parser or a restricted grammar instead of evaluating request text."},
+	{ID: "open-redirect", Label: "Open Redirect", Coverage: "bounded redirect destination analysis", Description: "Request text chooses an off-site navigation destination.", Interpretation: "Destination control and enforcing same-origin restrictions are assessed independently.", Remediation: "Select a destination from trusted constants or enforce parsed same-origin and host restrictions."},
+}
+
 var findingTypesByID = func() map[string]analysis.FindingType {
 	index := make(map[string]analysis.FindingType, len(findingTypes))
-	for _, t := range findingTypes {
+	for _, t := range append(append([]analysis.FindingType{}, findingTypes...), interpreterFindingTypes...) {
 		index[t.ID] = t
 	}
 	return index
@@ -93,6 +98,10 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		ids = append(ids, "account-creation-validation", "input-validation")
 	case "outbound_http", "outbound_http_candidate":
 		ids = append(ids, "outbound-request-safety")
+	case "code", "code_execution_candidate":
+		return []string{"code-injection"}
+	case "redirect", "open_redirect_candidate":
+		return []string{"open-redirect"}
 	case "ssrf_candidate":
 		return append(ids, "server-side-request-forgery")
 	case "log_sink", "log_sink_candidate":

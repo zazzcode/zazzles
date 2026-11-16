@@ -63,7 +63,12 @@ func (f Family) rootIDs() []string {
 	for _, language := range f.Languages {
 		ids = append(ids, languageID(&f, language))
 	}
-	ids = append(ids, f.Entries...)
+	for _, entry := range f.Entries {
+		if entry == "entry.browser" && (f.Name == "code" || f.Name == "redirect") {
+			entry = "entry." + f.Name + ".browser"
+		}
+		ids = append(ids, entry)
+	}
 	if f.Name == "xss" {
 		ids = append(ids, "render.html-output-v1", "render.browser-output-v1", "render.python-html-output-v1", "context.xss", "protection.xss", "browser.xss", "storage.xss", "response.xss")
 	}
@@ -93,6 +98,8 @@ func languageID(f *Family, language lang.Language) string {
 // Families returns the registered component families in stable order.
 func Families() []Family {
 	return []Family{
+		{Name: "code", Label: "code", Kinds: []string{"code_execution_candidate"}, QuestionNames: codeQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc", "entry.browser"}, RequiresAPI: true, Pack: "pack.code", Claim: "claim.code", Evidence: "evidence.code", PolicyOwner: "internal/judge/code_redirect.go"},
+		{Name: "redirect", Label: "redirect", Kinds: []string{"open_redirect_candidate"}, QuestionNames: redirectQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc", "entry.browser"}, RequiresAPI: true, Pack: "pack.redirect", Claim: "claim.redirect", Evidence: "evidence.redirect", PolicyOwner: "internal/judge/code_redirect.go"},
 		{Name: "logging", Label: "Sensitive-data logging", Kinds: []string{"log_sink_candidate"}, QuestionNames: loggingQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.logging", Claim: "claim.logging", Evidence: "evidence.logging", PolicyOwner: "internal/judge/logging.go"},
 		{Name: "outbound", Label: "Outbound observation", ObservationOnly: true, Kinds: []string{"outbound_http_candidate"}, Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.outbound", Claim: "observation.outbound", Evidence: "evidence.outbound", PolicyOwner: "internal/parse/flow.go + internal/parse/python_frameworks.go"},
 		{Name: "xss", Label: "XSS", Kinds: []string{"xss_candidate"}, QuestionNames: xssQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.xss", Claim: "claim.xss", Evidence: "evidence.xss", PolicyOwner: "internal/judge/xss.go"},
@@ -174,6 +181,10 @@ func ProtocolFor(kind string) string {
 
 func familyProtocol(name string) string {
 	switch name {
+	case "code":
+		return CodeProtocol
+	case "redirect":
+		return RedirectProtocol
 	case "logging":
 		return LoggingProtocol
 	case "outbound":
@@ -198,6 +209,10 @@ func familyProtocol(name string) string {
 
 func familyContract(f *Family, id string) *analysis.APIModel {
 	switch f.Name {
+	case "code":
+		return CodeContract(id)
+	case "redirect":
+		return RedirectContract(id)
 	case "sql":
 		return SQLContract(id)
 	case "nosql":
@@ -214,6 +229,10 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 
 func contractIDs(f *Family) []string {
 	switch f.Name {
+	case "code":
+		return codeContracts
+	case "redirect":
+		return redirectContracts
 	case "sql":
 		return sqlContractIDs
 	case "command":
@@ -256,6 +275,9 @@ func (c *catalog) claimQuestions(f *Family) ([]Question, map[string][]map[string
 }
 
 func flowID(f *Family) string {
+	if f.Name == "code" || f.Name == "redirect" {
+		return "flow." + f.Name
+	}
 	if f.ObservationOnly {
 		return "flow.outbound"
 	}

@@ -42,6 +42,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if contract == nil || !reflect.DeepEqual(contract, use.APIModel) {
 			return nil, fmt.Errorf("unsupported or conflicting verified %s API contract", family.Label)
 		}
+		if (family.Name == "code" || family.Name == "redirect") && (language == lang.Python) != strings.HasPrefix(contract.ID, "python-") {
+			return nil, fmt.Errorf("language and interpreter/redirect API conflict")
+		}
 		if family.Name == "sql" && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
 			return nil, fmt.Errorf("%s language and API capability conflict", family.Label)
 		}
@@ -64,7 +67,11 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	}
 	roots := []string{family.Pack, languageID(family, language)}
 	if entry != "" {
-		roots = append(roots, "entry."+entry)
+		if entry == "browser" && (family.Name == "code" || family.Name == "redirect") {
+			roots = append(roots, "entry."+family.Name+".browser")
+		} else {
+			roots = append(roots, "entry."+entry)
+		}
 	}
 	if contract != nil {
 		roots = append(roots, "api."+contract.ID)
@@ -92,6 +99,8 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		}
 		input := "source.node-input-v2"
 		switch family.Name {
+		case "code", "redirect":
+			input = "source.node-input-" + family.Name + "-v1"
 		case "path":
 			input = "source.node-input-path-v2"
 		case "ssrf":
@@ -102,6 +111,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 				return nil, fmt.Errorf("invalid Python HTTP input binding")
 			}
 			input = "source.python-input-v1"
+			if family.Name == "code" || family.Name == "redirect" {
+				input = "source.python-input-" + family.Name + "-v1"
+			}
 		}
 		roots = append(roots, input)
 	}

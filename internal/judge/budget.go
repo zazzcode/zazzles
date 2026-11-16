@@ -24,6 +24,7 @@ var gateRoles = map[string]bool{
 	"invocation_binding": true, "path_operands": true, "field_policy": true, "conditional_value": true,
 	"sql_all_inputs_hex": true, "selector_type_guard": true, "selector_path_string": true,
 	"allowlist_definition": true, "path_conditions": true,
+	"redirect_raw_substring": true, "redirect_origin_prefix": true, "code_constrained_operand": true,
 }
 
 // controlKinds are evidence kinds that record a control on a value or path.
@@ -207,7 +208,11 @@ func spanOf(k spanKey, s analysis.Span) analysis.Span {
 
 // indexedContext lists the use.Context positions that family facts reference.
 func indexedContext(use analysis.CandidateUse) []int {
-	var out []int
+	var interpreterIndices []int
+	for _, p := range use.CodePaths() {
+		interpreterIndices = append(interpreterIndices, p.Controls...)
+	}
+	out := interpreterIndices
 	if f := use.Command; f != nil {
 		for _, o := range f.Operands {
 			out = append(out, o.Context...)
@@ -295,6 +300,22 @@ func withoutContext(use analysis.CandidateUse, dropped map[spanKey]bool, omitted
 			copyFacts.Paths[i].Controls = mapAll(f.Paths[i].Controls)
 		}
 		out.Outbound = &copyFacts
+	}
+	if f := use.Code; f != nil {
+		copyFacts := *f
+		copyFacts.Paths = append([]analysis.CommandPath(nil), f.Paths...)
+		for i := range copyFacts.Paths {
+			copyFacts.Paths[i].Controls = mapAll(f.Paths[i].Controls)
+		}
+		out.Code = &copyFacts
+	}
+	if f := use.Redirect; f != nil {
+		copyFacts := *f
+		copyFacts.Paths = append([]analysis.CommandPath(nil), f.Paths...)
+		for i := range copyFacts.Paths {
+			copyFacts.Paths[i].Controls = mapAll(f.Paths[i].Controls)
+		}
+		out.Redirect = &copyFacts
 	}
 	gap := omissionGap(use.Sink.Span, omitted)
 	if c := use.Completeness; c != nil {

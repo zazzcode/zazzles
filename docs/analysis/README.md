@@ -93,3 +93,6 @@ The [cross-entry acceptance record](../../.zazz/evaluation/common-entry-dispatch
 checks these same claim policies across actual parsed entry adapters. Synthetic local-stub answers
 cannot override unknown guards/transforms, transfer protection between invocations, or turn coverage
 gaps into protection. This verification changes no analysis rule or historical model answer.
+
+- [Code injection](code-injection.md): verified JavaScript/Python interpreter operands and browser execution.
+- [Open redirect](open-redirect.md): redirect/navigation destination control and same-origin restrictions.

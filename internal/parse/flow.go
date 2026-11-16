@@ -22,20 +22,25 @@ type value struct {
 	trustedContext     string
 	apiPath, apiMethod string
 	// responseField is the JSON path read from an API response ("data[].id"); "*" when ambiguous.
-	responseField string
-	model         string
-	read          *analysis.Evidence
-	fields        map[string]value
-	templateFile  string
-	outputHTML    bool
-	outputContext string
-	deps          []analysis.Dependency
-	gaps          []analysis.Gap
+	responseField    string
+	model            string
+	read             *analysis.Evidence
+	readAlternatives []analysis.Evidence
+	fields           map[string]value
+	templateFile     string
+	outputHTML       bool
+	outputContext    string
+	deps             []analysis.Dependency
+	gaps             []analysis.Gap
 	// web is the web-request-v1 object kind this value is (searchParams,
 	// headers, formData, ...); "" for ordinary values.
 	web string
 }
 type flow struct {
+	redirectResponse string
+	nextData         bool
+	report           *analysis.AnalysisReport
+	jsxDepth         int
 	// web is the web-request acquisition context of a Next.js entry; nil elsewhere.
 	web          *webState
 	constants    registrationSeeds
@@ -107,6 +112,12 @@ func (f *flow) statement(n *sitter.Node) bool {
 	switch n.Kind() {
 	case "statement_block":
 		return f.block(n)
+	case "try_statement":
+		if f.set != nil && f.set.nextProjectFor(f.module.file) != nil {
+			return f.tryStatement(n)
+		}
+		f.branches(n)
+		return false
 	case "if_statement":
 		if yes, known := f.registrationCondition(n.ChildByFieldName("condition")); known {
 			f.context = append(f.context, f.module.evidence("conditional_test", n.ChildByFieldName("condition")))
@@ -169,6 +180,16 @@ func (f *flow) statement(n *sitter.Node) bool {
 		var v value
 		if n.NamedChildCount() > 0 {
 			v = f.eval(n.NamedChild(0))
+		}
+		if f.nextData {
+			if redirect, ok := v.fields["redirect"]; ok {
+				if dest, ok := redirect.fields["destination"]; ok {
+					f.recordInterpreter(n, n, dest, "redirect", "pages.redirect", "next-redirect-v1", []analysis.Evidence{f.module.evidence("sink_binding", n)}, 0)
+				}
+			}
+		}
+		if f.web != nil && f.web.surface == "server_action" {
+			f.noteNextBoundary("action_return", n, v)
 		}
 		f.returns = append(f.returns, f.transfer(v, "return_value", n))
 		return true
@@ -480,6 +501,12 @@ func (f *flow) eval(n *sitter.Node) value {
 		return value{gaps: []analysis.Gap{gap}}
 	}
 	src := f.module.src
+	if f.metaNavigation(n) {
+		return value{}
+	}
+	if v, ok := f.componentProps(n); ok {
+		return v
+	}
 	if v, ok := f.graphqlInputValue(n); ok {
 		return v
 	}
@@ -557,6 +584,12 @@ func (f *flow) eval(n *sitter.Node) value {
 	case "assignment_expression":
 		left := n.ChildByFieldName("left")
 		v := f.transfer(f.eval(n.ChildByFieldName("right")), "assignment", n)
+		if f.client != nil {
+			text := left.Utf8Text(f.module.src)
+			if (text == "window.location" || text == "window.location.href" || text == "location.href") && browserGlobal(f.module, n, strings.Split(text, ".")[0]) && !bindingReassigned(f.module, strings.Split(text, ".")[0]) {
+				f.recordInterpreter(n, n.ChildByFieldName("right"), v, "redirect", text, "browser-navigation-v1", []analysis.Evidence{f.module.evidence("sink_binding", left)}, 0)
+			}
+		}
 		if f.client != nil && f.clientAssignment(n, left, v) {
 			return v
 		}
@@ -642,6 +675,7 @@ func (f *flow) eval(n *sitter.Node) value {
 	case "template_string":
 		return f.templateString(n)
 	case "new_expression":
+		f.interpreterCall(n, n.ChildByFieldName("constructor"), n.ChildByFieldName("arguments"))
 		if f.client != nil {
 			if v, ok := f.clientConstructor(n); ok {
 				return v
@@ -776,6 +810,7 @@ func combine(a, b value) value {
 	}
 	if a.model == "" {
 		a.model, a.read = b.model, b.read
+		a.readAlternatives = append([]analysis.Evidence{}, b.readAlternatives...)
 	}
 	if a.fields == nil && b.fields != nil {
 		a.fields = b.fields
@@ -864,6 +899,10 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		return value{}
 	}
 	name := fn.Utf8Text(f.module.src)
+	f.interpreterCall(n, fn, args)
+	if f.pageEffect(n, fn, args) {
+		return value{}
+	}
 	if input, evidence := nativeHashHex(f.module, n); input != nil {
 		v := f.eval(input)
 		for _, e := range evidence {
@@ -934,8 +973,12 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	// Recording a process candidate is additive: the call is then handled exactly as
 	// before, so existing candidates, gaps and identities are unchanged.
 	f.commandCall(n, fn, args)
+	f.prismaRawStorage(n, args)
 	if modelCall {
 		f.recordStorageWrite(n, fn, args, values, modelValue)
+		if f.web != nil && f.web.surface == "server_action" && modelValue.read == nil && len(values) > 0 {
+			f.noteNextBoundary("action_write", n, values[0])
+		}
 		// A Prisma write resolves to the stored row, which echoes its data fields.
 		if strings.HasPrefix(modelValue.model, "prisma:") && modelValue.read == nil && len(values) > 0 {
 			data := values[0].fields["data"]
@@ -1334,6 +1377,9 @@ func (f *flow) awaited(n *sitter.Node, v value) value {
 	inner := n
 	if n.Kind() == "await_expression" && n.NamedChildCount() == 1 {
 		inner = unwrapTS(n.NamedChild(0))
+	}
+	if strings.HasPrefix(v.model, "prisma:") {
+		return f.transfer(v, "await_database_row", n)
 	}
 	if f.web != nil && inner.Kind() == "call_expression" && f.webAwaitable(inner) {
 		return f.transfer(v, "await_request_read", n)

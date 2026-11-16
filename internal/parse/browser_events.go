@@ -339,3 +339,15 @@ func eventProjectionGaps(m *sourceModule, callback *sitter.Node, param boundPara
 	visit(callback.ChildByFieldName("body"))
 	return gaps
 }
+
+func (s *moduleSet) browserEventsFor(out *analysis.AnalysisReport, m *sourceModule) *browserEvents {
+	if s.browserStates == nil {
+		s.browserStates = map[string]*browserEvents{}
+	}
+	if state := s.browserStates[m.file]; state != nil {
+		return state
+	}
+	state := newBrowserEvents(out, m)
+	s.browserStates[m.file] = state
+	return state
+}

@@ -61,7 +61,7 @@ func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
 			continue
 		}
 		base := &clientContext{entry: browserEntry(m, m.evidence("browser_source_slice", m.tree.RootNode()), file, "script"),
-			events: newBrowserEvents(report, m), injected: map[string]clientInjection{}, methods: map[string]*sitter.Node{}, fields: map[string]*sitter.Node{}}
+			events: s.browserEventsFor(report, m), injected: map[string]clientInjection{}, methods: map[string]*sitter.Node{}, fields: map[string]*sitter.Node{}}
 		for _, imp := range m.imports {
 			base.react = base.react || imp.module == "react"
 		}
@@ -163,7 +163,7 @@ func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
 }
 
 func newClientFlow(s *moduleSet, m *sourceModule, client *clientContext) flow {
-	return flow{module: m, set: s, client: client, entry: client.entry, invocation: browserInvocation(client.entry), env: map[string]value{}, helpers: &helperExpansion{budget: 24, stack: map[string]bool{}},
+	return flow{report: client.events.report, module: m, set: s, client: client, entry: client.entry, invocation: browserInvocation(client.entry), env: map[string]value{}, helpers: &helperExpansion{budget: 24, stack: map[string]bool{}},
 		facts: newInputFacts(), context: append([]analysis.Evidence{}, client.bindings...)}
 }
 
@@ -172,6 +172,15 @@ func addClientUses(report *analysis.AnalysisReport, client *clientContext, uses 
 		return
 	}
 	merged := mergeClientUses(uses)
+	if client.invocationID == "" {
+		for _, ctx := range report.InvocationContexts {
+			if ctx.EntryID == client.entry.ID {
+				client.invocationID = ctx.ID
+				break
+			}
+		}
+	}
+
 	if client.invocationID != "" {
 		for i := range merged {
 			merged[i].EntryID, merged[i].InvocationContextID, merged[i].EntryKind = client.entry.ID, client.invocationID, "browser"
@@ -204,6 +213,14 @@ func mergeClientUses(uses []analysis.CandidateUse) []analysis.CandidateUse {
 	var merged []analysis.CandidateUse
 	for _, u := range uses {
 		if u.XSS == nil {
+			if u.Code != nil || u.Redirect != nil {
+				if i, ok := index[u.ID]; ok {
+					merged[i] = mergeInterpreterUse(merged[i], u)
+				} else {
+					index[u.ID] = len(merged)
+					merged = append(merged, u)
+				}
+			}
 			continue
 		}
 		if i, ok := index[u.ID]; ok {

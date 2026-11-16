@@ -92,7 +92,7 @@ final paid runs replay exactly. [Contract](../specifications/nextjs-support.md).
 
 | Order | Planned functionality | Notes |
 |---|---|---|
-| 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Two new analyzer families on the shared engine, JS/TS server and browser, then Python. [Proposal](../../code-injection-and-open-redirect-proposal.md); vuln-nextjs `JS-001`/`JS-002`/`REDIR-001`, TS app, Juice Shop, Goof and VulnPy rows already identified |
+| 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Two new analyzer families on the shared engine, JS/TS server and browser, then Python. [Proposal](../../code-injection-and-open-redirect-proposal.md) (owner decisions recorded in §7; cap 150 `gpt-6-luna` requests); vuln-nextjs `JS-001`/`JS-002`/`REDIR-001`, TS app, Juice Shop, Goof and VulnPy rows already identified |
 | 2 | **Prototype pollution (CWE-1321)** | JS/TS recursive merge and library `merge`/`set`/`defaultsDeep` sinks, computed key writes, key deny-list and null-prototype controls |
 | 3 | **Drupal / PHP support** | PHP language adapter: Drupal routing and controllers, Symfony `Request`, Form API, database API, Twig and render-array output |
 | 4 | **Agent skills fixes, scan/fix loop, external SAST findings import** | Fix-workflow skills, the scheduled/on-demand loop, and provenance-preserving import of third-party SAST findings |

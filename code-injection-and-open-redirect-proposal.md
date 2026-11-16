@@ -1,6 +1,6 @@
 # Proposal: code injection and open redirect analyzers
 
-**Status:** Proposal, not an implementation contract. It authorizes no coding or paid model calls.
+**Status:** Proposal with owner decisions recorded (§7, 2026-11-16). Not an implementation contract; it authorizes no coding or paid model calls until an implementation request.
 **Drafted:** 2026-11-16, after Next.js support (draft PR zazzcode/zazzles#18).
 **Driving rows:** vuln-nextjs `JS-001`, `JS-002` (CWE-95), `REDIR-001` (CWE-601); vulnerable-typescript-app
 `TS-CODE-01`, `TS-REDIRECT-01`; VulnPy `unsafe_code_exec`; Juice Shop `/redirect`.
@@ -101,8 +101,8 @@ compiling request templates: a later family), deserialization (`pickle`, `node-s
   `blacklist_only`, and no claim blocker.
 - **Protected:** `allowlist_grammar` or `type_conversion` on every path with complete coverage,
   backed by a source-established guard or transform.
-- **Poor practice or Review:** a `sandbox_library` with no applicable advisory (Review); one with an
-  advisory (poor practice, citing the advisory).
+- **Poor practice or Review:** a `sandbox_library` with a known bypass or advisory is poor practice,
+  citing it (§7 decision 3); one with no established advisory is Review.
 - **No claim:** `data_only`. The finding says code is fixed and the value is data.
 - Contradictions (for example a restriction claimed where the source has no guard) are blocked as
   `code_answers_inconsistent`.
@@ -113,11 +113,11 @@ compiling request templates: a later family), deserialization (`pickle`, `node-s
 | --- | --- | --- |
 | vuln-nextjs `JS-002` | `pages/api/vulnerable-submit.js:15`, eval of a template literal | Confirmed (`inside_string_literal`) |
 | vuln-nextjs `JS-002-safeControl` | `pages/api/protected-example.js` | No record (no eval) |
-| vuln-nextjs `JS-001` | `pages/vulnerable/eval-injection.js:8`, browser `useEffect` eval of a prop from `query.input` | Confirmed, browser context |
+| vuln-nextjs `JS-001` | `pages/vulnerable/eval-injection.js:8`, browser `useEffect` eval of a prop from `query.input` | Confirmed, browser context; no XSS record (§7 decision 4) |
 | vulnerable-typescript-app `TS-CODE-01` | `src/server.ts:137`, `eval(req.body.expression)` | Confirmed (`whole_program`) |
 | VulnPy `unsafe_code_exec` | `trigger/unsafe_code_exec.py` `exec` and `eval`, 11 adapters | Confirmed per context |
 | Juice Shop captcha | `routes/captcha.ts:22`, eval of a server-generated expression | No record (no request data) |
-| Juice Shop B2B order | `routes/b2bOrder.ts:23`, `notevil` on the request body through `vm` | Review or poor practice (`sandbox_library`); the owner decides the key |
+| Juice Shop B2B order | `routes/b2bOrder.ts:23`, `notevil` on the request body through `vm` | Poor practice (`sandbox_library` with advisory; §7 decision 3) |
 | Juice Shop `lib/xml.ts`, `fileUpload.ts` `vm.runInContext` | constant code, request data in the sandbox | No claim (`data_only`), possibly an observation |
 | Juice Shop `new Function('specifier', ...)` | constant | No record |
 
@@ -172,7 +172,7 @@ carry both claims, with separate records that are linked in the report.
   claim blocker. A scheme-only test counts as `none`, as in SSRF.
 - **Protected:** `same_site_relative`, `parsed_origin_check` or `host_allowlist` on every path with
   complete coverage and a source-backed guard.
-- **`prefix_or_substring`:** owner decision. Recommendation: `includes`/`indexOf` is **Confirmed**,
+- **`prefix_or_substring`** (§7 decision 2): `includes`/`indexOf` is **Confirmed**,
   because an attacker can always place the allowed text in a query string; a `startsWith` with a
   full origin and trailing `/` is **Protected**; any other `startsWith` is **poor practice** (the
   SSRF rule).
@@ -185,7 +185,7 @@ carry both claims, with separate records that are linked in the report.
 | vuln-nextjs `REDIR-001` | `pages/vulnerable/redirect.js:18`, `getServerSideProps` `redirect.destination = query.to` | Confirmed |
 | vuln-nextjs `REDIR-001-safeControl` | `pages/secure/redirect.js:10`, `^\/[^/]` plus no-scheme regex | Protected |
 | vulnerable-typescript-app `TS-REDIRECT-01` | `src/server.ts:239` `res.redirect(req.query.url)` | Confirmed |
-| Juice Shop `/redirect` | `routes/redirect.ts:18`, `includes` allow-list | Confirmed under the recommendation (the known bypass challenge) |
+| Juice Shop `/redirect` | `routes/redirect.ts:18`, `includes` allow-list | Confirmed (§7 decision 2; the known bypass challenge) |
 | nodejs-goof login | `routes/index.js:29`, `res.redirect(req.body.redirectPage)` after login | Confirmed |
 | OopsSec login form | `app/login/LoginForm.tsx:37` `?redirect=` → `window.location.href` | Confirmed as open redirect, linked to the existing XSS record |
 | OopsSec middleware, Juice Shop `BASE_PATH + '/profile'` | fixed destinations | No record |
@@ -226,17 +226,22 @@ carry both claims, with separate records that are linked in the report.
 ### 6.2 Paid budget estimate
 
 About 15 new code records and 15 new redirect records across the samples (VulnPy contexts add about
-22). Two passes plus a final replay run come to roughly 150 `gpt-6-luna` requests. This needs a
-separate owner cap.
+22). Two passes plus a final replay run come to roughly 150 `gpt-6-luna` requests, the owner cap
+(§7 decision 6).
 
-## 7. Owner decisions needed
+## 7. Owner decisions (recorded 2026-11-16)
 
-1. Confirm two families (`code`, `redirect`) rather than one combined family.
-2. `prefix_or_substring` redirect policy (§5.5 recommendation).
-3. Juice Shop B2B `notevil`: Review or poor practice.
-4. Browser eval (JS-001): report under code injection only, or also as an XSS record.
-5. Whether Python ships in the same milestone (C3, C6) or follows JS/TS.
-6. Paid cap and model for evaluation.
+| # | Decision | Outcome |
+| --- | --- | --- |
+| 1 | One family or two | **Two families:** `code` (CWE-94/95) and `redirect` (CWE-601), sharing slice C0 |
+| 2 | Raw-string redirect checks (`prefix_or_substring`) | `includes`/`indexOf`: **Confirmed** (the allowed text can be placed in a query string). `startsWith` with a full origin and a trailing `/`: **Protected**. Any other `startsWith`: **poor practice** (the SSRF rule) |
+| 3 | Juice Shop B2B `notevil` | **Poor practice**, citing the library's known sandbox bypasses (`sandbox_library_advisory`) |
+| 4 | Browser `eval` (JS-001) | **Code injection only**, with a browser execution context; no duplicate XSS record |
+| 5 | Python | **JS/TS first**; Python (C3, C6) follows as a slice in the same milestone, validated on VulnPy |
+| 6 | Paid evaluation | Up to **150 `gpt-6-luna` requests**, with exact replay of the final runs |
+
+These decisions update §4.5, §4.6, §5.5 and §5.6: the Juice Shop B2B row expects poor practice,
+the Juice Shop `/redirect` row expects Confirmed, and JS-001 produces one code-injection record.
 
 ## 8. Next after this
 

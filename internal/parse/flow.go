@@ -31,8 +31,13 @@ type value struct {
 	outputContext string
 	deps          []analysis.Dependency
 	gaps          []analysis.Gap
+	// web is the web-request-v1 object kind this value is (searchParams,
+	// headers, formData, ...); "" for ordinary values.
+	web string
 }
 type flow struct {
+	// web is the web-request acquisition context of a Next.js entry; nil elsewhere.
+	web          *webState
 	constants    registrationSeeds
 	client       *clientContext
 	response     string
@@ -121,6 +126,9 @@ func (f *flow) statement(n *sitter.Node) bool {
 			if name == nil {
 				continue
 			}
+			if f.reactState(d, name) {
+				continue
+			}
 			v := f.eval(d.ChildByFieldName("value"))
 			if name.Kind() == "identifier" {
 				f.env[name.Utf8Text(f.module.src)] = f.transfer(v, "assignment", d)
@@ -134,13 +142,25 @@ func (f *flow) statement(n *sitter.Node) bool {
 				if name.Kind() == "object_pattern" {
 					for k := uint(0); k < name.NamedChildCount(); k++ {
 						binding := name.NamedChild(k)
+						if f.web != nil && v.web != "" {
+							if local, prop, key := patternBinding(binding, f.module.src); local != "" {
+								if wv, ok := f.webProjection(v, prop, key); ok {
+									f.env[local] = wv
+									continue
+								}
+							}
+						}
 						if binding.Kind() == "shorthand_property_identifier_pattern" {
-							f.env[binding.Utf8Text(f.module.src)] = f.transfer(v, "field_projection", binding)
+							projected := v
+							if field, ok := v.fields[binding.Utf8Text(f.module.src)]; ok && v.model == "" && len(v.deps) == 0 {
+								projected = field // a modeled result object such as a query's { rows }
+							}
+							f.env[binding.Utf8Text(f.module.src)] = f.transfer(projected, "field_projection", binding)
 						} else {
 							f.gaps = append(f.gaps, f.gap("unsupported_binding", "destructuring alias/default not modeled", binding))
 						}
 					}
-				} else {
+				} else if !f.serverReactState(d, name) {
 					f.gaps = append(f.gaps, f.gap("unsupported_binding", "binding not modeled", d))
 				}
 			}
@@ -157,7 +177,7 @@ func (f *flow) statement(n *sitter.Node) bool {
 			f.eval(n.NamedChild(0))
 		}
 		// The shared guard engine treats the Node global process.exit as an exit too.
-		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && f.module.nodeProcessExit(n.NamedChild(0)))
+		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && (f.module.nodeProcessExit(n.NamedChild(0)) || nextNavigationExit(f.module, n.NamedChild(0))))
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
 		if f.pathArchiveForOf(n) {
@@ -474,6 +494,14 @@ func (f *flow) eval(n *sitter.Node) value {
 	if v, ok := f.pathArchiveValue(n); ok {
 		return v
 	}
+	if f.web != nil {
+		if v, ok := f.webValue(n); ok {
+			return v
+		}
+		if v, ok := f.serverJSX(n); ok {
+			return v
+		}
+	}
 	switch n.Kind() {
 	case "identifier", "shorthand_property_identifier":
 		if v, ok := f.env[n.Utf8Text(src)]; ok {
@@ -596,6 +624,14 @@ func (f *flow) eval(n *sitter.Node) value {
 				v.fields[p.Utf8Text(src)] = field
 			} else if p.Kind() == "spread_element" && p.NamedChildCount() == 1 {
 				spread = f.eval(p.NamedChild(0))
+				if f.web != nil {
+					// `...(cond && { bio })` contributes its fields when present.
+					for k, fv := range spread.fields {
+						if _, set := v.fields[k]; !set {
+							v.fields[k] = fv
+						}
+					}
+				}
 				v.pathObjectClosed = v.pathObjectClosed && spread.pathObjectClosed
 				v = combine(v, spread)
 			}
@@ -616,6 +652,9 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return f.transfer(f.children(n), "expression", n)
 	case "call_expression":
+		if f.module.awaitedCalls[n.StartByte()] {
+			return f.awaited(n, f.call(n))
+		}
 		return f.call(n)
 	case "binary_expression":
 		// Same as any expression; a comparison against a credential-named property is destination evidence.
@@ -629,6 +668,10 @@ func (f *flow) eval(n *sitter.Node) value {
 		f.noteCredentialDestination(n, v)
 		return f.transfer(v, "expression", n)
 	case "arrow_function", "function_expression", "function":
+		if f.client != nil && f.client.react {
+			f.reactCallback(n, nil)
+			return value{}
+		}
 		f.enterQueryCallback(n)
 		return value{gaps: []analysis.Gap{f.gap("unsupported_callback", "callback/closure body not traversed", n)}}
 	case "number", "string", "true", "false", "null", "undefined", "property_identifier", "type_identifier", "comment", "string_fragment", "escape_sequence":
@@ -648,9 +691,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		v.gaps = append(v.gaps, f.gap("conditional_merge", "branch feasibility is not modeled", n))
 		return f.transfer(v, "conditional_value", n)
 	case "await_expression":
-		v := f.children(n)
-		v.gaps = append(v.gaps, f.gap("async_response_unresolved", "await response/continuation semantics not modeled", n))
-		return f.transfer(v, "await", n)
+		return f.awaited(n, f.children(n))
 	default:
 		return f.transfer(f.children(n), "expression", n)
 	}
@@ -757,6 +798,15 @@ func combine(a, b value) value {
 	if a.outputContext == "" {
 		a.outputContext = b.outputContext
 	}
+	// A web object kind survives only an accumulation from an empty value.
+	switch {
+	case a.web == b.web:
+	case a.web == "" && len(a.deps) == 0:
+		a.web = b.web
+	case b.web == "" && len(b.deps) == 0:
+	default:
+		a.web = ""
+	}
 	// An identical source path reached twice (for example an unchanged value on
 	// two merged branches) is one path; distinct transfer sequences stay separate.
 	deps := append([]analysis.Dependency{}, a.deps...)
@@ -825,6 +875,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		return v
 	}
 	if f.client != nil {
+		if v, handled := f.reactCall(n, fn, args); handled {
+			return v
+		}
 		if v, handled := f.clientCall(n, fn, args); handled {
 			return v
 		}
@@ -836,6 +889,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	}
 	if modeled, handled := f.templateCall(n, fn, args); handled {
 		return modeled
+	}
+	if inner := jsonRoundTrip(f.module, n); inner != nil {
+		return f.transfer(f.eval(inner), "json_copy", n)
 	}
 	// An outer chained call must still visit its receiver, including a query call.
 	// Its result is kept so a.b().c() still depends on what a.b() depended on.
@@ -872,11 +928,21 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	if f.responseCall(n, fn, args, values) {
 		return value{}
 	}
+	if f.nextJSONResponse(n, fn, values) {
+		return value{gaps: []analysis.Gap{f.gap("unknown_call_result", "response object is not modeled", n)}}
+	}
 	// Recording a process candidate is additive: the call is then handled exactly as
 	// before, so existing candidates, gaps and identities are unchanged.
 	f.commandCall(n, fn, args)
 	if modelCall {
 		f.recordStorageWrite(n, fn, args, values, modelValue)
+		// A Prisma write resolves to the stored row, which echoes its data fields.
+		if strings.HasPrefix(modelValue.model, "prisma:") && modelValue.read == nil && len(values) > 0 {
+			data := values[0].fields["data"]
+			echoed := combine(modelValue, data)
+			echoed.fields = data.fields
+			modelValue = echoed
+		}
 	}
 	// A verified logger is an emission sink, not a validator of its arguments.
 	if binding, ok := f.logSink(n, fn); ok {
@@ -892,6 +958,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			}
 		}
 	}
+	if kind == "" && f.set != nil && len(values) > 0 {
+		if _, _, ok := f.set.prismaFilterCall(f.module, n); ok && f.set.unvalidatedBody(values[0].fields["where"]) {
+			kind = "nosql_query_candidate"
+		}
+	}
 	if kind == "" && collectionWrite(name) && requestDeps(values) && f.set != nil {
 		probe := analysis.CandidateUse{Sink: f.module.evidence("nosql_query_candidate", n)}
 		if len(f.set.collectionBinding(probe)) > 0 {
@@ -902,6 +973,10 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		// Only request data in the SQL text slot is a claim; a bound values array is not.
 		if _, ok := sqlJSCall(f.module, fn); ok {
 			kind = "sql_query_candidate"
+		} else if f.set != nil {
+			if _, _, _, ok := f.set.sqlLibraryCall(f.module, n); ok {
+				kind = "sql_query_candidate"
+			}
 		}
 	}
 	var outbound *analysis.OutboundFacts
@@ -925,7 +1000,20 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			destValue = f.httpOptionsDestination(destNode, destValue)
 		}
 		outbound = &analysis.OutboundFacts{DestinationOrigin: f.destinationOrigin(n, destNode, destValue)}
-		if verified && outbound.DestinationOrigin == analysis.DestinationRequest {
+		internalPath := false
+		if verified && outbound.DestinationOrigin == analysis.DestinationRequest && f.web != nil && f.fixedOriginRequestPath(destNode) {
+			// A fixed (constant or configured) origin with a request-derived path is
+			// a request into the app's own or a fixed service: a path observation
+			// (request_path_in_internal_url), never forgery of an attacker-chosen host.
+			internalPath = true
+			g := f.gap("request_path_in_internal_url", "a request-derived value is inserted into the path of a fixed-origin server request; ../ or %2F may redirect it to another internal endpoint", destNode)
+			for i := range values {
+				if i == dest || (dest <= 0 && i == 0) {
+					values[i].gaps = append(append([]analysis.Gap{}, values[i].gaps...), g)
+				}
+			}
+		}
+		if verified && outbound.DestinationOrigin == analysis.DestinationRequest && !internalPath {
 			// A verified client with a request-derived destination is an SSRF claim
 			// over that operand only; other arguments are data, not destination control.
 			kind = "ssrf_candidate"
@@ -985,10 +1073,24 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		if modelCall {
 			return modelValue
 		}
+		if kind == "ssrf_candidate" && f.web != nil {
+			// The body of a request-chosen URL is attacker-controlled content.
+			fetched := f.module.evidence("fetched_content", n)
+			return value{web: "fetchedResponse", deps: []analysis.Dependency{{Source: fetched, Transfers: []analysis.Evidence{}}}}
+		}
 		return value{gaps: []analysis.Gap{f.gap("unknown_call_result", "sink/transport return value is not modeled", n)}}
 	}
 	if modelCall {
 		return modelValue
+	}
+	if v, ok := f.validationHelperCall(n, values); ok {
+		return v
+	}
+	if v, ok := f.directZodParse(n, values); ok {
+		return v
+	}
+	if f.set != nil && f.set.pgliteFactory(f.module, n) {
+		return value{} // a verified database client; its setup is not request flow
 	}
 	ret, entered, precise := f.enterHelper(n, name, values)
 	if entered && precise {
@@ -1205,4 +1307,69 @@ func (f *flow) enterContinuation(fn *sitter.Node) {
 		}
 	}
 	f.work = child.work
+}
+
+// patternBinding returns the local name, property and key node of one object
+// pattern entry: `{ id }` or `{ id: orderId }`.
+func patternBinding(b *sitter.Node, src []byte) (local, prop string, key *sitter.Node) {
+	switch b.Kind() {
+	case "shorthand_property_identifier_pattern":
+		return b.Utf8Text(src), b.Utf8Text(src), b
+	case "pair_pattern":
+		k, v := b.ChildByFieldName("key"), b.ChildByFieldName("value")
+		if k != nil && v != nil && v.Kind() == "identifier" {
+			return v.Utf8Text(src), k.Utf8Text(src), k
+		}
+	}
+	return "", "", nil
+}
+
+// awaited applies await semantics to the value of an awaited expression n (an
+// await_expression, or a generic call whose await keyword was blanked).
+func (f *flow) awaited(n *sitter.Node, v value) value {
+	if f.client != nil && v.apiPath != "" {
+		// A verified client HTTP call resolves to its response data.
+		return f.transfer(v, "await_response", n)
+	}
+	inner := n
+	if n.Kind() == "await_expression" && n.NamedChildCount() == 1 {
+		inner = unwrapTS(n.NamedChild(0))
+	}
+	if f.web != nil && inner.Kind() == "call_expression" && f.webAwaitable(inner) {
+		return f.transfer(v, "await_request_read", n)
+	}
+	v.gaps = append(v.gaps, f.gap("async_response_unresolved", "await response/continuation semantics not modeled", n))
+	return f.transfer(v, "await", n)
+}
+
+// fixedOriginRequestPath reports a template URL `${base}/path/${x}` whose leading
+// substitution is request-independent: a dependency-free local, a no-argument
+// call or a process.env read. Request data then sits only in the path or query.
+func (f *flow) fixedOriginRequestPath(n *sitter.Node) bool {
+	n = unwrapTS(n)
+	if n == nil || n.Kind() != "template_string" || n.NamedChildCount() < 2 {
+		return false
+	}
+	first, second := n.NamedChild(0), n.NamedChild(1)
+	if first.Kind() == "string_fragment" {
+		// A literal scheme and host: `https://api.example.com/x/${id}`.
+		text := first.Utf8Text(f.module.src)
+		i := strings.Index(text, "://")
+		return i > 0 && strings.Contains(text[i+3:], "/")
+	}
+	if first.Kind() != "template_substitution" || first.NamedChildCount() != 1 || second.Kind() != "string_fragment" || !strings.HasPrefix(second.Utf8Text(f.module.src), "/") {
+		return false
+	}
+	base := unwrapTS(first.NamedChild(0))
+	switch base.Kind() {
+	case "identifier":
+		v, ok := f.env[base.Utf8Text(f.module.src)]
+		return ok && len(v.deps) == 0
+	case "call_expression":
+		args := base.ChildByFieldName("arguments")
+		return args != nil && args.NamedChildCount() == 0
+	case "member_expression":
+		return f.environmentRead(n, base)
+	}
+	return false
 }

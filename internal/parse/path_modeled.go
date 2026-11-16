@@ -289,6 +289,11 @@ func coreModuleReference(m *sourceModule, n *sitter.Node) bool {
 	switch n.Kind() {
 	case "identifier":
 		name := n.Utf8Text(m.src)
+		if name == "process" && !topLevelBinding(m, name) && !shadowed(n, name, m.src) {
+			// The global process object of a process.cwd() trusted base.
+			parent := n.Parent()
+			return parent != nil && parent.Kind() == "member_expression" && parent.Utf8Text(m.src) == "process.cwd"
+		}
 		imp, ok := m.imports[name]
 		if !ok || shadowed(n, name, m.src) || bindingReassigned(m, name) {
 			return false

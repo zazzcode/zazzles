@@ -8,6 +8,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | Guide | Scope |
 |---|---|
 | [Node input acquisition](node-inputs.md) | Transport-neutral value facts, bounded Express/Fastify/Hapi adapters and provisional model-assisted discovery |
+| [Next.js acquisition and practice](nextjs.md) | Addendum: file-system entries, Web Request API origins, wrappers as authorization context, client/server rendering rules and NX-BP practice checks |
 | [Database injection](database-injection.md) | SQL/NoSQL library contracts, source flow, branch constraints, and verdicts |
 | [Command injection](command-injection.md) | Verified Node/Python process APIs, shell/executable/argument facets, guards and outcomes |
 | [Server-side request forgery](ssrf.md) | Verified `fetch`/`axios`/Python HTTP clients, destination-operand origin, restrictions, grouped outbound observations and outcomes |

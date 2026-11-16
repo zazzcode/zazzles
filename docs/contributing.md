@@ -10,15 +10,21 @@ Use Go 1.27.2 or newer, as declared in [go.mod](../go.mod), and a C compiler on 
 Tree-sitter bindings. Check `go version` and `cc --version`. On macOS, install the Xcode command-line
 tools if needed. Go downloads module dependencies during the first build or test run.
 
-For an ordinary contribution, clone the current development branch and create a feature branch:
+The preferred contributor setup is the project's `.bare/` repository with sibling worktrees. Use
+an existing assigned feature checkout. Worktree setup and optional Worktrunk procedures are
+[task references below](#branches-worktrees-and-review); consult them when those operations are needed.
+From the feature checkout:
 
 ```bash
-git clone --branch stage https://github.com/zazzcode/zazzles.git
-cd zazzles
-git switch -c your-feature
+cd <repo-container>/<feature-worktree>
 go build -o bin/scan ./cmd/scan
 go test ./...
 ```
+
+Contributors may use another local layout and submit a feature-branch PR normally. The layout is a
+shared working convention, not a PR acceptance requirement; contributors choosing another setup
+are responsible for adapting paths and commands. Agents in the maintained workspace MUST use its
+assigned sibling worktree and existing `.bare/` repository.
 
 Run commands from the directory containing `go.mod`. Tests use fixtures and local HTTP stubs;
 no API key, target-application server, or paid decision-model calls are required. User scans and
@@ -85,13 +91,20 @@ copies. Model agreement and finding totals do not define the expected source-lev
 draft pull request targeting `stage`, with the problem, resulting behavior, and verification evidence.
 Follow the [PR process](../.zazz/standards/pr-process.md); humans approve and merge.
 
-The maintained development workspace uses a bare repository with sibling worktrees. Contributors
-using that layout should follow the [worktree setup guide](../.zazz/docs/worktree-setup.md), verify
-`pwd` and `git status --short --branch`, and work in the assigned feature checkout. An ordinary
-clone does not need conversion merely to build or contribute.
+The maintained workspace uses `.bare/` with direct sibling worktrees, and contributors are encouraged
+to follow it for consistency. Reuse the assigned checkout. Nested tool worktrees and external fallback
+checkouts are not permitted for agents working in this workspace.
 
-Coding agents must read [AGENTS.md](../AGENTS.md), the
-[orientation](../.zazz/docs/zazzles-agent-orientation.md), and the assigned implementation contract.
+Contributor references for the operation being performed:
+
+- [Worktree setup](../.zazz/docs/worktree-setup.md) for creating, moving, removing or repairing
+  worktrees, local layout, file copying and the optional Worktrunk recommendation.
+- [Worktrunk cheat sheet](../.zazz/docs/wt-cheat-sheet.md) only when using `wt` or configuring its hooks.
+- [Agent orientation](../.zazz/docs/zazzles-agent-orientation.md) for the agent entry point and topic map.
+
+For coding agents, [AGENTS.md](../AGENTS.md#start-here) owns startup and context-loading rules,
+including opening the [orientation contents](../.zazz/docs/zazzles-agent-orientation.md#contents)
+and selecting sections for the current task. The assigned implementation contract governs the work.
 Keep transient execution notes in ignored `.zazz/ephemeral/`; preserve unrelated local changes and
 private credentials. The maintained checkout uses the `zazzcode` Git identity and authentication
 profile; verify that profile before publishing from it.

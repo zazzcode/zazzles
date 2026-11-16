@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-16",
+  "target_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+  "upstream": "https://github.com/kOaDT/oss-oopssec-store",
+  "source_run": "run-2413679240",
+  "source_json_sha256": "d830c7b7b12f2462127f16376c3b55e0cf8ab39012aab8646df06aa6bbecff0e",
+  "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
+  "scanner_note": "e1e254e executable; this closeout changes documentation and sample artifacts only.",
+  "evaluation_mode": "Fresh full scan: all implemented analyzers, including standalone input validation",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "paid_request_cap_both_apps": 180,
+  "provider_requests": 107,
+  "completed_assessments": 107,
+  "derived_assessments": 0,
+  "input_tokens": 466404,
+  "entries": 129,
+  "published_records": 116,
+  "outcomes": {
+    "needs_evidence": 92,
+    "confirmed_vulnerability": 15,
+    "needs_review": 9
+  },
+  "displayed_outcomes": {
+    "needs_evidence": 92,
+    "confirmed_vulnerability": 15,
+    "needs_review": 7
+  },
+  "grouped_records": 2,
+  "not_run": 9,
+  "not_run_reasons": {
+    "Outbound security assessment is not implemented; this is an observation only.": 9
+  },
+  "failed": 0,
+  "practice_observations": 29,
+  "exact_replay": {
+    "replayed": 107,
+    "mismatched": 0,
+    "trace_absent": 0
+  },
+  "target_status_before_and_after": "No tracked changes; no ignored files.",
+  "runtime_confirmation": "none; static source judgments only",
+  "publication_note": "Only root is replaced with the public label; evidence and fresh assessments are preserved."
+}

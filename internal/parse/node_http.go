@@ -28,7 +28,7 @@ func (s *moduleSet) rememberNodeHTTP(e analysis.EntryPoint, m, hm *sourceModule,
 		s.nodeHTTP = map[string]*nodeHTTPContext{}
 	}
 	c := &nodeHTTPContext{entry: e, registration: m, handler: hm, call: call, body: body, request: req, receiver: receiver}
-	if e.HTTP.Framework != "express" {
+	if e.HTTP.Framework != "express" && !nextFramework(e.HTTP.Framework) {
 		c.controls, c.gaps, c.stages = s.nodeHTTPControls(m, call, receiver, e.HTTP.Framework)
 	}
 	s.nodeHTTP[e.ID] = c

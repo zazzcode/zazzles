@@ -69,6 +69,41 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 		out.Gaps = append(out.Gaps, gaps...)
 	}
 
+	var jsFiles []string
+	for _, file := range parsed.Files {
+		if file.Language == lang.JavaScript || file.Language == lang.TypeScript {
+			jsFiles = append(jsFiles, file.Path)
+		}
+	}
+	nextRoutes, nextGaps, err := nextRouteInventory(root, jsFiles)
+	if err != nil {
+		return nil, err
+	}
+	if len(nextRoutes) > 0 || len(nextGaps) > 0 {
+		// Next.js scope excludes files the project's tsconfig removes.
+		excluded := map[string]bool{}
+		probe := &moduleSet{root: root, allowed: map[string]bool{}}
+		probe.detectNextProjects(jsFiles)
+		for _, f := range jsFiles {
+			if p := probe.nextProjectFor(f); p != nil && p.nextExcluded(f) {
+				excluded[f] = true
+			}
+		}
+		kept := out.Routes[:0]
+		for _, r := range out.Routes {
+			if !excluded[r.Registration.File] {
+				kept = append(kept, r)
+			}
+		}
+		out.Routes = append(kept, nextRoutes...)
+		keptGaps := out.Gaps[:0]
+		for _, g := range out.Gaps {
+			if !excluded[g.At.File] {
+				keptGaps = append(keptGaps, g)
+			}
+		}
+		out.Gaps = append(keptGaps, nextGaps...)
+	}
 	py, err := newPythonSet(root)
 	if err != nil {
 		return nil, err
@@ -149,7 +184,7 @@ func (p *parsers) forPath(path string) *sitter.Parser {
 }
 
 func extractFile(parser *sitter.Parser, file string, src []byte) ([]analysis.Route, []analysis.Gap, error) {
-	tree := parser.Parse(src, nil)
+	tree, _ := parseRecovered(parser, src)
 	if tree == nil {
 		return nil, []analysis.Gap{{
 			Kind:   "parse_error",
@@ -260,6 +295,15 @@ func routesFromCall(file string, src []byte, call *sitter.Node, locals map[strin
 		}
 	}
 	if !matched {
+		return nil, nil
+	}
+	// A client call such as api.post("/path", body) or app.get("setting") is not
+	// a registration: a route needs a handler-shaped final argument.
+	chained := false
+	if obj := fn.ChildByFieldName("object"); obj != nil && obj.Kind() == "call_expression" {
+		chained = true // receiver.route(path).verb(...) keeps its own handling
+	}
+	if method != "USE" && handlersFrom == 1 && !chained && !handlerShaped(args.NamedChild(args.NamedChildCount()-1), args.NamedChildCount()) {
 		return nil, nil
 	}
 	at := spanOf(file, call)
@@ -542,4 +586,17 @@ func spanOf(file string, node *sitter.Node) analysis.Span {
 		StartByte: int(node.StartByte()),
 		EndByte:   int(node.EndByte()),
 	}
+}
+
+// handlerShaped reports a final route argument that can be a handler: a
+// function, a name, a member reference or a call that may return one.
+func handlerShaped(n *sitter.Node, count uint) bool {
+	if n == nil || count < 2 {
+		return false
+	}
+	switch n.Kind() {
+	case "arrow_function", "function_expression", "function", "identifier", "member_expression", "call_expression", "array", "await_expression":
+		return true
+	}
+	return false
 }

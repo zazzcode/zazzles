@@ -2,7 +2,16 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/internal/analysis"
 
-var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", SequelizeFinderContract}
+var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
+
+// PrismaRawContract is Prisma Client's unsafe raw-SQL API.
+const PrismaRawContract = "prisma-raw-v1"
+
+// BetterSQLite3Contract is the better-sqlite3 Database statement API.
+const BetterSQLite3Contract = "better-sqlite3-v1"
+
+// PGliteContract is the PGlite (embedded Postgres) query API.
+const PGliteContract = "pglite-v1"
 
 // SequelizeFinderContract is a Sequelize model finder whose where values are bound.
 const SequelizeFinderContract = "sequelize-model-finder-v1"
@@ -15,6 +24,18 @@ func SQLContract(id string) *analysis.APIModel {
 	if id == SequelizeFinderContract {
 		return &analysis.APIModel{ID: id, Library: "sequelize", Reference: "https://sequelize.org/docs/v6/core-concepts/model-querying-basics/#operators",
 			Semantics: "Model.findAll, findOne, findAndCountAll, count and findOrCreate build SQL from a where object; attribute values and operator operands such as Op.like, Op.eq and Op.in are sent as escaped or bound values, so request text in them cannot change SQL syntax. Inside an Op.like (or Op.iLike, Op.notLike) operand the characters % and _ are LIKE wildcards: an unescaped request value can widen the match, which is an input-validation and resource concern, not SQL injection. Raw SQL fragments (Sequelize.literal, sequelize.literal, Op.literal or a literal attribute/order string) are not bound and are outside this contract. Attribute names, order and group keys taken from a request are not values."}
+	}
+	if id == PrismaRawContract {
+		return &analysis.APIModel{ID: id, Library: "prisma", Reference: "https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries",
+			Semantics: "$queryRawUnsafe(sql, ...values) and $executeRawUnsafe(sql, ...values) send their first argument as executable SQL text; values after it are bound to positional placeholders ($1, ?) and cannot protect SQL already interpolated into the text. The tagged-template forms $queryRaw`...${v}` and $executeRaw`...` bind every substitution as a parameter, except fragments built with Prisma.raw, which are raw SQL. Model methods such as findMany, findUnique and update are parameterized and outside this contract."}
+	}
+	if id == BetterSQLite3Contract {
+		return &analysis.APIModel{ID: id, Library: "better-sqlite3", Reference: "https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md",
+			Semantics: "Database.exec(sql) runs every statement in its SQL text argument and binds nothing (sql_multi_statement). Database.prepare(sql) compiles exactly one statement from its first argument and refuses multiple statements (sql_single_statement); values passed to the statement's run, get, all or iterate are bound to ?, @name, :name or $name placeholders and cannot protect SQL already interpolated into the prepared text. pragma(text) runs its argument as SQL like exec."}
+	}
+	if id == PGliteContract {
+		return &analysis.APIModel{ID: id, Library: "pglite", Reference: "https://pglite.dev/docs/api",
+			Semantics: "PGlite.query(sql, params) runs exactly one statement over the extended query protocol (sql_single_statement); values in the params array are bound to $1, $2 placeholders and cannot protect SQL already interpolated into the text. PGlite.exec(sql) runs every statement in its text over the simple query protocol and binds nothing (sql_multi_statement). The sql tagged template binds each substitution as a parameter. A transaction's tx.query and tx.exec behave the same."}
 	}
 	if id == "sqljs-statement-v1" {
 		return &analysis.APIModel{ID: "sqljs-statement-v1", Library: "sql.js", Semantics: "sql.js Database run, exec and prepare take executable SQL text as their first argument; run and exec execute every statement in that text. A second argument, or Statement bind, supplies separate values for placeholders and cannot protect SQL already interpolated into the text.", Reference: "https://sql.js.org/documentation/Database.html"}
@@ -30,7 +51,7 @@ func SQLContract(id string) *analysis.APIModel {
 
 // JavaScriptSQLLibrary reports a SQL contract that belongs to the JS/TS adapter.
 func JavaScriptSQLLibrary(library string) bool {
-	return library == "sequelize" || library == "sql.js"
+	return library == "sequelize" || library == "sql.js" || library == "prisma" || library == "better-sqlite3" || library == "pglite"
 }
 
 // PythonContract applies only after import/connection/cursor provenance resolves.

@@ -178,7 +178,13 @@ func (s *moduleSet) nodeHTTPControls(m *sourceModule, site *sitter.Node, receive
 // nativeHTTPChain is shared by query/command assembly; framework-specific
 // registration syntax has already been lowered into this context.
 func (s *moduleSet) nativeHTTPChain(c *nodeHTTPContext) ([]analysis.Evidence, []analysis.Gap) {
-	context := []analysis.Evidence{c.registration.evidence("route_registration", c.call), c.handler.evidence("invoked_callable", c.body), c.registration.evidence("framework_binding", topVariable(c.registration, c.receiver))}
+	context := []analysis.Evidence{c.registration.evidence("route_registration", c.call), c.handler.evidence("invoked_callable", c.body)}
+	if nextFramework(c.entry.HTTP.Framework) {
+		// The file-system path is the registration; no framework instance exists.
+		context = append(context, s.nextChainEvidence(c)...)
+	} else {
+		context = append(context, c.registration.evidence("framework_binding", topVariable(c.registration, c.receiver)))
+	}
 	context = append(context, c.controls...)
 	gaps := append([]analysis.Gap{}, c.gaps...)
 	gaps = append(gaps, s.inputHelperGaps(c.handler, c.body, c.request, s.contextFields)...)

@@ -124,7 +124,14 @@ func descriptors() ([]Component, error) {
 		contractOwners[id] = "internal/parse/python_sql.go"
 	}
 	contractOwners[SequelizeFinderContract] = "internal/parse/sequelize_finders.go"
+	contractOwners[PrismaRawContract] = "internal/parse/sql_libraries.go"
+	contractOwners[PrismaFilterContract] = "internal/parse/sql_libraries.go"
+	contractOwners[BetterSQLite3Contract] = "internal/parse/sql_libraries.go"
+	contractOwners[PGliteContract] = "internal/parse/pglite.go"
 	for _, id := range noSQLContractIDs {
+		if id == PrismaFilterContract {
+			continue
+		}
 		contractOwners[id] = "internal/parse/checks.go + internal/parse/mongoose_query_context.go"
 	}
 	for _, f := range Families() {

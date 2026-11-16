@@ -5,12 +5,18 @@ import "github.com/zazzcode/zazzles/internal/analysis"
 // noSQLContractIDs lists the verified NoSQL operation contracts. MarsDB has
 // Mongo-style matching semantics; this does not make it a MongoDB server or
 // establish support for any MongoDB driver. Python NoSQL stays unimplemented.
-var noSQLContractIDs = []string{"marsdb-collection-v1", "mongoose-model-query-v1", "mongoose-model-query-v2", "mongoose-path-id-objectid-v1", "mongoose-find-by-id-objectid-v1"}
+var noSQLContractIDs = []string{"marsdb-collection-v1", "mongoose-model-query-v1", "mongoose-model-query-v2", "mongoose-path-id-objectid-v1", "mongoose-find-by-id-objectid-v1", PrismaFilterContract}
+
+// PrismaFilterContract is Prisma Client's model filter (where) object.
+const PrismaFilterContract = "prisma-filter-object-v1"
 
 // NoSQLContract returns a copy of the supported operation contract by verified
 // model ID. It applies only after parse proved the collection/model binding.
 func NoSQLContract(id string) *analysis.APIModel {
 	switch id {
+	case PrismaFilterContract:
+		return &analysis.APIModel{ID: id, Library: "prisma", Reference: "https://www.prisma.io/docs/orm/reference/prisma-client-reference#filter-conditions-and-operators",
+			Semantics: "Prisma Client model methods (findUnique, findFirst, findMany, count, update, updateMany, delete, deleteMany, upsert) compile a where object to parameterized SQL; values never change SQL syntax. A where field that receives an object instead of a scalar is read as a filter: { not: x }, { contains: '' }, { startsWith: '' }, { in: [...] }, { gt: '' } and similar operators widen or invert the match (operator injection; engine prisma). A runtime check that enforces a primitive type for that field (for example zod z.string()) prevents operator objects; TypeScript annotations do not. Mass assignment through data objects is a separate concern."}
 	case "mongoose-find-by-id-objectid-v1":
 		return &analysis.APIModel{ID: id, Library: "mongoose", Reference: "https://github.com/Automattic/mongoose/blob/4.2.4/lib/model.js#L1179", Semantics: "The selected manifest pins Mongoose 4.2.4 and the verified literal schema retains its default ObjectId _id. findById(id) is findOne({_id:id}); the query caster casts the operand under ObjectId semantics. Primitive strings are cast to ObjectId or raise CastError, without JSON parsing string contents into selector operators. Object-valued operands can carry recognized query operators and do not inherit scalar protection. Determine the actual operand type and constraints from the separate source/transfer/hook facts, regardless of HTTP, RPC or other input acquisition. Source-present validation can be assessed semantically; missing implementations remain blockers. Custom ID types/hooks, authorization, ownership, valid-ID error handling and stored rendering are separate concerns. Installed runtime is not verified."}
 	case "mongoose-path-id-objectid-v1":

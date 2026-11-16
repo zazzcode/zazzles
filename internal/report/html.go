@@ -48,6 +48,7 @@ type htmlView struct {
 	ClientRows                  []*htmlRow
 	Gaps                        []analysis.Gap
 	Limitations                 []string
+	Practice                    []analysis.PracticeObservation
 	Skipped                     []string
 	Only                        []string
 	EntryCount                  int
@@ -57,7 +58,7 @@ type htmlView struct {
 // HTML renders a standalone snapshot with native disclosure rows and no network resources.
 func HTML(w io.Writer, r *analysis.AnalysisReport) error {
 	Enrich(r)
-	v := htmlView{Discovery: r.Discovery, CheckMatches: r.CheckMatches, Glossary: r.FindingTypes, Root: r.Root, Gaps: r.Gaps, Limitations: r.Limitations, Skipped: r.SkippedFamilies, Only: r.OnlyFamilies}
+	v := htmlView{Discovery: r.Discovery, CheckMatches: r.CheckMatches, Glossary: r.FindingTypes, Root: r.Root, Gaps: r.Gaps, Limitations: r.Limitations, Practice: r.Practice, Skipped: r.SkippedFamilies, Only: r.OnlyFamilies}
 	hash := sha256.Sum256([]byte(sortSource))
 	v.ScriptHash = base64.StdEncoding.EncodeToString(hash[:])
 	// Trust only the compiled-in script. Report/source values stay escaped in data attributes.

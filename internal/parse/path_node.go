@@ -36,6 +36,13 @@ var nodeFSOps = map[string]struct {
 	"copyFileSync":      {"write", false, false, true},
 	"rename":            {"write", false, true, true},
 	"renameSync":        {"write", false, false, true},
+	// Directory listing and metadata reads disclose names, sizes and times.
+	"readdir":     {"read", false, true, false},
+	"readdirSync": {"read", false, false, false},
+	"stat":        {"read", false, true, false},
+	"statSync":    {"read", false, false, false},
+	"lstat":       {"read", false, true, false},
+	"lstatSync":   {"read", false, false, false},
 }
 
 func fsCoreModule(module string) (core, promises bool) {

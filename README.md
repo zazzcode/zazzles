@@ -14,12 +14,16 @@ says what to change. Coding agents can then make small, focused repairs that kee
 intended behavior, check their own work, and hand a pull request to a person to review.
 
 Many scanners show where a problem is and the path an input takes to reach it. Zazzles adds a
-**decision model** that judges what the code actually does, and a scanner that checks the model's work:
+**decision model** that judges what the code actually does, working from a case the scanner builds:
 
-- **The model is the judge.** For each sensitive operation it answers specific questions. Can a request
+- **The scanner is the analyst.** It finds where input enters, traces the path the value takes to a
+  sensitive operation, records the checks along the way and notes what it could not resolve. From
+  that it builds the evidence and the specific questions to ask.
+- **The model is the judge.** For each sensitive operation it answers those questions. Can a request
   value do harm here? Is the guard or validation already in place adequate? Those answers decide
   whether a result is a vulnerability or is protected.
-- **The scanner is the referee.** It supplies the evidence and checks each answer before it counts:
+- **The analyst holds the judge to the record.** Each answer is checked against the established
+  facts before it counts:
   - An answer that contradicts the source is rejected. An example is "not applicable" when a request
     value plainly reaches the operation.
   - A vulnerability needs complete evidence for that path. Unresolved gaps on the path keep the
@@ -75,7 +79,9 @@ and delivery status.
 
 ## What exists today
 
-Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications.
+Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications,
+including Express, Fastify, Hapi and **Next.js** (App Router and Pages Router; see
+[Next.js support](docs/nextjs-support.md)).
 
 - It reads source only. It does not run your app or install its dependencies.
 - It covers the frameworks and operations it models. Anything else is reported as unresolved,
@@ -110,7 +116,8 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 
 **How it finds problems**
 
-- Finds entry points: web routes (including each stage of an Express middleware chain), browser
+- Finds entry points: web routes (including each stage of an Express middleware chain), Next.js
+  route handlers, pages, Server Actions, Pages Router API routes and `getServerSideProps`, browser
   events, GraphQL and gRPC
 - Follows request input to the sensitive operation it reaches, including URL fields
   (`path` / `url` / `originalUrl`) and verified upload filename or file content on Node apps
@@ -139,11 +146,25 @@ keys mark as Review stay Review (for example Juice Shop subtitle XSS). Defects o
 analyzers—authentication, IDOR, `eval`/code injection, open redirect, secrets, cookie flags, and
 most Juice Shop challenge categories—are **not covered** yet; a clean row there is not a pass.
 
+On the two Next.js samples (OSS OopsSec Store and the vuln-nextjs lab), every required positive in
+those families is confirmed and no safe control is red; `eval`/code injection, open redirect and the
+dependency row are not covered yet.
+
 Details and per-app expected-vs-actual tables live in
 [vulnerable sample applications](.zazz/project/vulnerable-sample-apps.md). Sample HTML reports are
 snapshots of those runs, not a claim of whole-application security.
 
 **Not yet available:** dependency auditing, a separate Inspect report, automated fixes and scheduled runs.
+
+**Next on the roadmap**, in order:
+
+1. Code injection (`eval`, CWE-94/95) and open redirect (CWE-601): two new analyzers
+   ([proposal](code-injection-and-open-redirect-proposal.md))
+2. Prototype pollution (CWE-1321)
+3. Drupal / PHP support
+4. Agent skills fixes, the scan/fix loop, and importing findings from other SAST tools
+
+XXE and dependency auditing (SCA) come later.
 The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
 exactly which languages, frameworks and operations each analyzer supports, with its limits.
 
@@ -315,6 +336,8 @@ Explore existing reports without installing Zazzles or making API calls:
 | ThreatByte (Python) | Flask/RESTX SQL, reflected/stored XSS, SSRF and protected controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/ThreatByte/findings.html) · [Sample notes](docs/samples/ThreatByte/README.md) |
 | Python insecure app | FastAPI HTML/template construction | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/python-insecure-app/findings.html) · [Sample notes](docs/samples/python-insecure-app/README.md) |
 | Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |
+| OSS OopsSec Store | Next.js App Router: SQL, path, SSRF, logging and client XSS | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/oss-oopssec-store/findings.html) · [Sample notes](docs/samples/oss-oopssec-store/README.md) |
+| vuln-nextjs lab | Pages Router: PGlite, command, path, SSRF and XSS with safe controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Sample notes](docs/samples/vuln-nextjs/README.md) |
 
 The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. VulnPy’s complete JSON/SARIF downloads are gzip-compressed to retain every record. Hosted previews update after changes merge into `stage`. Compare counts
 against the [expected-vs-actual tables](.zazz/project/vulnerable-sample-apps.md)—efficacy is

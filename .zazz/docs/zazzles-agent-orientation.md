@@ -1,7 +1,23 @@
 # zazzles — agent orientation
 
-Read [AGENTS.md](../../AGENTS.md) first. This guide maps the code, worktrees and development process.
-Follow only the section links relevant to the task; linked documents are not automatic includes.
+This guide maps the code, worktrees and development process. Agent startup and context loading are
+managed by [AGENTS.md](../../AGENTS.md#start-here). The contents below provide section links and
+selection cues for the current task.
+
+## Contents
+
+| Section | Consult for |
+| --- | --- |
+| [Current work](#current-work) | Integration status, active restrictions and current evidence pointers |
+| [Code structure](#code-structure) | Package ownership and focused architecture references |
+| [Portable workspace and DEV_ROOT](#portable-workspace-and-dev_root) | Resolving local checkout and sample paths |
+| [Branches and worktrees](#branches-and-worktrees) | Assigned checkout, `.bare/` layout and worktree operation references |
+| [Working protocol](#working-protocol) | Implementation, verification, execution records and PR preparation |
+| [Implemented features](#implemented-features) | Capability boundaries and acceptance records |
+| [Available vulnerable sample apps](#available-vulnerable-sample-apps) | Sample locations, source expectations and evaluation handling |
+| [Task reading paths](#task-reading-paths) | Focused references for specific engineering tasks |
+| [Documentation map](#documentation-map) | Finding the document that owns a topic |
+| [Commands and credentials](#commands-and-credentials) | Scan model selection, local configuration and live-call limits |
 
 ## Current work
 
@@ -51,20 +67,28 @@ zazzles/                   container, not a source checkout
 └── _test-findings/         local scan artifacts, outside targets and worktrees
 ```
 
-Run commands from the assigned feature checkout. Verify `pwd`, `git branch --show-current` and
-`git status --short --branch` before edits; do not edit `.bare` directly. `stage` receives reviewed
-PRs; `main` is human-operated release promotion. Related design, spec, implementation and tests stay
-in the assigned worktree. See [authorization](../../AGENTS.md#authorization-and-delivery),
-[worktree verification](worktree-setup.md#verification-checklist),
-[Worktrunk operations](worktree-setup.md#worktrunk-usage) and
-[linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain) only for linked VM sessions.
-Native development uses the Go version in `go.mod` and a C compiler.
+Contributors are encouraged to follow the maintainer's `.bare/` sibling-worktree structure for
+consistency. The [setup guide](worktree-setup.md) owns the layout convention and optional Worktrunk
+recommendation. Other local layouts can still submit feature-branch PRs, with
+contributors responsible for adapting their setup and paths. Agents in the maintained workspace
+MUST use the assigned sibling checkout.
 
-Ignored `.env` files are local to each checkout. Worktrunk's configured copy step seeds new worktrees
-from `stage`; later edits are not synchronized. Current intent: stage uses `gpt-6-luna`,
-path-traversal uses `gemini-decision-1`. Never print tokens or overwrite the user's local file.
-[Environment loading](../../docs/getting-started.md#local-environment-file) and
-[provider setup](../../docs/decision-models.md#credentials-and-local-environment) own configuration.
+Operational references (selection follows the [AGENTS.md loading policy](../../AGENTS.md#start-here)):
+
+| When needed | Reference |
+| --- | --- |
+| Create, move, remove or repair a worktree; configure the local layout or file copying | [Worktree setup](worktree-setup.md) |
+| Use Worktrunk commands or configure its hooks | [Worktrunk cheat sheet](wt-cheat-sheet.md) |
+| Run Go checks in a linked VM without a local toolchain | [Linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain) |
+
+The [worktree location rules](../../AGENTS.md#worktree-location) always apply: use the assigned
+sibling checkout managed by the existing `.bare/`; a stale handoff does not override that assignment.
+Related design, documentation, implementation and tests stay there. Native development uses the Go
+version in `go.mod` and a C compiler; [contributing](../../docs/contributing.md) owns check commands.
+
+Ignored `.env` files are local to each checkout. Never print credentials or overwrite the user's
+local file. For configuration tasks, consult [environment loading](../../docs/getting-started.md#local-environment-file)
+and [provider setup](../../docs/decision-models.md#credentials-and-local-environment) as needed.
 
 ## Working protocol
 

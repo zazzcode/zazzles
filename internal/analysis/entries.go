@@ -32,6 +32,13 @@ type HTTPEntryMetadata struct {
 	Path       string `json:"path,omitempty"`
 	Mount      string `json:"mount,omitempty"`
 	Receiver   string `json:"receiver,omitempty"`
+	// Router, Surface, Segments and Aliases describe file-system (Next.js) entries:
+	// "app" or "pages"; route_handler, server_action, page or api_route; the raw
+	// folder segments; and literal rewrite sources that also reach the entry.
+	Router   string   `json:"router,omitempty"`
+	Surface  string   `json:"surface,omitempty"`
+	Segments []string `json:"segments,omitempty"`
+	Aliases  []string `json:"aliases,omitempty"`
 }
 
 // BrowserEntryMetadata distinguishes event registrations from script/component roots.

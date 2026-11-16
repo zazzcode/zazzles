@@ -65,15 +65,25 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 				}
 				binding := s.queryBinding(use)
 				sqlContract := "sequelize-raw-query-v1"
+				prismaFilter := false
 				if check.Kind == "nosql_query" {
 					binding = s.collectionBinding(use)
+					if len(binding) == 0 {
+						if pb := s.prismaFilterBinding(use); len(pb) > 0 {
+							binding, prismaFilter = pb, true
+						}
+					}
 				} else if sqlJS := s.sqlJSBinding(use); len(sqlJS) > 0 {
 					binding, sqlContract = sqlJS, "sqljs-statement-v1"
+				} else if lib, contract := s.sqlLibraryBinding(use); len(lib) > 0 {
+					binding, sqlContract = lib, contract
 				} else if finder := s.sequelizeFinderBinding(use); len(binding) == 0 && len(finder) > 0 {
 					binding, sqlContract = finder, "sequelize-model-finder-v1"
 				}
 				if len(binding) > 0 {
-					if check.Kind == "nosql_query" {
+					if prismaFilter {
+						use.APIModel = analysispacks.NoSQLContract(analysispacks.PrismaFilterContract)
+					} else if check.Kind == "nosql_query" {
 						use.APIModel = analysispacks.NoSQLContract("marsdb-collection-v1")
 						if module := s.modules[use.Sink.Span.File]; module != nil {
 							call := nodeAt(module.tree.RootNode(), use.Sink.Span.StartByte, use.Sink.Span.EndByte)

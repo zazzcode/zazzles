@@ -164,7 +164,7 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 	for _, e := range report.Files {
 		artifacts = append(artifacts, map[string]any{"location": map[string]string{"uri": relativeURI(e.Span.File)}, "hashes": map[string]string{"sha-256": e.SHA256}})
 	}
-	run := map[string]any{"tool": map[string]any{"driver": map[string]any{"name": "scan", "informationUri": "https://github.com/zazzcode/zazzles", "rules": rules}}, "results": results, "artifacts": artifacts, "invocations": []any{invocation}, "properties": map[string]any{"scan.findingTypes": report.FindingTypes, "scan.limitations": report.Limitations, "scan.selectedRoute": report.SelectedRoute, "scan.selectedScope": report.SelectedScope, "scan.checkMatches": report.CheckMatches, "scan.identityPolicy": "snapshot-local use IDs; edit-stable baseline identity is not implemented"}}
+	run := map[string]any{"tool": map[string]any{"driver": map[string]any{"name": "scan", "informationUri": "https://github.com/zazzcode/zazzles", "rules": rules}}, "results": results, "artifacts": artifacts, "invocations": []any{invocation}, "properties": map[string]any{"scan.findingTypes": report.FindingTypes, "scan.limitations": report.Limitations, "scan.practiceObservations": report.Practice, "scan.selectedRoute": report.SelectedRoute, "scan.selectedScope": report.SelectedScope, "scan.checkMatches": report.CheckMatches, "scan.identityPolicy": "snapshot-local use IDs; edit-stable baseline identity is not implemented"}}
 	if len(report.Discovery) > 0 {
 		run["properties"].(map[string]any)["scan.discoveryProposals"] = report.Discovery
 	}

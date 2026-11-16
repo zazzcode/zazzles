@@ -386,7 +386,17 @@ func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms 
 	scan := newCommandGuardScan(m.guardLang(), call, func(helper *sitter.Node) []*sitter.Node { return jsHelperCallSites(m, u.Context, helper) })
 	seen := map[int]bool{}
 	var conditions []*sitter.Node
+	next := s.nextProjectFor(m.file) != nil
+	nameList := make([]string, 0, len(names))
+	for n := range names {
+		nameList = append(nameList, n)
+	}
 	for _, site := range scan.collect(names, u.Dependencies, nil) {
+		// In Next.js code a truthiness or type-only schema test of the value is
+		// not a destination or argument control.
+		if next && nonContainingTest(m, site.Cond, nameList, u) {
+			continue
+		}
 		if !seen[int(site.Whole.StartByte())] {
 			seen[int(site.Whole.StartByte())] = true
 			guards = append(guards, m.evidence(commandGuardEvidenceKind(site), site.Whole))

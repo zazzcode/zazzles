@@ -108,8 +108,12 @@ type AnalysisReport struct {
 	AnalysisGuidelines  []GuidelinesRef     `json:"analysis_guidelines,omitempty"`
 	// SkippedFamilies lists analyzer families deliberately not judged in this run
 	// (--skip-family). Their records stay in the report as not_run Review.
-	OnlyFamilies    []string `json:"only_families,omitempty"`
-	SkippedFamilies []string `json:"skipped_families,omitempty"`
+	OnlyFamilies []string `json:"only_families,omitempty"`
+	// Practice lists source-established framework practice observations (for
+	// example the Next.js NX-BP checks). They are not vulnerability findings and
+	// never use a model request.
+	Practice        []PracticeObservation `json:"practice_observations,omitempty"`
+	SkippedFamilies []string              `json:"skipped_families,omitempty"`
 }
 
 // GuidelinesRef identifies the embedded language analysis guidelines used for a report.
@@ -157,4 +161,17 @@ type APIModel struct {
 	Library   string `json:"library"`
 	Semantics string `json:"semantics"`
 	Reference string `json:"reference"`
+}
+
+// PracticeObservation is one source-established practice check result. Status is
+// "observed" when the source establishes the condition and "review" when a
+// heuristic part (such as matcher intent) needs a person to confirm it.
+type PracticeObservation struct {
+	ID       string     `json:"id"`
+	Check    string     `json:"check"`
+	Title    string     `json:"title"`
+	Status   string     `json:"status"`
+	Detail   string     `json:"detail"`
+	Entry    string     `json:"entry,omitempty"`
+	Evidence []Evidence `json:"evidence"`
 }

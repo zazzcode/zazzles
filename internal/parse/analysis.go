@@ -62,6 +62,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	if err != nil {
 		return nil, err
 	}
+	out0 := &analysis.AnalysisReport{}
 	set := &moduleSet{root: root, parsers: ps, modules: map[string]*sourceModule{}, allowed: map[string]bool{}}
 	defer set.close()
 	var selected []string
@@ -70,6 +71,10 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 			set.allowed[f.Path] = true
 			selected = append(selected, f.Path)
 		}
+	}
+	set.detectNextProjects(selected)
+	if entry == "" {
+		selected = set.applyNextScope(out0, selected)
 	}
 	if entry != "" {
 		entry = filepath.ToSlash(filepath.Clean(entry))
@@ -84,6 +89,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		"Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
 		"SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
 	}}
+	out.Gaps = append(out.Gaps, out0.Gaps...)
 	for _, file := range selected {
 		m, err := set.load(file)
 		if err != nil {
@@ -99,6 +105,13 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		set.graphqlEntries(out, m)
 		set.grpcEntries(out, m)
 		set.nodeFrameworkEntries(out, m)
+		if p := set.nextProjectFor(file); p != nil {
+			set.nextRouteEntries(out, m, p)
+			set.pagesAPIEntries(out, m, p)
+			set.pagesPageEntries(out, m, p)
+			set.nextPageEntries(out, m, p)
+			set.nextActionEntries(out, m, p)
+		}
 		locals := map[string]*sitter.Node{}
 		collectFuncs(m.tree.RootNode(), m.src, locals)
 		walkCalls(m.tree.RootNode(), func(call *sitter.Node) {
@@ -151,6 +164,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		set.automaticQueries(out)
 	}
 	set.assembleNodeInputs(out)
+	set.nextPractice(out, selected)
 	keys := make([]string, 0, len(set.modules))
 	for k := range set.modules {
 		keys = append(keys, k)

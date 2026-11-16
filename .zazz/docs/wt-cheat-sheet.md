@@ -1,332 +1,134 @@
-# Scan Worktree and Worktrunk Cheat Sheet
+# Zazzles Worktrunk cheat sheet
 
-Load this command reference when using Worktrunk. The
-[worktree setup guide](worktree-setup.md#required-model) owns zazzles's layout and operating model;
-[orientation](zazzles-agent-orientation.md#portable-workspace-and-dev_root) defines portable root lookup.
-Commands below run from the resolved container or named worktree, not an assumed home-directory path.
+Worktrunk is optional. The [worktree setup guide](worktree-setup.md#worktrunk-usage) owns the
+recommendation, local-file rationale and expected `.bare/` sibling layout. Native Git is fully
+supported there. Contributors choosing another local setup can still submit feature-branch PRs;
+agents in the maintained workspace MUST follow [AGENTS.md](../../AGENTS.md#worktree-location).
 
-## The main idea
+This reference covers the optional CLI, not a different repository layout. Resolve `<repo-container>`
+to the existing container; use an absolute path when substituting it below. Commands were checked
+against installed `wt v0.81.0` and the official [switch](https://worktrunk.dev/switch/),
+[remove](https://worktrunk.dev/remove/) and [configuration](https://worktrunk.dev/config/) references.
+Check your installed `wt <command> --help` before using version-dependent flags.
 
-- `.bare` is the shared Git repo backend.
-- `stage` is the integration worktree (GitHub `stage`, the repository's default branch). **`main` is
-  the release branch** — stage merges to main at release time, and a version tag is cut on main. PRs
-  target `stage`.
-- each feature branch or PR gets its own sibling worktree directory.
-- do not edit the checked-in `.gitignore` for machine-local files.
-- use `.bare/info/exclude` for local-only ignore rules.
+## Inspect and reuse first
 
-## Where to run Worktrunk
-
-From the repo container:  `~/Dev/zazzcode/zazzles`
-
-```bash
-cd <repo-container>
-wt -C .bare <command>
-```
-
-From inside a worktree:
-
-```bash
-wt -C ../.bare <command>
-```
-
-## Everyday commands
-
-List worktrees:
+From the container:
 
 ```bash
 wt -C .bare list
+wt -C .bare config show
 ```
 
-Switch to the integration worktree:
+From a sibling checkout, use `wt -C ../.bare ...`. Inspect configuration locally; do not publish
+credential-bearing hook commands. The assigned path takes precedence over an old handoff.
+
+If the assigned worktree already exists, enter it directly and verify it:
 
 ```bash
-wt -C .bare switch stage
+cd <repo-container>/nextjs-support-mvp
+pwd
+git branch --show-current
+git status --short --branch
+git rev-parse --path-format=absolute --git-common-dir
+git worktree list
 ```
 
-Switch back to the default/integration worktree:
+The common directory must resolve to `<repo-container>/.bare`. A new session or a new step in the
+same deliverable does not require another checkout. `wt switch` can create a checkout even without
+`--create` when a branch has no worktree, so inspect the list and destination before switching.
+Shell directory switching requires Worktrunk shell integration; verify `pwd` rather than assuming
+that a command changed the calling shell's directory.
 
-```bash
-wt -C .bare switch ^
-```
+## Create an authorized independent worktree
 
-Switch to an existing branch worktree:
-
-```bash
-wt -C .bare switch feature-taint-graph
-```
-
-Create a new branch and worktree from `stage`:
-
-```bash
-wt -C .bare switch --create my-new-branch --base stage
-```
-
-Remove a finished worktree:
-
-```bash
-wt -C .bare remove my-new-branch
-```
-
-Force-remove a worktree with local junk left in it:
-
-```bash
-wt -C .bare remove my-new-branch -D
-```
-
-## Keep `stage` current
-
-Update the integration worktree from GitHub:
-
-```bash
-git -C <repo-container>/stage pull origin stage
-```
-
-Then create new worktrees from updated `stage`:
-
-```bash
-wt -C <repo-container>/.bare switch --create another-branch --base stage
-```
-
-Use this flow before starting a new branch so the new worktree is based on the latest `origin/stage`.
-
-## Review a PR
-
-Create or switch to a PR review worktree:
-
-```bash
-wt -C .bare switch pr:123
-```
-
-That tells Worktrunk to fetch the PR branch and open it as its own worktree. The local copy hook
-populates ignored local files there too.
-
-When review is done:
-
-```bash
-wt -C .bare remove <pr-branch-name>
-```
-
-If you are not sure what branch name Worktrunk used:
-
-```bash
-wt -C .bare list
-```
-
-## Create a new feature worktree
-
-From the repo container:
+First update the remote base, then give Worktrunk an explicit direct sibling destination. `--path`
+is available in the checked CLI version; use the native Git procedure if yours lacks that option.
 
 ```bash
 cd <repo-container>
-wt -C .bare switch --create my-feature --base stage
-```
-
-Then work inside the new sibling directory:
-
-```bash
+git --git-dir=.bare fetch origin stage:refs/remotes/origin/stage
+wt -C .bare switch --create my-feature --base origin/stage --path "<repo-container>/my-feature"
 cd <repo-container>/my-feature
 ```
 
-When ready to push:
+Run the verification commands above. Configured path templates, hooks and tool defaults MUST NOT
+place a checkout outside the required sibling layout. Use flat branch names for new branches.
+Preserve existing local changes and never use `--clobber` to resolve a path collision blindly.
+
+## Review an existing PR
+
+Reuse its assigned local worktree when one exists. If an independent review checkout is needed,
+inspect the PR branch and existing checkouts before creating a direct sibling review directory:
 
 ```bash
-git push -u origin my-feature
+wt -C <repo-container>/.bare switch pr:123 --path "<repo-container>/review-123"
 ```
 
-## Stacked branches
+The PR shortcut may fetch a branch and create a checkout; it is not merely a read-only view.
+Verify the actual path and branch before reviewing. PRs target `stage`; humans approve and merge.
+Agents MUST NOT use `wt merge` or `wt step push` to integrate into `stage` or `main`. Publish feature
+commits using ordinary `git push` from the assigned checkout.
 
-A stacked branch series is a chain where each branch's PR targets the prior branch instead of
-`stage`. Each branch lives in its own sibling worktree. Example chain:
+## Local files and hooks
 
-```text
-stage → feature-graph-core → feature-taint-graph → feature-findings-reviewer
-```
+Native Git does not copy ignored files. Worktrunk can copy them with an optional `copy-ignored` hook,
+configured in the machine-local `.config/wt.toml`. Inspect the source checkout and selected files;
+copy only task-required configuration, never overwrite a contributor's existing `.env`, and never
+print credentials. Later edits are not synchronized between worktrees.
 
-PR `-2` merges into `-1`, PR `-3` merges into `-2`, and so on. The topmost branch contains the
-cumulative content of the whole stack and is where end-to-end testing happens.
+A local hook may also copy `.zazz/ephemeral/`; copied handoffs are historical context and MUST NOT
+change the active assignment. Preserve useful records and start the current task's own run log.
+Generated binaries, installed dependencies and stale analysis output should be rebuilt or kept out
+of the copy. Inspect hook templates before running them; hook setup is not required to contribute.
 
-Create the next branch in a stack from the current one (not from `stage`):
-
-```bash
-wt -C .bare switch --create feature-taint-graph --base feature-graph-core
-```
-
-### Verify the tip contains every parent's changes
-
-After any parent in the stack is rebased and force-pushed, the topmost branch needs to be rebased onto
-the new parent. To prove the tip is current with every parent — even after rebases rewrite SHAs — use
-`git cherry`:
-
-```bash
-git cherry -v HEAD origin/feature-graph-core
-git cherry -v HEAD origin/feature-taint-graph
-```
-
-Empty output means every parent commit is present (by ancestry or by patch-equivalence). Any line
-starting with `+` is a real gap that needs investigation.
-
-`git cherry` compares patch-ids (the hash of the diff), so it survives rebases. `git log
-<parent>..HEAD` only checks ancestry and gives false positives after a parent rebase.
-
-One-liner to check every parent in a stack:
-
-```bash
-for p in graph-core taint-graph; do
-  out=$(git cherry HEAD "origin/feature-$p")
-  [ -z "$out" ] && echo "$p: contained" || printf -- "%s: MISSING:\n%s\n" "$p" "$out"
-done
-```
-
-### Rebase onto a rewritten parent
-
-When a parent in the stack gets rebased and force-pushed, fetch with explicit refspecs so the
-remote-tracking refs actually update (`git fetch origin` alone only updates `FETCH_HEAD`):
-
-```bash
-git fetch origin \
-  '+refs/heads/feature-taint-graph:refs/remotes/origin/feature-taint-graph' \
-  '+refs/heads/feature-findings-reviewer:refs/remotes/origin/feature-findings-reviewer'
-```
-
-Then rebase the current branch onto the new parent:
-
-```bash
-git rebase origin/feature-taint-graph
-```
-
-Patch-equivalent commits (changes already absorbed into the new parent) are skipped automatically.
-The branch's own unique commits are replayed on top.
-
-### Force-push with a pinned lease
-
-After a rebase, push with `--force-with-lease` pinned to the verified remote SHA. Plain
-`--force-with-lease` can fail with "stale info" if remote-tracking refs are not fresh, and falling
-back to plain `--force` discards that safety check.
-
-```bash
-git ls-remote origin refs/heads/feature-findings-reviewer
-# copy the SHA, then:
-git push --force-with-lease=feature-findings-reviewer:<expected-remote-sha> \
-  origin feature-findings-reviewer
-```
-
-### Inspect divergence
-
-When `git cherry` reports a `+` line and you want to see exactly how a commit differs across two
-branches:
-
-```bash
-git range-diff origin/feature-taint-graph...HEAD
-```
-
-### Stacking with `gh-stack` inside a single worktree
-
-For deliverables that split into 2–3 dependent layers, keep the entire stack in one worktree and use
-`gh-stack` to manage branches and PRs. Full reference: [using-gh-stack.md](using-gh-stack.md).
-
-```bash
-cd <repo-container>
-wt -C .bare switch --create feature-graph-core --base stage
-cd <repo-container>/feature-graph-core
-gh stack init --base stage feature-graph-core feature-taint-graph
-```
-
-All branches share the same working directory. Switch between them with `gh stack` navigation
-(`gh stack bottom`, `gh stack top`, `gh stack up` / `gh stack down`). Commit with standard `git add` /
-`git commit`; stage deliberately so each branch contains only its layer's changes.
-
-Push and create linked draft PRs:
-
-```bash
-gh stack submit --auto --draft
-```
-
-Routine sync (fetch, rebase, push, sync PR state):
-
-```bash
-gh stack sync
-```
-
-## `wt` vs `git worktree`
-
-Use Worktrunk for this repo layout when you want the local setup to come across automatically:
-
-```bash
-wt -C .bare switch --create my-feature --base stage
-```
-
-Avoid plain `git worktree add` for normal day-to-day branch creation, because the local Worktrunk
-hook does not run there.
-
-## Local files in new worktrees
-
-Worktrunk's `copy-ignored` hook copies machine-local files (`.env`, `.config/wt.toml`,
-`.zazz/ephemeral/`) into new worktrees. These are gitignored, so they propagate only through this
-hook. The zazzles project config lives at `stage/.config/wt.toml` (gitignored):
-
-```toml
-pre-start = "/opt/homebrew/bin/wt step copy-ignored"
-post-start = [
-  "git -C {{ worktree_path }} config --worktree core.bare false",
-  "git -C {{ worktree_path }} config --worktree core.worktree {{ worktree_path }}",
-]
-
-[step.copy-ignored]
-exclude = ["graphify-out/"]
-```
-
-Why the post-start git lines matter: the shared bare repo sets `core.bare=true`, which leaks into
-wt-created worktrees and makes ordinary git commands fail there with "fatal: this operation must be
-run in a work tree" — including `wt remove` itself. The per-worktree overrides fix that. They also
-require `extensions.worktreeConfig=true` in `.bare/config` (already set in this container).
-
-`graphify-out/` is excluded from the copy because it is generated output — rebuild with
-`graphify update .` in the new worktree. Never copy installed dependencies between worktrees; when
-Go module or tooling caches matter, add a `post-start` rebuild step instead.
+Some existing bare-workspace configurations use worktree-specific `core.bare=false` and
+`core.worktree` overrides with `extensions.worktreeConfig=true`. If Git reports that the command
+must run in a worktree, inspect this configuration and the common Git directory before changing it.
+Do not turn the shared `.bare/` into a non-bare repository to work around a checkout error.
 
 ### Hook approvals
 
-Hook commands must be approved once per project. Interactively, Worktrunk prompts on first `switch` —
-approve and remember. Non-interactively (agent shells/CI), `wt hook approvals add` itself cannot
-prompt; either run it in a real TTY or edit `~/.config/worktrunk/approvals.toml` directly:
-
-```toml
-[projects."github.com/zazzcode/zazzles"]
-approved-commands = [
-    "/opt/homebrew/bin/wt step copy-ignored",
-    "git -C {{ worktree_path }} config --worktree core.bare false",
-    "git -C {{ worktree_path }} config --worktree core.worktree {{ worktree_path }}",
-]
-```
-
-## Local-only ignore rules
-
-Repo-wide local excludes:
+Inspect approval state without modifying it:
 
 ```bash
-<repo-container>/.bare/info/exclude
+wt -C <repo-container>/.bare config approvals list
 ```
 
-Per-worktree local excludes:
+A contributor may review and approve the declared commands through Worktrunk's normal interactive
+flow. For an agent, existing session authorization still governs each hook's actions. Do not silently
+rewrite the approval file or approve unrelated commands to get past a prompt. Native Git remains
+available when optional hooks are not configured or approved.
+
+## Cleanup
+
+The [setup guide](worktree-setup.md#remove-a-worktree) owns preservation and removal checks. Verify
+the exact checkout, uncommitted/ignored files and whether its branch is still needed. Save handoffs
+and replay evidence before removing a finished checkout. To remove the checkout while retaining its
+branch and wait for completion:
 
 ```bash
-<repo-container>/.bare/worktrees/<worktree-name>/info/exclude
+wt -C <repo-container>/.bare remove my-feature --no-delete-branch --foreground
 ```
 
-Check why something is ignored:
+The flags have different scopes:
 
-```bash
-git check-ignore -v <path>
-```
+| Flag | Effect |
+|---|---|
+| `--force` / `-f` | Removes a dirty checkout, including uncommitted and untracked files |
+| `--force-delete` / `-D` | Allows deletion of an unmerged branch |
+| `--no-delete-branch` | Keeps the branch when removing the checkout |
+| `--foreground` | Waits for removal to finish |
 
-## Good habits
+Force flags are deliberate cleanup choices, not routine fixes for a failing command. Do not remove
+unrelated active worktrees. Use `git worktree list` to verify the result; review a prune dry run before
+removing stale registrations.
 
-- keep `stage` clean — no feature work in the integration worktree
-- do feature work in sibling worktrees
-- use flat branch names like `feature-taint-graph`, not `feature/taint-graph`
-- use `.bare/info/exclude` for local-only notes and machine-specific config
-- use `wt -C .bare list` often so you can see what worktrees already exist
-- never merge into `stage` or `main` locally — PRs only; releases (stage → main + tag) are
-  human-operated
-- all work — even expedited fixes — flows through `stage`; `main` moves only at release promotion
+## Local excludes and advanced workflows
+
+Keep machine-local configuration out of tracked `.gitignore` changes. Shared local exclusions live
+in `<repo-container>/.bare/info/exclude`; inspect a specific rule with `git check-ignore -v <path>`.
+
+Dependent PR stacks are a separate, explicitly scoped workflow: see
+[using gh-stack](using-gh-stack.md). A stack does not authorize extra checkouts for steps of one
+active deliverable, and any worktree it uses still follows the same sibling layout.

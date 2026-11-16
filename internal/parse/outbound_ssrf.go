@@ -298,6 +298,9 @@ func (s *moduleSet) assembleSSRFClaims(report *analysis.AnalysisReport) {
 		complete: ssrfCompleteness,
 		finish: func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int) {
 			finishSSRFPaths(u, c, guards, guardIndex, s.commandDerivedNames(u), func(g analysis.Gap, d analysis.Dependency) bool { return gapTouchesDependency(g, d) })
+			if s.urlSchemeOnlyTests(u, c) {
+				c.ModelFacts = append(c.ModelFacts, "url_scheme_only_test")
+			}
 		},
 		contract: func(u *analysis.CandidateUse) *analysis.APIModel {
 			return analysispacks.SSRFContract(u.Outbound.ContractID)

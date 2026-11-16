@@ -2,8 +2,21 @@
 
 ## Start here
 
-Agents MUST read this file and the [agent orientation](.zazz/docs/zazzles-agent-orientation.md)
-at session start, then load only the context required for the task. Links are not automatic includes.
+This file owns agent startup and context-loading policy.
+
+At session start, agents MUST read this file, then open the
+[agent orientation introduction and contents](.zazz/docs/zazzles-agent-orientation.md#contents).
+Agents MUST use that table of contents to select and read the sections relevant to the current task.
+Reading every orientation section is not required. Agents MUST load additional sections when the task
+expands into those topics.
+
+Links are references, not automatic includes. Agents MUST NOT recursively load every linked guide,
+skill, standard or evaluation record. Use the task table below and the orientation's topic maps to
+load only the relevant sections before acting. In particular, load the worktree setup guide for
+worktree operations and the Worktrunk cheat sheet only when using `wt` or configuring its hooks;
+routine edits or builds in an already verified checkout do not require either guide. Mandatory rules
+in this file apply regardless of which reference sections are loaded.
+
 The [README](README.md) introduces the project; root [user documentation](docs/README.md) owns
 philosophy, user setup, CLI usage, result interpretation, and contributor guides.
 Product analysis rules and guidelines belong in root [docs/analysis](docs/analysis/README.md), not
@@ -41,6 +54,22 @@ Agents MUST use the assigned worktree for related architecture, documentation, i
 Independent future deliverables MAY be split when useful; agents MUST NOT create extra worktrees or PRs
 merely for steps of the active task. These authorization rules take precedence over stricter
 greenlight/topology wording in the methodology, execution discipline, and skills.
+
+## Worktree location
+
+This repository uses one bare Git directory, `<container>/.bare/`, with sibling worktrees such as
+`<container>/stage/` and `<container>/nextjs-support-mvp/`. Agents MUST view, edit, build and test in
+the user-assigned sibling worktree. The container and `.bare/` are not source checkouts.
+
+Agents MUST NOT create or use worktrees outside this structure, including `.claude/worktrees/`,
+other tool-specific nested checkouts, temporary clones or alternate repository copies. Any authorized
+new worktree MUST be registered with the existing `.bare/` repository and placed directly under the
+same container. Reuse the assigned checkout for the current deliverable.
+
+Before editing, agents MUST verify `pwd`, `git branch --show-current`, `git status --short --branch`
+and `git worktree list`. The active user's assigned path takes precedence over paths in older
+handoffs. If a handoff points at another checkout, resolve it against the assigned worktree before
+continuing; do not silently switch to the handoff's path. See [worktree setup](.zazz/docs/worktree-setup.md).
 
 ## Branch model
 

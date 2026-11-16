@@ -16,6 +16,10 @@ type importBinding struct {
 	declaration  *sitter.Node
 }
 type sourceModule struct {
+	// recovered names the byte-preserving grammar workarounds that parsed this module.
+	recovered []string
+	// awaitedCalls are generic calls whose `await` was blanked for parsing.
+	awaitedCalls     map[uint]bool
 	contractBindings map[string]bool
 	// commandNames holds CommonJS destructured child_process members. They are
 	// kept apart from imports so no other analyzer's module resolution changes.
@@ -38,26 +42,30 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
-	nodeHTTP       map[string]*nodeHTTPContext
-	graphqlRecords int
-	grpcRecords    int
-	grpcProtos     map[string]grpcProtoResult
-	storageWrites  map[string][]storageWrite
-	tableModels    map[string]string
-	restResources  []restResource
-	signedTokens   []signedToken
-	angularUnits   []*angularUnit
-	producers      []jsonProducer
-	modelEvidence  map[string][]analysis.Evidence
-	mountedOrigins map[string]bool
-	textSources    map[string]analysis.Evidence
-	packageFiles   map[string]*packageFile
-	contextLimits  []analysis.Gap
-	contextFields  []string
-	root           string
-	parsers        *parsers
-	modules        map[string]*sourceModule
-	allowed        map[string]bool
+	tsConfigs       map[string]*tsConfig
+	next            *nextState
+	nextConfigs     map[string]*nextConfigFacts
+	nextMiddlewares map[string]*nextMiddleware
+	nodeHTTP        map[string]*nodeHTTPContext
+	graphqlRecords  int
+	grpcRecords     int
+	grpcProtos      map[string]grpcProtoResult
+	storageWrites   map[string][]storageWrite
+	tableModels     map[string]string
+	restResources   []restResource
+	signedTokens    []signedToken
+	angularUnits    []*angularUnit
+	producers       []jsonProducer
+	modelEvidence   map[string][]analysis.Evidence
+	mountedOrigins  map[string]bool
+	textSources     map[string]analysis.Evidence
+	packageFiles    map[string]*packageFile
+	contextLimits   []analysis.Gap
+	contextFields   []string
+	root            string
+	parsers         *parsers
+	modules         map[string]*sourceModule
+	allowed         map[string]bool
 }
 
 func (s *moduleSet) close() {
@@ -88,11 +96,15 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 		parseSource = vueScriptSource(src)
 		parser = s.parsers.forPath("component.ts")
 	}
-	tree := parser.Parse(parseSource, nil)
+	tree, recovered := parseRecovered(parser, parseSource)
 	if tree == nil {
 		return nil, fmt.Errorf("no syntax tree: %s", file)
 	}
-	m := &sourceModule{file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree,
+	var awaited map[uint]bool
+	if len(recovered) == 0 && s.nextProjectFor(file) != nil && (strings.HasSuffix(file, ".ts") || strings.HasSuffix(file, ".tsx")) {
+		tree, awaited = reparseTypedAwaits(parser, tree, parseSource)
+	}
+	m := &sourceModule{awaitedCalls: awaited, recovered: recovered, file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree,
 		funcs: map[string]*sitter.Node{}, exports: map[string]*sitter.Node{}, imports: map[string]importBinding{}, express: map[string]bool{}, receivers: map[string]bool{}, commandNames: map[string]importBinding{}, fsNames: map[string]importBinding{}}
 	s.modules[file] = m
 	top := tree.RootNode()
@@ -128,6 +140,7 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 				v := d.ChildByFieldName("value")
 				if name != nil && v != nil && name.Kind() == "object_pattern" {
 					m.readRequireDestructuring(name, v, d)
+					m.readDefaultDestructuring(name, v, d)
 					m.readCommandDestructuring(name, v, d)
 					m.readFSDestructuring(name, v, d)
 				}
@@ -220,6 +233,13 @@ func (s *moduleSet) resolve(m *sourceModule, name string) (*sourceModule, *sitte
 		}
 	}
 	if parts := strings.Split(name, "."); len(parts) == 2 {
+		if imp, ok := m.imports[parts[0]]; ok && imp.name == "default" {
+			if target := s.importModule(m, imp.module); target != nil {
+				if fn := exportedMember(target, parts[1]); fn != nil {
+					return target, fn
+				}
+			}
+		}
 		if imp, ok := m.imports[parts[0]]; ok && imp.name == "*" {
 			if target := s.importModule(m, imp.module); target != nil {
 				if exported := target.exports[parts[1]]; exported != nil {
@@ -236,11 +256,10 @@ func (s *moduleSet) resolve(m *sourceModule, name string) (*sourceModule, *sitte
 		return m, n
 	}
 	imp, ok := m.imports[name]
-	if !ok || !strings.HasPrefix(imp.module, ".") {
+	if !ok {
 		return nil, nil
 	}
-	base := filepath.ToSlash(filepath.Join(filepath.Dir(m.file), imp.module))
-	for _, p := range []string{base, base + ".ts", base + ".tsx", base + ".js", base + ".mjs", base + "/index.ts", base + "/index.js"} {
+	for _, p := range s.moduleCandidates(m, imp.module) {
 		if !s.allowed[p] {
 			continue
 		}
@@ -252,17 +271,22 @@ func (s *moduleSet) resolve(m *sourceModule, name string) (*sourceModule, *sitte
 		if key == "*" {
 			key = "default"
 		}
+		if member, ok := strings.CutPrefix(key, "default."); ok {
+			return target, exportedMember(target, member)
+		}
+		if target.exports[key] == nil && key != "default" {
+			// require destructuring of a CommonJS module.exports object.
+			if fn := exportedMember(target, key); fn != nil {
+				return target, fn
+			}
+		}
 		return target, target.exports[key]
 	}
 	return nil, nil
 }
 
 func (s *moduleSet) importModule(m *sourceModule, path string) *sourceModule {
-	if !strings.HasPrefix(path, ".") {
-		return nil
-	}
-	base := filepath.ToSlash(filepath.Join(filepath.Dir(m.file), path))
-	for _, p := range []string{base, base + ".ts", base + ".tsx", base + ".js", base + ".mjs", base + "/index.ts", base + "/index.js"} {
+	for _, p := range s.moduleCandidates(m, path) {
 		if s.allowed[p] {
 			target, err := s.load(p)
 			if err == nil {

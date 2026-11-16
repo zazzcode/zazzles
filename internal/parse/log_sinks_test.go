@@ -83,7 +83,8 @@ func TestLogSinkNegativeControls(t *testing.T) {
 		{"module-shadowed console", "const console={log(){}};", "console.log(req.headers.authorization)"},
 		{"local fake logger", "", "const logger={info(){}};logger.info(req.headers.authorization)"},
 		{"module fake logger", "const logger={info:()=>{}};", "logger.info(req.headers.authorization)"},
-		{"unknown logging library", "import pino from 'pino';const logger=pino();", "logger.info(req.headers.authorization)"},
+		{"unknown logging library", "import bunyan from 'bunyan';const logger=bunyan.createLogger();", "logger.info(req.headers.authorization)"},
+		{"local pino lookalike", "const pino=()=>({info(){}});const logger=pino();", "logger.info(req.headers.authorization)"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

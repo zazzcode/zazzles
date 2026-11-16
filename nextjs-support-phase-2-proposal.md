@@ -1,7 +1,7 @@
 # Proposal: Next.js support, phase 2 (open items)
 
-**Status:** Follow-on proposal for separate sessions. It authorizes no coding or paid calls until a
-session is asked to implement it.
+**Status:** Session A implemented in PR #18. Sessions B–D are follow-on proposals for separate
+sessions and authorize no coding or paid calls until assigned.
 **Drafted:** 2026-11-16, at the end of the Next.js MVP session.
 **Base:** draft PR zazzcode/zazzles#18 (`claude/nextjs-support-mvp-e1c7ea`). Read its contract
 `.zazz/specifications/nextjs-support.md` and the user docs `docs/nextjs-support.md` /
@@ -11,34 +11,22 @@ The MVP is complete for its owner-approved scope: N0–N5 and part of N6. Every 
 passes, and every item below is listed as a limit in the docs. The items are grouped so that each
 group can be one session, one contract and one draft PR into `stage`.
 
-## Session A: publish Next.js sample reports (do first; small, no paid calls)
+## Session A: publish Next.js sample reports — implemented in PR #18
 
-N5 asked for published sample reports and detection guides. PR #18 has neither yet. Do this in the
-PR #18 worktree before merging, or as its own small PR right after.
+Completed in the assigned MVP worktree on 2026-11-16. The owner expanded publication from the saved
+scoped runs to fresh full paid scans of both apps, including standalone input validation, with OpenAI
+`gpt-6-luna`, no provider/model fallback, and a 180-request total cap.
 
-1. **Reports.** Create `docs/samples/oss-oopssec-store/` and `docs/samples/vuln-nextjs/`, following
-   `docs/samples/vulnerable-typescript-app/`.
-   - Inputs: the final replayed runs.
-     - OopsSec: `_test-findings/oss-oopssec-store/oss-oopssec-store/run-822779136/findings.json`.
-     - vuln-nextjs: `_test-findings/vuln-nextjs/vuln-nextjs/run-1392915960/findings.json`.
-     - `_test-findings/` is in the outer `zazzles` folder, outside the repository.
-   - Outputs per folder: `findings.html`, `findings.json`, `findings.sarif`, `README.md` (target,
-     pinned revision, current report counts, notable results, limits), `metadata.json` and the
-     upstream license (`UPSTREAM-LICENSE.txt` from each sample's `LICENSE`).
-2. **Refresh script.** Add both names to `docs/samples/refresh.py`. Run
-   `python3 docs/samples/refresh.py --scan ./bin/scan --sample oss-oopssec-store --sample vuln-nextjs`
-   so `root` becomes the public label and no home path is published. Check `reference-policy.md`.
-3. **Links.** Add rows to the `docs/samples/README.md` table, `docs/samples/index.html` and the
-   README "Saved results" table.
-4. **Detection guides.** Write `.zazz/evaluation/oss-oopssec-store-detection-guide.md` and
-   `vuln-nextjs-detection-guide.md`, in the format of `vulnerable-typescript-app-detection-guide.md`.
-   - OopsSec: promote the proposal §9 answer key, including `OOPS-LOG-02`.
-   - vuln-nextjs: point at the lab's `tests/expected-scanner-findings.json` as the source of truth;
-     it is a living lab.
-   - Link both from `.zazz/project/vulnerable-sample-apps.md`.
-5. **Acceptance:** `go test ./...` passes. Opening the HTML locally shows the same counts as the
-   saved runs: OopsSec 15 Confirmed; vuln-nextjs 10 Confirmed, 7 Protected. No absolute local paths
-   appear in published files.
+- [OopsSec reports and provenance](docs/samples/oss-oopssec-store/README.md), including upstream license.
+- [vuln-nextjs reports and provenance](docs/samples/vuln-nextjs/README.md), including upstream license.
+- Source-backed [OopsSec detection guide](.zazz/evaluation/oss-oopssec-store-detection-guide.md) and
+  [living lab guide](.zazz/evaluation/vuln-nextjs-detection-guide.md), linked from the sample catalog.
+- Both names are in `docs/samples/refresh.py`, the Markdown/HTML sample indexes and the root README
+  Saved results table. Exports normalize the public root and preserve the canonical evidence.
+
+The [N5 closeout record](.zazz/specifications/nextjs-support.md#8-sample-publication-closeout) owns
+final counts, exact-replay and contributor-check evidence. Session A adds no analyzer features;
+Sessions B–D remain separate future deliverables. Human review and merge of PR #18 remain the owner step.
 
 ## Session B: remaining practice checks (N6 rest; no model)
 

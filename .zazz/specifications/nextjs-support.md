@@ -33,7 +33,7 @@ framework-neutral library contracts the sample needs and a separate, model-free 
 | N3a | Server Component page and `generateMetadata` entries, navigation exits, server JSX raw-HTML/URL sinks with fixed-prefix exclusion, `request_path_in_internal_url` | `next_pages.go`, `flow.go`, `control_context.go` |
 | N3b | `"use client"` modules, React state/effects/refs/callbacks, Next navigation sources and router sinks, verified `api.*` helper summary, `NextResponse.json` producers, Prisma storage reads/writes for stored XSS, fetched-content origin | `react_flow.go`, `xss_client.go`, `xss_storage.go`, `xss_claims.go` |
 | N4 | Middleware matcher stages (literal path-to-regexp subset) as entry controls; Server Actions | `next_config.go`, `next_actions.go` |
-| N5 | Judged OopsSec run with exact replay (§5) | — |
+| N5 | Judged Next.js sample runs with exact replay; published HTML/JSON/SARIF, provenance, licenses and detection guides (§5–§6, §8) | `docs/samples/oss-oopssec-store/`, `docs/samples/vuln-nextjs/`, `.zazz/evaluation/*-detection-guide.md` |
 | N6 (partial) | `practice_observations` report section (JSON, HTML, text, SARIF property) | `next_practice.go`, `analysis.go`, `report/*` |
 
 New fact codes: `scope_nextjs`, `zod_schema_supplied`, `sql_multi_statement`, `sql_single_statement`,
@@ -120,10 +120,58 @@ outcomes as §5. Samples verified clean before and after.
 ## 7. Follow-ups
 
 Open items are grouped into sessions A–D in the [phase 2 proposal](../../nextjs-support-phase-2-proposal.md)
-(A: publish sample reports and detection guides, recommended before or right after merge).
+(A: sample publication completed in this branch; B–D remain separate future deliverables).
 
 Remaining NX-BP checks; a non-vulnerable Next.js app for false-red measurement (proposal §13);
-promote the answer key into a detection guide after owner review; code-injection (CWE-95) and
+code-injection (CWE-95) and
 open-redirect (CWE-601) analyzer families, which the vuln-nextjs lab already has rows for
 ([proposal](../../code-injection-and-open-redirect-proposal.md), next up in the
 [implementation plan](../project/implementation-plan.md#next-up)).
+
+## 8. Sample publication closeout
+
+Owner assigned Session A to this worktree on 2026-11-16, then requested fresh full paid scans of
+both samples (including standalone input validation), with OpenAI `gpt-6-luna`, no fallback, and
+an explicit 180-request total cap. Published artifacts and source-backed detection guides complete
+N5. All reports must retain inconclusive and unsupported records, normalize the public root, preserve
+upstream licenses and disclose source pins, coverage and actual assessment counts. The samples
+index, refresh script and root README Saved results must link both apps.
+
+Acceptance: fresh scans and exact offline replay; HTML counts agree with canonical JSON; published
+files contain no private absolute paths; sample source remains unchanged; `go test ./...` and required
+contributor checks pass. Results and verification are recorded below.
+
+**Fresh full results (2026-11-16).** 149 of the approved 180 paid requests, 644,304 reported input
+tokens, no retries/fallback, zero failed assessments, zero request-cap omissions. All implemented
+analyzers included, including standalone input validation. Every supported required positive remains
+Confirmed; no scoped safe control is red.
+
+| Sample / pin | Run | Paid / completed | Confirmed | Review | Protected | Exact replay |
+|---|---|---|---|---|---|---|
+| OopsSec `2d530ef` | `run-2413679240` | 107 / 107 | 15 | 101 canonical; 99 displayed | 0 | 107/107 |
+| vuln-nextjs `ea10efb` | `run-2372184294` | 42 / 42 | 10 | 33 | 7 | 42/42 |
+
+OopsSec retains 9 unassessed outbound observations (two grouped in HTML); the lab retains 8 API
+data-transfer observations with no rendering claim. These are intentionally not judged. Practice
+observations are separate (29 / 5). OopsSec remains clean at its pin; the lab has no tracked changes
+and its pre-existing ignored outputs remain unchanged. Only lab documentation changed since `022a863`.
+Raw runs and traces are retained outside worktrees under `_test-findings/nextjs-pr18-closeout/`.
+Public metadata records source hashes, target/scanner pins and full assessment coverage.
+
+**Verification.** `go test ./...`, `go test -race ./... -count=1`, `go vet ./...`, `go build ./...`,
+`gofmt -l cmd internal` all pass (Go 1.27.3; isolated writable Go cache; local HTTP stub access enabled
+for test suites). Both real-sample parser answer-key tests pass. Fresh exact replay is 149/149 with
+zero mismatches or missing traces. Offline refresh succeeds for both samples; public path, local-link,
+JSON/SARIF parsing, canonical-evidence preservation and HTML count/grouping checks pass. A browser
+preview could not open local file URLs under the browser policy; HTML was checked structurally.
+Human acceptance and merge remain the owner step; the worktree is retained.
+
+## Implementation And Review Change Log
+
+### 2026-11-16 — Complete N5 sample publication
+
+**Source.** Owner request to close PR #18, publish both Next.js sample reports, and perform full paid scans.
+**Changed sections.** N5 scope row and sample publication closeout (§8).
+**Rationale.** Saved-run publication alone did not satisfy the owner's request for current full results.
+**Summary.** Added bounded fresh all-family paid scans, public reports, guides and provenance to N5 acceptance.
+**Verification impact.** Exact replay, source-pin/state checks, export consistency and full offline contributor checks.

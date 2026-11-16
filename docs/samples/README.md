@@ -15,6 +15,14 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Python insecure app](python-insecure-app/README.md) | [findings.html](python-insecure-app/findings.html) | [findings.json](python-insecure-app/findings.json) | [findings.sarif](python-insecure-app/findings.sarif) |
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
+| [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
+| [vuln-nextjs (Pages Router lab)](vuln-nextjs/README.md) | [findings.html](vuln-nextjs/findings.html) | [findings.json](vuln-nextjs/findings.json) | [findings.sarif](vuln-nextjs/findings.sarif) |
+
+The Next.js samples published on 2026-11-16 use fresh full `gpt-6-luna` scans, including
+standalone input validation: 149 paid assessments and exact replays, zero failures or mismatches.
+OopsSec Store displays 15 Confirmed, 99 Review and 0 Protected (two grouped observations remain in JSON);
+the vuln-nextjs lab has 10 Confirmed, 33 Review and 7 Protected. Practice observations are separate.
+The lab report is pinned to `ea10efb`; its living source may contain newer scenarios.
 
 The three Node.js reports (Juice Shop, Node.js Goof, Vulnerable TypeScript app) were rebuilt on
 2026-11-15 with OpenAI Luna Decisions: every analyzer, including Express middleware-chain stages,

@@ -12,7 +12,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--scan', default='./bin/scan', help='compiled scan executable')
     names = ('juice-shop', 'vulnerable-typescript-app', 'nodejs-goof',
-             'ThreatByte', 'python-insecure-app', 'vulnerable-flask-app', 'vulnpy')
+             'ThreatByte', 'python-insecure-app', 'vulnerable-flask-app', 'vulnpy',
+             'oss-oopssec-store', 'vuln-nextjs')
     parser.add_argument('--sample', action='append', choices=names, help='refresh only selected samples')
     parser.add_argument('--compress', action='store_true', help='store complete JSON/SARIF as gzip files for large reports')
     args = parser.parse_args()

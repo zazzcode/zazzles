@@ -336,6 +336,8 @@ Explore existing reports without installing Zazzles or making API calls:
 | ThreatByte (Python) | Flask/RESTX SQL, reflected/stored XSS, SSRF and protected controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/ThreatByte/findings.html) · [Sample notes](docs/samples/ThreatByte/README.md) |
 | Python insecure app | FastAPI HTML/template construction | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/python-insecure-app/findings.html) · [Sample notes](docs/samples/python-insecure-app/README.md) |
 | Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |
+| OSS OopsSec Store | Next.js App Router: SQL, path, SSRF, logging and client XSS | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/oss-oopssec-store/findings.html) · [Sample notes](docs/samples/oss-oopssec-store/README.md) |
+| vuln-nextjs lab | Pages Router: PGlite, command, path, SSRF and XSS with safe controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Sample notes](docs/samples/vuln-nextjs/README.md) |
 
 The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. VulnPy’s complete JSON/SARIF downloads are gzip-compressed to retain every record. Hosted previews update after changes merge into `stage`. Compare counts
 against the [expected-vs-actual tables](.zazz/project/vulnerable-sample-apps.md)—efficacy is

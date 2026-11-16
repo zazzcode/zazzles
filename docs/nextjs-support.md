@@ -173,8 +173,9 @@ no model request. `review` marks a heuristic a person should confirm.
 The reference target is OSS OopsSec Store (`kOaDT/oss-oopssec-store`, pinned `2d530ef`), a
 deliberately vulnerable Next.js 15 App Router store using Prisma on SQLite, better-sqlite3, pino and
 zod. Offline, the scan finds 76 Route Handler entries (63 route files) and 38 Server Component page
-entries, with no parse errors. The final judged run (OpenAI `gpt-6-luna`, 21 records, reproduced
-exactly by offline replay) gave:
+entries, with no parse errors. The [published full scan](samples/oss-oopssec-store/README.md)
+assessed 107 contexts with OpenAI `gpt-6-luna`, including standalone input validation, and replayed
+107/107 exactly. It retains these source-backed results:
 
 | Expected | Result |
 | --- | --- |
@@ -199,7 +200,9 @@ a vulnerable file and one or more safe controls per scenario, PGlite (in-process
 DOMPurify. It exercises what OopsSec does not: `getServerSideProps` pages, `pages/api` handler
 factories, PGlite SQL, command injection and server-rendered stored and script-context XSS. Its
 ground truth is `tests/expected-scanner-findings.json` in the lab, which grows as scenarios are
-added. At `022a863`:
+added. The [published full scan](samples/vuln-nextjs/README.md) is pinned to `ea10efb` (only lab
+documentation changed since the original `022a863` acceptance scan). It includes all implemented
+analyzers and standalone input validation. At the acceptance pin:
 
 | Family | Vulnerable rows | Safe controls |
 | --- | --- | --- |

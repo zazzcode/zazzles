@@ -1,27 +1,21 @@
-# Zazz Worktree Setup
+# Zazzles worktree setup
 
-This document defines the required worktree structure for repos using the Zazz methodology, adapted for zazzles:
-the integration branch is **`stage`**, and **`main`** is the release branch (stage merges to main at release time;
-a version tag is cut on main).
+This guide owns contributor and agent operations in the maintained workspace. Read
+[AGENTS.md](../../AGENTS.md#worktree-location) for mandatory location and authorization rules;
+[agent orientation](zazzles-agent-orientation.md#branches-and-worktrees) is the entry point.
+`stage` integrates reviewed work; `main` receives human-operated release promotion.
 
-The methodology is opinionated here on purpose. A consistent worktree model reduces ambiguity, keeps agent work isolated, and gives teams a clean recovery path when a deliverable or document branch goes in the wrong direction.
-
-Worktrees are required by the methodology. This document describes the methodology's opinionated worktree operating model.
-
-Background references:
-
-- [Git worktree documentation](https://git-scm.com/docs/git-worktree)
-- [Worktrunk CLI](https://worktrunk.dev/worktrunk/)
-
-`git worktree` is the underlying Git feature. Worktrunk is an encouraged convenience CLI that makes worktree workflows easier, especially when builders and AI agents are working in parallel.
-
-Supporting docs in this repo:
-
-- [wt-cheat-sheet.md](wt-cheat-sheet.md)
+Native `git worktree` is fully supported. Worktrunk is **optional but recommended**, especially for
+its configured copy hook that carries `.env` and other needed gitignored local files into new
+worktrees. Its commands and hooks are in the [cheat sheet](wt-cheat-sheet.md). Both tools MUST use the same existing `.bare/`
+repository and direct sibling checkout paths. Tool defaults do not override this layout.
 
 ## Required Model
 
-Use a bare-repo container with sibling worktrees.
+The preferred workflow for **all contributors** is a bare-repo container with sibling worktrees,
+following the maintainer's setup for consistency. Contributors can use another local layout and submit feature-branch PRs; this convention is not a PR acceptance requirement.
+They are responsible for adapting their setup, paths and commands. Agents in the maintained
+workspace MUST use the assigned sibling worktree managed by its existing `.bare/` repository.
 
 Zazzles's container layout (resolve the development root using the
 [orientation](zazzles-agent-orientation.md#portable-workspace-and-dev_root)):
@@ -34,22 +28,45 @@ zazzles/                         # container; not a development checkout
 └── main/                     # optional release worktree; need not exist now
 ```
 
-Required conventions:
+Required conventions within the maintained workspace:
 
 - the container directory is not itself the active development checkout
 - `.bare/` is the shared Git directory
-- each active worktree is a sibling directory under the container
+- each active worktree MUST be a direct sibling of `.bare/` under the container
+- nested tool directories such as `.claude/worktrees/` and external/temporary scanner checkouts MUST NOT be used
+- reuse the assigned checkout for the current deliverable; a new session is not a new deliverable
 - one active deliverable or document effort maps to one worktree in the normal case
 - each spec has its own branch and worktree; generic stacked-lane examples do not override this policy
 - do not use `/` in branch names
 - use flat branch names so the branch name can map directly to a sibling worktree directory
 - merges happen through PRs, not by locally merging feature branches into the integration worktree
 
-Every spec is authored, refined, and implemented in its own feature worktree, with its own draft PR
-into `stage`. The current definition-only `stage/` exception does not apply to specs. Implementation
-requires human spec greenlight. Multiple agents assigned to the same spec coordinate in its worktree;
-alternative implementations belong to separately scoped specs/worktrees. The generic stacked-lane
-guide does not authorize sharing a worktree across zazzles specs.
+Related specs, implementation, documentation and tests stay in the assigned feature worktree and
+its draft PR into `stage`. Follow [authorization](../../AGENTS.md#authorization-and-delivery): an
+explicit implementation request authorizes the assigned work; no additional ceremony is needed.
+Independent deliverables may have separate sibling worktrees when assigned. A stale handoff or a
+tool-created checkout MUST NOT override the user's current worktree assignment.
+
+### Start or resume in an existing worktree
+
+Run these read-only checks from the assigned checkout before editing:
+
+```bash
+pwd
+git branch --show-current
+git status --short --branch
+git rev-parse --path-format=absolute --git-common-dir
+git worktree list
+```
+
+The directory MUST be `<repo-container>/<assigned-worktree>` and the common Git directory MUST
+resolve to `<repo-container>/.bare`. Confirm the expected branch and preserve local/ignored files.
+If an old handoff names another checkout, use the current user assignment and recover the needed
+committed state or records into that checkout. Inspect divergence before changing branches or history.
+Do not create another worktree merely to resume a session.
+
+Example: a contributor assigned `<repo-container>/nextjs-support-mvp` works there. A handoff naming
+`<repo-container>/.claude/worktrees/...` does not authorize using that nested checkout.
 
 ## Why This Pattern
 
@@ -84,6 +101,11 @@ permit feature implementation, direct pushes, local merges, or releases. Later a
 use sibling worktrees.
 
 ## New Setup Paths
+
+The maintained workspace already has `.bare/`; contributors and agents MUST NOT rerun conversion
+or create another clone there. These examples are for an explicitly requested initial workspace
+setup. Conversion requires a full clone whose `.git` is a directory, not a linked worktree's `.git`
+file. Preserve existing work and configuration before conversion.
 
 ### Option A: Convert an existing clone
 
@@ -136,7 +158,7 @@ Useful commands:
 ```bash
 git --git-dir=.bare rev-parse --is-bare-repository
 git --git-dir=.bare worktree list
-cd stage && git branch -vv
+git -C stage branch -vv
 ```
 
 ## Reference application checkout
@@ -212,21 +234,19 @@ Git allows `/` in branch names, but that creates awkward nested directory paths 
 
 ## Creating Feature, Deliverable, or Proposal Worktrees
 
-From the repo container:
+First list existing worktrees and reuse the assigned checkout if it exists. For an authorized new
+independent deliverable, run from the container and name an explicit direct sibling destination:
 
 ```bash
-git --git-dir=.bare fetch origin
+git --git-dir=.bare worktree list
+git --git-dir=.bare fetch origin stage:refs/remotes/origin/stage
 git --git-dir=.bare worktree add feature-rbac -b feature-rbac origin/stage
-git --git-dir=.bare worktree add proposal-role-management-options -b proposal-role-management-options origin/stage
 ```
 
-From inside the integration worktree:
-
-```bash
-git pull origin stage
-git worktree add ../feature-rbac -b feature-rbac
-git worktree add ../proposal-role-management-options -b proposal-role-management-options
-```
+Then `cd <repo-container>/feature-rbac` and run the start/resume checks above. Do not use a nested
+or external destination. Native Git does not copy ignored `.env`, local tool configuration or
+handoffs: inspect and copy only the required files deliberately, preserving credentials and existing
+content. Worktrunk users can follow the [optional hook setup](wt-cheat-sheet.md#local-files-and-hooks).
 
 ## Deliverables Directory Policy
 
@@ -260,57 +280,44 @@ git rebase origin/stage
 
 ```bash
 cd <repo-container>/feature-rbac
-git add .
-git commit -m "type: description"
+git add <changed-paths>
+git commit -m "[DOC] Describe the change"
 git push origin feature-rbac
 ```
 
 ### Remove a worktree
 
+Before removal, verify the exact path, branch, uncommitted changes and ignored files. Preserve
+handoffs and replay evidence outside the checkout if needed after cleanup. Remove only the assigned
+finished/redundant checkout; removing a worktree and deleting its branch are separate decisions.
+
 ```bash
+git -C <repo-container>/feature-rbac status --short --ignored
 cd <repo-container>
 git --git-dir=.bare worktree remove feature-rbac
-git --git-dir=.bare worktree remove --force feature-rbac
-git --git-dir=.bare worktree prune
+git --git-dir=.bare worktree prune --dry-run
 ```
+
+Use forced removal only after intentionally preserving or discarding the local files it would
+remove. Prune stale registrations after reviewing the dry run; pruning does not remove live checkouts.
 
 ## Worktrunk Usage
 
-Worktrunk is recommended when the environment has it installed.
-
-Common patterns from the repo container:
-
-```bash
-wt -C .bare list
-wt -C .bare switch --create feature-rbac
-wt -C .bare switch proposal-role-management-options
-wt -C .bare switch pr:123
-wt -C .bare remove feature-rbac
-wt -C .bare step commit
-wt -C .bare step push origin/feature-rbac
-wt -C .bare step rebase dev
-```
-
-Common pattern from inside a worktree:
+Worktrunk is optional but recommended for local-file setup: its configured `copy-ignored` hook can
+carry `.env` and other needed gitignored files into a new sibling checkout. Native Git above supports
+the complete workflow; copy the needed local files deliberately when using it.
+If using `wt`, first inspect existing worktrees and configuration:
 
 ```bash
-wt -C ../.bare list
-wt -C ../.bare switch pr:123
-wt -C ../.bare remove feature-rbac
+wt -C <repo-container>/.bare list
+wt -C <repo-container>/.bare config show
 ```
 
-If the team uses Worktrunk, prefer its wrappers for:
-
-- creating worktrees
-- switching between active efforts
-- checking out PRs
-- routine commit/push/rebase flows
-
-Use plain `git worktree` when:
-
-- Worktrunk is unavailable
-- the repo explicitly prefers native Git commands
-- debugging a lower-level worktree issue
+A Worktrunk switch can create a checkout when none exists. For authorized creation, explicitly set a
+direct sibling path and base; verify the resulting checkout before editing. The
+[cheat sheet](wt-cheat-sheet.md) owns commands, local file copying, approval handling and cleanup flags.
+Agents MUST NOT use `wt merge` or `wt step push` to integrate into `stage`/`main`; human-reviewed PRs
+are the integration path. Ordinary remote publication uses `git push` from the feature checkout.
 
 ## Review and PR Flow
 
@@ -332,13 +339,14 @@ If a session of work:
 - fails owner review
 - reveals that the proposal, feature requirements document, or deliverable specification is wrong
 
-then the worktree can be abandoned and the team can return to the governing documents, revise the contract, and start a new worktree for the corrected approach.
+first repair the assigned checkout when safe. If replacement is explicitly warranted, preserve its
+work and execution records, revise the governing contract, and use a direct sibling registered with
+the same `.bare/`. Do not create a tool-specific or external fallback checkout.
 
 Useful commands:
 
 ```bash
 git --git-dir=.bare worktree remove my-failed-branch
-git --git-dir=.bare worktree remove --force my-failed-branch
 git --git-dir=.bare worktree prune
 ```
 
@@ -366,4 +374,4 @@ This document defines:
 - setup and conversion paths
 - worktree-local exclusion guidance
 - daily operations with `git worktree`
-- the encouraged Worktrunk command model
+- optional Worktrunk use without changing location or review rules

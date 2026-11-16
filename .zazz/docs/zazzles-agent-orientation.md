@@ -51,6 +51,19 @@ zazzles/                   container, not a source checkout
 └── _test-findings/         local scan artifacts, outside targets and worktrees
 ```
 
+Contributors are encouraged to follow the maintainer's `.bare/` sibling-worktree structure for
+consistency. The [setup guide](worktree-setup.md) owns the layout convention and optional Worktrunk
+recommendation. Other local layouts can still submit feature-branch PRs, with
+contributors responsible for adapting their setup and paths. Agents in the maintained workspace
+MUST use the assigned sibling checkout.
+
+Contributor and agent reading path:
+
+- [Worktree setup](worktree-setup.md): required layout, checkout verification, native Git operations,
+  local configuration and cleanup. Read this before creating, moving or removing a worktree.
+- [Worktrunk cheat sheet](wt-cheat-sheet.md): optional `wt` commands and hooks. Native Git is fully
+  supported; installing or using Worktrunk is not a prerequisite.
+
 Follow the [worktree location rules](../../AGENTS.md#worktree-location): use the user-assigned sibling
 checkout managed by the existing `.bare/`; never create or use an alternate nested or external
 worktree. An old handoff path does not override the user's assigned path.
@@ -60,12 +73,14 @@ Run commands from the assigned feature checkout. Verify `pwd`, `git branch --sho
 `stage` receives reviewed PRs; `main` is human-operated release promotion. Related design, spec, implementation and tests stay
 in the assigned worktree. See [authorization](../../AGENTS.md#authorization-and-delivery),
 [worktree verification](worktree-setup.md#verification-checklist),
-[Worktrunk operations](worktree-setup.md#worktrunk-usage) and
-[linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain) only for linked VM sessions.
+[Worktrunk operations](worktree-setup.md#worktrunk-usage) for optional `wt` use. Linked VM sessions
+also use the [linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain).
 Native development uses the Go version in `go.mod` and a C compiler.
 
-Ignored `.env` files are local to each checkout. Worktrunk's configured copy step seeds new worktrees
-from `stage`; later edits are not synchronized. Current intent: stage uses `gpt-6-luna`,
+Ignored `.env` files are local to each checkout. When Worktrunk's optional copy hook is configured,
+it can seed new worktrees; native Git does not copy ignored files. Inspect the selected source and
+copy only the local configuration needed for the task, without overwriting existing files. Later
+edits are not synchronized; copied handoffs never override the active user's assigned path. Current intent: stage uses `gpt-6-luna`,
 path-traversal uses `gemini-decision-1`. Never print tokens or overwrite the user's local file.
 [Environment loading](../../docs/getting-started.md#local-environment-file) and
 [provider setup](../../docs/decision-models.md#credentials-and-local-environment) own configuration.

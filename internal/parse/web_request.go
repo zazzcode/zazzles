@@ -378,6 +378,14 @@ func (f *flow) webValue(n *sitter.Node) (value, bool) {
 			case "clone":
 				return value{web: "request"}, true
 			}
+		case "fetchedResponse":
+			// Reading the body of a fetched response keeps its content.
+			switch method {
+			case "text", "json", "arrayBuffer", "blob", "bytes":
+				v := f.transfer(recv, "response_body", n)
+				v.web = ""
+				return v, true
+			}
 		case "formEntry":
 			switch method {
 			case "arrayBuffer", "text", "stream", "bytes", "slice":

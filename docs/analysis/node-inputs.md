@@ -9,6 +9,9 @@ transports remain on the existing entry transport associations, independently of
 feed the same sink contracts and judgment policy. Queue acquisition is not implemented. Python
 keeps its existing behavior; migration to the shared input-fact model remains deferred.
 
+Next.js App Router, Server Action and page entries use the same facts through a separate adapter;
+see the [Next.js addendum](nextjs.md).
+
 ## Supported HTTP boundary
 
 - Express retains its existing bounded direct/mounted/finite-registration analysis and middleware context.

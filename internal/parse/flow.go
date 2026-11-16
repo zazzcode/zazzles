@@ -620,6 +620,14 @@ func (f *flow) eval(n *sitter.Node) value {
 				v.fields[p.Utf8Text(src)] = field
 			} else if p.Kind() == "spread_element" && p.NamedChildCount() == 1 {
 				spread = f.eval(p.NamedChild(0))
+				if f.web != nil {
+					// `...(cond && { bio })` contributes its fields when present.
+					for k, fv := range spread.fields {
+						if _, set := v.fields[k]; !set {
+							v.fields[k] = fv
+						}
+					}
+				}
 				v.pathObjectClosed = v.pathObjectClosed && spread.pathObjectClosed
 				v = combine(v, spread)
 			}
@@ -921,6 +929,13 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	f.commandCall(n, fn, args)
 	if modelCall {
 		f.recordStorageWrite(n, fn, args, values, modelValue)
+		// A Prisma write resolves to the stored row, which echoes its data fields.
+		if strings.HasPrefix(modelValue.model, "prisma:") && modelValue.read == nil && len(values) > 0 {
+			data := values[0].fields["data"]
+			echoed := combine(modelValue, data)
+			echoed.fields = data.fields
+			modelValue = echoed
+		}
 	}
 	// A verified logger is an emission sink, not a validator of its arguments.
 	if binding, ok := f.logSink(n, fn); ok {
@@ -1050,6 +1065,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		// Response values are new external sources, never aliases of request arguments.
 		if modelCall {
 			return modelValue
+		}
+		if kind == "ssrf_candidate" && f.web != nil {
+			// The body of a request-chosen URL is attacker-controlled content.
+			fetched := f.module.evidence("fetched_content", n)
+			return value{web: "fetchedResponse", deps: []analysis.Dependency{{Source: fetched, Transfers: []analysis.Evidence{}}}}
 		}
 		return value{gaps: []analysis.Gap{f.gap("unknown_call_result", "sink/transport return value is not modeled", n)}}
 	}

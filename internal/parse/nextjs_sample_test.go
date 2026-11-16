@@ -71,6 +71,10 @@ func TestNextJSOopsStoreAnswerKey(t *testing.T) {
 		{"OOPS-SSRF-01", "ssrf_candidate", "app/api/support/route.ts", "", 16},
 		{"OOPS-LOG-01", "log_sink_candidate", "app/api/auth/login/route.ts", "", 16},
 		{"OOPS-XSS-05", "xss_candidate", "app/login/LoginForm.tsx", "", 37},
+		{"OOPS-XSS-01", "xss_candidate", "app/products/[id]/ProductDetailClient.tsx", "", 55},
+		{"OOPS-XSS-02", "xss_candidate", "app/profile/ProfileClient.tsx", "", 411},
+		{"OOPS-XSS-04", "xss_candidate", "app/support/SupportForm.tsx", "", 103},
+		{"OOPS-PATH-02", "path_traversal_candidate", "app/api/files/route.ts", "", 21},
 	}
 	for _, want := range complete {
 		found := false

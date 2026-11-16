@@ -88,6 +88,9 @@ func (f *flow) modelCallValue(call, fn *sitter.Node, receiver value) (value, boo
 	if obj == nil || prop == nil {
 		return value{}, false
 	}
+	if v, ok := f.prismaModelCall(call, obj, prop); ok {
+		return v, true
+	}
 	if obj.Kind() == "identifier" {
 		if v, ok := f.env[obj.Utf8Text(f.module.src)]; ok && v.model != "" {
 			receiver = v
@@ -178,6 +181,35 @@ func (f *flow) recordStorageWrite(call, fn, args *sitter.Node, values []value, r
 		return
 	}
 	fields := receiver.fields
+	if strings.HasPrefix(receiver.model, "prisma:") {
+		// Prisma writes take { data: {...} }; upsert writes both create and update.
+		if len(values) == 0 {
+			return
+		}
+		switch prop.Utf8Text(f.module.src) {
+		case "create", "update", "updateMany", "createMany":
+			fields = values[0].fields["data"].fields
+		case "upsert":
+			fields = map[string]value{}
+			for _, key := range []string{"create", "update"} {
+				for k, v := range values[0].fields[key].fields {
+					fields[k] = combine(fields[k], v)
+				}
+			}
+		default:
+			return
+		}
+		if f.set.storageWrites == nil {
+			f.set.storageWrites = map[string][]storageWrite{}
+		}
+		for field, v := range fields {
+			if len(v.deps) > 0 {
+				key := receiver.model + "." + field
+				f.set.storageWrites[key] = append(f.set.storageWrites[key], storageWrite{f.entry.ID, v, f.module.evidence("storage_write", call)})
+			}
+		}
+		return
+	}
 	switch prop.Utf8Text(f.module.src) {
 	case "save":
 	case "create", "update", "updateOne":
@@ -283,4 +315,37 @@ func (s *moduleSet) rememberModel(key string, evidence []analysis.Evidence) {
 		s.modelEvidence = map[string][]analysis.Evidence{}
 	}
 	s.modelEvidence[key] = evidence
+}
+
+// prismaModelCall models `client.<model>.<method>(...)` on a verified Prisma
+// Client as storage: find* reads return a row of the model (its columns are
+// storage reads), and create/update/upsert writes record the data fields they
+// store. The model key is the client accessor, the same on both sides.
+func (f *flow) prismaModelCall(call, obj, prop *sitter.Node) (value, bool) {
+	if f.set == nil || obj.Kind() != "member_expression" {
+		return value{}, false
+	}
+	client, accessor := obj.ChildByFieldName("object"), obj.ChildByFieldName("property")
+	if client == nil || accessor == nil || client.Kind() != "identifier" || shadowed(call, client.Utf8Text(f.module.src), f.module.src) {
+		return value{}, false
+	}
+	method := prop.Utf8Text(f.module.src)
+	read := false
+	switch method {
+	case "findMany", "findUnique", "findFirst", "findUniqueOrThrow", "findFirstOrThrow":
+		read = true
+	case "create", "update", "upsert", "updateMany", "createMany":
+	default:
+		return value{}, false
+	}
+	binding := f.set.prismaClient(f.module, client.Utf8Text(f.module.src), 0)
+	if len(binding) == 0 {
+		return value{}, false
+	}
+	model := "prisma:" + accessor.Utf8Text(f.module.src)
+	if read {
+		e := f.module.evidence("storage_query", call)
+		return value{model: model, read: &e}, true
+	}
+	return value{model: model}, true
 }

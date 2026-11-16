@@ -578,3 +578,61 @@ export async function POST(request: Request) {
 		}
 	}
 }
+
+func TestNextStoredAndFetchedXSSLinks(t *testing.T) {
+	root := nextRepo(t, map[string]string{
+		"lib/prisma.ts": `import { PrismaClient } from "@prisma/client";
+export const prisma = new PrismaClient();`,
+		"lib/api.ts": `
+async function apiRequest(endpoint, options = {}) { const r = await fetch(endpoint, options); return r.json(); }
+export const api = {
+  get: (endpoint, options) => apiRequest(endpoint, { ...options, method: "GET" }),
+  post: (endpoint, body, options) => apiRequest(endpoint, { ...options, method: "POST", body }),
+};`,
+		"app/api/notes/route.ts": `
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+export async function POST(request: Request) {
+  const { body } = await request.json();
+  await prisma.note.create({ data: { body } });
+  return NextResponse.json({ ok: true });
+}
+export async function GET(request: Request) {
+  const notes = await prisma.note.findMany();
+  return NextResponse.json(notes);
+}`,
+		"app/api/preview/route.ts": `
+import { NextResponse } from "next/server";
+export async function POST(request: Request) {
+  const { url } = await request.json();
+  const res = await fetch(url);
+  const html = await res.text();
+  return NextResponse.json({ data: { html } });
+}`,
+		"app/n/Notes.tsx": `"use client";
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+export default function Notes() {
+  const [notes, setNotes] = useState([]);
+  const [preview, setPreview] = useState(null);
+  useEffect(() => { const load = async () => { const d = await api.get("/api/notes"); setNotes(d); }; load(); }, []);
+  const show = async () => { const r = await api.post("/api/preview", { url: "x" }); setPreview(r.data); };
+  return <div>{notes.map((n) => <p key={n.id} dangerouslySetInnerHTML={{ __html: n.body }} />)}
+    <div dangerouslySetInnerHTML={{ __html: preview.html }} /></div>;
+}`,
+	})
+	r := analyzeNext(t, root)
+	xss := usesOf(r, "xss_candidate", "app/n/Notes.tsx")
+	if len(xss) != 2 {
+		t.Fatalf("two client raw-HTML sinks: %+v", xss)
+	}
+	for _, u := range xss {
+		if !u.XSS.OriginResolved || len(blockers(u)) != 0 {
+			t.Errorf("%s: link must be complete (resolved %v, blockers %+v)", u.Sink.Text, u.XSS.OriginResolved, blockers(u))
+		}
+		facts := strings.Join(u.Completeness.ModelFacts, "\n")
+		if strings.Contains(u.Sink.Text, "preview") != strings.Contains(facts, "xss_via_fetched_content") {
+			t.Errorf("%s: fetched-content fact %q", u.Sink.Text, facts)
+		}
+	}
+}

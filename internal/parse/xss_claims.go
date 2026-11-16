@@ -46,6 +46,12 @@ func assembleXSSClaims(report *analysis.AnalysisReport) {
 		if u.XSS.OutputContext == "url" && u.XSS.EntryKind == "client" && navigationSink(u.Sink.Text) {
 			c.ModelFacts = append(c.ModelFacts, "browser_navigation_sink: "+u.Sink.Text+" at "+u.Sink.Span.File)
 		}
+		for _, d := range u.Dependencies {
+			if d.Source.Kind == "fetched_content" {
+				c.ModelFacts = append(c.ModelFacts, "xss_via_fetched_content: "+u.Sink.Text+" at "+u.Sink.Span.File)
+				break
+			}
+		}
 		if strings.Contains(u.Sink.Text, "innerHTML") && scriptReexecution(*u) {
 			c.ModelFacts = append(c.ModelFacts, "script_reexecution: "+u.Sink.Text+" at "+u.Sink.Span.File)
 		}

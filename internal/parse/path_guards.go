@@ -178,6 +178,88 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 	helper := climb(call)
 	scan.checkHelperCallers(u, helper, climb)
 	scan.attachImplicitGuards(u)
+	if scan.next {
+		for _, d := range all {
+			scan.lookupPreconditions(call, d.idx, d.list)
+		}
+	}
+}
+
+// lookupPreconditions records, in Next.js code, an early exit when a Prisma
+// record lookup keyed by the tracked value finds nothing (`const p = await
+// prisma.x.findUnique({ where: { id } }); if (!p) return ...`). The value must
+// then equal an existing key. Whether that contains the path is the
+// assessment's question, so the guard is recorded unclassified, never as proof.
+func (scan *pathGuardScan) lookupPreconditions(call *sitter.Node, dep int, names []string) {
+	m := scan.m
+	var fn *sitter.Node
+	for p := call.Parent(); p != nil; p = p.Parent() {
+		if isFunction(p) || p.Kind() == "function_declaration" {
+			fn = p
+			break
+		}
+	}
+	if fn == nil {
+		return
+	}
+	var visit func(*sitter.Node)
+	visit = func(n *sitter.Node) {
+		if n.StartByte() >= call.StartByte() || (isFunction(n) && n != fn) {
+			return
+		}
+		if n.Kind() == "if_statement" && n.EndByte() <= call.StartByte() && !scan.seen[int(n.StartByte())] {
+			cond := unwrapTS(n.ChildByFieldName("condition"))
+			for cond != nil && cond.Kind() == "unary_expression" {
+				cond = unwrapTS(cond.ChildByFieldName("argument"))
+			}
+			body := n.ChildByFieldName("consequence")
+			if cond != nil && cond.Kind() == "identifier" && body != nil && exitsBlock(m, body) {
+				def := unwrapTS(definitionAt(m, cond, cond.Utf8Text(m.src)))
+				if def != nil && def.Kind() == "await_expression" && def.NamedChildCount() == 1 {
+					def = unwrapTS(def.NamedChild(0))
+				}
+				if def != nil && def.Kind() == "call_expression" {
+					if fnText := def.ChildByFieldName("function"); fnText != nil && prismaFilterMethods[lastSegment(fnText.Utf8Text(m.src))] {
+						if args := def.ChildByFieldName("arguments"); args != nil && strings.Contains(args.Utf8Text(m.src), "where") && mentionsAny(args.Utf8Text(m.src), names) {
+							scan.seen[int(n.StartByte())] = true
+							ev := m.evidence("guard_test", n)
+							scan.info.noteWithMeta(ev, analysis.PathGuardUnclassified, map[int]bool{dep: true}, false)
+							scan.guards = append(scan.guards, ev)
+						}
+					}
+				}
+			}
+		}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			visit(n.NamedChild(i))
+		}
+	}
+	visit(fn.ChildByFieldName("body"))
+}
+
+func lastSegment(s string) string {
+	if i := strings.LastIndex(s, "."); i >= 0 {
+		return s[i+1:]
+	}
+	return s
+}
+
+// exitsBlock reports a consequence that returns, throws or calls a Next.js
+// navigation exit.
+func exitsBlock(m *sourceModule, n *sitter.Node) bool {
+	switch n.Kind() {
+	case "return_statement", "throw_statement":
+		return true
+	case "expression_statement":
+		return n.NamedChildCount() == 1 && nextNavigationExit(m, n.NamedChild(0))
+	case "statement_block":
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			if exitsBlock(m, n.NamedChild(i)) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (scan *pathGuardScan) checkHelperCallers(u *analysis.CandidateUse, helper *sitter.Node, climb func(*sitter.Node) *sitter.Node) {
@@ -354,7 +436,10 @@ func nonContainingTest(m *sourceModule, cond *sitter.Node, names []string, u *an
 		return false
 	}
 	obj, prop := c.ChildByFieldName("object"), c.ChildByFieldName("property")
-	if obj == nil || prop == nil || obj.Kind() != "identifier" || prop.Utf8Text(src) != "success" || !in(obj.Utf8Text(src)) {
+	if obj == nil || prop == nil || obj.Kind() != "identifier" || prop.Utf8Text(src) != "success" {
+		return false
+	}
+	if !in(obj.Utf8Text(src)) && !validatedResult(m, obj, u) {
 		return false
 	}
 	var schemas []string
@@ -410,4 +495,24 @@ func trackedFields(u *analysis.CandidateUse) map[string]bool {
 		}
 	}
 	return fields
+}
+
+// validatedResult reports a local bound to the validation helper call that a
+// dependency of u passed through (its validated_parse transfer).
+func validatedResult(m *sourceModule, id *sitter.Node, u *analysis.CandidateUse) bool {
+	def := unwrapTS(definitionAt(m, id, id.Utf8Text(m.src)))
+	if def != nil && def.Kind() == "await_expression" && def.NamedChildCount() == 1 {
+		def = unwrapTS(def.NamedChild(0))
+	}
+	if def == nil {
+		return false
+	}
+	for _, d := range u.Dependencies {
+		for _, t := range d.Transfers {
+			if t.Kind == "validated_parse" && t.Span.File == m.file && t.Span.StartByte == int(def.StartByte()) && t.Span.EndByte == int(def.EndByte()) {
+				return true
+			}
+		}
+	}
+	return false
 }

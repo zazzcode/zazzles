@@ -23,7 +23,8 @@ func (s *moduleSet) linkCrossTierXSS(report *analysis.AnalysisReport) {
 		var matched []jsonProducer
 		routes := map[string]bool{}
 		for _, p := range s.producers {
-			if strings.EqualFold(p.route.Method, x.ResponseMethod) && routePatternMatch(p.route.PathPattern, x.ResponsePath) {
+			// A Pages Router API route (ALL) answers every method.
+			if (strings.EqualFold(p.route.Method, x.ResponseMethod) || (p.route.Method == "ALL" && p.route.Framework == "nextjs-pages")) && routePatternMatch(p.route.PathPattern, x.ResponsePath) {
 				matched = append(matched, p)
 				routes[p.route.ID] = true
 			}

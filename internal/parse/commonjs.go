@@ -142,3 +142,58 @@ func bindingReassigned(m *sourceModule, name string) bool {
 	visit(m.tree.RootNode())
 	return found
 }
+
+// readDefaultDestructuring records `const { endpoint } = http` where `http` is a
+// default import (ESM interop with a CommonJS `module.exports = { ... }`). The
+// binding resolves only through that module's exported object, never through a
+// same-named ESM export.
+func (m *sourceModule) readDefaultDestructuring(pattern, v, declaration *sitter.Node) {
+	if v.Kind() != "identifier" {
+		return
+	}
+	imp, ok := m.imports[v.Utf8Text(m.src)]
+	if !ok || imp.name != "default" || bindingReassigned(m, v.Utf8Text(m.src)) {
+		return
+	}
+	for i := uint(0); i < pattern.NamedChildCount(); i++ {
+		c := pattern.NamedChild(i)
+		local, name := "", ""
+		switch c.Kind() {
+		case "shorthand_property_identifier_pattern":
+			local = c.Utf8Text(m.src)
+			name = local
+		case "pair_pattern":
+			key, value := c.ChildByFieldName("key"), c.ChildByFieldName("value")
+			if key != nil && value != nil && value.Kind() == "identifier" {
+				local, name = value.Utf8Text(m.src), key.Utf8Text(m.src)
+			}
+		}
+		if local != "" && !bindingReassigned(m, local) {
+			m.imports[local] = importBinding{imp.module, "default." + name, declaration}
+		}
+	}
+}
+
+// exportedMember resolves a property of a module's exported object literal
+// (`module.exports = { endpoint }` or `export default { endpoint }`) to its
+// function: an inline function, or a top-level function or const function the
+// shorthand or identifier names.
+func exportedMember(target *sourceModule, key string) *sitter.Node {
+	obj := target.exports["default"]
+	if obj == nil || obj.Kind() != "object" {
+		return nil
+	}
+	v := property(obj, key, target.src)
+	if v == nil {
+		return nil
+	}
+	if isFunction(v) {
+		return v
+	}
+	if v.Kind() == "shorthand_property_identifier" || v.Kind() == "identifier" {
+		if fn := target.funcs[v.Utf8Text(target.src)]; fn != nil {
+			return fn
+		}
+	}
+	return nil
+}

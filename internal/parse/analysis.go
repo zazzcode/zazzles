@@ -108,6 +108,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		if p := set.nextProjectFor(file); p != nil {
 			set.nextRouteEntries(out, m, p)
 			set.pagesAPIEntries(out, m, p)
+			set.pagesPageEntries(out, m, p)
 			set.nextPageEntries(out, m, p)
 			set.nextActionEntries(out, m, p)
 		}

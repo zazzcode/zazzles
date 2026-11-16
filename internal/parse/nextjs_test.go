@@ -698,3 +698,115 @@ export default async function handler(req, res) {
 		t.Fatalf("--routes lists both API routes: %+v", inv.Routes)
 	}
 }
+
+// TestNextPagesServerSidePropsAndPGlite covers the Pages Router page entry
+// (getServerSideProps props reaching the component's raw HTML), a CommonJS
+// multi-argument handler factory, the PGlite contract and client provenance,
+// a direct zod parse, PGlite raw-SQL stored links and script-context JSON.
+func TestNextPagesServerSidePropsAndPGlite(t *testing.T) {
+	root := nextRepo(t, map[string]string{
+		"package.json": `{"dependencies":{"next":"13.4.19","react":"18.2.0","@electric-sql/pglite":"0.5.16","zod":"4.6.7"}}`,
+		"lib/database.cjs": `const { PGlite } = require('@electric-sql/pglite');
+async function seed(db) { await db.query('INSERT INTO users (name) VALUES ($1)', ['admin']); }
+async function createDatabase() { const db = await PGlite.create(); await seed(db); return db; }
+function getDatabase() {
+  if (!globalThis.__db) { globalThis.__db = createDatabase().catch((e) => { delete globalThis.__db; throw e; }); }
+  return globalThis.__db;
+}
+module.exports = { getDatabase };`,
+		"lib/http.cjs": `function endpoint(methods, run, { discloseErrors = false } = {}) {
+  return async function handler(req, res) {
+    if (!methods.includes(req.method)) return res.status(405).end();
+    try { return await run(req, res); } catch (error) { return res.status(500).json({ error: 'failed' }); }
+  };
+}
+module.exports = { endpoint };`,
+		"pages/api/notes.js": `import { z } from 'zod';
+import database from '../../lib/database.cjs';
+import http from '../../lib/http.cjs';
+const { getDatabase } = database;
+const { endpoint } = http;
+const Note = z.object({ body: z.string().min(1) });
+export default endpoint(['GET', 'POST'], async (req, res) => {
+  const db = await getDatabase();
+  if (req.method === 'GET') {
+    const { rows } = await db.query('SELECT id, body FROM notes ORDER BY id');
+    return res.status(200).json({ notes: rows });
+  }
+  const parsed = Note.safeParse(req.body ?? {});
+  if (!parsed.success) return res.status(400).json({ error: 'bad' });
+  await db.query('INSERT INTO notes (body) VALUES ($1)', [parsed.data.body]);
+  return res.status(201).json({ ok: true });
+});`,
+		"pages/api/search.js": `import database from '../../lib/database.cjs';
+import http from '../../lib/http.cjs';
+export default http.endpoint(['GET'], async (req, res) => {
+  const db = await database.getDatabase();
+  const results = await db.exec("SELECT * FROM notes WHERE body LIKE '%" + req.query.q + "%'");
+  return res.status(200).json({ results });
+});`,
+		"pages/notes.js": `import database from '../lib/database.cjs';
+export default function Notes({ notes }) {
+  return <ul>{notes.map((note) => <li key={note.id} dangerouslySetInnerHTML={{ __html: note.body }} />)}</ul>;
+}
+export async function getServerSideProps() {
+  const db = await database.getDatabase();
+  const { rows } = await db.query('SELECT id, body FROM notes ORDER BY id');
+  return { props: { notes: JSON.parse(JSON.stringify(rows)) } };
+}`,
+		"pages/echo.js": `import { useState } from 'react';
+function embed(value) { return JSON.stringify(value).replace(/</g, '\\u003c'); }
+export default function Echo({ payload, data }) {
+  const [draft] = useState(payload);
+  return <div>
+    <p>{draft}</p>
+    <div dangerouslySetInnerHTML={{ __html: payload }} />
+    <script dangerouslySetInnerHTML={{ __html: "window.a = " + JSON.stringify({ data }) }} />
+    <script dangerouslySetInnerHTML={{ __html: "window.b = " + embed({ data }) }} />
+  </div>;
+}
+export function getServerSideProps({ query }) {
+  const payload = typeof query.payload === 'string' ? query.payload : 'hi';
+  return { props: { payload, data: query.data ?? '' } };
+}`,
+	})
+	r := analyzeNext(t, root)
+	if e := entryNamed(r, "GET /echo"); e == nil || e.HTTP.Router != "pages" || e.HTTP.Surface != "page" {
+		t.Fatalf("getServerSideProps page entry: %+v", e)
+	}
+	if entryNamed(r, "GET /notes") == nil {
+		t.Fatal("no GET /notes page entry")
+	}
+	sql := usesOf(r, "sql_query_candidate", "")
+	contracts := map[string]int{}
+	for _, u := range sql {
+		if u.Sink.Span.File == "lib/database.cjs" {
+			t.Errorf("seed query reached from a request: %s:%d", u.Sink.Span.File, u.Sink.Span.StartLine)
+		}
+		if u.APIModel != nil {
+			contracts[u.Sink.Span.File+":"+u.APIModel.ID]++
+		}
+		if len(blockers(u)) > 0 {
+			t.Errorf("%s:%d blockers %+v", u.Sink.Span.File, u.Sink.Span.StartLine, blockers(u))
+		}
+	}
+	if contracts["pages/api/search.js:pglite-v1"] == 0 || contracts["pages/api/notes.js:pglite-v1"] == 0 {
+		t.Errorf("pglite-v1 contracts: %v", contracts)
+	}
+	byLine := map[int]analysis.CandidateUse{}
+	for _, u := range usesOf(r, "xss_candidate", "pages/echo.js") {
+		byLine[u.Sink.Span.StartLine] = u
+	}
+	if len(byLine) != 3 {
+		t.Fatalf("echo XSS records (React text must not record) = %d", len(byLine))
+	}
+	for line, want := range map[int]string{7: "raw", 8: "raw", 9: "sanitized"} {
+		if u, ok := byLine[line]; !ok || u.XSS == nil || u.XSS.Protection != want {
+			t.Errorf("echo.js:%d protection %+v, want %s", line, u.XSS, want)
+		}
+	}
+	stored := usesOf(r, "xss_candidate", "pages/notes.js")
+	if len(stored) != 1 || !stored[0].XSS.OriginResolved || len(stored[0].Dependencies) == 0 || stored[0].Dependencies[0].Source.Span.File != "pages/api/notes.js" {
+		t.Fatalf("stored notes link: %+v", stored)
+	}
+}

@@ -37,6 +37,9 @@ func (s *moduleSet) sqlLibraryCall(m *sourceModule, call *sitter.Node) (contract
 		}
 		return "", "", nil, false
 	}
+	if b := s.pgliteCall(m, call, name, method); len(b) > 0 {
+		return analysispacks.PGliteContract, method, append(b, m.evidence("sink_binding", call)), true
+	}
 	switch method {
 	case "exec", "prepare", "pragma":
 		if b := s.betterSQLite(m, call, name); len(b) > 0 {
@@ -263,10 +266,10 @@ func (s *moduleSet) sqlStatementFact(use analysis.CandidateUse) string {
 		return ""
 	}
 	contract, method, _, ok := s.sqlLibraryCall(m, call)
-	if !ok || contract != analysispacks.BetterSQLite3Contract {
+	if !ok || (contract != analysispacks.BetterSQLite3Contract && contract != analysispacks.PGliteContract) {
 		return ""
 	}
-	if method == "prepare" {
+	if method == "prepare" || (contract == analysispacks.PGliteContract && method == "query") {
 		return "sql_single_statement"
 	}
 	return "sql_multi_statement"

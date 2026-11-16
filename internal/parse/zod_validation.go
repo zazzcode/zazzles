@@ -168,3 +168,76 @@ func (s *moduleSet) schemaEvidence(m *sourceModule, arg *sitter.Node) []analysis
 	}
 	return []analysis.Evidence{target.evidence("validation_schema", decl)}
 }
+
+// directZodParse applies `Schema.safeParse(x)` / `Schema.parse(x)` written in
+// the handler itself, where Schema is a module constant (or named import)
+// built from the zod package. The result keeps x's dependencies through a
+// validated_parse transfer, with the schema as evidence; it is never marked safe.
+func (f *flow) directZodParse(n *sitter.Node, values []value) (value, bool) {
+	if f.set == nil || f.set.nextProjectFor(f.module.file) == nil || len(values) == 0 || len(values[0].deps) == 0 {
+		return value{}, false
+	}
+	callee := n.ChildByFieldName("function")
+	if callee == nil || callee.Kind() != "member_expression" {
+		return value{}, false
+	}
+	obj, prop := callee.ChildByFieldName("object"), callee.ChildByFieldName("property")
+	if obj == nil || prop == nil || obj.Kind() != "identifier" || !zodParseMethods[prop.Utf8Text(f.module.src)] {
+		return value{}, false
+	}
+	schema := f.set.schemaEvidence(f.module, obj)
+	if len(schema) == 0 || !f.set.zodBuilt(f.module, obj) {
+		return value{}, false
+	}
+	f.context = append(f.context, f.module.evidence("validation_control", n))
+	f.context = append(f.context, schema...)
+	out := f.transfer(values[0], "validated_parse", n)
+	if f.web == nil {
+		return out, true // Pages Router: members of the result carry the input
+	}
+	if strings.HasPrefix(prop.Utf8Text(f.module.src), "safeParse") {
+		out.web = "validated"
+	} else {
+		out.web = "validatedData"
+	}
+	return out, true
+}
+
+// zodBuilt reports a schema constant whose initializer is a call chain rooted
+// at the zod import (`z.object(...)`, `z.string().min(1)`).
+func (s *moduleSet) zodBuilt(m *sourceModule, id *sitter.Node) bool {
+	target, local := m, id.Utf8Text(m.src)
+	if imp, ok := m.imports[local]; ok && topVariable(m, local) == nil {
+		d, l, _ := s.namedExport(m, imp.module, imp.name, 0)
+		if d == nil {
+			return false
+		}
+		target, local = d, l
+	}
+	v := unwrapTS(topVariable(target, local))
+	for v != nil {
+		switch v.Kind() {
+		case "call_expression":
+			v = unwrapTS(v.ChildByFieldName("function"))
+		case "member_expression":
+			v = unwrapTS(v.ChildByFieldName("object"))
+		case "identifier":
+			imp, ok := target.imports[v.Utf8Text(target.src)]
+			return ok && imp.module == "zod" && !bindingReassigned(target, v.Utf8Text(target.src))
+		default:
+			return false
+		}
+	}
+	return false
+}
+
+// zodParseCall reports Schema.safeParse/parse on a zod-built schema constant:
+// a modeled validation call, not an unresolved input helper.
+func (s *moduleSet) zodParseCall(m *sourceModule, call *sitter.Node) bool {
+	callee := call.ChildByFieldName("function")
+	if callee == nil || callee.Kind() != "member_expression" {
+		return false
+	}
+	obj, prop := callee.ChildByFieldName("object"), callee.ChildByFieldName("property")
+	return obj != nil && prop != nil && obj.Kind() == "identifier" && zodParseMethods[prop.Utf8Text(m.src)] && s.zodBuilt(m, obj)
+}

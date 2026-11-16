@@ -38,7 +38,8 @@ including `extends` chains, resolve imports for every TypeScript project, not on
 | App Router Route Handler `app/**/route.ts` | One HTTP entry per exported method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`) | `export async function`, `export const X = async () =>`, `export const POST = withAuth(handler)`, `export { h as GET }` and one level of `export { GET } from "./x"` |
 | Server Action (`"use server"` module or function) | `POST` entry, surface `server_action` | Path stays unresolved (`next_action_path_dynamic`): actions are posted to any page URL. Every argument is attacker-controlled request body data whatever its TypeScript type |
 | Server Component page `app/**/page.tsx` | `GET` entry, surface `page` | `params` and `searchParams` props are request inputs; `generateMetadata` is a separate `page_metadata` entry for the same path |
-| Pages Router API route `pages/api/**` | `ALL` entry, framework `nextjs-pages` | `export default function handler(req, res)`; reuses the Express-shaped `req.query` / `req.body` / `req.cookies` / `req.headers` vocabulary and `res.json` / `res.send` responses. Pages Router pages (non-API files) are not entries |
+| Pages Router API route `pages/api/**` | `ALL` entry, framework `nextjs-pages` | `export default function handler(req, res)` or a handler factory such as `export default endpoint(['POST'], async (req, res) => ...)` (also imported from a CommonJS `module.exports = { endpoint }`); reuses the Express-shaped `req.query` / `req.body` / `req.cookies` / `req.headers` vocabulary and `res.json` / `res.send` responses |
+| Pages Router page with `getServerSideProps` | `GET` entry, framework `nextjs-pages`, surface `page` | `context.query`, `context.params` and `context.req` are request inputs. The `props` it returns are bound to the default-exported page component, whose server render is analyzed in the same flow (raw HTML and URL sinks as for Server Components; `useState(prop)` renders the prop). Pages without `getServerSideProps` are analyzed as browser modules only |
 | Root `middleware.ts` / `proxy.ts` | Not an entry: a lifecycle stage | Attached only to entries its literal `config.matcher` covers; a regex or `has`/`missing` matcher is `next_matcher_unresolved` |
 
 Folder segments convert to the shared route syntax: `[id]` → `:id`, `[...p]` → `:p*`,
@@ -74,8 +75,12 @@ schema)`) are followed: the parsed data keeps the request origin and its field n
 definition is supplied to the model as evidence. A schema is never protection by itself. A
 type-only rule such as `z.string()` still admits SQL text, `../` and URLs.
 
-Authorization wrappers (`withAuth`, `withAdminAuth`) are resolved only when they forward the same
-request and context to the handler. Their checks, and middleware redirects, are *authorization
+A direct `Schema.safeParse(req.body)` / `Schema.parse(...)` on a module-level zod schema is modeled the
+same way, in App Router and Pages Router handlers.
+
+Authorization wrappers (`withAuth`, `withAdminAuth`) and handler factories are resolved only when
+the returned function forwards the same request and context to exactly one factory argument (the
+handler); other arguments, such as an allowed-methods list, are configuration. Their checks, and middleware redirects, are *authorization
 context*: they never make a SQL, path, SSRF or XSS claim protected. A wrapper that swaps the request
 stays `unresolved_wrapper`.
 
@@ -88,6 +93,7 @@ These contracts are framework-neutral: any Node.js entry that uses the library b
 | Prisma raw SQL | `$queryRawUnsafe` / `$executeRawUnsafe` SQL text (argument 0). Tagged `$queryRaw` templates bind every value and produce no claim. The client binding is verified, including `@prisma/client` and a custom generator `output` that is not checked in | `prisma-raw-v1` |
 | Prisma filter objects | `where: { email: body.email }` fed by an unvalidated JSON body can receive `{ "not": "" }` filter objects. Reported as NoSQL-style operator injection with engine `prisma` | `prisma-filter-object-v1` |
 | better-sqlite3 | `db.exec(sql)` runs stacked statements (`sql_multi_statement`); `db.prepare(sql)` runs one (`sql_single_statement`) | `better-sqlite3-v1` |
+| PGlite (`@electric-sql/pglite`) | `db.query(sql, params)` runs one statement with `$n` parameters bound (`sql_single_statement`); `db.exec(sql)` runs every statement and binds nothing (`sql_multi_statement`). The client is verified back to `new PGlite()` / `PGlite.create()`, also through a cached `getDatabase()` helper and a `globalThis` cache; that helper's setup queries are not request flow. Literal `SELECT ... FROM t` and `INSERT INTO t (cols) VALUES (...)` link stored values by table and column for stored XSS | `pglite-v1` |
 | pino | `logger.<level>(mergeObject, message)` — both the object fields and the message are log content; `logger.child()` and an imported logger are followed | logging family |
 | zod | Schema definitions and `safeParse`/`parse` helpers as validation evidence | `zod_schema_supplied` fact |
 | Node `fs` | `readdir`, `stat` and `lstat` (sync and promise forms) were added to the file contract | `node-fs-file-v1` |
@@ -103,6 +109,11 @@ whose every return is such a URL) fixes the scheme and produces no record.
 `redirect()`, `permanentRedirect()`, `notFound()`, `forbidden()` and `unauthorized()` from
 `next/navigation` throw, so code after `if (bad) redirect("/")` is on the guarded arm only. A local
 function with one of those names is not an exit.
+
+Inline `<script>` data: `JSON.stringify` alone does not protect a script context (`</script>` still
+ends the element), so it is recorded raw; `JSON.stringify(v).replace(/</g, '\\u003c')` is the
+standard script-embedding encoder and is recorded as protected. `JSON.parse(JSON.stringify(rows))`
+in `getServerSideProps` is a copy that keeps stored-row origins.
 
 A server `fetch` whose origin is fixed (`${baseUrl}/api/products/${id}`) and whose request data is
 only in the path is an outbound observation with `request_path_in_internal_url`, not SSRF. A
@@ -182,17 +193,41 @@ client-request observations on this sample. The four existing Node.js samples pr
 results as before, except for one new Juice Shop `fs.stat` path record that the added file
 operations reveal.
 
+## Second reference: the vuln-nextjs lab
+
+`zazzcode/vuln-nextjs` is a Next.js 13 **Pages Router** lab maintained by the Zazzles project, with
+a vulnerable file and one or more safe controls per scenario, PGlite (in-process Postgres), zod and
+DOMPurify. It exercises what OopsSec does not: `getServerSideProps` pages, `pages/api` handler
+factories, PGlite SQL, command injection and server-rendered stored and script-context XSS. Its
+ground truth is `tests/expected-scanner-findings.json` in the lab, which grows as scenarios are
+added. At `022a863`:
+
+| Family | Vulnerable rows | Safe controls |
+| --- | --- | --- |
+| SQL injection | Confirmed: unsafe login, products, notes (`exec` stacked SQL) | Parameterized and zod routes Protected (one Review) |
+| Command injection | Confirmed: `exec(command)` | `execFile` with an argument vector: Review |
+| Path traversal | Confirmed: `readFileSync(filePath)` | Exact allow-list: Protected |
+| SSRF | Confirmed: `fetch(query.fetch)` in `getServerSideProps` behind a scheme-only regex | Same-origin and `/api/` check: Review |
+| XSS | Confirmed: reflected, client stored notes, script-context JSON, server-rendered stored guestbook | React text: no record. DOMPurify and `\u003c`-escaped JSON: Review |
+
+Eval injection (CWE-95), open redirect (CWE-601) and the React2Shell dependency row are in the lab
+but have no Zazzles analyzer yet.
+
 ## Limits
 
-- Pages Router support covers API routes only (fixture-verified; the reference sample has none).
-  Pages Router `getServerSideProps` and page components are not entries.
+- Pages Router pages are entries only with `getServerSideProps`; `getStaticProps`,
+  `getInitialProps`, `_app` and `_document` are not. The page component is followed one level (its
+  own body and callbacks such as `.map`), not into imported child components.
 - Layouts, templates, `loading`/`error` files, parallel and intercepting routes produce no entries.
   Server Actions are verified by fixtures only (the reference sample has none).
 - Middleware is applied by literal matchers only; dynamic `next.config` (functions of phase,
   plugin wrappers) yields `next_config_unresolved` and no aliases.
 - React context, Redux/Zustand-style stores and prop chains beyond the analyzed component are not
   followed; such client paths stay Review.
-- Raw-SQL writes do not link to Prisma reads for stored XSS (they stay Review).
+- Raw-SQL writes do not link to Prisma reads for stored XSS (they stay Review). PGlite and sql.js
+  raw-SQL links need literal SQL with an explicit column list; joins and aliases are not linked.
+- Code injection (`eval`, `new Function`), open redirect and dependency (SCA) findings have no
+  analyzer yet.
 - Version advisories are manifest observations; they are not dependency audit or reachability.
 - RSC payload over-exposure, cached cross-user data and Server Action authorization checks
   (NX-BP-15, 18, 09) are not implemented yet.

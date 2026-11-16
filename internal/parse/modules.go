@@ -140,6 +140,7 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 				v := d.ChildByFieldName("value")
 				if name != nil && v != nil && name.Kind() == "object_pattern" {
 					m.readRequireDestructuring(name, v, d)
+					m.readDefaultDestructuring(name, v, d)
 					m.readCommandDestructuring(name, v, d)
 					m.readFSDestructuring(name, v, d)
 				}
@@ -232,6 +233,13 @@ func (s *moduleSet) resolve(m *sourceModule, name string) (*sourceModule, *sitte
 		}
 	}
 	if parts := strings.Split(name, "."); len(parts) == 2 {
+		if imp, ok := m.imports[parts[0]]; ok && imp.name == "default" {
+			if target := s.importModule(m, imp.module); target != nil {
+				if fn := exportedMember(target, parts[1]); fn != nil {
+					return target, fn
+				}
+			}
+		}
 		if imp, ok := m.imports[parts[0]]; ok && imp.name == "*" {
 			if target := s.importModule(m, imp.module); target != nil {
 				if exported := target.exports[parts[1]]; exported != nil {
@@ -262,6 +270,15 @@ func (s *moduleSet) resolve(m *sourceModule, name string) (*sourceModule, *sitte
 		key := imp.name
 		if key == "*" {
 			key = "default"
+		}
+		if member, ok := strings.CutPrefix(key, "default."); ok {
+			return target, exportedMember(target, member)
+		}
+		if target.exports[key] == nil && key != "default" {
+			// require destructuring of a CommonJS module.exports object.
+			if fn := exportedMember(target, key); fn != nil {
+				return target, fn
+			}
 		}
 		return target, target.exports[key]
 	}

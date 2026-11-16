@@ -61,18 +61,18 @@ func (s *moduleSet) nextHandler(m *sourceModule, n *sitter.Node, depth int) next
 		return nextResolved{module: hm, fn: fn}
 	case n.Kind() == "call_expression":
 		callee, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments")
-		if callee == nil || args == nil || args.NamedChildCount() != 1 {
-			return nextResolved{gaps: []analysis.Gap{{Kind: "unresolved_wrapper", Detail: "handler factory call is not a single-argument wrapper", At: spanOf(m.file, n)}}}
+		if callee == nil || args == nil || args.NamedChildCount() == 0 {
+			return nextResolved{gaps: []analysis.Gap{{Kind: "unresolved_wrapper", Detail: "handler factory call has no handler argument", At: spanOf(m.file, n)}}}
 		}
 		wm, wrapper := s.resolveCall(m, n)
 		if wm == nil || wrapper == nil || !supportedCallee(wrapper) {
 			return nextResolved{gaps: []analysis.Gap{{Kind: "unresolved_wrapper", Detail: "wrapper is not a resolved function: " + callee.Utf8Text(m.src), At: spanOf(m.file, n)}}}
 		}
-		auth, ok := s.forwardingWrapper(wm, wrapper, 0)
-		if !ok {
+		auth, index, ok := s.forwardingWrapper(wm, wrapper, 0)
+		if !ok || uint(index) >= args.NamedChildCount() {
 			return nextResolved{gaps: []analysis.Gap{{Kind: "unresolved_wrapper", Detail: "wrapper does not provably forward the request and context unchanged: " + callee.Utf8Text(m.src), At: spanOf(m.file, n)}}}
 		}
-		inner := s.nextHandler(m, args.NamedChild(0), depth+1)
+		inner := s.nextHandler(m, args.NamedChild(uint(index)), depth+1)
 		inner.wrappers = append([]analysis.Evidence{wm.evidence("wrapper_definition", wrapper)}, inner.wrappers...)
 		inner.auth = append(auth, inner.auth...)
 		return inner
@@ -84,19 +84,23 @@ func (s *moduleSet) nextHandler(m *sourceModule, n *sitter.Node, depth int) next
 // ...; return handler(req, ctx, extra) } }`, also when the returned value is
 // another verified wrapper applied to such a forwarding function. Early returns
 // before the forwarding call are returned as authorization context.
-func (s *moduleSet) forwardingWrapper(m *sourceModule, wrapper *sitter.Node, depth int) ([]analysis.Evidence, bool) {
+// forwardingWrapper verifies a handler factory whose returned function forwards
+// its own request and context, unchanged, to exactly one factory parameter: the
+// handler. It returns that parameter's index; the other arguments (allowed
+// methods, options) are configuration. Checks in the returned function are
+// recorded as context.
+func (s *moduleSet) forwardingWrapper(m *sourceModule, wrapper *sitter.Node, depth int) ([]analysis.Evidence, int, bool) {
 	if depth > 3 {
-		return nil, false
+		return nil, 0, false
 	}
-	params := plainParameters(wrapper, m.src)
-	if len(params) != 1 {
-		return nil, false
+	params := wrapperParameters(wrapper, m.src)
+	if len(params) == 0 {
+		return nil, 0, false
 	}
-	inner := params[0]
 	var ret *sitter.Node
 	body := wrapper.ChildByFieldName("body")
 	if body == nil {
-		return nil, false
+		return nil, 0, false
 	}
 	if body.Kind() != "statement_block" {
 		ret = body
@@ -105,7 +109,7 @@ func (s *moduleSet) forwardingWrapper(m *sourceModule, wrapper *sitter.Node, dep
 			c := body.NamedChild(i)
 			if c.Kind() == "return_statement" && c.NamedChildCount() == 1 {
 				if ret != nil {
-					return nil, false
+					return nil, 0, false
 				}
 				ret = c.NamedChild(0)
 			}
@@ -113,35 +117,72 @@ func (s *moduleSet) forwardingWrapper(m *sourceModule, wrapper *sitter.Node, dep
 	}
 	ret = unwrapTS(ret)
 	if ret == nil {
-		return nil, false
+		return nil, 0, false
 	}
 	if isFunction(ret) {
-		return forwardsTo(m, ret, inner)
+		index, found := -1, 0
+		var auth []analysis.Evidence
+		for i, p := range params {
+			if p == "" {
+				continue
+			}
+			if a, ok := forwardsTo(m, ret, p); ok {
+				index, auth = i, a
+				found++
+			}
+		}
+		return auth, index, found == 1
 	}
-	if ret.Kind() == "call_expression" {
+	if ret.Kind() == "call_expression" && len(params) == 1 && params[0] != "" {
 		args := ret.ChildByFieldName("arguments")
 		if args == nil || args.NamedChildCount() != 1 || !isFunction(args.NamedChild(0)) {
-			return nil, false
+			return nil, 0, false
 		}
 		wm, outer := s.resolveCall(m, ret)
 		if wm == nil || outer == nil || !supportedCallee(outer) {
-			return nil, false
+			return nil, 0, false
 		}
-		outerAuth, ok := s.forwardingWrapper(wm, outer, depth+1)
+		outerAuth, outerIndex, ok := s.forwardingWrapper(wm, outer, depth+1)
+		if !ok || outerIndex != 0 {
+			return nil, 0, false
+		}
+		own, ok := forwardsTo(m, args.NamedChild(0), params[0])
 		if !ok {
-			return nil, false
+			return nil, 0, false
 		}
-		own, ok := forwardsTo(m, args.NamedChild(0), inner)
-		if !ok {
-			return nil, false
-		}
-		return append(append(outerAuth, wm.evidence("wrapper_definition", outer)), own...), true
+		return append(append(outerAuth, wm.evidence("wrapper_definition", outer)), own...), 0, true
 	}
-	return nil, false
+	return nil, 0, false
 }
 
-// forwardsTo checks that fn calls `inner(p0, p1, ...)` with its own first two
-// parameters, unreassigned, as its single forwarding call.
+// wrapperParameters lists a factory's parameter names in order, with "" for a
+// pattern or defaulted parameter, which can never be the forwarded handler.
+func wrapperParameters(fn *sitter.Node, src []byte) []string {
+	p := fn.ChildByFieldName("parameters")
+	if p == nil {
+		if p = fn.ChildByFieldName("parameter"); p != nil && p.Kind() == "identifier" {
+			return []string{p.Utf8Text(src)}
+		}
+		return nil
+	}
+	var names []string
+	for i := uint(0); i < p.NamedChildCount(); i++ {
+		n := p.NamedChild(i)
+		if n.Kind() == "comment" {
+			continue
+		}
+		if n.Kind() == "required_parameter" && n.ChildByFieldName("value") == nil {
+			n = n.ChildByFieldName("pattern")
+		}
+		if n != nil && n.Kind() == "identifier" {
+			names = append(names, n.Utf8Text(src))
+		} else {
+			names = append(names, "")
+		}
+	}
+	return names
+}
+
 func forwardsTo(m *sourceModule, fn *sitter.Node, inner string) ([]analysis.Evidence, bool) {
 	params := plainParameters(fn, m.src)
 	if len(params) < 1 {

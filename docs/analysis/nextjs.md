@@ -10,7 +10,8 @@ and reference results are in [Next.js support](../nextjs-support.md).
 ## Rules
 
 1. **The file path is the registration.** An App Router entry is `route.*` plus an exported method
-   name; a page is `page.*` plus its default export. Evidence carries the route file and export
+   name; a page is `page.*` plus its default export; a Pages Router page is a `pages/**` file that
+   exports `getServerSideProps`, whose returned `props` feed its default-exported component. Evidence carries the route file and export
    declaration. Never infer an entry from a URL string elsewhere in the code.
 2. **Origins come from verified receivers.** A web-request read (`searchParams.get`, `headers.get`,
    `cookies.get`, `json()`, `formData()`, `params`) is an origin only when its receiver chain reaches
@@ -46,14 +47,18 @@ and reference results are in [Next.js support](../nextjs-support.md).
 
 The adapter adds these notes to [`facts.md`](../../internal/guidelines/facts.md): `scope_nextjs`,
 `zod_schema_supplied`, `sql_multi_statement`, `sql_single_statement`, `browser_navigation_sink`,
-`xss_via_fetched_content` and `script_reexecution`.
+`xss_via_fetched_content` and `script_reexecution`. `url_scheme_only_test` (SSRF) is
+framework-neutral and was added with the vuln-nextjs lab.
 
 ## Regression evidence
 
 Each rule has paired fixtures in `internal/parse/nextjs_test.go` (segment conversion, wrappers,
 web-request origins and a shadowed `headers`, tsconfig aliases, zod/pino/SSRF, client React flow,
 pages/middleware/actions, Pages Router API routes, navigation exits, client calls that are not routes, upload filename
-sanitizers, Prisma stored and fetched-content links). `TestNextJSOopsStoreAnswerKey` checks the
+sanitizers, Prisma stored and fetched-content links, `getServerSideProps` pages with PGlite).
+`TestNextJSVulnLab` (`ZAZZLES_VULN_NEXTJS`) is driven by the vuln-nextjs lab's own
+`tests/expected-scanner-findings.json`, so lab rows added later are checked without a code change.
+`TestNextJSOopsStoreAnswerKey` checks the
 offline answer key against the pinned reference sample when `ZAZZLES_NEXTJS_SAMPLE` names a clean
 checkout at `2d530ef`. Every fixture record must pass judge component selection, so a record that a
 model request would reject fails the test offline.

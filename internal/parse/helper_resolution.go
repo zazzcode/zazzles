@@ -64,7 +64,7 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 		if (name == "Number" || name == "String") && nativeStringOperation(m, call) {
 			return
 		}
-		if strings.HasSuffix(name, ".query") || collectionWrite(name) || s.verifiedSQLLibrarySink(m, call) {
+		if strings.HasSuffix(name, ".query") || collectionWrite(name) || s.verifiedSQLLibrarySink(m, call) || s.zodParseCall(m, call) {
 			return
 		}
 		relevant := false

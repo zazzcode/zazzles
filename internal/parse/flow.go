@@ -151,12 +151,16 @@ func (f *flow) statement(n *sitter.Node) bool {
 							}
 						}
 						if binding.Kind() == "shorthand_property_identifier_pattern" {
-							f.env[binding.Utf8Text(f.module.src)] = f.transfer(v, "field_projection", binding)
+							projected := v
+							if field, ok := v.fields[binding.Utf8Text(f.module.src)]; ok && v.model == "" && len(v.deps) == 0 {
+								projected = field // a modeled result object such as a query's { rows }
+							}
+							f.env[binding.Utf8Text(f.module.src)] = f.transfer(projected, "field_projection", binding)
 						} else {
 							f.gaps = append(f.gaps, f.gap("unsupported_binding", "destructuring alias/default not modeled", binding))
 						}
 					}
-				} else {
+				} else if !f.serverReactState(d, name) {
 					f.gaps = append(f.gaps, f.gap("unsupported_binding", "binding not modeled", d))
 				}
 			}
@@ -886,6 +890,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	if modeled, handled := f.templateCall(n, fn, args); handled {
 		return modeled
 	}
+	if inner := jsonRoundTrip(f.module, n); inner != nil {
+		return f.transfer(f.eval(inner), "json_copy", n)
+	}
 	// An outer chained call must still visit its receiver, including a query call.
 	// Its result is kept so a.b().c() still depends on what a.b() depended on.
 	var chained value
@@ -1078,6 +1085,12 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	}
 	if v, ok := f.validationHelperCall(n, values); ok {
 		return v
+	}
+	if v, ok := f.directZodParse(n, values); ok {
+		return v
+	}
+	if f.set != nil && f.set.pgliteFactory(f.module, n) {
+		return value{} // a verified database client; its setup is not request flow
 	}
 	ret, entered, precise := f.enterHelper(n, name, values)
 	if entered && precise {

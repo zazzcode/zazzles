@@ -32,6 +32,9 @@ destination value they mention.
 - **Confirmed (CWE-918):** host or full-URL control, no restriction, a raw destination path and no
   claim blocker.
 - **Poor practice:** host control restricted only by an unparsed string prefix, substring or pattern.
+  When the source establishes that every raw-text URL test in the handler fixes only the scheme (for
+  example `/^https?:\/\//.test(url)`; fact `url_scheme_only_test`), that test restricts no host and a
+  `prefix_only` answer is treated as `none`.
 - **Protected:** an allow-list or scheme-and-host check on the same value on every path, with complete
   coverage.
 - **Inconclusive:** blockers, `path_or_query` only, unknown answers, or answers that contradict the facts

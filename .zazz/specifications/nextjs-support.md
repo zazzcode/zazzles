@@ -51,7 +51,7 @@ New fact codes: `scope_nextjs`, `zod_schema_supplied`, `sql_multi_statement`, `s
   unclassified path guards, and treat a `replace(/[^…]/g, "_")` without separators as a component
   sanitizer. These are needed for consistent path/SSRF judgments (§5).
 - Not implemented: NX-BP-09, 11, 13, 14, 15, 18, 21, 22; RSC prop exposure; raw-SQL to Prisma stored
-  links; Pages Router `getServerSideProps` and pages. Pages Router API routes are covered by
+  links. (Pages Router `getServerSideProps` pages were added in iteration 2, §6.) Pages Router API routes are covered by
   `TestNextPagesRouterAPI`; the input-helper check now treats verified Prisma raw and better-sqlite3
   calls as sinks (previously only reachable through Express-shaped reads).
 
@@ -81,7 +81,44 @@ Paid: 89 `gpt-6-luna` requests across six passes. Final run
 | OOPS-SSR-01, 02 | `request_path_in_internal_url` observations |
 | Extra | `POST /api/gift-cards` logs `recipientEmail` (Confirmed); not in the answer key, needs owner review |
 
-## 6. Follow-ups
+## 6. Iteration 2: vuln-nextjs lab (2026-11-16)
 
-Remaining NX-BP checks; a second, non-vulnerable Next.js app for false-red
-measurement (proposal §13); promote the answer key into a detection guide after owner review.
+**Request:** add the owner-maintained `zazzcode/vuln-nextjs` lab (Next.js 13 Pages Router, PGlite,
+zod, DOMPurify) to the catalog with report output and tests, then iterate until every lab row in a
+supported family is found. The lab grows over time, so its acceptance is driven by its own
+`tests/expected-scanner-findings.json`.
+
+| Slice | Delivered | Owner files |
+| --- | --- | --- |
+| Handler factories | Multi-argument forwarding factories (`endpoint(methods, run, opts)`); CommonJS `module.exports = {...}` members through a default import, its destructuring and `require` destructuring | `next_handlers.go`, `commonjs.go`, `modules.go` |
+| PGlite | `pglite-v1` (`query` single statement with bound `$n`, `exec` multi-statement); client provenance through helpers, `.catch` and a `globalThis` cache; setup helpers are not request flow | `pglite.go`, `sql_libraries.go`, `analysispacks/contracts.go` |
+| Validation | Direct `Schema.safeParse/parse` on a module zod schema; it is not an unresolved input helper | `zod_validation.go`, `helper_resolution.go` |
+| Pages Router pages | `getServerSideProps` `GET` entries (`context.query/params/req`), props bound to the page component's server render, server `useState` | `next_gssp.go`, `flow.go` |
+| Stored XSS | PGlite literal `SELECT`/`INSERT` storage links, `JSON.parse(JSON.stringify(x))` copy, Pages `ALL` producers for cross-tier links | `pglite_storage.go`, `xss_storage.go`, `xss_cross_tier.go` |
+| XSS protection | `JSON.stringify` is not script-context protection; `.replace(/</g, '\\u003c')` after it is; `\u2028/\u2029` replacement is neutral | `xss_protection.go` |
+| Path | `process.cwd()` is a trusted base | `path_modeled.go` |
+| SSRF judge | Fact `url_scheme_only_test`: when every raw-text URL test only fixes the scheme, a `prefix_only` answer counts as no restriction | `ssrf_scheme_tests.go`, `judge/ssrf.go`, `guidelines/facts.md` |
+
+Unsupported lab rows (no analyzer family): JS-001/JS-002 (CWE-95 eval), REDIR-001 (CWE-601), SCA-001.
+
+**Acceptance evidence (2026-11-16).** Offline: `go vet` and `go test ./...` pass;
+`TestNextPagesServerSidePropsAndPGlite` covers every slice above; `TestNextJSVulnLab`
+(`ZAZZLES_VULN_NEXTJS`, lab at `022a863`) checks 24 supported rows: each required positive has a
+complete record of its family, safe controls have no blocked records, React-text controls record
+nothing. Existing samples: vuln-demo-app, nodejs-goof and vulnerable-typescript-app unchanged; Juice
+Shop unchanged from iteration 1; on OopsSec only `PATH-R01`/`PATH-R02` evidence changed
+(`process.cwd()` resolved; still blocked, still Review).
+
+Paid (`gpt-6-luna`): 67 requests this iteration (lab 23 + 23, OopsSec 21), 156 of the 300-request
+cap in total. Lab run `_test-findings/vuln-nextjs/vuln-nextjs/run-1392915960` replays 23/23 exactly;
+10 of 10 supported required positives Confirmed, 6 safe controls Protected, 6 Review, 2 no record,
+none red. The first lab pass judged SSRF-001 `poor_practice` (a scheme-only regex read as a host
+prefix check); the `url_scheme_only_test` fact fixed it. OopsSec rerun
+`_test-findings/oss-oopssec-store/oss-oopssec-store/run-822779136` replays 21/21 with the same
+outcomes as §5. Samples verified clean before and after.
+
+## 7. Follow-ups
+
+Remaining NX-BP checks; a non-vulnerable Next.js app for false-red measurement (proposal §13);
+promote the answer key into a detection guide after owner review; code-injection (CWE-95) and
+open-redirect (CWE-601) analyzer families, which the vuln-nextjs lab already has rows for.

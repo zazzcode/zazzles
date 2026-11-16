@@ -91,6 +91,9 @@ func (f *flow) modelCallValue(call, fn *sitter.Node, receiver value) (value, boo
 	if v, ok := f.prismaModelCall(call, obj, prop); ok {
 		return v, true
 	}
+	if v, ok := f.pgliteModelCall(call, obj, prop); ok {
+		return v, true
+	}
 	if obj.Kind() == "identifier" {
 		if v, ok := f.env[obj.Utf8Text(f.module.src)]; ok && v.model != "" {
 			receiver = v
@@ -181,6 +184,10 @@ func (f *flow) recordStorageWrite(call, fn, args *sitter.Node, values []value, r
 		return
 	}
 	fields := receiver.fields
+	if strings.HasPrefix(receiver.model, "sql:") {
+		f.recordSQLInsert(call, receiver.model)
+		return
+	}
 	if strings.HasPrefix(receiver.model, "prisma:") {
 		// Prisma writes take { data: {...} }; upsert writes both create and update.
 		if len(values) == 0 {

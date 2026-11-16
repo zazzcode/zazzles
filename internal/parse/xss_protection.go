@@ -86,6 +86,7 @@ func (f *flow) xssPathProtection(v value, context string, escaped bool) (string,
 // transformation of unknown effect leaves the path unknown even after an encoder.
 func (f *flow) dependencyProtection(dependency analysis.Dependency, context string) string {
 	protection := "raw"
+	jsonSeen := false
 	for _, transfer := range dependency.Transfers {
 		if transfer.Kind != "call_argument_dependency" {
 			continue
@@ -97,6 +98,11 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 		}
 		call := nodeAt(m.tree.RootNode(), transfer.Span.StartByte, transfer.Span.EndByte)
 		mode := verifiedOutputProtection(m, call)
+		if mode == "" && jsonStringifyCall(m, call) {
+			// JSON quoting keeps every character HTML can act on, "</script>" included.
+			jsonSeen = true
+			continue
+		}
 		if mode == "" {
 			mode = replacementMode(m, call)
 		}
@@ -124,6 +130,12 @@ func (f *flow) dependencyProtection(dependency analysis.Dependency, context stri
 			}
 		}
 		switch mode {
+		case "escape_script_angle":
+			// JSON with every "<" written as \u003c cannot end the script element.
+			protection = "unknown"
+			if context == "script" && jsonSeen {
+				protection = "encoded"
+			}
 		case "encode":
 			protection = "unknown"
 			if context == "html_text" || context == "html_attribute" {
@@ -314,6 +326,9 @@ func replacementMode(m *sourceModule, call *sitter.Node) string {
 		return ""
 	}
 	encodesAngle := replacement == "&lt;"
+	if scriptAngleEscape(replacement) && target.Kind() == "regex" && regexPart(m, target, "pattern") == "<" && strings.Contains(regexPart(m, target, "flags"), "g") {
+		return "escape_script_angle"
+	}
 	if replacement != "" && !encodesAngle {
 		if strings.ContainsAny(replacement, htmlSignificant) {
 			return ""
@@ -442,5 +457,21 @@ func canStartWithAngle(pattern string) bool {
 
 var (
 	allowlistPattern = regexp.MustCompile(`^\[\^(?:\\w|\\d|a-z|A-Z|0-9|_|-)+\][+*]?$`)
-	lineBreakPattern = regexp.MustCompile(`^(?:[()|+*?]|\?:|\\[rntfv]|\[(?:\\[rntfv])+\])+$`)
+	lineBreakPattern = regexp.MustCompile(`^(?:[()|+*?]|\?:|\\[rntfv]|\\u202[89]|\[(?:\\[rntfv]|\\u202[89])+\])+$`)
 )
+
+// jsonStringifyCall reports the global JSON.stringify.
+func jsonStringifyCall(m *sourceModule, call *sitter.Node) bool {
+	if call == nil || call.Kind() != "call_expression" {
+		return false
+	}
+	fn := call.ChildByFieldName("function")
+	return fn != nil && fn.Utf8Text(m.src) == "JSON.stringify" && !shadowed(call, "JSON", m.src) && !topLevelBinding(m, "JSON")
+}
+
+// scriptAngleEscape reports a replacement that writes "<" as a JavaScript
+// escape (\u003c or \x3c) inside a script string.
+func scriptAngleEscape(replacement string) bool {
+	r := strings.ToLower(strings.TrimLeft(replacement, "\\"))
+	return len(replacement) > len(r) && (r == "u003c" || r == "x3c")
+}

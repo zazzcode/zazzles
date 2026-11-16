@@ -96,13 +96,19 @@ func applySSRFPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		return
 	}
 	hostControl := ans["destination_control"] == "full_url" || ans["destination_control"] == "host"
-	if hostControl && ans["destination_restriction"] == "none" && rawAny && len(scoped) == 0 {
+	restriction := ans["destination_restriction"]
+	if restriction == "prefix_only" && hasModelFact(c, "url_scheme_only_test") {
+		// Source-established: every raw-text URL test fixes only the scheme, so
+		// the prefix test the model found restricts no host.
+		restriction = "none"
+	}
+	if hostControl && restriction == "none" && rawAny && len(scoped) == 0 {
 		a.BlockingGaps = nil
 		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
 		a.Reason = "A consistent SSRF answer is supported by an independent request-to-destination path through a verified " + f.Operation + " binding with no enforced destination restriction. Unresolved sibling paths remain visible. This is a static judgment, not runtime network reachability, DNS or redirect analysis, or independent Findings Review."
 		return
 	}
-	if hostControl && ans["destination_restriction"] == "prefix_only" && len(scoped) == 0 {
+	if hostControl && restriction == "prefix_only" && len(scoped) == 0 {
 		a.BlockingGaps = nil
 		a.FindingStatus, a.Protection = "poor_practice", "insufficient"
 		a.Reason = "The request controls the destination host and only an unparsed string prefix, substring or pattern test restricts it. That is a construction-practice finding: userinfo, alternative host forms and redirects can pass such a test, but whether one does here is not inferred."
@@ -126,4 +132,14 @@ func applySSRFPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		return
 	}
 	a.Reason = "The SSRF assessment is inconclusive; unknown answers, an unsafe path without a complete witness or incomplete coverage cannot support protection or a finding."
+}
+
+// hasModelFact reports a source-established fact code on the claim.
+func hasModelFact(c *analysis.Completeness, code string) bool {
+	for _, f := range c.ModelFacts {
+		if f == code || strings.HasPrefix(f, code+":") {
+			return true
+		}
+	}
+	return false
 }

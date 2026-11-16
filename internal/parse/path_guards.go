@@ -182,7 +182,32 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 		for _, d := range all {
 			scan.lookupPreconditions(call, d.idx, d.list)
 		}
+		for i, d := range u.Dependencies {
+			if d.SinkSlot != analysis.PathSlotFile {
+				continue
+			}
+			for _, t := range d.Transfers {
+				if separatorStrippingReplace(t.Text) && !scan.seen[t.Span.StartByte] {
+					scan.seen[t.Span.StartByte] = true
+					ev := t
+					ev.Kind = "component_sanitizer"
+					scan.info.noteWithMeta(ev, analysis.PathGuardComponentSanitizer, map[int]bool{i: true}, false)
+					scan.guards = append(scan.guards, ev)
+					break // one sanitizer per path; its assignment repeats it
+				}
+			}
+		}
 	}
+}
+
+var replaceNegatedClass = regexp.MustCompile(`\.replace(?:All)?\(\s*/\[\^([^\]\\/]*)\]\+?/g[a-z]*\s*,\s*("[^"/\\]*"|'[^'/\\]*')\s*\)\s*$`)
+
+// separatorStrippingReplace reports `x.replace(/[^allowed]/g, "_")` whose
+// allowed class and replacement contain no path separator: the result is a
+// single path component (it cannot contain / or \\).
+func separatorStrippingReplace(text string) bool {
+	m := replaceNegatedClass.FindStringSubmatch(strings.TrimSpace(text))
+	return m != nil && !strings.ContainsAny(m[1], "/\\")
 }
 
 // lookupPreconditions records, in Next.js code, an early exit when a Prisma

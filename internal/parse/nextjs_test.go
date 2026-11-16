@@ -547,3 +547,34 @@ func TestParseRecoveryKeepsSpans(t *testing.T) {
 		}
 	}
 }
+
+func TestNextUploadFilenameSanitizer(t *testing.T) {
+	root := nextRepo(t, map[string]string{
+		"app/api/up/route.ts": `
+import { writeFile } from "fs/promises";
+import { join } from "path";
+export async function POST(request: Request) {
+  const form = await request.formData();
+  const file = form.get("f") as File;
+  const safe = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+  await writeFile(join("/up", safe), Buffer.from(await file.arrayBuffer()));
+  const keep = file.name.replace(/[^a-zA-Z0-9./-]/g, "_");
+  await writeFile(join("/up", keep), "x");
+}`,
+	})
+	r := analyzeNext(t, root)
+	uses := usesOf(r, "path_traversal_candidate", "app/api/up/route.ts")
+	if len(uses) != 2 {
+		t.Fatalf("two upload writes: %d", len(uses))
+	}
+	for _, u := range uses {
+		sanitized := false
+		for _, g := range u.Path.Guards {
+			sanitized = sanitized || g.Kind == analysis.PathGuardComponentSanitizer
+		}
+		want := !strings.Contains(u.Sink.Text, "keep")
+		if sanitized != want {
+			t.Errorf("%s: component sanitizer %v, want %v (a class that keeps / is not one)", u.Sink.Text, sanitized, want)
+		}
+	}
+}

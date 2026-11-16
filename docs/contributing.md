@@ -11,9 +11,8 @@ Tree-sitter bindings. Check `go version` and `cc --version`. On macOS, install t
 tools if needed. Go downloads module dependencies during the first build or test run.
 
 The preferred contributor setup is the project's `.bare/` repository with sibling worktrees. Use
-an existing assigned feature worktree, or follow the [setup guide](../.zazz/docs/worktree-setup.md)
-to create that layout for a new workspace. That guide explains the optional Worktrunk recommendation
-and local-file setup. Native Git is fully supported.
+an existing assigned feature checkout. Worktree setup and optional Worktrunk procedures are
+[task references below](#branches-worktrees-and-review); consult them when those operations are needed.
 From the feature checkout:
 
 ```bash
@@ -93,12 +92,19 @@ draft pull request targeting `stage`, with the problem, resulting behavior, and 
 Follow the [PR process](../.zazz/standards/pr-process.md); humans approve and merge.
 
 The maintained workspace uses `.bare/` with direct sibling worktrees, and contributors are encouraged
-to follow it for consistency. Reuse the assigned checkout in this workspace. The
-[orientation](../.zazz/docs/zazzles-agent-orientation.md#branches-and-worktrees) links to the
-[worktree setup guide](../.zazz/docs/worktree-setup.md) and
-[optional Worktrunk cheat sheet](../.zazz/docs/wt-cheat-sheet.md). Verify the path, branch, changes
-and shared Git directory before editing. Nested tool worktrees and external fallback checkouts are
-not permitted for agents working in this maintained workspace.
+to follow it for consistency. Reuse the assigned checkout. Nested tool worktrees and external fallback
+checkouts are not permitted for agents working in this workspace.
+
+Consult these references **as required by the task**, rather than loading them for every session:
+
+- [Worktree setup](../.zazz/docs/worktree-setup.md) for creating, moving, removing or repairing
+  worktrees, local layout, file copying and the optional Worktrunk recommendation.
+- [Worktrunk cheat sheet](../.zazz/docs/wt-cheat-sheet.md) only when using `wt` or configuring its hooks.
+- [Agent orientation](../.zazz/docs/zazzles-agent-orientation.md) for the agent entry point and topic map.
+
+Links are not automatic includes in an agent's context. Load only the guide sections needed for the
+current operation; routine builds and edits in an already verified checkout do not need the worktree
+guides. The mandatory location rules in `AGENTS.md` still apply.
 
 Coding agents must read [AGENTS.md](../AGENTS.md), the
 [orientation](../.zazz/docs/zazzles-agent-orientation.md), and the assigned implementation contract.

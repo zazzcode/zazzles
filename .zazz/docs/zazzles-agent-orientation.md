@@ -57,33 +57,24 @@ recommendation. Other local layouts can still submit feature-branch PRs, with
 contributors responsible for adapting their setup and paths. Agents in the maintained workspace
 MUST use the assigned sibling checkout.
 
-Contributor and agent reading path:
+The guides below are task references, **not automatic context includes**. Load only the relevant
+sections when the current task requires them; ordinary work in an already verified checkout does
+not require loading either worktree guide.
 
-- [Worktree setup](worktree-setup.md): required layout, checkout verification, native Git operations,
-  local configuration and cleanup. Read this before creating, moving or removing a worktree.
-- [Worktrunk cheat sheet](wt-cheat-sheet.md): optional `wt` commands and hooks. Native Git is fully
-  supported; installing or using Worktrunk is not a prerequisite.
+| When needed | Reference |
+| --- | --- |
+| Create, move, remove or repair a worktree; configure the local layout or file copying | [Worktree setup](worktree-setup.md) |
+| Use Worktrunk commands or configure its hooks | [Worktrunk cheat sheet](wt-cheat-sheet.md) |
+| Run Go checks in a linked VM without a local toolchain | [Linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain) |
 
-Follow the [worktree location rules](../../AGENTS.md#worktree-location): use the user-assigned sibling
-checkout managed by the existing `.bare/`; never create or use an alternate nested or external
-worktree. An old handoff path does not override the user's assigned path.
+The [worktree location rules](../../AGENTS.md#worktree-location) always apply: use the assigned
+sibling checkout managed by the existing `.bare/`; a stale handoff does not override that assignment.
+Related design, documentation, implementation and tests stay there. Native development uses the Go
+version in `go.mod` and a C compiler; [contributing](../../docs/contributing.md) owns check commands.
 
-Run commands from the assigned feature checkout. Verify `pwd`, `git branch --show-current`,
-`git status --short --branch` and `git worktree list` before edits; do not edit `.bare` directly.
-`stage` receives reviewed PRs; `main` is human-operated release promotion. Related design, spec, implementation and tests stay
-in the assigned worktree. See [authorization](../../AGENTS.md#authorization-and-delivery),
-[worktree verification](worktree-setup.md#verification-checklist),
-[Worktrunk operations](worktree-setup.md#worktrunk-usage) for optional `wt` use. Linked VM sessions
-also use the [linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain).
-Native development uses the Go version in `go.mod` and a C compiler.
-
-Ignored `.env` files are local to each checkout. When Worktrunk's optional copy hook is configured,
-it can seed new worktrees; native Git does not copy ignored files. Inspect the selected source and
-copy only the local configuration needed for the task, without overwriting existing files. Later
-edits are not synchronized; copied handoffs never override the active user's assigned path. Current intent: stage uses `gpt-6-luna`,
-path-traversal uses `gemini-decision-1`. Never print tokens or overwrite the user's local file.
-[Environment loading](../../docs/getting-started.md#local-environment-file) and
-[provider setup](../../docs/decision-models.md#credentials-and-local-environment) own configuration.
+Ignored `.env` files are local to each checkout. Never print credentials or overwrite the user's
+local file. For configuration tasks, consult [environment loading](../../docs/getting-started.md#local-environment-file)
+and [provider setup](../../docs/decision-models.md#credentials-and-local-environment) as needed.
 
 ## Working protocol
 

@@ -1,7 +1,23 @@
 # zazzles — agent orientation
 
-Read [AGENTS.md](../../AGENTS.md) first. This guide maps the code, worktrees and development process.
-Follow only the section links relevant to the task; linked documents are not automatic includes.
+This guide maps the code, worktrees and development process. Agent startup and context loading are
+managed by [AGENTS.md](../../AGENTS.md#start-here). The contents below provide section links and
+selection cues for the current task.
+
+## Contents
+
+| Section | Consult for |
+| --- | --- |
+| [Current work](#current-work) | Integration status, active restrictions and current evidence pointers |
+| [Code structure](#code-structure) | Package ownership and focused architecture references |
+| [Portable workspace and DEV_ROOT](#portable-workspace-and-dev_root) | Resolving local checkout and sample paths |
+| [Branches and worktrees](#branches-and-worktrees) | Assigned checkout, `.bare/` layout and worktree operation references |
+| [Working protocol](#working-protocol) | Implementation, verification, execution records and PR preparation |
+| [Implemented features](#implemented-features) | Capability boundaries and acceptance records |
+| [Available vulnerable sample apps](#available-vulnerable-sample-apps) | Sample locations, source expectations and evaluation handling |
+| [Task reading paths](#task-reading-paths) | Focused references for specific engineering tasks |
+| [Documentation map](#documentation-map) | Finding the document that owns a topic |
+| [Commands and credentials](#commands-and-credentials) | Scan model selection, local configuration and live-call limits |
 
 ## Current work
 
@@ -57,9 +73,7 @@ recommendation. Other local layouts can still submit feature-branch PRs, with
 contributors responsible for adapting their setup and paths. Agents in the maintained workspace
 MUST use the assigned sibling checkout.
 
-The guides below are task references, **not automatic context includes**. Load only the relevant
-sections when the current task requires them; ordinary work in an already verified checkout does
-not require loading either worktree guide.
+Operational references (selection follows the [AGENTS.md loading policy](../../AGENTS.md#start-here)):
 
 | When needed | Reference |
 | --- | --- |

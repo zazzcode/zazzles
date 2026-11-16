@@ -2,8 +2,21 @@
 
 ## Start here
 
-Agents MUST read this file and the [agent orientation](.zazz/docs/zazzles-agent-orientation.md)
-at session start, then load only the context required for the task. Links are not automatic includes.
+This file owns agent startup and context-loading policy.
+
+At session start, agents MUST read this file, then open the
+[agent orientation introduction and contents](.zazz/docs/zazzles-agent-orientation.md#contents).
+Agents MUST use that table of contents to select and read the sections relevant to the current task.
+Reading every orientation section is not required. Agents MUST load additional sections when the task
+expands into those topics.
+
+Links are references, not automatic includes. Agents MUST NOT recursively load every linked guide,
+skill, standard or evaluation record. Use the task table below and the orientation's topic maps to
+load only the relevant sections before acting. In particular, load the worktree setup guide for
+worktree operations and the Worktrunk cheat sheet only when using `wt` or configuring its hooks;
+routine edits or builds in an already verified checkout do not require either guide. Mandatory rules
+in this file apply regardless of which reference sections are loaded.
+
 The [README](README.md) introduces the project; root [user documentation](docs/README.md) owns
 philosophy, user setup, CLI usage, result interpretation, and contributor guides.
 Product analysis rules and guidelines belong in root [docs/analysis](docs/analysis/README.md), not

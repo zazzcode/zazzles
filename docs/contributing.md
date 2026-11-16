@@ -95,19 +95,16 @@ The maintained workspace uses `.bare/` with direct sibling worktrees, and contri
 to follow it for consistency. Reuse the assigned checkout. Nested tool worktrees and external fallback
 checkouts are not permitted for agents working in this workspace.
 
-Consult these references **as required by the task**, rather than loading them for every session:
+Contributor references for the operation being performed:
 
 - [Worktree setup](../.zazz/docs/worktree-setup.md) for creating, moving, removing or repairing
   worktrees, local layout, file copying and the optional Worktrunk recommendation.
 - [Worktrunk cheat sheet](../.zazz/docs/wt-cheat-sheet.md) only when using `wt` or configuring its hooks.
 - [Agent orientation](../.zazz/docs/zazzles-agent-orientation.md) for the agent entry point and topic map.
 
-Links are not automatic includes in an agent's context. Load only the guide sections needed for the
-current operation; routine builds and edits in an already verified checkout do not need the worktree
-guides. The mandatory location rules in `AGENTS.md` still apply.
-
-Coding agents must read [AGENTS.md](../AGENTS.md), the
-[orientation](../.zazz/docs/zazzles-agent-orientation.md), and the assigned implementation contract.
+For coding agents, [AGENTS.md](../AGENTS.md#start-here) owns startup and context-loading rules,
+including opening the [orientation contents](../.zazz/docs/zazzles-agent-orientation.md#contents)
+and selecting sections for the current task. The assigned implementation contract governs the work.
 Keep transient execution notes in ignored `.zazz/ephemeral/`; preserve unrelated local changes and
 private credentials. The maintained checkout uses the `zazzcode` Git identity and authentication
 profile; verify that profile before publishing from it.

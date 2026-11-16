@@ -75,7 +75,9 @@ and delivery status.
 
 ## What exists today
 
-Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications.
+Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications,
+including Express, Fastify, Hapi and **Next.js** (App Router and Pages Router; see
+[Next.js support](docs/nextjs-support.md)).
 
 - It reads source only. It does not run your app or install its dependencies.
 - It covers the frameworks and operations it models. Anything else is reported as unresolved,
@@ -110,7 +112,8 @@ Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python*
 
 **How it finds problems**
 
-- Finds entry points: web routes (including each stage of an Express middleware chain), browser
+- Finds entry points: web routes (including each stage of an Express middleware chain), Next.js
+  route handlers, pages, Server Actions, Pages Router API routes and `getServerSideProps`, browser
   events, GraphQL and gRPC
 - Follows request input to the sensitive operation it reaches, including URL fields
   (`path` / `url` / `originalUrl`) and verified upload filename or file content on Node apps
@@ -139,11 +142,25 @@ keys mark as Review stay Review (for example Juice Shop subtitle XSS). Defects o
 analyzers—authentication, IDOR, `eval`/code injection, open redirect, secrets, cookie flags, and
 most Juice Shop challenge categories—are **not covered** yet; a clean row there is not a pass.
 
+On the two Next.js samples (OSS OopsSec Store and the vuln-nextjs lab), every required positive in
+those families is confirmed and no safe control is red; `eval`/code injection, open redirect and the
+dependency row are not covered yet.
+
 Details and per-app expected-vs-actual tables live in
 [vulnerable sample applications](.zazz/project/vulnerable-sample-apps.md). Sample HTML reports are
 snapshots of those runs, not a claim of whole-application security.
 
 **Not yet available:** dependency auditing, a separate Inspect report, automated fixes and scheduled runs.
+
+**Next on the roadmap**, in order:
+
+1. Code injection (`eval`, CWE-94/95) and open redirect (CWE-601): two new analyzers
+   ([proposal](code-injection-and-open-redirect-proposal.md))
+2. Prototype pollution (CWE-1321)
+3. Drupal / PHP support
+4. Agent skills fixes, the scan/fix loop, and importing findings from other SAST tools
+
+XXE and dependency auditing (SCA) come later.
 The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
 exactly which languages, frameworks and operations each analyzer supports, with its limits.
 

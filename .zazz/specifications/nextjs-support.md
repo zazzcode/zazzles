@@ -121,4 +121,6 @@ outcomes as §5. Samples verified clean before and after.
 
 Remaining NX-BP checks; a non-vulnerable Next.js app for false-red measurement (proposal §13);
 promote the answer key into a detection guide after owner review; code-injection (CWE-95) and
-open-redirect (CWE-601) analyzer families, which the vuln-nextjs lab already has rows for.
+open-redirect (CWE-601) analyzer families, which the vuln-nextjs lab already has rows for
+([proposal](../../code-injection-and-open-redirect-proposal.md), next up in the
+[implementation plan](../project/implementation-plan.md#next-up)).

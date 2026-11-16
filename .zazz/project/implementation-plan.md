@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Reconciled: 2026-11-15.** This document owns the functionality roadmap. **Implemented** means
+**Reconciled: 2026-11-16.** This document owns the functionality roadmap. **Implemented** means
 bounded code and verification exist in this checkout; it does not mean complete ecosystem coverage,
 a released version, or a merged feature branch. Contracts and evaluation records own detailed
 acceptance evidence. This roadmap does not authorize implementation or live model calls.
@@ -51,6 +51,7 @@ all its syntax, APIs, or vulnerable paths are covered.
 | **JavaScript conditional flow** | Precise JS/TS `if`/`else if`/`else`: arm polarity, exits including `process.exit`, isolated joins, block scoping. A guard on one arm never protects a sibling arm or later code. Loops, `switch`, `try`/`finally` and request rebinding keep a conservative fallback | [Analysis rules](../../docs/analysis/README.md#javascript-conditional-flow), [contract](../specifications/javascript-if-flow.md) |
 | **Evidence wire v7** | Always-compact requests with evidence IDs, character-column locators, one obligation ledger, a role budget with visible omissions and an `evidence_too_large` floor. Transparent wrappers and header-only middleware summaries. Guidance-owned fact codes. Largest sample request about 59 KB | [Wire v7 contract](../specifications/wire-bundle-v7.md), [verification](../evaluation/wire-bundle-v7-results.md) |
 | **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins (including URL path/url/originalUrl/baseUrl and verified upload filename/content), types, transfers, controls, lifecycle stages, and Express non-final middleware-chain sibling entries | [Node refactor results](../evaluation/node-input-refactor-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Next.js acquisition** | App Router route handlers, Server Component pages and `generateMetadata`, Server Actions, middleware matcher stages; Pages Router API routes (including CommonJS handler factories) and `getServerSideProps` pages whose props feed the server render; Web Request API origins, zod evidence, `"use client"` React flow; `prisma-raw-v1`, `prisma-filter-object-v1`, `better-sqlite3-v1`, `pglite-v1`; raw-SQL and Prisma stored-XSS links; model-free NX-BP practice observations. Verified on OopsSec Store (`2d530ef`) and the owner-maintained vuln-nextjs lab (`022a863`). Draft [PR #18](https://github.com/zazzcode/zazzles/pull/18), human review pending | [Next.js support](../../docs/nextjs-support.md), [rules](../../docs/analysis/nextjs.md), [contract](../specifications/nextjs-support.md) |
 | **Python input acquisition** | Existing bounded Python HTTP adapters emit the same optional origin/type/transfer schema as Node, with invocation-local acquisition and separate `source.python-input-v1` interpretation; runtime types remain unknown, existing sink contracts and behavior preserved; new dependency/lifecycle/discovery coverage remains deferred | [Python refactor contract](../specifications/python-input-refactor.md), [verification](../evaluation/python-input-refactor-results.md) |
 | **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
 | **Decision-model assessment** | OpenAI Luna Decisions is primary; optional Gemini and stub-tested Jev adapters use the shared evidence gates and one model selection per scan, without fallback | [Model setup](../../docs/decision-models.md) |
@@ -78,6 +79,24 @@ replays). Contract:
 Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
 is one record near the soft threshold and none over the limit. The user-authorized full Python
 validation below includes the 260 VulnPy path contexts and standalone input validation.
+
+**Next.js support is implemented on `claude/nextjs-support-mvp-e1c7ea`, draft
+[PR #18](https://github.com/zazzcode/zazzles/pull/18) into `stage`.** It covers proposal slices N0–N5,
+partial N6 (model-free practice checks) and a second iteration for the vuln-nextjs lab. Every required
+positive in a supported family is Confirmed on both Next.js samples, no safe control is red, and both
+final paid runs replay exactly. [Contract](../specifications/nextjs-support.md).
+
+<a id="next-up"></a>
+
+### Next up (owner order, 2026-11-16)
+
+| Order | Planned functionality | Notes |
+|---|---|---|
+| 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Two new analyzer families on the shared engine, JS/TS server and browser, then Python. [Proposal](../../code-injection-and-open-redirect-proposal.md); vuln-nextjs `JS-001`/`JS-002`/`REDIR-001`, TS app, Juice Shop, Goof and VulnPy rows already identified |
+| 2 | **Prototype pollution (CWE-1321)** | JS/TS recursive merge and library `merge`/`set`/`defaultsDeep` sinks, computed key writes, key deny-list and null-prototype controls |
+| 3 | **Drupal / PHP support** | PHP language adapter: Drupal routing and controllers, Symfony `Request`, Form API, database API, Twig and render-array output |
+| 4 | **Agent skills fixes, scan/fix loop, external SAST findings import** | Fix-workflow skills, the scheduled/on-demand loop, and provenance-preserving import of third-party SAST findings |
+| Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
 
 <a id="future-capability-branches"></a>
 <a id="ordered-specification-backlog"></a>
@@ -108,20 +127,20 @@ approved implementation assignments.
 |---|---|
 | **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; expanded dependency/lifecycle/discovery coverage remains a separate feature beyond shared Python input facts |
 | **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases; no implied DynamoDB or universal NoSQL support |
-| **Code injection and XXE** | Request-to-evaluation/code-generation and request-to-XML paths with verified operation/configuration contracts |
-| **Open redirect and SSRF** | Destination policies, verified URL slots, and complete security judgments beyond current outbound observations |
+| **Code injection and open redirect** | Next up, order 1: see [Next up](#next-up) and the [proposal](../../code-injection-and-open-redirect-proposal.md) |
+| **XXE** | Request-to-XML parser paths with verified parser configuration contracts (deferred by the owner) |
 | **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with appropriate negative controls |
-| **Prototype pollution** | JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
+| **Prototype pollution** | Next up, order 2. JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |
 | **Inspect workflow** | Select applicable engineering standards and present quality/maintainability findings separately from vulnerability claims |
-| **Dependency Audit** | npm/pnpm and pip-audit adapters, dependency/advisory provenance, SBOM artifacts, and explicit failure/reachability limits; [design](../architecture/sca-design.md) |
-| **Automation and Fix** | Scheduled/on-demand assessments, scoped repair agents supplied with findings and standards, tests/reassessment, and reviewable pull requests; [workflow proposal](user-agent-skills.md) |
-| **External finding imports** | SAST/code-quality adapters retaining source, provenance, and uncertainty within the remediation workflow |
+| **Dependency Audit** | Deferred by the owner (2026-11-16). npm/pnpm and pip-audit adapters, dependency/advisory provenance, SBOM artifacts, and explicit failure/reachability limits; [design](../architecture/sca-design.md) |
+| **Automation and Fix** | Next up, order 4, with agent skills fixes. Scheduled/on-demand assessments, scoped repair agents supplied with findings and standards, tests/reassessment, and reviewable pull requests; [workflow proposal](user-agent-skills.md) |
+| **External finding imports** | Next up, order 4. SAST/code-quality adapters retaining source, provenance, and uncertainty within the remediation workflow |
 | **Baselines and incremental analysis** | Stable finding identity, correct invalidation, comparison and explicit severity gates; current exit codes are not severity gates |
 | **Public analysis packs and standards** | Public pack loading and broader user-selected standards; embedded components do not imply an executable plugin system |
-| **Additional acquisition and languages** | Queue inputs and further source-language/framework adapters under separate coverage contracts |
+| **Additional acquisition and languages** | Drupal/PHP is next up (order 3); queue inputs and further source-language/framework adapters under separate coverage contracts |
 | **External generalization evaluation** | Bounded checks on fresh JS/TS and Python services against source-reviewed expectations; prior sample results do not establish general accuracy |
 
 ### Deferred analysis boundaries

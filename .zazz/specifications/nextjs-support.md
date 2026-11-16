@@ -119,6 +119,9 @@ outcomes as §5. Samples verified clean before and after.
 
 ## 7. Follow-ups
 
+Open items are grouped into sessions A–D in the [phase 2 proposal](../../nextjs-support-phase-2-proposal.md)
+(A: publish sample reports and detection guides, recommended before or right after merge).
+
 Remaining NX-BP checks; a non-vulnerable Next.js app for false-red measurement (proposal §13);
 promote the answer key into a detection guide after owner review; code-injection (CWE-95) and
 open-redirect (CWE-601) analyzer families, which the vuln-nextjs lab already has rows for

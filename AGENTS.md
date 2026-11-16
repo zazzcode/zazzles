@@ -42,6 +42,22 @@ Independent future deliverables MAY be split when useful; agents MUST NOT create
 merely for steps of the active task. These authorization rules take precedence over stricter
 greenlight/topology wording in the methodology, execution discipline, and skills.
 
+## Worktree location
+
+This repository uses one bare Git directory, `<container>/.bare/`, with sibling worktrees such as
+`<container>/stage/` and `<container>/nextjs-support-mvp/`. Agents MUST view, edit, build and test in
+the user-assigned sibling worktree. The container and `.bare/` are not source checkouts.
+
+Agents MUST NOT create or use worktrees outside this structure, including `.claude/worktrees/`,
+other tool-specific nested checkouts, temporary clones or alternate repository copies. Any authorized
+new worktree MUST be registered with the existing `.bare/` repository and placed directly under the
+same container. Reuse the assigned checkout for the current deliverable.
+
+Before editing, agents MUST verify `pwd`, `git branch --show-current`, `git status --short --branch`
+and `git worktree list`. The active user's assigned path takes precedence over paths in older
+handoffs. If a handoff points at another checkout, resolve it against the assigned worktree before
+continuing; do not silently switch to the handoff's path. See [worktree setup](.zazz/docs/worktree-setup.md).
+
 ## Branch model
 
 `stage` integrates reviewed work; `main` receives human-operated release promotion and version tags.

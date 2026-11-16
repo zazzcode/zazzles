@@ -3,7 +3,7 @@
 **Status:** Session A implemented in PR #18. Sessions B–D are follow-on proposals for separate
 sessions and authorize no coding or paid calls until assigned.
 **Drafted:** 2026-11-16, at the end of the Next.js MVP session.
-**Base:** draft PR zazzcode/zazzles#18 (`claude/nextjs-support-mvp-e1c7ea`). Read its contract
+**Base:** draft PR zazzcode/zazzles#18 (`nextjs-support-mvp`). Read its contract
 `.zazz/specifications/nextjs-support.md` and the user docs `docs/nextjs-support.md` /
 `docs/analysis/nextjs.md` first.
 

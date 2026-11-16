@@ -51,9 +51,13 @@ zazzles/                   container, not a source checkout
 └── _test-findings/         local scan artifacts, outside targets and worktrees
 ```
 
-Run commands from the assigned feature checkout. Verify `pwd`, `git branch --show-current` and
-`git status --short --branch` before edits; do not edit `.bare` directly. `stage` receives reviewed
-PRs; `main` is human-operated release promotion. Related design, spec, implementation and tests stay
+Follow the [worktree location rules](../../AGENTS.md#worktree-location): use the user-assigned sibling
+checkout managed by the existing `.bare/`; never create or use an alternate nested or external
+worktree. An old handoff path does not override the user's assigned path.
+
+Run commands from the assigned feature checkout. Verify `pwd`, `git branch --show-current`,
+`git status --short --branch` and `git worktree list` before edits; do not edit `.bare` directly.
+`stage` receives reviewed PRs; `main` is human-operated release promotion. Related design, spec, implementation and tests stay
 in the assigned worktree. See [authorization](../../AGENTS.md#authorization-and-delivery),
 [worktree verification](worktree-setup.md#verification-checklist),
 [Worktrunk operations](worktree-setup.md#worktrunk-usage) and

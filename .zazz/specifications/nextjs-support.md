@@ -1,6 +1,6 @@
 # Next.js support (N0–N5, partial N6)
 
-**Status:** Implemented on `claude/nextjs-support-mvp-e1c7ea`; draft PR https://github.com/zazzcode/zazzles/pull/18 into `stage`
+**Status:** Implemented on `nextjs-support-mvp`; draft PR https://github.com/zazzcode/zazzles/pull/18 into `stage`
 **Feature:** Next.js acquisition adapter, library contracts, client/server rendering, practice tier
 **Deliverable Owner:** Human owner
 **Delivery topology:** One feature branch and one draft PR (owner decision, 2026-11-15)
@@ -166,6 +166,14 @@ JSON/SARIF parsing, canonical-evidence preservation and HTML count/grouping chec
 preview could not open local file URLs under the browser policy; HTML was checked structurally.
 Human acceptance and merge remain the owner step; the worktree is retained.
 
+**Worktree closeout.** The assigned checkout is `<container>/nextjs-support-mvp`, branch
+`nextjs-support-mvp`, in the existing `.bare/` sibling structure. All completed work and ignored
+handoff/verification records are present there. The redundant nested checkout and stale temporary
+registration were removed. `AGENTS.md` now prohibits worktrees outside this structure, and the
+orientation links to that rule. Fresh offline scans, both sample gates, exact replay (149/149),
+`go vet` and the full test suite were rerun successfully from the corrected checkout. No additional
+paid calls were made. The PR's existing remote head is retained until human merge.
+
 ## Implementation And Review Change Log
 
 ### 2026-11-16 — Complete N5 sample publication
@@ -175,3 +183,11 @@ Human acceptance and merge remain the owner step; the worktree is retained.
 **Rationale.** Saved-run publication alone did not satisfy the owner's request for current full results.
 **Summary.** Added bounded fresh all-family paid scans, public reports, guides and provenance to N5 acceptance.
 **Verification impact.** Exact replay, source-pin/state checks, export consistency and full offline contributor checks.
+
+### 2026-11-16 — Enforce the assigned bare-worktree structure
+
+**Source.** Owner correction of the local worktree and explicit restriction against worktrees outside the existing `.bare/` structure.
+**Changed sections.** Status and worktree closeout; `AGENTS.md` worktree location; agent orientation and active branch references.
+**Rationale.** An older handoff named a nested checkout instead of the assigned sibling worktree.
+**Summary.** Moved the completed state into the assigned checkout, preserved execution records, removed redundant/stale worktree registrations, and made the location rule explicit.
+**Verification impact.** Rebuilt and reran offline scans, sample gates, all paid-decision replays and the full test suite from the correct sibling checkout; no scanner-code change or new paid calls.

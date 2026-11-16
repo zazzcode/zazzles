@@ -80,7 +80,7 @@ Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filte
 is one record near the soft threshold and none over the limit. The user-authorized full Python
 validation below includes the 260 VulnPy path contexts and standalone input validation.
 
-**Next.js support is implemented on `claude/nextjs-support-mvp-e1c7ea`, draft
+**Next.js support is implemented on `nextjs-support-mvp`, draft
 [PR #18](https://github.com/zazzcode/zazzles/pull/18) into `stage`.** It covers proposal slices N0–N5,
 partial N6 (model-free practice checks) and a second iteration for the vuln-nextjs lab. Every required
 positive in a supported family is Confirmed on both Next.js samples, no safe control is red, and both

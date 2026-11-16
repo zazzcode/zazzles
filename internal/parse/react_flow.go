@@ -294,7 +294,7 @@ func (f *flow) reactCall(n, fn, args *sitter.Node) (value, bool) {
 		if obj.Kind() == "identifier" {
 			if r, ok := f.env[obj.Utf8Text(src)]; ok && r.web == "nextRouter" && args.NamedChildCount() > 0 {
 				v := f.eval(args.NamedChild(0))
-				if method != "prefetch" {
+				if method != "prefetch" && !fixedURLPrefix(f, args.NamedChild(0)) {
 					v.gaps = append(v.gaps, f.gap("next_router_javascript_url_policy", "whether the Next.js client router refuses javascript: URLs depends on the installed version", n))
 					f.clientRecord(n, v, "url", false, f.module.evidence("render_binding", fn))
 				}

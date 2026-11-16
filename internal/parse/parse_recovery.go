@@ -90,3 +90,55 @@ func blankAmpersand(src []byte, i int) bool {
 	}
 	return !htmlEntity.Match(src[i:])
 }
+
+// typedAwaitCalls finds `await f<T>(...)`, which the pinned grammar parses as
+// `(await f)<T>(...)`. It returns the await keyword spans and the start byte of
+// each awaited callee.
+func typedAwaitCalls(root *sitter.Node) (blanks [][2]uint, callees []uint) {
+	var visit func(*sitter.Node)
+	visit = func(n *sitter.Node) {
+		if n.Kind() == "call_expression" && n.ChildByFieldName("type_arguments") != nil {
+			if fn := n.ChildByFieldName("function"); fn != nil && fn.Kind() == "await_expression" && fn.ChildCount() > 1 && fn.NamedChildCount() == 1 {
+				kw := fn.Child(0)
+				if kw.Kind() == "await" {
+					blanks = append(blanks, [2]uint{kw.StartByte(), kw.EndByte()})
+					callees = append(callees, fn.NamedChild(0).StartByte())
+				}
+			}
+		}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			visit(n.NamedChild(i))
+		}
+	}
+	visit(root)
+	return blanks, callees
+}
+
+// reparseTypedAwaits re-parses src with the misattached await keywords blanked
+// so the generic call parses as one call. The blanked calls are returned so the
+// flow can still apply await semantics to them.
+func reparseTypedAwaits(parser *sitter.Parser, tree *sitter.Tree, src []byte) (*sitter.Tree, map[uint]bool) {
+	blanks, callees := typedAwaitCalls(tree.RootNode())
+	if len(blanks) == 0 {
+		return tree, nil
+	}
+	copySrc := append([]byte{}, src...)
+	for _, b := range blanks {
+		for i := b[0]; i < b[1]; i++ {
+			copySrc[i] = ' '
+		}
+	}
+	candidate := parser.Parse(copySrc, nil)
+	if candidate == nil || candidate.RootNode().HasError() {
+		if candidate != nil {
+			candidate.Close()
+		}
+		return tree, nil
+	}
+	tree.Close()
+	awaited := map[uint]bool{}
+	for _, c := range callees {
+		awaited[c] = true
+	}
+	return candidate, awaited
+}

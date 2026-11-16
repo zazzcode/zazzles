@@ -41,6 +41,8 @@ type nextState struct {
 	// excludedFiles were removed from automatic selection by a project tsconfig.
 	excludedFiles []string
 	routeFiles    map[string]bool
+	// clientRequests are browser requests made through verified helpers or fetch.
+	clientRequests []clientRequest
 }
 
 func spanKey(s analysis.Span) string {

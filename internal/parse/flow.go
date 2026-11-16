@@ -126,6 +126,9 @@ func (f *flow) statement(n *sitter.Node) bool {
 			if name == nil {
 				continue
 			}
+			if f.reactState(d, name) {
+				continue
+			}
 			v := f.eval(d.ChildByFieldName("value"))
 			if name.Kind() == "identifier" {
 				f.env[name.Utf8Text(f.module.src)] = f.transfer(v, "assignment", d)
@@ -634,6 +637,9 @@ func (f *flow) eval(n *sitter.Node) value {
 		}
 		return f.transfer(f.children(n), "expression", n)
 	case "call_expression":
+		if f.module.awaitedCalls[n.StartByte()] {
+			return f.awaited(n, f.call(n))
+		}
 		return f.call(n)
 	case "binary_expression":
 		// Same as any expression; a comparison against a credential-named property is destination evidence.
@@ -647,6 +653,10 @@ func (f *flow) eval(n *sitter.Node) value {
 		f.noteCredentialDestination(n, v)
 		return f.transfer(v, "expression", n)
 	case "arrow_function", "function_expression", "function":
+		if f.client != nil && f.client.react {
+			f.reactCallback(n, nil)
+			return value{}
+		}
 		f.enterQueryCallback(n)
 		return value{gaps: []analysis.Gap{f.gap("unsupported_callback", "callback/closure body not traversed", n)}}
 	case "number", "string", "true", "false", "null", "undefined", "property_identifier", "type_identifier", "comment", "string_fragment", "escape_sequence":
@@ -666,9 +676,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		v.gaps = append(v.gaps, f.gap("conditional_merge", "branch feasibility is not modeled", n))
 		return f.transfer(v, "conditional_value", n)
 	case "await_expression":
-		v := f.children(n)
-		v.gaps = append(v.gaps, f.gap("async_response_unresolved", "await response/continuation semantics not modeled", n))
-		return f.transfer(v, "await", n)
+		return f.awaited(n, f.children(n))
 	default:
 		return f.transfer(f.children(n), "expression", n)
 	}
@@ -852,6 +860,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		return v
 	}
 	if f.client != nil {
+		if v, handled := f.reactCall(n, fn, args); handled {
+			return v
+		}
 		if v, handled := f.clientCall(n, fn, args); handled {
 			return v
 		}
@@ -1254,4 +1265,22 @@ func patternBinding(b *sitter.Node, src []byte) (local, prop string, key *sitter
 		}
 	}
 	return "", "", nil
+}
+
+// awaited applies await semantics to the value of an awaited expression n (an
+// await_expression, or a generic call whose await keyword was blanked).
+func (f *flow) awaited(n *sitter.Node, v value) value {
+	if f.client != nil && v.apiPath != "" {
+		// A verified client HTTP call resolves to its response data.
+		return f.transfer(v, "await_response", n)
+	}
+	inner := n
+	if n.Kind() == "await_expression" && n.NamedChildCount() == 1 {
+		inner = unwrapTS(n.NamedChild(0))
+	}
+	if f.web != nil && inner.Kind() == "call_expression" && f.webAwaitable(inner) {
+		return f.transfer(v, "await_request_read", n)
+	}
+	v.gaps = append(v.gaps, f.gap("async_response_unresolved", "await response/continuation semantics not modeled", n))
+	return f.transfer(v, "await", n)
 }

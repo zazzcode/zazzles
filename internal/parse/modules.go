@@ -17,7 +17,9 @@ type importBinding struct {
 }
 type sourceModule struct {
 	// recovered names the byte-preserving grammar workarounds that parsed this module.
-	recovered        []string
+	recovered []string
+	// awaitedCalls are generic calls whose `await` was blanked for parsing.
+	awaitedCalls     map[uint]bool
 	contractBindings map[string]bool
 	// commandNames holds CommonJS destructured child_process members. They are
 	// kept apart from imports so no other analyzer's module resolution changes.
@@ -98,7 +100,11 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 	if tree == nil {
 		return nil, fmt.Errorf("no syntax tree: %s", file)
 	}
-	m := &sourceModule{recovered: recovered, file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree,
+	var awaited map[uint]bool
+	if len(recovered) == 0 && s.nextProjectFor(file) != nil && (strings.HasSuffix(file, ".ts") || strings.HasSuffix(file, ".tsx")) {
+		tree, awaited = reparseTypedAwaits(parser, tree, parseSource)
+	}
+	m := &sourceModule{awaitedCalls: awaited, recovered: recovered, file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree,
 		funcs: map[string]*sitter.Node{}, exports: map[string]*sitter.Node{}, imports: map[string]importBinding{}, express: map[string]bool{}, receivers: map[string]bool{}, commandNames: map[string]importBinding{}, fsNames: map[string]importBinding{}}
 	s.modules[file] = m
 	top := tree.RootNode()

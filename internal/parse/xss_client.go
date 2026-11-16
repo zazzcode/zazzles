@@ -32,6 +32,9 @@ type clientContext struct {
 	bindings     []analysis.Evidence
 	angular      bool
 	react        bool
+	// state joins every React state setter value; setters maps setter -> state.
+	state   map[string]value
+	setters map[string]string
 }
 
 func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
@@ -50,7 +53,7 @@ func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
 			return err
 		}
 		text := string(m.src)
-		if !strings.Contains(text, "document") && !strings.Contains(text, "location") && !strings.Contains(text, "@angular") && !strings.Contains(text, "react") && !strings.Contains(text, "innerHTML") && !strings.Contains(text, "postMessage") && !strings.Contains(text, "setTimeout") && !strings.Contains(text, "jquery") && !strings.Contains(text, "addEventListener") {
+		if !strings.Contains(text, "document") && !strings.Contains(text, "location") && !strings.Contains(text, "@angular") && !strings.Contains(text, "react") && !strings.Contains(text, "innerHTML") && !strings.Contains(text, "postMessage") && !strings.Contains(text, "setTimeout") && !strings.Contains(text, "jquery") && !strings.Contains(text, "addEventListener") && !strings.Contains(text, "use client") {
 			continue
 		}
 		if m.tree.RootNode().HasError() {
@@ -62,6 +65,8 @@ func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
 		for _, imp := range m.imports {
 			base.react = base.react || imp.module == "react"
 		}
+		nextClient := s.nextProjectFor(file) != nil && reactClientModule(m)
+		base.react = base.react || nextClient
 		if base.react {
 			base.entry.Browser.Framework = "react"
 		}
@@ -91,15 +96,25 @@ func (s *moduleSet) browser(report *analysis.AnalysisReport) error {
 			if base.events.callbacks[fn.StartByte()] {
 				continue
 			}
-			child := newClientFlow(s, m, base)
-			child.env = copyValues(f.env)
-			if params, ok := functionParameters(fn, m.src); ok {
-				for _, p := range params {
-					child.env[p.name] = value{}
+			passes := 1
+			if nextClient {
+				// Two passes: the first collects React state setter joins, the
+				// second reads them. Only the second pass's records are kept.
+				base.state, base.setters, passes = map[string]value{}, map[string]string{}, 2
+			}
+			for pass := 0; pass < passes; pass++ {
+				child := newClientFlow(s, m, base)
+				child.env = copyValues(f.env)
+				if params, ok := functionParameters(fn, m.src); ok {
+					for _, p := range params {
+						child.env[p.name] = value{}
+					}
+				}
+				child.statements(fn.ChildByFieldName("body"))
+				if pass == passes-1 {
+					f.uses = append(f.uses, child.uses...)
 				}
 			}
-			child.statements(fn.ChildByFieldName("body"))
-			f.uses = append(f.uses, child.uses...)
 		}
 		s.vueOutputs(&f)
 		addClientUses(report, base, f.uses)
@@ -286,6 +301,11 @@ func (f *flow) clientClassEvidence(node *sitter.Node) analysis.Evidence {
 }
 
 func (f *flow) clientRecord(node *sitter.Node, v value, context string, escaped bool, binding analysis.Evidence) {
+	// React encodes JSX text and attribute values. In a Next.js client module
+	// such a value is the safe case and produces no record.
+	if escaped && context == "html_text" && f.client != nil && f.client.react && f.set != nil && f.set.nextProjectFor(f.module.file) != nil {
+		return
+	}
 	before := len(f.uses)
 	f.recordXSS(f.module.evidence("browser_output", node), v, context, "text/html", escaped, []analysis.Evidence{binding})
 	if len(f.uses) == before {

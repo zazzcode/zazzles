@@ -14,12 +14,16 @@ says what to change. Coding agents can then make small, focused repairs that kee
 intended behavior, check their own work, and hand a pull request to a person to review.
 
 Many scanners show where a problem is and the path an input takes to reach it. Zazzles adds a
-**decision model** that judges what the code actually does, and a scanner that checks the model's work:
+**decision model** that judges what the code actually does, working from a case the scanner builds:
 
-- **The model is the judge.** For each sensitive operation it answers specific questions. Can a request
+- **The scanner is the analyst.** It finds where input enters, traces the path the value takes to a
+  sensitive operation, records the checks along the way and notes what it could not resolve. From
+  that it builds the evidence and the specific questions to ask.
+- **The model is the judge.** For each sensitive operation it answers those questions. Can a request
   value do harm here? Is the guard or validation already in place adequate? Those answers decide
   whether a result is a vulnerability or is protected.
-- **The scanner is the referee.** It supplies the evidence and checks each answer before it counts:
+- **The analyst holds the judge to the record.** Each answer is checked against the established
+  facts before it counts:
   - An answer that contradicts the source is rejected. An example is "not applicable" when a request
     value plainly reaches the operation.
   - A vulnerability needs complete evidence for that path. Unresolved gaps on the path keep the

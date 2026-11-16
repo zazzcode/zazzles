@@ -2,6 +2,7 @@ package parse
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
@@ -42,6 +43,9 @@ func assembleXSSClaims(report *analysis.AnalysisReport) {
 			}
 		}
 		c.ModelFacts = []string{"output_context=" + u.XSS.OutputContext, "protection=" + u.XSS.Protection, fmt.Sprintf("origin_resolved=%t", u.XSS.OriginResolved)}
+		if strings.Contains(u.Sink.Text, "innerHTML") && scriptReexecution(*u) {
+			c.ModelFacts = append(c.ModelFacts, "script_reexecution: "+u.Sink.Text+" at "+u.Sink.Span.File)
+		}
 		if u.Sink.Kind == "html_response" {
 			for _, e := range u.Context {
 				if e.Kind == "render_markup_context" {
@@ -51,4 +55,22 @@ func assembleXSSClaims(report *analysis.AnalysisReport) {
 		}
 		u.Completeness = c
 	}
+}
+
+// scriptReexecution reports client code that, after the HTML sink, creates new
+// script elements to run scripts the inserted markup carried.
+func scriptReexecution(u analysis.CandidateUse) bool {
+	for _, e := range u.Context {
+		if e.Span.File != u.Sink.Span.File || e.Span.StartByte > u.Sink.Span.StartByte || e.Span.EndByte < u.Sink.Span.EndByte {
+			continue
+		}
+		after := e.Text
+		if i := strings.Index(after, u.Sink.Text); i >= 0 {
+			after = after[i:]
+			if strings.Contains(after, `createElement("script")`) || strings.Contains(after, `createElement('script')`) {
+				return true
+			}
+		}
+	}
+	return false
 }

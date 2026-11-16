@@ -173,7 +173,7 @@ func (f *flow) statement(n *sitter.Node) bool {
 			f.eval(n.NamedChild(0))
 		}
 		// The shared guard engine treats the Node global process.exit as an exit too.
-		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && f.module.nodeProcessExit(n.NamedChild(0)))
+		return n.Kind() == "throw_statement" || (n.NamedChildCount() == 1 && (f.module.nodeProcessExit(n.NamedChild(0)) || nextNavigationExit(f.module, n.NamedChild(0))))
 	case "function_declaration", "comment", "empty_statement":
 	case "for_in_statement":
 		if f.pathArchiveForOf(n) {
@@ -492,6 +492,9 @@ func (f *flow) eval(n *sitter.Node) value {
 	}
 	if f.web != nil {
 		if v, ok := f.webValue(n); ok {
+			return v
+		}
+		if v, ok := f.serverJSX(n); ok {
 			return v
 		}
 	}
@@ -910,6 +913,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	if f.responseCall(n, fn, args, values) {
 		return value{}
 	}
+	if f.nextJSONResponse(n, fn, values) {
+		return value{gaps: []analysis.Gap{f.gap("unknown_call_result", "response object is not modeled", n)}}
+	}
 	// Recording a process candidate is additive: the call is then handled exactly as
 	// before, so existing candidates, gaps and identities are unchanged.
 	f.commandCall(n, fn, args)
@@ -928,6 +934,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			case "find", "findOne", "findById", "update", "updateOne", "deleteOne":
 				kind = "nosql_query_candidate"
 			}
+		}
+	}
+	if kind == "" && f.set != nil && len(values) > 0 {
+		if _, _, ok := f.set.prismaFilterCall(f.module, n); ok && f.set.unvalidatedBody(values[0].fields["where"]) {
+			kind = "nosql_query_candidate"
 		}
 	}
 	if kind == "" && collectionWrite(name) && requestDeps(values) && f.set != nil {
@@ -967,7 +978,20 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			destValue = f.httpOptionsDestination(destNode, destValue)
 		}
 		outbound = &analysis.OutboundFacts{DestinationOrigin: f.destinationOrigin(n, destNode, destValue)}
-		if verified && outbound.DestinationOrigin == analysis.DestinationRequest {
+		internalPath := false
+		if verified && outbound.DestinationOrigin == analysis.DestinationRequest && f.web != nil && f.fixedOriginRequestPath(destNode) {
+			// A fixed (constant or configured) origin with a request-derived path is
+			// a request into the app's own or a fixed service: a path observation
+			// (request_path_in_internal_url), never forgery of an attacker-chosen host.
+			internalPath = true
+			g := f.gap("request_path_in_internal_url", "a request-derived value is inserted into the path of a fixed-origin server request; ../ or %2F may redirect it to another internal endpoint", destNode)
+			for i := range values {
+				if i == dest || (dest <= 0 && i == 0) {
+					values[i].gaps = append(append([]analysis.Gap{}, values[i].gaps...), g)
+				}
+			}
+		}
+		if verified && outbound.DestinationOrigin == analysis.DestinationRequest && !internalPath {
 			// A verified client with a request-derived destination is an SSRF claim
 			// over that operand only; other arguments are data, not destination control.
 			kind = "ssrf_candidate"
@@ -1283,4 +1307,36 @@ func (f *flow) awaited(n *sitter.Node, v value) value {
 	}
 	v.gaps = append(v.gaps, f.gap("async_response_unresolved", "await response/continuation semantics not modeled", n))
 	return f.transfer(v, "await", n)
+}
+
+// fixedOriginRequestPath reports a template URL `${base}/path/${x}` whose leading
+// substitution is request-independent: a dependency-free local, a no-argument
+// call or a process.env read. Request data then sits only in the path or query.
+func (f *flow) fixedOriginRequestPath(n *sitter.Node) bool {
+	n = unwrapTS(n)
+	if n == nil || n.Kind() != "template_string" || n.NamedChildCount() < 2 {
+		return false
+	}
+	first, second := n.NamedChild(0), n.NamedChild(1)
+	if first.Kind() == "string_fragment" {
+		// A literal scheme and host: `https://api.example.com/x/${id}`.
+		text := first.Utf8Text(f.module.src)
+		i := strings.Index(text, "://")
+		return i > 0 && strings.Contains(text[i+3:], "/")
+	}
+	if first.Kind() != "template_substitution" || first.NamedChildCount() != 1 || second.Kind() != "string_fragment" || !strings.HasPrefix(second.Utf8Text(f.module.src), "/") {
+		return false
+	}
+	base := unwrapTS(first.NamedChild(0))
+	switch base.Kind() {
+	case "identifier":
+		v, ok := f.env[base.Utf8Text(f.module.src)]
+		return ok && len(v.deps) == 0
+	case "call_expression":
+		args := base.ChildByFieldName("arguments")
+		return args != nil && args.NamedChildCount() == 0
+	case "member_expression":
+		return f.environmentRead(n, base)
+	}
+	return false
 }

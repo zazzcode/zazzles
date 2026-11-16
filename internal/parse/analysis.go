@@ -108,6 +108,8 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		if p := set.nextProjectFor(file); p != nil {
 			set.nextRouteEntries(out, m, p)
 			set.pagesAPIEntries(out, m, p)
+			set.nextPageEntries(out, m, p)
+			set.nextActionEntries(out, m, p)
 		}
 		locals := map[string]*sitter.Node{}
 		collectFuncs(m.tree.RootNode(), m.src, locals)
@@ -161,6 +163,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		set.automaticQueries(out)
 	}
 	set.assembleNodeInputs(out)
+	set.nextPractice(out, selected)
 	keys := make([]string, 0, len(set.modules))
 	for k := range set.modules {
 		keys = append(keys, k)

@@ -303,6 +303,21 @@ func (s *moduleSet) analyzeNextHandler(out *analysis.AnalysisReport, m *sourceMo
 		}
 	}
 	req := ""
+	page := surface == "page" || surface == "page_metadata"
+	action := surface == "server_action"
+	if action {
+		params = nil
+	}
+	if page {
+		// A Server Component receives props, not a request.
+		if len(params) > 0 && params[0].fields != nil {
+			web.paramsName = params[0].fields["params"]
+			web.searchParamsName = params[0].fields["searchParams"]
+		} else if len(params) > 0 {
+			web.context = params[0].name
+		}
+		params = nil
+	}
 	if len(params) > 0 && params[0].name != "" {
 		req = params[0].name
 	}
@@ -318,7 +333,7 @@ func (s *moduleSet) analyzeNextHandler(out *analysis.AnalysisReport, m *sourceMo
 	inputs := []analysis.InputBinding{}
 	if req != "" {
 		inputs = append(inputs, httpInput("http.request", req, parameterEvidence(hm, body, 0)))
-	} else if len(params) > 0 && router == "app" {
+	} else if len(params) > 0 && router == "app" && !page {
 		e.Gaps = append(e.Gaps, analysis.Gap{Kind: "request_projection_unresolved", Detail: "request parameter uses an unsupported projection", At: spanOf(hm.file, fn)})
 	}
 	response := ""
@@ -337,6 +352,18 @@ func (s *moduleSet) analyzeNextHandler(out *analysis.AnalysisReport, m *sourceMo
 		env: map[string]value{}, context: append([]analysis.Evidence{m.evidence("registration", ex.decl), evidence}, context...),
 		gaps: append([]analysis.Gap{}, e.Gaps...), helpers: &helperExpansion{budget: 24, stack: map[string]bool{}}, facts: newInputFacts(), web: web}
 	f.seedInvocation()
+	if action {
+		f.actionParameters(fn)
+	}
+	// The middleware stage is entry context (authorization), not a destination control.
+	if c := s.nodeHTTP[e.ID]; c != nil {
+		for _, st := range c.stages {
+			out.InvocationContexts[len(out.InvocationContexts)-1].Controls = append(out.InvocationContexts[len(out.InvocationContexts)-1].Controls, analysis.ApplicableControl{InvocationContextID: invocation.ID, DispatchBindingID: invocation.DispatchBindingID, Evidence: st.Evidence})
+		}
+	}
+	for _, g := range s.nextMiddlewareGaps(p) {
+		f.gaps = append(f.gaps, g)
+	}
 	// Extra wrapper arguments (an authenticated user) are values the wrapper
 	// derived; they are not request origins and carry no gap of their own.
 	for i := 2; i < len(params); i++ {
@@ -373,5 +400,23 @@ func (s *moduleSet) nextAliases(p *nextProject, pattern string) []string {
 		}
 	}
 	sort.Strings(out)
+	return out
+}
+
+// nextClaimFacts names the library and validation facts of a Next.js claim.
+func (s *moduleSet) nextClaimFacts(use analysis.CandidateUse) []string {
+	var out []string
+	if fact := s.sqlStatementFact(use); fact != "" {
+		out = append(out, fact+": "+use.Sink.Text+" at "+use.Sink.Span.File)
+	}
+	seen := map[string]bool{}
+	for _, d := range use.Dependencies {
+		for _, t := range d.Transfers {
+			if t.Kind == "validated_parse" && !seen[t.Text] {
+				seen[t.Text] = true
+				out = append(out, "zod_schema_supplied: "+t.Text+" at "+t.Span.File)
+			}
+		}
+	}
 	return out
 }

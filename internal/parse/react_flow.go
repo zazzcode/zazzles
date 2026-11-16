@@ -226,6 +226,9 @@ func (f *flow) reactCall(n, fn, args *sitter.Node) (value, bool) {
 	if v, ok := f.reactSetter(n, fn, args); ok {
 		return v, true
 	}
+	if fn.Kind() == "identifier" && fn.Utf8Text(src) == "fetch" && browserGlobal(f.module, n, "fetch") && args.NamedChildCount() > 0 && f.set.next != nil && f.set.nextProjectFor(f.module.file) != nil {
+		f.set.next.clientRequests = append(f.set.next.clientRequests, clientRequest{module: f.module, call: n, url: args.NamedChild(0), method: f.browserFetchMethod(args), entry: f.entry})
+	}
 	if fn.Kind() == "identifier" && !shadowed(n, fn.Utf8Text(src), src) {
 		switch nextNavigation(f.module, fn) {
 		case "useSearchParams":
@@ -387,7 +390,7 @@ func (s *moduleSet) clientAPIHelper(m *sourceModule, name, member string) (strin
 // recordClientRequest keeps a same-origin client request for the client-side
 // request observations (next_practice.go).
 func (s *moduleSet) recordClientRequest(f *flow, call, url *sitter.Node, method string) {
-	s.next.clientRequests = append(s.next.clientRequests, clientRequest{module: f.module, call: call, url: url, method: method, value: f.eval(url), entry: f.entry})
+	s.next.clientRequests = append(s.next.clientRequests, clientRequest{module: f.module, call: call, url: url, method: method, entry: f.entry})
 }
 
 type clientRequest struct {

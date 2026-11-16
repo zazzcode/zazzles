@@ -411,3 +411,31 @@ func (f *flow) webProjection(v value, prop string, binding *sitter.Node) (value,
 	}
 	return f.webMember(v.web, v, len(v.deps) > 0, prop, binding, binding)
 }
+
+// nextJSONResponse records `NextResponse.json(x)` / `Response.json(x)` as a JSON
+// producer for cross-tier links. JSON is not an HTML sink.
+func (f *flow) nextJSONResponse(n, fn *sitter.Node, values []value) bool {
+	if f.web == nil || fn == nil || fn.Kind() != "member_expression" || len(values) == 0 {
+		return false
+	}
+	obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+	if obj == nil || prop == nil || obj.Kind() != "identifier" || prop.Utf8Text(f.module.src) != "json" {
+		return false
+	}
+	name := obj.Utf8Text(f.module.src)
+	switch name {
+	case "NextResponse":
+		imp, ok := f.module.imports[name]
+		if !ok || imp.module != "next/server" {
+			return false
+		}
+	case "Response":
+		if moduleBinds(f.module, name) {
+			return false
+		}
+	default:
+		return false
+	}
+	f.recordProducer(n, values[0])
+	return true
+}

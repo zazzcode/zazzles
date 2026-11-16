@@ -28,6 +28,10 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 		c.ModelFacts = []string{"scope_grpc_unary"}
 	} else if ctx := s.nodeHTTP[use.EntryID]; ctx != nil && ctx.entry.HTTP.Framework != "express" {
 		c.ModelFacts = []string{"scope_node_framework: " + ctx.entry.HTTP.Framework}
+		if nextFramework(ctx.entry.HTTP.Framework) {
+			c.ModelFacts = []string{"scope_nextjs: " + ctx.entry.HTTP.Surface}
+			c.ModelFacts = append(c.ModelFacts, s.nextClaimFacts(*use)...)
+		}
 		// Discovery's generic middleware warning is replaced only by the adapter's
 		// explicitly bounded lifecycle context, retaining every adapter gap.
 		kept := []analysis.Gap{}

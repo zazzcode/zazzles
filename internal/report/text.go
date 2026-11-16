@@ -49,6 +49,13 @@ func Text(w io.Writer, r *analysis.AnalysisReport) {
 	for _, m := range r.CheckMatches {
 		fmt.Fprintf(w, "check %s entry=%s context=%s uses=%d\n", m.CheckID, m.EntryID, m.InvocationContextID, m.UseCount)
 	}
+	for _, p := range r.Practice {
+		at := ""
+		if len(p.Evidence) > 0 {
+			at = fmt.Sprintf("%s:%d", p.Evidence[0].Span.File, p.Evidence[0].Span.StartLine)
+		}
+		fmt.Fprintf(w, "practice %s [%s] %s %s: %s\n", p.Check, p.Status, at, p.Title, p.Detail)
+	}
 	for _, g := range r.Gaps {
 		fmt.Fprintf(w, "gap %s %s:%d %s\n", g.Kind, g.At.File, g.At.StartLine, g.Detail)
 	}

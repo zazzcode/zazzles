@@ -271,3 +271,73 @@ func (s *moduleSet) sqlStatementFact(use analysis.CandidateUse) string {
 	}
 	return "sql_multi_statement"
 }
+
+var prismaFilterMethods = map[string]bool{"findUnique": true, "findUniqueOrThrow": true, "findFirst": true, "findFirstOrThrow": true, "findMany": true, "count": true, "update": true, "updateMany": true, "delete": true, "deleteMany": true, "upsert": true, "aggregate": true, "groupBy": true}
+
+// prismaFilterCall verifies `client.<model>.<method>({ where: ... })` on a
+// verified Prisma Client and returns the where object.
+func (s *moduleSet) prismaFilterCall(m *sourceModule, call *sitter.Node) (*sitter.Node, []analysis.Evidence, bool) {
+	fn := call.ChildByFieldName("function")
+	args := call.ChildByFieldName("arguments")
+	if fn == nil || fn.Kind() != "member_expression" || args == nil || args.Kind() != "arguments" || args.NamedChildCount() == 0 {
+		return nil, nil, false
+	}
+	prop := fn.ChildByFieldName("property")
+	model := fn.ChildByFieldName("object")
+	if prop == nil || model == nil || !prismaFilterMethods[prop.Utf8Text(m.src)] || model.Kind() != "member_expression" {
+		return nil, nil, false
+	}
+	client := model.ChildByFieldName("object")
+	if client == nil || client.Kind() != "identifier" || shadowed(call, client.Utf8Text(m.src), m.src) {
+		return nil, nil, false
+	}
+	opts := unwrapTS(args.NamedChild(0))
+	if opts == nil || opts.Kind() != "object" {
+		return nil, nil, false
+	}
+	where := property(opts, "where", m.src)
+	if where == nil {
+		return nil, nil, false
+	}
+	binding := s.prismaClient(m, client.Utf8Text(m.src), 0)
+	if len(binding) == 0 {
+		return nil, nil, false
+	}
+	return where, append(binding, m.evidence("sink_binding", call)), true
+}
+
+// unvalidatedBody reports a dependency on raw JSON request body data that no
+// schema helper parsed: the only shape that can carry a Prisma filter object.
+func (s *moduleSet) unvalidatedBody(v value) bool {
+	for _, d := range v.deps {
+		o, ok := s.webOriginFor(d.Source)
+		if !ok || o.origin != "http.body" || (o.initialType != "unknown" && o.initialType != "string") {
+			continue
+		}
+		validated := false
+		for _, t := range d.Transfers {
+			validated = validated || t.Kind == "validated_parse"
+		}
+		if !validated {
+			return true
+		}
+	}
+	return false
+}
+
+// prismaFilterBinding returns the verified binding of a Prisma filter use.
+func (s *moduleSet) prismaFilterBinding(use analysis.CandidateUse) []analysis.Evidence {
+	m := s.modules[use.Sink.Span.File]
+	if m == nil {
+		return nil
+	}
+	call := nodeAt(m.tree.RootNode(), use.Sink.Span.StartByte, use.Sink.Span.EndByte)
+	if call == nil || call.Kind() != "call_expression" {
+		return nil
+	}
+	_, binding, ok := s.prismaFilterCall(m, call)
+	if !ok {
+		return nil
+	}
+	return binding
+}

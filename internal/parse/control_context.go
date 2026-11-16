@@ -66,6 +66,9 @@ func controlContext(m *sourceModule, body *sitter.Node) ([]analysis.ControlEdge,
 			}
 			return head
 		}
+		if n.Kind() == "expression_statement" && n.NamedChildCount() == 1 && nextNavigationExit(m, n.NamedChild(0)) {
+			return n // redirect()/notFound() throw and never fall through
+		}
 		switch n.Kind() {
 		case "return_statement", "throw_statement":
 			return n

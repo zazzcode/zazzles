@@ -75,11 +75,11 @@ Paid: 89 `gpt-6-luna` requests across six passes. Final run
 | OOPS-PATH-01, 02 | Confirmed (`readFile` ×2, `readdir`) |
 | OOPS-SSRF-01 | Confirmed |
 | OOPS-LOG-01 | Confirmed |
+| OOPS-LOG-02 | Confirmed (`POST /api/gift-cards` logs `recipientEmail`; owner added the row 2026-11-16, not in the sample's own key) |
 | OOPS-XSS-01, 02, 04, 05 | Confirmed |
 | OOPS-SSRF-02, XSS-03, PATH-R01, PATH-R02, PATH-N01 | Review (none red) |
 | OOPS-XSS-N01..N04 | No record |
 | OOPS-SSR-01, 02 | `request_path_in_internal_url` observations |
-| Extra | `POST /api/gift-cards` logs `recipientEmail` (Confirmed); not in the answer key, needs owner review |
 
 ## 6. Iteration 2: vuln-nextjs lab (2026-11-16)
 

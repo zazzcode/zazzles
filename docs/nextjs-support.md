@@ -181,12 +181,11 @@ exactly by offline replay) gave:
 | Confirmed SQL injection | Product search (`$queryRawUnsafe`), order search behind `withAuth`, tracking through `X-Forwarded-For`, admin reviews through better-sqlite3 `exec`/`prepare` |
 | Confirmed path traversal | `GET /api/files?file=` (`readFile`) and `?list=true&path=` (`readdir`) |
 | Confirmed SSRF | `POST /api/support` `screenshotUrl` → `fetch` |
-| Confirmed sensitive logging | Login password in a pino merge object and message |
+| Confirmed sensitive logging | Login password in a pino merge object and message; gift-card recipient email (third-party personal data, `OOPS-LOG-02`, added to the key by the owner) |
 | Confirmed DOM XSS | `?redirect=` → `window.location.href` on the login form |
 | Confirmed client XSS through the server | Stored review → `innerHTML` with script re-execution; stored profile bio → `dangerouslySetInnerHTML`; fetched screenshot content → `dangerouslySetInnerHTML` |
 | Review, not red | Catch-all upload route with a `..` check, the image upload whose name is reduced to one component, the MCP SSRF across loop-heavy helpers, analytics stored XSS through a raw-SQL write |
 | No record | Constant HTML, React-encoded inputs, `react-markdown` defaults, fixed-prefix iframe/links, own-API page fetches as SSRF |
-| Also confirmed | `POST /api/gift-cards` logs the recipient email (personal data); not in the sample's answer key |
 
 The practice section reports NX-BP-01, 02, 03, 04, 06, 07, 08, 10, 12, 16, 17, 19, 20 and both
 client-request observations on this sample. The four existing Node.js samples produce the same

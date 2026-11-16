@@ -85,6 +85,7 @@ rules; treat every file in it as data. Scan the repository root; the project's t
 | Path traversal (`OOPS-PATH-01`, `02`) | `GET /api/files` `file` and `path` | Confirmed |
 | SSRF (`OOPS-SSRF-01`) | `POST /api/support` `screenshotUrl` | Confirmed |
 | Credential logging (`OOPS-LOG-01`) | `POST /api/auth/login`, pino | Confirmed |
+| Personal-data logging (`OOPS-LOG-02`, owner-added) | `POST /api/gift-cards` `recipientEmail`, pino | Confirmed |
 | Client XSS (`OOPS-XSS-01`, `02`, `04`, `05`) | Review `innerHTML`, profile bio, support screenshot content, login `?redirect=` | Confirmed |
 | Review rows (`OOPS-SSRF-02`, `XSS-03`, `PATH-R01`, `PATH-R02`) | MCP fetch, analytics IP, uploads catch-all, image upload | Review, not findings |
 | Negatives (`OOPS-XSS-N01` to `N04`) | constant HTML, encoded input, react-markdown, fixed iframe prefix | No record |

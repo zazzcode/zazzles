@@ -1,25 +1,78 @@
 {
   "date": "2026-11-15",
   "target_revision": "b188493768ca2c1ef003e08148fb2e4577219c36",
-  "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
-  "evaluation_mode": "fresh gpt-6-luna scan: security sink families; standalone input validation excluded",
+  "scanner_revision": "python-input-refactor (shared Python acquisition; see owning PR and verification contract)",
+  "scanner_binary_sha256": "a652e80aa162790fe67dd8caee053e7f5cef0ebabed380070dfa9be95340b183",
+  "exporter_binary_sha256": "e402b0dfc97169da91d9b71b2abd8e1b84ce95c77def5854dd761514fe472317",
+  "evaluation_mode": "fresh all-family gpt-6-luna scan, including standalone input validation",
   "provider": "openai",
   "model": "gpt-6-luna",
+  "entries": 1,
   "positions": 2,
-  "provider_requests": 1,
-  "input_tokens": 4029,
+  "provider_requests": 2,
+  "input_tokens": 7067,
   "published_records": 2,
-  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD unchanged at pin)",
   "runtime_confirmation": "none; static source judgments only",
   "outcomes": {
-    "confirmed_vulnerability": 1
+    "confirmed_vulnerability": 1,
+    "needs_evidence": 1
   },
-  "not_run": 1,
+  "published_outcomes": {
+    "confirmed_vulnerability": 1,
+    "needs_evidence": 1
+  },
+  "families": {
+    "xss_candidate": 1,
+    "input_validation_candidate": 1
+  },
+  "not_run": 0,
   "failed": 0,
+  "exact_replays": 2,
+  "replay_mismatches": 0,
+  "missing_traces": 0,
+  "future_routine_scope": "--skip-family input-validation (user preference; this complete run includes it)",
+  "artifact_bytes": {
+    "findings.html": 69544,
+    "findings.json": 81968,
+    "findings.sarif": 103272
+  },
+  "artifact_sha256": {
+    "findings.html": "b146104a44227a8dcd31c888130f1bb23c68d2e2353b942e36e655fd2289f438",
+    "findings.json": "eb5cc36c93e3c4bdead355a16270afd8ace2f8d4fbef19f259b440531a6e282d",
+    "findings.sarif": "3e46470d4275aad21efffa5a86e130c71d5d652187e4b6d9027372a0536772b9"
+  },
   "previous": {
-    "date": "2026-11-14",
-    "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
-    "provider_requests": 2,
-    "input_tokens": 10136
+    "date": "2026-11-15",
+    "target_revision": "b188493768ca2c1ef003e08148fb2e4577219c36",
+    "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
+    "evaluation_mode": "fresh gpt-6-luna scan: security sink families; standalone input validation excluded",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "positions": 2,
+    "provider_requests": 1,
+    "input_tokens": 4029,
+    "published_records": 2,
+    "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+    "runtime_confirmation": "none; static source judgments only",
+    "outcomes": {
+      "confirmed_vulnerability": 1
+    },
+    "not_run": 1,
+    "failed": 0,
+    "previous": {
+      "date": "2026-11-14",
+      "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
+      "provider_requests": 2,
+      "input_tokens": 10136
+    }
+  },
+  "family_outcomes": {
+    "xss_candidate": {
+      "confirmed_vulnerability": 1
+    },
+    "input_validation_candidate": {
+      "needs_evidence": 1
+    }
   }
 }

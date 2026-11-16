@@ -6,7 +6,9 @@ expects, and what the scanner reports. Applications are read-only scan targets, 
 **Expected** comes from source-reviewed references, never from scanner output. **Actual** for the JavaScript
 apps comes from the 2026-11-15 Node rebuild with OpenAI Decisions `gpt-6-luna` (every analyzer on Juice
 Shop, Goof, the TypeScript app, and vuln-demo-app—including middleware-chain / URL / upload inputs and
-Node `http`/`https` SSRF). VulnPy rows come from the earlier core v7 rebuild, whose requests are unchanged.
+Node `http`/`https` SSRF). Python actuals now come from the full 2026-11-15 shared-input refactor validation: all four Python
+apps, every supported family including standalone input validation, with fresh `gpt-6-luna` decisions.
+No Node/TypeScript paid scans or sample artifacts were rerun for this Python update.
 Earlier XSS evidence is in the [XSS hardening results](../evaluation/xss-hardening-results.md). These are
 static judgments, not runtime exploits. The XSS rows are the only ones with a machine-checked
 [matrix](../evaluation/xss-hardening/matrix.json).
@@ -95,20 +97,44 @@ The XSS paths depend on `isChallengeEnabled` branches, which stay attached as pr
 | Reflected XSS, 11 adapters | Flask, FastAPI, Quart, Django, Django-ASGI, Falcon, Falcon-ASGI, Bottle, Pyramid, aiohttp, WSGI | Confirmed, 30 contexts |
 | Reflected XSS, Jinja (`VP-XSS-JINJA`) | `apps/templates/jinja/xss.html:30` | Confirmed |
 | Command injection, 2 sinks | `trigger/cmdi.py:6`, `:10`, plus 5 app witnesses | Confirmed, 61 contexts |
-| SQL injection, 3 sinks | `trigger/sqli.py:37`, `:48`, `:59` | Confirmed in 63 of 78 contexts; **15 stay Review** |
-| XXE, path traversal, deserialization, other triggers | [guide](../evaluation/vulnpy-detection-guide.md) | Not covered |
+| SQL injection, 3 sinks | `trigger/sqli.py:37`, `:48`, `:59` | Each sink pattern has 21 confirmed contexts and 5 construction-only findings: 63/78 injection confirmations overall; injection remains unconfirmed for the other 15 |
+| Path traversal / file operands | Verified Python file and archive operations | 260 contexts assessed: 191 Confirmed, 69 Review |
+| XXE, deserialization, other unsupported triggers | [guide](../evaluation/vulnpy-detection-guide.md) | Not covered |
 
-Contexts repeat a few shared sinks across adapters; they are not separate defects.
+Contexts repeat a few shared sinks across adapters; they are not separate defects. The current
+source/coverage inventory passes 10/10 (six positive locations plus four registration-disposition
+controls), not an exhaustive recall score for every vulnerability family advertised by VulnPy.
 
 ## Other evaluated applications
 
-These were not rescanned for the results above. Their guides record their own expectations and results.
+These Python applications were also fully reassessed in the same refactor validation. Their source
+guides own expectations; the metrics below record the fresh results.
 
 | Application | Language | Source | Reference |
 |---|---|---|---|
 | ThreatByte | Python | [anotherik/ThreatByte](https://github.com/anotherik/ThreatByte) | [Detection guide](../evaluation/threatbyte-detection-guide.md) |
 | python-insecure-app | Python (FastAPI) | [trottomv/python-insecure-app](https://github.com/trottomv/python-insecure-app) | [Detection guide](../evaluation/python-insecure-app-detection-guide.md) |
 | Vulnerable-Flask-App | Python (Flask) | [ikpehlivan/Vulnerable-Flask-App](https://github.com/ikpehlivan/Vulnerable-Flask-App) | [Python results](../evaluation/python-support-results.md) |
+
+## Python application assessment metrics — 2026-11-15
+
+All 3,354 assessments completed and replayed exactly against fresh pinned source, with no HTTP,
+decoder or replay failures and no missing traces. Target revisions and clean status, including
+ignored files, were unchanged. Report counts below are canonical rendered outcomes, which retain
+source-derived poor-practice findings separately from model assessment outcomes.
+
+| Python app | Entries | Records / requests | Input tokens | Confirmed | Poor practice | Protected | Review | Exact replays |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| [vulnpy](../../docs/samples/vulnpy/README.md) | 2,214 | 3,260 / 3,260 | 16,014,526 | 346 | 15 | 0 | 2,899 | 3,260 / 3,260 |
+| [ThreatByte](../../docs/samples/ThreatByte/README.md) | 24 | 62 / 62 | 302,537 | 6 | 3 | 33 | 20 | 62 / 62 |
+| [python-insecure-app](../../docs/samples/python-insecure-app/README.md) | 1 | 2 / 2 | 7,067 | 1 | 0 | 0 | 1 | 2 / 2 |
+| [vulnerable-flask-app](../../docs/samples/vulnerable-flask-app/README.md) | 19 | 30 / 30 | 98,624 | 8 | 0 | 0 | 22 | 30 / 30 |
+
+VulnPy includes 2,830 standalone input-validation contexts in this full baseline. Future routine
+Python comparisons skip input validation per the user’s instruction (496 contexts on this source
+corpus). A completed decision is not a complete security guarantee; existing Review boundaries and
+unsupported families remain explicit. Full scope, source controls and artifact provenance are in
+the [Python refactor verification](../evaluation/python-input-refactor-results.md) and each sample metadata.
 
 ## Keeping this current
 

@@ -14,16 +14,18 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [ThreatByte (Python)](ThreatByte/README.md) | [findings.html](ThreatByte/findings.html) | [findings.json](ThreatByte/findings.json) | [findings.sarif](ThreatByte/findings.sarif) |
 | [Python insecure app](python-insecure-app/README.md) | [findings.html](python-insecure-app/findings.html) | [findings.json](python-insecure-app/findings.json) | [findings.sarif](python-insecure-app/findings.sarif) |
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
-| [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [findings.json](vulnpy/findings.json) | [findings.sarif](vulnpy/findings.sarif) |
+| [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
 
 The three Node.js reports (Juice Shop, Node.js Goof, Vulnerable TypeScript app) were rebuilt on
 2026-11-15 with OpenAI Luna Decisions: every analyzer, including Express middleware-chain stages,
 URL and upload inputs, broader file/archive operations, and Node `http`/`https` SSRF. On that rebuild,
 every source-reviewed required positive for those analyzers was confirmed (see the
 [expected-vs-actual tables](../../.zazz/project/vulnerable-sample-apps.md)); defects outside those
-analyzers remain not covered. Python samples keep their prior judgments. Excluded and unsupported
-records remain explicitly unassessed; VulnPy omits excluded records from its public copy to bound
-file size. Path traversal and Zip Slip results appear inside each report. Each sample's README has a
+analyzers remain not covered. All four Python samples were fully reassessed on 2026-11-15 with shared Python input facts,
+including every standalone input-validation context: 3,354 completed assessments and exact replays.
+The complete VulnPy JSON/SARIF are losslessly gzip-compressed; its HTML contains all 3,260 records.
+Existing Node/TypeScript report files were not changed by this Python update. Unsupported records
+remain explicitly bounded by the documented coverage limits. Path traversal and Zip Slip results appear inside each report. Each sample's README has a
 **Current report** section with its counts and notable results.
 
 The reports include XSS discovery and the **Hide protected results** remediation
@@ -89,5 +91,12 @@ Python NoSQL is out of this corpus; no sample contains a MongoDB driver.
 ## VulnPy coverage corpus
 
 [VulnPy](vulnpy/README.md) adds dynamically generated Python route/trigger coverage and source-backed
-SQL/XSS expectations. Its six known positive misses remain visible; four controls require explicit
-coverage warnings. [Living guide](../../.zazz/evaluation/vulnpy-detection-guide.md).
+SQL/XSS expectations. All six positive source-location checks and four source-backed
+registration-or-gap controls pass; historical anchors/dispositions remain in the reference corrections. [Living guide](../../.zazz/evaluation/vulnpy-detection-guide.md).
+
+
+For future routine Python comparisons, use `--skip-family input-validation`; the full assessment
+published here includes that family. With the current four-app corpus, that scope uses 496 contexts
+instead of 3,354. Presentation refreshes are offline and need no new model calls.
+For oversized reports, `refresh.py --compress` stores complete JSON/SARIF as gzip; existing gzip
+samples retain that format on subsequent refreshes, including when fresh plain canonical JSON is copied in.

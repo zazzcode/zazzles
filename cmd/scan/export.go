@@ -10,6 +10,9 @@ import (
 	"github.com/zazzcode/zazzles/internal/report"
 )
 
+// Full multi-framework reports can exceed the former 64 MiB input ceiling.
+const maxSavedReportBytes = 512 << 20
+
 func runExportSARIF(path string, stdout, stderr io.Writer) int {
 	return runExport(path, false, stdout, stderr)
 }
@@ -21,9 +24,9 @@ func runExport(path string, asHTML bool, stdout, stderr io.Writer) int {
 		return exitError
 	}
 	defer f.Close()
-	data, err := io.ReadAll(io.LimitReader(f, (64<<20)+1))
-	if err != nil || len(data) > 64<<20 {
-		fmt.Fprintln(stderr, "scan: saved report read failed or exceeds 64 MiB")
+	data, err := io.ReadAll(io.LimitReader(f, maxSavedReportBytes+1))
+	if err != nil || len(data) > maxSavedReportBytes {
+		fmt.Fprintln(stderr, "scan: saved report read failed or exceeds 512 MiB")
 		return exitError
 	}
 	var saved analysis.AnalysisReport

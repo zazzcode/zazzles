@@ -31,6 +31,7 @@ type pythonModule struct {
 	vars, funcs   map[string]*sitter.Node
 }
 type pythonSet struct {
+	inputs        map[string]map[analysis.Evidence]pythonInputSource
 	root          string
 	parser        *sitter.Parser
 	modules       map[string]*pythonModule
@@ -363,6 +364,7 @@ func (s *pythonSet) report(entry string, checks []analysis.Check) (*analysis.Ana
 	for _, r := range guidelines.ForPaths(s.files) {
 		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: r.ID, Version: r.Version, Languages: r.Languages})
 	}
+	s.assemblePythonInputs(out)
 	if err := finalizeEntries(out); err != nil {
 		return nil, err
 	}

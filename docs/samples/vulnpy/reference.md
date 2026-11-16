@@ -51,3 +51,24 @@ from these generated raw responses. Other frameworks and vulnerability families 
 by this D5 result. The original six-positive-miss/four-warning baseline and `cases.json` remain intact.
 Detailed commands, limits, pipeline checks and provenance are recorded in the
 [D5 implementation results](../../../.zazz/evaluation/common-entry-dispatch-results.md).
+
+
+## Current source-anchor and coverage corrections
+
+The current pinned source resolves `apps/flask_app.py:18` through the Environment loader
+at lines 10–11 to `apps/templates/jinja/xss.html`. The render call at app line 19 passes
+request input, while the actual unescaped output is `{{ user_input | safe }}` at template
+line 30. The case inventory now anchors that same positive to its output sink, preserving
+the earlier call location as provenance. This raw-output path was already recognized in
+the pre-refactor published report; the older “Jinja gap” narrative above is historical.
+
+The four generator-registration controls at FastAPI lines 24/32 and Flask lines 33/61
+retain their source locations. Their criterion is explicit coverage disposition: either
+a source-backed registration with matching entry, resolved callable dispatch and invocation,
+or the specified unresolved-registration warning. They must not pass when both are absent.
+The earlier gap-only assertions are preserved in `previous_expect`; resolved finite
+registrations must not be made to emit fabricated warnings to satisfy historical checks.
+
+All six positive-source checks and four registration-disposition checks pass on the current
+complete source snapshot. Expected positive classifications remain unchanged; no case was
+removed or reclassified as safe to fit model output.

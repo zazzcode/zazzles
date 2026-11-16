@@ -1,70 +1,67 @@
 # VulnPy Python sample
 
-[Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
+[Samples](../README.md) · [Full HTML](findings.html) · [JSON, gzip](findings.json.gz) · [SARIF, gzip](findings.sarif.gz) · [Provenance](metadata.json)
 
 ## Current report (rebuilt 2026-11-15)
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+Fresh all-family OpenAI `gpt-6-luna` assessment after the shared Python input refactor,
+at pinned revision `b81885e58283a3449b578d20c20557aff637e5ea`. Every discovered supported context was assessed,
+including standalone input validation. No record was omitted from this published copy.
 
-Command, SQL and XSS; other analyzers excluded were run at pinned revision `b81885e58283` with OpenAI `gpt-6-luna` and evidence wire v7 on the analyzer-assessment-coverage branch. The target remained clean. These are static source judgments.
+- **Entries:** 2,214. **Records / completed assessments:** 3,260 / 3,260.
+- **Provider requests:** 3,260 (16,014,526 input tokens); no fallback or automatic retries.
+- **Report outcomes:** 346 confirmed_vulnerability, 2,899 needs_evidence, 15 poor_practice.
+- **Unassessed / failed:** 0 / 0. **Exact fresh-source replays:** 3,260; mismatches/missing traces: 0.
+- **Families:** 61 command, 78 SQL, 31 XSS, 260 path and 2,830 input-validation contexts.
 
-- **Records:** 170. **Judged:** 170, in 170 requests (1,004,048 input tokens).
-- **Outcomes among judged records:** 155 confirmed vulnerabilities, 15 poor practice, 0 protected, 0 not applicable, 0 inconclusive (Review).
-- **Unassessed records shown:** 0; provider/decoder failures: 0.
-- **Scope:** 61 command, 78 SQL and 31 XSS contexts. Unjudged input-validation and path records are omitted from this public copy. Historical path decisions remain historical; they were not relabeled as v7 decisions.
+These are static source judgments, not executed exploits or a complete framework/security certification.
+Repeated contexts expose shared sinks through different adapters and are not distinct defects.
+The 61 command contexts preserve both shared process sinks and app-specific loop/upload/thread witnesses
+across the existing eleven-adapter corpus. Source-case checks pass 10/10, including the Jinja raw
+output at `apps/templates/jinja/xss.html:30` and explicit registration-disposition controls.
 
-[Wire v7 verification and limits](../../../.zazz/evaluation/wire-bundle-v7-results.md).
+## Comparison with the known source-reviewed set
 
-Sections below this one describe earlier published snapshots; where their counts differ, this section is current.
+| Family | Known/reviewed scope | Current result |
+| --- | --- | --- |
+| Command injection | Two shared process sinks plus app-specific loop/upload/thread witnesses | All 61 contexts confirmed |
+| SQL injection | `execute`, `executemany`, `executescript` at `trigger/sqli.py:37/48/59` | Each pattern: 21 confirmed contexts and 5 construction-only findings; 63/78 injection confirmations overall |
+| XSS | Generated raw responses plus the separate Jinja `safe` output | All 31 contexts confirmed, including Jinja |
+| Path traversal | Supported file/archive destination operands | 191 confirmed; 69 remain Review |
+| Standalone input validation | Applicable business field requirements | All 2,830 assessed; Review where no business policy is established |
+| XXE, deserialization and other unsupported trigger families | Broader advertised corpus | Not covered; this scan does not claim those vulnerabilities are absent |
 
-Target: [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy), MIT,
-reviewed at `b81885e58283a3449b578d20c20557aff637e5ea`. The target remained clean and unchanged.
-Its vulnerable function library is exposed through several frameworks and dynamically built routes.
+The 10/10 source checks cover six positive source locations and four registration-disposition
+controls. They are not ten vulnerability categories or an exhaustive recall score. Contexts repeat
+shared defects across registrations/adapters; 61 command contexts do not mean 61 distinct defects.
 
-## Current report: command-injection acceptance scan (2026-11-07)
+## Complete downloads and offline refresh
 
-Full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner revision `6f5cb711fe06…`
-(binary SHA-256 in [metadata](metadata.json)); the target stayed clean at the pin. The scan models the
-Flask, FastAPI, Quart, Django (sync/ASGI), Falcon (sync/ASGI), Bottle, Pyramid, aiohttp and WSGI entries:
-2,214 entries and 2,977 candidate records. **Command injection:** both core sinks (`trigger/cmdi.py:6` `os.system`, `:10` `subprocess.Popen(shell=True)`) are confirmed in every adapter context (Flask, FastAPI, Quart, Django sync/ASGI, Falcon sync/ASGI, Bottle, Pyramid, aiohttp, WSGI), plus the five app-specific witnesses (FastAPI loop and upload, Quart upload, Falcon upload and thread): 61 contexts, all completed `confirmed_vulnerability`. These are repeated exposures of two shared defects, not 61 defects.
-
-**Input validation was deliberately not used for this run** (`--skip-family input-validation`, on explicit
-instruction because the full scan would need about 3,000 further requests). Its 2,830 records are unjudged
-and remain Review; this says nothing about validation adequacy. The scan judged the other 147 records with
-147 provider requests (1,789,377 input tokens): 61 command, 78 SQL (63 confirmed injection, 15 poor-practice construction findings)
-and 8 XSS (7 confirmed, 1 Review). The published HTML/JSON/SARIF omit those unjudged records and the entries that
-carried only them (the full report is over 100 MB); the omission is stated in the report limitations.
-The complete report is retained with the review package. Statuses are static judgments, not runtime exploitation.
-
-Published copy: 147 entries, 147 records (146 Findings, 1 Review, 0 Protected).
-See the [acceptance results](../../../.zazz/evaluation/command-injection-results.md).
-
-## Previously published historical baseline (superseded for the links above)
-
-The offline Zazzles scan records 11 static entries, six unassessed records and four explicit
-registration/path coverage warnings. The core generated SQL/XSS routes remain coverage gaps.
-This is not a completed semantic calibration or a clean result. No new source was sent to a model.
-
-Six source-positive cases remain known misses. Four controls check explicit coverage warnings.
-The evaluator intentionally exits nonzero while those positives are missing:
+The normal HTML contains the entire result. Full canonical JSON and SARIF are stored as lossless gzip
+because their uncompressed sizes exceed GitHub's per-file limit. Decompress before using tools that
+require plain SARIF/JSON; the sample evaluator and refresh helper accept the compressed canonical file.
 
 ```sh
-python3 docs/samples/evaluate-python.py vulnpy docs/samples/vulnpy/findings.json
+python3 docs/samples/evaluate-python.py vulnpy docs/samples/vulnpy/findings.json.gz
+python3 docs/samples/refresh.py --scan ./bin/scan --sample vulnpy
 ```
 
-Pinned local Semgrep CE found eight results and Bearer found 21; neither baseline identifies the
-three SQL trigger variants. Broader findings cover future vulnerability families. Counts are not
-precision/recall. The first sandbox-blocked Bearer attempt is not used as a baseline.
+Future routine Python comparisons use `--skip-family input-validation`. This complete scan includes
+all 2,830 standalone validation contexts. They remain Review when no applicable business policy is
+established; model completion does not turn missing policy into a validation defect or protection.
 
-See the living [detection guide and checklist](../../../.zazz/evaluation/vulnpy-detection-guide.md),
-[source reference](reference.md), [expected cases](cases.json), [hashes](source-hashes.json),
-[metadata](metadata.json), [Semgrep baseline](semgrep/baseline.json),
-[Bearer baseline](bearer/baseline.json), and [upstream license](SOURCE-LICENSE.txt).
+## Source and history
 
-## D5 follow-up
+Target: [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy), MIT.
+The checkout remained clean, including ignored files, at the pin before and after evaluation.
+No application execution, dependency installation or target edits were performed.
 
-A later full source-only scan and code inspection confirmed the three SQLite constructions and
-generated Flask/FastAPI raw-HTML responses. See the
-[confirmed-findings table](reference.md#findings-confirmed-by-scan-and-code-inspection--d5) and
-[D5 results](../../../.zazz/evaluation/common-entry-dispatch-results.md). The HTML/JSON/SARIF links
-above still identify the original published baseline; this follow-up does not overwrite its evidence.
+The preceding published snapshot contained 170 assessed command/SQL/XSS contexts and omitted path
+and input-validation records. Its model answers remain historical in Git and metadata; no old answer
+was transplanted onto changed requests. The larger count here comes from scope, not a refactor-caused
+increase in candidate discovery or distinct request signatures.
+
+See the [refactor verification](../../../.zazz/evaluation/python-input-refactor-results.md),
+[living detection guide](../../../.zazz/evaluation/vulnpy-detection-guide.md),
+[source reference and corrections](reference.md), [expected cases](cases.json),
+[source hashes](source-hashes.json), and [upstream license](SOURCE-LICENSE.txt).

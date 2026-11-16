@@ -152,15 +152,7 @@
                 "framework": "fastapi"
               }
             ]
-          },
-          "toolExecutionNotifications": [
-            {
-              "level": "note",
-              "message": {
-                "text": "GET /: semantic assessment not_run"
-              }
-            }
-          ]
+          }
         }
       ],
       "properties": {
@@ -288,18 +280,8 @@
           "Python supports static Flask/Blueprint, RESTX Resource and FastAPI routes plus bounded source-derived Flask/FastAPI generation; runtime registry mutation, unsupported decorators and response overrides remain gaps",
           "Python helper expansion is bounded to depth 3 and 24 calls per route; loops, comprehensions, mutation, exceptions and external dispatch are conservative",
           "Jinja output requires a verified Flask template binding; unresolved configuration, includes/macros and stored origins remain Review; no runtime execution or SCA",
-          "Analyzer family selection: skipped [], only [sql,nosql,xss,command,path,logging,ssrf]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.",
-          "Judged 1 distinct candidate signatures across 1 total entry contexts (0 derived across equivalent entry contexts).",
-          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 800000; requests remain sequential. Attempts 1; reported input tokens 4029; unknown-usage attempts 0. "
-        ],
-        "scan.onlyFamilies": [
-          "sql",
-          "nosql",
-          "xss",
-          "command",
-          "path",
-          "logging",
-          "ssrf"
+          "Judged 2 distinct candidate signatures across 2 total entry contexts (0 derived across equivalent entry contexts).",
+          "Decision-model limits (one scan; discovery and assessment share state): RPM 60, estimated input TPM 1000000; requests remain sequential. Attempts 2; reported input tokens 7067; unknown-usage attempts 0. "
         ],
         "scan.selectedRoute": "",
         "scan.selectedScope": {}
@@ -800,11 +782,11 @@
           },
           "properties": {
             "scan.assessment": {
-              "request_digest": "745fcc35bf4acd59c4faa8dcff9f7b84514507e96443bdcde42e7ebd897157b0",
+              "request_digest": "b47c905864bd49b15c20ee601af2c798b157e062ddea27d72d4aec60569b963c",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.71,
+                  "confidence": 0.55,
                   "probabilities": [
                     {
                       "value": "adequate",
@@ -812,29 +794,29 @@
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.21
+                      "probability": 0.32
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.78
+                      "probability": 0.66
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.9,
+                  "confidence": 0.98,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.91
+                      "probability": 0.98
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "url",
@@ -862,69 +844,69 @@
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.06
+                      "probability": 0.01
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.95,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.02
+                      "probability": 0.01
                     },
                     {
                       "value": "absent",
-                      "probability": 0.96
+                      "probability": 0.97
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.01
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.96,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "no",
-                      "probability": 0.97
+                      "probability": 0.99
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.01
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.84,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.88
+                      "probability": 0.97
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.11
+                      "probability": 0.03
                     },
                     {
                       "value": "not_applicable",
@@ -942,7 +924,7 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 4029,
+                "input_tokens": 4267,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -1024,6 +1006,345 @@
                 ],
                 "example_status": "source-derived candidate; review intended output semantics and test before applying"
               }
+            },
+            "scan.inputFacts": {
+              "version": 1,
+              "acquisition": "http",
+              "framework": "fastapi",
+              "binding": {
+                "kind": "entry_registration",
+                "text": "@app.get(\"/\", response_class=HTMLResponse)",
+                "span": {
+                  "file": "app/main.py",
+                  "start_line": 18,
+                  "end_line": 18,
+                  "start_byte": 342,
+                  "end_byte": 384
+                },
+                "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+              },
+              "values": [
+                {
+                  "dependency": 0,
+                  "origin": "http.query",
+                  "initial_type": "unknown",
+                  "sink_type": "unknown",
+                  "source": {
+                    "kind": "input_source",
+                    "text": "name: str = config.SUPER_SECRET_NAME",
+                    "span": {
+                      "file": "app/main.py",
+                      "start_line": 19,
+                      "end_line": 19,
+                      "start_byte": 407,
+                      "end_byte": 443
+                    },
+                    "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                  },
+                  "transfers": [
+                    {
+                      "kind": "value_reference",
+                      "text": "name",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 37,
+                        "end_line": 37,
+                        "start_byte": 1052,
+                        "end_byte": 1056
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "expression",
+                      "text": "name or config.SUPER_SECRET_NAME",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 37,
+                        "end_line": 37,
+                        "start_byte": 1052,
+                        "end_byte": 1084
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "assignment",
+                      "text": "name = name or config.SUPER_SECRET_NAME",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 37,
+                        "end_line": 37,
+                        "start_byte": 1045,
+                        "end_byte": 1084
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "value_reference",
+                      "text": "name",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1113,
+                        "end_byte": 1117
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "string_interpolation",
+                      "text": "{name}",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1112,
+                        "end_byte": 1118
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "string_interpolation",
+                      "text": "f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1099,
+                        "end_byte": 1169
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "assignment",
+                      "text": "content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1089,
+                        "end_byte": 1169
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "value_reference",
+                      "text": "content",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 41,
+                        "end_line": 41,
+                        "start_byte": 1311,
+                        "end_byte": 1318
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "template_source_construction",
+                      "text": "Template(content)",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 41,
+                        "end_line": 41,
+                        "start_byte": 1302,
+                        "end_byte": 1319
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "template_render",
+                      "text": "Template(content).render()",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 41,
+                        "end_line": 41,
+                        "start_byte": 1302,
+                        "end_byte": 1328
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    }
+                  ]
+                },
+                {
+                  "dependency": 1,
+                  "origin": "external_response",
+                  "initial_type": "unknown",
+                  "sink_type": "unknown",
+                  "source": {
+                    "kind": "external_response_source",
+                    "text": "public_ip_response.text",
+                    "span": {
+                      "file": "app/main.py",
+                      "start_line": 36,
+                      "end_line": 36,
+                      "start_byte": 1017,
+                      "end_byte": 1040
+                    },
+                    "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                  },
+                  "transfers": [
+                    {
+                      "kind": "assignment",
+                      "text": "public_ip = public_ip_response.text",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 36,
+                        "end_line": 36,
+                        "start_byte": 1005,
+                        "end_byte": 1040
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "value_reference",
+                      "text": "public_ip",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1146,
+                        "end_byte": 1155
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "string_interpolation",
+                      "text": "{public_ip}",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1145,
+                        "end_byte": 1156
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "string_interpolation",
+                      "text": "f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1099,
+                        "end_byte": 1169
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "assignment",
+                      "text": "content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 38,
+                        "end_line": 38,
+                        "start_byte": 1089,
+                        "end_byte": 1169
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "value_reference",
+                      "text": "content",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 41,
+                        "end_line": 41,
+                        "start_byte": 1311,
+                        "end_byte": 1318
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "template_source_construction",
+                      "text": "Template(content)",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 41,
+                        "end_line": 41,
+                        "start_byte": 1302,
+                        "end_byte": 1319
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    },
+                    {
+                      "kind": "template_render",
+                      "text": "Template(content).render()",
+                      "span": {
+                        "file": "app/main.py",
+                        "start_line": 41,
+                        "end_line": 41,
+                        "start_byte": 1302,
+                        "end_byte": 1328
+                      },
+                      "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                    }
+                  ]
+                }
+              ],
+              "controls": [
+                {
+                  "model_text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n       \n                                                                  \n\n         \n                                                                              \n\n            \n                                                                   \n       \n    try:\n                                                            \n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n                                                                              \n                                         \n    return Template(content).render()",
+                  "kind": "invoked_callable",
+                  "text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n    \"\"\"\n    Root endpoint that greets the user and provides a random text.\n\n    Args:\n        name (str, optional): Name of the user. Defaults to SUPER_SECRET_NAME.\n\n    Returns:\n        str: HTML content with a greeting and a public ip response.\n    \"\"\"\n    try:\n        # Get the public IP address from an external service\n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n    # https://fastapi.tiangolo.com/advanced/custom-response/#return-a-response\n    # FIXME: return HTMLResponse(content)\n    return Template(content).render()",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 41,
+                    "start_byte": 385,
+                    "end_byte": 1328
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                {
+                  "kind": "route_registration",
+                  "text": "app.get(\"/\", response_class=HTMLResponse)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 18,
+                    "end_line": 18,
+                    "start_byte": 343,
+                    "end_byte": 384
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                {
+                  "kind": "receiver_binding",
+                  "text": "FastAPI(\n    title=\"Try Hack Me\",\n    description=\"A sample project that will be hacked soon.\",\n    version=\"0.0.1337\",\n    debug=config.DEBUG,\n)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 10,
+                    "end_line": 15,
+                    "start_byte": 194,
+                    "end_byte": 339
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                {
+                  "kind": "render_binding",
+                  "text": "app.get(\"/\", response_class=HTMLResponse)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 18,
+                    "end_line": 18,
+                    "start_byte": 343,
+                    "end_byte": 384
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                }
+              ],
+              "gaps": [
+                {
+                  "kind": "python_value_unresolved",
+                  "detail": "Value definition is not resolved: config",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 37,
+                    "end_line": 37,
+                    "start_byte": 1060,
+                    "end_byte": 1066
+                  }
+                }
+              ]
             },
             "scan.invocationContext": {
               "id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
@@ -1242,12 +1563,129 @@
             }
           ],
           "message": {
-            "text": "GET /: Request-field validation needs review [needs_review]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Not established from the supplied evidence."
+            "text": "GET /: Request-field validation needs review [needs_evidence]. Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection. Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
           },
           "properties": {
             "scan.assessment": {
-              "status": "not_run",
-              "reason": "input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf)"
+              "request_digest": "568ee0badb5fb4796f498b3e421b7a4d4da3d6668b770c157c4d0b3d7d3666b4",
+              "answer_details": {
+                "enforcement_coverage": {
+                  "choice": "incomplete",
+                  "confidence": 0.94,
+                  "probabilities": [
+                    {
+                      "value": "complete",
+                      "probability": 0.03
+                    },
+                    {
+                      "value": "incomplete",
+                      "probability": 0.97
+                    }
+                  ]
+                },
+                "field_requirement": {
+                  "choice": "unknown",
+                  "confidence": 1,
+                  "probabilities": [
+                    {
+                      "value": "established",
+                      "probability": 0
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 1
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0
+                    }
+                  ]
+                },
+                "validation": {
+                  "choice": "uncertain",
+                  "confidence": 0.92,
+                  "probabilities": [
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02
+                    },
+                    {
+                      "value": "insufficient",
+                      "probability": 0.03
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.94
+                    },
+                    {
+                      "value": "not_applicable",
+                      "probability": 0.01
+                    }
+                  ]
+                }
+              },
+              "finding_status": "needs_evidence",
+              "blocking_gaps": [
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "input_source",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "field_policy",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "invoked_callable",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                },
+                {
+                  "kind": "validation_evidence_missing",
+                  "detail": "control_flow",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                }
+              ],
+              "answers": {
+                "enforcement_coverage": "incomplete",
+                "field_requirement": "unknown",
+                "validation": "uncertain"
+              },
+              "usage": {
+                "input_tokens": 2800,
+                "output_tokens": 0
+              },
+              "status": "completed",
+              "provider": "openai",
+              "model": "gpt-6-luna",
+              "question_version": "validation-components-v2",
+              "protection": "uncertain",
+              "reason": "The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
             },
             "scan.coverageGaps": [
               {
@@ -1305,20 +1743,113 @@
               "entry_id": "entry:v1:05d43dc0cde4de8e325ce48b1dc5f6537bf20fef328bcea04453ff954169babf",
               "invocation_context_id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
               "record_type": "analysis",
-              "status": "needs_review",
+              "status": "needs_evidence",
               "title": "Request-field validation needs review",
               "summary": "Scan identified a request field used by the handler. Review it against the route's actual business requirements, separately from database protection.",
-              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
-              "use_protection": "Not established from the supplied evidence.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Semantic assessment was not run. input-validation analyzer not used for this run (--only-family sql,nosql,xss,command,path,logging,ssrf).",
+              "input_validation": "The value reaches a call or middleware whose validation effect has not been established. Inspect the actual check and whether it runs before this use. Evidence: query.name: assess actual enforcing conditions in handler; no external business policy was supplied Model validation answer: Inconclusive.",
+              "use_protection": "Assessed injection/use protection: Inconclusive. The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                  "Resolve validation_evidence_missing at app/main.py:19: input_source",
+                  "Resolve validation_evidence_missing at app/main.py:19: field_policy",
+                  "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
+                  "Resolve validation_evidence_missing at app/main.py:19: control_flow",
+                  "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               }
+            },
+            "scan.inputFacts": {
+              "version": 1,
+              "acquisition": "http",
+              "framework": "fastapi",
+              "binding": {
+                "kind": "entry_registration",
+                "text": "@app.get(\"/\", response_class=HTMLResponse)",
+                "span": {
+                  "file": "app/main.py",
+                  "start_line": 18,
+                  "end_line": 18,
+                  "start_byte": 342,
+                  "end_byte": 384
+                },
+                "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+              },
+              "values": [
+                {
+                  "dependency": 0,
+                  "origin": "http.query",
+                  "initial_type": "unknown",
+                  "sink_type": "unknown",
+                  "source": {
+                    "kind": "input_source",
+                    "text": "name: str = config.SUPER_SECRET_NAME",
+                    "span": {
+                      "file": "app/main.py",
+                      "start_line": 19,
+                      "end_line": 19,
+                      "start_byte": 407,
+                      "end_byte": 443
+                    },
+                    "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                  }
+                }
+              ],
+              "controls": [
+                {
+                  "model_text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n       \n                                                                  \n\n         \n                                                                              \n\n            \n                                                                   \n       \n    try:\n                                                            \n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n                                                                              \n                                         \n    return Template(content).render()",
+                  "kind": "invoked_callable",
+                  "text": "async def try_hack_me(name: str = config.SUPER_SECRET_NAME):\n    \"\"\"\n    Root endpoint that greets the user and provides a random text.\n\n    Args:\n        name (str, optional): Name of the user. Defaults to SUPER_SECRET_NAME.\n\n    Returns:\n        str: HTML content with a greeting and a public ip response.\n    \"\"\"\n    try:\n        # Get the public IP address from an external service\n        public_ip_response = requests.get(config.PUBLIC_IP_SERVICE_URL)\n        public_ip_response.raise_for_status()\n    except (requests.HTTPError, requests.exceptions.InvalidSchema):\n        public_ip = \"Unknown\"\n    else:\n        public_ip = public_ip_response.text\n    name = name or config.SUPER_SECRET_NAME\n    content = f\"\u003ch1\u003eHello, {name}!\u003c/h1\u003e\u003ch2\u003ePublic IP: \u003ccode\u003e{public_ip}\u003c/code\u003e\u003c/h2\u003e\"\n    # https://fastapi.tiangolo.com/advanced/custom-response/#return-a-response\n    # FIXME: return HTMLResponse(content)\n    return Template(content).render()",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 41,
+                    "start_byte": 385,
+                    "end_byte": 1328
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                {
+                  "kind": "route_registration",
+                  "text": "app.get(\"/\", response_class=HTMLResponse)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 18,
+                    "end_line": 18,
+                    "start_byte": 343,
+                    "end_byte": 384
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                },
+                {
+                  "kind": "receiver_binding",
+                  "text": "FastAPI(\n    title=\"Try Hack Me\",\n    description=\"A sample project that will be hacked soon.\",\n    version=\"0.0.1337\",\n    debug=config.DEBUG,\n)",
+                  "span": {
+                    "file": "app/main.py",
+                    "start_line": 10,
+                    "end_line": 15,
+                    "start_byte": 194,
+                    "end_byte": 339
+                  },
+                  "sha256": "2c276fac071346e10eee895beb21de3ad49ac9652f4f4723cef4de6c3378f890"
+                }
+              ],
+              "gaps": [
+                {
+                  "kind": "input_validation_unresolved",
+                  "detail": "query.name: assess actual enforcing conditions in handler; no external business policy was supplied",
+                  "at": {
+                    "file": "app/main.py",
+                    "start_line": 19,
+                    "end_line": 19,
+                    "start_byte": 407,
+                    "end_byte": 443
+                  }
+                }
+              ]
             },
             "scan.invocationContext": {
               "id": "invocation:v1:2f61849769df8a002ec6f573b86ca869af45acde47f7948c7f9c33d8cea0d3f9",
@@ -1373,7 +1904,11 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.",
-                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "Resolve validation_evidence_missing at app/main.py:19: input_source",
+                "Resolve validation_evidence_missing at app/main.py:19: field_policy",
+                "Resolve validation_evidence_missing at app/main.py:19: invoked_callable",
+                "Resolve validation_evidence_missing at app/main.py:19: control_flow",
+                "Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -1471,8 +2006,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.\n- Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect. Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect.\n- Resolve validation_evidence_missing at app/main.py:19: input_source\n- Resolve validation_evidence_missing at app/main.py:19: field_policy\n- Resolve validation_evidence_missing at app/main.py:19: invoked_callable\n- Resolve validation_evidence_missing at app/main.py:19: control_flow\n- Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at app/main.py:19: name: str = config.SUPER_SECRET_NAME. Its current Review status does not establish a code defect. Resolve validation_evidence_missing at app/main.py:19: input_source Resolve validation_evidence_missing at app/main.py:19: field_policy Resolve validation_evidence_missing at app/main.py:19: invoked_callable Resolve validation_evidence_missing at app/main.py:19: control_flow Reconcile the semantic assessment with this exact source claim: The field policy or relevant enforcement implementation is incomplete; supply the named evidence rather than inferring a validation defect."
               },
               "id": "scan/input-validation",
               "properties": {

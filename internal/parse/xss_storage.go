@@ -38,7 +38,20 @@ func (f *flow) storedProperty(n *sitter.Node) (value, bool) {
 		return v, true // Sequelize's plain row view has the same columns.
 	}
 	source := f.module.evidence("storage_read", n)
-	return value{deps: []analysis.Dependency{{StorageKey: v.model + "." + field, Source: source, Transfers: []analysis.Evidence{*v.read}}}}, true
+	reads := v.readAlternatives
+	if len(reads) == 0 {
+		reads = []analysis.Evidence{*v.read}
+	}
+	deps := []analysis.Dependency{}
+	seen := map[analysis.Evidence]bool{}
+	for _, read := range reads {
+		if seen[read] {
+			continue
+		}
+		seen[read] = true
+		deps = append(deps, analysis.Dependency{StorageKey: v.model + "." + field, Source: source, Transfers: []analysis.Evidence{read}})
+	}
+	return value{deps: deps}, true
 }
 
 func (f *flow) assignStoredField(left *sitter.Node, v value) {

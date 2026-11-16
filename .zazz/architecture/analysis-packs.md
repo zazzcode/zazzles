@@ -608,3 +608,13 @@ families; the command tests, including the source cases on the pinned targets, a
 `input_source` dependencies are path flows; stored, file, API and browser values are not. Path-scoped second-pass URL/file
 members (`req.path`/`url`/`originalUrl`/`file(s)`), non-final Express route-chain handlers, explicit local export lists and
 mounted router parameters extend path coverage without altering any existing analyzer's evidence (see the [results](../evaluation/path-traversal-results.md)).
+
+## Code and redirect components
+
+The `code` and `redirect` families select independent packs, claim questions, evidence obligations,
+language guidance and verified API contracts under `code-components-v1` / `redirect-components-v1`.
+Their Node/Python input components and browser-entry capabilities have family-specific identities,
+so adding these families preserves previously selected component bytes. The decoder retains the
+selected protocol's choices even where question names overlap with SSRF. Operand paths preserve
+control indices through budgeting and wire projection; final decisions require source-established
+binding, origins and claim completeness. See the [implementation contract](../specifications/nextjs-phase-2-and-code-redirect.md).

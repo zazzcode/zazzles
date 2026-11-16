@@ -28,3 +28,10 @@ These notes own the interpretation of fixed scanner facts. A request receives on
 - `output_alternative_numeric`: The named alternative of a conditional output expression produces only a number on normal completion (or throws); the original request text is not its output.
 - `output_alternative_unconstrained`: No numeric output guarantee is established for the named alternative of a conditional output expression; assess its actual constraints independently.
 - `numeric_output_expression`: Every output alternative of the named exact expression is proven numeric on normal completion. There is no unconstrained text-output sibling branch in this expression. This is a value-type fact, not business validation or approval of executable-string construction; assess the actual database slot separately.
+
+- `vm_not_security_boundary`: Node's vm module executes code in another context and is not a security boundary. Only its code operand is the claim; context object values are data. Reference: https://nodejs.org/api/vm.html
+- `code_inside_string_literal`: Request text is interpolated inside a JavaScript string literal in executable code. A quote break-out remains possible unless every path has a verified grammar or appropriate code-literal conversion.
+- `sandbox_library_advisory`: The verified evaluator library has the named sandbox escape advisory. Report poor practice and cite that advisory; do not infer an exploit payload or runtime compromise.
+- `protocol_relative_path`: A single slash prefix permits //host and /\host destinations in URL resolution. It does not establish same-site navigation.
+- `redirect_back_referer`: The verified Express redirect('back') destination comes from request Referer; request-controlled navigation is the claim.
+- `redirect_also_xss`: This navigation has a separate XSS claim for active URL schemes. Open redirect and script execution remain independent records, linked by source location.

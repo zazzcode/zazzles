@@ -20,6 +20,10 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return componentQuestions(analysispacks.CommandQuestions())
 		case "path_traversal_candidate":
 			return componentQuestions(analysispacks.PathQuestions())
+		case "code_execution_candidate":
+			return interpreterComponentQuestions("code")
+		case "open_redirect_candidate":
+			return interpreterComponentQuestions("redirect")
 		case "ssrf_candidate":
 			return componentQuestions(analysispacks.SSRFQuestions())
 		}
@@ -34,6 +38,9 @@ func questionsFor(use analysis.CandidateUse) []question {
 }
 
 func questionChoices(q question) []map[string]string {
+	if q.choices != nil {
+		return q.choices
+	}
 	if q.name == "route_binding" {
 		return discoveryChoices()
 	}

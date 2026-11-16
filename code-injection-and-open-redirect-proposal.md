@@ -1,6 +1,8 @@
 # Proposal: code injection and open redirect analyzers
 
-**Status:** Proposal with owner decisions recorded (§7, 2026-11-16). Not an implementation contract; it authorizes no coding or paid model calls until an implementation request.
+**Status:** Assigned for implementation by the owner on 2026-11-16 with Next.js B–D. The
+[implementation contract](.zazz/specifications/nextjs-phase-2-and-code-redirect.md) and
+[results](.zazz/evaluation/nextjs-phase-2-results.md) own current acceptance, paid counts and source-backed corrections.
 **Drafted:** 2026-11-16, after Next.js support (draft PR zazzcode/zazzles#18).
 **Driving rows:** vuln-nextjs `JS-001`, `JS-002` (CWE-95), `REDIR-001` (CWE-601); vulnerable-typescript-app
 `TS-CODE-01`, `TS-REDIRECT-01`; VulnPy `unsafe_code_exec`; Juice Shop `/redirect`.

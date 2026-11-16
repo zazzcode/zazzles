@@ -34,7 +34,7 @@ func (c *Client) discoveryPayload(p analysis.DiscoveryProposal) ([]byte, error) 
 	if err != nil {
 		return nil, err
 	}
-	q := question{"route_binding", "Does the supplied registration bind this handler as an HTTP route? route=source supports the proposed relationship; not_route=source shows a different use; unknown=required wrapper/framework/dispatch implementation is absent."}
+	q := question{name: "route_binding", instructions: "Does the supplied registration bind this handler as an HTTP route? route=source supports the proposed relationship; not_route=source shows a different use; unknown=required wrapper/framework/dispatch implementation is absent."}
 	choices := discoveryChoices()
 	var payload []byte
 	if c.provider == "openai" {
@@ -61,7 +61,7 @@ func (c *Client) decodeDiscovery(p analysis.DiscoveryProposal, data []byte) anal
 	p.ModelStatus = "failed"
 	p.Provider = c.provider
 	p.Model = c.model
-	answers, model, usage, err := c.decodeQuestions(data, []question{{"route_binding", ""}})
+	answers, model, usage, err := c.decodeQuestions(data, []question{{name: "route_binding", instructions: ""}})
 	if err != nil || model != c.model {
 		p.Reason = "Discovery response is malformed or returned a different model."
 		return p

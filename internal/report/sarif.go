@@ -191,6 +191,10 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/sql-input-protection", "CWE-89"
 	case "nosql_query", "nosql_query_candidate":
 		return "scan/nosql-input-protection", "CWE-943"
+	case "code", "code_execution_candidate":
+		return "scan/code-injection", "CWE-95"
+	case "redirect", "open_redirect_candidate":
+		return "scan/open-redirect", "CWE-601"
 	case "ssrf_candidate":
 		return "scan/ssrf", "CWE-918"
 	case "path_traversal_candidate":

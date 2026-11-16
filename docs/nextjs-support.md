@@ -128,7 +128,7 @@ analysis adds:
   `location`, `document.referrer`, storage and message sources.
 - **React flow:** `useState` setters (direct and functional) join into their state; `useEffect`,
   `useCallback`, `useMemo`, JSX event handlers, promise callbacks and `forEach`/`map` callbacks are
-  analyzed; `useRef<HTMLElement>` refs are DOM elements. Context and external stores are
+  analyzed; `useRef<HTMLElement>` refs are DOM elements. Context and verified external-store hooks are state sources; their unmodeled transitions remain
   `react_shared_state_unresolved`.
 - **Sinks:** `dangerouslySetInnerHTML`, `el.innerHTML`, navigation (`window.location.href = v`,
   `location.assign/replace`, `router.push/replace`). Navigation sinks carry the
@@ -137,7 +137,7 @@ analysis adds:
 - **Links to the server:** a verified client helper such as `api.get(url)` (a wrapper whose member
   fixes the method and calls `fetch`) and `fetch` itself are matched to the Route Handler that
   produces the JSON response, including template URLs such as `` `/api/products/${id}/reviews` ``.
-  Prisma `create/update/upsert({ data })` writes and `find*` reads link stored values
+  Prisma `create/update/upsert({ data })` writes, schema-mapped raw SQL writes and `find*` reads link stored values
   (stored XSS). Content the server fetched from a request-chosen URL and returned is an
   attacker-controlled origin (`xss_via_fetched_content`).
 
@@ -165,6 +165,14 @@ no model request. `review` marks a heuristic a person should confirm.
 | NX-BP-17 | A page grants access from a client-controlled header or cookie compared with a literal |
 | NX-BP-19 | Credential, session or user data stored in `localStorage` / `sessionStorage` (review) |
 | NX-BP-20 | A credential-like parameter in a request URL |
+| NX-BP-09 | Public Server Action arguments reach a sink/write without an established enforcing validator or authorization context (review) |
+| NX-BP-11 | Verified cookie writes omit security flags or tie secure to NODE_ENV |
+| NX-BP-13 | Wildcard image hosts or enabled SVG optimization without a content policy |
+| NX-BP-14 | Wildcards in Server Action allowedOrigins |
+| NX-BP-15 | Shared caching with user-context reads and no established user key (review) |
+| NX-BP-18 | Sensitive fields or schema-established whole rows cross a JSON, action-return or client-prop boundary (review) |
+| NX-BP-21 | Message data without origin comparison, or sensitive wildcard postMessage (review) |
+| NX-BP-22 | Client-controlled role data gates admin UI without an established authorization check on the called API (review) |
 | CLIENT-PATH | A location value inserted unencoded into a same-origin request path (client-side path traversal) |
 | CLIENT-QUERY | A location value inserted unencoded into a same-origin query string |
 
@@ -215,21 +223,26 @@ analyzers and standalone input validation. At the acceptance pin:
 Eval injection (CWE-95), open redirect (CWE-601) and the React2Shell dependency row are in the lab
 but have no Zazzles analyzer yet.
 
+## Phase 2 coverage
+
+The [phase 2 evaluation](../.zazz/evaluation/nextjs-phase-2-results.md) records the follow-on work,
+including the source correction for the lab redirect control. Code injection and open redirect are
+now independent [code](analysis/code-injection.md) and [redirect](analysis/open-redirect.md) families.
+The published sample reports above retain their original scanner pins and outcomes.
+
+- Verified Prisma awaits resolve to row data; Next Pages try/catch/finally keeps normal and exceptional
+  bindings separate. Literal SQL INSERT/UPDATE writes link to Prisma reads through schema table/column
+  mappings, including same-model branch read alternatives.
+- Explicit JSX props reach one imported child component; browser effects retain their source props.
+  Context, Redux and verified Zustand hooks supply state sources with unresolved state transitions.
+- Pages getInitialProps supplies per-request props. getStaticProps is a build-time observation.
+  App Router export-star declarations expand bounded module exports. Ancestor layouts/templates are
+  page stages, not additional endpoints.
+
 ## Limits
 
-- Pages Router pages are entries only with `getServerSideProps`; `getStaticProps`,
-  `getInitialProps`, `_app` and `_document` are not. The page component is followed one level (its
-  own body and callbacks such as `.map`), not into imported child components.
-- Layouts, templates, `loading`/`error` files, parallel and intercepting routes produce no entries.
-  Server Actions are verified by fixtures only (the reference sample has none).
-- Middleware is applied by literal matchers only; dynamic `next.config` (functions of phase,
-  plugin wrappers) yields `next_config_unresolved` and no aliases.
-- React context, Redux/Zustand-style stores and prop chains beyond the analyzed component are not
-  followed; such client paths stay Review.
-- Raw-SQL writes do not link to Prisma reads for stored XSS (they stay Review). PGlite and sql.js
-  raw-SQL links need literal SQL with an explicit column list; joins and aliases are not linked.
-- Code injection (`eval`, `new Function`), open redirect and dependency (SCA) findings have no
-  analyzer yet.
-- Version advisories are manifest observations; they are not dependency audit or reachability.
-- RSC payload over-exposure, cached cross-user data and Server Action authorization checks
-  (NX-BP-15, 18, 09) are not implemented yet.
+Component traversal is one imported hop. Provider/reducer/store updater transitions, dynamic exports,
+parallel/intercepting routing and arbitrary configuration wrappers remain bounded or unresolved.
+Raw SQL needs explicit literal table/column identity; dynamic identifiers and ambiguous schema mappings
+are not linked. Practice observations are separate from judged vulnerabilities, and version advisories
+remain manifest observations rather than dependency audit or reachability claims.

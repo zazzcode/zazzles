@@ -389,7 +389,8 @@ func (s *moduleSet) analyzeNextHandler(out *analysis.AnalysisReport, m *sourceMo
 		c.stages = append(c.stages, s.nextMiddlewareStages(p, r.PathPattern, surface)...)
 	}
 	invocation := registerInvocation(out, e, &evidence, "filesystem_route", inputs, e.Gaps)
-	f := flow{module: hm, set: s, entry: e, invocation: invocation, registration: m,
+	entryIndex := len(out.Entries) - 1
+	f := flow{report: out, module: hm, set: s, entry: e, invocation: invocation, registration: m,
 		env: map[string]value{}, context: append([]analysis.Evidence{m.evidence("registration", ex.decl), evidence}, context...),
 		gaps: append([]analysis.Gap{}, e.Gaps...), helpers: &helperExpansion{budget: 24, stack: map[string]bool{}}, facts: newInputFacts(), web: web}
 	f.seedInvocation()
@@ -416,11 +417,14 @@ func (s *moduleSet) analyzeNextHandler(out *analysis.AnalysisReport, m *sourceMo
 		// Pages Router handlers use the Express-shaped req.query/body/cookies members.
 		f.web = nil
 	}
+	if page && surface == "page" && router == "app" {
+		s.pageLayoutStages(out, m, p, e, invocation)
+	}
 	f.statements(body)
 	f.finishValidation()
 	out.Uses = append(out.Uses, f.uses...)
 	e.Gaps = append(e.Gaps, f.gaps[len(e.Gaps):]...)
-	out.Entries[len(out.Entries)-1].Gaps = e.Gaps
+	out.Entries[entryIndex].Gaps = e.Gaps
 	noteHTTPDeclaration(out, r, context)
 }
 

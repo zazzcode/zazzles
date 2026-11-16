@@ -55,7 +55,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		discoveryLimit = flags.Int("discovery-limit", 3, "maximum additional model discovery requests with --discover-routes, no retries")
 		judgeLimit     = flags.Int("judge-limit", 10, "maximum judge requests per run, no retries")
 		asSARIF        = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
-		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families to exclude: sql,nosql,xss,command,path,logging,input-validation,outbound")
+		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families to exclude: sql,nosql,xss,command,path,ssrf,code,redirect,logging,input-validation,outbound")
 		onlyFamily     = flags.String("only-family", "", "comma-separated analyzer families to judge exclusively")
 		traceDir       = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
 		asJSON         = flags.Bool("json", false, "emit machine-readable JSON instead of text")
@@ -139,7 +139,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	skipped, err := parseSkipFamilies(*skipFamily)
 	only, onlyErr := parseSkipFamilies(*onlyFamily)
 	if err != nil || onlyErr != nil || len(skipped) > 0 && len(only) > 0 || (len(skipped) > 0 || len(only) > 0) && (!*analyzeMode || *judgeProvider == "") {
-		fmt.Fprintln(stderr, "scan: family filters require --analyze with --judge; --only-family and --skip-family are mutually exclusive and accept sql,nosql,xss,command,path,logging,input-validation,outbound")
+		fmt.Fprintln(stderr, "scan: family filters require --analyze with --judge; --only-family and --skip-family are mutually exclusive and accept sql,nosql,xss,command,path,ssrf,code,redirect,logging,input-validation,outbound")
 		return exitUsage
 	}
 

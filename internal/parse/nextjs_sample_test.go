@@ -93,12 +93,6 @@ func TestNextJSOopsStoreAnswerKey(t *testing.T) {
 				t.Errorf("%s: blockers %+v", want.id, u.Completeness.Blockers)
 			}
 			for _, g := range u.Gaps {
-				if g.Kind == "async_response_unresolved" && want.id == "OOPS-LOG-02" {
-					// The logged value is the row echoed by `await prisma.giftCard.create`;
-					// a Prisma await is not yet a modeled step. The gap is coverage, not a
-					// blocker, and the judged run confirms the row.
-					continue
-				}
 				if g.Kind == "async_response_unresolved" || g.Kind == "unresolved_wrapper" {
 					t.Errorf("%s: gap %s on a required path", want.id, g.Kind)
 				}
@@ -151,7 +145,7 @@ func TestNextJSOopsStoreAnswerKey(t *testing.T) {
 	for _, p := range r.Practice {
 		checks[p.Check] = true
 	}
-	for _, want := range []string{"NX-BP-01", "NX-BP-03", "NX-BP-04", "NX-BP-06", "NX-BP-07", "NX-BP-08", "NX-BP-10", "NX-BP-16", "NX-BP-17", "NX-BP-19", "NX-BP-20", "CLIENT-PATH", "CLIENT-QUERY"} {
+	for _, want := range []string{"NX-BP-01", "NX-BP-03", "NX-BP-04", "NX-BP-06", "NX-BP-07", "NX-BP-08", "NX-BP-10", "NX-BP-16", "NX-BP-17", "NX-BP-19", "NX-BP-20", "NX-BP-18", "CLIENT-PATH", "CLIENT-QUERY"} {
 		if !checks[want] {
 			t.Errorf("practice observation %s missing", want)
 		}

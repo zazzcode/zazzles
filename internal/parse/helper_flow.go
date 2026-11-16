@@ -85,6 +85,12 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 					child.request = p.name
 				}
 			}
+			if nodes := call.ChildByFieldName("arguments"); nodes != nil && uint(i) < nodes.NamedChildCount() {
+				arg := nodes.NamedChild(uint(i))
+				if arg.Kind() == "identifier" && ((f.response != "" && arg.Utf8Text(f.module.src) == f.response) || (f.redirectResponse != "" && arg.Utf8Text(f.module.src) == f.redirectResponse)) {
+					child.redirectResponse = p.name
+				}
+			}
 			// Bind on the callee flow so the parameter span stays in the callee file.
 			child.env[p.name] = child.transfer(args[i], "parameter_binding", p.node)
 			continue

@@ -145,12 +145,13 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	set.assembleCommandClaims(out)
 	set.assemblePathClaims(out)
 	set.assembleSSRFClaims(out)
+	set.assembleInterpreterClaims(out)
 	// Check assembly rebuilds the use list for its own claim families; the
 	// command and path claims are independent of explicit check files and are kept whole.
 	var commandUses []analysis.CandidateUse
 	rest := out.Uses[:0:0]
 	for _, u := range out.Uses {
-		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" || u.Kind == "ssrf_candidate" {
+		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" || u.Kind == "ssrf_candidate" || u.Code != nil || u.Redirect != nil {
 			commandUses = append(commandUses, u)
 		} else {
 			rest = append(rest, u)
@@ -211,6 +212,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	if err := finalizeEntries(out); err != nil {
 		return nil, err
 	}
+	linkNavigationClaims(out)
 	return out, nil
 }
 

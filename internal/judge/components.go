@@ -11,7 +11,7 @@ import (
 func componentQuestions(items []analysispacks.Question) []question {
 	out := make([]question, 0, len(items))
 	for _, q := range items {
-		out = append(out, question{q.Name, q.Instructions})
+		out = append(out, question{name: q.Name, instructions: q.Instructions})
 	}
 	return out
 }
@@ -44,4 +44,16 @@ func wireComponents(m *analysispacks.Material) any {
 		ids = append(ids, c.ID)
 	}
 	return map[string]any{"pack": m.Selection.Pack.ID, "components": ids}
+}
+
+func interpreterComponentQuestions(family string) []question {
+	items := analysispacks.CodeQuestions()
+	if family == "redirect" {
+		items = analysispacks.RedirectQuestions()
+	}
+	out := componentQuestions(items)
+	for i := range out {
+		out[i].choices = analysispacks.InterpreterChoices(family, out[i].name)
+	}
+	return out
 }

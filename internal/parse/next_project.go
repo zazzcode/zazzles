@@ -34,8 +34,9 @@ type webOrigin struct {
 
 // nextState holds the Next.js adapter's per-scan facts.
 type nextState struct {
-	projects []*nextProject
-	origins  map[string]webOrigin
+	boundaries []nextBoundary
+	projects   []*nextProject
+	origins    map[string]webOrigin
 	// classes is the execution class of each module (next_modules.go).
 	classes map[string]string
 	// excludedFiles were removed from automatic selection by a project tsconfig.

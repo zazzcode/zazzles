@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -365,6 +366,7 @@ func (f *flow) joinConditionalValues(values []value, conditions []analysis.Evide
 	}
 	first := defined[0]
 	out.model, out.read = first.model, first.read
+	out.readAlternatives = append([]analysis.Evidence{}, first.readAlternatives...)
 	out.graphqlArgs, out.graphqlTransfers = first.graphqlArgs, append([]analysis.Evidence{}, first.graphqlTransfers...)
 	out.grpcInput, out.grpcTransfers = first.grpcInput, append([]analysis.Evidence{}, first.grpcTransfers...)
 	out.trustedContext, out.templateFile, out.outputContext = first.trustedContext, first.templateFile, first.outputContext
@@ -380,8 +382,16 @@ func (f *flow) joinConditionalValues(values []value, conditions []analysis.Evide
 	}
 	for _, v := range defined[1:] {
 		if v.model != first.model || v.read != first.read {
-			out.model, out.read = "", nil
-			uncertain = true
+			if v.model == first.model && strings.HasPrefix(v.model, "prisma:") && v.read != nil && first.read != nil && f.set != nil && f.set.nextProjectFor(f.module.file) != nil {
+				// Same-model read alternatives retain the physical column identity; every
+				// query witness stays separate when that column is projected.
+				out.readAlternatives = append(out.readAlternatives, *first.read, *v.read)
+				out.readAlternatives = append(out.readAlternatives, v.readAlternatives...)
+			} else {
+				out.model, out.read = "", nil
+				out.readAlternatives = nil
+				uncertain = true
+			}
 		}
 		if v.graphqlArgs != first.graphqlArgs || !reflect.DeepEqual(v.graphqlTransfers, first.graphqlTransfers) {
 			out.graphqlArgs, out.graphqlTransfers = nil, nil

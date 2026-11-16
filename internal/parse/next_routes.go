@@ -141,6 +141,18 @@ func (s *moduleSet) nextExports(m *sourceModule, depth int) []nextExport {
 		if src := n.ChildByFieldName("source"); src != nil {
 			source, _ = stringLiteral(src, m.src)
 		}
+
+		if source != "" && strings.Contains(n.Utf8Text(m.src), "export *") && depth < 4 {
+			if target := s.importModule(m, source); target != nil && target != m {
+				for _, e := range s.nextExports(target, depth+1) {
+					if e.name != "default" {
+						e.decl = n
+						out = append(out, e)
+					}
+				}
+			}
+			continue
+		}
 		for j := uint(0); j < n.NamedChildCount(); j++ {
 			clause := n.NamedChild(j)
 			if clause.Kind() != "export_clause" {

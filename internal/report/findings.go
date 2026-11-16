@@ -13,6 +13,14 @@ import (
 func Enrich(r *analysis.AnalysisReport) {
 	r.PresentationVersion = 7
 	r.FindingTypes = append([]analysis.FindingType(nil), findingTypes...)
+	for _, t := range interpreterFindingTypes {
+		for _, u := range r.Uses {
+			if u.Code != nil && t.ID == "code-injection" || u.Redirect != nil && t.ID == "open-redirect" {
+				r.FindingTypes = append(r.FindingTypes, t)
+				break
+			}
+		}
+	}
 	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
 	for _, u := range r.Uses {
 		r.Findings = append(r.Findings, describe(u))
@@ -259,6 +267,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		f.Uncertainty += " Assessment derived from equivalent entry context " + a.DeduplicatedFrom + "; scanner policy was applied independently to this candidate."
 	}
 	f.Recommendations = scopedGuidance(u, f)
+	if u.Code != nil || u.Redirect != nil {
+		describeInterpreter(u, &f)
+	}
 	return f
 }
 func hasGap(u analysis.CandidateUse, kind string) bool {

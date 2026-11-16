@@ -120,7 +120,8 @@ outcomes as §5. Samples verified clean before and after.
 ## 7. Follow-ups
 
 Open items are grouped into sessions A–D in the [phase 2 proposal](../../nextjs-support-phase-2-proposal.md)
-(A: sample publication completed in this branch; B–D remain separate future deliverables).
+(A: sample publication completed in PR #18; B–D are implemented under the
+[follow-on contract](nextjs-phase-2-and-code-redirect.md)).
 
 Remaining NX-BP checks; a non-vulnerable Next.js app for false-red measurement (proposal §13);
 code-injection (CWE-95) and

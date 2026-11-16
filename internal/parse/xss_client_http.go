@@ -116,6 +116,20 @@ func (s *moduleSet) clientURL(m *sourceModule, n *sitter.Node, fields map[string
 		return literal
 	}
 	switch n.Kind() {
+	case "identifier":
+		if s.nextProjectFor(m.file) != nil && !bindingReassigned(m, n.Utf8Text(m.src)) {
+			if init := localInitializer(m, n, n.Utf8Text(m.src)); init != nil && init != n {
+				return s.clientURL(m, init, fields, depth+1)
+			}
+		}
+	case "ternary_expression":
+		if s.nextProjectFor(m.file) != nil {
+			a := s.clientURL(m, n.ChildByFieldName("consequence"), fields, depth+1)
+			b := s.clientURL(m, n.ChildByFieldName("alternative"), fields, depth+1)
+			if a != "" && b != "" && strings.Split(a, "?")[0] == strings.Split(b, "?")[0] {
+				return strings.Split(a, "?")[0]
+			}
+		}
 	case "member_expression":
 		obj, prop := n.ChildByFieldName("object"), n.ChildByFieldName("property")
 		if obj == nil || prop == nil {

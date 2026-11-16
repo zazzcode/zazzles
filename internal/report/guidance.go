@@ -40,6 +40,10 @@ func guidance(use analysis.CandidateUse) Guidance {
 		g = commandGuidance()
 	case "path_traversal_candidate":
 		g = pathGuidance()
+	case "code", "code_execution_candidate":
+		g = Guidance{Title: "Keep request text out of code", Actions: []string{"Replace eval/exec with data parsing or a restricted expression grammar.", "Do not rely on vm or a sandbox library as a security boundary; constrain every code operand."}}
+	case "redirect", "open_redirect_candidate":
+		g = Guidance{Title: "Constrain navigation destinations", Actions: []string{"Prefer an identifier mapped to fixed trusted destinations.", "Otherwise parse the URL and enforce same-origin or a finite host allowlist on every path; reject protocol-relative and backslash-relative destinations."}}
 	case "ssrf_candidate":
 		g = ssrfGuidance()
 	case "input_validation", "input_validation_candidate":

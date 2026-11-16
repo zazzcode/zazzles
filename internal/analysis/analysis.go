@@ -33,6 +33,8 @@ type CandidateUse struct {
 	XSS                 *XSSFacts           `json:"xss,omitempty"`
 	Command             *CommandFacts       `json:"command,omitempty"`
 	Path                *PathFacts          `json:"path,omitempty"`
+	Code                *CodeFacts          `json:"code,omitempty"`
+	Redirect            *RedirectFacts      `json:"redirect,omitempty"`
 	Outbound            *OutboundFacts      `json:"outbound,omitempty"`
 	APIModel            *APIModel           `json:"api_model,omitempty"`
 	ControlEdges        []ControlEdge       `json:"control_edges,omitempty"`

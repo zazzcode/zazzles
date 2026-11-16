@@ -16,6 +16,7 @@ type importBinding struct {
 	declaration  *sitter.Node
 }
 type sourceModule struct {
+	interpreterMutations map[string]bool
 	// recovered names the byte-preserving grammar workarounds that parsed this module.
 	recovered []string
 	// awaitedCalls are generic calls whose `await` was blanked for parsing.
@@ -42,6 +43,8 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
+	prismaSchemas   map[string]map[string]map[string]string
+	browserStates   map[string]*browserEvents
 	tsConfigs       map[string]*tsConfig
 	next            *nextState
 	nextConfigs     map[string]*nextConfigFacts

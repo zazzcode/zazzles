@@ -18,6 +18,7 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		return pythonValue{rendered: true}
 	}
 	nodes, values, all := f.callArguments(n)
+	f.interpreterOperation(n, fn, nodes, values)
 
 	object := pyField(fn, "object")
 	method := pyText(m, pyField(fn, "attribute"))

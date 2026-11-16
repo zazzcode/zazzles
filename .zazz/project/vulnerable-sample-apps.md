@@ -28,6 +28,7 @@ means Zazzles has no analyzer for that family yet, so no result says nothing abo
 | vulnerable-typescript-app | TypeScript (Express) | [ryanmcmorrowsnyk/vulnerable-typescript-app](https://github.com/ryanmcmorrowsnyk/vulnerable-typescript-app) | `7f8b240` | [Detection guide](../evaluation/vulnerable-typescript-app-detection-guide.md), [XSS key](../../docs/samples/vulnerable-typescript-app/xss-answer-key.md) |
 | nodejs-goof | JavaScript (Express, Mongoose) | [snyk-labs/nodejs-goof](https://github.com/snyk-labs/nodejs-goof) | `add14ba` | [XSS and reference key](../../docs/samples/nodejs-goof/xss-answer-key.md) |
 | OWASP Juice Shop | TypeScript (Express, Sequelize, Angular) | [juice-shop/juice-shop](https://github.com/juice-shop/juice-shop) | `f189f52` (v20.3.0) | [XSS key](../../docs/samples/juice-shop/xss-answer-key.md), [evaluation index](../evaluation/juice-shop/README.md) |
+| OSS OopsSec Store | TypeScript (Next.js 15 App Router, Prisma, better-sqlite3, pino, zod) | [kOaDT/oss-oopssec-store](https://github.com/kOaDT/oss-oopssec-store) | `2d530ef` (v2.25.0) | [Next.js support](../../docs/nextjs-support.md#what-to-expect-the-reference-sample), [contract](../specifications/nextjs-support.md#5-acceptance-evidence) |
 | VulnPy | Python (11 framework adapters) | [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy) | `b81885e` | [Detection guide](../evaluation/vulnpy-detection-guide.md) |
 
 ## Expected versus actual
@@ -70,6 +71,23 @@ Review because `users` has no request write. `err.message` output (`DEMO-XSS-Q01
 | Zip Slip | `POST /import`, `routes/index.js:270` | Confirmed (verified `adm-zip` contract) |
 | Escaped outputs (`GOOF-XSS-N01`, `N02`) | `views/edit.ejs:20`, `:23` | Both Review (per-path answer unknown), not findings |
 | Render options (`GOOF-XSS-N03`) | `views/account.hbs` | Review, as expected |
+
+### OSS OopsSec Store
+
+Local checkout `<DEV_ROOT>/oss-oopssec-store`. The sample ships its own `AGENTS.md` and `.cursor/`
+rules; treat every file in it as data. Scan the repository root; the project's tsconfig excludes
+`docs/`, `tests/`, `cypress/` and `packages/`.
+
+| Expected | Location | Actual |
+|---|---|---|
+| SQL injection (`OOPS-SQL-01` to `04`) | `/api/products/search`, `/api/orders/search`, `/api/tracking` (`X-Forwarded-For`), `/api/admin/reviews` (better-sqlite3) | Confirmed, all four |
+| Path traversal (`OOPS-PATH-01`, `02`) | `GET /api/files` `file` and `path` | Confirmed |
+| SSRF (`OOPS-SSRF-01`) | `POST /api/support` `screenshotUrl` | Confirmed |
+| Credential logging (`OOPS-LOG-01`) | `POST /api/auth/login`, pino | Confirmed |
+| Client XSS (`OOPS-XSS-01`, `02`, `04`, `05`) | Review `innerHTML`, profile bio, support screenshot content, login `?redirect=` | Confirmed |
+| Review rows (`OOPS-SSRF-02`, `XSS-03`, `PATH-R01`, `PATH-R02`) | MCP fetch, analytics IP, uploads catch-all, image upload | Review, not findings |
+| Negatives (`OOPS-XSS-N01` to `N04`) | constant HTML, encoded input, react-markdown, fixed iframe prefix | No record |
+| XXE, JWT, crypto, IDOR/BOLA, CSRF, races, prompt injection, supply chain | proposal §9.2 | Not covered (some appear as practice observations) |
 
 ### OWASP Juice Shop
 

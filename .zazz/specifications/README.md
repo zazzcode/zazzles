@@ -26,6 +26,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 - [Analyzer assessment coverage](analyzer-assessment-coverage.md) — MarsDB named-import binding, request budget with explicit omissions and `evidence_too_large` floor, outbound destination origin/grouping and the first SSRF family, Sequelize finder contract; implemented and merged via PR #14.
 - [Wire bundle v7](wire-bundle-v7.md) — compact evidence wire, logging catalog sync, wrappers/middleware summaries, JS conditionals; merged via PR #14.
 - [Shared Node inputs and file APIs (E4)](shared-node-inputs-and-file-apis.md) — Express middleware-chain entries, `source.node-input-v2` URL/upload facts, phase-2 Node/Python file APIs, Node `http`/`https` SSRF; merged via [PR #15](https://github.com/zazzcode/zazzles/pull/15).
+- [Next.js support](nextjs-support.md) — App Router/Server Action/page entries, `web-request-v1` origins, Prisma/better-sqlite3/pino/zod contracts, client and server rendering, practice tier; draft [PR #18](https://github.com/zazzcode/zazzles/pull/18).
 
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
 

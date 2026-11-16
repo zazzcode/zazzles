@@ -162,7 +162,8 @@ no model request. `review` marks a heuristic a person should confirm.
 The reference target is OSS OopsSec Store (`kOaDT/oss-oopssec-store`, pinned `2d530ef`), a
 deliberately vulnerable Next.js 15 App Router store using Prisma on SQLite, better-sqlite3, pino and
 zod. Offline, the scan finds 76 Route Handler entries (63 route files) and 38 Server Component page
-entries, with no parse errors. A judged run (OpenAI `gpt-6-luna`) gave:
+entries, with no parse errors. The final judged run (OpenAI `gpt-6-luna`, 21 records, reproduced
+exactly by offline replay) gave:
 
 | Expected | Result |
 | --- | --- |
@@ -171,9 +172,10 @@ entries, with no parse errors. A judged run (OpenAI `gpt-6-luna`) gave:
 | Confirmed SSRF | `POST /api/support` `screenshotUrl` → `fetch` |
 | Confirmed sensitive logging | Login password in a pino merge object and message |
 | Confirmed DOM XSS | `?redirect=` → `window.location.href` on the login form |
-| Client XSS with complete links | Stored review → `innerHTML` with script re-execution; stored profile bio → `dangerouslySetInnerHTML`; fetched screenshot content → `dangerouslySetInnerHTML` |
+| Confirmed client XSS through the server | Stored review → `innerHTML` with script re-execution; stored profile bio → `dangerouslySetInnerHTML`; fetched screenshot content → `dangerouslySetInnerHTML` |
 | Review, not red | Catch-all upload route with a `..` check, the image upload whose name is reduced to one component, the MCP SSRF across loop-heavy helpers, analytics stored XSS through a raw-SQL write |
 | No record | Constant HTML, React-encoded inputs, `react-markdown` defaults, fixed-prefix iframe/links, own-API page fetches as SSRF |
+| Also confirmed | `POST /api/gift-cards` logs the recipient email (personal data); not in the sample's answer key |
 
 The practice section reports NX-BP-01, 02, 03, 04, 06, 07, 08, 10, 12, 16, 17, 19, 20 and both
 client-request observations on this sample. The four existing Node.js samples produce the same

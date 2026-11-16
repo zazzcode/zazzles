@@ -51,7 +51,9 @@ New fact codes: `scope_nextjs`, `zod_schema_supplied`, `sql_multi_statement`, `s
   unclassified path guards, and treat a `replace(/[^…]/g, "_")` without separators as a component
   sanitizer. These are needed for consistent path/SSRF judgments (§5).
 - Not implemented: NX-BP-09, 11, 13, 14, 15, 18, 21, 22; RSC prop exposure; raw-SQL to Prisma stored
-  links; Pages Router regression fixture.
+  links; Pages Router `getServerSideProps` and pages. Pages Router API routes are covered by
+  `TestNextPagesRouterAPI`; the input-helper check now treats verified Prisma raw and better-sqlite3
+  calls as sinks (previously only reachable through Express-shaped reads).
 
 ## 5. Acceptance evidence
 
@@ -81,5 +83,5 @@ Paid: 89 `gpt-6-luna` requests across six passes. Final run
 
 ## 6. Follow-ups
 
-Pages Router fixture; remaining NX-BP checks; a second, non-vulnerable Next.js app for false-red
+Remaining NX-BP checks; a second, non-vulnerable Next.js app for false-red
 measurement (proposal §13); promote the answer key into a detection guide after owner review.

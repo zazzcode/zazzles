@@ -38,7 +38,7 @@ including `extends` chains, resolve imports for every TypeScript project, not on
 | App Router Route Handler `app/**/route.ts` | One HTTP entry per exported method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`) | `export async function`, `export const X = async () =>`, `export const POST = withAuth(handler)`, `export { h as GET }` and one level of `export { GET } from "./x"` |
 | Server Action (`"use server"` module or function) | `POST` entry, surface `server_action` | Path stays unresolved (`next_action_path_dynamic`): actions are posted to any page URL. Every argument is attacker-controlled request body data whatever its TypeScript type |
 | Server Component page `app/**/page.tsx` | `GET` entry, surface `page` | `params` and `searchParams` props are request inputs; `generateMetadata` is a separate `page_metadata` entry for the same path |
-| Pages Router API route `pages/api/**` | `ALL` entry, framework `nextjs-pages` | Reuses the Express-shaped `req.query` / `req.body` / `req.cookies` vocabulary. Less tested than the App Router (see [limits](#limits)) |
+| Pages Router API route `pages/api/**` | `ALL` entry, framework `nextjs-pages` | `export default function handler(req, res)`; reuses the Express-shaped `req.query` / `req.body` / `req.cookies` / `req.headers` vocabulary and `res.json` / `res.send` responses. Pages Router pages (non-API files) are not entries |
 | Root `middleware.ts` / `proxy.ts` | Not an entry: a lifecycle stage | Attached only to entries its literal `config.matcher` covers; a regex or `has`/`missing` matcher is `next_matcher_unresolved` |
 
 Folder segments convert to the shared route syntax: `[id]` → `:id`, `[...p]` → `:p*`,
@@ -184,8 +184,8 @@ operations reveal.
 
 ## Limits
 
-- Pages Router API routes reuse the Express vocabulary and have no dedicated regression fixture yet;
-  App Router coverage is the verified part.
+- Pages Router support covers API routes only (fixture-verified; the reference sample has none).
+  Pages Router `getServerSideProps` and page components are not entries.
 - Layouts, templates, `loading`/`error` files, parallel and intercepting routes produce no entries.
   Server Actions are verified by fixtures only (the reference sample has none).
 - Middleware is applied by literal matchers only; dynamic `next.config` (functions of phase,

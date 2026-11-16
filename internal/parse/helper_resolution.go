@@ -44,7 +44,7 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 	sinkEnd := uint(0)
 	walkCalls(body, func(call *sitter.Node) {
 		fn := call.ChildByFieldName("function")
-		if fn != nil && (strings.HasSuffix(fn.Utf8Text(m.src), ".query") || collectionWrite(fn.Utf8Text(m.src))) {
+		if fn != nil && (strings.HasSuffix(fn.Utf8Text(m.src), ".query") || collectionWrite(fn.Utf8Text(m.src)) || s.verifiedSQLLibrarySink(m, call)) {
 			if sinkStart == 0 || call.StartByte() < sinkStart {
 				sinkStart = call.StartByte()
 				sinkEnd = call.EndByte()
@@ -64,7 +64,7 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 		if (name == "Number" || name == "String") && nativeStringOperation(m, call) {
 			return
 		}
-		if strings.HasSuffix(name, ".query") || collectionWrite(name) {
+		if strings.HasSuffix(name, ".query") || collectionWrite(name) || s.verifiedSQLLibrarySink(m, call) {
 			return
 		}
 		relevant := false
@@ -105,4 +105,11 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 		gaps = append(gaps, analysis.Gap{Kind: "input_helper_unresolved", Detail: "call receiving checked input lacks a definition: " + name, At: spanOf(m.file, call)})
 	})
 	return gaps
+}
+
+// verifiedSQLLibrarySink reports a Prisma raw or better-sqlite3 statement call
+// with a verified client binding: the sink itself, never an input helper.
+func (s *moduleSet) verifiedSQLLibrarySink(m *sourceModule, call *sitter.Node) bool {
+	_, _, _, ok := s.sqlLibraryCall(m, call)
+	return ok
 }

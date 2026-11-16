@@ -636,3 +636,65 @@ export default function Notes() {
 		}
 	}
 }
+
+func TestNextPagesRouterAPI(t *testing.T) {
+	root := nextRepo(t, map[string]string{
+		"lib/logger.ts": `import pino from "pino";
+export const logger = pino();`,
+		"pages/api/users/[id].ts": `
+import type { NextApiRequest, NextApiResponse } from "next";
+import Database from "better-sqlite3";
+import { logger } from "../../../lib/logger";
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  const db = new Database("app.db");
+  if (req.method === "POST") {
+    logger.info({ password: req.body.password }, "update");
+    return res.status(200).json({ ok: true });
+  }
+  const rows = db.prepare("SELECT * FROM users WHERE id = '" + req.query.id + "'").all();
+  res.status(200).json(rows);
+}`,
+		"pages/api/index.ts": `
+import fs from "fs";
+export default async function handler(req, res) {
+  res.send(fs.readFileSync("/data/" + req.cookies.file));
+}`,
+		"pages/about.tsx": `export default function About() { return <p>about</p>; }`,
+	})
+	r := analyzeNext(t, root)
+	for _, name := range []string{"ALL /api/users/:id", "ALL /api"} {
+		e := entryNamed(r, name)
+		if e == nil || e.HTTP.Framework != "nextjs-pages" || e.HTTP.Router != "pages" || e.HTTP.Surface != "api_route" {
+			t.Fatalf("Pages Router entry %s: %+v", name, e)
+		}
+	}
+	for _, e := range r.Entries {
+		if strings.Contains(e.Location.Span.File, "about") {
+			t.Errorf("a Pages Router page is not an API entry: %s", e.Name)
+		}
+	}
+	sql := usesOf(r, "sql_query_candidate", "pages/api/users/[id].ts")
+	if len(sql) != 1 || sql[0].APIModel == nil || sql[0].APIModel.ID != "better-sqlite3-v1" {
+		t.Fatalf("req.query.id reaches better-sqlite3 prepare: %+v", sql)
+	}
+	if o := origins(sql[0]); len(o) != 1 || o[0] != "http.query" {
+		t.Fatalf("Express-shaped req.query origin: %v", o)
+	}
+	if b := blockers(sql[0]); len(b) != 0 {
+		t.Fatalf("complete evidence expected: %+v", b)
+	}
+	if logs := usesOf(r, "log_sink_candidate", "pages/api/users/[id].ts"); len(logs) != 1 || origins(logs[0])[0] != "http.body" {
+		t.Fatalf("req.body.password logged through pino: %+v", logs)
+	}
+	paths := usesOf(r, "path_traversal_candidate", "pages/api/index.ts")
+	if len(paths) != 1 || origins(paths[0])[0] != "http.cookies" {
+		t.Fatalf("req.cookies reaches readFileSync: %+v", paths)
+	}
+	inv, err := Routes(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(inv.Routes) != 2 {
+		t.Fatalf("--routes lists both API routes: %+v", inv.Routes)
+	}
+}

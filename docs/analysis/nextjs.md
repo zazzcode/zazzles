@@ -52,7 +52,7 @@ The adapter adds these notes to [`facts.md`](../../internal/guidelines/facts.md)
 
 Each rule has paired fixtures in `internal/parse/nextjs_test.go` (segment conversion, wrappers,
 web-request origins and a shadowed `headers`, tsconfig aliases, zod/pino/SSRF, client React flow,
-pages/middleware/actions, navigation exits, client calls that are not routes, upload filename
+pages/middleware/actions, Pages Router API routes, navigation exits, client calls that are not routes, upload filename
 sanitizers, Prisma stored and fetched-content links). `TestNextJSOopsStoreAnswerKey` checks the
 offline answer key against the pinned reference sample when `ZAZZLES_NEXTJS_SAMPLE` names a clean
 checkout at `2d530ef`. Every fixture record must pass judge component selection, so a record that a

@@ -46,12 +46,21 @@ func controlContext(m *sourceModule, body *sitter.Node) ([]analysis.ControlEdge,
 			}
 			return condition
 		}
-		if n.Kind() == "try_statement" && n.ChildByFieldName("finalizer") == nil {
+		if n.Kind() == "try_statement" {
 			// A try body runs unconditionally up to a throw, so it does not guard its
-			// statements; catch is a separate exceptional successor. finally stays a gap.
-			head := statement(n.ChildByFieldName("body"), next)
+			// statements; catch is a separate exceptional successor. A finally body
+			// runs after either and guards neither, so it precedes the next statement.
+			after := next
+			if fin := n.ChildByFieldName("finalizer"); fin != nil {
+				body := fin.ChildByFieldName("body")
+				if body == nil && fin.NamedChildCount() > 0 {
+					body = fin.NamedChild(fin.NamedChildCount() - 1)
+				}
+				after = statement(body, next)
+			}
+			head := statement(n.ChildByFieldName("body"), after)
 			if handler := n.ChildByFieldName("handler"); handler != nil {
-				if caught := statement(handler.ChildByFieldName("body"), next); caught != nil && head != nil {
+				if caught := statement(handler.ChildByFieldName("body"), after); caught != nil && head != nil {
 					edges = append(edges, analysis.ControlEdge{From: m.evidence("statement", head), To: m.evidence("statement", caught), Kind: "EXCEPTION"})
 				}
 			}

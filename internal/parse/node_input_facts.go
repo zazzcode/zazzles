@@ -39,7 +39,11 @@ func (s *moduleSet) assembleNodeInputs(r *analysis.AnalysisReport) {
 	}
 }
 func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext) {
-	facts := &analysis.InputFacts{Version: 1, Acquisition: "http", Framework: c.entry.HTTP.Framework, Binding: c.entry.Location, Values: []analysis.InputValueFact{}, Controls: append([]analysis.Evidence{}, c.controls...), Stages: append([]analysis.InputStage{}, c.stages...), Gaps: append([]analysis.Gap{}, c.gaps...)}
+	acquisition := "http"
+	if nextFramework(c.entry.HTTP.Framework) && c.entry.HTTP.Router == "app" {
+		acquisition = "web-request"
+	}
+	facts := &analysis.InputFacts{Version: 1, Acquisition: acquisition, Framework: c.entry.HTTP.Framework, Binding: c.entry.Location, Values: []analysis.InputValueFact{}, Controls: append([]analysis.Evidence{}, c.controls...), Stages: append([]analysis.InputStage{}, c.stages...), Gaps: append([]analysis.Gap{}, c.gaps...)}
 	if u.Completeness != nil {
 		facts.Gaps = append(facts.Gaps, u.Completeness.Blockers...)
 	}
@@ -71,6 +75,11 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 	for i, d := range u.Dependencies {
 		v := analysis.InputValueFact{Dependency: i, Origin: "unknown", InitialType: "unknown", SinkType: "unknown", Source: d.Source, Transfers: append([]analysis.Evidence{}, d.Transfers...)}
 		m := s.modules[d.Source.Span.File]
+		if o, ok := s.webOriginFor(d.Source); ok {
+			// web-request-v1 reads record their origin where the flow created them.
+			v.Origin, v.InitialType = o.origin, o.initialType
+			m = nil
+		}
 		if m != nil {
 			n := nodeAt(m.tree.RootNode(), d.Source.Span.StartByte, d.Source.Span.EndByte)
 			if n != nil && n.Kind() == "member_expression" {

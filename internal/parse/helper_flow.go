@@ -71,6 +71,7 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 		depth:   f.depth + 1,
 		helpers: f.helpers,
 		facts:   f.facts,
+		web:     f.web,
 	}
 	var conditions []modeledCondition
 	child.conditions = &conditions

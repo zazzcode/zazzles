@@ -33,10 +33,78 @@ func (f *flow) logSink(call, fn *sitter.Node) (analysis.Evidence, bool) {
 		}
 		return m.evidence("logger_binding", fn), true
 	}
-	if !winstonMethods[method] || f.set == nil {
+	if f.set == nil {
 		return analysis.Evidence{}, false
 	}
-	return f.set.winstonLogger(m, name)
+	if winstonMethods[method] {
+		if e, ok := f.set.winstonLogger(m, name); ok {
+			return e, true
+		}
+	}
+	if pinoMethods[method] {
+		return f.set.pinoLogger(m, name, 0)
+	}
+	return analysis.Evidence{}, false
+}
+
+var pinoMethods = map[string]bool{"trace": true, "debug": true, "info": true, "warn": true, "error": true, "fatal": true}
+
+// pinoLogger verifies a binding created by pino(options?, destination?), or a
+// child of one, here or through one named/default import. The binding evidence
+// is the creating call, so options such as `redact` reach the model as source.
+func (s *moduleSet) pinoLogger(m *sourceModule, name string, depth int) (analysis.Evidence, bool) {
+	if depth > 2 {
+		return analysis.Evidence{}, false
+	}
+	if imp, ok := m.imports[name]; ok && topVariable(m, name) == nil {
+		target := s.importModule(m, imp.module)
+		if target == nil {
+			return analysis.Evidence{}, false
+		}
+		if imp.name == "default" {
+			if v := defaultExport(target); v != nil && pinoCreate(target, v) {
+				return target.evidence("logger_binding", v), true
+			}
+			return analysis.Evidence{}, false
+		}
+		if imp.name == "*" || !exportedName(target, imp.name) || bindingReassigned(target, imp.name) {
+			return analysis.Evidence{}, false
+		}
+		return s.pinoLogger(target, imp.name, depth+1)
+	}
+	v := unwrapTS(topVariable(m, name))
+	if v == nil || bindingReassigned(m, name) {
+		return analysis.Evidence{}, false
+	}
+	if pinoCreate(m, v) {
+		return m.evidence("logger_binding", v), true
+	}
+	// logger.child(bindings) inherits the parent's configuration.
+	if v.Kind() == "call_expression" {
+		if fn := v.ChildByFieldName("function"); fn != nil && fn.Kind() == "member_expression" {
+			obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+			if obj != nil && prop != nil && obj.Kind() == "identifier" && prop.Utf8Text(m.src) == "child" {
+				if parent, ok := s.pinoLogger(m, obj.Utf8Text(m.src), depth+1); ok {
+					_ = parent
+					return m.evidence("logger_binding", v), true
+				}
+			}
+		}
+	}
+	return analysis.Evidence{}, false
+}
+
+func pinoCreate(m *sourceModule, n *sitter.Node) bool {
+	n = unwrapTS(n)
+	if n == nil || n.Kind() != "call_expression" {
+		return false
+	}
+	fn := n.ChildByFieldName("function")
+	if fn == nil || fn.Kind() != "identifier" {
+		return false
+	}
+	imp, ok := m.imports[fn.Utf8Text(m.src)]
+	return ok && imp.module == "pino" && (imp.name == "default" || imp.name == "pino")
 }
 
 // recordLogSink adds a logging use only when an argument carries a classified

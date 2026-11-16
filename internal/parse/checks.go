@@ -69,6 +69,8 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 					binding = s.collectionBinding(use)
 				} else if sqlJS := s.sqlJSBinding(use); len(sqlJS) > 0 {
 					binding, sqlContract = sqlJS, "sqljs-statement-v1"
+				} else if lib, contract := s.sqlLibraryBinding(use); len(lib) > 0 {
+					binding, sqlContract = lib, contract
 				} else if finder := s.sequelizeFinderBinding(use); len(binding) == 0 && len(finder) > 0 {
 					binding, sqlContract = finder, "sequelize-model-finder-v1"
 				}

@@ -31,8 +31,13 @@ type value struct {
 	outputContext string
 	deps          []analysis.Dependency
 	gaps          []analysis.Gap
+	// web is the web-request-v1 object kind this value is (searchParams,
+	// headers, formData, ...); "" for ordinary values.
+	web string
 }
 type flow struct {
+	// web is the web-request acquisition context of a Next.js entry; nil elsewhere.
+	web          *webState
 	constants    registrationSeeds
 	client       *clientContext
 	response     string
@@ -134,6 +139,14 @@ func (f *flow) statement(n *sitter.Node) bool {
 				if name.Kind() == "object_pattern" {
 					for k := uint(0); k < name.NamedChildCount(); k++ {
 						binding := name.NamedChild(k)
+						if f.web != nil && v.web != "" {
+							if local, prop, key := patternBinding(binding, f.module.src); local != "" {
+								if wv, ok := f.webProjection(v, prop, key); ok {
+									f.env[local] = wv
+									continue
+								}
+							}
+						}
 						if binding.Kind() == "shorthand_property_identifier_pattern" {
 							f.env[binding.Utf8Text(f.module.src)] = f.transfer(v, "field_projection", binding)
 						} else {
@@ -474,6 +487,11 @@ func (f *flow) eval(n *sitter.Node) value {
 	if v, ok := f.pathArchiveValue(n); ok {
 		return v
 	}
+	if f.web != nil {
+		if v, ok := f.webValue(n); ok {
+			return v
+		}
+	}
 	switch n.Kind() {
 	case "identifier", "shorthand_property_identifier":
 		if v, ok := f.env[n.Utf8Text(src)]; ok {
@@ -757,6 +775,15 @@ func combine(a, b value) value {
 	if a.outputContext == "" {
 		a.outputContext = b.outputContext
 	}
+	// A web object kind survives only an accumulation from an empty value.
+	switch {
+	case a.web == b.web:
+	case a.web == "" && len(a.deps) == 0:
+		a.web = b.web
+	case b.web == "" && len(b.deps) == 0:
+	default:
+		a.web = ""
+	}
 	// An identical source path reached twice (for example an unchanged value on
 	// two merged branches) is one path; distinct transfer sequences stay separate.
 	deps := append([]analysis.Dependency{}, a.deps...)
@@ -902,6 +929,10 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		// Only request data in the SQL text slot is a claim; a bound values array is not.
 		if _, ok := sqlJSCall(f.module, fn); ok {
 			kind = "sql_query_candidate"
+		} else if f.set != nil {
+			if _, _, _, ok := f.set.sqlLibraryCall(f.module, n); ok {
+				kind = "sql_query_candidate"
+			}
 		}
 	}
 	var outbound *analysis.OutboundFacts
@@ -989,6 +1020,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	}
 	if modelCall {
 		return modelValue
+	}
+	if v, ok := f.validationHelperCall(n, values); ok {
+		return v
 	}
 	ret, entered, precise := f.enterHelper(n, name, values)
 	if entered && precise {
@@ -1205,4 +1239,19 @@ func (f *flow) enterContinuation(fn *sitter.Node) {
 		}
 	}
 	f.work = child.work
+}
+
+// patternBinding returns the local name, property and key node of one object
+// pattern entry: `{ id }` or `{ id: orderId }`.
+func patternBinding(b *sitter.Node, src []byte) (local, prop string, key *sitter.Node) {
+	switch b.Kind() {
+	case "shorthand_property_identifier_pattern":
+		return b.Utf8Text(src), b.Utf8Text(src), b
+	case "pair_pattern":
+		k, v := b.ChildByFieldName("key"), b.ChildByFieldName("value")
+		if k != nil && v != nil && v.Kind() == "identifier" {
+			return v.Utf8Text(src), k.Utf8Text(src), k
+		}
+	}
+	return "", "", nil
 }

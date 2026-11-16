@@ -123,7 +123,7 @@ func (f *flow) validationHelperCall(n *sitter.Node, values []value) (value, bool
 		// The helper reads the body itself: the source is that read.
 		source := hm.evidence("input_source", h.reader)
 		f.rememberInput(source)
-		f.set.recordWebOrigin(source, webOrigin{origin: "http.body", initialType: map[string]string{"text": "string", "json": "unknown", "formData": "FormData"}[h.readerOp]})
+		f.set.recordWebOrigin(source, webOrigin{origin: "http.body", initialType: map[string]string{"text": "string", "json": "unknown", "formData": "object"}[h.readerOp]})
 		data = value{deps: []analysis.Dependency{{Source: source, Transfers: []analysis.Evidence{}}}}
 	case len(input.deps) > 0:
 		data = input
@@ -135,7 +135,7 @@ func (f *flow) validationHelperCall(n *sitter.Node, values []value) (value, bool
 		f.context = append(f.context, f.set.schemaEvidence(f.module, args.NamedChild(uint(h.schemaIdx)))...)
 	}
 	out := f.transfer(data, "validated_parse", n)
-	out.web = ""
+	out.web = "validated"
 	return out, true
 }
 

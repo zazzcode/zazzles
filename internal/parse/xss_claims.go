@@ -43,6 +43,9 @@ func assembleXSSClaims(report *analysis.AnalysisReport) {
 			}
 		}
 		c.ModelFacts = []string{"output_context=" + u.XSS.OutputContext, "protection=" + u.XSS.Protection, fmt.Sprintf("origin_resolved=%t", u.XSS.OriginResolved)}
+		if u.XSS.OutputContext == "url" && u.XSS.EntryKind == "client" && navigationSink(u.Sink.Text) {
+			c.ModelFacts = append(c.ModelFacts, "browser_navigation_sink: "+u.Sink.Text+" at "+u.Sink.Span.File)
+		}
 		if strings.Contains(u.Sink.Text, "innerHTML") && scriptReexecution(*u) {
 			c.ModelFacts = append(c.ModelFacts, "script_reexecution: "+u.Sink.Text+" at "+u.Sink.Span.File)
 		}
@@ -70,6 +73,16 @@ func scriptReexecution(u analysis.CandidateUse) bool {
 			if strings.Contains(after, `createElement("script")`) || strings.Contains(after, `createElement('script')`) {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+// navigationSink reports a client sink text that navigates the browser.
+func navigationSink(text string) bool {
+	for _, p := range []string{"location.href", "location =", "location.assign(", "location.replace(", "window.open(", "router.push(", "router.replace("} {
+		if strings.Contains(text, p) {
+			return true
 		}
 	}
 	return false

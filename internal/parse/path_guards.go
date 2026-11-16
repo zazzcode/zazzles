@@ -17,6 +17,8 @@ type pathGuardScan struct {
 	decls    []analysis.Evidence
 	declSeen map[int]bool
 	seen     map[int]bool
+	// next enables the Next.js presence and type-only schema classification.
+	next bool
 }
 
 // localFunctionName names a function declared locally: a function declaration or
@@ -51,7 +53,7 @@ func (s *moduleSet) pathGuards(info *pathGuardInfo) func(*analysis.CandidateUse)
 		if call == nil {
 			return nil, nil
 		}
-		scan := &pathGuardScan{m: m, info: info, declSeen: map[int]bool{}, seen: map[int]bool{}}
+		scan := &pathGuardScan{m: m, info: info, declSeen: map[int]bool{}, seen: map[int]bool{}, next: s.nextProjectFor(m.file) != nil}
 		scan.run(u, call)
 		u.Context = append(u.Context, scan.decls...)
 		return scan.guards, nil
@@ -157,6 +159,9 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 			return
 		}
 		scan.seen[int(whole.StartByte())] = true
+		if scan.next && nonContainingTest(m, cond, union, u) {
+			return
+		}
 		class, rootContain := classifyPathGuardAST(cond, m.src, polarity, union, defs, defNodes, collection, baseConst)
 		if class == analysis.PathGuardPresenceOrType {
 			return
@@ -284,4 +289,125 @@ func pathPresenceOnly(n *sitter.Node, names []string, defs map[string]string, sr
 		return emptyComparison.MatchString(strings.Trim(text, "() "))
 	}
 	return false
+}
+
+// nonContainingTest recognizes, in Next.js code, two tests that cannot contain
+// a path: a bare truthiness test of the tracked value (`if (!file)`) and a
+// zod `success` test of a validation helper result whose schema rule for every
+// tracked field is type-only (z.string() with optional/length modifiers). A
+// schema with a regex, enum, refine or similar rule stays a possible control.
+func nonContainingTest(m *sourceModule, cond *sitter.Node, names []string, u *analysis.CandidateUse) bool {
+	src := m.src
+	fields := trackedFields(u)
+	c := unwrapTS(cond)
+	if c != nil && c.Kind() == "binary_expression" {
+		// `ext === ".pdf"` on extname(value), or a sibling validated field
+		// compared with a literal: neither constrains the path text.
+		op := c.ChildByFieldName("operator")
+		l, r := unwrapTS(c.ChildByFieldName("left")), unwrapTS(c.ChildByFieldName("right"))
+		if op != nil && (op.Utf8Text(src) == "===" || op.Utf8Text(src) == "!==" || op.Utf8Text(src) == "==" || op.Utf8Text(src) == "!=") && l != nil && r != nil {
+			id := l
+			if l.Kind() == "string" {
+				id = r
+			} else if r.Kind() != "string" {
+				return false
+			}
+			if id.Kind() != "identifier" {
+				return false
+			}
+			def := definitionAt(m, id, id.Utf8Text(src))
+			if def == nil {
+				return false
+			}
+			d := strings.TrimSpace(def.Utf8Text(src))
+			if extnameCall.MatchString(d) {
+				return true
+			}
+			if sm := siblingField.FindStringSubmatch(d); sm != nil && len(fields) > 0 && !fields[sm[1]] {
+				return true
+			}
+		}
+		return false
+	}
+	for c != nil && c.Kind() == "unary_expression" {
+		if op := c.ChildByFieldName("operator"); op == nil || op.Utf8Text(src) != "!" {
+			return false
+		}
+		c = unwrapTS(c.ChildByFieldName("argument"))
+	}
+	if c == nil {
+		return false
+	}
+	text := c.Utf8Text(src)
+	in := func(name string) bool {
+		for _, n := range names {
+			if n == name {
+				return true
+			}
+		}
+		return false
+	}
+	if c.Kind() == "identifier" && in(text) {
+		return true
+	}
+	if c.Kind() != "member_expression" {
+		return false
+	}
+	obj, prop := c.ChildByFieldName("object"), c.ChildByFieldName("property")
+	if obj == nil || prop == nil || obj.Kind() != "identifier" || prop.Utf8Text(src) != "success" || !in(obj.Utf8Text(src)) {
+		return false
+	}
+	var schemas []string
+	for _, e := range u.Context {
+		if e.Kind == "validation_schema" {
+			schemas = append(schemas, e.Text)
+		}
+	}
+	if len(schemas) == 0 || len(fields) == 0 {
+		return false
+	}
+	for field := range fields {
+		typeOnly := false
+		for _, schema := range schemas {
+			typeOnly = typeOnly || zodFieldTypeOnly(schema, field)
+		}
+		if !typeOnly {
+			return false
+		}
+	}
+	return true
+}
+
+var zodTypeOnlyRule = regexp.MustCompile(`^z\.(?:coerce\.)?string\(\)(?:\.(?:optional|nullable|nullish|trim|toLowerCase|toUpperCase)\(\)|\.(?:min|max|length)\(\s*\d+\s*(?:,[^)]*)?\)|\.(?:default|describe)\([^()]*\))*$`)
+
+// zodFieldTypeOnly reports a `field: z.string()...` rule in schema source whose
+// only modifiers are optionality, trimming, case and length.
+func zodFieldTypeOnly(schema, field string) bool {
+	re := regexp.MustCompile(`(?m)(?:^|[{,\s])` + regexp.QuoteMeta(field) + `\s*:\s*(z\.[^,\n}]*)`)
+	m := re.FindStringSubmatch(schema)
+	if m == nil {
+		return false
+	}
+	rule := strings.Join(strings.Fields(m[1]), "")
+	return zodTypeOnlyRule.MatchString(rule)
+}
+
+var extnameCall = regexp.MustCompile(`^(?:path\.)?extname\(`)
+var siblingField = regexp.MustCompile(`^[A-Za-z_$][\w$]*\.data\.([A-Za-z_$][\w$]*)(?:\s*\?\?.*)?$`)
+
+// trackedFields lists the validated fields a use's dependencies project.
+func trackedFields(u *analysis.CandidateUse) map[string]bool {
+	fields := map[string]bool{}
+	for _, d := range u.Dependencies {
+		validated := false
+		for _, t := range d.Transfers {
+			if t.Kind == "validated_parse" {
+				validated = true
+			}
+			if validated && t.Kind == "field_projection" {
+				fields[strings.Trim(t.Text, `"' `)] = true
+			}
+		}
+	}
+	return fields
 }

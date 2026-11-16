@@ -39,11 +39,9 @@ func (s *moduleSet) assembleNodeInputs(r *analysis.AnalysisReport) {
 	}
 }
 func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext) {
-	acquisition := "http"
-	if nextFramework(c.entry.HTTP.Framework) && c.entry.HTTP.Router == "app" {
-		acquisition = "web-request"
-	}
-	facts := &analysis.InputFacts{Version: 1, Acquisition: acquisition, Framework: c.entry.HTTP.Framework, Binding: c.entry.Location, Values: []analysis.InputValueFact{}, Controls: append([]analysis.Evidence{}, c.controls...), Stages: append([]analysis.InputStage{}, c.stages...), Gaps: append([]analysis.Gap{}, c.gaps...)}
+	// Next.js web-request reads keep acquisition "http" (it must equal the entry
+	// kind); the framework value and per-value origins carry the adapter.
+	facts := &analysis.InputFacts{Version: 1, Acquisition: "http", Framework: c.entry.HTTP.Framework, Binding: c.entry.Location, Values: []analysis.InputValueFact{}, Controls: append([]analysis.Evidence{}, c.controls...), Stages: append([]analysis.InputStage{}, c.stages...), Gaps: append([]analysis.Gap{}, c.gaps...)}
 	if u.Completeness != nil {
 		facts.Gaps = append(facts.Gaps, u.Completeness.Blockers...)
 	}

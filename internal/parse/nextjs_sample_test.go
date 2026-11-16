@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 // TestNextJSOopsStoreAnswerKey is the offline integration test of the Next.js
@@ -26,6 +27,11 @@ func TestNextJSOopsStoreAnswerKey(t *testing.T) {
 	r, err := Analyze(root, "")
 	if err != nil {
 		t.Fatal(err)
+	}
+	for _, u := range r.Uses {
+		if _, err := analysispacks.Select(u); err != nil {
+			t.Errorf("%s %s:%d: judge selection rejects the record: %v", u.Kind, u.Sink.Span.File, u.Sink.Span.StartLine, err)
+		}
 	}
 	entries := map[string]analysis.EntryPoint{}
 	routeHandlers, pages := 0, 0

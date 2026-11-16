@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 // nextRepo writes a small Next.js App Router repository: a manifest that
@@ -34,6 +35,18 @@ func analyzeNext(t *testing.T, root string) *analysis.AnalysisReport {
 	r, err := Analyze(root, "")
 	if err != nil {
 		t.Fatal(err)
+	}
+	// Every record must be sendable: input facts use the wire vocabulary.
+	for _, u := range r.Uses {
+		if err := u.InputFacts.Validate(u.Dependencies); err != nil {
+			t.Fatalf("%s %s: invalid input facts: %v", u.Kind, u.Sink.Text, err)
+		}
+		if _, err := analysispacks.Select(u); err != nil {
+			t.Fatalf("%s %s: judge component selection rejects the record: %v", u.Kind, u.Sink.Text, err)
+		}
+		if u.InputFacts != nil && u.EntryFacts != nil && (u.EntryFacts.Kind != u.InputFacts.Acquisition || u.EntryFacts.Location.Span != u.InputFacts.Binding.Span) {
+			t.Fatalf("%s: input facts acquisition/binding must match the entry", u.Kind)
+		}
 	}
 	return r
 }
@@ -224,7 +237,7 @@ export async function POST(request: NextRequest) {
 		t.Fatalf("prisma contract %+v", sql[0].APIModel)
 	}
 	for _, v := range sql[0].InputFacts.Values {
-		if v.Origin == "http.query" && v.InitialType != "string | null" {
+		if v.Origin == "http.query" && v.InitialType != "string" {
 			t.Fatalf("searchParams.get initial type %q", v.InitialType)
 		}
 	}

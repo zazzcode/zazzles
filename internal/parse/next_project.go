@@ -49,7 +49,26 @@ func spanKey(s analysis.Span) string {
 	return s.File + ":" + strconv.Itoa(s.StartByte) + ":" + strconv.Itoa(s.EndByte)
 }
 
+// wireInputType maps a web-request value type onto the input_facts v1 type
+// vocabulary. Nullability is absence, not an attacker-chosen type, so
+// `string | null` is a string; anything without a fixed JSON shape is unknown.
+func wireInputType(t string) string {
+	switch t {
+	case "string", "string | null", "RequestCookie | undefined":
+		if t == "RequestCookie | undefined" {
+			return "object"
+		}
+		return "string"
+	case "string[]", "string[] | undefined":
+		return "array"
+	case "object", "URLSearchParams", "FormData", "URL", "iterable":
+		return "object"
+	}
+	return "unknown"
+}
+
 func (s *moduleSet) recordWebOrigin(e analysis.Evidence, o webOrigin) {
+	o.initialType = wireInputType(o.initialType)
 	if s.next == nil {
 		s.next = &nextState{}
 	}

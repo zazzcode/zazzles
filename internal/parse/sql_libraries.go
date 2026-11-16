@@ -311,7 +311,7 @@ func (s *moduleSet) prismaFilterCall(m *sourceModule, call *sitter.Node) (*sitte
 func (s *moduleSet) unvalidatedBody(v value) bool {
 	for _, d := range v.deps {
 		o, ok := s.webOriginFor(d.Source)
-		if !ok || o.origin != "http.body" || (o.initialType != "unknown" && o.initialType != "string") {
+		if !ok || o.origin != "http.body" || o.initialType == "array" {
 			continue
 		}
 		validated := false

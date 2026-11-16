@@ -67,8 +67,11 @@ func (f *flow) webRecv(n *sitter.Node) (kind string, recv value, bound bool) {
 		if obj == nil || prop == nil {
 			return "", value{}, false
 		}
-		base, _, _ := f.webRecv(obj)
+		base, baseValue, baseBound := f.webRecv(obj)
 		switch base + "." + prop.Utf8Text(src) {
+		case "validated.data":
+			v := f.transfer(baseValue, "property_read", n)
+			return "validatedData", v, baseBound
 		case "request.nextUrl":
 			return "nexturl", value{}, false
 		case "request.headers":
@@ -235,6 +238,21 @@ func (f *flow) webMember(kind string, recv value, bound bool, prop string, n, ke
 			keyNode = n
 		}
 		return f.transfer(v, "field_projection", keyNode), true
+	case "validated":
+		// parsed.data is the schema's output object; its fields are projections.
+		if prop == "data" {
+			v := f.transfer(recv, "property_read", n)
+			v.web = "validatedData"
+			return v, true
+		}
+		if prop == "success" || prop == "response" || prop == "error" {
+			return value{}, true
+		}
+	case "validatedData":
+		v := f.transfer(recv, "property_read", n)
+		v = f.transfer(v, "field_projection", keyNode)
+		v.web = ""
+		return v, true
 	case "formEntry":
 		switch prop {
 		case "name":

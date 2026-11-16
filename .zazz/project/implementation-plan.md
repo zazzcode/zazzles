@@ -95,7 +95,7 @@ both [sample reports](../../docs/samples/README.md) and detection guides are pub
 |---|---|---|
 | 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Implemented with Next.js B–D in `nextjs-support-phase-2`; human review pending. [Contract](../specifications/nextjs-phase-2-and-code-redirect.md), [results](../evaluation/nextjs-phase-2-results.md). Prototype pollution remains the next implementation assignment |
 | 2 | **Prototype pollution (CWE-1321)** | JS/TS recursive merge and library `merge`/`set`/`defaultsDeep` sinks, computed key writes, key deny-list and null-prototype controls |
-| 3 | **Drupal / PHP support** | PHP language adapter: Drupal routing and controllers, Symfony `Request`, Form API, database API, Twig and render-array output |
+| 3 | **PHP support (DVWA MVP), then Drupal** | General plain-PHP adapter first: [contract](../specifications/php-support.md) authored on `php-dvwa` (server-mapped entries, include dispatch, superglobal input facts, SQL/command/XSS/path/code/redirect/validation families, DVWA `a1978a2`). Drupal routing/controllers, Symfony `Request`, Form API, database API, Twig and render arrays remain a separate follow-up deliverable |
 | 4 | **Agent skills fixes, scan/fix loop, external SAST findings import** | Fix-workflow skills, the scheduled/on-demand loop, and provenance-preserving import of third-party SAST findings |
 | Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
 
@@ -141,7 +141,7 @@ approved implementation assignments.
 | **External finding imports** | Next up, order 4. SAST/code-quality adapters retaining source, provenance, and uncertainty within the remediation workflow |
 | **Baselines and incremental analysis** | Stable finding identity, correct invalidation, comparison and explicit severity gates; current exit codes are not severity gates |
 | **Public analysis packs and standards** | Public pack loading and broader user-selected standards; embedded components do not imply an executable plugin system |
-| **Additional acquisition and languages** | Drupal/PHP is next up (order 3); queue inputs and further source-language/framework adapters under separate coverage contracts |
+| **Additional acquisition and languages** | PHP is next up (order 3) via the [DVWA MVP contract](../specifications/php-support.md); Drupal follows as its own deliverable; queue inputs and further source-language/framework adapters under separate coverage contracts |
 | **External generalization evaluation** | Bounded checks on fresh JS/TS and Python services against source-reviewed expectations; prior sample results do not establish general accuracy |
 
 ### Deferred analysis boundaries

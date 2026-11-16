@@ -30,6 +30,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 - [Analyzer protection and flow coverage](analyzer-protection-and-flow-coverage.md) — proposal 1: guard/validator protection to the final operand, redirect normalization semantics, inventory-selected flow gaps, stored-path writes/reads and Review explanations on the PR #19 analyzers; in progress.
 - [Practice accuracy and false-positive evaluation](practice-accuracy-and-false-positive-evaluation.md) — proposal 2 implementation contract, reproduced practice defects, pinned Commerce record audit, explicit accuracy metrics and bounded evaluation plan on the merged PR #20 baseline.
 - [Next.js support](nextjs-support.md) — App Router/Server Action/page entries, `web-request-v1` origins, Prisma/better-sqlite3/pino/zod contracts, client and server rendering, practice tier; draft [PR #18](https://github.com/zazzcode/zazzles/pull/18).
+- [PHP support (DVWA MVP)](php-support.md) — plain-PHP adapter (server-mapped entries, include dispatch alternatives, `source.php-input-v1`), core family contracts (`php-mysqli/pdo/sqlite3-v1`, `php-program-execution-v1`, filesystem/upload/include, `php-eval-v1`, `php-header-redirect-v1`) evaluated against DVWA `a1978a2`; authored, not yet implemented.
 
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held
 

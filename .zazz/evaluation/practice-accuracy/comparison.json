@@ -1,0 +1,169 @@
+{
+  "artifact_root": "<container>/_test-findings/practice-accuracy",
+  "baseline_commit": "cb40f370594948181594b2dbc1b5576157b1ba95",
+  "comparison": [
+    {
+      "after_sha256": "e090aa4b22603fa0eb68b42f8418bfc8c95e73d5ae28e258991725ffe4eee702",
+      "baseline_sha256": "e090aa4b22603fa0eb68b42f8418bfc8c95e73d5ae28e258991725ffe4eee702",
+      "entries": 175,
+      "non_practice_fields_equal": true,
+      "practice_after": 0,
+      "practice_before": 0,
+      "practice_equal": true,
+      "records_after": 251,
+      "records_before": 251,
+      "target": "juice-shop"
+    },
+    {
+      "after_sha256": "16224735ff33d87337fa108486ba522dd9b2a9baebab94831cf466cdd506c961",
+      "baseline_sha256": "16224735ff33d87337fa108486ba522dd9b2a9baebab94831cf466cdd506c961",
+      "entries": 19,
+      "non_practice_fields_equal": true,
+      "practice_after": 0,
+      "practice_before": 0,
+      "practice_equal": true,
+      "records_after": 32,
+      "records_before": 32,
+      "target": "nodejs-goof"
+    },
+    {
+      "after_sha256": "03d72010663a9866ed1804bff0740bb7481c524e25a8a8a18a0d4298e594e687",
+      "baseline_sha256": "03d72010663a9866ed1804bff0740bb7481c524e25a8a8a18a0d4298e594e687",
+      "entries": 131,
+      "non_practice_fields_equal": true,
+      "practice_after": 48,
+      "practice_before": 48,
+      "practice_equal": true,
+      "records_after": 125,
+      "records_before": 125,
+      "target": "oss-oopssec-store"
+    },
+    {
+      "after_sha256": "75d54c575055300fe656e965de596fda5e791573c37ae0e01f2fa4a740402719",
+      "baseline_sha256": "75d54c575055300fe656e965de596fda5e791573c37ae0e01f2fa4a740402719",
+      "entries": 16,
+      "non_practice_fields_equal": true,
+      "practice_after": 2,
+      "practice_before": 2,
+      "practice_equal": true,
+      "records_after": 23,
+      "records_before": 23,
+      "target": "vercel-commerce-f7521d5"
+    },
+    {
+      "after_sha256": "cb751e8be4632ed811713ce44773a53bfd6a5cc7f1fd8071a4d6e4eb54650c28",
+      "baseline_sha256": "cb751e8be4632ed811713ce44773a53bfd6a5cc7f1fd8071a4d6e4eb54650c28",
+      "entries": 14,
+      "non_practice_fields_equal": true,
+      "practice_after": 0,
+      "practice_before": 0,
+      "practice_equal": true,
+      "records_after": 19,
+      "records_before": 19,
+      "target": "vuln-demo-app"
+    },
+    {
+      "after_sha256": "69f509b8fde99469a2bc96667a736221c5a1f9e57f53f1b565fed7216790f175",
+      "baseline_sha256": "69f509b8fde99469a2bc96667a736221c5a1f9e57f53f1b565fed7216790f175",
+      "entries": 37,
+      "non_practice_fields_equal": true,
+      "practice_after": 5,
+      "practice_before": 5,
+      "practice_equal": true,
+      "records_after": 54,
+      "records_before": 54,
+      "target": "vuln-nextjs"
+    },
+    {
+      "after_sha256": "d1dcfc745661d0d7f6d59e1199c15660262b8dfdfb116c73f10be6086ee69352",
+      "baseline_sha256": "d1dcfc745661d0d7f6d59e1199c15660262b8dfdfb116c73f10be6086ee69352",
+      "entries": 19,
+      "non_practice_fields_equal": true,
+      "practice_after": 0,
+      "practice_before": 0,
+      "practice_equal": true,
+      "records_after": 26,
+      "records_before": 26,
+      "target": "vulnerable-typescript-app"
+    },
+    {
+      "after_sha256": "b9137654c8eca560924b0a14fe98782faaec400697030e95c0706acc45e66eef",
+      "baseline_sha256": "b9137654c8eca560924b0a14fe98782faaec400697030e95c0706acc45e66eef",
+      "entries": 2214,
+      "non_practice_fields_equal": true,
+      "practice_after": 0,
+      "practice_before": 0,
+      "practice_equal": true,
+      "records_after": 3350,
+      "records_before": 3350,
+      "target": "vulnpy"
+    }
+  ],
+  "post_evaluation_source_integrity": [
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 708,
+      "revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+      "target": "oss-oopssec-store",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 5,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 106,
+      "revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "target": "vuln-nextjs",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 143,
+      "revision": "b81885e58283a3449b578d20c20557aff637e5ea",
+      "target": "vulnpy",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 1466,
+      "revision": "f189f521266f42c6bd05884468292000cee852ed",
+      "target": "juice-shop",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 60,
+      "revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "target": "nodejs-goof",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 8,
+      "revision": "7f8b240a2f02beba099da3632d1ba679ff8bc32f",
+      "target": "vulnerable-typescript-app",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 5,
+      "revision": "d27b35bdd2d599f1f79dace71d5272215df04423",
+      "target": "vuln-demo-app",
+      "tracked_changes": 0
+    },
+    {
+      "existing_ignored_paths": 0,
+      "hash_mismatches": 0,
+      "manifest_files_checked": 78,
+      "revision": "f7521d57d29f0eb3d23c1399cf9bb299d61fcd21",
+      "target": "vercel-commerce-f7521d5",
+      "tracked_changes": 0
+    }
+  ],
+  "schema_version": 1
+}

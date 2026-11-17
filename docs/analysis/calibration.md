@@ -36,6 +36,14 @@ cases, and check JSON/HTML/SARIF agreement. Model answer consistency is necessar
 judgment but does not by itself establish accuracy. Independent review and broader held-out
 validation remain separate from these bounded checks.
 
+Accuracy measurements MUST name the source-reviewed corpus and publish counts with denominators.
+Known-positive recall includes missed and unjudged selected cases. Genuine safe controls, justified
+candidate exclusions, unresolved trust, model failures and practice observations are separate
+populations. A Review result is not automatically a false positive, and zero offline Confirmed
+records cannot estimate semantic error rates. Report assessed coverage beside false Confirmed/false
+Protected rates; an empty assessed population is unmeasured. Preserve repeated-context coverage
+alongside source-defect counts so deduplication cannot hide missing paths.
+
 The shared evidence wire format includes an explicit static trace graph and supplied/missing
 role ledger. Template context includes focused source markup rather than only the expression.
 Neither a graph edge nor a supplied-role index proves complete execution coverage. Calibrate

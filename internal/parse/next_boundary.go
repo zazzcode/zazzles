@@ -13,31 +13,20 @@ type nextBoundary struct {
 	entry    analysis.EntryPoint
 	evidence analysis.Evidence
 	value    value
-	context  []analysis.Evidence
 }
 
 func (f *flow) noteNextBoundary(kind string, n *sitter.Node, v value) {
 	if f.set == nil || f.set.next == nil || f.web == nil {
 		return
 	}
-	f.set.next.boundaries = append(f.set.next.boundaries, nextBoundary{kind, f.entry, f.module.evidence("browser_boundary", n), v, append([]analysis.Evidence{}, f.context...)})
+	f.set.next.boundaries = append(f.set.next.boundaries, nextBoundary{kind, f.entry, f.module.evidence("browser_boundary", n), v})
 }
 
 func (s *moduleSet) practiceBoundaries(ps *practiceSet) {
 	for _, b := range s.next.boundaries {
 		if b.kind == "action_write" && len(b.value.deps) > 0 {
-			validated, authorized := false, false
-			for _, c := range b.context {
-				validated = validated || c.Kind == "validation_control"
-				authorized = authorized || c.Kind == "authorization_context"
-			}
-			for _, d := range b.value.deps {
-				for _, t := range d.Transfers {
-					validated = validated || t.Kind == "validated_parse"
-				}
-			}
-			if !validated && !authorized {
-				ps.add("NX-BP-09", "Unvalidated public Server Action write", "review", "Server Action arguments reach a data write without an established enforcing validator or authorization context", b.entry.Name, b.evidence)
+			if !practiceValueValidated(b.value) {
+				ps.add("NX-BP-09", "Unvalidated public Server Action write", "review", "Server Action arguments reach a data write without established validation of every request-derived value; authorization is a separate boundary", b.entry.Name, b.evidence)
 			}
 		}
 		if b.kind == "action_return" || b.kind == "client_props" {
@@ -46,6 +35,24 @@ func (s *moduleSet) practiceBoundaries(ps *practiceSet) {
 			}
 		}
 	}
+}
+
+func practiceValueValidated(v value) bool {
+	for _, field := range v.fields {
+		if !practiceValueValidated(field) {
+			return false
+		}
+	}
+	for _, d := range v.deps {
+		validated := false
+		for _, transfer := range d.Transfers {
+			validated = validated || transfer.Kind == "validated_parse"
+		}
+		if !validated {
+			return false
+		}
+	}
+	return true
 }
 
 var prismaModelBlock = regexp.MustCompile(`(?s)\bmodel\s+(\w+)\s*\{([^}]+)\}`)

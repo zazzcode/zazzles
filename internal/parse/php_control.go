@@ -159,8 +159,12 @@ func (f *phpFlow) stmt(n *sitter.Node) bool {
 	case "php_tag", "text_interpolation", "comment":
 		return false
 	case "expression_statement":
+		echo := phpShortEcho(f.module, n)
 		for i := uint(0); i < n.NamedChildCount(); i++ {
-			f.eval(n.NamedChild(i))
+			v := f.eval(n.NamedChild(i))
+			if echo {
+				f.render(n.NamedChild(i), v)
+			}
 		}
 		// die(...)/exit(...) parse as calls; as a statement they never fall
 		// through, exactly like the exit_statement form.

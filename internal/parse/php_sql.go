@@ -2,6 +2,7 @@ package parse
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -65,6 +66,12 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 			result.columns = selectColumns(match[0])
 			result.evidence = append(result.evidence, m.evidence("storage_query", n))
 		}
+	} else if match := phpSelectRe.FindStringSubmatch(phpUnquote(text.template)); len(match) > 0 && !strings.ContainsAny(match[1], "${") {
+		// An interpolated SELECT (`... FROM task WHERE id = $id`) still reads
+		// a literal table: rows stay stored values instead of vanishing.
+		result.table = strings.ToLower(match[1])
+		result.columns = selectColumns(match[0])
+		result.evidence = append(result.evidence, m.evidence("storage_query", n))
 	}
 	// Inline interpolated writes expose the value's raw template for
 	// storage-key attribution.
@@ -186,27 +193,84 @@ func (f *phpFlow) storageWrite(n *sitter.Node, text phpValue, queryNode *sitter.
 	if sqlTemplate == "" && queryNode != nil && (queryNode.Kind() == "string" || queryNode.Kind() == "encapsed_string") {
 		sqlTemplate = phpText(m, queryNode)
 	}
-	if len(sqlTemplate) >= 2 {
-		if q := sqlTemplate[0]; (q == '"' || q == '\'') && sqlTemplate[len(sqlTemplate)-1] == q {
-			sqlTemplate = sqlTemplate[1 : len(sqlTemplate)-1]
+	seen := map[string]bool{}
+	for _, w := range append([]phpSQLWrite{{template: sqlTemplate, deps: text.deps}}, text.sqlWrites...) {
+		if seen[w.template] {
+			continue
+		}
+		seen[w.template] = true
+		columns := phpWriteColumns(phpUnquote(w.template), w.deps)
+		for _, storage := range sortedStorageKeys(columns) {
+			v := phpTransfer(phpValue{deps: []phpDep{columns[storage]}}, f.module.evidence("storage_write", n))
+			f.set.writes[storage] = append(f.set.writes[storage], phpWrite{value: v, entry: f.invocation.EntryID, evidence: f.module.evidence("storage_write", n)})
 		}
 	}
-	match := phpInsertRe.FindStringSubmatch(sqlTemplate)
-	if match == nil || len(text.deps) == 0 {
-		return
+}
+
+func sortedStorageKeys(m map[string]phpDep) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
 	}
-	table := strings.ToLower(match[1])
-	fields := strings.Split(match[2], ",")
-	if len(text.deps) != len(fields) {
-		return
+	sort.Strings(keys)
+	return keys
+}
+
+var phpInterpolationRe = regexp.MustCompile(`\{?\$[A-Za-z_]`)
+
+// phpWriteColumns attributes interpolated dependencies to the storage keys of
+// an INSERT column list or UPDATE SET list. Attribution is exact-count-or-skip:
+// every interpolation must map to exactly one column, otherwise no origin is
+// invented and the reads stay unresolved.
+func phpWriteColumns(template string, deps []phpDep) map[string]phpDep {
+	if len(deps) == 0 {
+		return nil
 	}
-	for i, key := range fields {
-		d := text.deps[i]
-		storage := "php-sql:" + table + "." + strings.ToLower(strings.Trim(strings.TrimSpace(key), "`\"'[]"))
-		v := phpValue{deps: []phpDep{d}}
-		v = phpTransfer(v, f.module.evidence("storage_write", n))
-		f.set.writes[storage] = append(f.set.writes[storage], phpWrite{value: v, entry: f.invocation.EntryID, evidence: f.module.evidence("storage_write", n)})
+	column := func(table, key string) string {
+		return "php-sql:" + table + "." + strings.ToLower(strings.Trim(strings.TrimSpace(key), "`\"'[]"))
 	}
+	out := map[string]phpDep{}
+	if match := phpInsertRe.FindStringSubmatch(template); match != nil {
+		table := strings.ToLower(match[1])
+		fields := strings.Split(match[2], ",")
+		if len(deps) != len(fields) {
+			return nil
+		}
+		for i, key := range fields {
+			out[column(table, key)] = deps[i]
+		}
+		return out
+	}
+	match := phpUpdateRe.FindStringSubmatch(template)
+	if match == nil || len(phpInterpolationRe.FindAllString(template, -1)) != len(deps) {
+		return nil
+	}
+	table, next := strings.ToLower(match[1]), 0
+	for _, assignment := range strings.Split(match[2], ",") {
+		key, value, ok := strings.Cut(assignment, "=")
+		if !ok {
+			return nil
+		}
+		switch len(phpInterpolationRe.FindAllString(value, -1)) {
+		case 0:
+		case 1:
+			out[column(table, key)] = deps[next]
+			next++
+		default:
+			return nil
+		}
+	}
+	return out
+}
+
+// phpUnquote strips one pair of matching outer quotes from a source template.
+func phpUnquote(t string) string {
+	if len(t) >= 2 {
+		if q := t[0]; (q == '"' || q == '\'') && t[len(t)-1] == q {
+			return t[1 : len(t)-1]
+		}
+	}
+	return t
 }
 
 // selectColumns extracts the column list of a SELECT header (bounded).
@@ -266,7 +330,9 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 					nd.Transfers = append(append([]analysis.Evidence{}, nd.Transfers...), d.Transfers...)
 					deps = append(deps, nd)
 					p := u.XSS.Protection
-					if source.protection == "unknown" {
+					if source.protection == "url_encoded" && p == "raw" {
+						p = phpURLEncodedProtection(source.protection, u.XSS.OutputContext)
+					} else if source.protection == "unknown" {
 						p = "unknown"
 					} else if p == "raw" && (source.protection == "encoded" || source.protection == "numeric" || source.protection == "non_content") {
 						p = "encoded"

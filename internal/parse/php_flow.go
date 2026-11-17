@@ -153,6 +153,9 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			return v
 		}
 		v.built = true
+		if t := phpUnquote(v.template); phpInsertRe.MatchString(t) || phpUpdateRe.MatchString(t) {
+			v.sqlWrites = []phpSQLWrite{{template: v.template, deps: v.deps}}
+		}
 		return phpTransfer(v, m.evidence("string_interpolation", n))
 	case "binary_expression":
 		return f.binaryExpression(n)
@@ -428,5 +431,5 @@ func (f *phpFlow) render(n *sitter.Node, v phpValue) {
 	if len(v.deps) == 0 {
 		return
 	}
-	f.recordXSS(f.module.evidence("html_output", n), v, "html_text")
+	f.recordXSS(f.module.evidence("html_output", n), v, htmlOutputContext(f.module.inlineHTMLBefore(n.StartByte())))
 }

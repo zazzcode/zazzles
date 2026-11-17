@@ -93,6 +93,15 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 			v.gaps = append(v.gaps, f.gap("php_escape_flags", "escape function "+qname+" flags: "+flags, n))
 			return v
 		}
+	case "urlencode", "rawurlencode":
+		if f.builtin(qname) && len(values) >= 1 {
+			// Output holds only [A-Za-z0-9_.~+-] and %XX: no HTML-significant
+			// characters and no URL scheme. phpXSSProtection scopes the
+			// guarantee to output contexts; other families keep it raw.
+			v := phpTransfer(phpProtect(values[0], "url_encoded"), f.module.evidence("url_encode_transform", n))
+			v.escapes = append(v.escapes, f.module.evidence("url_encode_transform", n))
+			return v
+		}
 	case "strip_tags":
 		if f.builtin(qname) && len(values) >= 1 {
 			v := phpProtect(values[0], "sanitized")
@@ -125,7 +134,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		}
 	case "md5", "sha1", "hash", "password_hash", "crc32", "hash_hmac":
 		return phpTransfer(phpProtect(all, "non_content"), f.module.evidence("non_content", n))
-	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "sprintf", "number_format", "nl2br", "urlencode", "rawurlencode", "stripslashes", "strip_whitespace":
+	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "sprintf", "number_format", "nl2br", "stripslashes", "strip_whitespace":
 		if f.builtin(qname) && len(values) >= 1 {
 			v := phpTransfer(phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown")), f.module.evidence("string_transform", n))
 			return v

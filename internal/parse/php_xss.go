@@ -29,6 +29,7 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 		if (p == "encoded" || p == "sanitized") && context != "html_text" && context != "html_attribute" {
 			p = "unknown"
 		}
+		p = phpURLEncodedProtection(p, context)
 		if p == "numeric" || p == "non_content" {
 			p = "encoded"
 		}
@@ -76,4 +77,17 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 	// assembler expects it as role evidence.
 	u.Context = append(u.Context, analysis.Evidence{Kind: "render_binding", Text: sink.Text, Span: sink.Span, SHA256: sink.SHA256})
 	f.report.Uses = append(f.report.Uses, u)
+}
+
+// phpURLEncodedProtection scopes urlencode/rawurlencode output to the
+// contexts where its alphabet cannot change markup or a URL's scheme.
+func phpURLEncodedProtection(p, context string) string {
+	if p != "url_encoded" {
+		return p
+	}
+	switch context {
+	case "html_text", "html_attribute", "unquoted_attribute", "url":
+		return "sanitized"
+	}
+	return "unknown"
 }

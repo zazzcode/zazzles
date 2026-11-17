@@ -397,3 +397,99 @@ if ($v == '10') { system($_GET['c']); }
 		t.Fatalf("loose numeric equality must not be decided: %v", got)
 	}
 }
+
+func TestPHPRenderOutputContextFromInlineHTML(t *testing.T) {
+	// php-goof index.php shape: echo inside a quoted attribute value, and a
+	// short echo tag inside an href.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<form>
+<input type="hidden" name="edid" value="<?php echo $_GET['edid']?>">
+<a href="pdf.php?title=<?= $_GET['title'] ?>">pdf</a>
+<p><?php echo $_GET['msg']; ?></p>
+</form>
+`}), "")
+	got := map[int]string{}
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		got[u.Sink.Span.StartLine] = u.XSS.OutputContext + "/" + u.XSS.Protection
+	}
+	want := map[int]string{2: "html_attribute/raw", 3: "url/raw", 4: "html_text/raw"}
+	for line, w := range want {
+		if got[line] != w {
+			t.Fatalf("line %d: got %q want %q (all %v)", line, got[line], w, got)
+		}
+	}
+}
+
+func TestPHPRenderShortEchoTagIsOutput(t *testing.T) {
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": "<p><?= $_GET['q'] ?></p>\n<p><?= htmlspecialchars($_GET['s']) ?></p>\n"}), "")
+	byLine := map[int]string{}
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		byLine[u.Sink.Span.StartLine] = u.XSS.Protection
+	}
+	if byLine[1] != "raw" || byLine[2] != "encoded" {
+		t.Fatalf("short echo tags must render with their own protection: %v", byLine)
+	}
+}
+
+func TestPHPInterpolatedSelectRowsStayStoredValues(t *testing.T) {
+	// php-goof func.php/index.php shape: the row of an interpolated SELECT
+	// reaches an attribute; it must stay a stored-origin record.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$id = $_GET['edid'];
+$result = mysqli_query($conn, "SELECT * FROM task where id = $id");
+$row = mysqli_fetch_array($result);
+$title = $row['title'];
+?>
+<input value="<?php echo $title; ?>">
+`}), "")
+	xss := phpUsesOfKind(r, "xss_candidate")
+	if len(xss) != 1 || xss[0].XSS.Type != "stored" || xss[0].XSS.StorageKey != "php-sql:task.title" {
+		t.Fatalf("row of an interpolated SELECT must render as a stored value: %#v", xss)
+	}
+}
+
+func TestPHPStoredWritesSurviveJoinedInsertUpdate(t *testing.T) {
+	// php-goof tasks.php shape: the executed query is a join of an UPDATE and
+	// an INSERT alternative; both writes to task.title must link to the read.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"tasks.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$title = urlencode($_POST['title']);
+if (isset($_POST['edid'])) {
+  $edid = $_POST['edid'];
+  $query = "UPDATE task SET title = '$title' WHERE id = '$edid'";
+}
+else $query = "INSERT INTO task(title) VALUES ('$title')";
+mysqli_query($conn, $query);
+`,
+		"index.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$result = mysqli_query($conn, "SELECT * FROM task");
+$row = mysqli_fetch_array($result);
+echo $row['title'];
+`}), "")
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		if u.XSS.StorageKey != "php-sql:task.title" {
+			continue
+		}
+		if !u.XSS.OriginResolved || len(u.XSS.Paths) != 2 {
+			t.Fatalf("UPDATE and INSERT writes must both link: resolved=%v paths=%#v", u.XSS.OriginResolved, u.XSS.Paths)
+		}
+		return
+	}
+	t.Fatalf("missing stored task.title render: %#v", r.Uses)
+}
+
+func TestPHPURLEncodeProtectsOnlyMarkupContexts(t *testing.T) {
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<a href="x?q=<?php echo urlencode($_GET['q']); ?>">x</a>
+<script>var q = <?php echo urlencode($_GET['s']); ?>;</script>
+<p><?php echo urldecode(urlencode($_GET['d'])); ?></p>
+`}), "")
+	got := map[int]string{}
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		got[u.Sink.Span.StartLine] = u.XSS.Protection
+	}
+	if got[1] != "encoded" || got[2] != "unknown" || got[3] == "encoded" {
+		t.Fatalf("urlencode protects url/attribute/text only, never script or after urldecode: %v", got)
+	}
+}

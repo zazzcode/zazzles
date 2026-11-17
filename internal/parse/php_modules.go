@@ -20,13 +20,17 @@ import (
 // potential HTTP entry, and files compose through include/require.
 type phpModule struct {
 	commentsReady bool
-	comments      []sourceComment
-	file          string
-	src           []byte
-	hash          string
-	tree          *sitter.Tree
-	funcs         map[string]*sitter.Node
-	classes       map[string]*sitter.Node
+	// inlineHTML holds the byte spans of inline HTML (text) regions in
+	// source order, indexed lazily for output-context classification.
+	inlineHTMLReady bool
+	inlineHTML      [][2]uint
+	comments        []sourceComment
+	file            string
+	src             []byte
+	hash            string
+	tree            *sitter.Tree
+	funcs           map[string]*sitter.Node
+	classes         map[string]*sitter.Node
 	// constants maps define(name, literal) declarations in this file.
 	constants map[string]string
 }
@@ -115,6 +119,38 @@ func (m *phpModule) evidence(kind string, n *sitter.Node) analysis.Evidence {
 		modelText = modelSource(m.src, n.StartByte(), n.EndByte(), m.comments)
 	}
 	return analysis.Evidence{ModelText: modelText, Kind: kind, Text: n.Utf8Text(m.src), Span: spanOf(m.file, n), SHA256: m.hash}
+}
+
+// inlineHTMLBefore returns the inline HTML that precedes byte pos in this
+// module, which decides the output context of an echo embedded in a page
+// (`value="<?php echo $x ?>"` is an attribute, not HTML text).
+func (m *phpModule) inlineHTMLBefore(pos uint) string {
+	if !m.inlineHTMLReady {
+		m.inlineHTMLReady = true
+		phpWalk(m.tree.RootNode(), func(n *sitter.Node) {
+			if n.Kind() == "text" {
+				m.inlineHTML = append(m.inlineHTML, [2]uint{n.StartByte(), n.EndByte()})
+			}
+		})
+	}
+	var b strings.Builder
+	for _, span := range m.inlineHTML {
+		if span[1] > pos {
+			break
+		}
+		b.Write(m.src[span[0]:span[1]])
+	}
+	return b.String()
+}
+
+// phpShortEcho reports an expression statement opened by the `<?=` short
+// echo tag, which outputs its expression exactly like echo.
+func phpShortEcho(m *phpModule, stmt *sitter.Node) bool {
+	prev := stmt.PrevSibling()
+	if prev != nil && prev.Kind() == "text_interpolation" && prev.ChildCount() > 0 {
+		prev = prev.Child(prev.ChildCount() - 1)
+	}
+	return prev != nil && prev.Kind() == "php_tag" && strings.TrimSpace(phpText(m, prev)) == "<?="
 }
 
 func phpWalk(n *sitter.Node, fn func(*sitter.Node)) {

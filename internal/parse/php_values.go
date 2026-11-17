@@ -42,6 +42,10 @@ type phpValue struct {
 	// template keeps the raw source template of an interpolated/concatenated
 	// string (variables in place) for SQL table/column attribution.
 	template string
+	// sqlWrites keeps each INSERT/UPDATE template this value was built from,
+	// with its interpolated dependencies in order, so stored-field writes
+	// stay attributable after branch joins replace the single template.
+	sqlWrites []phpSQLWrite
 	// arrayLiterals keeps the string elements of an array literal whose
 	// elements are all plain string literals (membership allowlists).
 	arrayLiterals []string
@@ -52,6 +56,12 @@ type phpValue struct {
 	evidence        []analysis.Evidence
 	built           bool
 	unknown         bool
+}
+
+// phpSQLWrite is one write-statement template with its interpolated deps.
+type phpSQLWrite struct {
+	template string
+	deps     []phpDep
 }
 
 func phpEmpty(v phpValue) bool {
@@ -88,6 +98,7 @@ func phpCombine(a, b phpValue) phpValue {
 	a.escapes = append(append([]analysis.Evidence{}, a.escapes...), b.escapes...)
 	a.bindingControls = append(append([]analysis.Evidence{}, a.bindingControls...), b.bindingControls...)
 	a.evidence = append(append([]analysis.Evidence{}, a.evidence...), b.evidence...)
+	a.sqlWrites = append(append([]phpSQLWrite{}, a.sqlWrites...), b.sqlWrites...)
 	if a.fields == nil {
 		a.fields = b.fields
 	}

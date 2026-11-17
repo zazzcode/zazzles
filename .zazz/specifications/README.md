@@ -27,6 +27,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 - [Wire bundle v7](wire-bundle-v7.md) — compact evidence wire, logging catalog sync, wrappers/middleware summaries, JS conditionals; merged via PR #14.
 - [Shared Node inputs and file APIs (E4)](shared-node-inputs-and-file-apis.md) — Express middleware-chain entries, `source.node-input-v2` URL/upload facts, phase-2 Node/Python file APIs, Node `http`/`https` SSRF; merged via [PR #15](https://github.com/zazzcode/zazzles/pull/15).
 - [Next.js phase 2 and code/redirect](nextjs-phase-2-and-code-redirect.md) — two analyzer families, remaining practice checks, flow/entry coverage and non-vulnerable-app measurement; [results](../evaluation/nextjs-phase-2-results.md).
+- [Analyzer protection and flow coverage](analyzer-protection-and-flow-coverage.md) — proposal 1: guard/validator protection to the final operand, redirect normalization semantics, inventory-selected flow gaps, stored-path writes/reads and Review explanations on the PR #19 analyzers; in progress.
 - [Next.js support](nextjs-support.md) — App Router/Server Action/page entries, `web-request-v1` origins, Prisma/better-sqlite3/pino/zod contracts, client and server rendering, practice tier; draft [PR #18](https://github.com/zazzcode/zazzles/pull/18).
 
 - [XSS hardening](xss-hardening.md) — every known XSS across five sample apps confirmed, with source-reviewed negatives held

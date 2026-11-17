@@ -8,6 +8,12 @@ import (
 // controlContext exposes branch tests and statement successors rather than
 // flattening validation branches into one unconditional list of calls.
 func controlContext(m *sourceModule, body *sitter.Node) ([]analysis.ControlEdge, []analysis.Gap) {
+	return controlContextWith(m, body, nil)
+}
+
+// controlContextWith is controlContext plus the sink anchors that let inert
+// loops be stepped over (see controlContextAnchored).
+func controlContextWith(m *sourceModule, body *sitter.Node, anchors []analysis.Span) ([]analysis.ControlEdge, []analysis.Gap) {
 	edges := []analysis.ControlEdge{}
 	gaps := []analysis.Gap{}
 	if body != nil && body.Kind() == "call_expression" {
@@ -83,6 +89,12 @@ func controlContext(m *sourceModule, body *sitter.Node) ([]analysis.ControlEdge,
 			}
 			return next
 		default:
+			if transparentLoop(m, n, anchors) {
+				if next != nil {
+					edges = append(edges, analysis.ControlEdge{From: m.evidence("statement", n), To: m.evidence("statement", next), Kind: "NEXT"})
+				}
+				return n
+			}
 			gaps = append(gaps, analysis.Gap{Kind: "control_flow_unresolved", Detail: "unsupported control statement: " + n.Kind(), At: spanOf(m.file, n)})
 			return n
 		}

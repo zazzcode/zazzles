@@ -56,7 +56,7 @@ func (s *moduleSet) pathGuards(info *pathGuardInfo) func(*analysis.CandidateUse)
 		scan := &pathGuardScan{m: m, info: info, declSeen: map[int]bool{}, seen: map[int]bool{}, next: s.nextProjectFor(m.file) != nil}
 		scan.run(u, call)
 		u.Context = append(u.Context, scan.decls...)
-		return scan.guards, nil
+		return scan.guards, s.catchAllJoinTransforms(m, u)
 	}
 }
 

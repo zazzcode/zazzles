@@ -53,6 +53,8 @@ func (s *moduleSet) generatedIdentifier(u analysis.CandidateUse) bool {
 }
 
 func (s *moduleSet) linkStoredXSS(report *analysis.AnalysisReport) {
+	// Code-family operands reuse the same write-to-read link (see linkStoredCode).
+	defer s.linkStoredCode(report)
 	kept := report.Uses[:0]
 	for _, u := range report.Uses {
 		if u.XSS == nil || u.XSS.Type != "stored" || !s.generatedIdentifier(u) {

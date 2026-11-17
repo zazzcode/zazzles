@@ -27,6 +27,11 @@ Native Number conversion can constrain injection syntax without checking range, 
 field's business validity. JSON parsing can accept nested objects without validating their schema.
 SQL binding does not validate email format; an email-format check does not replace query binding.
 
+For `const parsed = Schema.safeParse(req.body)`, each `parsed.data.<key>` read at exactly one place
+keeps its own request-source evidence as a field projection. Reassigned or redeclared results, keys
+read more than once and `safeParse` on a non-request object keep plain property reads. The projection
+never marks the value safe; whether `success` is enforced remains a separate fact.
+
 ## Report for a correct fix
 
 Name the field, requirement, relevant path, and evidence of the enforcement defect. Keep destination

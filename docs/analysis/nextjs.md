@@ -76,6 +76,12 @@ transitions remain `react_shared_state_unresolved`. Literal raw-SQL writes link 
 through physical table/column identities established by the Prisma schema. Dynamic SQL identifiers
 and ambiguous schemas remain unresolved.
 
+Loops do not block a claim when they start after the sink or, before it, neither leave the handler,
+assign an outer binding nor contain the sink; this only removes `control_flow_unresolved` and never
+adds a guard. Python percent-decoders and query-string parsers (`unquote`, `unquote_plus`,
+`unquote_to_bytes`, `parse_qs`, `parse_qsl`) keep the argument's provenance; a raw value stays raw and
+an earlier protection becomes unknown after decoding.
+
 NX-BP-09/11/13/14/15/18/21/22 supplement the existing model-free practice checks. Cookie checks require
 a verified receiver. Sensitive row exposure requires schema-established sensitive columns and honors
 literal select projections. Action writes/returns and explicit client props are browser boundaries.

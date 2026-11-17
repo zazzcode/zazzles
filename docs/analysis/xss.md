@@ -55,6 +55,14 @@ field, originating request and rendering evidence are retained; unresolved origi
 A read with no write stays visible, but cannot hide a complete unsafe sibling path. A generated Mongoose
 `_id` with no request write is not a claim.
 
+A keyed read of a server-owned in-module store (`this.tokenMap[key]` on a const object literal, or a
+module-level `const {}`/`Object.create(null)`) yields stored state: the request-derived key selects an
+entry but is not the value. This applies only when the store is not aliased, spread, returned,
+exported or written in the same flow. The read is recorded as a storage read with no linked writer:
+writes by other requests or other modules are second-order flows the scanner does not model. Any claim,
+in any family or language, whose operand comes only from unlinked storage reads carries
+`storage_origin_unresolved` and stays Review; it is neither request-derived nor proven safe.
+
 SQL-backed storage covers sql.js connections and Sequelize raw queries. Bound `INSERT` and `UPDATE`
 columns of a verified sql.js connection are writes. Literal `SELECT` text, including through local query
 helpers, is a read; `.map` results keep their row fields. A Sequelize raw `SELECT` resolves through the

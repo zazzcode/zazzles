@@ -161,6 +161,9 @@ func (f *flow) destinationOrigin(call, arg *sitter.Node, v value) string {
 
 func (f *flow) staticOrigin(call, n *sitter.Node, depth int) string {
 	m := f.module
+	if depth == 0 && (n.Kind() == "identifier" || n.Kind() == "template_string") && f.set.literalConstFoldable(m, n, 0) {
+		return analysis.DestinationConstant
+	}
 	switch n.Kind() {
 	case "string":
 		return analysis.DestinationConstant
@@ -298,6 +301,7 @@ func (s *moduleSet) assembleSSRFClaims(report *analysis.AnalysisReport) {
 		complete: ssrfCompleteness,
 		finish: func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int) {
 			finishSSRFPaths(u, c, guards, guardIndex, s.commandDerivedNames(u), func(g analysis.Gap, d analysis.Dependency) bool { return gapTouchesDependency(g, d) })
+			s.dropNonEnforcingTransfers(u, c)
 			if s.urlSchemeOnlyTests(u, c) {
 				c.ModelFacts = append(c.ModelFacts, "url_scheme_only_test")
 			}

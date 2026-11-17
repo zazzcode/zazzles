@@ -124,7 +124,7 @@ func (s *moduleSet) assembleClaims(report *analysis.AnalysisReport, h claimHooks
 			if body == nil {
 				continue
 			}
-			edges, missing := controlContext(module, body)
+			edges, missing := controlContextAnchored(module, body, claimAnchors(u))
 			u.ControlEdges = append(u.ControlEdges, edges...)
 			var remaining []analysis.Gap
 			for _, g := range missing {

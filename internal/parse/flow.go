@@ -574,7 +574,15 @@ func (f *flow) eval(n *sitter.Node) value {
 				segment = prop.Utf8Text(src)
 			}
 		} else {
-			v = combine(v, f.eval(n.ChildByFieldName("index")))
+			// A keyed read of a server-owned store yields stored state (a
+			// storage read with no modeled writer); the request-derived key
+			// selects an entry but is not the value.
+			idx := f.eval(n.ChildByFieldName("index"))
+			if stored, ok := f.keyedStoreValue(n, base); ok {
+				v = combine(v, stored)
+			} else {
+				v = combine(v, idx)
+			}
 		}
 		if base.apiPath != "" && base.responseField != "*" {
 			v.responseField = joinField(base.responseField, segment)
@@ -603,6 +611,7 @@ func (f *flow) eval(n *sitter.Node) value {
 			}
 		} else if !f.assignLocalField(left, v) {
 			f.assignStoredField(left, v)
+			f.noteStoreWrite(left)
 			v.gaps = append(v.gaps, f.heapWrite("heap/property assignment is not modeled", n))
 		}
 		return v
@@ -624,6 +633,7 @@ func (f *flow) eval(n *sitter.Node) value {
 				f.env[left.Utf8Text(src)] = v
 			}
 		} else if left != nil {
+			f.noteStoreWrite(left)
 			v.gaps = append(v.gaps, f.heapWrite("heap/property assignment is not modeled", n))
 		}
 		return v

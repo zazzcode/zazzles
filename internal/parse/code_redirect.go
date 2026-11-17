@@ -240,6 +240,10 @@ func (f *flow) recordInterpreter(call, arg *sitter.Node, v value, family, op, co
 }
 
 func (f *flow) fixedLiteralRedirect(n *sitter.Node) bool {
+	return f.fixedLiteralPrefixRedirect(n) || f.fixedOriginDestination(n, 0)
+}
+
+func (f *flow) fixedLiteralPrefixRedirect(n *sitter.Node) bool {
 	n = unwrapTS(n)
 	if n == nil {
 		return false
@@ -359,6 +363,7 @@ func (s *moduleSet) assembleInterpreterClaims(report *analysis.AnalysisReport) {
 				if u.Redirect != nil {
 					s.redirectRestrictionEvidence(u, c)
 					s.redirectHelperRestrictions(u, c)
+					s.redirectPredicateFacts(u, c)
 					if strings.Contains(u.Sink.Text, "'back'") || strings.Contains(u.Sink.Text, `"back"`) {
 						c.ModelFacts = append(c.ModelFacts, "redirect_back_referer")
 					}

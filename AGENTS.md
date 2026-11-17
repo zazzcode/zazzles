@@ -71,6 +71,18 @@ and `git worktree list`. The active user's assigned path takes precedence over p
 handoffs. If a handoff points at another checkout, resolve it against the assigned worktree before
 continuing; do not silently switch to the handoff's path. See [worktree setup](.zazz/docs/worktree-setup.md).
 
+## Claude Code
+
+These rules apply to Claude Code desktop sessions and the agents they start:
+
+- Start desktop sessions on the assigned sibling worktree folder with the app's worktree option off.
+- Never use app-created `.claude/worktrees/` checkouts or `claude/*` branches. A session that finds
+  itself in one MUST stop and ask the owner instead of working around the edit guard.
+- Subagents never use worktree isolation. They share the assigned checkout and own disjoint files.
+- `start_session` uses `cwd` set to the assigned worktree and `use_worktree: false`.
+- Sonnet subagents are acceptable for scoped implementation. The lead reviews their diffs and runs
+  the gates.
+
 ## Branch model
 
 `stage` integrates reviewed work; `main` receives human-operated release promotion and version tags.

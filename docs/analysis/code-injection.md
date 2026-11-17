@@ -46,5 +46,11 @@ patches, sandbox object factories and unmodeled control flow remain unresolved. 
 deserialization, module loading and WebAssembly are separate concerns. Server-to-client props are
 followed one imported component hop; deeper component chains and state transitions remain bounded.
 
+A Sequelize stored value read by `findByPk`/finders can link back to its request writer
+(`user.update({field: req.body.field})`) for a code operand, reusing the stored-XSS write/read link.
+A model setter that only sanitizes HTML is a transfer, not a code restriction. Seed-only writers and
+other columns remain unresolved. A browser `eval` records only the code claim; string timers and
+`Function` keep their separate script-context XSS records.
+
 Use `--only-family code` with a judged scan to select this family. Offline evidence and practice
 observations do not consume model requests.

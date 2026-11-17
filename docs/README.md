@@ -27,6 +27,7 @@ and intended behavior visible so an agent can apply and verify an appropriate ch
 | [Getting started](getting-started.md) | Go/C prerequisites, compilation, `.env.sample`, and environment loading |
 | [Running scans](running-scans.md) | CLI modes, route scope, report folders, JSON/HTML/SARIF, and current limitations |
 | [Interpreting results](interpreting-results.md) | Findings, Review, Protected, Categories, counts, and agent remediation |
+| [Detection capabilities](detection-capabilities.md) | Families, languages and frameworks covered, recognized protections, generic vs adapter-specific rules |
 | [Analysis rules and guidelines](analysis/README.md) | Source evidence, SQL/NoSQL judgment, input validation, and calibration |
 | [Category glossary](glossary.md) | SQL/NoSQL, validation, outbound requests, and planned categories |
 | [Decision-model setup](decision-models.md) | Required core assessment with Luna, credentials, bounded requests and failures |

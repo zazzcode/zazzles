@@ -7,7 +7,39 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
+// dropCodeOwnedXSS removes a script-context XSS candidate recorded at the same
+// operation as a code-injection candidate (eval, Function constructor, timer
+// string). The code-injection family owns that operation, so a duplicate XSS
+// claim is not emitted. A script-context XSS at any other sink is untouched.
+func dropCodeOwnedXSS(report *analysis.AnalysisReport) {
+	type key struct {
+		file       string
+		start, end int
+	}
+	code := map[key]bool{}
+	for _, u := range report.Uses {
+		// Only browser eval is code-owned (docs/analysis/code-injection.md);
+		// string timers and Function keep their script-context XSS record.
+		if u.Code != nil && u.Code.ContractID == "js-eval-v1" {
+			code[key{u.Sink.Span.File, u.Sink.Span.StartByte, u.Sink.Span.EndByte}] = true
+		}
+	}
+	if len(code) == 0 {
+		return
+	}
+	kept := report.Uses[:0:0]
+	for _, u := range report.Uses {
+		if u.Kind == "xss_candidate" && u.XSS != nil && u.XSS.OutputContext == "script" &&
+			code[key{u.Sink.Span.File, u.Sink.Span.StartByte, u.Sink.Span.EndByte}] {
+			continue
+		}
+		kept = append(kept, u)
+	}
+	report.Uses = kept
+}
+
 func assembleXSSClaims(report *analysis.AnalysisReport) {
+	dropCodeOwnedXSS(report)
 	for i := range report.Uses {
 		u := &report.Uses[i]
 		if u.Kind != "xss_candidate" || u.XSS == nil {

@@ -21,6 +21,7 @@ func (s *moduleSet) urlSchemeOnlyTests(u *analysis.CandidateUse, c *analysis.Com
 	var handlers []analysis.Evidence
 	handlers = append(handlers, c.Evidence["invoked_callable"]...)
 	tests, schemeOnly := 0, true
+	skip := s.ssrfNonEnforcingChecks(u, c)
 	seen := map[string]bool{}
 	for _, h := range handlers {
 		m := s.modules[h.Span.File]
@@ -35,6 +36,10 @@ func (s *moduleSet) urlSchemeOnlyTests(u *analysis.CandidateUse, c *analysis.Com
 		walkCalls(body, func(call *sitter.Node) {
 			fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
 			if fn == nil || args == nil || fn.Kind() != "member_expression" || args.NamedChildCount() != 1 {
+				return
+			}
+			// A check that only sets a flag, or runs after the call, restricts nothing.
+			if h.Span.File == u.Sink.Span.File && skip[call.StartByte()] {
 				return
 			}
 			obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")

@@ -230,6 +230,22 @@ An API name alone is not proof of binding, source control or protection. Unknown
 registration, helper limits and unsupported control/heap behavior retain explicit uncertainty.
 Adapter-specific limits and current case evidence belong in their contracts and coverage guides.
 
+### Shared, language and framework layers
+
+Analysis has three layers. A rule belongs to the most widely shared layer that can state it correctly:
+
+| Layer | Owns | Shared by |
+|---|---|---|
+| Framework entry adapters | Entries, registration and dispatch, request inputs, framework rendering and redirect APIs: Express/Fastify/Hapi, Next.js (file-system routes, Server Actions, pages, Web Request API), Flask, Django, FastAPI and the other Python adapters | One framework |
+| Language flow and library contracts | Value/control flow, guards, transfers, stores, constant folding and library operation models (Sequelize, Prisma, Mongoose, `fs`, `child_process`, `fetch`/axios; sqlite3, `subprocess`, `requests`) | Every framework in that language: JS/TS (`flow.go`, `guard_*`, library files) or Python (`python_*.go`) |
+| Claim assembly, verdict policy and reporting | Completeness roles, blockers such as `storage_origin_unresolved`, deterministic gates, judge questions and JSON/HTML/SARIF output | All languages |
+
+Next.js is an entry adapter over the JS/TS layer, not a separate analyzer. A JS/TS flow or library
+rule therefore applies to Express and Next.js alike, unless it depends on a framework construct (for
+example a Next.js catch-all `[...path]` parameter). Python shares only the claim, policy and reporting layer; a JS/TS flow
+rule has no Python effect until the Python adapter gets an equivalent with its own paired fixtures.
+The user-facing summary is [detection capabilities](../docs/detection-capabilities.md).
+
 ### Multiple entry and dispatch mechanisms
 
 **Architecture decision:** analysis roots MUST be independent of HTTP routes. Entry kinds and dispatch

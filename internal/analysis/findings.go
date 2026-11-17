@@ -15,11 +15,30 @@ type Finding struct {
 	Protection          string         `json:"use_protection"`
 	Uncertainty         string         `json:"uncertainty"`
 	Recommendations     Recommendation `json:"recommendations"`
+	// AssessmentState separates unjudged records ("not_run") from completed
+	// ("completed") and failed ("failed") semantic assessments.
+	AssessmentState string `json:"assessment_state,omitempty"`
+	// BlockingEvidence names, for a Review record, the claim-relevant evidence
+	// that prevents a final outcome. It never discharges or invents a blocker.
+	BlockingEvidence []BlockingReason `json:"blocking_evidence,omitempty"`
+	// LinkedUseIDs lists independent claims on the same operation (for example
+	// a redirect and an XSS claim on one navigation); each keeps its own record.
+	LinkedUseIDs []string `json:"linked_use_ids,omitempty"`
 	// GroupedUseIDs lists the other records an observation finding stands for:
 	// entries that reach the same call site. GroupedInto marks such a record with
 	// the finding that represents it; renderers show only the representative.
 	GroupedUseIDs []string `json:"grouped_use_ids,omitempty"`
 	GroupedInto   string   `json:"grouped_into,omitempty"`
+}
+
+// BlockingReason is one machine-readable reason a record stays in Review.
+// Source is "scanner" for candidate gaps/completeness, "policy" for
+// deterministic verdict gates.
+type BlockingReason struct {
+	Kind   string `json:"kind"`
+	Detail string `json:"detail,omitempty"`
+	Source string `json:"source"`
+	At     *Span  `json:"at,omitempty"`
 }
 
 // Recommendation describes actions to review; examples are never verified patches.

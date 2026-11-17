@@ -193,7 +193,11 @@ func (f *flow) directZodParse(n *sitter.Node, values []value) (value, bool) {
 	f.context = append(f.context, schema...)
 	out := f.transfer(values[0], "validated_parse", n)
 	if f.web == nil {
-		return out, true // Pages Router: members of the result carry the input
+		// Pages Router: members of the result carry the input.
+		if strings.HasPrefix(prop.Utf8Text(f.module.src), "safeParse") {
+			out = f.zodDataFieldReads(n, out)
+		}
+		return out, true
 	}
 	if strings.HasPrefix(prop.Utf8Text(f.module.src), "safeParse") {
 		out.web = "validated"

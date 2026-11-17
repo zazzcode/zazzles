@@ -22,6 +22,12 @@ Every outbound record classifies the destination operand: `request` (a request i
 `request` destination with a verified client becomes a claim. Second-order destinations stay
 observations; `unestablished` is not proof that no request value reaches the call.
 
+Module-level `const` string literals and templates of such constants, including named imports up to
+four hops, fold to a `constant` destination. `process.env` (also `env || literal`), `let`, reassigned
+and locally shadowed bindings do not fold. A constant destination with request values only in the
+headers or body is explained in the record and its blocking reasons
+(`constant_destination_no_request_dependency`); its status is unchanged.
+
 ## Assessment and outcomes
 
 The model answers `destination_control` (`full_url`, `host`, `path_or_query`, `none`, `unknown`),
@@ -42,3 +48,9 @@ destination value they mention.
 
 Network reachability, DNS answers, redirects at runtime, proxies and deployment policy are not inferred.
 A handler reached through an unmodeled wrapper keeps `unresolved_wrapper` blockers.
+
+A URL test is non-enforcing when the source shows it cannot stop or change the call: it runs after
+the call, or its only effect is setting a flag or variable that no branch on the sink reads. Such a
+test is not a supported transfer or restriction, and the path stays raw. A loop that starts after the
+sink, or that precedes it without leaving the handler, assigning an outer binding or containing the
+sink, no longer adds `control_flow_unresolved`; removing that blocker never records a guard.

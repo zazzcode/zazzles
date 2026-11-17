@@ -46,7 +46,8 @@ produces no invented origin, and the read stays an unresolved-origin Review. Cro
 write ordering is not established; a `$_SESSION` read whose writing helper expanded in another
 entry stays unresolved rather than linked.
 
-Helper expansion is bounded to depth 3 and 96 work units per entry, source files to 2 MiB,
+Helper expansion is bounded to depth 3 and 256 helper calls per entry, include nesting to 8
+(include cycles are not re-entered), source files to 2 MiB,
 dependency paths to 64 and evidence merges are content-deduplicated. Conditional dispatch
 switches join only changed variables. Loops, references/aliases, dynamic calls by variable name,
 object polymorphism, interface inheritance and unresolved dynamic includes

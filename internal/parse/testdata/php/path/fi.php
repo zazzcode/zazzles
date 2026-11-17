@@ -2,4 +2,3 @@
 
 $file = $_GET['page'];
 include( $file );
-

@@ -10,4 +10,3 @@ if( is_numeric( $id ) ) {
 	$row = $stmt->fetch();
 	echo "<pre>{$row['first_name']}</pre>";
 }
-

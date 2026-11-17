@@ -23,7 +23,7 @@ Contracts: `php-mysqli-v1`, `php-pdo-v1`, `php-sqlite3-v1`, `php-program-executi
 `php-header-redirect-v1`, `render.php-html-output-v1`, `source.php-input-v1`. Selection closure
 covers the six families plus validation; NoSQL/SSRF/logging never select for PHP.
 
-Documented deviations from the Python adapter bounds: helper work budget is 96 per entry (DVWA
+Documented deviations from the Python adapter bounds: helper work budget is 256 calls per entry (DVWA
 page assembly chains more helpers than a Flask handler; depth 3 kept), gap/evidence merges dedupe
 by content (branch clones inherit parent state; plain append doubles per conditional), and
 conditional joins use a dirty-set (only changed variables rejoin). These took a DVWA entry from
@@ -111,3 +111,20 @@ remaining fi-impossible false positive fixed by guard modeling at `1deee35`.
 **Cumulative paid usage: 1,336 requests** (292 + 292 + 154 + 14 probe + 292 + 292), all against
 the user's OpenAI account with per-run caps honored; the 300-request contract cap applies to the
 accepted final pass.
+
+
+## Independent review fixes (post-AC14)
+
+The review rebased the branch onto `stage` `86efc7e` (replay still 292/292 exact) and then fixed
+PHP flow defects that dropped or mis-protected flows: nested-branch merges losing writes,
+inverted `!is_numeric`/`||` guard polarity, unwalked `elseif`/`else` chains and braceless bodies,
+loops ending the entry, `file($file)` builtin shadowing, include cycles and zero-argument panics;
+dispatch alternatives now narrow their selector so impossible-only page code stays out of other
+levels (regressions in `internal/parse/php_flow_test.go`; php-goof used as a second sample).
+Offline DVWA analysis at the fixed tip has 229 records (296 before): 72 zero-dependency SQL
+records for constant double-quoted queries are gone and 5 records are new (cookie values reaching
+the page render, a braceless upload `unlink`); no record with a request dependency was lost.
+67 of the 292 retained paid decisions still replay exactly; the rest carry different evidence (for
+example `csrf/source/high.php` UPDATE gained the request sources it had lost).
+`TestDVWASourceKey` still passes. The AC14 outcomes above describe
+scanner `1deee35`; no paid requests were made for the fixed tip.

@@ -9,4 +9,3 @@ $rows = mysqli_query($GLOBALS["___mysqli_ston"], 'SELECT name, comment FROM gues
 while( $row = mysqli_fetch_assoc( $rows ) ) {
 	echo "<div id=\"guestbook_comments\">Name: {$row['name']}<br />Message: {$row['comment']}<br /></div>";
 }
-

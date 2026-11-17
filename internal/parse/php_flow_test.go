@@ -809,3 +809,22 @@ $stmt->execute();
 		}
 	}
 }
+
+func TestPHPXSSTypeNamesTheRawWitness(t *testing.T) {
+	// DVWA page shape: a raw cookie and an encoded, resolved stored value
+	// render together; the witness is reflected.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"write.php": "<?php\n$conn = mysqli_connect('h', 'u', 'p', 'd');\n$c = htmlspecialchars($_POST['c']);\nmysqli_query($conn, \"INSERT INTO notes (body) VALUES ('$c')\");\n",
+		"read.php":  "<?php\n$conn = mysqli_connect('h', 'u', 'p', 'd');\n$row = mysqli_fetch_assoc(mysqli_query($conn, \"SELECT body FROM notes\"));\necho \"<body class='\" . $_COOKIE['theme'] . \"'>\" . $row['body'];\n",
+	}), "")
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		if u.Sink.Span.File != "read.php" {
+			continue
+		}
+		if u.XSS.Type != "reflected" || u.XSS.StorageKey != "php-sql:notes.body" || !u.XSS.OriginResolved {
+			t.Fatalf("direct raw witness with an encoded stored sibling is reflected: %#v", u.XSS)
+		}
+		return
+	}
+	t.Fatalf("missing read.php render: %#v", r.Uses)
+}

@@ -405,8 +405,11 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 		}
 		u.XSS.OriginResolved = resolved
 		u.XSS.RelatedEntries = related
+		// The type names the witness: a raw linked stored path makes a stored
+		// claim; otherwise a direct raw request path keeps it reflected, with
+		// resolved or unresolved stored siblings visible in its paths.
 		u.XSS.Type = "stored"
-		if !resolved && directRaw {
+		if rawKey == "" && directRaw {
 			u.XSS.Type = "reflected"
 		}
 		raw, unknown := false, false

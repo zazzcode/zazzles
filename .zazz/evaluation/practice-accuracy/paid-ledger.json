@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "authorization_date": "2026-11-16",
+  "scope": "Current owner-authorized implementation and evaluation session only",
+  "cap": 300,
+  "paid_requests_sent": 0,
+  "reserved_requests": 0,
+  "remaining": 300,
+  "carry_forward": false,
+  "fallback_allowed": false,
+  "entries": [],
+  "reason": "Practice corrections require no model requests. Security evidence is unchanged; retained assessments are verified by exact offline replay. Missing Commerce trust contracts cannot be supplied by another model call."
+}

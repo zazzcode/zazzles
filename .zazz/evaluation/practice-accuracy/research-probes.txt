@@ -1,0 +1,30 @@
+package parse
+
+import "testing"
+
+func TestAccuracyResearchProbe(t *testing.T) {
+	for _, tt := range []struct {
+		name, check string
+		files       map[string]string
+		want        bool
+	}{
+		{"cookie_composed_safe", "NX-BP-11", map[string]string{"app/api/x/route.ts": `import {cookies} from 'next/headers';export async function GET(){const defaults={httpOnly:true,secure:true,sameSite:'strict'};const jar=await cookies();jar.set('session','x',{...defaults});return new Response('ok')}`}, false},
+		{"cookie_override_unsafe", "NX-BP-11", map[string]string{"app/api/x/route.ts": `import {cookies} from 'next/headers';export async function GET(){const insecure={secure:false};const jar=await cookies();jar.set('session','x',{httpOnly:true,secure:true,sameSite:'strict',...insecure});return new Response('ok')}`}, true},
+		{"message_comparison_unused", "NX-BP-21", map[string]string{"app/page.tsx": `"use client";export default function Page(){window.addEventListener('message',event=>{const trusted=event.origin==='https://trusted.example';document.body.innerHTML=event.data});return null}`}, true},
+		{"message_comparison_after_use", "NX-BP-21", map[string]string{"app/page.tsx": `"use client";export default function Page(){window.addEventListener('message',event=>{document.body.innerHTML=event.data;if(event.origin!=='https://trusted.example')return});return null}`}, true},
+		{"cache_identity_name_only", "NX-BP-15", map[string]string{"app/page.tsx": `import {cookies} from 'next/headers';import {unstable_cache} from 'next/cache';export default async function Page(){const jar=await cookies();const user='global';const get=unstable_cache(async()=>jar.get('session')?.value,[user]);return <p>{await get()}</p>}`}, true},
+		{"cache_public_unrelated", "NX-BP-15", map[string]string{"app/page.tsx": `import {cookies} from 'next/headers';export default async function Page(){const jar=await cookies();const catalog=await fetch('https://example.com/catalog',{cache:'force-cache'});return <p>{jar.get('session')?.value}</p>}`}, false},
+		{"admin_ignored_auth", "NX-BP-22", map[string]string{"app/page.tsx": `"use client";export default function Page(){if(localStorage.getItem('role')==='admin'){fetch('/api/admin')}return null}`, "app/api/admin/route.ts": `import {auth} from './auth';export async function GET(){await auth();return Response.json({secret:'x'})}`}, true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			r := analyzeNext(t, nextRepo(t, tt.files))
+			got := false
+			for _, p := range r.Practice {
+				got = got || p.Check == tt.check
+			}
+			if got != tt.want {
+				t.Errorf("%s got=%v want=%v", tt.check, got, tt.want)
+			}
+		})
+	}
+}

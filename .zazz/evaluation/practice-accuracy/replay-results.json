@@ -1,0 +1,870 @@
+{
+  "schema_version": 1,
+  "generated_date": "2026-11-16",
+  "method": "go test ./internal/judge -run ^TestReplaySavedRun$ -count=1 -v",
+  "network_calls": 0,
+  "paid_calls": 0,
+  "totals": {
+    "completed_assessments": 60,
+    "exact_replay_pass": 51,
+    "mismatched": 9,
+    "trace_absent": 0
+  },
+  "runs": [
+    {
+      "origin_run": "oops-ssrf",
+      "report_artifact": "analyzer-protection/paid/oops-ssrf/oss-oopssec-store/run-2675857201/findings.json",
+      "report_sha256": "21d6c1ec643cc0a0ed9bc1a9e7486fc2e6e4f1f5af275c1281a2cd7ccd7fe116",
+      "source": {
+        "checkout": "oss-oopssec-store",
+        "revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:1dccf44a0cdc445a57bee086a7bdf97603049d38ebadf45ca00dedc98f00ff04"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-oops-ssrf.logs"
+    },
+    {
+      "origin_run": "oops-sql",
+      "report_artifact": "analyzer-protection/paid/oops-sql/oss-oopssec-store/run-19764020/findings.json",
+      "report_sha256": "3c2193f4d9b17f59b3f3e1315eed62f5e722943aed15b170a5bf0514378051bf",
+      "source": {
+        "checkout": "oss-oopssec-store",
+        "revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:c0a583c0e0a019e33befad6a21897974f385fb9582696d07d0627201b84671d6"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-oops-sql.logs"
+    },
+    {
+      "origin_run": "oops-path",
+      "report_artifact": "analyzer-protection/paid/oops-path/oss-oopssec-store/run-2232494879/findings.json",
+      "report_sha256": "7487fcdef97de8665586664a86794fef67fa209ab05fa6fbbdd64c5f148eb599",
+      "source": {
+        "checkout": "oss-oopssec-store",
+        "revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:b2d80e8902f52041eb65a9f05bd9e26c57f74eb12e4a2f60c53457f689a34e78"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-oops-path.logs"
+    },
+    {
+      "origin_run": "lab-zodsql",
+      "report_artifact": "analyzer-protection/paid/lab-zodsql/vuln-nextjs/run-2811614972/findings.json",
+      "report_sha256": "cfcdc13c11d0a9d519571f254f256179720cbabc4d6509ae6245dde8be549e94",
+      "source": {
+        "checkout": "vuln-nextjs",
+        "revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:f01eca3a5c695fd97270c4dd96fc028b1685575f24c560efc3f2812157af7453"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-lab-zodsql.logs"
+    },
+    {
+      "origin_run": "lab-redir",
+      "report_artifact": "analyzer-protection/paid/lab-redir/vuln-nextjs/run-1920467932/findings.json",
+      "report_sha256": "521086fe381b29b1bffb65b81bfe63221e2ae15f10c6603efb079538ad417aca",
+      "source": {
+        "checkout": "vuln-nextjs",
+        "revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:4ccae06adcbbbdfc0669a8eea6e07e0d0e8ea12f96ce492ea62148f7d91cd264"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-lab-redir.logs"
+    },
+    {
+      "origin_run": "juice-code",
+      "report_artifact": "analyzer-protection/paid/juice-code/juice-shop/run-2915517281/findings.json",
+      "report_sha256": "082a60ad43008ee5b034647c9ab624e76f119311f884bd8e1e8abdb9be33a8b4",
+      "source": {
+        "checkout": "juice-shop",
+        "revision": "f189f521266f42c6bd05884468292000cee852ed"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:a963a4128c685979bad75c0f4c782628e0f477c1c4ebb1d7287e491c6dc82060"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-juice-code.logs"
+    },
+    {
+      "origin_run": "juice-ssrf",
+      "report_artifact": "analyzer-protection/paid/juice-ssrf/juice-shop/run-1471178657/findings.json",
+      "report_sha256": "85b0a9ef5256d8b07ec6d325b592e86417636d6621445369ee52798d8c2a7a1f",
+      "source": {
+        "checkout": "juice-shop",
+        "revision": "f189f521266f42c6bd05884468292000cee852ed"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:751d258ce369b615f7aa56dd863f6ab00333ad68b0b7f6877e060adda47ae66f"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-juice-ssrf.logs"
+    },
+    {
+      "origin_run": "vulnpy-path",
+      "report_artifact": "analyzer-protection/paid/vulnpy-path/vulnpy/run-1241835277/findings.json",
+      "report_sha256": "4f302ef09be6a87ea0baaf18eb8f7cb652d1be6477b2023edaf6a73a19602d62",
+      "source": {
+        "checkout": "vulnpy",
+        "revision": "b81885e58283a3449b578d20c20557aff637e5ea"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:aa3bb2e52863b7c4a64392bffe4e3c2d66334c051eed3a3d2080402f0ae38f69"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-vulnpy-path.logs"
+    },
+    {
+      "origin_run": "vulnpy-sql",
+      "report_artifact": "analyzer-protection/paid/vulnpy-sql/vulnpy/run-3908830752/findings.json",
+      "report_sha256": "7f5c6443521beb34cfd348c2249f5be333a335d6210ad80d6bb9ab673b4b44cc",
+      "source": {
+        "checkout": "vulnpy",
+        "revision": "b81885e58283a3449b578d20c20557aff637e5ea"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:02da34e328f9420663824da73b353a4a34730da9d9aa291d8ac4d761557dff4a"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-vulnpy-sql.logs"
+    },
+    {
+      "origin_run": "phase2-vuln-nextjs",
+      "report_artifact": "nextjs-phase-2/final/vuln-nextjs/run-2011024734/findings.json",
+      "report_sha256": "28ca0788b0ff4ba97809922689d316013191e5b58d59caae7ba48757bccee5c4",
+      "source": {
+        "checkout": "vuln-nextjs",
+        "revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:12d5631c8df549f8f22a261aa2265af0e88eb5144f3e60cc6653e464ae710d27",
+        "candidate:v1:7497a942c4ebe144519925a3bc7c0c809048f4b6e68b030659448a809a41f1c3",
+        "candidate:v1:8453e855665a9c27054d4f1dc743e0e6c4f4eb47f4128f7b25bcff79b4953f23",
+        "candidate:v1:c880e46ecb3b976676c0a6d71d3247607984084b22d5d5d05f7e80187cc0381f",
+        "candidate:v1:d5bcaee9bd8cf31eb6b4b29c0c8965c4a5271d1cbe8b6521171abfa42e4eb7ff",
+        "candidate:v1:f0778bdf92ecce87c852c8ef01f746be5e1784a7b0561217d9dc8699584510fc"
+      ],
+      "exact_replay_failure_use_ids": [
+        {
+          "id": "candidate:v1:4ccae06adcbbbdfc0669a8eea6e07e0d0e8ea12f96ce492ea62148f7d91cd264",
+          "outcome": "exact_replay_mismatch"
+        },
+        {
+          "id": "candidate:v1:84847e1a477031745e28de18134baccdce8ef9906eb60dd5871fc9c06832c581",
+          "outcome": "absent_from_fresh_analysis"
+        }
+      ],
+      "completed_assessments": 8,
+      "replayed": 6,
+      "mismatched": 2,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-phase2-vuln-nextjs.logs"
+    },
+    {
+      "origin_run": "phase2-nodejs-goof",
+      "report_artifact": "nextjs-phase-2/final/nodejs-goof/run-106441268/findings.json",
+      "report_sha256": "c096e5b73e743553b9f15751523d58606bf1d43d7a0468d23494dd793a02056d",
+      "source": {
+        "checkout": "nodejs-goof",
+        "revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:e808aea2edeb9715ad0ff9abf50625b5a27ecccc27fdf8c272e5611b2ff3f172"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 1,
+      "replayed": 1,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-phase2-nodejs-goof.logs"
+    },
+    {
+      "origin_run": "phase2-vulnerable-typescript-app",
+      "report_artifact": "nextjs-phase-2/final/vulnerable-typescript-app/run-834355082/findings.json",
+      "report_sha256": "1230615b3aba7cc7937b7aafbd2124ea8783b4a4fdfac597654e66e0c25ae26c",
+      "source": {
+        "checkout": "vulnerable-typescript-app",
+        "revision": "7f8b240a2f02beba099da3632d1ba679ff8bc32f"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:2d0d694f21669a036d0e2acc0fa6214b668ced3d563e4edcc5b1a9027d514bbd",
+        "candidate:v1:88f55ec31d2142f070b574eab5bc5b05642e0e01bbe9054829cc041ab05be95a"
+      ],
+      "exact_replay_failure_use_ids": [],
+      "completed_assessments": 2,
+      "replayed": 2,
+      "mismatched": 0,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-phase2-vulnerable-typescript-app.logs"
+    },
+    {
+      "origin_run": "phase2-oss-oopssec-store",
+      "report_artifact": "nextjs-phase-2/final/oss-oopssec-store/run-3304220139/findings.json",
+      "report_sha256": "64b73216273b6a5641654083f1b36ba2e97ad9dc88c1f7750a68d129317e1139",
+      "source": {
+        "checkout": "oss-oopssec-store",
+        "revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:1c0ee94b6dc7e85fc8ac35923bed9f39ab8b804a44303b25e874ca9cd349d97a",
+        "candidate:v1:58b3d69870d4a80d1edbc4b7e4fdba1208ff95e1915de817c07777c77c8c9cba",
+        "candidate:v1:88d9712c47241b47d49cce51ed78b41ee108eb9ee5af396e3efabdb48788ba3f",
+        "candidate:v1:c929ce67f8895672972844fbd180ea856cc6f2aad4faba27292f76bec756752d",
+        "candidate:v1:df122e9544f44244d0548e9e93ab46069e8572288080db5ff320ff20d606c1f9",
+        "candidate:v1:df122e9544f44244d0548e9e93ab46069e8572288080db5ff320ff20d606c1f9:1"
+      ],
+      "exact_replay_failure_use_ids": [
+        {
+          "id": "candidate:v1:5488d02813c094cde60c1eeb8c82a9431bbd118ed10e0dade3dce883bc023a0a",
+          "outcome": "absent_from_fresh_analysis"
+        },
+        {
+          "id": "candidate:v1:5962182579e55314d5a1bfdd5e8943791dda0d7b45ee0a46c9a243cbe86dbbc8",
+          "outcome": "absent_from_fresh_analysis"
+        },
+        {
+          "id": "candidate:v1:6b6fbcfc7768b1a408118ffbaa38695257dbd80cd61e700653b7edb0e6e41944",
+          "outcome": "absent_from_fresh_analysis"
+        }
+      ],
+      "completed_assessments": 9,
+      "replayed": 6,
+      "mismatched": 3,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-phase2-oss-oopssec-store.logs"
+    },
+    {
+      "origin_run": "phase2-juice-shop",
+      "report_artifact": "nextjs-phase-2/final/juice-shop/run-3757015726/findings.json",
+      "report_sha256": "1884f8e6241b78460aa6fb9c91758bd960d9fc7b820b627faf9105f9fa1b830c",
+      "source": {
+        "checkout": "juice-shop",
+        "revision": "f189f521266f42c6bd05884468292000cee852ed"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:13e9c81d5c6856ae347c6afdaf69f3fcbd0da0bdc36fb9dba212309b35751c99",
+        "candidate:v1:5f0b010cf72de57c0d1f2a43b578601144600846dad1a09a8319b2ba12899563",
+        "candidate:v1:f33138dede791435567b2cb03e15e95a0d413b4273985676ed89c604bcbecbad"
+      ],
+      "exact_replay_failure_use_ids": [
+        {
+          "id": "candidate:v1:8681cd56f3496d46769130fa63f2b5ffd192a204778c4770c7fc1ae7a3a0b4e8",
+          "outcome": "absent_from_fresh_analysis"
+        }
+      ],
+      "completed_assessments": 4,
+      "replayed": 3,
+      "mismatched": 1,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-phase2-juice-shop.logs"
+    },
+    {
+      "origin_run": "phase2-vulnpy",
+      "report_artifact": "nextjs-phase-2/final/vulnpy/run-2256159336/findings.json",
+      "report_sha256": "ad78c4ce6d62d983bc427620bdfd4c28bed89a0bfa4025eed29886f254de3e5f",
+      "source": {
+        "checkout": "vulnpy",
+        "revision": "b81885e58283a3449b578d20c20557aff637e5ea"
+      },
+      "exact_replay_pass_use_ids": [
+        "candidate:v1:1936d219efcff70652ee9c5f135f3fc859d0a931986ccb19d44e35295a7328f8",
+        "candidate:v1:2135d108dfe2deed5d40d592fe942a34d5a726d1c9f427504506c0c22e03f930",
+        "candidate:v1:21d181b6e5352b922fab58d4b3a971d43af04f39544f11292b94f467bae27858",
+        "candidate:v1:2ab20eae2e0eec81283868b4181796cac061890bff7d6582f1dcc7fedeb7d007",
+        "candidate:v1:305822c4661f6ad89a011d91418fb623dfc058c4bd2d7f55292d689035658044",
+        "candidate:v1:3b237ca2cdd8cb0f2877c8b4c82c84a5ce9839dd44ad3d40ca89bd8699abb409",
+        "candidate:v1:44b5fbb0fe903343bf7687f9a96c214b2dc91e90f74f696ee1f4190790536770",
+        "candidate:v1:4cd5ac81c4a205a2bf631a762265e2e8bbfe4c2d19a00adec69c4b6fddafbafb",
+        "candidate:v1:4d2dff8d9409cf540ed8f9ab8668f4ce29ab17bd81dc0a0fb190f0d7d13c9b65",
+        "candidate:v1:4e3ba66e92b17014ef2e572a9c0347015e50115b2311aa93b3e697b6c11de1af",
+        "candidate:v1:5f1988a02aa7edcfb225e4fe31bf439012528eeefdac5e8c64eb2f36305dd16a",
+        "candidate:v1:61fc2b7a1ff55127975fe741a1600aa4fcdea7a185e3a1445a903bde6b10eca3",
+        "candidate:v1:65ee66c12c35eced5cefcedcbaeeb174d92db47341d5e824d2dda09dc93151d0",
+        "candidate:v1:7462432239383626772d8458ba204171e4708ff2a87a47ecea164d04517427eb",
+        "candidate:v1:83a1796a1a9bae583b7efec236458def3d7441b0c424d94540052629dfa5cd4c",
+        "candidate:v1:8ca5cbeda37fea772bce45b51aa6d6d9010da50d5fe793d1ca2f09abe0606a1a",
+        "candidate:v1:98ff35802481d6edcd4e347ef1a4a2e80313ab9aae0f42647916e3f7e1fc5989",
+        "candidate:v1:a08637324699b73ccc6d42a7c9a720e750205848ad5c9b5d8c4e9d9799d5760f",
+        "candidate:v1:a826155e10a1c6409b3ededd461aefb0a109fac4bf09c666ecc684c626b02ca4",
+        "candidate:v1:a8bfada537686209c6b158f2444fae85f350b13f70abef91356ce99282039f81",
+        "candidate:v1:af78c6bc11c972d4076b2c24c11f92c656e0e653c73c8540c9087937dcf4d50f",
+        "candidate:v1:c61dfcb40f8c1e58cafaa38a52a8793870169eaac5c2d614c66cb22b527d9eb6",
+        "candidate:v1:e4c8ed91e75e0220c2c6951b8472b16a63b02bc51fa3b09af852968d45c833b0",
+        "candidate:v1:f695ef2896be716505c45088a921fd9d70841335dab0d660975fb6609c147072"
+      ],
+      "exact_replay_failure_use_ids": [
+        {
+          "id": "candidate:v1:0e6c5e2f5524ca9a2753eefd84d1a801d403da64ce95625474958f0e6e390fe6",
+          "outcome": "exact_replay_mismatch"
+        },
+        {
+          "id": "candidate:v1:6ff63e6ff74d806f5037694a218f70a06b50cdb3e2575c962a7851fcb58bf2fc",
+          "outcome": "exact_replay_mismatch"
+        },
+        {
+          "id": "candidate:v1:f73b824a25a44b82c08a8e98ae2af9f35c9dd5d2b11daca01473ffa87131dc8c",
+          "outcome": "exact_replay_mismatch"
+        }
+      ],
+      "completed_assessments": 27,
+      "replayed": 24,
+      "mismatched": 3,
+      "trace_absent": 0,
+      "log": ".zazz/ephemeral/accuracy-replay-phase2-vulnpy.logs"
+    }
+  ],
+  "current_analyzer_source": {
+    "checkout_branch": "accuracy-false-positive-eval",
+    "head_commit": "cb40f370594948181594b2dbc1b5576157b1ba95",
+    "internal_go_tree_sha256": "65d992c2797e253b5d275edab2ba0b09bc2c4da5630bcfb71707c65568fbd913",
+    "working_tree_has_uncommitted_changes": true
+  },
+  "baseline_verification": {
+    "baseline_commit": "cb40f370594948181594b2dbc1b5576157b1ba95",
+    "go_overlay": {
+      "replaced_with_baseline": [
+        "internal/parse/next_boundary.go",
+        "internal/parse/next_practice_extended.go"
+      ],
+      "replaced_new_helper_files_with": [
+        "package parse placeholder: internal/parse/next_practice_authorization.go",
+        "package parse placeholder: internal/parse/next_practice_cache.go",
+        "package parse placeholder: internal/parse/next_practice_controls.go",
+        "package parse placeholder: internal/parse/next_practice_config.go",
+        "package parse placeholder: internal/parse/next_practice_values.go"
+      ],
+      "command": "go test -overlay=<temporary-cb40f-overlay> ./internal/judge -run ^TestReplaySavedRun$ -count=1 -v"
+    },
+    "exact_mismatch_replays": [
+      {
+        "origin_run": "phase2-vuln-nextjs",
+        "overlay_log": ".zazz/ephemeral/accuracy-replay-baseline-phase2-vuln-nextjs.logs",
+        "summary": {
+          "replayed": 5,
+          "mismatched": 3,
+          "trace_absent": 0
+        },
+        "original_exact_mismatch_ids": [
+          "candidate:v1:4ccae06adcbbbdfc0669a8eea6e07e0d0e8ea12f96ce492ea62148f7d91cd264"
+        ],
+        "all_original_exact_mismatch_ids_reproduced": true
+      },
+      {
+        "origin_run": "phase2-vulnpy",
+        "overlay_log": ".zazz/ephemeral/accuracy-replay-baseline-phase2-vulnpy.logs",
+        "summary": {
+          "replayed": 24,
+          "mismatched": 3,
+          "trace_absent": 0
+        },
+        "original_exact_mismatch_ids": [
+          "candidate:v1:0e6c5e2f5524ca9a2753eefd84d1a801d403da64ce95625474958f0e6e390fe6",
+          "candidate:v1:6ff63e6ff74d806f5037694a218f70a06b50cdb3e2575c962a7851fcb58bf2fc",
+          "candidate:v1:f73b824a25a44b82c08a8e98ae2af9f35c9dd5d2b11daca01473ffa87131dc8c"
+        ],
+        "all_original_exact_mismatch_ids_reproduced": true
+      }
+    ],
+    "absent_id_raw_report_checks": [
+      {
+        "target": "juice-shop",
+        "baseline_report": "_test-findings/practice-accuracy/baseline/juice-shop.json",
+        "report_sha256": "e090aa4b22603fa0eb68b42f8418bfc8c95e73d5ae28e258991725ffe4eee702",
+        "use_count": 251,
+        "checked_absent_use_ids": [
+          "candidate:v1:8681cd56f3496d46769130fa63f2b5ffd192a204778c4770c7fc1ae7a3a0b4e8"
+        ],
+        "all_checked_ids_absent": true,
+        "checked_id_count": 1
+      },
+      {
+        "target": "oss-oopssec-store",
+        "baseline_report": "_test-findings/practice-accuracy/baseline/oss-oopssec-store.json",
+        "report_sha256": "03d72010663a9866ed1804bff0740bb7481c524e25a8a8a18a0d4298e594e687",
+        "use_count": 125,
+        "checked_absent_use_ids": [
+          "candidate:v1:5488d02813c094cde60c1eeb8c82a9431bbd118ed10e0dade3dce883bc023a0a",
+          "candidate:v1:5962182579e55314d5a1bfdd5e8943791dda0d7b45ee0a46c9a243cbe86dbbc8",
+          "candidate:v1:6b6fbcfc7768b1a408118ffbaa38695257dbd80cd61e700653b7edb0e6e41944"
+        ],
+        "all_checked_ids_absent": true,
+        "checked_id_count": 3
+      },
+      {
+        "target": "vuln-nextjs",
+        "baseline_report": "_test-findings/practice-accuracy/baseline/vuln-nextjs.json",
+        "report_sha256": "69f509b8fde99469a2bc96667a736221c5a1f9e57f53f1b565fed7216790f175",
+        "use_count": 54,
+        "checked_absent_use_ids": [
+          "candidate:v1:84847e1a477031745e28de18134baccdce8ef9906eb60dd5871fc9c06832c581"
+        ],
+        "all_checked_ids_absent": true,
+        "checked_id_count": 1
+      }
+    ],
+    "network_calls": 0,
+    "paid_calls": 0
+  },
+  "final_retained_replay": {
+    "generated_date": "2026-11-16",
+    "source": {
+      "checkout_branch": "accuracy-false-positive-eval",
+      "head_commit": "cb40f370594948181594b2dbc1b5576157b1ba95",
+      "internal_go_tree_sha256": "86f37cbbcdb322334e007a0b231e06af10c9c0a20d13289178902ce458121e18",
+      "working_tree_has_uncommitted_changes": true
+    },
+    "method": "go test ./internal/judge -run ^TestReplaySavedRun$ -count=1 -v; phase-2 inputs are temporary projections of prior successful registry IDs only",
+    "network_calls": 0,
+    "paid_calls": 0,
+    "totals": {
+      "retained_proposal1_assessments": 9,
+      "proposal1_exact_replay_pass": 9,
+      "retained_phase2_assessments": 42,
+      "phase2_exact_replay_pass": 42,
+      "exact_replay_mismatched": 0,
+      "trace_absent": 0,
+      "stale_completed_assessments_excluded": 9
+    },
+    "projection_policy": "Each phase-2 projection retains the original completed assessments for registry-passing IDs; other completed assessments are replaced with {\"status\":\"skipped\"}. IDs are not relabeled, and original reports remain unchanged.",
+    "stale_excluded_use_ids": [
+      "candidate:v1:0e6c5e2f5524ca9a2753eefd84d1a801d403da64ce95625474958f0e6e390fe6",
+      "candidate:v1:4ccae06adcbbbdfc0669a8eea6e07e0d0e8ea12f96ce492ea62148f7d91cd264",
+      "candidate:v1:5488d02813c094cde60c1eeb8c82a9431bbd118ed10e0dade3dce883bc023a0a",
+      "candidate:v1:5962182579e55314d5a1bfdd5e8943791dda0d7b45ee0a46c9a243cbe86dbbc8",
+      "candidate:v1:6b6fbcfc7768b1a408118ffbaa38695257dbd80cd61e700653b7edb0e6e41944",
+      "candidate:v1:6ff63e6ff74d806f5037694a218f70a06b50cdb3e2575c962a7851fcb58bf2fc",
+      "candidate:v1:84847e1a477031745e28de18134baccdce8ef9906eb60dd5871fc9c06832c581",
+      "candidate:v1:8681cd56f3496d46769130fa63f2b5ffd192a204778c4770c7fc1ae7a3a0b4e8",
+      "candidate:v1:f73b824a25a44b82c08a8e98ae2af9f35c9dd5d2b11daca01473ffa87131dc8c"
+    ],
+    "runs": [
+      {
+        "origin_run": "oops-ssrf",
+        "source_checkout": "oss-oopssec-store",
+        "source_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/oops-ssrf/oss-oopssec-store/run-2675857201/findings.json",
+        "original_report_sha256": "21d6c1ec643cc0a0ed9bc1a9e7486fc2e6e4f1f5af275c1281a2cd7ccd7fe116",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-oops-ssrf",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "21d6c1ec643cc0a0ed9bc1a9e7486fc2e6e4f1f5af275c1281a2cd7ccd7fe116",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-oops-ssrf.logs"
+      },
+      {
+        "origin_run": "oops-sql",
+        "source_checkout": "oss-oopssec-store",
+        "source_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/oops-sql/oss-oopssec-store/run-19764020/findings.json",
+        "original_report_sha256": "3c2193f4d9b17f59b3f3e1315eed62f5e722943aed15b170a5bf0514378051bf",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-oops-sql",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "3c2193f4d9b17f59b3f3e1315eed62f5e722943aed15b170a5bf0514378051bf",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-oops-sql.logs"
+      },
+      {
+        "origin_run": "oops-path",
+        "source_checkout": "oss-oopssec-store",
+        "source_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/oops-path/oss-oopssec-store/run-2232494879/findings.json",
+        "original_report_sha256": "7487fcdef97de8665586664a86794fef67fa209ab05fa6fbbdd64c5f148eb599",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-oops-path",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "7487fcdef97de8665586664a86794fef67fa209ab05fa6fbbdd64c5f148eb599",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-oops-path.logs"
+      },
+      {
+        "origin_run": "lab-zodsql",
+        "source_checkout": "vuln-nextjs",
+        "source_revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/lab-zodsql/vuln-nextjs/run-2811614972/findings.json",
+        "original_report_sha256": "cfcdc13c11d0a9d519571f254f256179720cbabc4d6509ae6245dde8be549e94",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-lab-zodsql",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "cfcdc13c11d0a9d519571f254f256179720cbabc4d6509ae6245dde8be549e94",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-lab-zodsql.logs"
+      },
+      {
+        "origin_run": "lab-redir",
+        "source_checkout": "vuln-nextjs",
+        "source_revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/lab-redir/vuln-nextjs/run-1920467932/findings.json",
+        "original_report_sha256": "521086fe381b29b1bffb65b81bfe63221e2ae15f10c6603efb079538ad417aca",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-lab-redir",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "521086fe381b29b1bffb65b81bfe63221e2ae15f10c6603efb079538ad417aca",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-lab-redir.logs"
+      },
+      {
+        "origin_run": "juice-code",
+        "source_checkout": "juice-shop",
+        "source_revision": "f189f521266f42c6bd05884468292000cee852ed",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/juice-code/juice-shop/run-2915517281/findings.json",
+        "original_report_sha256": "082a60ad43008ee5b034647c9ab624e76f119311f884bd8e1e8abdb9be33a8b4",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-juice-code",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "082a60ad43008ee5b034647c9ab624e76f119311f884bd8e1e8abdb9be33a8b4",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-juice-code.logs"
+      },
+      {
+        "origin_run": "juice-ssrf",
+        "source_checkout": "juice-shop",
+        "source_revision": "f189f521266f42c6bd05884468292000cee852ed",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/juice-ssrf/juice-shop/run-1471178657/findings.json",
+        "original_report_sha256": "85b0a9ef5256d8b07ec6d325b592e86417636d6621445369ee52798d8c2a7a1f",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-juice-ssrf",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "85b0a9ef5256d8b07ec6d325b592e86417636d6621445369ee52798d8c2a7a1f",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-juice-ssrf.logs"
+      },
+      {
+        "origin_run": "vulnpy-path",
+        "source_checkout": "vulnpy",
+        "source_revision": "b81885e58283a3449b578d20c20557aff637e5ea",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/vulnpy-path/vulnpy/run-1241835277/findings.json",
+        "original_report_sha256": "4f302ef09be6a87ea0baaf18eb8f7cb652d1be6477b2023edaf6a73a19602d62",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-vulnpy-path",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "4f302ef09be6a87ea0baaf18eb8f7cb652d1be6477b2023edaf6a73a19602d62",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-vulnpy-path.logs"
+      },
+      {
+        "origin_run": "vulnpy-sql",
+        "source_checkout": "vulnpy",
+        "source_revision": "b81885e58283a3449b578d20c20557aff637e5ea",
+        "original_report_artifact": "_test-findings/analyzer-protection/paid/vulnpy-sql/vulnpy/run-3908830752/findings.json",
+        "original_report_sha256": "7f5c6443521beb34cfd348c2249f5be333a335d6210ad80d6bb9ab673b4b44cc",
+        "trace_artifact": "_test-findings/analyzer-protection/paid/traces-vulnpy-sql",
+        "replay_input": "original_report_unprojected",
+        "replay_input_sha256": "7f5c6443521beb34cfd348c2249f5be333a335d6210ad80d6bb9ab673b4b44cc",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-vulnpy-sql.logs"
+      },
+      {
+        "origin_run": "phase2-vuln-nextjs",
+        "source_checkout": "vuln-nextjs",
+        "source_revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+        "original_report_artifact": "_test-findings/nextjs-phase-2/final/vuln-nextjs/run-2011024734/findings.json",
+        "original_report_sha256": "28ca0788b0ff4ba97809922689d316013191e5b58d59caae7ba48757bccee5c4",
+        "trace_artifact": "_test-findings/nextjs-phase-2/final/traces-final-2209874715",
+        "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-vuln-nextjs.json",
+        "replay_input_projection_sha256": "59e2e10df9ca09f4bf9ae6e4abd0aebb1880ec05ab99257bc0e1dcebc1177ed2",
+        "retained_completed_assessments": 6,
+        "excluded_stale_completed_assessments": 2,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-phase2-vuln-nextjs.logs"
+      },
+      {
+        "origin_run": "phase2-nodejs-goof",
+        "source_checkout": "nodejs-goof",
+        "source_revision": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+        "original_report_artifact": "_test-findings/nextjs-phase-2/final/nodejs-goof/run-106441268/findings.json",
+        "original_report_sha256": "c096e5b73e743553b9f15751523d58606bf1d43d7a0468d23494dd793a02056d",
+        "trace_artifact": "_test-findings/nextjs-phase-2/final/traces-final-1194548429",
+        "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-nodejs-goof.json",
+        "replay_input_projection_sha256": "750f3f9ed4d973e939c4176c349b9b41231366c526986afcda30bc993fa38009",
+        "retained_completed_assessments": 1,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-phase2-nodejs-goof.logs"
+      },
+      {
+        "origin_run": "phase2-vulnerable-typescript-app",
+        "source_checkout": "vulnerable-typescript-app",
+        "source_revision": "7f8b240a2f02beba099da3632d1ba679ff8bc32f",
+        "original_report_artifact": "_test-findings/nextjs-phase-2/final/vulnerable-typescript-app/run-834355082/findings.json",
+        "original_report_sha256": "1230615b3aba7cc7937b7aafbd2124ea8783b4a4fdfac597654e66e0c25ae26c",
+        "trace_artifact": "_test-findings/nextjs-phase-2/final/traces-final-2891722844",
+        "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-vulnerable-typescript-app.json",
+        "replay_input_projection_sha256": "be4cee38a5b917ac50886203af6a0d46097241a15a7f103fa67e1401305c9095",
+        "retained_completed_assessments": 2,
+        "excluded_stale_completed_assessments": 0,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-phase2-vulnerable-typescript-app.logs"
+      },
+      {
+        "origin_run": "phase2-oss-oopssec-store",
+        "source_checkout": "oss-oopssec-store",
+        "source_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+        "original_report_artifact": "_test-findings/nextjs-phase-2/final/oss-oopssec-store/run-3304220139/findings.json",
+        "original_report_sha256": "64b73216273b6a5641654083f1b36ba2e97ad9dc88c1f7750a68d129317e1139",
+        "trace_artifact": "_test-findings/nextjs-phase-2/final/traces-final-1916625053",
+        "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-oss-oopssec-store.json",
+        "replay_input_projection_sha256": "694aa4802782473a8ed47780ba6e5030e0ba11762539177acd7bd5b3e4baff82",
+        "retained_completed_assessments": 6,
+        "excluded_stale_completed_assessments": 3,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-phase2-oss-oopssec-store.logs"
+      },
+      {
+        "origin_run": "phase2-juice-shop",
+        "source_checkout": "juice-shop",
+        "source_revision": "f189f521266f42c6bd05884468292000cee852ed",
+        "original_report_artifact": "_test-findings/nextjs-phase-2/final/juice-shop/run-3757015726/findings.json",
+        "original_report_sha256": "1884f8e6241b78460aa6fb9c91758bd960d9fc7b820b627faf9105f9fa1b830c",
+        "trace_artifact": "_test-findings/nextjs-phase-2/final/traces-final-1238306971",
+        "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-juice-shop.json",
+        "replay_input_projection_sha256": "5d2e6f472260cba569e502d13598efa83878a102d73e9222f52bb2efb944b995",
+        "retained_completed_assessments": 3,
+        "excluded_stale_completed_assessments": 1,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-phase2-juice-shop.logs"
+      },
+      {
+        "origin_run": "phase2-vulnpy",
+        "source_checkout": "vulnpy",
+        "source_revision": "b81885e58283a3449b578d20c20557aff637e5ea",
+        "original_report_artifact": "_test-findings/nextjs-phase-2/final/vulnpy/run-2256159336/findings.json",
+        "original_report_sha256": "ad78c4ce6d62d983bc427620bdfd4c28bed89a0bfa4025eed29886f254de3e5f",
+        "trace_artifact": "_test-findings/nextjs-phase-2/final/traces-final-4057840939",
+        "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-vulnpy.json",
+        "replay_input_projection_sha256": "e40cd6ac26e790e556a4c62daa12ed0e0c0edb193b97582fdc87e43d0949df71",
+        "retained_completed_assessments": 24,
+        "excluded_stale_completed_assessments": 3,
+        "log": ".zazz/ephemeral/accuracy-replay-final-qa51-phase2-vulnpy.logs"
+      }
+    ]
+  },
+  "final_retained_replay_history": [
+    {
+      "generated_date": "2026-11-16",
+      "source": {
+        "checkout_branch": "accuracy-false-positive-eval",
+        "head_commit": "cb40f370594948181594b2dbc1b5576157b1ba95",
+        "internal_go_tree_sha256": "4691798178a992fce93af26ec4aa0a4983e3586483b42fd1a9647c5342b4b5f1",
+        "working_tree_has_uncommitted_changes": true
+      },
+      "method": "go test ./internal/judge -run ^TestReplaySavedRun$ -count=1 -v; phase-2 inputs are temporary projections of retained successful registry IDs only",
+      "network_calls": 0,
+      "paid_calls": 0,
+      "totals": {
+        "retained_proposal1_assessments": 9,
+        "proposal1_exact_replay_pass": 9,
+        "retained_phase2_assessments": 42,
+        "phase2_exact_replay_pass": 42,
+        "exact_replay_mismatched": 0,
+        "trace_absent": 0,
+        "stale_completed_assessments_excluded": 9
+      },
+      "projection_policy": "For each phase-2 projection, only registry IDs with a prior exact replay pass remain completed. Other completed assessments are replaced with {\"status\":\"skipped\"}; IDs and successful saved assessments remain unchanged. Original reports are untouched.",
+      "stale_excluded_use_ids": [
+        "candidate:v1:0e6c5e2f5524ca9a2753eefd84d1a801d403da64ce95625474958f0e6e390fe6",
+        "candidate:v1:4ccae06adcbbbdfc0669a8eea6e07e0d0e8ea12f96ce492ea62148f7d91cd264",
+        "candidate:v1:5488d02813c094cde60c1eeb8c82a9431bbd118ed10e0dade3dce883bc023a0a",
+        "candidate:v1:5962182579e55314d5a1bfdd5e8943791dda0d7b45ee0a46c9a243cbe86dbbc8",
+        "candidate:v1:6b6fbcfc7768b1a408118ffbaa38695257dbd80cd61e700653b7edb0e6e41944",
+        "candidate:v1:6ff63e6ff74d806f5037694a218f70a06b50cdb3e2575c962a7851fcb58bf2fc",
+        "candidate:v1:84847e1a477031745e28de18134baccdce8ef9906eb60dd5871fc9c06832c581",
+        "candidate:v1:8681cd56f3496d46769130fa63f2b5ffd192a204778c4770c7fc1ae7a3a0b4e8",
+        "candidate:v1:f73b824a25a44b82c08a8e98ae2af9f35c9dd5d2b11daca01473ffa87131dc8c"
+      ],
+      "runs": [
+        {
+          "origin_run": "oops-ssrf",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/oops-ssrf/oss-oopssec-store/run-2675857201/findings.json",
+          "original_report_sha256": "21d6c1ec643cc0a0ed9bc1a9e7486fc2e6e4f1f5af275c1281a2cd7ccd7fe116",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "21d6c1ec643cc0a0ed9bc1a9e7486fc2e6e4f1f5af275c1281a2cd7ccd7fe116",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-oops-ssrf.logs"
+        },
+        {
+          "origin_run": "oops-sql",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/oops-sql/oss-oopssec-store/run-19764020/findings.json",
+          "original_report_sha256": "3c2193f4d9b17f59b3f3e1315eed62f5e722943aed15b170a5bf0514378051bf",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "3c2193f4d9b17f59b3f3e1315eed62f5e722943aed15b170a5bf0514378051bf",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-oops-sql.logs"
+        },
+        {
+          "origin_run": "oops-path",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/oops-path/oss-oopssec-store/run-2232494879/findings.json",
+          "original_report_sha256": "7487fcdef97de8665586664a86794fef67fa209ab05fa6fbbdd64c5f148eb599",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "7487fcdef97de8665586664a86794fef67fa209ab05fa6fbbdd64c5f148eb599",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-oops-path.logs"
+        },
+        {
+          "origin_run": "lab-zodsql",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/lab-zodsql/vuln-nextjs/run-2811614972/findings.json",
+          "original_report_sha256": "cfcdc13c11d0a9d519571f254f256179720cbabc4d6509ae6245dde8be549e94",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "cfcdc13c11d0a9d519571f254f256179720cbabc4d6509ae6245dde8be549e94",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-lab-zodsql.logs"
+        },
+        {
+          "origin_run": "lab-redir",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/lab-redir/vuln-nextjs/run-1920467932/findings.json",
+          "original_report_sha256": "521086fe381b29b1bffb65b81bfe63221e2ae15f10c6603efb079538ad417aca",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "521086fe381b29b1bffb65b81bfe63221e2ae15f10c6603efb079538ad417aca",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-lab-redir.logs"
+        },
+        {
+          "origin_run": "juice-code",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/juice-code/juice-shop/run-2915517281/findings.json",
+          "original_report_sha256": "082a60ad43008ee5b034647c9ab624e76f119311f884bd8e1e8abdb9be33a8b4",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "082a60ad43008ee5b034647c9ab624e76f119311f884bd8e1e8abdb9be33a8b4",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-juice-code.logs"
+        },
+        {
+          "origin_run": "juice-ssrf",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/juice-ssrf/juice-shop/run-1471178657/findings.json",
+          "original_report_sha256": "85b0a9ef5256d8b07ec6d325b592e86417636d6621445369ee52798d8c2a7a1f",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "85b0a9ef5256d8b07ec6d325b592e86417636d6621445369ee52798d8c2a7a1f",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-juice-ssrf.logs"
+        },
+        {
+          "origin_run": "vulnpy-path",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/vulnpy-path/vulnpy/run-1241835277/findings.json",
+          "original_report_sha256": "4f302ef09be6a87ea0baaf18eb8f7cb652d1be6477b2023edaf6a73a19602d62",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "4f302ef09be6a87ea0baaf18eb8f7cb652d1be6477b2023edaf6a73a19602d62",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-vulnpy-path.logs"
+        },
+        {
+          "origin_run": "vulnpy-sql",
+          "original_report_artifact": "<container>/_test-findings/analyzer-protection/paid/vulnpy-sql/vulnpy/run-3908830752/findings.json",
+          "original_report_sha256": "7f5c6443521beb34cfd348c2249f5be333a335d6210ad80d6bb9ab673b4b44cc",
+          "replay_input": "original_report_unprojected",
+          "replay_input_sha256": "7f5c6443521beb34cfd348c2249f5be333a335d6210ad80d6bb9ab673b4b44cc",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-vulnpy-sql.logs"
+        },
+        {
+          "origin_run": "phase2-vuln-nextjs",
+          "original_report_artifact": "<container>/_test-findings/nextjs-phase-2/final/vuln-nextjs/run-2011024734/findings.json",
+          "original_report_sha256": "28ca0788b0ff4ba97809922689d316013191e5b58d59caae7ba48757bccee5c4",
+          "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-vuln-nextjs.json",
+          "replay_input_projection_sha256": "59e2e10df9ca09f4bf9ae6e4abd0aebb1880ec05ab99257bc0e1dcebc1177ed2",
+          "retained_completed_assessments": 6,
+          "excluded_stale_completed_assessments": 2,
+          "log": ".zazz/ephemeral/accuracy-replay-final-phase2-vuln-nextjs.logs"
+        },
+        {
+          "origin_run": "phase2-nodejs-goof",
+          "original_report_artifact": "<container>/_test-findings/nextjs-phase-2/final/nodejs-goof/run-106441268/findings.json",
+          "original_report_sha256": "c096e5b73e743553b9f15751523d58606bf1d43d7a0468d23494dd793a02056d",
+          "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-nodejs-goof.json",
+          "replay_input_projection_sha256": "750f3f9ed4d973e939c4176c349b9b41231366c526986afcda30bc993fa38009",
+          "retained_completed_assessments": 1,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-phase2-nodejs-goof.logs"
+        },
+        {
+          "origin_run": "phase2-vulnerable-typescript-app",
+          "original_report_artifact": "<container>/_test-findings/nextjs-phase-2/final/vulnerable-typescript-app/run-834355082/findings.json",
+          "original_report_sha256": "1230615b3aba7cc7937b7aafbd2124ea8783b4a4fdfac597654e66e0c25ae26c",
+          "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-vulnerable-typescript-app.json",
+          "replay_input_projection_sha256": "be4cee38a5b917ac50886203af6a0d46097241a15a7f103fa67e1401305c9095",
+          "retained_completed_assessments": 2,
+          "excluded_stale_completed_assessments": 0,
+          "log": ".zazz/ephemeral/accuracy-replay-final-phase2-vulnerable-typescript-app.logs"
+        },
+        {
+          "origin_run": "phase2-oss-oopssec-store",
+          "original_report_artifact": "<container>/_test-findings/nextjs-phase-2/final/oss-oopssec-store/run-3304220139/findings.json",
+          "original_report_sha256": "64b73216273b6a5641654083f1b36ba2e97ad9dc88c1f7750a68d129317e1139",
+          "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-oss-oopssec-store.json",
+          "replay_input_projection_sha256": "694aa4802782473a8ed47780ba6e5030e0ba11762539177acd7bd5b3e4baff82",
+          "retained_completed_assessments": 6,
+          "excluded_stale_completed_assessments": 3,
+          "log": ".zazz/ephemeral/accuracy-replay-final-phase2-oss-oopssec-store.logs"
+        },
+        {
+          "origin_run": "phase2-juice-shop",
+          "original_report_artifact": "<container>/_test-findings/nextjs-phase-2/final/juice-shop/run-3757015726/findings.json",
+          "original_report_sha256": "1884f8e6241b78460aa6fb9c91758bd960d9fc7b820b627faf9105f9fa1b830c",
+          "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-juice-shop.json",
+          "replay_input_projection_sha256": "5d2e6f472260cba569e502d13598efa83878a102d73e9222f52bb2efb944b995",
+          "retained_completed_assessments": 3,
+          "excluded_stale_completed_assessments": 1,
+          "log": ".zazz/ephemeral/accuracy-replay-final-phase2-juice-shop.logs"
+        },
+        {
+          "origin_run": "phase2-vulnpy",
+          "original_report_artifact": "<container>/_test-findings/nextjs-phase-2/final/vulnpy/run-2256159336/findings.json",
+          "original_report_sha256": "ad78c4ce6d62d983bc427620bdfd4c28bed89a0bfa4025eed29886f254de3e5f",
+          "replay_input_projection": "<external-output>/zazzles-accuracy-final-projections/phase2-vulnpy.json",
+          "replay_input_projection_sha256": "e40cd6ac26e790e556a4c62daa12ed0e0c0edb193b97582fdc87e43d0949df71",
+          "retained_completed_assessments": 24,
+          "excluded_stale_completed_assessments": 3,
+          "log": ".zazz/ephemeral/accuracy-replay-final-phase2-vulnpy.logs"
+        }
+      ]
+    }
+  ]
+}

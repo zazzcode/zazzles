@@ -89,5 +89,34 @@ Message sender and client-only authorization checks are Review observations, not
 Caching observations require a registered entry's actual user-context reads; a constant key named
 `users` is not a user-specific cache key.
 
+Cookie option checks resolve bounded immutable local aliases and ordered literal spreads; a later
+override wins. Mutation, an escaped options object or unknown composition remains a Review
+observation, rather than a claim that an individual flag is definitely absent. Image/Server Action
+configuration whose relevant values cannot be resolved is also reported as an unresolved practice
+boundary.
+
+Shared-cache checks follow actual request-context values into the same cached computation.
+`unstable_cache` key parts must cover the captured request value; a different cookie or a whole
+cookie jar does not establish the same identity. Known callback invocation arguments participate in
+the key. An unresolved callback cannot establish protection. A public cached request beside an
+unrelated cookie read does not establish personalized caching.
+
+Message origin checks must enforce an exact origin before the same callback's data use. Ignored
+comparisons, checks after use, mutated events and nested callback checks cannot suppress the
+observation. A client role gate is associated with its actual request/method/route; merely calling
+an auth helper on the server is not evidence of enforcing the relevant admin permission. The bounded
+server check recognizes a `next-auth` `getServerSession` identity and an explicit role rejection
+with a 401/403 response before the operation. Unknown local helpers, successful responses from the
+rejecting branch and unsupported authorization forms remain Review. Neither sender origin nor
+server authentication supplies output encoding.
+Direct `if` and ternary branches establish the client request association. Mutating a session
+through a local alias invalidates the role evidence; unsupported escapes remain unresolved.
+
+Server Action validation is checked per request-derived value, including sibling object fields.
+An ignored parsed result or a validated sibling cannot supply another value's validation evidence;
+authorization remains a separate boundary. These checks use no model and express no exploitability
+verdict. [Accuracy evaluation](../../.zazz/evaluation/practice-accuracy/results.md) records the pinned
+research, results and the distinction between this practice tier and security assessment.
+
 [Code injection](code-injection.md) and [open redirect](open-redirect.md) remain independent shared
 families. Their API semantics and verdict gates are not Next.js acquisition rules.

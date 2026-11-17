@@ -1,0 +1,693 @@
+{
+  "schema_version": 1,
+  "scope": "Thirteen predecessor rows with prior Protected or offline protected_for_claim outcomes, plus two source-established React-text no-candidate exclusions. Source oracle and scanner outcome are separate.",
+  "source_basis": {
+    "inventory": ".zazz/evaluation/analyzer-protection-and-flow-inventory.md",
+    "pins": ".zazz/evaluation/practice-accuracy/research.md#pinned-corpus",
+    "offline_reports": "container/_test-findings/practice-accuracy/baseline/",
+    "target_integrity": "Pinned target HEADs match research pins; target sources were read only."
+  },
+  "rows": [
+    {
+      "row_id": "L-SQL-001-safe",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "sql",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Fixed SQL uses $1 with [username] supplied separately to PGlite query. The type/length check is defense in depth, not the basis of SQL-injection safety.",
+      "source_refs": [
+        {
+          "file": "pages/api/sql/safe/login.js",
+          "lines": [
+            10
+          ],
+          "sha256": "d4b2cd7dbaf97c3ee0e89de9542c54f1d0d8fd8f488ad2628395e55478d29c2c"
+        },
+        {
+          "file": "lib/database.cjs",
+          "lines": [
+            1
+          ],
+          "sha256": "a40223b74f4dd2b2b4ba6e8569212ffbeba58e6e2f559bf5b9df5b7dd3bd0614"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            26
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:22962d815a02f6f564ce325229434201c7270a8a64fda10f22c1b023425692b0",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/sql/safe/login.js",
+            "start_line": 10,
+            "end_line": 10,
+            "start_byte": 533,
+            "end_byte": 628,
+            "sha256": "d4b2cd7dbaf97c3ee0e89de9542c54f1d0d8fd8f488ad2628395e55478d29c2c"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-SQL-002-safe",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "sql",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Fixed SQL uses ILIKE $1 with the wildcard-wrapped q in the parameter array. LIKE wildcards affect matching, not SQL structure.",
+      "source_refs": [
+        {
+          "file": "pages/api/sql/safe/products.js",
+          "lines": [
+            10
+          ],
+          "sha256": "f731c1eda0dd07ecf6731dcbd3575118f6b90b6e6d3360ed97f2359857041bd6"
+        },
+        {
+          "file": "lib/database.cjs",
+          "lines": [
+            1
+          ],
+          "sha256": "a40223b74f4dd2b2b4ba6e8569212ffbeba58e6e2f559bf5b9df5b7dd3bd0614"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            26
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:c661827f064cbf8dd03e3622af19b22f7fae1e6eec8fc5d9f89ff9a66b8e3f6d",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/sql/safe/products.js",
+            "start_line": 10,
+            "end_line": 10,
+            "start_byte": 441,
+            "end_byte": 559,
+            "sha256": "f731c1eda0dd07ecf6731dcbd3575118f6b90b6e6d3360ed97f2359857041bd6"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-SQL-003-safe",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "sql",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Fixed INSERT uses $1/$2 placeholders; request body is passed in the separate parameter array and visibility is a server literal.",
+      "source_refs": [
+        {
+          "file": "pages/api/sql/safe/notes.js",
+          "lines": [
+            14
+          ],
+          "sha256": "154afd2e47be73118f1e83313c0b1cefd7cbde01794fc95c83c09b9b7b76e225"
+        },
+        {
+          "file": "lib/database.cjs",
+          "lines": [
+            1
+          ],
+          "sha256": "a40223b74f4dd2b2b4ba6e8569212ffbeba58e6e2f559bf5b9df5b7dd3bd0614"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            26
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:647df4683fd3f347ab44462285c2d6571fe7497764b440e00845d66e485dba93",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/sql/safe/notes.js",
+            "start_line": 14,
+            "end_line": 14,
+            "start_byte": 627,
+            "end_byte": 740,
+            "sha256": "154afd2e47be73118f1e83313c0b1cefd7cbde01794fc95c83c09b9b7b76e225"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-SQL-001-zod",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "sql",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Zod safeParse rejects malformed credentials before query; independently, fixed $1 SQL uses username only as a bound parameter. Parameterization, not validation alone, establishes safety.",
+      "source_refs": [
+        {
+          "file": "pages/api/sql/zod/login.js",
+          "lines": [
+            9,
+            10,
+            11,
+            15,
+            16,
+            17,
+            19
+          ],
+          "sha256": "5ee329d69568928cb2a40bb79c9fbcd4aaced5352a574d521aa020bf003afef2"
+        },
+        {
+          "file": "lib/database.cjs",
+          "lines": [
+            1
+          ],
+          "sha256": "a40223b74f4dd2b2b4ba6e8569212ffbeba58e6e2f559bf5b9df5b7dd3bd0614"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            26,
+            31
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:cb5f431bcbddfb8835a314d839abd760d1de6a5ff3e956f0d7d7a0f34b325028",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/sql/zod/login.js",
+            "start_line": 19,
+            "end_line": 19,
+            "start_byte": 820,
+            "end_byte": 915,
+            "sha256": "5ee329d69568928cb2a40bb79c9fbcd4aaced5352a574d521aa020bf003afef2"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-SQL-002-zod",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "sql",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Zod safeParse constrains q before use; fixed $1 SQL receives the wildcard-wrapped parsed value as a parameter. LIKE behavior is not SQL syntax. Current baseline mapping is source/sink based because the predecessor prefix changed.",
+      "source_refs": [
+        {
+          "file": "pages/api/sql/zod/products.js",
+          "lines": [
+            8,
+            11,
+            12,
+            14
+          ],
+          "sha256": "f489df55cdceffae97ac8c29bdcb5b951fa1968c52fdf41517366e20750413c4"
+        },
+        {
+          "file": "lib/database.cjs",
+          "lines": [
+            1
+          ],
+          "sha256": "a40223b74f4dd2b2b4ba6e8569212ffbeba58e6e2f559bf5b9df5b7dd3bd0614"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            26,
+            31
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:fe48cb7e2913ad9857190974d336b678cbfd139b73fd6953f2dd5c38089150b3",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/sql/zod/products.js",
+            "start_line": 14,
+            "end_line": 14,
+            "start_byte": 635,
+            "end_byte": 765,
+            "sha256": "f489df55cdceffae97ac8c29bdcb5b951fa1968c52fdf41517366e20750413c4"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-XSS-comments-write",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "sql",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "This row is the comments API INSERT claim: fixed SQL placeholders receive author/body in a separate parameter array. This does not assert that stored HTML rendering is safe.",
+      "source_refs": [
+        {
+          "file": "pages/api/xss/comments.js",
+          "lines": [
+            19
+          ],
+          "sha256": "80a02fb8e4cccafb60bc205560ccde164d88491286d71b07f6a716e231c36182"
+        },
+        {
+          "file": "lib/database.cjs",
+          "lines": [
+            1
+          ],
+          "sha256": "a40223b74f4dd2b2b4ba6e8569212ffbeba58e6e2f559bf5b9df5b7dd3bd0614"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            26
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:52785558c1b16e22b8059843d5c15bded911c83f6dc4bd6a3884280f36ab02b4",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/xss/comments.js",
+            "start_line": 19,
+            "end_line": 19,
+            "start_byte": 912,
+            "end_byte": 1030,
+            "sha256": "80a02fb8e4cccafb60bc205560ccde164d88491286d71b07f6a716e231c36182"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-FS-001-safe",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "path",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Request file must be a string and an exact member of the fixed Set before path.join. Traversal/absolute values fail membership; only two published filenames are joined.",
+      "source_refs": [
+        {
+          "file": "pages/api/secure/file-read.js",
+          "lines": [
+            8,
+            12,
+            15
+          ],
+          "sha256": "3f9252bf4242dd8e6249035e272f59da34eb92239557a62ecae2e6f8da410257"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:aa3b9bd7cdcfa62e7f294cf5bb2291fced32fe4917ef6fac37acebc4eaae05b8",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "pages/api/secure/file-read.js",
+            "start_line": 15,
+            "end_line": 15,
+            "start_byte": 669,
+            "end_byte": 717,
+            "sha256": "3f9252bf4242dd8e6249035e272f59da34eb92239557a62ecae2e6f8da410257"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-XSS-001-sanitized",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "xss",
+      "prior_outcome": "Protected (phase-2 final; unchanged offline)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "protected_for_claim",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "getServerSideProps passes payload through imported isomorphic-dompurify DOMPurify.sanitize with default configuration and provides that value to dangerouslySetInnerHTML.",
+      "source_refs": [
+        {
+          "file": "pages/xss/sanitized/reflected.js",
+          "lines": [
+            3,
+            16,
+            21,
+            22
+          ],
+          "sha256": "913ac8a31246423496db86ecf780474de5899453d467708518437d2523eb41db"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            27
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:06d701f1c33364866aaa0edd437ff7f2a9d30dc15049fd6f286281704662cc25",
+          "baseline_assessment": "protected_for_claim",
+          "sink": {
+            "file": "pages/xss/sanitized/reflected.js",
+            "start_line": 16,
+            "end_line": 16,
+            "start_byte": 1545,
+            "end_byte": 1588,
+            "sha256": "913ac8a31246423496db86ecf780474de5899453d467708518437d2523eb41db"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-XSS-004-sanitized",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "xss-stored",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "protected_for_claim",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Each stored comment body is passed directly through imported DOMPurify.sanitize at the raw HTML sink; no permissive custom configuration is supplied. The parameterized writer is not the XSS rationale.",
+      "source_refs": [
+        {
+          "file": "pages/xss/sanitized/comments.js",
+          "lines": [
+            3,
+            30,
+            37,
+            38
+          ],
+          "sha256": "aa7da2905220171135a5f787559a995934afbc16826635a315f48723285154b9"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            27
+          ],
+          "sha256": "15b1702aa9272790777288507bb7d75988014d5b40bc64ea0425f8f8ddebb9a2"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:fcd97e7d81d75a061d40e888a93a38f2703da92a85e34972217dd1b2a0f4ef70",
+          "baseline_assessment": "protected_for_claim",
+          "sink": {
+            "file": "pages/xss/sanitized/comments.js",
+            "start_line": 30,
+            "end_line": 30,
+            "start_byte": 2232,
+            "end_byte": 2302,
+            "sha256": "aa7da2905220171135a5f787559a995934afbc16826635a315f48723285154b9"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-XSS-003-escaped",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "xss",
+      "prior_outcome": "Protected (run-2611760098)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "protected_for_claim",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "jsonForScriptEmbedding JSON-serializes then escapes every < and U+2028/U+2029 before inserting data into script text. Escaping < prevents an embedded </script> delimiter.",
+      "source_refs": [
+        {
+          "file": "pages/xss/safe/script-context.js",
+          "lines": [
+            6,
+            7,
+            17
+          ],
+          "sha256": "b9c05f09a136da5e038b7bc82afb74343b16e8a2e9dbe295f69f3e025031fbec"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:8cce4abdcf195905b097ce7f2d0e2339c22f4de9cbe0ecc0109bae06778023b1",
+          "baseline_assessment": "protected_for_claim",
+          "sink": {
+            "file": "pages/xss/safe/script-context.js",
+            "start_line": 17,
+            "end_line": 17,
+            "start_byte": 1113,
+            "end_byte": 1208,
+            "sha256": "b9c05f09a136da5e038b7bc82afb74343b16e8a2e9dbe295f69f3e025031fbec"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "B-GF-05",
+      "target": "nodejs-goof",
+      "targetfullpin": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "family": "nosql",
+      "prior_outcome": "Protected (mongoose-path-id-objectid-v1)",
+      "baseline_report": "baseline/nodejs-goof.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Express req.params.id is a primitive string passed to Mongoose findById for the default _id/ObjectId field, so operator objects cannot be supplied through this route parameter. This is injection-only; destroy authorization remains separate.",
+      "source_refs": [
+        {
+          "file": "routes/index.js",
+          "lines": [
+            204
+          ],
+          "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+        },
+        {
+          "file": "mongoose-db.js",
+          "lines": [
+            1,
+            3,
+            5,
+            8,
+            10
+          ],
+          "sha256": "22591758d30ca24b01641fcd90d373299e3e68134b8a09f26ed0a069a184d370"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            39
+          ],
+          "sha256": "d93de0d5af790ec763d4c62177d92f4fbed7b9d48f21d6dafaa7984bd8733c31"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:87fed316f3c646ea705d8b543a5ecf0c7ccfd409378ca22f1c7d00bc21f63b9a",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "routes/index.js",
+            "start_line": 204,
+            "end_line": 213,
+            "start_byte": 5235,
+            "end_byte": 5439,
+            "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "B-GF-06",
+      "target": "nodejs-goof",
+      "targetfullpin": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "family": "nosql",
+      "prior_outcome": "Protected (mongoose-path-id-objectid-v1)",
+      "baseline_report": "baseline/nodejs-goof.json",
+      "baseline_outcome": "needs_review",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Express req.params.id is a primitive string passed to Mongoose findById for the default _id/ObjectId field, so operator objects cannot be supplied through this route parameter. This is injection-only; update authorization remains separate.",
+      "source_refs": [
+        {
+          "file": "routes/index.js",
+          "lines": [
+            232
+          ],
+          "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+        },
+        {
+          "file": "mongoose-db.js",
+          "lines": [
+            1,
+            3,
+            5,
+            8,
+            10
+          ],
+          "sha256": "22591758d30ca24b01641fcd90d373299e3e68134b8a09f26ed0a069a184d370"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            39
+          ],
+          "sha256": "d93de0d5af790ec763d4c62177d92f4fbed7b9d48f21d6dafaa7984bd8733c31"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:436d52031ec3c93d5c3177fade283b8fb176ca4f175d082eb78f0c448b906642",
+          "baseline_assessment": "needs_review",
+          "sink": {
+            "file": "routes/index.js",
+            "start_line": 232,
+            "end_line": 241,
+            "start_byte": 5774,
+            "end_byte": 6013,
+            "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "B-GF-12",
+      "target": "nodejs-goof",
+      "targetfullpin": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "family": "xss-stored",
+      "prior_outcome": "protected_for_claim (E4)",
+      "baseline_report": "baseline/nodejs-goof.json",
+      "baseline_outcome": "protected_for_claim",
+      "disposition": "established_safe",
+      "oracle_class": "genuine_safe",
+      "rationale": "Both todo.content outputs use EJS escaped-output syntax <%=, one in a quoted value attribute and one in HTML text. The XSS claim is escaped output only; the separate render-options/layout boundary is not covered.",
+      "source_refs": [
+        {
+          "file": "views/edit.ejs",
+          "lines": [
+            20,
+            23
+          ],
+          "sha256": "867ce350c8ae5d7793208c3b170d98f2733bc15382900833efbc55a59f74e4fe"
+        },
+        {
+          "file": "package.json",
+          "lines": [
+            24
+          ],
+          "sha256": "d93de0d5af790ec763d4c62177d92f4fbed7b9d48f21d6dafaa7984bd8733c31"
+        }
+      ],
+      "current_candidate_mappings": [
+        {
+          "candidate_id": "candidate:v1:81d715f75253c2161a5a8d2871e69dbec282e45c210d036db5b97b34ea3936b7",
+          "baseline_assessment": "protected_for_claim",
+          "sink": {
+            "file": "views/edit.ejs",
+            "start_line": 20,
+            "end_line": 20,
+            "start_byte": 603,
+            "end_byte": 622,
+            "sha256": "867ce350c8ae5d7793208c3b170d98f2733bc15382900833efbc55a59f74e4fe"
+          }
+        },
+        {
+          "candidate_id": "candidate:v1:11efb60d5eaec026d4f7c70f9d51fd25e6011792e3771b19428b13752478e945",
+          "baseline_assessment": "protected_for_claim",
+          "sink": {
+            "file": "views/edit.ejs",
+            "start_line": 23,
+            "end_line": 23,
+            "start_byte": 742,
+            "end_byte": 761,
+            "sha256": "867ce350c8ae5d7793208c3b170d98f2733bc15382900833efbc55a59f74e4fe"
+          }
+        }
+      ]
+    },
+    {
+      "row_id": "L-XSS-001-text",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "xss",
+      "prior_outcome": "no candidate (justified exclusion)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "no_xss_record",
+      "disposition": "justified_safe_exclusion",
+      "oracle_class": "genuine_safe",
+      "rationale": "Request payload is rendered as a React JSX text child, not dangerouslySetInnerHTML. React text interpolation escapes markup; no raw HTML claim/candidate exists.",
+      "source_refs": [
+        {
+          "file": "pages/xss/safe/reflected.js",
+          "lines": [
+            14
+          ],
+          "sha256": "c257b907829c2ecba3e72e65d5249e4fc0030bedac2194a077ab707bfd26c0e6"
+        }
+      ],
+      "current_candidate_mappings": []
+    },
+    {
+      "row_id": "L-XSS-002-text",
+      "target": "vuln-nextjs",
+      "targetfullpin": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+      "family": "xss-stored",
+      "prior_outcome": "no candidate (justified exclusion)",
+      "baseline_report": "baseline/vuln-nextjs.json",
+      "baseline_outcome": "no_xss_record",
+      "disposition": "justified_safe_exclusion",
+      "oracle_class": "genuine_safe",
+      "rationale": "Stored note body is rendered as a React JSX text child. React text interpolation escapes markup; there is no raw HTML sink or XSS candidate.",
+      "source_refs": [
+        {
+          "file": "pages/xss/safe/stored.js",
+          "lines": [
+            34
+          ],
+          "sha256": "9f3d2dec85a6d8fe6e12d06897ae0926c123abb3d5298a7b196f4e22901ff789"
+        }
+      ],
+      "current_candidate_mappings": []
+    }
+  ],
+  "scope_notes": [
+    {
+      "row_id": "B-JS-25",
+      "disposition": "unresolved_scope_note",
+      "rationale": "Inventory notes quoted Handlebars output as safe, but B-JS-25 was not a prior Protected/protected_for_claim row; it is excluded from this bounded matrix pending separate view/render-option audit."
+    }
+  ]
+}

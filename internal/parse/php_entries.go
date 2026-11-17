@@ -47,9 +47,3 @@ func (s *phpSet) analyzeEntry(out *analysis.AnalysisReport, m *phpModule) {
 		}
 	}
 }
-
-// phpInputSource records acquisition origin per invocation.
-type phpInputSource struct {
-	origin    string
-	container string
-}

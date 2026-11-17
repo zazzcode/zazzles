@@ -1,31 +1,104 @@
 package parse
 
 import (
+	"strings"
+
+	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-// phpInputOrigin maps a superglobal container to its acquisition origin
-// vocabulary (D-4). $_SESSION is a storage container, never a request origin.
-func phpInputOrigin(container, key string) string {
-	switch container {
-	case "GET":
-		return "http.query"
-	case "POST":
-		return "http.form"
-	case "REQUEST":
-		return "http.query_or_form"
-	case "COOKIE":
-		return "http.cookies"
-	case "FILES":
-		return "http.upload"
-	case "SERVER":
-		return serverKeyOrigin(key)
-	case "INPUT":
-		return "http.body"
+// phpInputSource records acquisition origin per invocation.
+type phpInputSource struct {
+	origin    string
+	container string
+}
+
+// superscriptOrigin maps a superglobal access to its acquisition origin.
+func superscriptOrigin(name string) (container, origin string, ok bool) {
+	switch name {
+	case "_GET":
+		return "GET", "http.query", true
+	case "_POST":
+		return "POST", "http.form", true
+	case "_REQUEST":
+		return "REQUEST", "http.query_or_form", true
+	case "_COOKIE":
+		return "COOKIE", "http.cookies", true
+	case "_FILES":
+		return "FILES", "http.upload", true
+	case "_SERVER":
+		return "SERVER", "http.headers", true
 	case "_SESSION":
-		return "storage"
+		return "_SESSION", "session", true
+	}
+	return "", "", false
+}
+
+// phpRequestContainer reports a superglobal whose whole value is request
+// controlled ($_SERVER mixes server facts and headers; $_SESSION is storage).
+func phpRequestContainer(container string) bool {
+	switch container {
+	case "GET", "POST", "REQUEST", "COOKIE", "FILES":
+		return true
+	}
+	return false
+}
+
+// serverKeyOrigin maps selected $_SERVER keys to precise origins.
+func serverKeyOrigin(key string) string {
+	switch {
+	case strings.HasPrefix(key, "HTTP_"):
+		return "http.headers"
+	case key == "REQUEST_URI", key == "PATH_INFO", key == "PHP_SELF":
+		return "http.url_path"
+	case key == "QUERY_STRING":
+		return "http.query"
 	}
 	return "unknown"
+}
+
+// source records an acquisition fact at a superglobal access.
+func (f *phpFlow) source(n *sitter.Node, container, origin, key string) phpValue {
+	kind := "input_source"
+	if container == "_SESSION" {
+		// A session container is storage, not an untrusted request origin:
+		// prior writes link as transfers.
+		kind = "storage_source"
+	}
+	e := f.module.evidence(kind, n)
+	dep := analysis.Dependency{Source: e, Transfers: []analysis.Evidence{}}
+	v := phpValue{deps: []phpDep{{dep: dep, protection: "raw", container: container, key: key}}}
+	if container == "_SESSION" {
+		key0 := "php-session:" + key
+		v.deps[0].dep.StorageKey = key0
+		for _, w := range f.set.sessionWrites[key0] {
+			for _, wd := range w.value.deps {
+				nd := wd
+				nd.dep.StorageKey = key0
+				nd.dep.Transfers = append(append([]analysis.Evidence{}, nd.dep.Transfers...), w.evidence)
+				nd.entry = w.entry
+				v.deps = append(v.deps, nd)
+			}
+		}
+		if len(f.set.sessionWrites[key0]) == 0 {
+			v.deps[0].protection = "unknown"
+		}
+	}
+	f.recordInput(e, container, key, origin)
+	return v
+}
+
+// recordInput indexes acquisition per invocation context.
+func (f *phpFlow) recordInput(source analysis.Evidence, container, key, origin string) {
+	if f.set.inputs == nil {
+		f.set.inputs = map[string]map[analysis.Evidence]phpInputSource{}
+	}
+	inputs := f.set.inputs[f.invocation.ID]
+	if inputs == nil {
+		inputs = map[analysis.Evidence]phpInputSource{}
+		f.set.inputs[f.invocation.ID] = inputs
+	}
+	inputs[source] = phpInputSource{origin: origin, container: container}
 }
 
 // assemblePHPInputs builds InputFacts after storage linking finalized the

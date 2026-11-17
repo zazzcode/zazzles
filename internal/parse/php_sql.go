@@ -10,7 +10,9 @@ import (
 )
 
 var phpSelectRe = regexp.MustCompile(`(?is)^\s*select\s+.+?\s+from\s+([a-zA-Z_][a-zA-Z0-9_]*)\b`)
+
 var phpInsertRe = regexp.MustCompile(`(?is)^\s*insert\s+into\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^)]+)\)\s*values\s*\((.*)\)\s*;?\s*$`)
+
 var phpUpdateRe = regexp.MustCompile(`(?is)^\s*update\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+set\s+(.+?)\s+where\b`)
 
 // phpSQLText extracts the constant SQL text of a value, if fully literal.
@@ -343,12 +345,4 @@ func (s *phpSet) attachChecks(out *analysis.AnalysisReport, checks []analysis.Ch
 		}
 	}
 	out.Uses = selected
-}
-
-func phpSlot(v phpValue, slot string) phpValue {
-	v.deps = append([]phpDep{}, v.deps...)
-	for i := range v.deps {
-		v.deps[i].dep.SinkSlot = slot
-	}
-	return v
 }

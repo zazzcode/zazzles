@@ -227,14 +227,6 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 	return all
 }
 
-func sliceFrom(values []phpValue, i int) phpValue {
-	var v phpValue
-	for ; i < len(values); i++ {
-		v = phpCombine(v, values[i])
-	}
-	return v
-}
-
 func (f *phpFlow) helperFunction(name string) *sitter.Node {
 	if fn, ok := f.module.funcs[name]; ok {
 		return fn
@@ -390,11 +382,7 @@ func (f *phpFlow) classOf(varName string) *sitter.Node {
 	}
 	// Track classes by object creation: a `new C` assignment binds the class.
 	if v, ok := f.env[varName]; ok && v.binding == "php_class" && len(v.evidence) > 0 {
-		for _, cls := range f.module.classes {
-			if cls != nil && phpText(f.module, phpField(cls, "name")) == v.table {
-				return cls
-			}
-		}
+		return f.module.classes[v.class]
 	}
 	return nil
 }
@@ -426,19 +414,27 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		return phpValue{binding: "db_statement", driver: "mysqli", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	}
 	if m.classes[cls] != nil {
-		return phpValue{binding: "php_class", table: cls, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
+		return phpValue{binding: "php_class", class: cls, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
 	}
 	f.evalChildren(n)
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
 }
 
+// Helper expansion bounds: the Python depth bound, with a larger per-entry
+// call budget because DVWA page assembly chains more helpers than a Flask
+// handler.
+const (
+	phpHelperDepthLimit = 3
+	phpHelperWorkLimit  = 256
+)
+
 // boundHelper expands a user function call with bounded work (the Python
 // depth bound; DVWA page assembly chains more helpers than a Flask handler,
-// so the call budget is 96 per entry).
+// so the call budget is phpHelperWorkLimit per entry).
 func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, values []phpValue) phpValue {
 	m, fn := callable.module, callable.fn
 	key := fmt.Sprintf("%s:%d", m.file, fn.StartByte())
-	if f.depth >= 3 || *f.work >= 256 || f.stack[key] {
+	if f.depth >= phpHelperDepthLimit || *f.work >= phpHelperWorkLimit || f.stack[key] {
 		v := phpValue{}
 		for _, a := range values {
 			v = phpCombine(v, a)
@@ -519,21 +515,6 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	return phpTransfer(h.returns, f.module.evidence("helper_return", call))
 }
 
-// includeExpression handles an include appearing as a nested expression. The
-// D-3 composition (literal inlining and dispatch alternatives) runs at
-// statement level in stmts; here only the path claim and a gap are recorded,
-// because an include nested inside another expression is not composed.
-func (f *phpFlow) includeExpression(n *sitter.Node) phpValue {
-	operand := firstNamedChild(n)
-	if operand == nil {
-		return phpValue{}
-	}
-	v := f.eval(operand)
-	f.pathUse(n, n.Kind(), []*sitter.Node{operand}, []phpValue{v}, "php-include-v1", "execute")
-	f.gaps = append(f.gaps, f.gap("php_dynamic_include", "include expression is not composed at statement level", operand))
-	return phpValue{}
-}
-
 func firstNamedChild(n *sitter.Node) *sitter.Node {
 	if n == nil {
 		return nil
@@ -544,110 +525,6 @@ func firstNamedChild(n *sitter.Node) *sitter.Node {
 	return nil
 }
 
-// includeTargets resolves an include operand to module targets.
-func (f *phpFlow) includeTargets(operand *sitter.Node, v phpValue) []phpIncludeTarget {
-	var out []phpIncludeTarget
-	candidates := []phpLiteral{}
-	if phpLiteralsOnly(v) {
-		candidates = v.literals
-	} else if operand.Kind() == "name" {
-		if text, ok := f.set.constant(f.module, phpText(f.module, operand)); ok {
-			candidates = []phpLiteral{{text: text}}
-		}
-	} else if operand.Kind() == "binary_expression" || operand.Kind() == "encapsed_string" {
-		parts, ok := f.includePathParts(operand)
-		if !ok {
-			return nil
-		}
-		// Cartesian expansion of finite alternative segments.
-		sets := make([][]phpLiteral, len(parts))
-		for i, p := range parts {
-			if phpLiteralsOnly(p) {
-				sets[i] = p.literals
-			} else {
-				return nil
-			}
-		}
-		var expand func(i int, prefix string, condition []analysis.Evidence)
-		expand = func(i int, prefix string, condition []analysis.Evidence) {
-			if i == len(sets) {
-				candidates = append(candidates, phpLiteral{text: prefix, condition: condition})
-				return
-			}
-			for _, lit := range sets[i] {
-				expand(i+1, prefix+lit.text, append(append([]analysis.Evidence{}, condition...), lit.condition...))
-			}
-		}
-		expand(0, "", nil)
-	}
-	baseDir := path_Dir(f.module.file)
-	for _, c := range candidates {
-		target := c.text
-		if target == "" {
-			continue
-		}
-		resolved := phpNormalizePath(baseDir, target)
-		if m := f.set.modules[resolved]; m != nil {
-			out = append(out, phpIncludeTarget{module: m, condition: c.condition, literal: resolved})
-		}
-	}
-	return out
-}
-
-// includePathParts splits a concatenation/interpolation into evaluable parts.
-func (f *phpFlow) includePathParts(n *sitter.Node) ([]phpValue, bool) {
-	switch n.Kind() {
-	case "binary_expression":
-		left, right := phpField(n, "left"), phpField(n, "right")
-		if left == nil || right == nil {
-			return nil, false
-		}
-		op := phpOperator(f.module, n)
-		if op != "." {
-			return nil, false
-		}
-		a, ok := f.includePathParts(left)
-		if !ok {
-			return nil, false
-		}
-		b, ok := f.includePathParts(right)
-		if !ok {
-			return nil, false
-		}
-		return append(a, b...), true
-	case "encapsed_string":
-		var parts []phpValue
-		for i := uint(0); i < n.ChildCount(); i++ {
-			c := n.Child(i)
-			if c == nil {
-				continue
-			}
-			if c.Kind() == "string_content" {
-				parts = append(parts, phpValue{literals: []phpLiteral{{text: c.Utf8Text(f.module.src)}}, constant: true})
-				continue
-			}
-			if !c.IsNamed() {
-				continue
-			}
-			v := f.eval(c)
-			parts = append(parts, v)
-		}
-		return parts, true
-	case "string":
-		if text, ok := phpStringLiteral(f.module, n); ok {
-			return []phpValue{{literals: []phpLiteral{{text: text}}, constant: true}}, true
-		}
-		return nil, false
-	case "variable_name", "name", "subscript_expression", "parenthesized_expression":
-		v := f.eval(n)
-		if phpLiteralsOnly(v) {
-			return []phpValue{v}, true
-		}
-		return nil, false
-	}
-	return nil, false
-}
-
 func phpOperator(m *phpModule, n *sitter.Node) string {
 	for i := uint(0); i < n.ChildCount(); i++ {
 		if c := n.Child(i); c != nil && !c.IsNamed() {
@@ -655,18 +532,6 @@ func phpOperator(m *phpModule, n *sitter.Node) string {
 		}
 	}
 	return ""
-}
-
-// path_Dir wraps path.Dir without importing path in multiple files.
-func path_Dir(p string) string {
-	idx := strings.LastIndex(p, "/")
-	if idx < 0 {
-		return "."
-	}
-	if idx == 0 {
-		return "/"
-	}
-	return p[:idx]
 }
 
 // phpCallee resolves the callee node of any call shape for sink evidence.

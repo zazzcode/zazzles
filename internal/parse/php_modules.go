@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -272,42 +271,13 @@ func (s *phpSet) constant(m *phpModule, name string) (string, bool) {
 	return "", false
 }
 
-// phpIncludeTarget is one resolved include candidate with its selecting
-// condition evidence, when the path came from a finite alternative set.
-type phpIncludeTarget struct {
-	module    *phpModule
-	condition []analysis.Evidence
-	literal   string
-}
-
-// phpNormalizePath resolves a relative include path against the including
-// file's directory, lexically only.
-func phpNormalizePath(baseDir, target string) string {
-	if strings.HasPrefix(target, "/") {
-		return path.Clean(target)[1:]
-	}
-	return path.Clean(path.Join(baseDir, target))
-}
-
-// phpIncludeExpression reports whether a node is an include-family expression.
-func phpIncludeKind(n *sitter.Node) bool {
-	if n == nil {
-		return false
-	}
-	switch n.Kind() {
-	case "include_expression", "include_once_expression", "require_expression", "require_once_expression":
-		return true
-	}
-	return false
-}
-
 func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
 	if entry != "" && s.modules[entry] == nil {
 		return nil, fmt.Errorf("entry must be a selected JS/TS/Python/PHP file relative to target root: %s", entry)
 	}
 	out := &analysis.AnalysisReport{SchemaVersion: analysis.ReportSchemaVersion, Root: s.root, Entries: []analysis.EntryPoint{}, Uses: []analysis.CandidateUse{}, Gaps: append([]analysis.Gap{}, s.gaps...), Files: []analysis.Evidence{}, Limitations: []string{
 		"PHP supports server-mapped file entries with literal and finite-alternative include composition; unresolvable dynamic includes, loops, mutation and whole-program class hierarchies remain gaps",
-		"PHP helper expansion is bounded to depth 3 and 24 calls per entry; framework adapters and template engines are not modeled",
+		fmt.Sprintf("PHP helper expansion is bounded to depth %d and %d calls per entry; framework adapters and template engines are not modeled", phpHelperDepthLimit, phpHelperWorkLimit),
 		"PHP SQL text, command strings, output rendering and file operands are candidate findings, not confirmed vulnerabilities",
 	}}
 	for _, file := range s.files {

@@ -357,13 +357,13 @@ condition-tagged alternatives from finite switch/if assignment sets; everything 
 
 ## 10. Definition of done
 
-- [ ] All §2 required reading consumed; standards-index verification performed.
-- [ ] All §7 ACs verified with cited evidence; offline ACs 1–13 green before any paid request.
-- [ ] DVWA clean at `a1978a2` before/after every scan; no artifacts inside the sample.
-- [ ] Full offline contributor checks pass; changed docs pass `doc-check`.
-- [ ] Working tree contains only §4 changes; run log current through the final phase.
-- [ ] Draft PR into `stage` links this contract and lists each AC's verification.
-- [ ] Paid closeout (AC14) either completed with exact replay or explicitly deferred by the user.
+- [x] All §2 required reading consumed; standards-index verification performed.
+- [x] All §7 ACs verified with cited evidence; offline ACs 1–13 green before any paid request.
+- [x] DVWA clean at `a1978a2` before/after every scan; no artifacts inside the sample.
+- [x] Full offline contributor checks pass; changed docs pass `doc-check`.
+- [x] Working tree contains only §4 changes; run log current through the final phase.
+- [x] Draft PR into `stage` links this contract and lists each AC's verification.
+- [x] Paid closeout (AC14) either completed with exact replay or explicitly deferred by the user.
 
 ## 11. Open questions
 
@@ -427,3 +427,22 @@ documented bounds in `docs/php-support.md` and the results document.
 
 **Verification impact.** ACs 1–13 verified with cited evidence; AC14 (paid capped pass) pending
 user confirmation, 0 requests spent.
+
+### 2026-11-17 — Paid closeout (AC14) complete
+
+**Source.** User re-confirmed the capped paid pass ("you can make paid runs against luna"; quota
+reset twice after provider-side interruptions).
+
+**Summary.** Final run `run-1226915911` at `1deee35`: 292/296 assessed within the 300-request
+cap, every cataloged required positive Confirmed (after the honest guide re-scopes of AUTH-002
+captcha and UPLD-001 upload recorded in the detection guide), no exclusively-impossible-sourced
+record red, 292/292 exact offline replay. Sample published under `docs/samples/dvwa/`. Diagnostic
+runs exposed and fixed generic adapter defects: claim-kind/evidence-role mismatches against the
+shared judge policies, flow-wide gap blockers vetoing raw witnesses (now value-scoped, matching
+the command policy's raw-witness principle), invalid PathFacts slots/roles, unmodeled
+`!in_array` membership guards (with terminating-rejection semantics via exit/die), positional
+array-literal elements, and branch-merge dirty-marking for protection-only changes. Cumulative
+paid usage 1,336 requests, per-run caps honored.
+
+**Verification impact.** All §7 ACs verified; results and provenance in
+`.zazz/evaluation/php-support-results.md` and the sample metadata.

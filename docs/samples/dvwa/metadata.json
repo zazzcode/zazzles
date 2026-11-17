@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-17",
+  "target_revision": "a1978a2fed195acd093010af6395f86a281537ca",
+  "upstream": "https://github.com/digininja/DVWA",
+  "source_run": "run-1226915911",
+  "source_json_sha256": "2c02f2ee2ac936d380ff03b485c5eebc33e14b40da1ed1763735b323df54d3be",
+  "scanner_revision": "1deee350a2d4a6ebb79f9553bf940307e30e49c6",
+  "scanner_note": "1deee35 executable; the closeout after this run changes documentation and sample artifacts only.",
+  "evaluation_mode": "Fresh full-tree scan of the plain-PHP adapter: all six families plus construction-practice records",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "paid_request_cap": 300,
+  "provider_requests": 292,
+  "completed_assessments": 292,
+  "derived_assessments": 0,
+  "unsent_assessments": 4,
+  "unsent_reason": "evidence_too_large: the four shared-render-sink stored-XSS records need 72-75KB against the 64KB request limit; they stay needs_review with byte accounting retained",
+  "input_tokens": 2417921,
+  "entries": 174,
+  "published_records": 296,
+  "outcomes": {
+    "confirmed_vulnerability": 107,
+    "needs_evidence": 30,
+    "needs_review": 0,
+    "poor_practice": 150,
+    "protected_for_claim": 9
+  },
+  "detection_guide": "../../.zazz/evaluation/dvwa-detection-guide.md",
+  "results": "../../.zazz/evaluation/php-support-results.md"
+}

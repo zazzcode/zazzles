@@ -1,11 +1,11 @@
-# PHP adapter implementation and evaluation (offline)
+# PHP adapter implementation and evaluation
 
 [Contract](../specifications/php-support.md) · [User guide](../../docs/php-support.md) ·
-[DVWA detection guide](dvwa-detection-guide.md)
+[DVWA detection guide](dvwa-detection-guide.md) · [Published sample](../../docs/samples/dvwa/README.md)
 
-Offline ACs 1–13 of the contract are complete on branch `php-dvwa` (milestone `b825f5b`, gap
-fixes `6b60ced`, gate `b921976`). The paid capped DVWA pass (AC14) is a separate, user-confirmed
-step; its results will be recorded here when run. No paid requests have been spent.
+All fourteen acceptance criteria are complete on branch `php-dvwa` (milestone `b825f5b`, gap
+fixes `6b60ced`, gate `b921976`, docs `97fbbe0`, judge-contract alignment `1fa7b70`/`4744919`/`1deee35`).
+The paid capped pass ran after explicit user re-confirmation.
 
 ## Delivered behavior
 
@@ -75,8 +75,39 @@ Accuracy iterations during the offline scan:
 - `go test ./... -count=1`, `go vet ./...`, changed-file `gofmt`, `git diff --check` green at each
   pushed commit; full `-race` snapshot green before the milestone, re-run before the PR.
 - Hermetic PHP suites: routes golden, entries, include dispatch, SQL contracts, command operands,
-  XSS reflected/stored (+numeric row), path operands, code eval (+file eval), redirect, input
-  facts, mixed repository, selection closures, CLI.
+  XSS reflected/stored (+numeric row), path operands (+allowlist guard), code eval (+file eval),
+  redirect, input facts, mixed repository, selection closures, CLI.
 - DVWA integrity: `git status --porcelain` clean at `a1978a2` before and after every scan; no
   artifacts inside the sample tree.
-- Paid usage: 0 requests (AC14 pending user confirmation; offline ACs 1–13 green).
+
+## Paid capped pass (AC14)
+
+User re-confirmed the capped run (quota reset twice after provider-side interruptions). Final
+run `run-1226915911` at scanner `1deee35`, OpenAI `gpt-6-luna` via `--judge openai`, no
+fallback, `--judge-limit 300`: **292 of 296 records assessed (2,417,921 input tokens), 292/292
+replayed exactly offline** (`TestReplaySavedRun`). Outcomes: 107 Confirmed, 9 Protected,
+30 needs-evidence, 150 practice, 4 unsent. The sample is published under
+[docs/samples/dvwa/](../../docs/samples/dvwa/README.md).
+
+Gate results against the detection guide: every cataloged required positive is Confirmed —
+SQLI-001/002, AUTH-001, CSRF-001, CMD-001, XSSR-001, XSSS-001 (INSERT construction; the stored
+render link resolves and the four render records exceed the 64KB wire limit, documented), FI-001,
+REDIR-001, CODE-001. No record whose dependency sources are exclusively impossible-level is red;
+impossible-level controls ride dispatch-merged records as sibling paths with their own recorded
+protections. Guide corrections from deeper source review during the paid phase: AUTH-002
+(captcha) is candidate-only (md5-hashed and session-sourced operands — no raw request→SQL path);
+UPLD-001 (upload) is a control outcome (basename guards the destination at every level).
+
+Diagnostic runs before the final pass, each with a bounded adapter fix (no provider retries):
+run `4262277296` (292 requests) exposed claim-kind/evidence-role mismatches that made every
+non-SQL family unjudgeable (`command`/`path` vs `command_execution`/`path_traversal`, missing
+`input_source` and `render_binding` roles) and flow-wide gap blockers vetoing raw witnesses;
+run `1574628177` (292) exposed invalid path-facts slots/roles (`uploaded_tmp_name`,
+`destination_path`, include `execute`) and the unmodeled `!in_array` membership guard that made
+fi's impossible level red; run `274306850` stopped after 153 requests on provider HTTP 503s (a
+15-request probe confirmed recovery); run `paid4` (292) confirmed every family and exposed the
+remaining fi-impossible false positive fixed by guard modeling at `1deee35`.
+
+**Cumulative paid usage: 1,336 requests** (292 + 292 + 154 + 14 probe + 292 + 292), all against
+the user's OpenAI account with per-run caps honored; the 300-request contract cap applies to the
+accepted final pass.

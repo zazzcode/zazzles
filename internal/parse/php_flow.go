@@ -386,6 +386,10 @@ func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 		name := phpVarName(m, obj)
 		if container, origin, ok := superscriptOrigin(name); ok {
 			if container == "SERVER" {
+				if phpServerDetermined(key) {
+					// The server, not the request, chooses this value.
+					return phpValue{evidence: []analysis.Evidence{m.evidence("server_value", n)}}
+				}
 				origin = serverKeyOrigin(key)
 			}
 			return f.source(n, container, origin, key)

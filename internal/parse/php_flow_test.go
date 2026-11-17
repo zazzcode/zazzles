@@ -828,3 +828,29 @@ func TestPHPXSSTypeNamesTheRawWitness(t *testing.T) {
 	}
 	t.Fatalf("missing read.php render: %#v", r.Uses)
 }
+
+func TestPHPServerDeterminedKeysAreNotSources(t *testing.T) {
+	// DVWA setup shape: the avatar base path comes from SCRIPT_NAME.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$base = str_replace('setup.php', '', $_SERVER['SCRIPT_NAME']);
+mysqli_query($conn, "INSERT INTO users (avatar) VALUES ('{$base}a.jpg')");
+mysqli_query($conn, "INSERT INTO hits (ip, host) VALUES ('{$_SERVER['REMOTE_ADDR']}', '{$_SERVER['SERVER_NAME']}')");
+`}), "")
+	for _, u := range phpUsesOfKind(r, "sql_query_candidate") {
+		for _, d := range u.Dependencies {
+			if strings.Contains(d.Source.Text, "SCRIPT_NAME") || strings.Contains(d.Source.Text, "REMOTE_ADDR") {
+				t.Fatalf("server-determined value used as a request source: %#v", d.Source)
+			}
+		}
+	}
+	host := false
+	for _, u := range phpUsesOfKind(r, "sql_query_candidate") {
+		for _, d := range u.Dependencies {
+			host = host || strings.Contains(d.Source.Text, "SERVER_NAME")
+		}
+	}
+	if !host {
+		t.Fatalf("SERVER_NAME follows the Host header and stays a source: %#v", r.Uses)
+	}
+}

@@ -59,8 +59,23 @@ func serverKeyOrigin(key string) string {
 		return "http.url_path"
 	case key == "QUERY_STRING":
 		return "http.query"
+	case key == "SERVER_NAME":
+		// Follows the Host header unless the server pins a canonical name.
+		return "http.headers"
 	}
 	return "unknown"
+}
+
+// phpServerDetermined reports $_SERVER keys whose value the server chooses
+// (script location, addresses, ports, timestamps): not request content.
+// Unlisted keys stay conservative request sources; REQUEST_METHOD stays one
+// because HTTP method tokens may contain quotes.
+func phpServerDetermined(key string) bool {
+	switch key {
+	case "SCRIPT_NAME", "SCRIPT_FILENAME", "DOCUMENT_ROOT", "CONTEXT_DOCUMENT_ROOT", "SERVER_ADDR", "SERVER_PORT", "SERVER_SOFTWARE", "SERVER_PROTOCOL", "GATEWAY_INTERFACE", "REMOTE_ADDR", "REMOTE_PORT", "REQUEST_TIME", "REQUEST_TIME_FLOAT":
+		return true
+	}
+	return false
 }
 
 // source records an acquisition fact at a superglobal access.

@@ -173,7 +173,10 @@ only; canonical JSON/SARIF retain all records. Reusable source-reviewed sample r
 [the sample baseline documentation](../samples/reference-policy.md), outside detector/model inputs.
 The shared facts use language-neutral source/context/protection/storage/entry fields. The [Python adapter](../python-support.md) supplies those facts for bounded Flask, Quart, FastAPI,
 Django, Pyramid, Bottle, aiohttp, Falcon, WSGI and Jinja flows and literal inline browser scripts. Unresolved renderer settings, template constructs and
-storage origins remain Review.
+storage origins remain Review. The [PHP adapter](../php-support.md) supplies them for `echo`/`print`
+render values (`render.php-html-output-v1`): reflected claims from superglobal HTML values, stored
+claims linked through `php-sql:<table>.<column>` keys with exact-count-or-skip INSERT attribution,
+and `htmlspecialchars`/`htmlentities` transforms as encoding evidence on the value paths.
 
 Finite Express table registrations and local literal-argument handler factories retain separate
 closure/control contexts. A factory's encoded branch cannot protect a raw sibling registration.

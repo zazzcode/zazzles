@@ -22,6 +22,10 @@ XSS claim.
   escape affecting all published versions, and is poor practice.
 - Python unshadowed `eval`, `exec`, and `compile`; `ast.literal_eval` is excluded. Flask and the
   other supported Python HTTP adapters reuse their existing request acquisition.
+- PHP unshadowed `eval`, string `assert` and `create_function` under `php-eval-v1`
+  (`whole_program` server execution context). A `file_get_contents` return carries its path's
+  dependency paths — path control is content control — so `eval('?>' . file_get_contents($p) . '<?php ')`
+  with a request-derived `$p` is a code claim alongside its filesystem read claim.
 
 ## Evidence and decisions
 

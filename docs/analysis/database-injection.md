@@ -195,6 +195,19 @@ itself is not value flow: the report includes the captured input and actual curs
 Unresolved or mutated registry/callback bindings remain gaps; schema setup and constant SELECT text
 are not request-derived SQL findings. See the [bounded Python subset](../python-support.md#finite-generated-http-routes).
 
+## PHP adapter
+
+[PHP analysis](../php-support.md) verifies mysqli (OO and procedural, including the
+`$GLOBALS["___mysqli_ston"]` converter idiom), PDO and SQLite3 connection handle provenance and
+supplies driver-specific contracts (`php-mysqli-v1`, `php-pdo-v1`, `php-sqlite3-v1`).
+Interpolated SQL text — encapsed strings and concatenation with the raw template preserved — is
+a construction claim; `prepare`+`bindParam`/`bindValue`+`execute` records binding controls on
+the same claim so the judge can assess the actual binding. A shadowed SQL function name stays
+negative. INSERT column attribution is exact-count-or-skip and feeds `php-sql:<table>.<column>`
+storage keys; SELECT headers resolve string and numeric `fetch_row` access for stored links. An
+UPDATE/INSERT whose interpolation count does not match its column list produces no invented
+origin. See the [bounded PHP subset](../php-support.md).
+
 ## GraphQL resolver sources
 
 The bounded Apollo Node adapter binds schema coordinates to separate resolver invocations and

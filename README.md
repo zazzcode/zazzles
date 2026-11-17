@@ -54,7 +54,7 @@ Every result keeps its evidence trail:
 
 | Capability | What it does | Status |
 |---|---|---|
-| **Scan** | Finds security vulnerabilities in your code and judges whether existing protection is adequate | Available for supported JavaScript, TypeScript and Python |
+| **Scan** | Finds security vulnerabilities in your code and judges whether existing protection is adequate | Available for supported JavaScript, TypeScript, Python and PHP |
 | **Inspect** | Reviews code for poor practice in validation, query and command construction, logging and reliability | Partly available: practice checks ship inside Scan; a distinct Inspect workflow is planned |
 | **Audit** | Finds known vulnerabilities in your dependencies and guides upgrades, using ecosystem tools such as `npm audit` and `pip-audit`, with SBOM artifacts | Planned |
 | **Fix** | Provides agent skills and automation so coding agents can read findings and deficiencies, repair the code, upgrade libraries, verify the changes and prepare a pull request for review | Planned |
@@ -79,9 +79,11 @@ and delivery status.
 
 ## What exists today
 
-Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications,
+Today Zazzles is a command-line scanner for **JavaScript, TypeScript, Python and PHP** applications,
 including Express, Fastify, Hapi and **Next.js** (App Router and Pages Router; see
-[Next.js support](docs/nextjs-support.md) · [Code injection](docs/analysis/code-injection.md) · [Open redirect](docs/analysis/open-redirect.md)).
+[Next.js support](docs/nextjs-support.md) · [Code injection](docs/analysis/code-injection.md) · [Open redirect](docs/analysis/open-redirect.md)),
+and plain **PHP** with mysqli/PDO/SQLite3, command, XSS, path, code and redirect families (see
+[PHP support](docs/php-support.md)).
 
 - It reads source only. It does not run your app or install its dependencies.
 - It covers the frameworks and operations it models. Anything else is reported as unresolved,

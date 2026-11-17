@@ -408,3 +408,22 @@ pinned DVWA checkout.
 
 **Verification impact.** None yet; implementation evidence accrues in the run log and
 `.zazz/evaluation/php-support-results.md`.
+
+### 2026-11-17 — Offline implementation complete (ACs 1–13)
+
+**Source.** §9 execution sequence completed in the `php-dvwa` worktree per §13.
+
+**Summary.** Adapter, families, contracts, guidelines, CLI and fixtures implemented and green
+(milestone `b825f5b`); full-tree DVWA offline scan closed two structural gaps (numeric
+`fetch_row` storage columns; `file_get_contents` dependency propagation into `eval`) in
+`6b60ced`; detection guide and `TestDVWASourceKey` gate added in `b921976`. Offline results and
+bounded gaps are recorded in `.zazz/evaluation/php-support-results.md`.
+
+**Deviations approved as implemented.** Helper work budget is 96 per entry (Python uses 24 per
+route; DVWA page assembly chains more helpers) with depth 3 unchanged; gap/evidence merges dedupe
+by content because branch clones inherit parent state and plain append doubles per conditional;
+conditional joins use a dirty-set so only changed variables rejoin. All three are visible as
+documented bounds in `docs/php-support.md` and the results document.
+
+**Verification impact.** ACs 1–13 verified with cited evidence; AC14 (paid capped pass) pending
+user confirmation, 0 requests spent.

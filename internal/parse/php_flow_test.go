@@ -355,3 +355,45 @@ foreach ($_POST as $k => $v) {
 		t.Fatalf("foreach value of $_POST must render raw: %#v", xss)
 	}
 }
+
+func TestPHPFlowDispatchAlternativeNarrowsSelector(t *testing.T) {
+	// DVWA xss_s/index.php shape: a braceless impossible-only append must not
+	// reach the low alternative, and must reach the impossible one.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"index.php": `<?php
+$vulnerabilityFile = '';
+switch ($level) {
+  case 'low': $vulnerabilityFile = 'low.php'; break;
+  default: $vulnerabilityFile = 'impossible.php'; break;
+}
+require_once "source/{$vulnerabilityFile}";
+$body = 'page';
+if ($vulnerabilityFile == 'impossible.php') $body .= $_GET['token'];
+echo $body;
+`,
+		"source/low.php":        "<?php\n$x = 1;\n",
+		"source/impossible.php": "<?php\n$y = 2;\n",
+	}), "index.php")
+	xss := phpUsesOfKind(r, "xss_candidate")
+	if len(xss) != 1 {
+		t.Fatalf("only the impossible alternative renders request content, got %d records: %#v", len(xss), xss)
+	}
+	found := false
+	for _, e := range xss[0].Context {
+		found = found || (e.Kind == "dispatch_condition" && e.Span.StartLine == 5)
+	}
+	if !found {
+		t.Fatalf("rendered record must carry the impossible alternative's selecting condition: %#v", xss[0].Context)
+	}
+}
+
+func TestPHPFlowLooseNumericComparisonStaysUndecided(t *testing.T) {
+	// "1e1" == "10" is true in PHP; loose numeric comparison is not folded.
+	got := phpCommandProtections(t, `<?php
+$v = '1e1';
+if ($v == '10') { system($_GET['c']); }
+`)
+	if !phpHasProtection(got, "raw") {
+		t.Fatalf("loose numeric equality must not be decided: %v", got)
+	}
+}

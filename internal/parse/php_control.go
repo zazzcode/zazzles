@@ -1,6 +1,8 @@
 package parse
 
 import (
+	"sort"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -138,6 +140,7 @@ func (f *phpFlow) stmts(list []*sitter.Node) bool {
 		terminated := true
 		for _, t := range targets {
 			b := f.clone()
+			b.narrow(t.bindings)
 			b.inlineInclude(include, t)
 			if !b.stmts(list[i+1:]) {
 				terminated = false
@@ -217,16 +220,24 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 		test = test.NamedChild(0)
 	}
 	f.eval(test)
+	// A decided constant condition walks only its feasible branch; an
+	// undecided one walks both.
+	truth, known := f.constantCondition(test)
+	walkYes, walkNo := !known || truth, !known || !truth
 	yesProt, noProt := f.branchProtection(test)
 	yes := f.clone()
 	yes.context = append(yes.context, f.module.evidence("branch_precondition", test))
 	yes.applyProtections(yesProt)
-	yt := yes.body(body)
+	yt := false
+	if walkYes {
+		yt = yes.body(body)
+	}
+	// An infeasible branch contributes nothing; a terminated one contributes
+	// only its computed returns.
 	branches := []*phpFlow{}
-	if !yt {
+	if walkYes && !yt {
 		branches = append(branches, yes)
-	} else {
-		// A terminated branch still contributes its computed returns.
+	} else if walkYes {
 		f.returns = phpCombine(f.returns, phpTransfer(yes.returns, f.module.evidence("branch_precondition", test)))
 	}
 	no := f.clone()
@@ -238,7 +249,7 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	}
 	no.context = append(no.context, f.module.evidence("branch_false_precondition", test))
 	nt := false
-	if len(alternatives) > 0 {
+	if walkNo && len(alternatives) > 0 {
 		switch alt := alternatives[0]; alt.Kind() {
 		case "else_if_clause":
 			nt = no.ifChain(phpField(alt, "condition"), phpField(alt, "body"), alternatives[1:])
@@ -246,13 +257,19 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 			nt = no.body(phpField(alt, "body"))
 		}
 	}
-	if !nt {
+	if walkNo && !nt {
 		branches = append(branches, no)
-	} else {
+	} else if walkNo {
 		f.returns = phpCombine(f.returns, phpTransfer(no.returns, f.module.evidence("branch_false_precondition", test)))
 	}
 	if len(branches) > 0 {
 		f.merge(branches...)
+	}
+	switch {
+	case !walkYes:
+		return nt
+	case !walkNo:
+		return yt
 	}
 	return yt && nt
 }
@@ -399,4 +416,72 @@ func (f *phpFlow) tryStatement(n *sitter.Node) bool {
 	}
 	f.merge(branches...)
 	return len(branches) == 0 && terminated
+}
+
+// narrow replaces each dispatch-selecting variable with the single literal
+// its alternative chose (D-3), keeping the value's other evidence.
+func (f *phpFlow) narrow(bindings map[string]phpLiteral) {
+	for _, name := range sortedNames(bindings) {
+		v := f.env[name]
+		v.literals = []phpLiteral{bindings[name]}
+		v.constant = true
+		f.env[name] = v
+		f.markDirty(name)
+	}
+}
+
+func sortedNames(m map[string]phpLiteral) []string {
+	names := make([]string, 0, len(m))
+	for k := range m {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// constantCondition decides an equality test between two exact constants:
+// `$level == 'impossible.php'` after narrowing. Loose comparison of numeric
+// strings and anything else that is not an exact constant stays undecided.
+func (f *phpFlow) constantCondition(test *sitter.Node) (truth, known bool) {
+	if test == nil || test.Kind() != "binary_expression" {
+		return false, false
+	}
+	op := phpOperator(f.module, test)
+	switch op {
+	case "==", "===", "!=", "!==":
+	default:
+		return false, false
+	}
+	operand := func(n *sitter.Node) (string, bool) {
+		if n == nil {
+			return "", false
+		}
+		switch n.Kind() {
+		case "variable_name", "string", "encapsed_string", "integer", "name":
+		default:
+			return "", false // evaluation could have effects
+		}
+		return phpSQLText(f.eval(n))
+	}
+	a, ok := operand(phpField(test, "left"))
+	if !ok {
+		return false, false
+	}
+	b, ok := operand(phpField(test, "right"))
+	if !ok {
+		return false, false
+	}
+	if op == "==" || op == "!=" {
+		if _, err := strconv.ParseFloat(strings.TrimSpace(a), 64); err == nil {
+			return false, false
+		}
+		if _, err := strconv.ParseFloat(strings.TrimSpace(b), 64); err == nil {
+			return false, false
+		}
+	}
+	equal := a == b
+	if op == "!=" || op == "!==" {
+		return !equal, true
+	}
+	return equal, true
 }

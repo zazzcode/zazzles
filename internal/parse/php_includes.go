@@ -14,6 +14,17 @@ type phpIncludeTarget struct {
 	module    *phpModule
 	condition []analysis.Evidence
 	literal   string
+	// bindings narrows each selecting variable to the literal this
+	// alternative chose, so code after the include sees one value per
+	// alternative instead of the whole finite set.
+	bindings map[string]phpLiteral
+}
+
+// phpIncludePart is one evaluated segment of an include path; variable names
+// a segment that is a bare variable reference.
+type phpIncludePart struct {
+	value    phpValue
+	variable string
 }
 
 // phpIncludeDepthLimit bounds include nesting; the active include chain also
@@ -89,38 +100,20 @@ func (f *phpFlow) includeExpression(n *sitter.Node) phpValue {
 // includeTargets resolves an include operand to module targets.
 func (f *phpFlow) includeTargets(operand *sitter.Node, v phpValue) []phpIncludeTarget {
 	var out []phpIncludeTarget
-	candidates := []phpLiteral{}
-	if phpLiteralsOnly(v) {
-		candidates = v.literals
-	} else if operand.Kind() == "name" {
+	candidates := f.includeSegmentCandidates(operand)
+	if candidates == nil && phpLiteralsOnly(v) {
+		name := phpVarName(f.module, operand)
+		for _, lit := range v.literals {
+			c := phpIncludeCandidate{phpLiteral: lit}
+			if name != "" && len(v.literals) > 1 {
+				c.bindings = map[string]phpLiteral{name: lit}
+			}
+			candidates = append(candidates, c)
+		}
+	} else if candidates == nil && operand.Kind() == "name" {
 		if text, ok := f.set.constant(f.module, phpText(f.module, operand)); ok {
-			candidates = []phpLiteral{{text: text}}
+			candidates = []phpIncludeCandidate{{phpLiteral: phpLiteral{text: text}}}
 		}
-	} else if operand.Kind() == "binary_expression" || operand.Kind() == "encapsed_string" {
-		parts, ok := f.includePathParts(operand)
-		if !ok {
-			return nil
-		}
-		// Cartesian expansion of finite alternative segments.
-		sets := make([][]phpLiteral, len(parts))
-		for i, p := range parts {
-			if phpLiteralsOnly(p) {
-				sets[i] = p.literals
-			} else {
-				return nil
-			}
-		}
-		var expand func(i int, prefix string, condition []analysis.Evidence)
-		expand = func(i int, prefix string, condition []analysis.Evidence) {
-			if i == len(sets) {
-				candidates = append(candidates, phpLiteral{text: prefix, condition: condition})
-				return
-			}
-			for _, lit := range sets[i] {
-				expand(i+1, prefix+lit.text, append(append([]analysis.Evidence{}, condition...), lit.condition...))
-			}
-		}
-		expand(0, "", nil)
 	}
 	baseDir := path.Dir(f.module.file)
 	for _, c := range candidates {
@@ -130,14 +123,60 @@ func (f *phpFlow) includeTargets(operand *sitter.Node, v phpValue) []phpIncludeT
 		}
 		resolved := phpNormalizePath(baseDir, target)
 		if m := f.set.modules[resolved]; m != nil {
-			out = append(out, phpIncludeTarget{module: m, condition: c.condition, literal: resolved})
+			out = append(out, phpIncludeTarget{module: m, condition: c.condition, literal: resolved, bindings: c.bindings})
 		}
 	}
 	return out
 }
 
+// phpIncludeCandidate is one literal include path with the selector
+// bindings that produced it.
+type phpIncludeCandidate struct {
+	phpLiteral
+	bindings map[string]phpLiteral
+}
+
+// includeSegmentCandidates expands a concatenated/interpolated include path
+// whose every segment is a finite literal set (Cartesian product), recording
+// which literal each variable segment chose; nil for any other shape.
+func (f *phpFlow) includeSegmentCandidates(operand *sitter.Node) []phpIncludeCandidate {
+	if operand.Kind() != "binary_expression" && operand.Kind() != "encapsed_string" {
+		return nil
+	}
+	parts, ok := f.includePathParts(operand)
+	if !ok {
+		return nil
+	}
+	for _, p := range parts {
+		if !phpLiteralsOnly(p.value) {
+			return nil
+		}
+	}
+	var out []phpIncludeCandidate
+	var expand func(i int, prefix string, condition []analysis.Evidence, bindings map[string]phpLiteral)
+	expand = func(i int, prefix string, condition []analysis.Evidence, bindings map[string]phpLiteral) {
+		if i == len(parts) {
+			out = append(out, phpIncludeCandidate{phpLiteral{text: prefix, condition: condition}, bindings})
+			return
+		}
+		p := parts[i]
+		for _, lit := range p.value.literals {
+			next := bindings
+			if p.variable != "" && len(p.value.literals) > 1 {
+				next = map[string]phpLiteral{p.variable: lit}
+				for k, v := range bindings {
+					next[k] = v
+				}
+			}
+			expand(i+1, prefix+lit.text, append(append([]analysis.Evidence{}, condition...), lit.condition...), next)
+		}
+	}
+	expand(0, "", nil, nil)
+	return out
+}
+
 // includePathParts splits a concatenation/interpolation into evaluable parts.
-func (f *phpFlow) includePathParts(n *sitter.Node) ([]phpValue, bool) {
+func (f *phpFlow) includePathParts(n *sitter.Node) ([]phpIncludePart, bool) {
 	switch n.Kind() {
 	case "binary_expression":
 		left, right := phpField(n, "left"), phpField(n, "right")
@@ -158,32 +197,31 @@ func (f *phpFlow) includePathParts(n *sitter.Node) ([]phpValue, bool) {
 		}
 		return append(a, b...), true
 	case "encapsed_string":
-		var parts []phpValue
+		var parts []phpIncludePart
 		for i := uint(0); i < n.ChildCount(); i++ {
 			c := n.Child(i)
 			if c == nil {
 				continue
 			}
 			if c.Kind() == "string_content" {
-				parts = append(parts, phpValue{literals: []phpLiteral{{text: c.Utf8Text(f.module.src)}}, constant: true})
+				parts = append(parts, phpIncludePart{value: phpValue{literals: []phpLiteral{{text: c.Utf8Text(f.module.src)}}, constant: true}})
 				continue
 			}
 			if !c.IsNamed() {
 				continue
 			}
-			v := f.eval(c)
-			parts = append(parts, v)
+			parts = append(parts, phpIncludePart{value: f.eval(c), variable: phpVarName(f.module, c)})
 		}
 		return parts, true
 	case "string":
 		if text, ok := phpStringLiteral(f.module, n); ok {
-			return []phpValue{{literals: []phpLiteral{{text: text}}, constant: true}}, true
+			return []phpIncludePart{{value: phpValue{literals: []phpLiteral{{text: text}}, constant: true}}}, true
 		}
 		return nil, false
 	case "variable_name", "name", "subscript_expression", "parenthesized_expression":
 		v := f.eval(n)
 		if phpLiteralsOnly(v) {
-			return []phpValue{v}, true
+			return []phpIncludePart{{value: v, variable: phpVarName(f.module, n)}}, true
 		}
 		return nil, false
 	}

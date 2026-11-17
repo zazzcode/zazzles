@@ -73,14 +73,17 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	u.APIModel = analysispacks.CommandContract(analysispacks.PHPProgramContract)
 	u.Context = append(u.Context, context...)
 	u.Context = append(u.Context, m.evidence("sink_binding", phpCallee(n)))
-	c := &analysis.Completeness{ClaimKind: "command", Required: []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "command_operands", "execution_configuration"}, Evidence: map[string][]analysis.Evidence{
+	c := &analysis.Completeness{ClaimKind: "command_execution", Required: []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "command_operands", "execution_configuration"}, Evidence: map[string][]analysis.Evidence{
 		"sink_binding":            {m.evidence("sink_binding", phpCallee(n))},
 		"invoked_callable":        {f.entryEvidence()},
 		"command_operands":        context,
 		"execution_configuration": {m.evidence("operation", n)},
 		"control_flow":            append([]analysis.Evidence{m.evidence("operation", n)}, f.context...),
 	}, Blockers: []analysis.Gap{}, Coverage: append([]analysis.Gap{}, u.Gaps...), Scope: "Bounded PHP source-to-process flow; every listed operation passes its command string to a shell."}
-	for _, g := range append(append([]analysis.Gap{}, f.gaps...), all.gaps...) {
+	// Blockers ride the operand value's own gaps; flow-wide gaps stay visible
+	// in u.Gaps/Coverage without vetoing the claim (shared helper bodies
+	// accumulate unrelated unresolved constructs).
+	for _, g := range append([]analysis.Gap{}, all.gaps...) {
 		switch g.Kind {
 		case "php_parameter_unresolved", "php_value_unresolved", "php_call_unresolved", "php_loop_unresolved", "php_expression_unresolved", "php_global_unresolved", "work_limit", "dependency_limit", "transfer_limit":
 			c.Blockers = append(c.Blockers, g)

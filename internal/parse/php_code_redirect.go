@@ -34,6 +34,11 @@ func (f *phpFlow) codeUse(n *sitter.Node, op string, v phpValue, node *sitter.No
 		"code_operand":     {f.module.evidence("code_operand", node)},
 		"control_flow":     append([]analysis.Evidence{f.module.evidence("operation", n)}, f.context...),
 	}, Blockers: []analysis.Gap{}, Coverage: append([]analysis.Gap{}, u.Gaps...), Scope: "PHP interpreter-string operand claim; the operand is source text, not a file destination."}
+	for _, d := range u.Dependencies {
+		if d.Source.Kind == "input_source" || d.Source.Kind == "storage_source" {
+			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.Source)
+		}
+	}
 	u.Completeness = c
 }
 
@@ -74,6 +79,11 @@ func (f *phpFlow) headerUse(n *sitter.Node, node *sitter.Node, v phpValue) {
 		"redirect_operand": {f.module.evidence("redirect_operand", node)},
 		"control_flow":     append([]analysis.Evidence{f.module.evidence("operation", n)}, f.context...),
 	}, Blockers: []analysis.Gap{}, Coverage: append([]analysis.Gap{}, u.Gaps...), Scope: "PHP Location header destination claim; PHP makes a Location header an implied 302 redirect."}
+	for _, d := range u.Dependencies {
+		if d.Source.Kind == "input_source" || d.Source.Kind == "storage_source" {
+			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.Source)
+		}
+	}
 	u.Completeness = c
 }
 

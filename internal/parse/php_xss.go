@@ -46,17 +46,25 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 		p, reason = "unknown", "A source transformation or output context remains unresolved."
 	}
 	if hasRaw {
+		// A raw witness is scoped to its own source-to-render path; unresolved
+		// sibling content merged into the same rendered value stays visible in
+		// u.Gaps without voiding the witness.
 		p, reason = "raw", "A supported source path reaches HTML without context-appropriate escaping; unknown siblings remain explicit."
 	}
-	for _, g := range append(append([]analysis.Gap{}, f.gaps...), v.gaps...) {
-		switch g.Kind {
-		case "php_loop_unresolved", "php_dynamic_include", "php_call_unresolved", "php_value_unresolved", "dependency_limit", "transfer_limit", "work_limit":
-			p, reason = "unknown", "A relevant PHP control or value path is unresolved."
+	// Protection unknown rides the value's own unresolved paths, and only
+	// when no raw path is established (a protection claim requires every
+	// modeled path resolved; a finding does not).
+	if !hasRaw {
+		for _, g := range append([]analysis.Gap{}, v.gaps...) {
+			switch g.Kind {
+			case "php_loop_unresolved", "php_dynamic_include", "php_call_unresolved", "php_value_unresolved", "dependency_limit", "transfer_limit", "work_limit":
+				p, reason = "unknown", "A relevant PHP control or value path is unresolved."
+			}
 		}
-	}
-	if v.unknown && !hasRaw {
-		p = "unknown"
-		reason = "A value definition or output alternative is unresolved."
+		if v.unknown {
+			p = "unknown"
+			reason = "A value definition or output alternative is unresolved."
+		}
 	}
 	kind := "reflected"
 	if stored {
@@ -64,5 +72,8 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 	}
 	u := analysis.CandidateUse{ID: "use:" + f.invocation.ID + ":" + sink.Span.File + ":" + strconv.Itoa(sink.Span.StartByte) + ":xss", EntryID: f.invocation.EntryID, InvocationContextID: f.invocation.ID, Kind: "xss_candidate", Sink: sink, Dependencies: deps, Context: phpDedupeEvidence(f.context), Gaps: append(append([]analysis.Gap{}, f.gaps...), v.gaps...), Assessment: analysis.Assessment{Status: "not_run"}, XSS: &analysis.XSSFacts{Type: kind, EntryKind: "server", OutputContext: context, ContentType: "text/html", Protection: p, ProtectionReason: reason, OriginResolved: !stored, Paths: paths}, APIModel: analysispacks.XSSContract("php-html-output-v1", "php")}
 	u.Context = append(u.Context, v.escapes...)
+	// The echo/print render binding is the sink itself; the shared XSS claim
+	// assembler expects it as role evidence.
+	u.Context = append(u.Context, analysis.Evidence{Kind: "render_binding", Text: sink.Text, Span: sink.Span, SHA256: sink.SHA256})
 	f.report.Uses = append(f.report.Uses, u)
 }

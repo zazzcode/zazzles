@@ -49,6 +49,7 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 	facts := &analysis.PathFacts{Operation: op, ContractID: contract, Platform: "posix", Role: role, Operands: []analysis.PathOperand{}, Paths: []analysis.PathFlow{}, Guards: []analysis.PathGuard{}}
 	var context []analysis.Evidence
 	var deps []phpDep
+	var all phpValue
 	request := false
 	for i, slot := range slots {
 		var v phpValue
@@ -102,25 +103,31 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 			request = true
 		}
 		facts.Operands = append(facts.Operands, o)
+		all = phpCombine(all, v)
 	}
 	if !request {
 		return
 	}
-	u := f.addUse("path_traversal_candidate", n, phpValue{deps: deps})
+	u := f.addUse("path_traversal_candidate", n, phpValue{deps: deps, gaps: all.gaps})
 	u.Path = facts
 	u.APIModel = analysispacks.PathContract(contract)
 	u.Context = append(u.Context, context...)
 	u.Context = append(u.Context, m.evidence("sink_binding", phpCallee(n)))
+	sinkGaps := []analysis.Gap{}
 	if role == "execute" {
-		u.Gaps = append(u.Gaps, f.gap("file_inclusion", "include/require executes the resolved path (CWE-98 execution context)", n))
+		g := f.gap("file_inclusion", "include/require executes the resolved path (CWE-98 execution context)", n)
+		u.Gaps = append(u.Gaps, g)
+		sinkGaps = append(sinkGaps, g)
 	}
-	c := &analysis.Completeness{ClaimKind: "path", Required: []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "path_operands"}, Evidence: map[string][]analysis.Evidence{
+	c := &analysis.Completeness{ClaimKind: "path_traversal", Required: []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "path_operands"}, Evidence: map[string][]analysis.Evidence{
 		"sink_binding":     {m.evidence("sink_binding", phpCallee(n))},
 		"invoked_callable": {f.entryEvidence()},
 		"path_operands":    context,
 		"control_flow":     append([]analysis.Evidence{m.evidence("operation", n)}, f.context...),
 	}, Blockers: []analysis.Gap{}, Coverage: append([]analysis.Gap{}, u.Gaps...), Scope: "Bounded PHP source-to-file-operation flow; only the file-path operand is the claim."}
-	for _, g := range append(append([]analysis.Gap{}, f.gaps...), u.Gaps...) {
+	// Blockers ride the operand value's own gaps and the sink's inclusion fact;
+	// flow-wide gaps stay visible in u.Gaps/Coverage without vetoing.
+	for _, g := range append(append([]analysis.Gap{}, all.gaps...), sinkGaps...) {
 		switch g.Kind {
 		case "php_parameter_unresolved", "php_value_unresolved", "php_call_unresolved", "php_loop_unresolved", "php_expression_unresolved", "php_global_unresolved", "work_limit", "dependency_limit", "transfer_limit":
 			c.Blockers = append(c.Blockers, g)

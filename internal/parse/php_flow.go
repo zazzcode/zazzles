@@ -436,5 +436,14 @@ func (f *phpFlow) render(n *sitter.Node, v phpValue) {
 	if len(v.deps) == 0 {
 		return
 	}
-	f.recordXSS(f.module.evidence("html_output", n), v, htmlOutputContext(f.module.inlineHTMLBefore(n.StartByte())))
+	m := f.module
+	markup := m.inlineHTMLBefore(n.StartByte())
+	f.recordXSS(m.evidence("html_output", n), v, htmlOutputContext(markup))
+	if markup != "" {
+		// The judge sees the markup around an echo embedded in a page, so the
+		// output context (`value="<?php echo $x ?>"`) is source-backed.
+		file := analysis.Evidence{Kind: "file", Text: string(m.src), Span: spanOf(m.file, m.tree.RootNode()), SHA256: m.hash}
+		u := &f.report.Uses[len(f.report.Uses)-1]
+		u.Context = append(u.Context, renderMarkup(file, int(n.StartByte()), int(n.EndByte())))
+	}
 }

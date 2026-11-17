@@ -1,6 +1,9 @@
 package parse
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // Flow-semantics regressions from the independent PHP review. Each case pins
 // a source-reviewed vulnerable flow (or near-miss guard) the bounded flow must
@@ -656,4 +659,21 @@ system($c);
 	if !phpHasProtection(got, "raw") {
 		t.Fatalf("`$x =& f()` must assign: %v", got)
 	}
+}
+
+func TestPHPRenderSuppliesMarkupContextEvidence(t *testing.T) {
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<form>
+<input type="hidden" name="edid" value="<?php echo $_GET['edid']?>">
+</form>
+`}), "")
+	xss := phpUsesOfKind(r, "xss_candidate")
+	if len(xss) != 1 {
+		t.Fatalf("want one record: %#v", xss)
+	}
+	for _, e := range xss[0].Completeness.Evidence["render_context"] {
+		if e.Kind == "render_markup_context" && strings.Contains(e.Text, `value="`) {
+			return
+		}
+	}
+	t.Fatalf("render_context must carry the surrounding markup: %#v", xss[0].Completeness.Evidence["render_context"])
 }

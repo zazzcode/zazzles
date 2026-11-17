@@ -1,5 +1,5 @@
 id: php
-version: 1
+version: 2
 languages: php
 
 # PHP analysis guidelines
@@ -24,7 +24,7 @@ Do not build SQL text with string interpolation, concatenation, or heredoc inter
 
 ## Rendering
 
-PHP echo, print and string interpolation emit HTML directly; nothing autoescapes. A request value that reaches echo/print inside an HTML string is a reflected rendering claim. htmlspecialchars and htmlentities (with ENT_QUOTES or their actual flags recorded) escape HTML text and quoted attributes; they do not establish script, URL-scheme, CSS or unquoted-attribute safety. Values stored through SQL INSERT and later read and echoed are stored rendering claims; the storage link must resolve the writing entry. JSON output and Content-Type changes are not HTML sinks.
+PHP echo, print, `<?= ?>` and string interpolation emit HTML directly; nothing autoescapes. Text outside PHP tags is page markup, and the output context is the markup position where the PHP tag sits: inside a quoted attribute value (`value="<?php echo $x ?>"`) it is an HTML attribute, inside href/src/action it is a URL, inside an event-handler or style attribute it is an active attribute, inside `<script>` it is script, otherwise HTML text. A request value that reaches echo/print inside an HTML string is a reflected rendering claim. htmlspecialchars and htmlentities (with ENT_QUOTES or their actual flags recorded) escape HTML text and quoted attributes; they do not establish script, URL-scheme, CSS or unquoted-attribute safety. Values stored through SQL INSERT and later read and echoed are stored rendering claims; the storage link must resolve the writing entry. JSON output and Content-Type changes are not HTML sinks.
 
 ## Do not claim
 

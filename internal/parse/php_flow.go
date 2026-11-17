@@ -44,6 +44,9 @@ type phpValue struct {
 	// template keeps the raw source template of an interpolated/concatenated
 	// string (variables in place) for SQL table/column attribution.
 	template string
+	// arrayLiterals keeps the string elements of an array literal whose
+	// elements are all plain string literals (membership allowlists).
+	arrayLiterals []string
 	// escapes records htmlspecialchars/htmlentities transform evidence.
 	escapes []analysis.Evidence
 	// bindingControls records prepare/bindParam control evidence.
@@ -379,6 +382,9 @@ func (f *phpFlow) stmt(n *sitter.Node) bool {
 			f.returns = phpCombine(f.returns, f.eval(n.NamedChild(0)))
 		}
 		return true
+	case "exit_statement":
+		// exit/die never falls through; the path after it is unreachable.
+		return true
 	case "if_statement":
 		return f.conditional(n)
 	case "switch_statement":
@@ -423,45 +429,118 @@ func (f *phpFlow) stmt(n *sitter.Node) bool {
 
 // branchProtection inspects a condition for value-constraining checks on a
 // bare variable: is_numeric($x) or isset($x) style predicates.
-func (f *phpFlow) branchProtection(n *sitter.Node) map[string]string {
-	out := map[string]string{}
+// branchProtection returns variable protections that hold on the true branch
+// of the condition (yes) and on the false branch (no). A negated membership
+// allowlist (`!in_array($v, [...])`) guards the fall-through, so its
+// protection lands in no and conditional() applies it only when the rejecting
+// branch terminates.
+func (f *phpFlow) branchProtection(n *sitter.Node) (yes, no map[string]string) {
+	yes, no = map[string]string{}, map[string]string{}
 	if n == nil {
-		return out
+		return
 	}
-	phpWalk(n, func(c *sitter.Node) {
-		if c.Kind() != "function_call_expression" {
-			return
+	// One recursive walk carries the negation down the tree; node wrappers
+	// are not identity-stable across separate walks.
+	var visit func(c *sitter.Node, negated bool)
+	visit = func(c *sitter.Node, negated bool) {
+		if c.Kind() == "unary_op_expression" && strings.HasPrefix(strings.TrimSpace(phpText(f.module, c)), "!") {
+			negated = true
 		}
-		name := phpText(f.module, phpField(c, "name"))
-		args := phpArgs(c)
-		if len(args) != 1 {
-			return
-		}
-		v := phpVarName(f.module, args[0])
-		if v == "" {
-			return
-		}
-		switch name {
-		case "is_numeric":
-			if _, shadow := f.module.funcs[name]; !shadow {
-				out[v] = "numeric"
+		if c.Kind() == "function_call_expression" {
+			name := phpText(f.module, phpCallee(c))
+			args := phpArgs(c)
+			switch name {
+			case "is_numeric", "ctype_digit":
+				if _, shadow := f.module.funcs[name]; shadow || len(args) != 1 {
+					return
+				}
+				if v := phpVarName(f.module, args[0]); v != "" {
+					yes[v] = "numeric"
+				}
+			case "in_array":
+				if _, shadow := f.module.funcs[name]; shadow || len(args) != 2 {
+					return
+				}
+				v := phpVarName(f.module, args[0])
+				if v == "" {
+					return
+				}
+				options := phpArrayLiteralStrings(f.module, args[1])
+				if options == nil {
+					if av, ok := f.env[phpVarName(f.module, args[1])]; ok {
+						options = phpFiniteStrings(av)
+					}
+				}
+				if len(options) == 0 {
+					return
+				}
+				target := yes
+				if negated {
+					target = no
+				}
+				target[v] = "component"
 			}
-		case "ctype_digit":
-			if _, shadow := f.module.funcs[name]; !shadow {
-				out[v] = "numeric"
-			}
 		}
-	})
-	return out
+		for i := uint(0); i < c.NamedChildCount(); i++ {
+			visit(c.NamedChild(i), negated)
+		}
+	}
+	visit(n, false)
+	return yes, no
 }
 
 func (f *phpFlow) applyProtections(p map[string]string) *phpFlow {
 	for name, protection := range p {
 		if v, ok := f.env[name]; ok {
 			f.env[name] = phpProtect(v, protection)
+			// Branch merges join only dirty variables; a protection-only
+			// change must survive the join like an assignment would.
+			f.markDirty(name)
 		}
 	}
 	return f
+}
+
+// phpFiniteStrings returns a value's unconditional finite string candidate
+// set, or nil when the value is anything else (deps, unknown, dynamic
+// elements).
+func phpFiniteStrings(v phpValue) []string {
+	if len(v.deps) > 0 || v.unknown || len(v.arrayLiterals) == 0 {
+		return nil
+	}
+	return append([]string{}, v.arrayLiterals...)
+}
+
+// phpArrayLiteralStrings extracts the string elements of a plain array
+// literal; nil for any non-literal shape. The first string of a keyed element
+// is the key, mirroring array evaluation.
+func phpArrayLiteralStrings(m *phpModule, n *sitter.Node) []string {
+	if n == nil || n.Kind() != "array_creation_expression" {
+		return nil
+	}
+	var out []string
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		pair := n.NamedChild(i)
+		if pair.Kind() != "array_element_initializer" {
+			return nil
+		}
+		var valueNode *sitter.Node
+		for j := uint(0); j < pair.NamedChildCount(); j++ {
+			c := pair.NamedChild(j)
+			if valueNode == nil && pair.NamedChildCount() > 1 {
+				if _, ok := phpStringLiteral(m, c); ok {
+					continue // keyed element: first string is the key
+				}
+			}
+			valueNode = c
+		}
+		text, ok := phpStringLiteral(m, valueNode)
+		if !ok {
+			return nil
+		}
+		out = append(out, text)
+	}
+	return out
 }
 
 func (f *phpFlow) conditional(n *sitter.Node) bool {
@@ -470,10 +549,10 @@ func (f *phpFlow) conditional(n *sitter.Node) bool {
 		test = test.NamedChild(0)
 	}
 	f.eval(test)
-	protections := f.branchProtection(test)
+	yesProt, noProt := f.branchProtection(test)
 	yes := f.clone()
 	yes.context = append(yes.context, f.module.evidence("branch_precondition", test))
-	yes.applyProtections(protections)
+	yes.applyProtections(yesProt)
 	yt := yes.block(phpField(n, "body"))
 	branches := []*phpFlow{}
 	if !yt {
@@ -483,6 +562,12 @@ func (f *phpFlow) conditional(n *sitter.Node) bool {
 		f.returns = phpCombine(f.returns, phpTransfer(yes.returns, f.module.evidence("branch_precondition", test)))
 	}
 	no := f.clone()
+	if yt {
+		// A rejecting branch that terminates makes the false-branch
+		// precondition (for example a membership allowlist) enforcing for
+		// everything after the conditional.
+		no.applyProtections(noProt)
+	}
 	no.context = append(no.context, f.module.evidence("branch_false_precondition", test))
 	nt := false
 	if alt := phpField(n, "alternative"); alt != nil {
@@ -687,6 +772,8 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		return phpValue{gaps: []analysis.Gap{f.gap("php_expression_unresolved", "unsupported conditional shape", n)}}
 	case "array_creation_expression":
 		v := phpValue{fields: map[string]phpValue{}}
+		var elements []string
+		allStrings := true
 		for i := uint(0); i < n.NamedChildCount(); i++ {
 			pair := n.NamedChild(i)
 			if pair.Kind() != "array_element_initializer" {
@@ -694,22 +781,35 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			}
 			var key string
 			var valueNode *sitter.Node
-			for j := uint(0); j < pair.NamedChildCount(); j++ {
-				c := pair.NamedChild(j)
-				if text, ok := phpStringLiteral(m, c); ok && key == "" && valueNode == nil {
-					key = text
-				} else {
-					valueNode = c
+			if pair.NamedChildCount() == 1 {
+				// Positional element: the sole child is the value.
+				valueNode = pair.NamedChild(0)
+			} else {
+				for j := uint(0); j < pair.NamedChildCount(); j++ {
+					c := pair.NamedChild(j)
+					if text, ok := phpStringLiteral(m, c); ok && key == "" && valueNode == nil {
+						key = text
+					} else {
+						valueNode = c
+					}
 				}
 			}
 			if valueNode == nil {
 				continue
+			}
+			if text, ok := phpStringLiteral(m, valueNode); ok {
+				elements = append(elements, text)
+			} else {
+				allStrings = false
 			}
 			value := f.eval(valueNode)
 			v = phpCombine(v, value)
 			if key != "" {
 				v.fields[key] = value
 			}
+		}
+		if allStrings && len(elements) > 0 {
+			v.arrayLiterals = elements
 		}
 		return v
 	case "shell_execution_expression":

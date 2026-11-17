@@ -326,6 +326,28 @@ func TestPathPHPOperands(t *testing.T) {
 	if !inclusion {
 		t.Fatal("file_inclusion fact missing")
 	}
+
+	// A terminating !in_array membership rejection guards the fall-through
+	// include; an unguarded sibling stays raw.
+	aw := phpAnalyze(t, "testdata/php/path", "allowlist.php")
+	awu := phpUsesOfKind(aw, "path_traversal_candidate")
+	if len(awu) != 2 {
+		t.Fatalf("allowlist candidates: %#v", awu)
+	}
+	guardCount, rawCount := 0, 0
+	for _, u := range awu {
+		for _, p := range u.Path.Paths {
+			switch p.Protection {
+			case "guarded":
+				guardCount++
+			case "raw":
+				rawCount++
+			}
+		}
+	}
+	if guardCount != 1 || rawCount != 1 {
+		t.Fatalf("allowlist guard: guarded=%d raw=%d %#v", guardCount, rawCount, awu)
+	}
 	// Include is a file READ with a separate file_inclusion execution-context
 	// fact; the shared path facts validate only read/write/delete roles.
 	if fiu[0].Path.Role != "read" {

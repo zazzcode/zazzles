@@ -17,6 +17,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
+- [Architecture update plan](architecture-update-plan.md) — phased plan for a shared registration graph, language packages, parallel judge, Symfony, npm library scan, Drupal, then value-flow accuracy. Plan only; each phase needs its own spec when assigned.
 - [Shared Gemini Decisions provider](gemini-decisions.md) — interactive shared-provider integration and bounded live smoke before analyzer work.
 - [Path Traversal Analyzer](path-traversal.md) — JS/TS/Python filesystem, Zip Slip (`adm-zip`/`unzipper`) and `hbs` layout containment analysis; implemented and live-verified across all eight sample apps.
 - [Path Traversal Tier-1 Hardening](path-traversal-hardening.md) — AST branch-polarity/conjunction soundness, normalization-sensitive substring policy, false-protection closures, guarded constant/import excerpt injection, determinism and file-size split; implemented and live-verified.

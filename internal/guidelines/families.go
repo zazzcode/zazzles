@@ -153,6 +153,17 @@ func validationPythonSpec() projectionSpec {
 	}}
 }
 
+// phpSQLSpec projects the PHP document's shared query-family sections.
+func phpSQLSpec() projectionSpec {
+	return projectionSpec{sections: []sectionSpec{
+		{"Posture", nil},
+		{"Validation", nil},
+		{"Free text", nil},
+		{"Sinks", nil},
+		{"Do not claim", nil},
+	}}
+}
+
 // FamilyBody returns the validated section projection of the canonical
 // language document for one claim family. Unmigrated families keep the full
 // document through Body.
@@ -167,19 +178,23 @@ func FamilyBody(language lang.Language, family string) (AnalysisGuidelines, erro
 		spec = projectionSpec{sections: []sectionSpec{{"Logging", nil}, {"Do not claim", nil}}}
 	case "xss":
 		title := "Cross-site scripting"
-		if language == lang.Python {
+		if language == lang.Python || language == lang.PHP {
 			title = "Rendering"
 		}
 		spec = projectionSpec{sections: []sectionSpec{{title, []sectionEdit{replace("xss-use-v1", "xss-components-v2")}}, {"Do not claim", nil}}}
 	case "sql":
-		spec = sqlSpec(language)
+		if language == lang.PHP {
+			spec = phpSQLSpec()
+		} else {
+			spec = sqlSpec(language)
+		}
 	case "nosql":
 		if language != lang.JavaScript && language != lang.TypeScript {
 			return AnalysisGuidelines{}, fmt.Errorf("nosql guidance requires the JavaScript document, not %s", language)
 		}
 		spec = noSQLSpec()
 	case "validation":
-		if language == lang.Python {
+		if language == lang.Python || language == lang.PHP {
 			spec = validationPythonSpec()
 		} else {
 			spec = validationSpec()

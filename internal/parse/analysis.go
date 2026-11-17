@@ -54,6 +54,14 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		defer py.close()
 		return py.report(entry, checks)
 	}
+	if ext := strings.ToLower(filepath.Ext(entry)); ext == ".php" || ext == ".phtml" {
+		ph, err := newPHPSet(root)
+		if err != nil {
+			return nil, err
+		}
+		defer ph.close()
+		return ph.report(entry, checks)
+	}
 	files, err := walk.Walk(root, walk.Options{})
 	if err != nil {
 		return nil, err
@@ -207,6 +215,23 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		if len(more.Entries) > 0 {
 			out.Limitations = append(out.Limitations, more.Limitations...)
 			out.AnalysisGuidelines = append(out.AnalysisGuidelines, more.AnalysisGuidelines...)
+		}
+		ph, err := newPHPSet(root)
+		if err != nil {
+			return nil, err
+		}
+		defer ph.close()
+		phpMore, err := ph.report("", checks)
+		if err != nil {
+			return nil, err
+		}
+		out.MergeEntries(phpMore)
+		out.Uses = append(out.Uses, phpMore.Uses...)
+		out.Gaps = append(out.Gaps, phpMore.Gaps...)
+		out.Files = append(out.Files, phpMore.Files...)
+		if len(phpMore.Entries) > 0 {
+			out.Limitations = append(out.Limitations, phpMore.Limitations...)
+			out.AnalysisGuidelines = append(out.AnalysisGuidelines, phpMore.AnalysisGuidelines...)
 		}
 	}
 	if err := finalizeEntries(out); err != nil {

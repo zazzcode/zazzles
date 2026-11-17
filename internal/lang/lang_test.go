@@ -15,6 +15,8 @@ func TestDetect(t *testing.T) {
 		{"commonjs javascript", "lib/index.cjs", JavaScript, true},
 		{"jsx", "src/App.jsx", JavaScript, true},
 		{"python", "app/main.py", Python, true},
+		{"php", "vulnerabilities/sqli/index.php", PHP, true},
+		{"phtml", "legacy/page.phtml", PHP, true},
 		{"go", "internal/walk/walk.go", Go, true},
 		{"java", "src/main/java/App.java", Java, true},
 		{"uppercase extension", "SRC/HANDLER.TS", TypeScript, true},

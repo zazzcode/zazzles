@@ -1,0 +1,340 @@
+package parse
+
+import (
+	"crypto/sha256"
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"sort"
+	"strings"
+
+	sitter "github.com/tree-sitter/go-tree-sitter"
+	php "github.com/tree-sitter/tree-sitter-php/bindings/go"
+	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/guidelines"
+	"github.com/zazzcode/zazzles/internal/lang"
+	"github.com/zazzcode/zazzles/internal/walk"
+)
+
+// phpModule is one parsed PHP file. Plain PHP has no router: every file is a
+// potential HTTP entry, and files compose through include/require.
+type phpModule struct {
+	commentsReady bool
+	comments      []sourceComment
+	file          string
+	src           []byte
+	hash          string
+	tree          *sitter.Tree
+	funcs         map[string]*sitter.Node
+	classes       map[string]*sitter.Node
+	// constants maps define(name, literal) declarations in this file.
+	constants map[string]string
+}
+
+// phpSet owns the parsed PHP modules of one scan root.
+type phpSet struct {
+	root    string
+	parser  *sitter.Parser
+	modules map[string]*phpModule
+	files   []string
+	gaps    []analysis.Gap
+	// inputs indexes acquisition per invocation context, never by span alone.
+	inputs map[string]map[analysis.Evidence]phpInputSource
+	// writes links SQL storage keys to their writing values (stored XSS).
+	writes map[string][]phpWrite
+	// sessionWrites links php-session:<key> containers to writing values.
+	sessionWrites map[string][]phpWrite
+}
+
+type phpWrite struct {
+	value    phpValue
+	entry    string
+	evidence analysis.Evidence
+}
+
+func newPHPSet(root string) (*phpSet, error) {
+	manifest, err := walk.Walk(root, walk.Options{})
+	if err != nil {
+		return nil, err
+	}
+	p, err := openParser(php.LanguagePHP())
+	if err != nil {
+		return nil, err
+	}
+	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}}
+	for _, f := range manifest.Files {
+		if f.Language == lang.PHP {
+			s.files = append(s.files, f.Path)
+		}
+	}
+	for _, file := range s.files {
+		src, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(file)))
+		if err != nil {
+			s.close()
+			return nil, err
+		}
+		if len(src) > 2<<20 {
+			s.gaps = append(s.gaps, analysis.Gap{Kind: "work_limit", Detail: "PHP source exceeds 2 MiB", At: analysis.Span{File: file, StartLine: 1}})
+			continue
+		}
+		tree := p.Parse(src, nil)
+		if tree == nil {
+			continue
+		}
+		m := &phpModule{file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree, funcs: map[string]*sitter.Node{}, classes: map[string]*sitter.Node{}, constants: map[string]string{}}
+		s.modules[file] = m
+		if tree.RootNode().HasError() {
+			s.gaps = append(s.gaps, analysis.Gap{Kind: "parse_error", Detail: "PHP syntax errors; module omitted", At: spanOf(file, tree.RootNode())})
+			continue
+		}
+		m.declarations(tree.RootNode())
+	}
+	return s, nil
+}
+
+func (s *phpSet) close() {
+	for _, m := range s.modules {
+		m.tree.Close()
+	}
+	s.parser.Close()
+}
+
+func (m *phpModule) evidence(kind string, n *sitter.Node) analysis.Evidence {
+	if n == nil {
+		return analysis.Evidence{Kind: kind, SHA256: m.hash, Span: analysis.Span{File: m.file}}
+	}
+	if !m.commentsReady {
+		m.comments = sourceComments(m.tree.RootNode(), m.src, false)
+		m.commentsReady = true
+	}
+	modelText := ""
+	if kind != "file" {
+		modelText = modelSource(m.src, n.StartByte(), n.EndByte(), m.comments)
+	}
+	return analysis.Evidence{ModelText: modelText, Kind: kind, Text: n.Utf8Text(m.src), Span: spanOf(m.file, n), SHA256: m.hash}
+}
+
+func phpWalk(n *sitter.Node, fn func(*sitter.Node)) {
+	if n == nil {
+		return
+	}
+	fn(n)
+	for i := uint(0); i < n.ChildCount(); i++ {
+		if c := n.Child(i); c != nil && c.IsNamed() {
+			phpWalk(c, fn)
+		}
+	}
+}
+
+func phpText(m *phpModule, n *sitter.Node) string {
+	if n == nil {
+		return ""
+	}
+	return n.Utf8Text(m.src)
+}
+
+func phpField(n *sitter.Node, key string) *sitter.Node {
+	if n == nil {
+		return nil
+	}
+	return n.ChildByFieldName(key)
+}
+
+// phpVarName returns the bare variable name of a variable_name node
+// ("$id" → "id"). The grammar attaches no field to the inner name token.
+func phpVarName(m *phpModule, n *sitter.Node) string {
+	if n == nil || n.Kind() != "variable_name" {
+		return ""
+	}
+	return strings.TrimPrefix(phpText(m, n), "$")
+}
+
+// phpArgs flattens a call's arguments, unwrapping argument nodes.
+func phpArgs(n *sitter.Node) []*sitter.Node {
+	a := phpField(n, "arguments")
+	var out []*sitter.Node
+	if a != nil {
+		for i := uint(0); i < a.NamedChildCount(); i++ {
+			c := a.NamedChild(i)
+			if c.Kind() == "argument" {
+				if v := c.NamedChild(0); v != nil {
+					out = append(out, v)
+					continue
+				}
+			}
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+// phpStringLiteral unquotes a plain string node (no interpolation). Both
+// single-quoted strings and double-quoted encapsed strings without
+// interpolation carry literal text.
+func phpStringLiteral(m *phpModule, n *sitter.Node) (string, bool) {
+	if n == nil {
+		return "", false
+	}
+	if n.Kind() == "encapsed_string" {
+		var out []byte
+		for i := uint(0); i < n.ChildCount(); i++ {
+			c := n.Child(i)
+			if c == nil {
+				continue
+			}
+			if c.Kind() == "string_content" {
+				out = append(out, c.Utf8Text(m.src)...)
+				continue
+			}
+			if c.IsNamed() {
+				return "", false // interpolation
+			}
+		}
+		return string(out), true
+	}
+	if n.Kind() != "string" {
+		return "", false
+	}
+	text := phpText(m, n)
+	if len(text) < 2 {
+		return "", false
+	}
+	q := text[:1]
+	if q != "'" && q != "\"" {
+		return "", false
+	}
+	return text[1 : len(text)-1], true
+}
+
+// declarations indexes top-level functions, classes and define() constants.
+func (m *phpModule) declarations(n *sitter.Node) {
+	if n == nil {
+		return
+	}
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		c := n.NamedChild(i)
+		switch c.Kind() {
+		case "function_definition":
+			m.funcs[phpText(m, phpField(c, "name"))] = c
+		case "class_declaration":
+			m.classes[phpText(m, phpField(c, "name"))] = c
+		case "expression_statement":
+			call := firstChildOfKind(c, "function_call_expression")
+			if call == nil || phpText(m, phpField(call, "function")) != "define" {
+				continue
+			}
+			args := phpArgs(call)
+			if len(args) != 2 {
+				continue
+			}
+			name, ok := phpStringLiteral(m, args[0])
+			if !ok {
+				continue
+			}
+			if value, ok := phpStringLiteral(m, args[1]); ok {
+				m.constants[name] = value
+			}
+		}
+	}
+}
+
+func firstChildOfKind(n *sitter.Node, kind string) *sitter.Node {
+	if n == nil {
+		return nil
+	}
+	for i := uint(0); i < n.ChildCount(); i++ {
+		if c := n.Child(i); c != nil && c.Kind() == kind {
+			return c
+		}
+	}
+	return nil
+}
+
+// constant resolves a bare identifier to a define() literal. PHP constants are
+// global; the declaring module is searched first, then all modules in order.
+func (s *phpSet) constant(m *phpModule, name string) (string, bool) {
+	if v, ok := m.constants[name]; ok {
+		return v, true
+	}
+	files := append([]string{}, s.files...)
+	sort.Strings(files)
+	for _, file := range files {
+		if other := s.modules[file]; other != nil {
+			if v, ok := other.constants[name]; ok {
+				return v, true
+			}
+		}
+	}
+	return "", false
+}
+
+// phpIncludeTarget is one resolved include candidate with its selecting
+// condition evidence, when the path came from a finite alternative set.
+type phpIncludeTarget struct {
+	module    *phpModule
+	condition []analysis.Evidence
+	literal   string
+}
+
+// phpNormalizePath resolves a relative include path against the including
+// file's directory, lexically only.
+func phpNormalizePath(baseDir, target string) string {
+	if strings.HasPrefix(target, "/") {
+		return path.Clean(target)[1:]
+	}
+	return path.Clean(path.Join(baseDir, target))
+}
+
+// phpIncludeExpression reports whether a node is an include-family expression.
+func phpIncludeKind(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	switch n.Kind() {
+	case "include_expression", "include_once_expression", "require_expression", "require_once_expression":
+		return true
+	}
+	return false
+}
+
+func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
+	if entry != "" && s.modules[entry] == nil {
+		return nil, fmt.Errorf("entry must be a selected JS/TS/Python/PHP file relative to target root: %s", entry)
+	}
+	out := &analysis.AnalysisReport{SchemaVersion: analysis.ReportSchemaVersion, Root: s.root, Entries: []analysis.EntryPoint{}, Uses: []analysis.CandidateUse{}, Gaps: append([]analysis.Gap{}, s.gaps...), Files: []analysis.Evidence{}, Limitations: []string{
+		"PHP supports server-mapped file entries with literal and finite-alternative include composition; unresolvable dynamic includes, loops, mutation and whole-program class hierarchies remain gaps",
+		"PHP helper expansion is bounded to depth 3 and 24 calls per entry; framework adapters and template engines are not modeled",
+		"PHP SQL text, command strings, output rendering and file operands are candidate findings, not confirmed vulnerabilities",
+	}}
+	for _, file := range s.files {
+		m := s.modules[file]
+		if m == nil {
+			continue
+		}
+		if entry != "" && file != entry {
+			continue
+		}
+		s.analyzeEntry(out, m)
+	}
+	s.linkStorage(out)
+	assembleXSSClaims(out)
+	if len(checks) > 0 {
+		s.attachChecks(out, checks)
+	}
+	for _, file := range s.files {
+		if m := s.modules[file]; m != nil {
+			e := m.evidence("file", m.tree.RootNode())
+			e.Text = ""
+			out.Files = append(out.Files, e)
+		}
+	}
+	for _, r := range guidelines.ForPaths(s.files) {
+		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: r.ID, Version: r.Version, Languages: r.Languages})
+	}
+	s.assemblePHPInputs(out)
+	if err := finalizeEntries(out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}

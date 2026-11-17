@@ -12,9 +12,10 @@ const (
 	NodeArgvContract   = "node-child-process-argv-v1"
 	PythonOSContract   = "python-os-shell-v1"
 	PythonSubprocessID = "python-subprocess-v1"
+	PHPProgramContract = "php-program-execution-v1"
 )
 
-var commandContractIDs = []string{NodeShellContract, NodeArgvContract, PythonOSContract, PythonSubprocessID}
+var commandContractIDs = []string{NodeShellContract, NodeArgvContract, PythonOSContract, PythonSubprocessID, PHPProgramContract}
 
 // CommandContract returns a copy of the supported operation contract by verified ID.
 // Semantics follow the cited official documentation reviewed 2026-11-07; the
@@ -33,6 +34,9 @@ func CommandContract(id string) *analysis.APIModel {
 	case PythonSubprocessID:
 		return &analysis.APIModel{ID: id, Library: "subprocess", Reference: "https://docs.python.org/3/library/subprocess.html#popen-constructor",
 			Semantics: "subprocess.run, Popen, call, check_call and check_output default to shell=False. With shell=False a sequence is an executable plus separate arguments, and a string is the program name, not shell text. On POSIX with shell=True a string is shell command text; for a sequence the first item is shell command text and the remaining items are arguments to the shell itself, not concatenated into that command. The executable keyword replaces the shell or program. stdin/stdout/stderr/timeout/input are not command text; cwd and env are separate configuration. A literal sh/bash with -c is an interpreter command operand even when shell=False."}
+	case PHPProgramContract:
+		return &analysis.APIModel{ID: id, Library: "php", Reference: "https://www.php.net/manual/en/function.system.php",
+			Semantics: "system, exec, shell_exec, passthru, popen and proc_open pass their command-string argument to the platform shell (/bin/sh -c on POSIX); the backtick operator is shell_exec. Request text in that operand can add commands, substitutions, redirection and separators. exec's second (output array) and third (status) arguments are results, not command text; popen's mode and proc_open's descriptor-specification arrays are configuration, not command text. escapeshellarg quotes one argument and escapeshellcmd escapes shell metacharacters: they are argument-quoting controls on the value they wrap, never evidence that an already-constructed command string is safe. This contract is not evidence of the deployed platform."}
 	}
 	return nil
 }
@@ -83,4 +87,5 @@ var commandOwners = map[string]string{
 	NodeArgvContract:   "internal/parse/command_node.go",
 	PythonOSContract:   "internal/parse/python_command.go",
 	PythonSubprocessID: "internal/parse/python_command.go",
+	PHPProgramContract: "internal/parse/php_command.go",
 }

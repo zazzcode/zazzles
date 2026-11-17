@@ -12,7 +12,7 @@ import (
 	"github.com/zazzcode/zazzles/internal/lang"
 )
 
-//go:embed javascript.md python.md go.md
+//go:embed javascript.md python.md php.md go.md
 var files embed.FS
 
 // AnalysisGuidelines contains secure coding guidance and instructions for interpreting source evidence.
@@ -26,7 +26,7 @@ type AnalysisGuidelines struct {
 var pack []AnalysisGuidelines
 
 func init() {
-	names := []string{"javascript.md", "python.md", "go.md"}
+	names := []string{"javascript.md", "python.md", "php.md", "go.md"}
 	for _, name := range names {
 		raw, err := files.ReadFile(name)
 		if err != nil {

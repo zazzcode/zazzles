@@ -19,24 +19,27 @@ const (
 	TypeScript Language = "typescript"
 	JavaScript Language = "javascript"
 	Python     Language = "python"
+	PHP        Language = "php"
 	Go         Language = "go"
 	Java       Language = "java"
 )
 
 // extensions maps a lower-case file extension, including the dot, to a language.
 var extensions = map[string]Language{
-	".ts":   TypeScript,
-	".tsx":  TypeScript,
-	".mts":  TypeScript,
-	".cts":  TypeScript,
-	".js":   JavaScript,
-	".jsx":  JavaScript,
-	".mjs":  JavaScript,
-	".cjs":  JavaScript,
-	".vue":  JavaScript,
-	".py":   Python,
-	".go":   Go,
-	".java": Java,
+	".ts":    TypeScript,
+	".tsx":   TypeScript,
+	".mts":   TypeScript,
+	".cts":   TypeScript,
+	".js":    JavaScript,
+	".jsx":   JavaScript,
+	".mjs":   JavaScript,
+	".cjs":   JavaScript,
+	".vue":   JavaScript,
+	".py":    Python,
+	".php":   PHP,
+	".phtml": PHP,
+	".go":    Go,
+	".java":  Java,
 }
 
 // Detect returns the language for a path, and whether scan supports it.

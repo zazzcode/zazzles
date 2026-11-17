@@ -11,7 +11,7 @@ import (
 // The path documents are embedded separately and are deliberately not part of
 // the default language pack, so adding the family changes no existing request.
 //
-//go:embed path_javascript.md path_python.md
+//go:embed path_javascript.md path_python.md path_php.md
 var pathFiles embed.FS
 
 // pathSections are required, exactly once, in every path document.
@@ -24,6 +24,8 @@ func PathBody(language lang.Language) (AnalysisGuidelines, error) {
 	case lang.JavaScript, lang.TypeScript:
 	case lang.Python:
 		name = "path_python.md"
+	case lang.PHP:
+		name = "path_php.md"
 	default:
 		return AnalysisGuidelines{}, fmt.Errorf("no path guidelines for %s", language)
 	}

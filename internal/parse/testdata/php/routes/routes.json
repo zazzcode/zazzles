@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "root": "php/routes",
+  "routes": [
+    {
+      "id": "route:admin/login.php:FILE:/admin/login.php",
+      "method": "",
+      "path_pattern": "/admin/login.php",
+      "framework": "php",
+      "registration": {
+        "file": "admin/login.php",
+        "start_line": 1,
+        "end_line": 4,
+        "start_byte": 0,
+        "end_byte": 53
+      },
+      "handler": {
+        "name": "login.php",
+        "kind": "file",
+        "span": {
+          "file": "admin/login.php",
+          "start_line": 1,
+          "end_line": 4,
+          "start_byte": 0,
+          "end_byte": 53
+        }
+      },
+      "steps": [
+        {
+          "kind": "server_file_mapping",
+          "symbol": {
+            "name": "login.php",
+            "kind": "file",
+            "span": {
+              "file": "admin/login.php",
+              "start_line": 1,
+              "end_line": 4,
+              "start_byte": 0,
+              "end_byte": 53
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "route:index.php:FILE:/index.php",
+      "method": "",
+      "path_pattern": "/index.php",
+      "framework": "php",
+      "registration": {
+        "file": "index.php",
+        "start_line": 1,
+        "end_line": 4,
+        "start_byte": 0,
+        "end_byte": 50
+      },
+      "handler": {
+        "name": "index.php",
+        "kind": "file",
+        "span": {
+          "file": "index.php",
+          "start_line": 1,
+          "end_line": 4,
+          "start_byte": 0,
+          "end_byte": 50
+        }
+      },
+      "steps": [
+        {
+          "kind": "server_file_mapping",
+          "symbol": {
+            "name": "index.php",
+            "kind": "file",
+            "span": {
+              "file": "index.php",
+              "start_line": 1,
+              "end_line": 4,
+              "start_byte": 0,
+              "end_byte": 50
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "gaps": []
+}

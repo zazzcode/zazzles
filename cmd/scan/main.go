@@ -48,7 +48,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		entryID        = flags.String("entry-id", "", "select an exact snapshot entry ID for --analyze")
 		routeFilter    = flags.String("route", "", "optional exact route path pattern for --analyze")
 		checksFile     = flags.String("checks", "", "JSON file declaring route/method/field security requirements for --analyze")
-		entry          = flags.String("entry", "", "relative JS/TS/Python registration file for --analyze")
+		entry          = flags.String("entry", "", "relative JS/TS/Python/PHP registration file for --analyze")
 		judgeProvider  = flags.String("judge", "", "optional semantic judge: openai, gemini or jev (transmits bounded source evidence)")
 		judgeModel     = flags.String("judge-model", "", "judge model; defaults to JUDGE_DECISION_MODEL, gpt-6-luna for openai or gemini-decision-1 for gemini; required for jev")
 		discoverRoutes = flags.Bool("discover-routes", false, "opt-in model-assisted Node route proposals; unverified bindings remain provisional")

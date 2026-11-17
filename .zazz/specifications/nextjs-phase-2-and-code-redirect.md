@@ -5,8 +5,8 @@
 
 ## Capability and scope
 
-Implement the [code/redirect proposal](../../code-injection-and-open-redirect-proposal.md)
-C0–C7 and [Next.js phase 2 proposal](../../nextjs-support-phase-2-proposal.md) B–D.
+This contract owns the combined code/redirect C0–C7 and Next.js phase 2 B–D implementation;
+the [results](../evaluation/nextjs-phase-2-results.md) record delivered scope and verification.
 Session A is complete. Prototype pollution, PHP, SCA and XXE remain outside this contract.
 
 ## Required reading

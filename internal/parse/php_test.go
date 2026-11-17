@@ -326,7 +326,9 @@ func TestPathPHPOperands(t *testing.T) {
 	if !inclusion {
 		t.Fatal("file_inclusion fact missing")
 	}
-	if fiu[0].Path.Role != "execute" {
+	// Include is a file READ with a separate file_inclusion execution-context
+	// fact; the shared path facts validate only read/write/delete roles.
+	if fiu[0].Path.Role != "read" {
 		t.Fatalf("role: %#v", fiu[0].Path)
 	}
 
@@ -343,7 +345,7 @@ func TestPathPHPOperands(t *testing.T) {
 	}
 	dest := -1
 	for i, o := range upu[0].Path.Operands {
-		if o.Slot == "destination_path" {
+		if o.Slot == "destination" {
 			dest = i
 		}
 	}
@@ -352,7 +354,7 @@ func TestPathPHPOperands(t *testing.T) {
 	}
 	guarded := false
 	for _, flow := range upu[0].Path.Paths {
-		if flow.Operand == "destination_path" && flow.Protection == "guarded" {
+		if flow.Operand == "destination" && flow.Protection == "guarded" {
 			guarded = true
 		}
 	}

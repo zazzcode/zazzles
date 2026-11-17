@@ -19,11 +19,11 @@ pinned revision.
 | SQLI-001 | `vulnerabilities/sqli/source/low.php:10` (also medium/high; impossible PDO at `:16`) | `$_GET['id']` interpolated into `SELECT ... WHERE user_id = '$id'`; all four alternatives yield `sql_query_candidate` (impossible records binding controls) |
 | SQLI-002 | `vulnerabilities/sqli_blind/source/low.php:11` | Same input shape; boolean/blind variants remain interpolated queries |
 | AUTH-001 | `vulnerabilities/brute/source/low.php:12` | `$_POST` `user`/`pass` interpolated into `SELECT * FROM users WHERE user = '$user' AND password = '$pass'` |
-| AUTH-002 | `vulnerabilities/captcha/source/low.php` | Same query shape as AUTH-001; the captcha gate is control flow, not data protection |
+| AUTH-002 | `vulnerabilities/captcha/source/low.php:61` | Candidate-only, not a Confirmed positive: the UPDATE interpolates `md5($pass_new)` (non-content) and `dvwaCurrentUser()` (session-sourced via `dvwaPage.inc.php:172`), so no raw request→SQL path exists; unresolved session/helper origin honestly stays Review |
 | CSRF-001 | `vulnerabilities/csrf/source/low.php:16` | `$_GET['password_new']` interpolated into `UPDATE users SET password = ...` |
 | CMD-001 | `vulnerabilities/exec/source/low.php:14` (unix branch `:10`) | `$_REQUEST['ip']` concatenated into `shell_exec('ping -c 4 ' . $target)`; medium/high re-encode but stay raw; impossible `escapeshellarg` records quoted protection |
 | XSSR-001 | `vulnerabilities/xss_r/source/low.php` (+medium/high; impossible `htmlspecialchars`) | `$_GET['name']` echoed at the shared render sink `dvwa/includes/dvwaPage.inc.php:388` (`dvwaHtmlEcho`); reflected candidates are attributed by input-source span, not sink file |
-| XSSS-001 | `vulnerabilities/xss_s/source/low.php:17` (write) + `dvwa/includes/dvwaPage.inc.php:610`/`:625` (read/render) | `$_POST` `mtxMessage`/`txtName` → `INSERT INTO guestbook ( comment, name )` → `dvwaGuestbook()` `SELECT name, comment` + `mysqli_fetch_row` render; stored link key `php-sql:guestbook.comment`/`.name` resolves to the writing entry |
+| XSSS-001 | `vulnerabilities/xss_s/source/low.php:17` (write) + `dvwa/includes/dvwaPage.inc.php:610`/`:625` (read/render) | `$_POST` `mtxMessage`/`txtName` → `INSERT INTO guestbook ( comment, name )` (confirmed SQL construction) → `dvwaGuestbook()` `SELECT name, comment` + `mysqli_fetch_row` render; stored link key `php-sql:guestbook.comment`/`.name` resolves to the writing entry. The four render records exceed the 64KB judge wire limit (byte accounting retained) and stay needs_review — a documented limit, not a verdict |
 | UPLD-001 | `vulnerabilities/upload/source/low.php:9` | `move_uploaded_file($_FILES['uploaded']['tmp_name'], $target_path)` with request-derived `name`; impossible level enforces renaming/size checks |
 | FI-001 | `vulnerabilities/fi/index.php:36` | `include( $file )` with `$_GET['page']` composed path (`fi/source/low.php`); impossible allowlist keeps the candidate with verified restrictions |
 | REDIR-001 | `vulnerabilities/open_redirect/source/low.php:4` | `header ("location: " . $_GET['redirect'])` — lowercase `location:` accepted case-insensitively; impossible `:18` allowlist checks precede the same sink |
@@ -61,6 +61,10 @@ pin — each still yields its unresolved-origin finding:
 positives against a clean checkout at the pinned revision. Expected labels live only in test code
 and never enter model inputs. Paid judgment (AC14) is a separate, explicitly budgeted step; its
 results belong in `php-support-results.md` and the published sample, not in this guide.
+Paid-run interpretation: dispatch alternatives share one candidate — a Confirmed record rests on
+its raw (low/medium/high) dependency path while impossible-level sibling paths keep their own
+recorded protections; "no impossible-level control is red" therefore means no record whose
+dependency sources are exclusively impossible-level is red.
 
 Before a new evaluation, verify the DVWA revision; re-review changed modules and re-pin lines.
 Never carry old decisions onto changed evidence.

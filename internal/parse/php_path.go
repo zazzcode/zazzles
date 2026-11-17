@@ -12,11 +12,11 @@ import (
 func phpPathSlots(op string) []string {
 	switch op {
 	case "move_uploaded_file":
-		return []string{"uploaded_tmp_name", "destination_path"}
+		return []string{"path", "destination"}
 	case "file_put_contents":
-		return []string{"path", "data"}
+		return []string{"path", "content"}
 	case "fopen":
-		return []string{"path", "mode"}
+		return []string{"path", "option"}
 	case "unlink", "readfile", "file", "file_get_contents":
 		return []string{"path"}
 	default: // include/require(_once)
@@ -46,7 +46,14 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 	if role == "" {
 		role = phpPathRole(op)
 	}
-	facts := &analysis.PathFacts{Operation: op, ContractID: contract, Platform: "posix", Role: role, Operands: []analysis.PathOperand{}, Paths: []analysis.PathFlow{}, Guards: []analysis.PathGuard{}}
+	// Include/require is a file READ whose execution context is the separate
+	// file_inclusion fact; the shared facts validate only read/write/delete.
+	executeContext := role == "execute"
+	factsRole := role
+	if executeContext {
+		factsRole = "read"
+	}
+	facts := &analysis.PathFacts{Operation: op, ContractID: contract, Platform: "posix", Role: factsRole, Operands: []analysis.PathOperand{}, Paths: []analysis.PathFlow{}, Guards: []analysis.PathGuard{}}
 	var context []analysis.Evidence
 	var deps []phpDep
 	var all phpValue
@@ -67,7 +74,7 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 		o.Context = append(o.Context, len(context))
 		context = append(context, m.evidence("path_operand", iOrFallback(i, nodes, n)))
 		for _, d := range v.deps {
-			if slot == "uploaded_tmp_name" || slot == "data" || slot == "mode" {
+			if slot == "content" || slot == "option" || op == "move_uploaded_file" && slot == "path" {
 				// Server-managed upload tmp names and written data are not path
 				// sources; keep the dependency visible without a path claim.
 				o.Dependencies = append(o.Dependencies, len(deps))
@@ -114,7 +121,7 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 	u.Context = append(u.Context, context...)
 	u.Context = append(u.Context, m.evidence("sink_binding", phpCallee(n)))
 	sinkGaps := []analysis.Gap{}
-	if role == "execute" {
+	if executeContext {
 		g := f.gap("file_inclusion", "include/require executes the resolved path (CWE-98 execution context)", n)
 		u.Gaps = append(u.Gaps, g)
 		sinkGaps = append(sinkGaps, g)

@@ -233,7 +233,10 @@ set -a
 set +a
 ```
 
-The scanner reads process environment variables; it does not load `.env` automatically. OpenAI Luna
+The scanner reads process environment variables; it does not load `.env` automatically. To load
+it on every `cd` into the checkout instead, install [direnv](https://direnv.net) and run
+`direnv allow` once — the tracked `.envrc` only says `dotenv` (see
+[getting started](docs/getting-started.md#local-environment-file)). OpenAI Luna
 is the primary model used for development and calibration. Manage spending in your API account;
 no local pricing or rate configuration is needed.
 

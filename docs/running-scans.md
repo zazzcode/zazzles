@@ -46,7 +46,9 @@ directory; use an absolute path for shared storage. The repository folder is nam
 root's basename, so clones sharing a basename share that folder but receive separate run folders.
 No existing run is overwritten. This local directory is a configurable convention, not a hard-coded
 scanner default. You may keep the variable in your ignored `.env`; load it in the invoking shell,
-because the scanner does not automatically read `.env`. It is a local filesystem path, not a URL.
+because the scanner does not automatically read `.env` (the tracked `.envrc` plus
+[direnv](https://direnv.net) loads it on `cd` — see [getting started](getting-started.md#local-environment-file)).
+It is a local filesystem path, not a URL.
 
 Open the printed `findings.html` path in your browser (on macOS: `open /path/to/run/findings.html`).
 Entry rows start with Findings, then Review, then Protected counts (highest first), followed by

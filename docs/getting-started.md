@@ -52,6 +52,17 @@ set +a
 The scanner reads environment variables and does not auto-load `.env`. This sample is for local
 shell use; CI should set environment variables and secrets through its workflow configuration.
 
+To load `.env` automatically on `cd` into the checkout, use [direnv](https://direnv.net) with the
+tracked `.envrc` (it only says `dotenv` and reads the Git-ignored `.env`):
+
+```bash
+brew install direnv            # macOS; see direnv docs for other shells/OSes
+echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc   # once per machine; reload your shell
+direnv allow                    # once per checkout, after reviewing .envrc
+```
+
+Every worktree of this repository has its own `.env` and needs its own `direnv allow`.
+
 
 Continue with [required decision-model setup](decision-models.md) before a security assessment.
 The primary setup uses `JUDGE_DECISION_MODEL=gpt-6-luna`, `OPENAI_API_KEY`, and `--judge openai`

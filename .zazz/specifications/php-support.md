@@ -449,18 +449,24 @@ paid usage 1,336 requests, per-run caps honored.
 
 ### 2026-11-17 — Independent review and rebase onto stage
 
-**Source.** Owner-assigned independent review of the implemented MVP before merge.
+**Source.** Owner-assigned independent review of the implemented MVP before merge, with paid
+passes on DVWA and php-goof authorized by the owner during the review.
 
-**Summary.** Rebased onto `stage` `86efc7e` without conflicts. Fixed flow defects found by direct
-PHP-semantics review and the php-goof sample (merge dirty propagation, guard polarity, if/elseif
-/else chains, braceless bodies, loop termination, foreach and whole-superglobal sources, builtin
-shadowing, include cycles, zero-argument calls, literal double-quoted SQL, D-3 selector
-narrowing per dispatch alternative with exact-constant condition folding). Reorganized the adapter
-into values/control/guards/includes/input-facts files without output change. Helper work budget
-documented as implemented (256 calls per entry; earlier text said 96).
+**Summary.** Rebased onto `stage` `86efc7e` without conflicts. Fixed defects found by direct
+PHP-semantics review and by the two samples: merge dirty propagation; guard polarity; if/elseif/
+else chains, braceless and colon bodies; loop termination; `die()` statements; foreach and
+whole-superglobal sources; builtin shadowing by variables; include cycles and depth; zero-argument
+calls; literal double-quoted SQL; D-3 selector narrowing with exact-constant condition folding and
+sibling-alternative gap isolation; inline-HTML output context and `<?=`; interpolated SELECT rows;
+INSERT/UPDATE write attribution across joins; session writer linking across entries; raw-witness
+XSS typing; `urlencode` as a scoped XSS control; shell deny-lists; `explode` and element type
+guards; flow-scoped `define()`, entry-relative includes, `__DIR__`; `=&` assignment; guarded
+command/code/redirect facts valid under the shared contracts; stored-only injection claims kept in
+Review; server-determined `$_SERVER` keys. Adapter reorganized into values/control/guards/
+includes/input-facts files. Bounds as implemented: helper depth 4, 256 calls per entry, include
+nesting 8. PHP guideline version 2 (inline-HTML output context).
 
-**Verification impact.** Offline suites green; DVWA source-key gate passes; exact replay of the
-retained paid run drops to 67/292 because the other records gained or changed evidence; DVWA
-offline records 296 → 229 (72 zero-dependency constant-SQL records removed, none with a request
-dependency lost). Fresh judged
-outcomes for the fixed tip need a separately authorized paid pass.
+**Verification impact.** Offline suites, `-race`, vet and the DVWA source-key gate green.
+Evaluation of record and sample analysis in `.zazz/evaluation/php-support-results.md` and
+`.zazz/evaluation/php-sample-analysis.md`; 721 review requests. The published
+`docs/samples/dvwa/` reports remain pinned to scanner `1deee35` by their metadata.

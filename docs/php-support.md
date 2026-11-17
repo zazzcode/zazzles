@@ -23,11 +23,11 @@ model; neither mode certifies an application as safe.
 | Area | Implemented subset |
 | --- | --- |
 | Entries | Server-mapped `.php`/`.phtml` file entries with deterministic identity and normalized path metadata |
-| Sources | `$_GET`/`$_POST`/`$_REQUEST`/`$_COOKIE`/`$_SERVER`/`$_FILES` superglobals, `php://input` body origin, `$_SESSION` as storage with write→read transfers, `$GLOBALS` idiom |
-| Flow | Assignments/reassignments, string interpolation and concatenation with raw templates, conditional (switch/if) value alternatives, helper expansion with global propagation, `require`/`include` dispatch over finite switch alternatives |
+| Sources | `$_GET`/`$_POST`/`$_REQUEST`/`$_COOKIE`/`$_SERVER`/`$_FILES` superglobals (keyed and whole, e.g. `reset($_GET)`, `foreach ($_POST …)`), `php://input` body origin, `$_SESSION` as storage linked to writes from every entry, `$GLOBALS` idiom |
+| Flow | Assignments (including `=&`), string interpolation and concatenation with raw templates, `if`/`elseif`/`else` (braced, braceless and colon forms), `switch`, loops and `foreach` bindings, `die`/`exit` termination, helper expansion with global propagation, flow-scoped `define()` constants, `require`/`include` dispatch over finite switch alternatives with the selector narrowed per alternative, `__DIR__`/`dirname(__FILE__)` paths |
 | SQL | mysqli (OO and procedural, including the `$GLOBALS["___mysqli_ston"]` converter idiom), PDO and SQLite3 prepare/bind/execute with binding controls, interpolated-statement claims with storage attribution |
-| Command | `shell_exec`/`exec`/`system`/`passthru`/`popen`/`proc_open`/backticks with shell-operand facts; `escapeshellarg` is a control |
-| XSS | `echo`/`print` HTML render values, reflected and stored claims, `php-sql:<table>.<column>` storage links from INSERT column attribution (string and numeric `fetch_row` access), `htmlspecialchars`/`htmlentities` transforms |
+| Command | `shell_exec`/`exec`/`system`/`passthru`/`popen`/`proc_open`/backticks with shell-operand facts; `escapeshellarg` is a control; a literal `str_replace` deny-list that leaves a shell metacharacter stays raw; `is_numeric` on `explode` elements constrains them |
+| XSS | `echo`/`print`/`<?= ?>` render values with the output context taken from the surrounding inline HTML (text, attribute, URL, script, style), reflected and stored claims, `php-sql:<table>.<column>` storage links from INSERT and UPDATE column attribution across branch joins (string and numeric `fetch_row` access), `htmlspecialchars`/`htmlentities` transforms, `urlencode` as a markup/URL-scoped control |
 | Path | `include`/`require` dynamic targets, `move_uploaded_file` upload moves, filesystem read/write calls; `basename`/allowlist restrictions are controls, not sink removals |
 | Code | `eval`, string `assert`, `create_function` as whole-program interpreter operands; `file_get_contents` returns carry their path's dependency paths (path control is content control) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
@@ -38,15 +38,18 @@ protect their data slots, not interpolated identifiers. Input-validation policy,
 protection and HTML context remain distinct questions; per-family interpretation lives in the
 [analysis rules](analysis/README.md).
 
-Stored links use literal INSERT column attribution and SELECT header resolution, retaining
+Stored links use INSERT/UPDATE column attribution and SELECT header resolution, retaining
 writing entries, source hashes and transfer evidence. They are potential field flows, not proof
 that a particular row was written or a deployed database matches the source. Column attribution
-is exact-count-or-skip: an INSERT whose interpolation count does not match its column list
-produces no invented origin, and the read stays an unresolved-origin Review. Cross-entry session
-write ordering is not established; a `$_SESSION` read whose writing helper expanded in another
-entry stays unresolved rather than linked.
+is exact-count-or-skip: a write whose interpolation count does not match its column list
+produces no invented origin, and the read stays an unresolved-origin Review. `$_SESSION` reads
+link the writes found in every entry once all entries are analyzed; this establishes possible
+writers, not request ordering. A key with no writer stays unresolved, and a render whose stored
+writers are all server-generated (`md5(uniqid())`, literals) carries no request content. A render
+that also has a direct raw request path stays a reflected claim with its unresolved stored
+siblings visible.
 
-Helper expansion is bounded to depth 3 and 256 helper calls per entry, include nesting to 8
+Helper expansion is bounded to depth 4 and 256 helper calls per entry, include nesting to 8
 (include cycles are not re-entered), source files to 2 MiB,
 dependency paths to 64 and evidence merges are content-deduplicated. Conditional dispatch
 switches join only changed variables. Loops, references/aliases, dynamic calls by variable name,

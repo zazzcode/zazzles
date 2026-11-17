@@ -113,18 +113,23 @@ the user's OpenAI account with per-run caps honored; the 300-request contract ca
 accepted final pass.
 
 
-## Independent review fixes (post-AC14)
+## Independent review (post-AC14)
 
-The review rebased the branch onto `stage` `86efc7e` (replay still 292/292 exact) and then fixed
-PHP flow defects that dropped or mis-protected flows: nested-branch merges losing writes,
-inverted `!is_numeric`/`||` guard polarity, unwalked `elseif`/`else` chains and braceless bodies,
-loops ending the entry, `file($file)` builtin shadowing, include cycles and zero-argument panics;
-dispatch alternatives now narrow their selector so impossible-only page code stays out of other
-levels (regressions in `internal/parse/php_flow_test.go`; php-goof used as a second sample).
-Offline DVWA analysis at the fixed tip has 229 records (296 before): 72 zero-dependency SQL
-records for constant double-quoted queries are gone and 5 records are new (cookie values reaching
-the page render, a braceless upload `unlink`); no record with a request dependency was lost.
-67 of the 292 retained paid decisions still replay exactly; the rest carry different evidence (for
-example `csrf/source/high.php` UPDATE gained the request sources it had lost).
-`TestDVWASourceKey` still passes. The AC14 outcomes above describe
-scanner `1deee35`; no paid requests were made for the fixed tip.
+The review rebased the branch onto `stage` `86efc7e` (replay of the AC14 run still 292/292 exact),
+fixed the flow, guard, include, storage and fact-contract defects listed in the contract change
+log, and re-ran paid passes on DVWA and on a second sample, php-goof. Regressions live in
+`internal/parse/php_flow_test.go`. Evaluation of record at scanner `bc40266` (OpenAI `gpt-6-luna`,
+no fallback, per-family runs that each replay exactly at that commit): **115 Confirmed, 12
+Protected, 110 Review, 2 Practice** over 240 records (AC14 at `1deee35`, counted the same way:
+107 / 10 / 177 / 2 over 296). Every detection-guide positive has its expected outcome, apart from
+the documented render wire limit and two judge disagreements (CMD-001 impossible, UPLD-001).
+`TestDVWASourceKey` passes. php-goof: all three source-reviewed SQL injections are Confirmed; the
+reflected attribute XSS stays Review on a judge context disagreement.
+
+Case-by-case expected-vs-found tables, findings beyond the guide, practice and input-validation
+results, and the 8 records changed after the paid runs are in the
+[sample analysis](php-sample-analysis.md).
+
+**Review paid usage: 721 requests** (php-goof 64 across six runs including three 7-request XSS
+probes; DVWA 657 across four runs: 222 + 230 full, 124 SQL/command, 81 XSS), about 6.6M input
+tokens, per-run caps honored. Cumulative PHP paid usage including AC14: 2,057 requests.

@@ -3,6 +3,7 @@ package parse
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -893,7 +894,10 @@ func phpSubscriptParts(n *sitter.Node) (obj, index *sitter.Node) {
 func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 	m := f.module
 	obj, index := phpSubscriptParts(n)
-	key, _ := phpStringLiteral(m, index)
+	key, literal := phpStringLiteral(m, index)
+	if !literal && index != nil && index.Kind() == "integer" {
+		key = phpText(m, index)
+	}
 	if obj == nil {
 		return f.evalChildren(n)
 	}
@@ -956,8 +960,15 @@ func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue 
 		return phpTransfer(field, f.module.evidence("field_projection", n))
 	}
 	if v.binding == "db_row" && v.table != "" {
+		column := key
+		if pos, err := strconv.Atoi(column); err == nil && pos >= 0 && pos < len(v.columns) {
+			// Numeric row access (fetch_row) resolves through the SELECT
+			// header position; an unresolvable position keeps the raw key
+			// and fails storage matching honestly.
+			column = v.columns[pos]
+		}
 		e := f.module.evidence("storage_source", n)
-		return phpValue{deps: []phpDep{{dep: analysis.Dependency{Source: e, StorageKey: "php-sql:" + v.table + "." + key, Transfers: append([]analysis.Evidence{}, v.evidence...)}, protection: "raw"}}}
+		return phpValue{deps: []phpDep{{dep: analysis.Dependency{Source: e, StorageKey: "php-sql:" + v.table + "." + column, Transfers: append([]analysis.Evidence{}, v.evidence...)}, protection: "raw"}}}
 	}
 	v = phpTransfer(v, f.module.evidence("field_projection", n))
 	v.deps = append([]phpDep{}, v.deps...)

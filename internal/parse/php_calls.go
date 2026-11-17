@@ -160,7 +160,17 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 				return f.source(n, "INPUT", "http.body", "")
 			}
 			f.pathUse(n, "file_get_contents", nodes, values, "php-filesystem-v1", "read")
-			return phpValue{unknown: true, evidence: []analysis.Evidence{f.module.evidence("file_read", n)}}
+			// The returned content derives from the file the path selects:
+			// path control is content control for downstream sinks (eval,
+			// render). Keep the path's dependency paths with a read transfer
+			// and drop literal identity — the content is not the path text.
+			v := phpTransfer(values[0], f.module.evidence("file_read", n))
+			v.literals = nil
+			v.constant = false
+			if len(v.deps) == 0 {
+				v.unknown = true
+			}
+			return v
 		}
 	case "fopen", "readfile", "file", "file_put_contents", "unlink":
 		if f.builtin(qname) && len(values) >= 1 {

@@ -292,6 +292,27 @@ func TestPHPXSSStored(t *testing.T) {
 	}
 }
 
+// TestPHPXSSStoredNumericRow covers mysqli_fetch_row access by numeric
+// position: the SELECT header resolves the column so the storage key matches
+// its INSERT-recorded write.
+func TestPHPXSSStoredNumericRow(t *testing.T) {
+	r := phpAnalyze(t, "testdata/php/xss", "stored_row.php")
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		if u.XSS.Type != "stored" {
+			continue
+		}
+		key := u.XSS.StorageKey
+		if key != "php-sql:guestbook.name" && key != "php-sql:guestbook.comment" {
+			t.Fatalf("storage key: %q", key)
+		}
+		if !u.XSS.OriginResolved || len(u.XSS.RelatedEntries) == 0 {
+			t.Fatalf("stored link unresolved: %#v", u.XSS)
+		}
+		return
+	}
+	t.Fatal("no stored claim from numeric row access")
+}
+
 func TestPathPHPOperands(t *testing.T) {
 	fi := phpAnalyze(t, "testdata/php/path", "fi.php")
 	fiu := phpUsesOfKind(fi, "path_traversal_candidate")
@@ -352,6 +373,26 @@ func TestCodePHPEval(t *testing.T) {
 	}
 	if u.APIModel.ID != "php-eval-v1" {
 		t.Fatalf("contract: %#v", u.APIModel)
+	}
+}
+
+// TestCodePHPFileEval covers the DVWA view_help.php shape: eval over a
+// file_get_contents return whose path is request-derived — path control is
+// content control, so the operand stays tainted through the read.
+func TestCodePHPFileEval(t *testing.T) {
+	r := phpAnalyze(t, "testdata/php/code", "file_eval.php")
+	uses := phpUsesOfKind(r, "code_execution_candidate")
+	if len(uses) != 2 {
+		t.Fatalf("code uses: %#v", r.Uses)
+	}
+	for _, u := range uses {
+		if len(u.Dependencies) != 1 {
+			t.Fatalf("operand deps: %#v", u.Dependencies)
+		}
+	}
+	// The read stays a path claim alongside the code claim.
+	if paths := phpUsesOfKind(r, "path_traversal_candidate"); len(paths) != 2 {
+		t.Fatalf("path uses: %#v", paths)
 	}
 }
 

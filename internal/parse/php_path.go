@@ -145,6 +145,7 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.dep.Source)
 		}
 	}
+	c.Blockers = append(c.Blockers, phpStoredOnlyBlockers(deps, u.Sink.Span)...)
 	u.Completeness = c
 }
 

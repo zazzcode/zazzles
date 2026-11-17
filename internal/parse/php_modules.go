@@ -49,6 +49,9 @@ type phpSet struct {
 	writes map[string][]phpWrite
 	// sessionWrites links php-session:<key> containers to writing values.
 	sessionWrites map[string][]phpWrite
+	// storedOnly lists, per SQL use ID, the storage keys of a claim whose only
+	// content is stored; session writers from later entries resolve it.
+	storedOnly map[string][]string
 }
 
 type phpWrite struct {
@@ -66,7 +69,7 @@ func newPHPSet(root string) (*phpSet, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}}
+	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
 	for _, f := range manifest.Files {
 		if f.Language == lang.PHP {
 			s.files = append(s.files, f.Path)
@@ -328,6 +331,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		s.analyzeEntry(out, m)
 	}
 	s.linkStorage(out)
+	s.linkStoredOnlySessions(out)
 	assembleXSSClaims(out)
 	if len(checks) > 0 {
 		s.attachChecks(out, checks)

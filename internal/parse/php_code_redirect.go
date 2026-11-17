@@ -25,6 +25,7 @@ func (f *phpFlow) codeUse(n *sitter.Node, op string, v phpValue, node *sitter.No
 		}
 		paths = append(paths, analysis.CommandPath{Dependency: i, Operand: "code", Protection: protection})
 	}
+	phpCiteGuards(u, paths, f.module.evidence("code_operand", node))
 	u.Code = &analysis.CodeFacts{Operation: op, ContractID: "php-eval-v1", ExecutionContext: "server", Shape: "whole_program", Paths: paths}
 	u.APIModel = analysispacks.CodeContract("php-eval-v1")
 	u.Context = append(u.Context, f.module.evidence("sink_binding", phpCallee(n)))
@@ -39,6 +40,7 @@ func (f *phpFlow) codeUse(n *sitter.Node, op string, v phpValue, node *sitter.No
 			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.Source)
 		}
 	}
+	c.Blockers = append(c.Blockers, phpStoredOnlyBlockers(v.deps, u.Sink.Span)...)
 	u.Completeness = c
 }
 
@@ -46,7 +48,7 @@ func phpCodeProtection(deps []phpDep, i int) string {
 	if i < len(deps) {
 		switch deps[i].protection {
 		case "numeric", "non_content":
-			return "constrained"
+			return "guarded"
 		case "unknown", phpUnwritten, phpShellDenylist:
 			return "unknown"
 		}
@@ -70,6 +72,7 @@ func (f *phpFlow) headerUse(n *sitter.Node, node *sitter.Node, v phpValue) {
 		u.Dependencies[i].SinkSlot = "destination"
 		paths = append(paths, analysis.CommandPath{Dependency: i, Operand: "destination", Protection: phpCodeProtection(v.deps, i)})
 	}
+	phpCiteGuards(u, paths, f.module.evidence("redirect_operand", node))
 	u.Redirect = &analysis.RedirectFacts{Operation: "header", ContractID: "php-header-redirect-v1", DestinationOrigin: analysis.DestinationRequest, Paths: paths}
 	u.APIModel = analysispacks.RedirectContract("php-header-redirect-v1")
 	u.Context = append(u.Context, f.module.evidence("sink_binding", phpCallee(n)))
@@ -84,6 +87,7 @@ func (f *phpFlow) headerUse(n *sitter.Node, node *sitter.Node, v phpValue) {
 			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.Source)
 		}
 	}
+	c.Blockers = append(c.Blockers, phpStoredOnlyBlockers(v.deps, u.Sink.Span)...)
 	u.Completeness = c
 }
 
@@ -126,4 +130,22 @@ func phpConstantPrefix(m *phpModule, n *sitter.Node, limit int) string {
 		}
 	}
 	return ""
+}
+
+// phpCiteGuards gives guarded code/redirect paths the control citation the
+// shared facts contract requires: the operand evidence whose value the
+// numeric or non-content constraint covers.
+func phpCiteGuards(u *analysis.CandidateUse, paths []analysis.CommandPath, operand analysis.Evidence) {
+	control := -1
+	for i := range paths {
+		if paths[i].Protection != "guarded" {
+			continue
+		}
+		if control < 0 {
+			control = len(u.Context)
+			u.Context = append(u.Context, operand)
+		}
+		paths[i].Controls = []int{control}
+		paths[i].Reason = "numeric or non-content value cannot carry operand syntax"
+	}
 }

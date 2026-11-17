@@ -27,6 +27,9 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	var all phpValue
 	var context []analysis.Evidence
 	var deps []phpDep
+	// guardOperand maps a guarded path to its operand's local context index;
+	// the shared contract requires guarded paths to cite a control.
+	guardOperand := map[int]int{}
 	request := false
 	for i, slot := range slots {
 		var v phpValue
@@ -51,19 +54,22 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 		for _, d := range v.deps {
 			d.dep.SinkSlot = slot
 			o.Dependencies = append(o.Dependencies, len(deps))
-			protection := "raw"
+			protection, reason := "raw", ""
 			switch d.protection {
 			case "shell_quoted":
-				protection = "quoted"
+				protection, reason = "guarded", "escapeshellarg/escapeshellcmd quotes the shell operand"
 			case "numeric", "non_content":
-				protection = "constrained"
+				protection, reason = "guarded", "numeric or non-content value cannot carry shell syntax"
 			case "unknown", phpUnwritten:
 				protection = "unknown"
 			case phpShellDenylist:
 				// The deny-list leaves a shell metacharacter usable.
 				protection = "raw"
 			}
-			facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: len(deps), Operand: slot, Protection: protection})
+			if protection == "guarded" {
+				guardOperand[len(facts.Paths)] = o.Context[0]
+			}
+			facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: len(deps), Operand: slot, Protection: protection, Reason: reason})
 			deps = append(deps, d)
 			request = true
 		}
@@ -76,6 +82,10 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	u := f.addUse("command_execution_candidate", n, phpValue{deps: deps, gaps: all.gaps})
 	u.Command = facts
 	u.APIModel = analysispacks.CommandContract(analysispacks.PHPProgramContract)
+	base := len(u.Context)
+	for i, local := range guardOperand {
+		facts.Paths[i].Controls = []int{base + local}
+	}
 	u.Context = append(u.Context, context...)
 	u.Context = append(u.Context, m.evidence("sink_binding", phpCallee(n)))
 	c := &analysis.Completeness{ClaimKind: "command_execution", Required: []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "command_operands", "execution_configuration"}, Evidence: map[string][]analysis.Evidence{
@@ -99,6 +109,7 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.dep.Source)
 		}
 	}
+	c.Blockers = append(c.Blockers, phpStoredOnlyBlockers(deps, u.Sink.Span)...)
 	u.Completeness = c
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
 }

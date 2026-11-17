@@ -68,7 +68,7 @@ if (!is_numeric($ip)) {
   system('ping ' . $ip);
 }
 `)
-	if phpHasProtection(got, "constrained") || !phpHasProtection(got, "raw") {
+	if phpHasProtection(got, "guarded") || !phpHasProtection(got, "raw") {
 		t.Fatalf("!is_numeric true branch must stay raw: %v", got)
 	}
 }
@@ -148,7 +148,7 @@ $ip = $_GET['ip'];
 if (!is_numeric($ip)) { die('bad'); }
 system('ping ' . $ip);
 `)
-	if !phpHasProtection(got, "constrained") || phpHasProtection(got, "raw") {
+	if !phpHasProtection(got, "guarded") || phpHasProtection(got, "raw") {
 		t.Fatalf("terminating !is_numeric rejection should constrain the fall-through: %v", got)
 	}
 }
@@ -676,4 +676,136 @@ func TestPHPRenderSuppliesMarkupContextEvidence(t *testing.T) {
 		}
 	}
 	t.Fatalf("render_context must carry the surrounding markup: %#v", xss[0].Completeness.Evidence["render_context"])
+}
+
+func TestPHPGuardedFactsSatisfySharedContracts(t *testing.T) {
+	// Every guarded PHP path must validate against the shared fact contracts
+	// (raw/guarded/unknown with cited controls); invalid facts can never be
+	// judged Protected.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+shell_exec('ping ' . escapeshellarg($_GET['h']));
+shell_exec('ping ' . intval($_GET['n']));
+eval('return ' . intval($_GET['e']) . ';');
+header('Location: /item.php?id=' . intval($_GET['r']));
+readfile('/srv/' . basename($_GET['f']));
+`}), "")
+	guarded := 0
+	for _, u := range r.Uses {
+		var err error
+		var protections []string
+		switch {
+		case u.Command != nil:
+			err = u.Command.Validate(len(u.Dependencies), len(u.Context))
+			for _, p := range u.Command.Paths {
+				protections = append(protections, p.Protection)
+			}
+		case u.Code != nil:
+			err = u.Code.Validate(len(u.Dependencies), len(u.Context))
+			for _, p := range u.Code.Paths {
+				protections = append(protections, p.Protection)
+			}
+		case u.Redirect != nil:
+			err = u.Redirect.Validate(len(u.Dependencies), len(u.Context))
+			for _, p := range u.Redirect.Paths {
+				protections = append(protections, p.Protection)
+			}
+		case u.Path != nil:
+			err = u.Path.Validate(len(u.Dependencies), len(u.Context))
+			for _, p := range u.Path.Paths {
+				protections = append(protections, p.Protection)
+			}
+		default:
+			continue
+		}
+		if err != nil {
+			t.Fatalf("%s %d: shared facts contract rejects the record: %v", u.Kind, u.Sink.Span.StartLine, err)
+		}
+		if phpHasProtection(protections, "guarded") {
+			guarded++
+		}
+	}
+	if guarded != 5 {
+		t.Fatalf("want five guarded records, got %d: %#v", guarded, r.Uses)
+	}
+}
+
+func TestPHPStoredOnlyInjectionStaysReview(t *testing.T) {
+	// DVWA csrf/captcha shape: the request password is md5-hashed and the
+	// only content is a session value with no request-linked writer.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$_SESSION['dvwa'] = array();
+$pass = md5($_GET['password_new']);
+$user = $_SESSION['dvwa'];
+mysqli_query($conn, "UPDATE users SET password = '$pass' WHERE user = '$user'");
+`}), "")
+	uses := phpUsesOfKind(r, "sql_query_candidate")
+	if len(uses) != 1 {
+		t.Fatalf("want one SQL record: %#v", uses)
+	}
+	blocked := false
+	for _, g := range uses[0].Completeness.Blockers {
+		blocked = blocked || g.Kind == "storage_origin_unresolved"
+	}
+	if !blocked {
+		t.Fatalf("stored-only content must stay Review: %#v", uses[0].Completeness.Blockers)
+	}
+	// Near-miss: a request-linked session write is a request path.
+	r = phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$_SESSION['id'] = $_POST['id'];
+$id = $_SESSION['id'];
+mysqli_query($conn, "SELECT * FROM users WHERE id = '$id'");
+`}), "")
+	for _, u := range phpUsesOfKind(r, "sql_query_candidate") {
+		for _, g := range u.Completeness.Blockers {
+			if g.Kind == "storage_origin_unresolved" {
+				t.Fatalf("a request-linked session write must not be stored-only: %#v", u.Completeness.Blockers)
+			}
+		}
+	}
+}
+
+func TestPHPStoredOnlySQLLinksLaterSessionWriter(t *testing.T) {
+	// DVWA sqli high shape: the reader entry sorts before the entry that
+	// writes the session id from the request.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"a_high.php":          "<?php\n$conn = mysqli_connect('h', 'u', 'p', 'd');\n$id = $_SESSION['id'];\nmysqli_query($conn, \"SELECT * FROM users WHERE id = '$id'\");\n",
+		"b_session_input.php": "<?php\n$_SESSION['id'] = $_POST['id'];\n",
+	}), "")
+	uses := phpUsesOfKind(r, "sql_query_candidate")
+	if len(uses) != 1 {
+		t.Fatalf("want one SQL record: %#v", uses)
+	}
+	for _, g := range uses[0].Completeness.Blockers {
+		if g.Kind == "storage_origin_unresolved" {
+			t.Fatalf("a later request-derived session writer must resolve the claim: %#v", uses[0].Completeness.Blockers)
+		}
+	}
+	found := false
+	for _, d := range uses[0].Dependencies {
+		found = found || d.Source.Text == "$_POST['id']"
+	}
+	if !found {
+		t.Fatalf("the writer's request source must join the claim: %#v", uses[0].Dependencies)
+	}
+}
+
+func TestPHPStoredOnlyRuleIgnoresBoundParameters(t *testing.T) {
+	// DVWA csrf impossible shape: the session user is a bound parameter.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$db = new PDO('sqlite::memory:');
+$_SESSION['dvwa'] = array();
+$user = $_SESSION['dvwa'];
+$stmt = $db->prepare('UPDATE users SET password = (:password) WHERE user = (:user);');
+$stmt->bindParam(':user', $user);
+$stmt->execute();
+`}), "")
+	for _, u := range phpUsesOfKind(r, "sql_query_candidate") {
+		for _, g := range u.Completeness.Blockers {
+			if g.Kind == "storage_origin_unresolved" {
+				t.Fatalf("a bound stored value must not block a protection judgment: %#v", u.Completeness.Blockers)
+			}
+		}
+	}
 }

@@ -124,6 +124,18 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 		entryPath = f.entry.HTTP.Path
 	}
 	u.Check = &analysis.Check{ID: "automatic-php-query", Path: entryPath, Kind: "sql_query", Fields: fields, Validation: "Assess only requirements established by supplied server code and source-backed form-field policy. A browser form can declare a requirement but does not enforce it on direct HTTP requests. Missing business requirements remain uncertain.", Protection: "Request values must remain data and must not change SQL syntax. Bound values and dynamic identifiers are separate slots."}
+	// Bound parameters are data whoever wrote them; only constructed SQL text
+	// needs a request-linked writer before a stored value can inject.
+	var constructed []phpDep
+	for _, d := range all.deps {
+		if d.dep.SinkSlot == "sql_text" {
+			constructed = append(constructed, d)
+		}
+	}
+	if stored := phpStoredOnlyBlockers(constructed, u.Sink.Span); len(stored) > 0 {
+		c.Blockers = append(c.Blockers, stored...)
+		f.set.storedOnly[u.ID] = phpStoredKeys(constructed)
+	}
 	u.Completeness = c
 	return result
 }

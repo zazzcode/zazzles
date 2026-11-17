@@ -166,3 +166,88 @@ func phpUploadOrigin(dep analysis.Dependency) string {
 	}
 	return "http.upload"
 }
+
+// phpStoredOnlyBlockers blocks an injection claim whose only content-bearing
+// paths are stored reads (php-sql: rows, php-session: values) with no
+// request-linked writer in the supplied evidence: a lookup key alone does not
+// establish who wrote a stored value. Request paths reduced to numeric or
+// non-content values (md5, intval) carry no syntax. Session reads whose
+// request writes were linked carry request sources and are not stored-only.
+func phpStoredOnlyBlockers(deps []phpDep, at analysis.Span) []analysis.Gap {
+	stored := false
+	for _, d := range deps {
+		if d.protection == "numeric" || d.protection == "non_content" {
+			continue
+		}
+		switch d.dep.Source.Kind {
+		case "input_source":
+			return nil
+		case "storage_source":
+			stored = true
+		}
+	}
+	if !stored {
+		return nil
+	}
+	return []analysis.Gap{{Kind: "storage_origin_unresolved", Detail: "Only stored values reach this operation as content; no request-linked writer is established for them.", At: at}}
+}
+
+// phpStoredKeys lists the storage keys of a value's content-bearing stored paths.
+func phpStoredKeys(deps []phpDep) []string {
+	var keys []string
+	for _, d := range deps {
+		if d.dep.Source.Kind == "storage_source" && d.protection != "numeric" && d.protection != "non_content" {
+			keys = appendUniqueString(keys, d.dep.StorageKey)
+		}
+	}
+	return keys
+}
+
+// linkStoredOnlySessions resolves stored-only SQL claims once every entry was
+// analyzed: a session key written from a request value in any entry links
+// those request sources into the claim and lifts its stored-only blocker. A
+// key with no request-derived writer keeps the claim in Review.
+func (s *phpSet) linkStoredOnlySessions(out *analysis.AnalysisReport) {
+	for i := range out.Uses {
+		u := &out.Uses[i]
+		keys, ok := s.storedOnly[u.ID]
+		if !ok || u.Completeness == nil {
+			continue
+		}
+		seen := map[analysis.Span]bool{}
+		for _, d := range u.Dependencies {
+			seen[d.Source.Span] = true
+		}
+		linked := false
+		for _, key := range keys {
+			if !strings.HasPrefix(key, "php-session:") {
+				continue
+			}
+			for _, w := range s.sessionWrites[key] {
+				for _, wd := range w.value.deps {
+					if wd.dep.Source.Kind != "input_source" || wd.protection == "numeric" || wd.protection == "non_content" || seen[wd.dep.Source.Span] {
+						continue
+					}
+					seen[wd.dep.Source.Span] = true
+					nd := wd.dep
+					nd.StorageKey = key
+					nd.SinkSlot = "sql_text"
+					nd.Transfers = append(append([]analysis.Evidence{}, nd.Transfers...), w.evidence)
+					u.Dependencies = append(u.Dependencies, nd)
+					u.Completeness.Evidence["input_source"] = append(u.Completeness.Evidence["input_source"], nd.Source)
+					linked = true
+				}
+			}
+		}
+		if !linked {
+			continue
+		}
+		blockers := u.Completeness.Blockers[:0]
+		for _, g := range u.Completeness.Blockers {
+			if g.Kind != "storage_origin_unresolved" {
+				blockers = append(blockers, g)
+			}
+		}
+		u.Completeness.Blockers = blockers
+	}
+}

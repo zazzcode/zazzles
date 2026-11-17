@@ -234,7 +234,7 @@ func TestCommandPHPOperands(t *testing.T) {
 	}
 	quoted := false
 	for _, p := range u.Command.Paths {
-		quoted = quoted || p.Protection == "quoted"
+		quoted = quoted || p.Protection == "guarded"
 	}
 	if quoted {
 		t.Fatal("ping.php operand must stay raw")
@@ -245,7 +245,7 @@ func TestCommandPHPOperands(t *testing.T) {
 	if len(eu) != 1 {
 		t.Fatalf("escaped uses: %#v", esc.Uses)
 	}
-	if eu[0].Command.Paths[0].Protection != "quoted" {
+	if eu[0].Command.Paths[0].Protection != "guarded" {
 		t.Fatalf("escapeshellarg control: %#v", eu[0].Command.Paths)
 	}
 }

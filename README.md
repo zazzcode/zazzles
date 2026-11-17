@@ -156,15 +156,13 @@ snapshots of those runs, not a claim of whole-application security.
 
 **Not yet available:** dependency auditing, a separate Inspect report, automated fixes and scheduled runs.
 
-**Next on the roadmap**, in order:
+Code injection (`eval`, CWE-94/95) and open redirect (CWE-601) are implemented; see the
+[combined implementation contract](.zazz/specifications/nextjs-phase-2-and-code-redirect.md) and
+[verification results](.zazz/evaluation/nextjs-phase-2-results.md).
 
-1. Code injection (`eval`, CWE-94/95) and open redirect (CWE-601): two new analyzers
-   ([proposal](code-injection-and-open-redirect-proposal.md))
-2. Prototype pollution (CWE-1321)
-3. Drupal / PHP support
-4. Agent skills fixes, the scan/fix loop, and importing findings from other SAST tools
-
-XXE and dependency auditing (SCA) come later.
+The [implementation plan](.zazz/project/implementation-plan.md#next-up) records further analyzer,
+language and workflow work, including prototype pollution, PHP, agent workflows and external
+finding imports. XXE and dependency auditing (SCA) remain deferred.
 The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
 exactly which languages, frameworks and operations each analyzer supports, with its limits.
 

@@ -119,15 +119,14 @@ outcomes as §5. Samples verified clean before and after.
 
 ## 7. Follow-ups
 
-Open items are grouped into sessions A–D in the [phase 2 proposal](../../nextjs-support-phase-2-proposal.md)
-(A: sample publication completed in PR #18; B–D are implemented under the
-[follow-on contract](nextjs-phase-2-and-code-redirect.md)).
+Sample publication (Session A) completed in PR #18. The remaining practice checks, entry/flow
+coverage, Commerce measurement and code-injection/open-redirect families shipped under the
+[combined phase 2 contract](nextjs-phase-2-and-code-redirect.md); see its
+[results](../evaluation/nextjs-phase-2-results.md).
 
-Remaining NX-BP checks; a non-vulnerable Next.js app for false-red measurement (proposal §13);
-code-injection (CWE-95) and
-open-redirect (CWE-601) analyzer families, which the vuln-nextjs lab already has rows for
-([proposal](../../code-injection-and-open-redirect-proposal.md), next up in the
-[implementation plan](../project/implementation-plan.md#next-up)).
+Subsequent practice corrections and the remaining security-recognition limits are recorded in
+[practice accuracy results](../evaluation/practice-accuracy/results.md). The
+[implementation plan](../project/implementation-plan.md#next-up) owns further delivery scope.
 
 ## 8. Sample publication closeout
 

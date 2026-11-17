@@ -65,6 +65,8 @@ func (f *phpFlow) impliedProtections(c *sitter.Node, truth bool, out map[string]
 			}
 			if v := phpVarName(m, args[0]); v != "" {
 				out[v] = "numeric"
+			} else if key := phpElementKey(m, args[0]); key != "" {
+				out[key] = "numeric"
 			}
 		case "in_array":
 			if len(args) != 2 {
@@ -89,6 +91,10 @@ func (f *phpFlow) impliedProtections(c *sitter.Node, truth bool, out map[string]
 
 func (f *phpFlow) applyProtections(p map[string]string) *phpFlow {
 	for name, protection := range p {
+		if base, index, element := strings.Cut(name, phpElementSeparator); element {
+			f.protectElement(base, index, protection)
+			continue
+		}
 		if v, ok := f.env[name]; ok {
 			f.env[name] = phpProtect(v, protection)
 			// Branch merges join only dirty variables; a protection-only
@@ -139,4 +145,51 @@ func phpArrayLiteralStrings(m *phpModule, n *sitter.Node) []string {
 		out = append(out, text)
 	}
 	return out
+}
+
+// phpElementSeparator joins a variable and a literal index into one guard key.
+const phpElementSeparator = "\x00"
+
+// phpElementKey returns the guard key of `$name[literal]`, or "".
+func phpElementKey(m *phpModule, n *sitter.Node) string {
+	if n == nil || n.Kind() != "subscript_expression" {
+		return ""
+	}
+	obj, index := phpSubscriptParts(n)
+	name := phpVarName(m, obj)
+	if name == "" || index == nil {
+		return ""
+	}
+	key, ok := phpStringLiteral(m, index)
+	if !ok && index.Kind() == "integer" {
+		key, ok = phpText(m, index), true
+	}
+	if !ok {
+		return ""
+	}
+	return name + phpElementSeparator + key
+}
+
+// protectElement records a guard on one literal-index element (for example
+// `is_numeric($octet[0])`): later reads of that element see the protection;
+// sibling elements and the whole array keep their own protection. The fields
+// map is copied because branch clones share it with their parent.
+func (f *phpFlow) protectElement(name, index, protection string) {
+	v, ok := f.env[name]
+	if !ok {
+		return
+	}
+	element, ok := v.fields[index]
+	if !ok {
+		element = v
+		element.fields = nil
+	}
+	fields := make(map[string]phpValue, len(v.fields)+1)
+	for k, field := range v.fields {
+		fields[k] = field
+	}
+	fields[index] = phpProtect(element, protection)
+	v.fields = fields
+	f.env[name] = v
+	f.markDirty(name)
 }

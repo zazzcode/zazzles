@@ -20,7 +20,7 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 	hasRaw, hasUnknown := false, false
 	stored := false
 	for _, d := range v.deps {
-		p := d.protection
+		p := phpNonShellProtection(d.protection)
 		if p == "escaped_routine" {
 			// mysqli_real_escape_string and friends are recorded transforms,
 			// never output encoding: their guarantee is SQL-syntax scoped.
@@ -33,7 +33,7 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 		if p == "numeric" || p == "non_content" {
 			p = "encoded"
 		}
-		if p == "" || p == "raw" {
+		if p == "" || p == "raw" || p == phpUnwritten {
 			p = "raw"
 		}
 		hasRaw = hasRaw || p == "raw"

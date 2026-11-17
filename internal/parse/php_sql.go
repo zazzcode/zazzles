@@ -297,29 +297,61 @@ func selectColumns(header string) []string {
 	return out
 }
 
-// linkStorage links stored XSS storage keys to their writes (php-sql:).
+// linkStorage links stored XSS reads to their writes once every entry was
+// analyzed: SQL keys (php-sql:) to INSERT/UPDATE writes and session keys
+// (php-session:) to $_SESSION writes from any entry. Each stored path starts
+// from its own render protection. A record whose stored origin stays
+// unresolved but which also carries a direct raw request path remains a
+// reflected claim: the raw witness is scoped to its own path and the
+// unresolved stored siblings stay visible instead of vetoing it.
 func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
+	kept := out.Uses[:0]
+	defer func() { out.Uses = kept }()
 	for i := range out.Uses {
 		u := &out.Uses[i]
 		if u.XSS == nil {
+			kept = append(kept, *u)
 			continue
+		}
+		own := map[int]string{}
+		for _, p := range u.XSS.Paths {
+			own[p.Dependency] = p.Protection
 		}
 		var deps []analysis.Dependency
 		var paths []analysis.XSSPath
 		var related []string
-		resolved := true
-		stored := false
-		for _, d := range u.Dependencies {
+		resolved, stored, directRaw := true, false, false
+		// The record's storage key names its first raw stored path, else its
+		// first stored read, independent of dependency order otherwise.
+		firstKey, rawKey := "", ""
+		add := func(d analysis.Dependency, entry, protection string) {
+			deps = append(deps, d)
+			paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Entry: entry, Protection: protection})
+		}
+		for j, d := range u.Dependencies {
+			read := own[j]
 			if d.StorageKey == "" {
-				deps = append(deps, d)
+				directRaw = directRaw || read == "raw"
+				add(d, "", read)
+				continue
+			}
+			session := strings.HasPrefix(d.StorageKey, "php-session:")
+			if session && d.Source.Kind != "storage_source" {
+				// A write source source() linked at read time; the complete
+				// session writer set is linked below.
 				continue
 			}
 			stored = true
-			u.XSS.StorageKey = d.StorageKey
+			if firstKey == "" {
+				firstKey = d.StorageKey
+			}
 			writes := s.writes[d.StorageKey]
+			if session {
+				writes = s.sessionWrites[d.StorageKey]
+			}
 			if len(writes) == 0 {
 				resolved = false
-				deps = append(deps, d)
+				add(d, "", read)
 				continue
 			}
 			for _, w := range writes {
@@ -328,50 +360,77 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 					nd := source.dep
 					nd.StorageKey = d.StorageKey
 					nd.Transfers = append(append([]analysis.Evidence{}, nd.Transfers...), d.Transfers...)
-					deps = append(deps, nd)
-					p := u.XSS.Protection
-					if source.protection == "url_encoded" && p == "raw" {
-						p = phpURLEncodedProtection(source.protection, u.XSS.OutputContext)
-					} else if source.protection == "unknown" {
-						p = "unknown"
-					} else if p == "raw" && (source.protection == "encoded" || source.protection == "numeric" || source.protection == "non_content") {
-						p = "encoded"
+					protection := phpStoredPathProtection(read, source.protection, u.XSS.OutputContext)
+					if protection == "raw" && rawKey == "" {
+						rawKey = d.StorageKey
 					}
-					paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Entry: w.entry, Protection: p})
+					add(nd, w.entry, protection)
 				}
 			}
 		}
-		if stored {
-			if len(deps) > 64 {
-				deps = deps[:64]
-				u.Gaps = append(u.Gaps, analysis.Gap{Kind: "dependency_limit", Detail: "Stored origin expansion exceeds 64 paths", At: u.Sink.Span})
-				u.XSS.Protection = "unknown"
-				resolved = false
-			}
-			u.Dependencies = deps
-			u.XSS.Type = "stored"
-			u.XSS.OriginResolved = resolved
-			u.XSS.RelatedEntries = related
-			if len(paths) > len(deps) {
-				paths = paths[:len(deps)]
-			}
-			u.XSS.Paths = paths
-			raw, unknown := false, false
-			for _, p := range paths {
-				raw = raw || p.Protection == "raw"
-				unknown = unknown || p.Protection == "unknown"
-			}
-			if !raw && unknown {
-				u.XSS.Protection = "unknown"
-			}
-			if len(paths) > 0 && !raw && !unknown && resolved {
-				u.XSS.Protection = "encoded"
-			}
-			if !resolved {
-				u.XSS.ProtectionReason += " Stored field origin is unresolved."
-			}
+		if !stored {
+			kept = append(kept, *u)
+			continue
 		}
+		if len(deps) == 0 {
+			// Every writer of every stored value is server-generated: the
+			// render has no request-derived content, like any render whose
+			// value carries no dependency.
+			continue
+		}
+		if len(deps) > 64 {
+			deps = deps[:64]
+			paths = paths[:64]
+			u.Gaps = append(u.Gaps, analysis.Gap{Kind: "dependency_limit", Detail: "Stored origin expansion exceeds 64 paths", At: u.Sink.Span})
+			u.XSS.Protection = "unknown"
+			resolved = false
+		}
+		u.Dependencies = deps
+		u.XSS.Paths = paths
+		u.XSS.StorageKey = firstKey
+		if rawKey != "" {
+			u.XSS.StorageKey = rawKey
+		}
+		u.XSS.OriginResolved = resolved
+		u.XSS.RelatedEntries = related
+		u.XSS.Type = "stored"
+		if !resolved && directRaw {
+			u.XSS.Type = "reflected"
+		}
+		raw, unknown := false, false
+		for _, p := range paths {
+			raw = raw || p.Protection == "raw"
+			unknown = unknown || p.Protection == "unknown"
+		}
+		switch {
+		case raw:
+			u.XSS.Protection = "raw"
+		case unknown:
+			u.XSS.Protection = "unknown"
+		case len(paths) > 0 && resolved:
+			u.XSS.Protection = "encoded"
+		}
+		if !resolved {
+			u.XSS.ProtectionReason += " Stored field origin is unresolved."
+		}
+		kept = append(kept, *u)
 	}
+}
+
+// phpStoredPathProtection combines a stored read's own render protection with
+// the protection its writer applied before storage.
+func phpStoredPathProtection(read, written, context string) string {
+	switch {
+	case read != "raw":
+		return read
+	case written == "url_encoded":
+		return phpURLEncodedProtection(written, context)
+	case written == "unknown" || written == phpUnwritten || written == phpShellDenylist:
+		return "unknown"
+	case written == "encoded" || written == "numeric" || written == "non_content":
+		return "encoded"
+	}
+	return "raw"
 }
 
 // attachChecks mirrors the Python check attachment for PHP entries.

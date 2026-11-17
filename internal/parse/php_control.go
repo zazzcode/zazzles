@@ -35,6 +35,10 @@ func (f *phpFlow) clone() *phpFlow {
 		c.stack[k] = v
 	}
 	c.dirty = map[string]bool{}
+	c.constants = make(map[string]string, len(f.constants))
+	for k, v := range f.constants {
+		c.constants[k] = v
+	}
 	return &c
 }
 
@@ -42,6 +46,7 @@ func (f *phpFlow) merge(branches ...*phpFlow) {
 	keys := map[string]bool{}
 	for _, b := range branches {
 		f.gaps = phpMergeGaps(f.gaps, b.gaps)
+		f.adoptConstants(b.constants)
 		f.returns = phpJoin(f.returns, b.returns)
 		for k := range b.dirty {
 			keys[k] = true
@@ -138,6 +143,7 @@ func (f *phpFlow) stmts(list []*sitter.Node) bool {
 			continue
 		}
 		terminated := true
+		var alternativeGaps []analysis.Gap
 		for _, t := range targets {
 			b := f.clone()
 			b.narrow(t.bindings)
@@ -145,10 +151,12 @@ func (f *phpFlow) stmts(list []*sitter.Node) bool {
 			if !b.stmts(list[i+1:]) {
 				terminated = false
 			}
-			// The alternative's remaining statements ran in b; its gaps
-			// belong to this entry even though b's values do not rejoin.
-			f.gaps = phpMergeGaps(f.gaps, b.gaps)
+			alternativeGaps = phpMergeGaps(alternativeGaps, b.gaps)
 		}
+		// Each alternative's remaining statements ran in its own clone; its
+		// gaps belong to the entry, but only after every alternative was
+		// cloned, so a sibling's gaps never reach another alternative's claims.
+		f.gaps = phpMergeGaps(f.gaps, alternativeGaps)
 		return terminated
 	}
 	return false

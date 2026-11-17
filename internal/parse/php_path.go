@@ -98,7 +98,7 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 				protection = "guarded"
 				guard = len(facts.Guards)
 				facts.Guards = append(facts.Guards, analysis.PathGuard{Context: len(context) - 1, Kind: analysis.PathGuardPresenceOrType})
-			case "unknown":
+			case "unknown", phpUnwritten, phpShellDenylist:
 				protection = "unknown"
 			}
 			flow := analysis.PathFlow{Dependency: len(deps), Operand: slot, Protection: protection, Transforms: transforms}

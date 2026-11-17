@@ -38,7 +38,7 @@ func (s *phpSet) analyzeEntry(out *analysis.AnalysisReport, m *phpModule) {
 	handler := m.evidence("invoked_callable", m.tree.RootNode())
 	invocation := registerInvocation(out, entry, &handler, "server_file_mapping", nil, nil)
 	work := 0
-	f := &phpFlow{set: s, module: m, entry: entry, invocation: invocation, report: out, env: map[string]phpValue{}, globals: map[string]phpValue{}, context: []analysis.Evidence{handler, location}, work: &work, stack: map[string]bool{}, entryModule: m, entryModuleRoot: m.tree.RootNode()}
+	f := &phpFlow{set: s, module: m, entry: entry, invocation: invocation, report: out, env: map[string]phpValue{}, globals: map[string]phpValue{}, context: []analysis.Evidence{handler, location}, work: &work, stack: map[string]bool{}, constants: map[string]string{}, entryModule: m, entryModuleRoot: m.tree.RootNode()}
 	f.block(m.tree.RootNode())
 	out.InvocationContexts[len(out.InvocationContexts)-1] = f.invocation
 	for i := range out.Entries {

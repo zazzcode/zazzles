@@ -1,6 +1,8 @@
 package parse
 
 import (
+	"strings"
+
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
@@ -55,8 +57,11 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 				protection = "quoted"
 			case "numeric", "non_content":
 				protection = "constrained"
-			case "unknown":
+			case "unknown", phpUnwritten:
 				protection = "unknown"
+			case phpShellDenylist:
+				// The deny-list leaves a shell metacharacter usable.
+				protection = "raw"
 			}
 			facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: len(deps), Operand: slot, Protection: protection})
 			deps = append(deps, d)
@@ -96,4 +101,107 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	}
 	u.Completeness = c
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
+}
+
+// phpShellDenylist labels a value passed through a finite literal str_replace
+// deny-list that leaves at least one shell metacharacter intact. Only command
+// sinks read it as raw; every other family treats it as unknown.
+const phpShellDenylist = "shell_denylist"
+
+// phpShellMetas are the POSIX shell characters that start a new command,
+// substitution or redirection.
+const phpShellMetas = ";&|`$()<>\n"
+
+// phpShellMetaSurvives reports whether some shell metacharacter is not
+// removed by the single-character removals of a deny-list. Removing a
+// multi-character sequence (`&&`, `| `) never removes its characters.
+func phpShellMetaSurvives(removed map[string]bool) bool {
+	for _, c := range phpShellMetas {
+		if !removed[string(c)] {
+			return true
+		}
+	}
+	return false
+}
+
+// phpDenylistProtect applies protection to raw paths only; already
+// transformed paths become unknown, as any removal would leave them.
+func phpDenylistProtect(v phpValue, protection string) phpValue {
+	v.deps = append([]phpDep{}, v.deps...)
+	for i := range v.deps {
+		if v.deps[i].protection == "raw" {
+			v.deps[i].protection = protection
+		} else {
+			v.deps[i].protection = "unknown"
+		}
+	}
+	return v
+}
+
+// phpNonShellProtection maps the command-only deny-list label to unknown for
+// every non-command family.
+func phpNonShellProtection(p string) string {
+	if p == phpShellDenylist {
+		return "unknown"
+	}
+	return p
+}
+
+// literalRemovals returns the single characters a str_replace call deletes
+// (or replaces with text free of shell metacharacters), when the search and
+// replacement operands are finite literals: an array literal, a string, or
+// the array_keys($map)/$map pair of a literal map.
+func (f *phpFlow) literalRemovals(search, replace *sitter.Node) (map[string]bool, bool) {
+	m := f.module
+	removed := map[string]bool{}
+	note := func(term, replacement string) {
+		if len([]rune(term)) == 1 && !strings.ContainsAny(replacement, phpShellMetas) {
+			removed[term] = true
+		}
+	}
+	if search != nil && search.Kind() == "function_call_expression" && phpText(m, phpCallee(search)) == "array_keys" && f.builtin("array_keys") {
+		args := phpArgs(search)
+		if len(args) != 1 || phpVarName(m, args[0]) == "" || phpVarName(m, args[0]) != phpVarName(m, replace) {
+			return nil, false
+		}
+		mapValue, ok := f.env[phpVarName(m, args[0])]
+		if !ok || len(mapValue.deps) > 0 || len(mapValue.fields) == 0 {
+			return nil, false
+		}
+		for key, value := range mapValue.fields {
+			replacement, ok := phpSQLText(value)
+			if !ok {
+				return nil, false
+			}
+			note(key, replacement)
+		}
+		return removed, true
+	}
+	terms := phpArrayLiteralStrings(m, search)
+	if terms == nil {
+		text, ok := phpStringLiteral(m, search)
+		if !ok {
+			return nil, false
+		}
+		terms = []string{text}
+	}
+	replacements := phpArrayLiteralStrings(m, replace)
+	if replacements == nil {
+		text, ok := phpStringLiteral(m, replace)
+		if !ok {
+			return nil, false
+		}
+		for _, term := range terms {
+			note(term, text)
+		}
+		return removed, true
+	}
+	for i, term := range terms {
+		replacement := ""
+		if i < len(replacements) {
+			replacement = replacements[i]
+		}
+		note(term, replacement)
+	}
+	return removed, true
 }

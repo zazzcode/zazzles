@@ -47,7 +47,7 @@ func phpCodeProtection(deps []phpDep, i int) string {
 		switch deps[i].protection {
 		case "numeric", "non_content":
 			return "constrained"
-		case "unknown":
+		case "unknown", phpUnwritten, phpShellDenylist:
 			return "unknown"
 		}
 	}

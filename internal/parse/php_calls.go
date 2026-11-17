@@ -2,6 +2,7 @@ package parse
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -93,6 +94,29 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 			v.gaps = append(v.gaps, f.gap("php_escape_flags", "escape function "+qname+" flags: "+flags, n))
 			return v
 		}
+	case "explode":
+		if f.builtin(qname) && len(values) >= 2 {
+			// Every element is a substring of the subject: same sources,
+			// same protection, no literal identity.
+			v := phpTransfer(values[1], f.module.evidence("string_split", n))
+			v.literals, v.constant, v.fields = nil, false, nil
+			return v
+		}
+	case "define":
+		if f.builtin(qname) && len(nodes) >= 2 {
+			if name, ok := phpStringLiteral(f.module, nodes[0]); ok {
+				if text, ok := phpSQLText(values[1]); ok {
+					f.defineConstant(name, text)
+				}
+			}
+			return phpValue{}
+		}
+	case "dirname":
+		if f.builtin(qname) && len(values) == 1 {
+			if text, ok := phpSQLText(values[0]); ok {
+				return phpValue{literals: []phpLiteral{{text: path.Dir(text)}}, constant: true, evidence: []analysis.Evidence{f.module.evidence("path_transform", n)}}
+			}
+		}
 	case "urlencode", "rawurlencode":
 		if f.builtin(qname) && len(values) >= 1 {
 			// Output holds only [A-Za-z0-9_.~+-] and %XX: no HTML-significant
@@ -139,7 +163,21 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 			v := phpTransfer(phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown")), f.module.evidence("string_transform", n))
 			return v
 		}
-	case "str_replace", "preg_replace", "preg_match", "stristr", "stripos", "strpos", "strstr", "substr":
+	case "str_replace", "str_ireplace":
+		if f.builtin(qname) && len(values) >= 3 {
+			// A finite literal deny-list that leaves a shell metacharacter
+			// intact cannot protect a shell string; for every other sink the
+			// removal's effect stays unknown.
+			protection := "unknown"
+			if removed, ok := f.literalRemovals(nodes[0], nodes[1]); ok && phpShellMetaSurvives(removed) {
+				protection = phpShellDenylist
+			}
+			v := phpTransfer(phpDenylistProtect(values[2], protection), f.module.evidence("string_transform", n))
+			v = phpCombine(v, phpProtect(phpCombine(values[0], values[1]), "unknown"))
+			v.literals, v.constant = nil, false
+			return v
+		}
+	case "preg_replace", "preg_match", "stristr", "stripos", "strpos", "strstr", "substr":
 		if f.builtin(qname) {
 			// Replacement/removal transforms keep content with unknown effect.
 			v := phpTransfer(phpProtect(all, "unknown"), f.module.evidence("string_transform", n))
@@ -429,11 +467,11 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
 }
 
-// Helper expansion bounds: the Python depth bound, with a larger per-entry
-// call budget because DVWA page assembly chains more helpers than a Flask
-// handler.
+// Helper expansion bounds: one level deeper than Python's depth 3 and a
+// larger per-entry call budget, because plain-PHP page assembly chains more
+// helpers than a Flask handler (DVWA: page echo -> locale -> session grab).
 const (
-	phpHelperDepthLimit = 3
+	phpHelperDepthLimit = 4
 	phpHelperWorkLimit  = 256
 )
 
@@ -501,6 +539,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 		}
 	}
 	terminated := h.block(phpField(fn, "body"))
+	f.adoptConstants(h.constants)
 	f.gaps = phpMergeGaps(f.gaps, h.gaps)
 	f.context = phpMergeEvidence(f.context, h.context)
 	// A helper's writes to declared globals and to $GLOBALS are visible to the

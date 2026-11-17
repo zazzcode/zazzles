@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -346,4 +347,46 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		return nil, err
 	}
 	return out, nil
+}
+
+// constant resolves a bare identifier: magic __DIR__/__FILE__, then a
+// define() executed in this flow, then a top-level define() of the current
+// module, then the first module (by path) that defines it.
+func (f *phpFlow) constant(name string) (string, bool) {
+	switch name {
+	case "__DIR__":
+		return "/" + path.Dir(f.module.file), true
+	case "__FILE__":
+		return "/" + f.module.file, true
+	}
+	if v, ok := f.constants[name]; ok {
+		return v, true
+	}
+	return f.set.constant(f.module, name)
+}
+
+// defineConstant records define(name, literal); the first definition wins.
+func (f *phpFlow) defineConstant(name, value string) {
+	if f.constants == nil {
+		f.constants = map[string]string{}
+	}
+	if _, ok := f.constants[name]; !ok {
+		f.constants[name] = value
+	}
+}
+
+// adoptConstants carries definitions made in a branch or helper back to f.
+func (f *phpFlow) adoptConstants(defined map[string]string) {
+	for _, name := range sortedStrings(defined) {
+		f.defineConstant(name, defined[name])
+	}
+}
+
+func sortedStrings(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }

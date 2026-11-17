@@ -34,6 +34,12 @@ func superscriptOrigin(name string) (container, origin string, ok bool) {
 	return "", "", false
 }
 
+// phpUnwritten marks a session read with no writer linked yet at read time.
+// Non-XSS families treat it as unknown; the XSS render path treats the content
+// as unescaped and lets linkStorage resolve the origin against every entry's
+// writes once all entries were analyzed.
+const phpUnwritten = "unwritten"
+
 // phpRequestContainer reports a superglobal whose whole value is request
 // controlled ($_SERVER mixes server facts and headers; $_SESSION is storage).
 func phpRequestContainer(container string) bool {
@@ -81,7 +87,7 @@ func (f *phpFlow) source(n *sitter.Node, container, origin, key string) phpValue
 			}
 		}
 		if len(f.set.sessionWrites[key0]) == 0 {
-			v.deps[0].protection = "unknown"
+			v.deps[0].protection = phpUnwritten
 		}
 	}
 	f.recordInput(e, container, key, origin)

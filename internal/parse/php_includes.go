@@ -111,19 +111,28 @@ func (f *phpFlow) includeTargets(operand *sitter.Node, v phpValue) []phpIncludeT
 			candidates = append(candidates, c)
 		}
 	} else if candidates == nil && operand.Kind() == "name" {
-		if text, ok := f.set.constant(f.module, phpText(f.module, operand)); ok {
+		if text, ok := f.constant(phpText(f.module, operand)); ok {
 			candidates = []phpIncludeCandidate{{phpLiteral: phpLiteral{text: text}}}
 		}
 	}
-	baseDir := path.Dir(f.module.file)
+	// PHP resolves a relative include against the include_path ('.', the
+	// requested script's working directory) and then the including file's
+	// own directory.
+	baseDirs := []string{path.Dir(f.entryModule.file)}
+	if dir := path.Dir(f.module.file); dir != baseDirs[0] {
+		baseDirs = append(baseDirs, dir)
+	}
 	for _, c := range candidates {
 		target := c.text
 		if target == "" {
 			continue
 		}
-		resolved := phpNormalizePath(baseDir, target)
-		if m := f.set.modules[resolved]; m != nil {
-			out = append(out, phpIncludeTarget{module: m, condition: c.condition, literal: resolved, bindings: c.bindings})
+		for _, baseDir := range baseDirs {
+			resolved := phpNormalizePath(baseDir, target)
+			if m := f.set.modules[resolved]; m != nil {
+				out = append(out, phpIncludeTarget{module: m, condition: c.condition, literal: resolved, bindings: c.bindings})
+				break
+			}
 		}
 	}
 	return out

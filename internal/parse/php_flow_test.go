@@ -493,3 +493,167 @@ func TestPHPURLEncodeProtectsOnlyMarkupContexts(t *testing.T) {
 		t.Fatalf("urlencode protects url/attribute/text only, never script or after urldecode: %v", got)
 	}
 }
+
+func TestPHPFlowDispatchAlternativeGapsStayInTheirAlternative(t *testing.T) {
+	// The low alternative's loop gap must not become a blocker of the
+	// high alternative's SQL claim.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"index.php": `<?php
+$f = '';
+switch ($level) {
+  case 'low': $f = 'low.php'; break;
+  default: $f = 'high.php'; break;
+}
+require_once "source/{$f}";
+`,
+		"source/low.php":  "<?php\nwhile ($x) { $y = 1; }\n",
+		"source/high.php": "<?php\n$conn = mysqli_connect('h', 'u', 'p', 'd');\nmysqli_query($conn, \"SELECT * FROM t WHERE id = '\" . $_GET['id'] . \"'\");\n",
+	}), "index.php")
+	for _, u := range phpUsesOfKind(r, "sql_query_candidate") {
+		for _, g := range u.Completeness.Blockers {
+			if g.Kind == "php_loop_unresolved" {
+				t.Fatalf("sibling alternative gap leaked into the claim: %#v", u.Completeness.Blockers)
+			}
+		}
+	}
+	found := false
+	for _, e := range r.Entries {
+		for _, g := range e.Gaps {
+			found = found || g.Kind == "php_loop_unresolved"
+		}
+	}
+	if !found {
+		t.Fatalf("alternative gaps must still reach the entry: %#v", r.Entries)
+	}
+}
+
+func TestPHPSessionReadLinksWritesFromAnyEntry(t *testing.T) {
+	// The writer entry sorts after the reader; the session link is made once
+	// every entry was analyzed.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"a_read.php":  "<?php\necho $_SESSION['msg'];\n",
+		"b_write.php": "<?php\n$_SESSION['msg'] = $_POST['m'];\n",
+	}), "")
+	xss := phpUsesOfKind(r, "xss_candidate")
+	if len(xss) != 1 || !xss[0].XSS.OriginResolved || xss[0].XSS.Protection != "raw" || len(xss[0].XSS.RelatedEntries) != 1 {
+		t.Fatalf("session read must link the request write of another entry: %#v", xss)
+	}
+}
+
+func TestPHPDirectRawWitnessSurvivesUnresolvedStoredSibling(t *testing.T) {
+	// DVWA sqli page shape: the reflected id and an unwritten DB column are
+	// rendered together; the raw reflected path stays a reflected claim.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$conn = mysqli_connect('h', 'u', 'p', 'd');
+$id = $_GET['id'];
+$result = mysqli_query($conn, "SELECT first_name FROM users");
+$row = mysqli_fetch_assoc($result);
+echo "ID: {$id} First: {$row['first_name']}";
+`}), "")
+	xss := phpUsesOfKind(r, "xss_candidate")
+	if len(xss) != 1 || xss[0].XSS.Type != "reflected" || xss[0].XSS.OriginResolved || xss[0].XSS.StorageKey != "php-sql:users.first_name" {
+		t.Fatalf("raw reflected witness with an unresolved stored sibling: %#v", xss)
+	}
+}
+
+func TestPHPServerGeneratedSessionRenderIsNotACandidate(t *testing.T) {
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"index.php": "<?php\n$_SESSION['token'] = md5(uniqid());\necho \"<input value='{$_SESSION['token']}'>\";\n",
+	}), "")
+	if xss := phpUsesOfKind(r, "xss_candidate"); len(xss) != 0 {
+		t.Fatalf("a server-generated session value is not request content: %#v", xss)
+	}
+}
+
+func TestPHPShellDenylistLeavingMetacharactersStaysRaw(t *testing.T) {
+	// DVWA exec medium/high shapes: neither deny-list removes a bare `|`.
+	medium := phpCommandProtections(t, `<?php
+$target = $_REQUEST['ip'];
+$substitutions = array('&&' => '', ';' => '');
+$target = str_replace(array_keys($substitutions), $substitutions, $target);
+shell_exec('ping -c 4 ' . $target);
+`)
+	high := phpCommandProtections(t, "<?php\n"+
+		"$target = trim($_REQUEST['ip']);\n"+
+		"$substitutions = array('||' => '', '&' => '', ';' => '', '| ' => '', '-' => '', '$' => '', '(' => '', ')' => '', '`' => '');\n"+
+		"$target = str_replace(array_keys($substitutions), $substitutions, $target);\n"+
+		"shell_exec('ping -c 4 ' . $target);\n")
+	if !phpHasProtection(medium, "raw") || !phpHasProtection(high, "raw") {
+		t.Fatalf("incomplete shell deny-lists stay raw: medium %v high %v", medium, high)
+	}
+	complete := phpCommandProtections(t, "<?php\n"+
+		"$t = str_replace(array(';', '&', '|', '`', '$', '(', ')', '<', '>', \"\\n\"), '', $_GET['ip']);\n"+
+		"shell_exec('ping ' . $t);\n")
+	if phpHasProtection(complete, "raw") {
+		t.Fatalf("a deny-list removing every metacharacter is not raw: %v", complete)
+	}
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$t = str_replace(array(';'), '', $_GET['q']);
+echo $t;
+`}), "")
+	if xss := phpUsesOfKind(r, "xss_candidate"); len(xss) != 1 || xss[0].XSS.Protection != "unknown" {
+		t.Fatalf("the shell deny-list label must stay unknown outside command sinks: %#v", xss)
+	}
+}
+
+func TestPHPElementTypeGuardsConstrainReassembledValue(t *testing.T) {
+	// DVWA exec impossible shape: every octet is checked before reassembly.
+	got := phpCommandProtections(t, `<?php
+$octet = explode('.', $_REQUEST['ip']);
+if (is_numeric($octet[0]) && is_numeric($octet[1]) && sizeof($octet) == 2) {
+  $target = $octet[0] . '.' . $octet[1];
+  shell_exec('ping ' . $target);
+}
+`)
+	if phpHasProtection(got, "raw") || phpHasProtection(got, "unknown") {
+		t.Fatalf("checked octets are constrained: %v", got)
+	}
+	// Near-miss: an unchecked element stays raw.
+	miss := phpCommandProtections(t, `<?php
+$octet = explode('.', $_REQUEST['ip']);
+if (is_numeric($octet[0])) {
+  shell_exec('ping ' . $octet[0] . '.' . $octet[1]);
+}
+`)
+	if !phpHasProtection(miss, "raw") {
+		t.Fatalf("an unchecked element must stay raw: %v", miss)
+	}
+}
+
+func TestPHPFlowConstantsAndEntryRelativeIncludes(t *testing.T) {
+	// DVWA shape: the entry defines the root prefix, an included helper uses
+	// it to include config relative to the entry's working directory. Another
+	// file (sorting first) defines the same constant differently.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"about.php":                   "<?php\ndefine('ROOT', '');\n",
+		"config/config.php":           "<?php\n$cfg = array();\n$cfg['cmd'] = $_GET['c'];\n",
+		"inc/page.php":                "<?php\nrequire_once ROOT . 'config/config.php';\n",
+		"vulnerabilities/x/index.php": "<?php\ndefine('ROOT', '../../');\nrequire_once ROOT . 'inc/page.php';\nsystem($cfg['cmd']);\n",
+	}), "vulnerabilities/x/index.php")
+	if len(phpUsesOfKind(r, "command_execution_candidate")) != 1 {
+		t.Fatalf("config composed through the entry's constant must reach the sink: %#v %#v", r.Uses, r.Entries)
+	}
+}
+
+func TestPHPFlowDirConstantInclude(t *testing.T) {
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"app/index.php": "<?php\nrequire __DIR__ . '/lib.php';\nrequire dirname(__FILE__) . '/lib2.php';\nsystem($a . $b);\n",
+		"app/lib.php":   "<?php\n$a = $_GET['a'];\n",
+		"app/lib2.php":  "<?php\n$b = $_GET['b'];\n",
+	}), "app/index.php")
+	uses := phpUsesOfKind(r, "command_execution_candidate")
+	if len(uses) != 1 || len(uses[0].Dependencies) != 2 {
+		t.Fatalf("__DIR__ and dirname(__FILE__) includes must compose: %#v", uses)
+	}
+}
+
+func TestPHPFlowReferenceAssignment(t *testing.T) {
+	got := phpCommandProtections(t, `<?php
+function &grab() { return $_GET['c']; }
+$c =& grab();
+system($c);
+`)
+	if !phpHasProtection(got, "raw") {
+		t.Fatalf("`$x =& f()` must assign: %v", got)
+	}
+}

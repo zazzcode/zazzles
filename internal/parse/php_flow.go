@@ -36,6 +36,9 @@ type phpFlow struct {
 	// entry file even while helper expansion switches f.module.
 	entryModule     *phpModule
 	entryModuleRoot *sitter.Node
+	// constants holds define() values executed in this flow; PHP constants
+	// are global, so helpers share them and the first definition wins.
+	constants map[string]string
 	// condition carries selecting-branch evidence tagged onto literal sets.
 	condition []analysis.Evidence
 	// dirty records the variables this flow wrote since its clone origin, so
@@ -86,7 +89,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		return phpValue{unknown: true, gaps: []analysis.Gap{f.gap("php_value_unresolved", "Variable is not resolved: $"+name, n)}}
 	case "name":
 		text := phpText(m, n)
-		if c, ok := f.set.constant(m, text); ok {
+		if c, ok := f.constant(text); ok {
 			return phpValue{literals: []phpLiteral{{text: c}}, constant: true, evidence: []analysis.Evidence{m.evidence("constant_binding", n)}}
 		}
 		return phpValue{}
@@ -161,7 +164,9 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		return f.binaryExpression(n)
 	case "parenthesized_expression":
 		return f.evalChildren(n)
-	case "assignment_expression", "augmented_assignment_expression", "assignment_by_reference_expression":
+	case "assignment_expression", "augmented_assignment_expression", "reference_assignment_expression":
+		// `$a =& $b` is modeled as a copy: later writes through either alias
+		// do not reach the other.
 		return f.assign(n)
 	case "subscript_expression":
 		return f.subscript(n)

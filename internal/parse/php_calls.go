@@ -8,30 +8,19 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-// builtinPHP reports whether a called name is the unshadowed builtin. A locally
+// builtin reports whether a called name is the unshadowed builtin. A locally
 // defined function with the same name never carries a builtin contract.
+// Variables live in a separate namespace from functions, so a same-named
+// variable (`$file = ...; file($file)`) never shadows a builtin; variable
+// function calls (`$fn()`) carry a `$` callee and match no builtin name.
 func (f *phpFlow) builtin(name string) bool {
-	if _, local := f.module.funcs[name]; local {
-		return false
-	}
-	if v, ok := f.env[strings.TrimPrefix(name, "$")]; ok && len(v.deps) > 0 {
-		return false
-	}
-	return true
+	_, local := f.module.funcs[name]
+	return !local
 }
 
-// callName resolves the callee node: function_call_expression carries it in
-// the "function" field, member/scoped calls in the "name" field.
-func (f *phpFlow) callName(n *sitter.Node) (string, *sitter.Node) {
-	m := f.module
-	fn := phpField(n, "function")
-	if fn == nil {
-		fn = phpField(n, "name")
-	}
-	if fn == nil {
-		return "", nil
-	}
-	return phpText(m, fn), fn
+// callName returns the callee text of any call shape.
+func (f *phpFlow) callName(n *sitter.Node) string {
+	return phpText(f.module, phpCallee(n))
 }
 
 func (f *phpFlow) call(n *sitter.Node) phpValue {
@@ -42,7 +31,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		values[i] = f.eval(a)
 		all = phpCombine(all, values[i])
 	}
-	name, fnNode := f.callName(n)
+	name := f.callName(n)
 	if n.Kind() == "member_call_expression" {
 		return f.methodCall(n, nodes, values)
 	}
@@ -55,9 +44,6 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 	if qname == "" {
 		return all
 	}
-
-	// Include-family calls (include($x) parses as a call-like expression too).
-	_ = fnNode
 
 	// Procedural SQL operations.
 	switch qname {
@@ -87,8 +73,6 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		if f.builtin(qname) && len(values) >= 1 {
 			return f.sqlFetch(n, values[0])
 		}
-	case "PDO::query", "PDO::exec":
-		return f.sql(n, nodes, values, phpValue{}, values[0], "pdo")
 	}
 
 	// Command operations.
@@ -142,7 +126,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 	case "md5", "sha1", "hash", "password_hash", "crc32", "hash_hmac":
 		return phpTransfer(phpProtect(all, "non_content"), f.module.evidence("non_content", n))
 	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "sprintf", "number_format", "nl2br", "urlencode", "rawurlencode", "stripslashes", "strip_whitespace":
-		if f.builtin(qname) {
+		if f.builtin(qname) && len(values) >= 1 {
 			v := phpTransfer(phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown")), f.module.evidence("string_transform", n))
 			return v
 		}
@@ -292,6 +276,13 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if obj.Kind() == "variable_name" {
 		name = phpVarName(m, obj)
 	}
+	if len(values) == 0 && receiver.binding == "db_connection" {
+		switch method {
+		case "query", "real_query", "multi_query", "exec", "prepare":
+			// A SQL operation without a SQL operand has no claim.
+			return phpValue{}
+		}
+	}
 
 	switch {
 	case receiver.binding == "db_connection" && receiver.driver == "mysqli" && (method == "query" || method == "real_query" || method == "multi_query"):
@@ -316,6 +307,7 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 		if name != "" {
 			f.env[name] = stmt
+			f.markDirty(name)
 		}
 		return phpValue{}
 	case receiver.binding == "db_statement" && method == "execute":
@@ -323,6 +315,7 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		executed.evidence = append(executed.evidence, m.evidence("statement_execute", n))
 		if name != "" {
 			f.env[name] = executed
+			f.markDirty(name)
 		}
 		return executed
 	case receiver.binding == "db_statement" || receiver.binding == "db_connection":
@@ -340,8 +333,7 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if cls := f.classOf(name); cls != nil {
 		if method := findClassMethod(m, cls, method); method != nil {
 			self := receiver
-			selfCopy := self
-			return f.boundHelper(n, &phpBoundCallable{module: f.module, fn: method, object: &selfCopy}, values)
+			return f.boundHelper(n, &phpBoundCallable{module: f.module, fn: method, object: &self}, values)
 		}
 	}
 	// mysqli procedural-style object kept in a global (DVWA stores the
@@ -476,7 +468,6 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 			pos++
 			continue
 		}
-		pname := phpText(m, phpField(p, "name"))
 		v := phpValue{}
 		if pos < len(values) {
 			v = phpTransfer(values[pos], m.evidence("argument_to_parameter", p))
@@ -484,7 +475,6 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 			v = h.eval(def)
 		}
 		h.env[phpVarName(m, phpField(p, "name"))] = v
-		_ = pname
 		pos++
 	}
 	// `global $x` statements alias the caller's tracked variables.
@@ -513,6 +503,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	for g := range globalNames {
 		if v, ok := h.env[g]; ok {
 			f.env[g] = v
+			f.markDirty(g)
 		}
 	}
 	for k, v := range h.globals {
@@ -520,6 +511,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 			f.globals = map[string]phpValue{}
 		}
 		f.globals[k] = v
+		f.markDirty(phpGlobalsKeyPrefix + k)
 	}
 	if !terminated {
 		h.returns.gaps = append(h.returns.gaps, h.gaps...)

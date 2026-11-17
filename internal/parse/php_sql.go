@@ -33,8 +33,9 @@ func (f *phpFlow) sql(n *sitter.Node, nodes []*sitter.Node, values []phpValue, c
 		return sliceFrom(values, 0)
 	}
 	queryNode, params := nodes[0], []phpValue{}
-	if op != "pdo" && len(nodes) > 1 {
-		// Procedural mysqli_* forms carry the connection first.
+	if strings.HasPrefix(op, "mysqli_") && len(nodes) > 1 {
+		// Procedural mysqli_* forms carry the connection first; the OO
+		// ->query($sql, $mode) form carries the SQL first.
 		queryNode, params = nodes[1], values[2:]
 	}
 	if op == "pdo" && len(values) > 1 {

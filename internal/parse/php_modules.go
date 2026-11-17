@@ -85,7 +85,10 @@ func newPHPSet(root string) (*phpSet, error) {
 		m := &phpModule{file: file, src: src, hash: fmt.Sprintf("%x", sha256.Sum256(src)), tree: tree, funcs: map[string]*sitter.Node{}, classes: map[string]*sitter.Node{}, constants: map[string]string{}}
 		s.modules[file] = m
 		if tree.RootNode().HasError() {
-			s.gaps = append(s.gaps, analysis.Gap{Kind: "parse_error", Detail: "PHP syntax errors; module omitted", At: spanOf(file, tree.RootNode())})
+			// The module is still walked error-tolerantly (PHP executes the
+			// valid code regions of a mostly inline-HTML file), but its
+			// declarations are not indexed and its results may be partial.
+			s.gaps = append(s.gaps, analysis.Gap{Kind: "parse_error", Detail: "PHP syntax errors; module analyzed error-tolerantly and may be incomplete", At: spanOf(file, tree.RootNode())})
 			continue
 		}
 		m.declarations(tree.RootNode())

@@ -211,26 +211,36 @@ func (f *phpFlow) merge(branches ...*phpFlow) {
 		}
 	}
 	for key := range keys {
+		global, isGlobal := strings.CutPrefix(key, phpGlobalsKeyPrefix)
 		var v phpValue
 		for _, b := range branches {
+			scope := b.env
+			name := key
+			if isGlobal {
+				scope, name = b.globals, global
+			}
 			candidate := phpValue{unknown: true}
-			if value, ok := b.env[key]; ok {
-				candidate = value
-			} else if value, ok := b.globals[strings.TrimPrefix(key, "GLOBALS:")]; ok {
+			if value, ok := scope[name]; ok {
 				candidate = value
 			}
 			v = phpJoin(v, candidate)
 		}
-		if strings.HasPrefix(key, "GLOBALS:") {
+		if isGlobal {
 			if f.globals == nil {
 				f.globals = map[string]phpValue{}
 			}
-			f.globals[strings.TrimPrefix(key, "GLOBALS:")] = v
+			f.globals[global] = v
 		} else {
 			f.env[key] = v
 		}
+		// The joined value is a write in this flow too: when f is itself a
+		// branch clone, its own merge must carry the nested change outward.
+		f.markDirty(key)
 	}
 }
+
+// phpGlobalsKeyPrefix namespaces $GLOBALS['name'] writes in the dirty set.
+const phpGlobalsKeyPrefix = "GLOBALS:"
 
 // phpJoin merges branch values: distinct protections on the same source stay
 // separate dependency paths; literal candidate sets union with their conditions.
@@ -292,6 +302,19 @@ func (f *phpFlow) block(n *sitter.Node) bool {
 	return f.stmts(list)
 }
 
+// body walks a control-structure body: a braced or colon block, or the single
+// statement of a braceless form (`if ($a) $x = 1;`, `else exit;`).
+func (f *phpFlow) body(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	switch n.Kind() {
+	case "compound_statement", "colon_block":
+		return f.block(n)
+	}
+	return f.stmts([]*sitter.Node{n})
+}
+
 // stmts walks a statement list. A conditional include forks the remainder of
 // the list per alternative (D-3): each candidate file continues in its own
 // flow carrying its selecting condition, so a guard in one alternative never
@@ -316,27 +339,33 @@ func (f *phpFlow) stmts(list []*sitter.Node) bool {
 			f.gaps = append(f.gaps, f.gap("php_dynamic_include", "include path is not resolvable to a finite literal set", operand))
 			continue
 		}
-		if f.include >= 4 {
+		if f.include >= phpIncludeDepthLimit {
 			f.gaps = append(f.gaps, f.gap("work_limit", "include composition depth limit", include))
 			continue
 		}
 		if len(targets) == 1 {
-			f.inlineInclude(targets[0])
+			f.inlineInclude(include, targets[0])
 			continue
 		}
 		terminated := true
 		for _, t := range targets {
 			b := f.clone()
-			b.include++
-			b.inlineInclude(t)
+			b.inlineInclude(include, t)
 			if !b.stmts(list[i+1:]) {
 				terminated = false
 			}
+			// The alternative's remaining statements ran in b; its gaps
+			// belong to this entry even though b's values do not rejoin.
+			f.gaps = phpMergeGaps(f.gaps, b.gaps)
 		}
 		return terminated
 	}
 	return false
 }
+
+// phpIncludeDepthLimit bounds include nesting; the active include chain also
+// rejects cycles, which would otherwise recurse without end.
+const phpIncludeDepthLimit = 8
 
 // phpIncludeStmt unwraps an include-family statement to its expression.
 func phpIncludeStmt(s *sitter.Node) *sitter.Node {
@@ -352,16 +381,29 @@ func phpIncludeStmt(s *sitter.Node) *sitter.Node {
 	return nil
 }
 
-// inlineInclude walks an included module's top-level scope in this flow.
-func (f *phpFlow) inlineInclude(t phpIncludeTarget) {
+// inlineInclude walks an included module's top-level scope in this flow. A
+// module already on the active include chain is not re-entered: *_once is a
+// runtime no-op there, and a plain include would recurse without bound.
+func (f *phpFlow) inlineInclude(include *sitter.Node, t phpIncludeTarget) {
+	key := "include:" + t.module.file
+	if f.stack[key] || t.module == f.entryModule {
+		if !strings.HasSuffix(include.Kind(), "_once_expression") {
+			f.gaps = append(f.gaps, f.gap("work_limit", "include cycle is not re-entered: "+t.module.file, include))
+		}
+		return
+	}
 	if len(t.condition) > 0 {
 		f.context = append(f.context, t.condition...)
 		f.condition = append(append([]analysis.Evidence{}, f.condition...), t.condition...)
 	}
+	f.stack[key] = true
+	f.include++
 	saved := f.module
 	f.module = t.module
 	f.block(t.module.tree.RootNode())
 	f.module = saved
+	f.include--
+	delete(f.stack, key)
 }
 
 func (f *phpFlow) stmt(n *sitter.Node) bool {
@@ -372,6 +414,9 @@ func (f *phpFlow) stmt(n *sitter.Node) bool {
 		for i := uint(0); i < n.NamedChildCount(); i++ {
 			f.eval(n.NamedChild(i))
 		}
+		// die(...)/exit(...) parse as calls; as a statement they never fall
+		// through, exactly like the exit_statement form.
+		return f.terminatingCall(n)
 	case "echo_statement":
 		for i := uint(0); i < n.NamedChildCount(); i++ {
 			v := f.eval(n.NamedChild(i))
@@ -390,103 +435,103 @@ func (f *phpFlow) stmt(n *sitter.Node) bool {
 	case "switch_statement":
 		return f.switchStatement(n)
 	case "while_statement", "for_statement", "do_statement", "foreach_statement":
-		// Loops are modeled as one conservative iteration plus a gap. The
-		// header (including fetch-into-variable assignments) is evaluated
-		// once before the body.
-		body := phpField(n, "body")
-		for i := uint(0); i < n.NamedChildCount(); i++ {
-			c := n.NamedChild(i)
-			if body != nil && c.Id() == body.Id() {
-				continue
-			}
-			f.eval(c)
-		}
-		b := f.clone()
-		b.gaps = append(b.gaps, f.gap("php_loop_unresolved", "loop execution and mutation are not fully modeled", n))
-		terminated := b.block(body)
-		if !terminated {
-			f.merge(f.clone(), b)
-		}
-		return terminated
-	case "function_definition":
-		return false
-	case "class_declaration", "interface_declaration", "trait_declaration", "namespace_definition", "use_declaration", "declare_statement":
+		return f.loop(n)
+	case "function_definition", "class_declaration", "interface_declaration", "trait_declaration", "namespace_definition", "use_declaration", "declare_statement":
 		return false
 	case "break_statement", "continue_statement":
+		// Ends the current case or loop body; loop() and switchStatement()
+		// keep the enclosing path alive.
 		return true
 	case "global_declaration":
-		// A global statement inside a function aliases the global scope.
+		// boundHelper aliases `global $x` names before walking the body.
 		return false
 	case "try_statement":
 		return f.tryStatement(n)
-	case "unset_statement":
-		f.evalChildren(n)
 	default:
 		f.evalChildren(n)
 	}
 	return false
 }
 
-// branchProtection inspects a condition for value-constraining checks on a
-// bare variable: is_numeric($x) or isset($x) style predicates.
 // branchProtection returns variable protections that hold on the true branch
-// of the condition (yes) and on the false branch (no). A negated membership
-// allowlist (`!in_array($v, [...])`) guards the fall-through, so its
-// protection lands in no and conditional() applies it only when the rejecting
-// branch terminates.
+// of the condition (yes) and on the false branch (no). Only predicates whose
+// truth is implied by the branch contribute: `!` flips the branch, `&&`
+// implies both operands only when true, `||` implies both negations only when
+// false; any other operator implies nothing. A negated predicate such as
+// `!in_array($v, [...])` therefore lands in no, which conditional() applies
+// only when the rejecting branch terminates.
 func (f *phpFlow) branchProtection(n *sitter.Node) (yes, no map[string]string) {
 	yes, no = map[string]string{}, map[string]string{}
-	if n == nil {
+	f.impliedProtections(n, true, yes)
+	f.impliedProtections(n, false, no)
+	return yes, no
+}
+
+// impliedProtections records into out the protections implied when the
+// condition c evaluates to truth.
+func (f *phpFlow) impliedProtections(c *sitter.Node, truth bool, out map[string]string) {
+	if c == nil {
 		return
 	}
-	// One recursive walk carries the negation down the tree; node wrappers
-	// are not identity-stable across separate walks.
-	var visit func(c *sitter.Node, negated bool)
-	visit = func(c *sitter.Node, negated bool) {
-		if c.Kind() == "unary_op_expression" && strings.HasPrefix(strings.TrimSpace(phpText(f.module, c)), "!") {
-			negated = true
+	m := f.module
+	switch c.Kind() {
+	case "parenthesized_expression":
+		if c.NamedChildCount() == 1 {
+			f.impliedProtections(c.NamedChild(0), truth, out)
 		}
-		if c.Kind() == "function_call_expression" {
-			name := phpText(f.module, phpCallee(c))
-			args := phpArgs(c)
-			switch name {
-			case "is_numeric", "ctype_digit":
-				if _, shadow := f.module.funcs[name]; shadow || len(args) != 1 {
-					return
-				}
-				if v := phpVarName(f.module, args[0]); v != "" {
-					yes[v] = "numeric"
-				}
-			case "in_array":
-				if _, shadow := f.module.funcs[name]; shadow || len(args) != 2 {
-					return
-				}
-				v := phpVarName(f.module, args[0])
-				if v == "" {
-					return
-				}
-				options := phpArrayLiteralStrings(f.module, args[1])
-				if options == nil {
-					if av, ok := f.env[phpVarName(f.module, args[1])]; ok {
-						options = phpFiniteStrings(av)
-					}
-				}
-				if len(options) == 0 {
-					return
-				}
-				target := yes
-				if negated {
-					target = no
-				}
-				target[v] = "component"
+	case "unary_op_expression":
+		if strings.HasPrefix(strings.TrimSpace(phpText(m, c)), "!") && c.NamedChildCount() == 1 {
+			f.impliedProtections(c.NamedChild(0), !truth, out)
+		}
+	case "binary_expression":
+		switch strings.ToLower(phpOperator(m, c)) {
+		case "&&", "and":
+			if truth {
+				f.impliedProtections(phpField(c, "left"), true, out)
+				f.impliedProtections(phpField(c, "right"), true, out)
+			}
+		case "||", "or":
+			if !truth {
+				f.impliedProtections(phpField(c, "left"), false, out)
+				f.impliedProtections(phpField(c, "right"), false, out)
 			}
 		}
-		for i := uint(0); i < c.NamedChildCount(); i++ {
-			visit(c.NamedChild(i), negated)
+	case "function_call_expression":
+		if !truth {
+			return
+		}
+		name := phpText(m, phpCallee(c))
+		if _, shadow := m.funcs[name]; shadow {
+			return
+		}
+		args := phpArgs(c)
+		switch name {
+		case "is_numeric", "ctype_digit":
+			if len(args) != 1 {
+				return
+			}
+			if v := phpVarName(m, args[0]); v != "" {
+				out[v] = "numeric"
+			}
+		case "in_array":
+			if len(args) != 2 {
+				return
+			}
+			v := phpVarName(m, args[0])
+			if v == "" {
+				return
+			}
+			options := phpArrayLiteralStrings(m, args[1])
+			if options == nil {
+				if av, ok := f.env[phpVarName(m, args[1])]; ok {
+					options = phpFiniteStrings(av)
+				}
+			}
+			if len(options) > 0 {
+				out[v] = "component"
+			}
 		}
 	}
-	visit(n, false)
-	return yes, no
 }
 
 func (f *phpFlow) applyProtections(p map[string]string) *phpFlow {
@@ -543,8 +588,21 @@ func phpArrayLiteralStrings(m *phpModule, n *sitter.Node) []string {
 	return out
 }
 
+// conditional walks an if statement with its full elseif/else chain. The
+// grammar repeats the "alternative" field once per elseif/else clause.
 func (f *phpFlow) conditional(n *sitter.Node) bool {
-	test := phpField(n, "condition")
+	var alternatives []*sitter.Node
+	for i := uint(0); i < n.ChildCount(); i++ {
+		if n.FieldNameForChild(uint32(i)) == "alternative" {
+			alternatives = append(alternatives, n.Child(i))
+		}
+	}
+	return f.ifChain(phpField(n, "condition"), phpField(n, "body"), alternatives)
+}
+
+// ifChain walks one condition/body pair; the false branch continues with the
+// remaining elseif/else alternatives.
+func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) bool {
 	if test != nil && test.Kind() == "parenthesized_expression" && test.NamedChildCount() > 0 {
 		test = test.NamedChild(0)
 	}
@@ -553,7 +611,7 @@ func (f *phpFlow) conditional(n *sitter.Node) bool {
 	yes := f.clone()
 	yes.context = append(yes.context, f.module.evidence("branch_precondition", test))
 	yes.applyProtections(yesProt)
-	yt := yes.block(phpField(n, "body"))
+	yt := yes.body(body)
 	branches := []*phpFlow{}
 	if !yt {
 		branches = append(branches, yes)
@@ -570,11 +628,12 @@ func (f *phpFlow) conditional(n *sitter.Node) bool {
 	}
 	no.context = append(no.context, f.module.evidence("branch_false_precondition", test))
 	nt := false
-	if alt := phpField(n, "alternative"); alt != nil {
-		if alt.Kind() == "else_clause" {
-			nt = no.block(phpField(alt, "body"))
-		} else {
-			nt = no.stmt(alt)
+	if len(alternatives) > 0 {
+		switch alt := alternatives[0]; alt.Kind() {
+		case "else_if_clause":
+			nt = no.ifChain(phpField(alt, "condition"), phpField(alt, "body"), alternatives[1:])
+		case "else_clause":
+			nt = no.body(phpField(alt, "body"))
 		}
 	}
 	if !nt {
@@ -586,6 +645,89 @@ func (f *phpFlow) conditional(n *sitter.Node) bool {
 		f.merge(branches...)
 	}
 	return yt && nt
+}
+
+// loop models one conservative iteration plus a gap. The header (including
+// fetch-into-variable assignments) is evaluated once before the body. A loop
+// never ends the enclosing path: its body may run zero times, and a body that
+// stops at break/continue/return is not distinguished from one that falls
+// through, so the body's effects (and returns) always join the zero-iteration
+// path.
+func (f *phpFlow) loop(n *sitter.Node) bool {
+	body := phpField(n, "body")
+	if n.Kind() == "foreach_statement" {
+		b := f.clone()
+		b.gaps = append(b.gaps, f.gap("php_loop_unresolved", "loop execution and mutation are not fully modeled", n))
+		b.foreachBindings(n, body)
+		b.body(body)
+		f.merge(f.clone(), b)
+		return false
+	}
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		c := n.NamedChild(i)
+		if body != nil && c.Id() == body.Id() {
+			continue
+		}
+		f.eval(c)
+	}
+	b := f.clone()
+	b.gaps = append(b.gaps, f.gap("php_loop_unresolved", "loop execution and mutation are not fully modeled", n))
+	b.body(body)
+	f.merge(f.clone(), b)
+	return false
+}
+
+// foreachBindings binds `foreach ($collection as [$key =>] $value)` iteration
+// variables to the collection's value: element content and keys both derive
+// from it. Destructuring targets stay unbound (and unresolved when read).
+func (f *phpFlow) foreachBindings(n, body *sitter.Node) {
+	m := f.module
+	var collection *sitter.Node
+	var targets []*sitter.Node
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		c := n.NamedChild(i)
+		if body != nil && c.Id() == body.Id() {
+			continue
+		}
+		if collection == nil {
+			collection = c
+			continue
+		}
+		if c.Kind() == "pair" {
+			for j := uint(0); j < c.NamedChildCount(); j++ {
+				targets = append(targets, c.NamedChild(j))
+			}
+		} else {
+			targets = append(targets, c)
+		}
+	}
+	v := f.eval(collection)
+	for _, t := range targets {
+		if t.Kind() == "by_ref" && t.NamedChildCount() == 1 {
+			t = t.NamedChild(0)
+		}
+		if name := phpVarName(m, t); name != "" {
+			f.env[name] = phpTransfer(v, m.evidence("iteration_binding", t))
+			f.markDirty(name)
+		}
+	}
+}
+
+// terminatingCall reports an expression statement that is exactly an
+// unshadowed die(...)/exit(...) call.
+func (f *phpFlow) terminatingCall(stmt *sitter.Node) bool {
+	if stmt.NamedChildCount() != 1 {
+		return false
+	}
+	call := stmt.NamedChild(0)
+	if call.Kind() != "function_call_expression" {
+		return false
+	}
+	switch name := strings.ToLower(phpText(f.module, phpCallee(call))); name {
+	case "die", "exit":
+		return f.builtin(name)
+	}
+	return false
 }
 
 func (f *phpFlow) switchStatement(n *sitter.Node) bool {
@@ -628,7 +770,7 @@ func (f *phpFlow) tryStatement(n *sitter.Node) bool {
 	branches := []*phpFlow{}
 	b := f.clone()
 	b.context = append(b.context, f.module.evidence("try_precondition", n))
-	terminated := b.block(phpField(n, "body"))
+	terminated := b.body(phpField(n, "body"))
 	if !terminated {
 		branches = append(branches, b)
 	}
@@ -640,7 +782,7 @@ func (f *phpFlow) tryStatement(n *sitter.Node) bool {
 		if c.Kind() == "catch_clause" {
 			h := f.clone()
 			h.context = append(h.context, f.module.evidence("exception_precondition", c))
-			if !h.block(phpField(c, "body")) {
+			if !h.body(phpField(c, "body")) {
 				branches = append(branches, h)
 			}
 		}
@@ -670,6 +812,11 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		if v, ok := f.env[name]; ok {
 			return phpTransfer(v, m.evidence("value_reference", n))
 		}
+		if container, origin, ok := superscriptOrigin(name); ok && phpRequestContainer(container) {
+			// A whole request superglobal (`reset($_GET)`, `foreach ($_POST
+			// ...)`) carries every request value, keyed by no single field.
+			return f.source(n, container, origin, "")
+		}
 		return phpValue{unknown: true, gaps: []analysis.Gap{f.gap("php_value_unresolved", "Variable is not resolved: $"+name, n)}}
 	case "name":
 		text := phpText(m, n)
@@ -693,7 +840,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 	case "encapsed_string":
 		v := phpValue{}
 		candidates := []phpLiteral{{}}
-		allLiteral := true
+		allLiteral, interpolated := true, false
 		for i := uint(0); i < n.ChildCount(); i++ {
 			c := n.Child(i)
 			if c == nil {
@@ -709,6 +856,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			if !c.IsNamed() {
 				continue
 			}
+			interpolated = true
 			part := f.eval(c)
 			if len(part.deps) > 0 || len(part.literals) == 0 {
 				allLiteral = false
@@ -737,6 +885,11 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			v.constant = len(candidates) == 1
 		}
 		v.template = phpText(m, n)
+		if !interpolated {
+			// A double-quoted string without interpolation is a literal.
+			v.evidence = []analysis.Evidence{m.evidence("literal", n)}
+			return v
+		}
 		v.built = true
 		return phpTransfer(v, m.evidence("string_interpolation", n))
 	case "binary_expression":
@@ -903,7 +1056,7 @@ func (f *phpFlow) assign(n *sitter.Node) phpValue {
 				if f.globals == nil {
 					f.globals = map[string]phpValue{}
 				}
-				f.markDirty("GLOBALS:" + key)
+				f.markDirty(phpGlobalsKeyPrefix + key)
 				f.globals[key] = v
 			}
 			return v
@@ -961,6 +1114,16 @@ func superscriptOrigin(name string) (container, origin string, ok bool) {
 		return "_SESSION", "session", true
 	}
 	return "", "", false
+}
+
+// phpRequestContainer reports a superglobal whose whole value is request
+// controlled ($_SERVER mixes server facts and headers; $_SESSION is storage).
+func phpRequestContainer(container string) bool {
+	switch container {
+	case "GET", "POST", "REQUEST", "COOKIE", "FILES":
+		return true
+	}
+	return false
 }
 
 // serverKeyOrigin maps selected $_SERVER keys to precise origins.

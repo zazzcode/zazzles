@@ -73,6 +73,12 @@ Browser-only entries never select a Node process contract. Bounded models also c
 registrations, finite loops, upload reads, request-path registry dispatch and `threading.Thread`
 hand-off. Test modules are not application registrations. Anything outside these shapes stays a gap.
 
+For PHP, [server-mapped file entries](../php-support.md) cover `shell_exec`, `exec`, `system`,
+`passthru`, `popen`, `proc_open` and backtick operators with `php-program-execution-v1`
+shell-operand facts; concatenation into a fixed command prefix stays a raw operand.
+`escapeshellarg` on the dynamic operand is a quoting control the judge weighs, not a sink removal;
+a shadowed execution function stays negative.
+
 ## Skipping the input-validation analyzer
 
 For very large targets, `--skip-family input-validation` leaves every input-validation record

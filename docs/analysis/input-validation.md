@@ -51,6 +51,12 @@ and source-backed input constraints from a form posting to the same handler. Cli
 establish declared policy; they do not prove server enforcement. Standalone fields remain Review
 when no business policy is established. Query records retain separate validation and injection facets.
 
+The [PHP adapter](../php-support.md) assembles `source.php-input-v1` facts from superglobal
+acquisitions (`$_GET`/`$_POST`/`$_REQUEST`/`$_COOKIE`/`$_SERVER` → `http.query`/`http.form`/
+`http.cookies`/`http.headers`, `php://input` → `http.body`, `$_FILES` parts) with per-key input
+values. Handler guards (isset/empty, type checks, presence tests) are enforcement evidence; HTML
+`maxlength` or client script constraints are declared policy only.
+
 The shared trace bundle indexes actual helper/condition evidence and exposes missing roles to the
 judge. Presence is not proof of enforcement. A Review recommendation names the missing fact; a
 validation-practice finding names the exact source-declared field constraints and direct-request

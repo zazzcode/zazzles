@@ -11,7 +11,7 @@ import (
 // The command documents are embedded separately and are deliberately not part of
 // the default language pack, so adding the family changes no existing request.
 //
-//go:embed command_javascript.md command_python.md
+//go:embed command_javascript.md command_python.md command_php.md
 var commandFiles embed.FS
 
 // commandSections are required, exactly once, in every command document.
@@ -24,6 +24,8 @@ func CommandBody(language lang.Language) (AnalysisGuidelines, error) {
 	case lang.JavaScript, lang.TypeScript:
 	case lang.Python:
 		name = "command_python.md"
+	case lang.PHP:
+		name = "command_php.md"
 	default:
 		return AnalysisGuidelines{}, fmt.Errorf("no command guidelines for %s", language)
 	}

@@ -47,5 +47,9 @@ design, project planning, evaluation records, implementation contracts, and SDLC
 
 [Python analysis and limits](python-support.md) describes the Flask, RESTX, FastAPI and sqlite3 adapter.
 
+[PHP analysis and limits](php-support.md) describes the plain-PHP adapter: server-mapped file
+entries, superglobal sources, include dispatch, and the mysqli/PDO/SQLite3, command, XSS, path,
+code and redirect families verified on DVWA.
+
 [Next.js analysis](nextjs-support.md) describes the App Router, Server Action and page entries added to
 the TypeScript/Node.js analysis, what a scan is expected to find, and the framework practice checks.

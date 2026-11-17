@@ -2,7 +2,7 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/internal/analysis"
 
-var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
+var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
 
 // PrismaRawContract is Prisma Client's unsafe raw-SQL API.
 const PrismaRawContract = "prisma-raw-v1"
@@ -46,12 +46,38 @@ func SQLContract(id string) *analysis.APIModel {
 			return v
 		}
 	}
+	for _, driver := range []string{"mysqli", "pdo", "sqlite3"} {
+		if v := PHPSQLContract(driver); v.ID == id {
+			return v
+		}
+	}
 	return nil
 }
 
 // JavaScriptSQLLibrary reports a SQL contract that belongs to the JS/TS adapter.
 func JavaScriptSQLLibrary(library string) bool {
 	return library == "sequelize" || library == "sql.js" || library == "prisma" || library == "better-sqlite3" || library == "pglite"
+}
+
+// PHPSQLContractIDs lists the PHP per-engine SQL contracts (D-5).
+var PHPSQLContractIDs = []string{"php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1"}
+
+// PHPSQLContract returns the per-engine operation contract. mysqli covers the
+// procedural API and the OO API; the $GLOBALS["___mysqli_ston"] converter
+// idiom is normalized to the verified connection handle by the adapter.
+func PHPSQLContract(driver string) *analysis.APIModel {
+	switch driver {
+	case "mysqli":
+		return &analysis.APIModel{ID: "php-mysqli-v1", Library: "mysqli", Reference: "https://www.php.net/manual/en/mysqli.query.php",
+			Semantics: "mysqli_query and mysqli::query execute every statement in their SQL text argument (argument 1 in the procedural form; the connection provenance is supplied separately). mysqli_multi_query runs multiple semicolon-separated statements. mysqli_prepare compiles one statement with ? placeholders; mysqli_stmt_bind_param/execute supply separate values for those placeholders and cannot protect SQL already interpolated into the prepared text. mysqli_real_escape_string escapes SQL syntax for the current connection charset; it is a value transform recorded as evidence, never a binding or a protection verdict, and it does not escape identifiers. Connection/cursor provenance is supplied separately; this contract is not evidence that the caller uses it correctly."}
+	case "pdo":
+		return &analysis.APIModel{ID: "php-pdo-v1", Library: "pdo", Reference: "https://www.php.net/manual/en/pdo.query.php",
+			Semantics: "PDO::query and PDO::exec run the SQL text argument and bind nothing. PDO::prepare compiles one statement with named (:name) or positional (?) placeholders; PDOStatement::bindParam/bindValue supply separate values and cannot protect SQL already interpolated into the prepared text; PDOStatement::execute with a value array behaves the same. emulate_prepares does not change the text/data separation. Connection/statement provenance is supplied separately; this contract is not evidence that the caller uses it correctly."}
+	case "sqlite3":
+		return &analysis.APIModel{ID: "php-sqlite3-v1", Library: "sqlite3", Reference: "https://www.php.net/manual/en/sqlite3.query.php",
+			Semantics: "SQLite3::query and SQLite3::exec run the SQL text argument; exec runs every statement in the text and binds nothing. SQLite3::prepare compiles one statement with named or positional placeholders; SQLite3Stmt::bindValue/execute supply separate values and cannot protect SQL already interpolated into the prepared text. Connection provenance is supplied separately; this contract is not evidence that the caller uses it correctly."}
+	}
+	return nil
 }
 
 // PythonContract applies only after import/connection/cursor provenance resolves.

@@ -120,8 +120,11 @@ func descriptors() ([]Component, error) {
 	for _, id := range sqlContractIDs {
 		contractOwners[id] = "internal/parse/checks.go"
 	}
-	for _, id := range sqlContractIDs[2:] {
+	for _, id := range []string{"python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1"} {
 		contractOwners[id] = "internal/parse/python_sql.go"
+	}
+	for _, id := range PHPSQLContractIDs {
+		contractOwners[id] = "internal/parse/php_sql.go"
 	}
 	contractOwners[SequelizeFinderContract] = "internal/parse/sequelize_finders.go"
 	contractOwners[PrismaRawContract] = "internal/parse/sql_libraries.go"
@@ -181,6 +184,6 @@ func descriptors() ([]Component, error) {
 	out = append(out, interpreterDescriptors("redirect")...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
-	out = append(out, nodeInputComponent(), pythonInputComponent())
+	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent())
 	return out, nil
 }

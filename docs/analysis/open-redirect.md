@@ -15,7 +15,10 @@ an established redirect status, Fastify/Hapi redirects, imported Next navigation
 `assign`/`replace`, `window.open`, Next router navigation and JSX meta refresh. Next explicitly
 [accepts external absolute URLs](https://nextjs.org/docs/app/api-reference/functions/redirect).
 Python bindings include Flask/Django redirects, Starlette/FastAPI RedirectResponse and aiohttp
-redirect exceptions.
+redirect exceptions. PHP bindings cover `header('Location: …')` under `php-header-redirect-v1`:
+a Location value is an implied 302 (the `Location:` prefix is matched case-insensitively, matching
+PHP behavior), non-Location headers are not redirects, and only the destination operand is the
+claim.
 
 Only the destination operand is the claim. A body, unrelated header or data sent to a fixed
 endpoint does not select the destination. Constants, query/fragment-only navigation and fixed

@@ -22,9 +22,12 @@ const (
 	StarletteFileContract    = "starlette-file-response-v1"
 	PythonShutilContract     = "python-shutil-file-v1"
 	PythonTarExtractContract = "python-tarfile-extract-v1"
+	PHPIncludeContract       = "php-include-v1"
+	PHPUploadMoveContract    = "php-upload-move-v1"
+	PHPFilesystemContract    = "php-filesystem-v1"
 )
 
-var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract}
+var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract, PHPIncludeContract, PHPUploadMoveContract, PHPFilesystemContract}
 
 // PathContract returns a copy of the supported operation contract by verified ID.
 // Semantics follow the cited official documentation; the declared platform is a
@@ -73,6 +76,15 @@ func PathContract(id string) *analysis.APIModel {
 	case PythonTarExtractContract:
 		return &analysis.APIModel{ID: id, Library: "tarfile", Reference: "https://docs.python.org/3/library/tarfile.html#tarfile.TarFile.extractall",
 			Semantics: "TarFile.extractall([path='.', *, members=None, filter=None]) writes archive members under path. When the archive was opened from request-derived bytes or a request path, stored member names are request-derived path components (Zip Slip shape); path is the destination root operand. The filter argument (added in Python 3.12) selects extraction policy: absent or None on 3.12–3.13 behaves as fully_trusted; Python 3.14 defaults to filter='data'. Missing filter facts on unknown runtime versions are unresolved policy, not assumed safety. filter='data' reduces risk but does not eliminate symlink/race issues. This contract is not evidence of the deployed platform."}
+	case PHPIncludeContract:
+		return &analysis.APIModel{ID: id, Library: "include", Reference: "https://www.php.net/manual/en/function.include.php",
+			Semantics: "include, include_once, require and require_once execute the PHP file named by their operand; the operand is a file path, and execution makes it a file-inclusion (CWE-98) context. A relative path resolves against the including file's directory then the include_path setting; '..' segments and absolute values select any readable file the process can execute, so a request-derived operand with no enforced containment is the claim. basename of the value reduces it to one component; allow-lists of literal page names with a rejecting branch are containment. allow_url_include governs remote destinations, not local selection; scheme classification on the path facts records local vs remote destination. This contract is not evidence of the deployed configuration."}
+	case PHPUploadMoveContract:
+		return &analysis.APIModel{ID: id, Library: "upload", Reference: "https://www.php.net/manual/en/function.move-uploaded-file.php",
+			Semantics: "move_uploaded_file(filename, destination) writes the uploaded stream to destination; filename is the server-managed $_FILES tmp_name and is not a request path source, while destination is the effective file-path operand. A destination built from $_FILES[name][name] carries the client-supplied original name, separators included; basename reduces it to one component, and a finite allow-list with a rejecting branch contains it. is_uploaded_file is a presence check on the source, not containment for the destination. Neither call resolves symbolic links on the caller's behalf. This contract is not evidence of the deployed platform."}
+	case PHPFilesystemContract:
+		return &analysis.APIModel{ID: id, Library: "filesystem", Reference: "https://www.php.net/manual/en/function.file-get-contents.php",
+			Semantics: "file_get_contents, fopen, readfile, file, file_put_contents and unlink take a file path as their first argument; file_put_contents' second argument is written data, a separate operand and never a path source; fopen's mode selects read/write and is not a path; readfile streams the selected file to the response. A relative path resolves against the process working directory with no containment check, so '..' segments and an absolute value select any file the process can reach. basename reduces a value to one component; realpath resolves symbolic links lexically-plus-filesystem but is not itself containment; a finite allow-list or a component-boundary check that rejects before the operation is. A function defined locally with one of these names carries no contract. This contract is not evidence of the deployed platform."}
 	}
 	return nil
 }
@@ -130,4 +142,7 @@ var pathOwners = map[string]string{
 	StarletteFileContract:    "internal/parse/python_path.go",
 	PythonShutilContract:     "internal/parse/python_path.go",
 	PythonTarExtractContract: "internal/parse/python_path.go",
+	PHPIncludeContract:       "internal/parse/php_path.go",
+	PHPUploadMoveContract:    "internal/parse/php_path.go",
+	PHPFilesystemContract:    "internal/parse/php_path.go",
 }

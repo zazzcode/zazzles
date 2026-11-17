@@ -55,6 +55,8 @@ func XSSContract(id, library string) *analysis.APIModel {
 		return &analysis.APIModel{ID: id, Library: library, Semantics: "Verified browser/framework rendering binding and source flow in the stated context.", Reference: "https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML"}
 	case "python-html-output-v1":
 		return &analysis.APIModel{ID: id, Library: library, Semantics: "Flask string returns use HTML; FastAPI HTML is explicit. Jinja autoescape protects template variables, not request text compiled as template source.", Reference: "https://flask.palletsprojects.com/en/stable/templating/"}
+	case "php-html-output-v1":
+		return &analysis.APIModel{ID: id, Library: library, Semantics: "PHP echo/print and string interpolation emit HTML directly; there is no autoescaping. htmlspecialchars (with its actual flags) escapes HTML text and quoted non-active attributes; it does not establish script or URL-scheme safety.", Reference: "https://www.php.net/manual/en/function.echo.php"}
 	}
 	return nil
 }

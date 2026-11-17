@@ -113,6 +113,13 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 		out.Routes = append(out.Routes, r.route)
 	}
 	out.Gaps = append(out.Gaps, py.gaps...)
+	ph, err := newPHPSet(root)
+	if err != nil {
+		return nil, err
+	}
+	defer ph.close()
+	out.Routes = append(out.Routes, ph.phpRoutes()...)
+	out.Gaps = append(out.Gaps, ph.gaps...)
 	sort.Slice(out.Routes, func(i, j int) bool {
 		if out.Routes[i].Registration.File != out.Routes[j].Registration.File {
 			return out.Routes[i].Registration.File < out.Routes[j].Registration.File

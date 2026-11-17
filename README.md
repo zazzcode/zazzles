@@ -54,7 +54,7 @@ Every result keeps its evidence trail:
 
 | Capability | What it does | Status |
 |---|---|---|
-| **Scan** | Finds security vulnerabilities in your code and judges whether existing protection is adequate | Available for supported JavaScript, TypeScript and Python |
+| **Scan** | Finds security vulnerabilities in your code and judges whether existing protection is adequate | Available for supported JavaScript, TypeScript, Python and PHP |
 | **Inspect** | Reviews code for poor practice in validation, query and command construction, logging and reliability | Partly available: practice checks ship inside Scan; a distinct Inspect workflow is planned |
 | **Audit** | Finds known vulnerabilities in your dependencies and guides upgrades, using ecosystem tools such as `npm audit` and `pip-audit`, with SBOM artifacts | Planned |
 | **Fix** | Provides agent skills and automation so coding agents can read findings and deficiencies, repair the code, upgrade libraries, verify the changes and prepare a pull request for review | Planned |
@@ -79,9 +79,11 @@ and delivery status.
 
 ## What exists today
 
-Today Zazzles is a command-line scanner for **JavaScript, TypeScript and Python** applications,
+Today Zazzles is a command-line scanner for **JavaScript, TypeScript, Python and PHP** applications,
 including Express, Fastify, Hapi and **Next.js** (App Router and Pages Router; see
-[Next.js support](docs/nextjs-support.md) · [Code injection](docs/analysis/code-injection.md) · [Open redirect](docs/analysis/open-redirect.md)).
+[Next.js support](docs/nextjs-support.md) · [Code injection](docs/analysis/code-injection.md) · [Open redirect](docs/analysis/open-redirect.md)),
+and plain **PHP** with mysqli/PDO/SQLite3, command, XSS, path, code and redirect families (see
+[PHP support](docs/php-support.md)).
 
 - It reads source only. It does not run your app or install its dependencies.
 - It covers the frameworks and operations it models. Anything else is reported as unresolved,
@@ -231,7 +233,10 @@ set -a
 set +a
 ```
 
-The scanner reads process environment variables; it does not load `.env` automatically. OpenAI Luna
+The scanner reads process environment variables; it does not load `.env` automatically. To load
+it on every `cd` into the checkout instead, install [direnv](https://direnv.net) and run
+`direnv allow` once — the tracked `.envrc` only says `dotenv` (see
+[getting started](docs/getting-started.md#local-environment-file)). OpenAI Luna
 is the primary model used for development and calibration. Manage spending in your API account;
 no local pricing or rate configuration is needed.
 
@@ -336,6 +341,7 @@ Explore existing reports without installing Zazzles or making API calls:
 | Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |
 | OSS OopsSec Store | Next.js App Router: SQL, path, SSRF, logging and client XSS | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/oss-oopssec-store/findings.html) · [Sample notes](docs/samples/oss-oopssec-store/README.md) |
 | vuln-nextjs lab | Pages Router: PGlite, command, path, SSRF and XSS with safe controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Sample notes](docs/samples/vuln-nextjs/README.md) |
+| DVWA (PHP) | Plain-PHP SQL, command, XSS, path, code and redirect families across all security levels | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/dvwa/findings.html) · [Sample notes](docs/samples/dvwa/README.md) |
 
 The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. VulnPy’s complete JSON/SARIF downloads are gzip-compressed to retain every record. Hosted previews update after changes merge into `stage`. Compare counts
 against the [expected-vs-actual tables](.zazz/project/vulnerable-sample-apps.md)—efficacy is

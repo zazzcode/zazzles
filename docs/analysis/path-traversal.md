@@ -108,6 +108,12 @@ lists, verified configuration-parameter router mounts and immediate closures: Ex
 handlers, GraphQL and unary gRPC contexts, and Python Flask, FastAPI, Quart, Django, Falcon, Bottle,
 Pyramid, aiohttp and WSGI dispatch. Repeated exposures of one sink are separate contexts, not separate defects.
 
+For PHP, [server-mapped file entries](../php-support.md) cover dynamic `include`/`require`
+(`php-include-v1`), `move_uploaded_file` (`php-upload-move-v1`) and filesystem read/write calls
+(`php-filesystem-v1`) with PathFacts operands. `basename`, finite allowlists and verified
+renaming are controls the judge weighs, never sink removals; an unresolvable dynamic include
+yields a `php_dynamic_include` gap with no invented edge.
+
 Not covered, and reported as such rather than as safe: `copyFile`, `rename`, `readdir`, `stat`,
 `existsSync`, `express.static`/`serve-index`, multer disk storage, `shutil`, Python `zipfile`/`tarfile`
 extraction, archive libraries other than `adm-zip` and `unzipper.Open.buffer` entry writes, template

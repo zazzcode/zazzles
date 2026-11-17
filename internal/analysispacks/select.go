@@ -45,7 +45,13 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if (family.Name == "code" || family.Name == "redirect") && (language == lang.Python) != strings.HasPrefix(contract.ID, "python-") {
 			return nil, fmt.Errorf("language and interpreter/redirect API conflict")
 		}
-		if family.Name == "sql" && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
+		if family.RequiresAPI && language == lang.PHP && !strings.HasPrefix(contract.ID, "php-") {
+			return nil, fmt.Errorf("PHP %s candidate requires a php- contract", family.Label)
+		}
+		if family.RequiresAPI && language != lang.PHP && strings.HasPrefix(contract.ID, "php-") {
+			return nil, fmt.Errorf("php contract selected for non-PHP %s candidate", family.Label)
+		}
+		if family.Name == "sql" && language != lang.PHP && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
 			return nil, fmt.Errorf("%s language and API capability conflict", family.Label)
 		}
 	}
@@ -63,6 +69,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		}
 		if family.PythonHTTPOnly && language == lang.Python && entry != "http" {
 			return nil, fmt.Errorf("unsupported Python %s entry capability", family.Label)
+		}
+		if family.PHPHTTPOnly && language == lang.PHP && entry != "http" {
+			return nil, fmt.Errorf("unsupported PHP %s entry capability", family.Label)
 		}
 	}
 	roots := []string{family.Pack, languageID(family, language)}
@@ -114,6 +123,12 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			if family.Name == "code" || family.Name == "redirect" {
 				input = "source.python-input-" + family.Name + "-v1"
 			}
+		}
+		if language == lang.PHP {
+			if use.InputFacts.Acquisition != "http" || use.EntryFacts == nil || use.EntryFacts.HTTP == nil || use.InputFacts.Framework != "php" {
+				return nil, fmt.Errorf("invalid PHP HTTP input binding")
+			}
+			input = "source.php-input-v1"
 		}
 		roots = append(roots, input)
 	}

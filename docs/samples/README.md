@@ -96,6 +96,12 @@ The [Python evaluation](../../.zazz/evaluation/python-support-results.md) record
 checks, nine reviewed SQL/XSS discovery cases, 78 live Luna requests and the retained Review boundaries.
 Python NoSQL is out of this corpus; no sample contains a MongoDB driver.
 
+The [PHP evaluation](../../.zazz/evaluation/php-support-results.md) records the offline DVWA
+`a1978a2` structural pass and the paid AC14 closeout. The curated
+[DVWA sample](dvwa/README.md) publishes the final judged run: 292 of 296 records assessed by
+`gpt-6-luna` within the 300-request cap, 292/292 exact offline replay, every cataloged required
+positive Confirmed and no impossible-level-only record red.
+
 ## VulnPy coverage corpus
 
 [VulnPy](vulnpy/README.md) adds dynamically generated Python route/trigger coverage and source-backed

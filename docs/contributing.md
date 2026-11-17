@@ -29,7 +29,9 @@ assigned sibling worktree and existing `.bare/` repository.
 Run commands from the directory containing `go.mod`. Tests use fixtures and local HTTP stubs;
 no API key, target-application server, or paid decision-model calls are required. User scans and
 private environment configuration are covered in [getting started](getting-started.md) and the
-[decision-model guide](decision-models.md).
+[decision-model guide](decision-models.md). Local credentials live in each worktree's Git-ignored
+`.env`; the tracked `.envrc` plus [direnv](https://direnv.net) auto-loads it on `cd` (one
+`direnv allow` per worktree) — otherwise `set -a; . ./.env; set +a` in the invoking shell.
 
 ## Repository layout
 

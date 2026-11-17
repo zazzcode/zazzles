@@ -10,8 +10,8 @@ import (
 const CodeProtocol = "code-components-v1"
 const RedirectProtocol = "redirect-components-v1"
 
-var codeContracts = []string{"js-eval-v1", "js-function-constructor-v1", "js-timer-string-v1", "node-vm-v1", "python-eval-v1", "js-safe-eval-libs-v1"}
-var redirectContracts = []string{"express-redirect-v1", "node-location-header-v1", "fastify-redirect-v1", "hapi-redirect-v1", "next-redirect-v1", "browser-navigation-v1", "python-redirect-v1"}
+var codeContracts = []string{"js-eval-v1", "js-function-constructor-v1", "js-timer-string-v1", "node-vm-v1", "python-eval-v1", "php-eval-v1", "js-safe-eval-libs-v1"}
+var redirectContracts = []string{"express-redirect-v1", "node-location-header-v1", "fastify-redirect-v1", "hapi-redirect-v1", "next-redirect-v1", "browser-navigation-v1", "python-redirect-v1", "php-header-redirect-v1"}
 
 // CodeContract returns semantics only for a verified interpreter binding.
 func CodeContract(id string) *analysis.APIModel {
@@ -21,6 +21,7 @@ func CodeContract(id string) *analysis.APIModel {
 		"js-timer-string-v1":         "Browser setTimeout/setInterval interpret a non-function first argument as JavaScript. Function callbacks are not code-string operands. Node timers do not accept code strings.",
 		"node-vm-v1":                 "Node vm.runInThisContext/runInNewContext/runInContext, Script, compileFunction and SourceTextModule interpret the code argument. Context objects are data. Node vm is not a security boundary.",
 		"python-eval-v1":             "Python builtin eval/exec and compile interpret argument 0 as Python source. compile produces executable code; ast.literal_eval parses literals and is excluded.",
+		"php-eval-v1":                "PHP eval interprets its argument as PHP source. A string assert evaluates its argument as code before PHP 8 (recorded as a fact); create_function evaluates its two string arguments into a function (removed in PHP 8; poor practice when bound). Quoting request text inside the source does not constrain program structure.",
 		"js-safe-eval-libs-v1":       "A verified sandbox evaluator interprets argument 0 as code. Library isolation requires source-established version/advisory evidence; library branding alone proves no security boundary.",
 	}
 	text, ok := semantics[id]
@@ -102,7 +103,7 @@ func interpreterDescriptors(name string) []Component {
 	flow := base("flow."+name, "compiled_capability", "", f.Kinds)
 	flow.CompiledOwner = "internal/parse/code_redirect.go"
 	out := []Component{pack, claim, evidence, flow}
-	for _, language := range []lang.Language{lang.JavaScript, lang.Python} {
+	for _, language := range []lang.Language{lang.JavaScript, lang.Python, lang.PHP} {
 		langs := []string{string(language)}
 		if language == lang.JavaScript {
 			langs = append(langs, string(lang.TypeScript))

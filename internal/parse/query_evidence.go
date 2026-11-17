@@ -134,6 +134,7 @@ func (s *moduleSet) refineQueryEvidence(use *analysis.CandidateUse) {
 	s.conditionalHelpers(use)
 	s.queryConstraintReview(use)
 	s.mongoosePathIDFacts(use)
+	s.sqlLiteralEscapeFacts(use)
 }
 
 func nativeStringOperation(m *sourceModule, n *sitter.Node) bool {

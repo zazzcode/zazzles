@@ -92,6 +92,13 @@ func applyInterpreterPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	if family == "redirect" {
 		control, restriction = ans["destination_control"], ans["destination_restriction"]
 		effective = restriction == "same_site_relative" || restriction == "parsed_origin_check" || restriction == "host_allowlist"
+		// A recorded validator predicate that permits a bypass form (a
+		// backslash, protocol-relative or origin-prefix destination, a decoded
+		// or reassigned value, an unfixed parsed origin, or a check on another
+		// operand) never makes a same-site or parsed-origin answer effective.
+		if (restriction == "same_site_relative" || restriction == "parsed_origin_check") && hasModelFact(c, "redirect_predicate_bypass") {
+			effective = false
+		}
 	}
 	// Transform protection requires a constraint on the complete operand, not
 	// merely a converted occurrence of a source also used raw in that operand.

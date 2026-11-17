@@ -68,6 +68,14 @@ One record may contain multiple field or protection concerns. Distinct claim-lev
 planned improvement: independent established problems should ultimately count separately, with
 shared operation/evidence links. Shared helper records can also repeat for multiple routes.
 
+Each record carries `assessment_state`: `not_run` (unjudged), `completed` or `failed`. An unjudged
+Poor practice or Review is an offline scanner result, not a model judgment; HTML shows a "Not judged"
+badge and SARIF an `assessmentState` property. Review records list `blocking_evidence` entries
+(`kind`, `detail`, `source` = `policy` for judged verdict gates or `scanner` for candidate gaps and
+missing required evidence). Independent claims of different families on one operation, such as an
+open redirect and a DOM XSS on the same navigation, stay separate and list each other in
+`linked_use_ids`. SARIF carries both lists under `properties.scan`.
+
 ## Locations and evidence
 
 **Declaration location** points to the entry registration or schema declaration. **Finding location** inside the expanded row

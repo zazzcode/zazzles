@@ -42,6 +42,7 @@ func Text(w io.Writer, r *analysis.AnalysisReport) {
 			continue
 		}
 		fmt.Fprintf(w, "%s: %s [%s]\n%s\nentry=%s context=%s %s %s:%d sources=%d gaps=%d judge=%s\n", f.RecordType, f.Title, f.Status, f.Summary, u.EntryID, u.InvocationContextID, u.Kind, u.Sink.Span.File, u.Sink.Span.StartLine, len(u.Dependencies), len(u.Gaps), u.Assessment.Status)
+		fmt.Fprintf(w, "assessment=%s (%s) blocking=%d linked=%d\n", f.AssessmentState, assessmentLabel(f.AssessmentState), len(f.BlockingEvidence), len(f.LinkedUseIDs))
 		if u.Check != nil {
 			fmt.Fprintf(w, "check=%s finding=%s protection=%s blockers=%d\n", u.Check.ID, u.Assessment.FindingStatus, u.Assessment.Protection, len(u.Assessment.BlockingGaps))
 		}

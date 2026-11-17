@@ -43,6 +43,21 @@ Prefer a small identifier mapped to trusted constant destinations. Otherwise par
 same final URL on every path. Check after decoding and before navigation; an earlier check of a
 subsequently reassigned value protects no later value.
 
+Destinations fixed by construction are not candidates: a ternary whose every branch is a fixed
+same-site path, concatenation or a template led by such a path, a module `const` literal, and
+`new URL(fixedPath, base)` (an unshadowed `URL`). A fixed path is one `/` followed by a character
+other than `/` or `\`. `let`, reassigned, `process.env` and request-led prefixes stay candidates.
+
+For JS/TS validator predicates the scanner records which destination forms each path still permits
+(fact `redirect_predicate_bypass`: `backslash_prefix`, `slash_backslash`, `protocol_relative`,
+`absolute_url`, `origin_prefix`, `parsed_origin_unfixed`, `checked_operand_differs`,
+`percent_encoded_after_decode`, `reassigned_after_check`) and what it excludes
+(`redirect_predicate_excludes`). A `same_site_relative` or `parsed_origin_check` answer is not
+effective while a bypass form is recorded, so `^\/[^/]` (which permits `/\host`) stays Review.
+`new URL(x, base).origin|host|hostname` compared with a literal, a `const` literal or the base's own
+origin is a parsed-origin check only for the same unreassigned value. Python predicates are not yet
+classified this way.
+
 ## Bounds
 
 The scanner establishes source-level paths, not runtime redirect behavior, DNS, proxy policy or

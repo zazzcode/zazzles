@@ -51,6 +51,14 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 		if use.InputFacts != nil {
 			props["scan.inputFacts"] = use.InputFacts
 		}
+		props["scan.assessmentState"] = finding.AssessmentState
+		props["assessmentState"] = finding.AssessmentState
+		if len(finding.BlockingEvidence) > 0 {
+			props["scan.blockingEvidence"] = finding.BlockingEvidence
+		}
+		if len(finding.LinkedUseIDs) > 0 {
+			props["scan.linkedUseIds"] = finding.LinkedUseIDs
+		}
 		props["scan.entryKind"] = "unknown"
 		props["scan.entryId"] = use.EntryID
 		props["scan.invocationContextId"] = use.InvocationContextID

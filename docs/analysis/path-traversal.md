@@ -115,6 +115,12 @@ engines other than `hbs` layout reads, second-order flows through storage, Windo
 symbolic-link or race behavior. Unmodeled middleware (including custom upload `fileFilter` callbacks),
 helpers, mutation through unmodeled calls, cross-module guards and whole-program flow stay Review.
 
+A Next.js catch-all parameter joined with a literal separator (`params.path.join('/')`) is a modeled
+transfer of the request array when the receiver is read once in its function and never reassigned,
+so a later reject guard on the joined string (for example `includes('..')`) attaches to the final
+operand. A check after the read, on another variable, a single-pass `replace('..', '')` or a decode
+after the check is not such a guard; the guard's adequacy remains a judged question.
+
 ## Remediation guidance
 
 Select files by a trusted identifier or a finite allow-list instead of accepting a path. Otherwise resolve

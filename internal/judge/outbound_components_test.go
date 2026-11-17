@@ -36,11 +36,14 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			// Discovery identities and observation-only outcomes remain unchanged.
 			// E4: Node http/https SSRF + path single-pass / Python phase-2 file APIs
 			// change discovery report bytes for these fixtures; identities stay stable.
+			// Analyzer protection/flow (P5): findings gain assessment_state and
+			// blocking_evidence; constant-destination outbound summaries gain one
+			// sentence. Parser output for these fixtures is otherwise unchanged.
 			want := map[string]string{
-				"javascript/outbound":  "072a30548c48c7718084ef3b2f0266ae68128191ce20bb33a56af239592a4744",
-				"typescript/outbound":  "50ad7e4c4580279dbe41ebd09f8c09e2db52f810c16173735e4a7c59d62244d5",
-				"python/outbound":      "24bf5044c43c4801d508936435c4c08fb5087860a3d10f619355fcae767d9e71",
-				"javascript/xss-fetch": "73f4032846b5d8ec5fd5e0c1369f12d7471c539ad09668cb82e724b43e4a4fe1",
+				"javascript/outbound":  "fe83c6051cd20ca23b4f425e0d98d6a810e1c268b084d0de296086a34315f672",
+				"typescript/outbound":  "f17e446623de7faed72652a0337b0daed885a89d089b954a1742208ed26b0e94",
+				"python/outbound":      "997d2c824b0e720b5bd20397161a37b9bf499bc97c821e0ec5b919eaade7ed14",
+				"javascript/xss-fetch": "468e9d7d75aa7c626843e3ce9a263f6a334240b37449f1f3b671116c837a8396",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)

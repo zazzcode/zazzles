@@ -26,6 +26,7 @@ func Enrich(r *analysis.AnalysisReport) {
 		r.Findings = append(r.Findings, describe(u))
 	}
 	groupObservations(r)
+	explainOutcomes(r)
 }
 
 func describe(u analysis.CandidateUse) analysis.Finding {
@@ -108,12 +109,16 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	case "outbound_http_candidate":
 		f.Title = "Outbound request needs destination review"
 		f.Summary = "Scan recorded a possible outbound HTTP use. Verify the destination, request-value handling, and applicable restrictions; this is not a confirmed SSRF finding." + destinationOriginText(u.Outbound)
+		if constantDestination(u) {
+			f.Summary += " No request value reaches the destination operand; any request values reach only headers or body."
+		}
 	case "ssrf_candidate":
 		describeSSRF(u, &f)
 	}
 	if (u.Kind == "sql_query_candidate" || u.Kind == "nosql_query_candidate") && len(u.Dependencies) == 0 {
 		f.Uncertainty += " No direct request-field dependency was resolved for this use; external control is not established."
 	}
+	f.AssessmentState = assessmentState(u)
 	a := u.Assessment
 	if a.Status == "failed" {
 		f.Uncertainty += " Semantic assessment failed: " + a.Reason

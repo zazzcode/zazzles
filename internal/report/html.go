@@ -19,7 +19,8 @@ var htmlSource string
 var sortSource string
 
 var htmlReport = template.Must(template.New("report").Funcs(template.FuncMap{
-	"label": displayLabel,
+	"label":  displayLabel,
+	"assess": assessmentLabel,
 }).Parse(htmlSource))
 
 type htmlItem struct {

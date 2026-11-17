@@ -212,6 +212,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	if err := finalizeEntries(out); err != nil {
 		return nil, err
 	}
+	blockUnlinkedStoredOrigins(out)
 	linkNavigationClaims(out)
 	return out, nil
 }

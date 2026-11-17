@@ -35,6 +35,10 @@ a MongoDB server or establish support for every MongoDB driver. Unsupported bind
   wildcard concern (`like_pattern_interpolated`), not SQL syntax control. A call that only contains a
   nested function with a finder, such as a tool or callback registration, is not itself a SQL candidate.
 - A `try` body does not guard its query; `catch` is an exceptional successor. `finally` stays unresolved.
+- In Prisma raw SQL, an operand passed through single-quote doubling (`.replace(/'/g, "''")`) inside a
+  single-quoted literal is recorded per operand (`sql_literal_quote_doubling`) for SQLite, PostgreSQL
+  and CockroachDB providers only. MySQL, SQL Server and unknown providers get no fact. The fact marks
+  only the escaped operands; a raw sibling operand keeps the record eligible for Confirmed.
 - A string merely constructed or logged without a database call is not an executed SQL sink.
 - A vulnerability verdict requires request-controlled syntax on a supported path, independently of
   the construction-practice answer. Missing field validation alone does not prove SQL injection.

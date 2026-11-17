@@ -148,6 +148,9 @@ func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
 	case "attribute", "subscript":
 		return f.project(n)
 	case "call":
+		if v, ok := f.decodeCall(n); ok {
+			return v
+		}
 		return f.call(n)
 	case "conditional_expression":
 		if n.NamedChildCount() == 3 {

@@ -1,9 +1,9 @@
 # Architecture phase 1 — Registration graph
 
-**Worktree / branch:** `graph-registration-store`
+**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 1. Objective: maintainability, with registration facts made visible
-**Depends on:** phase 0 merged
-**Delivery topology:** one deliverable, one branch, one draft PR into `stage`
+**Depends on:** phase 0 committed on `arch-review-clean-up` with green gates
+**Delivery topology:** one deliverable; its commits join the phases 0–3 milestone draft PR into `stage`
 **Coordination:** Lead Agent. One Contributor Agent may own `internal/graph` and its tests while the lead does the integration
 **Run log:** `.zazz/ephemeral/architecture-phase-1-registration-graph-run-log.md`
 **Drafted:** 2026-11-17
@@ -255,14 +255,14 @@ func (e *EntryGraph) Classify(registrationID string) RegistrationClassification
    `finalizeEntries`. AC6 goes green.
 5. D-9 language fix. Regenerate the phase 0 golden and the Python input-baseline golden. Verify the
    AC7 and AC8 diff by inspection.
-6. Measurements for AC9, then docs for AC10, then the gate and a draft PR.
+6. Measurements for AC9, then docs for AC10, then the gate. Commit and push.
 
 ## 10. Definition of done
 
 - [ ] Required reading done; standards lookup recorded.
 - [ ] AC1–AC10 verified, with evidence for each AC in the run log.
-- [ ] `git diff origin/stage --stat` matches §4.
-- [ ] The draft PR body lists the AC8 deltas and states that request bytes are unchanged.
+- [ ] `git diff <phase start HEAD> --stat` matches §4.
+- [ ] The run log's PR summary lists the AC8 deltas and states that request bytes are unchanged.
 
 ## 11. Open questions
 
@@ -275,16 +275,21 @@ Use the plan's common rules. Record the mechanism enumeration, the golden diff e
 
 ## 13. Agent implementation prompt
 
-> Work in the `graph-registration-store` sibling worktree, cut from `origin/stage` after phase 0
-> merged. Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this
+> Work in the `arch-review-clean-up` worktree (`<DEV_ROOT>/zazzcode/zazzles/arch-review-clean-up`).
+> Confirm the phase 0 commits are on the branch and its run log shows green gates; record the starting HEAD. Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this
 > spec. Follow the plan's session start and common rules. Execute §9 in order, TDD first. You may
 > delegate `internal/graph` and its tests (§9 steps 1–2) to one Sonnet Contributor Agent. It owns only
-> those files; you integrate and run the gates. Stop on any §6 halt. Finish with a draft PR into
-> `stage` listing AC1–AC10 evidence. Verifier: a fresh-context subagent compares the phase 0 and
+> those files; you integrate and run the gates. Stop on any §6 halt. Finish by committing and
+> pushing, with AC1–AC10 evidence in the run log; the phase 3 session opens the milestone draft PR. Verifier: a fresh-context subagent compares the phase 0 and
 > phase 1 goldens and confirms that only `report_sha256` and `sarif_sha256` changed. It re-runs
 > `go test -race ./internal/graph ./internal/analysis ./cmd/scan -count=1` and checks that no
 > `NodeID` appears in any JSON tag or request builder. It reports PASS or FAIL.
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-17 — Owner topology decision
+
+Source: owner, in the planning session. Runs in the `arch-review-clean-up` worktree as one fresh
+session, after the previous phase's commits, with no new worktree. Changed: header, §10 scope diff
+base, §13 prompt. Verification impact: the scope diff is taken from this phase's recorded starting
+HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.

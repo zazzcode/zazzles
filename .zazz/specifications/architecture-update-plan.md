@@ -92,6 +92,12 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 | 8 | Feature | [npm library mode](architecture-phase-8-npm-library-mode.md) | `npm-library-mode` | 2, 7 |
 | 9 | Feature | [Drupal](architecture-phase-9-drupal.md) | `php-drupal` | 6 |
 
+**Owner decision, 2026-11-17: phases 0–3 run in the `arch-review-clean-up` worktree.** They use
+one fresh session per phase, strictly in order, on that one branch, with no new worktrees.
+"Depends on (merged)" means for these phases that the previous phase's commits are on this branch
+and passed its gates. Phases 0–3 ship together with this plan in one milestone draft PR into
+`stage`, with commits grouped by phase. Phases 4–9 keep the per-phase worktree model above.
+
 The table order is the default. Phases 4 and 5 depend only on phase 0 or 1, so the owner may run
 them earlier without changing their specs. They are kept after phase 3 so the core refactors land
 in consecutive sessions.
@@ -149,7 +155,9 @@ Every phase spec's §6 points here and adds only its own halt conditions.
 
 1. Read AGENTS.md, the orientation contents, this plan, and the phase spec.
 2. Confirm that every "Depends on" phase is merged into `origin/stage` (`git log origin/stage --oneline`).
-   Cut the worktree from that SHA and record it.
+   Cut the worktree from that SHA and record it. For phases 0–3 in `arch-review-clean-up`, confirm
+   instead that the previous phase's commits are on the branch and that its run log records green
+   gates. Record the starting HEAD.
 3. Run `go test ./cmd/scan -run TestArchitectureBaseline -count=1` on the fresh cut. If it fails
    because another deliverable merged, regenerate the golden in a separate first commit,
    `[TEST] Rebaseline architecture golden on <sha>`, and record the reason. Do this before any change.
@@ -241,3 +249,5 @@ language-adapter section. User docs change only when a flag or supported framewo
   - Resolved the Twig contradiction with a lexical output scan.
   - Removed evidence slicing as a speed lever.
   - Wrote one spec per phase.
+- 2026-11-17 — Owner decision: phases 0–3 run serially in `arch-review-clean-up`, one session per
+  phase, with one milestone draft PR. See [phase sequence](#phase-sequence).

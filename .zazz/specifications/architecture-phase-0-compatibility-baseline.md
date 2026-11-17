@@ -1,9 +1,9 @@
 # Architecture phase 0 — Compatibility baseline
 
-**Worktree / branch:** `arch-compat-baseline`
+**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 0. Objective: maintainability (refactor guard)
-**Depends on:** the revised plan merged into `stage`
-**Delivery topology:** one deliverable, one branch, one draft PR into `stage`
+**Depends on:** the revised plan committed on `arch-review-clean-up`
+**Delivery topology:** one deliverable; its commits join the phases 0–3 milestone draft PR into `stage`
 **Coordination:** Lead Agent alone, local run log
 **Run log:** `.zazz/ephemeral/architecture-phase-0-compatibility-baseline-run-log.md`
 **Drafted:** 2026-11-17
@@ -151,14 +151,14 @@ func snapshot(t *testing.T, root string) baselineFixture {
 3. Run with `-update-architecture-baseline` and review the golden. Confirm that AC3's order holds.
 4. Do the AC5 mutation check, then revert it.
 5. Measure the samples for AC6 and write the evaluation record.
-6. Run the contributor gate, update the README index, and open a draft PR.
+6. Run the contributor gate and update the README index. Commit and push.
 
 ## 10. Definition of done
 
 - [ ] Required reading done; standards lookup recorded.
 - [ ] AC1–AC7 verified, with the evidence for each AC cited in the run log.
-- [ ] `git diff origin/stage --stat` matches §4.
-- [ ] The draft PR body lists each AC and states that there is no production diff.
+- [ ] `git diff <phase start HEAD> --stat` matches §4.
+- [ ] The run log's PR summary lists each AC and states that there is no production diff.
 
 ## 11. Open questions
 
@@ -171,15 +171,21 @@ Use the path in the header, with the sections from the plan's common rules. Samp
 
 ## 13. Agent implementation prompt
 
-> Work in the `arch-compat-baseline` sibling worktree. Cut it from `origin/stage` after the revised
-> architecture plan has merged. Read AGENTS.md, the orientation contents, the
+> Work in the `arch-review-clean-up` worktree (`<DEV_ROOT>/zazzcode/zazzles/arch-review-clean-up`).
+> Record the starting HEAD. Read AGENTS.md, the orientation contents, the
 > [plan](architecture-update-plan.md), and this spec. Follow the plan's session start and common
 > rules. Implement §9 in order and keep the production diff empty. Stop on any §6 halt. Finish with
-> the contributor gate and a draft PR into `stage` that lists AC1–AC7 evidence. Verifier: have a
+> the contributor gate, commit, and push the branch, with AC1–AC7 evidence in the run log; the phase 3
+> session opens the milestone draft PR. Verifier: have a
 > fresh-context subagent run `go test ./cmd/scan -run TestArchitectureBaseline -count=2`. It should
 > confirm the golden covers every directory D-2 selects and that the diff touches only §4 paths,
 > then report PASS or FAIL.
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-17 — Owner topology decision
+
+Source: owner, in the planning session. Runs in the `arch-review-clean-up` worktree as one fresh
+session, after the previous phase's commits, with no new worktree. Changed: header, §10 scope diff
+base, §13 prompt. Verification impact: the scope diff is taken from this phase's recorded starting
+HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.

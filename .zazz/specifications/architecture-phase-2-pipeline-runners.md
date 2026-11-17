@@ -1,9 +1,9 @@
 # Architecture phase 2 — Pipeline and concurrent language runners
 
-**Worktree / branch:** `analysis-pipeline`
+**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 2. Objective: performance and maintainability
-**Depends on:** phase 1 merged
-**Delivery topology:** one deliverable, one branch, one draft PR into `stage`
+**Depends on:** phase 1 committed on `arch-review-clean-up` with green gates
+**Delivery topology:** one deliverable; its commits join the phases 0–3 milestone draft PR into `stage`
 **Coordination:** Lead Agent. A Contributor Agent may do the mechanical caller migration (§9 step 5) after the seam compiles
 **Run log:** `.zazz/ephemeral/architecture-phase-2-pipeline-runners-run-log.md`
 **Drafted:** 2026-11-17
@@ -164,14 +164,14 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, opts Option
 
 4. Add the parse test helper (`analyze_test.go`). Get the `parse` tests green.
 5. Migrate the external callers in their own commit, then run AC5 and AC6.
-6. AC1, AC2, and AC4 tests; `-race`; measurements for AC7; docs; gate; draft PR.
+6. AC1, AC2, and AC4 tests; `-race`; measurements for AC7; docs; gate; commit and push.
 
 ## 10. Definition of done
 
 - [ ] Required reading done; standards lookup recorded.
 - [ ] AC1–AC8 verified, with evidence in the run log.
-- [ ] `git diff origin/stage --stat` matches §4. The caller migration commit is mechanical, with an import and call rename only.
-- [ ] The draft PR states that there are no output changes and gives the before/after timing table.
+- [ ] `git diff <phase start HEAD> --stat` matches §4. The caller migration commit is mechanical, with an import and call rename only.
+- [ ] The run log's PR summary states that there are no output changes and gives the before/after timing table.
 
 ## 11. Open questions
 
@@ -183,15 +183,20 @@ Use the plan's common rules. Record the migrated caller list, race-test output, 
 
 ## 13. Agent implementation prompt
 
-> Work in the `analysis-pipeline` sibling worktree, cut from `origin/stage` after phase 1 merged.
-> Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this spec.
+> Work in the `arch-review-clean-up` worktree (`<DEV_ROOT>/zazzcode/zazzles/arch-review-clean-up`).
+> Confirm the phase 1 commits are on the branch and its run log shows green gates; record the starting HEAD. Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this spec.
 > Follow the plan's session start and common rules. Execute §9 in order. After step 4 compiles, you
 > may delegate step 5 (mechanical caller migration) to one Sonnet Contributor Agent. It changes
-> imports and call names only. Stop on any §6 halt. Finish with a draft PR into `stage` listing AC1–AC8
-> evidence. Verifier: a fresh-context subagent runs `go test -race ./internal/pipeline ./cmd/scan -count=3`.
+> imports and call names only. Stop on any §6 halt. Finish by committing and pushing, with AC1–AC8
+> evidence in the run log; the phase 3 session opens the milestone draft PR. Verifier: a fresh-context subagent runs `go test -race ./internal/pipeline ./cmd/scan -count=3`.
 > It confirms no `walk.Walk` call remains in `internal/parse` outside `parse.go`, confirms no exported `parse.Analyze*`
-> remains in non-test files, and diffs the golden against `origin/stage`. It reports PASS or FAIL.
+> remains in non-test files, and diffs the golden against the phase's starting HEAD. It reports PASS or FAIL.
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-17 — Owner topology decision
+
+Source: owner, in the planning session. Runs in the `arch-review-clean-up` worktree as one fresh
+session, after the previous phase's commits, with no new worktree. Changed: header, §10 scope diff
+base, §13 prompt. Verification impact: the scope diff is taken from this phase's recorded starting
+HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.

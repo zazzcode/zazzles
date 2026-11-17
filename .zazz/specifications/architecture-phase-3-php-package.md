@@ -1,9 +1,9 @@
 # Architecture phase 3 — PHP language package and behavior-named files
 
-**Worktree / branch:** `langphp-package`
+**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 3. Objective: maintainability
-**Depends on:** phase 2 merged
-**Delivery topology:** one deliverable, one branch, one draft PR into `stage`
+**Depends on:** phase 2 committed on `arch-review-clean-up` with green gates
+**Delivery topology:** one deliverable; its commits join the phases 0–3 milestone draft PR into `stage`
 **Coordination:** Lead Agent alone. The moves are tightly coupled
 **Run log:** `.zazz/ephemeral/architecture-phase-3-php-package-run-log.md`
 **Drafted:** 2026-11-17
@@ -144,13 +144,13 @@ func Run(inv parse.Inventory, entry string, checks []analysis.Check) (*analysis.
 ```
 
 4. **Commit 3:** the D-4 renames.
-5. **Commit 4:** docs. Then the gate and a draft PR.
+5. **Commit 4:** docs. Then the gate, push, and the milestone draft PR.
 
 ## 10. Definition of done
 
 - [ ] Required reading done; standards lookup recorded.
 - [ ] AC1–AC7 verified, with evidence in the run log.
-- [ ] `git diff origin/stage --stat` matches §4. Moves show as renames.
+- [ ] `git diff <phase start HEAD> --stat` matches §4. Moves show as renames.
 - [ ] The PR lists the core API and states that there are no output changes.
 
 ## 11. Open questions
@@ -163,15 +163,21 @@ Use the plan's common rules. Record the step 1 identifier classification.
 
 ## 13. Agent implementation prompt
 
-> Work in the `langphp-package` sibling worktree, cut from `origin/stage` after phase 2 merged.
-> Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this spec.
+> Work in the `arch-review-clean-up` worktree (`<DEV_ROOT>/zazzcode/zazzles/arch-review-clean-up`).
+> Confirm the phase 2 commits are on the branch and its run log shows green gates; record the starting HEAD. Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this spec.
 > Follow the plan's session start and common rules. Execute §9 in order as four commits. Do not
-> delegate; the moves interlock. Stop on any §6 halt, especially the API-size halt. Finish with a
-> draft PR into `stage` listing AC1–AC7 evidence. Verifier: a fresh-context subagent runs
+> delegate; the moves interlock. Stop on any §6 halt, especially the API-size halt. Finish by pushing and
+> opening the milestone draft PR into `stage` (plan plus phases 0–3). Its body lists each phase's AC
+> evidence from the four run logs, per the PR process standard. Verifier: a fresh-context subagent runs
 > `go list -deps` on `parse`, `langphp`, and `pipeline` to confirm the import direction. It confirms
 > every moved file is a rename with only qualification edits (`git diff -M --stat` and a spot diff
 > of three files), runs `TestArchitectureBaseline`, and reports PASS or FAIL.
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-17 — Owner topology decision
+
+Source: owner, in the planning session. Runs in the `arch-review-clean-up` worktree as one fresh
+session, after the previous phase's commits, with no new worktree. Changed: header, §10 scope diff
+base, §13 prompt. Verification impact: the scope diff is taken from this phase's recorded starting
+HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.

@@ -50,10 +50,10 @@ func (inv Inventory) Runners(entry string) Languages {
 	case entry != "":
 		return Languages{JavaScript: true}
 	}
-	return Languages{JavaScript: true, Python: inv.hasLanguage(lang.Python), PHP: inv.hasLanguage(lang.PHP)}
+	return Languages{JavaScript: true, Python: inv.HasLanguage(lang.Python), PHP: inv.HasLanguage(lang.PHP)}
 }
 
-func (inv Inventory) hasLanguage(languages ...lang.Language) bool {
+func (inv Inventory) HasLanguage(languages ...lang.Language) bool {
 	for _, f := range inv.Files {
 		for _, l := range languages {
 			if f.Language == l {
@@ -81,7 +81,7 @@ func RunJavaScript(inv Inventory, entry string, checks []analysis.Check, options
 // the grammars only when there is at least one such file.
 func openJavaScriptSet(inv Inventory) (*moduleSet, []string, error) {
 	var ps *parsers
-	if inv.hasLanguage(lang.JavaScript, lang.TypeScript) {
+	if inv.HasLanguage(lang.JavaScript, lang.TypeScript) {
 		var err error
 		if ps, err = newParsers(); err != nil {
 			return nil, nil, err

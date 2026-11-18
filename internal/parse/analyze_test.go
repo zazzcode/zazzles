@@ -3,6 +3,7 @@ package parse
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -11,9 +12,10 @@ import (
 )
 
 // Analyze, AnalyzeWithChecks and AnalyzeWithOptions keep the package's
-// internal tests on one unqualified call. They run the language runners in the
-// fixed order and share production's Assemble; internal/pipeline owns the
-// production orchestration and its concurrency.
+// internal tests on one unqualified call. They run the JS/TS and Python runners
+// in the fixed order and share production's Assemble; internal/pipeline owns the
+// production orchestration, its concurrency and the PHP runner (internal/langphp).
+// Tests that need PHP output live in internal/pipeline or internal/langphp.
 func Analyze(root, entry string) (*analysis.AnalysisReport, error) {
 	return AnalyzeWithChecks(root, entry, nil)
 }
@@ -33,20 +35,17 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	}
 	// Same selection as internal/pipeline, run one after another in merge order.
 	run := inv.Runners(entry)
-	var js, py, php *analysis.AnalysisReport
+	var js, py *analysis.AnalysisReport
 	if run.JavaScript {
 		js, err = RunJavaScript(inv, entry, checks, options)
 	}
 	if err == nil && run.Python {
 		py, err = RunPython(inv, entry, checks)
 	}
-	if err == nil && run.PHP {
-		php, err = RunPHP(inv, entry, checks)
-	}
 	if err != nil {
 		return nil, err
 	}
-	out, err := Assemble(entry, js, py, php)
+	out, err := Assemble(entry, js, py, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +64,44 @@ func testInventory(root string) (Inventory, error) {
 	return Inventory{Root: root, Files: files.Files}, nil
 }
 
-// newPythonSet and newPHPSet open a set over a fresh walk for set-level tests.
+// Routes mirrors internal/pipeline.Routes for the JS/TS and Python fixtures of
+// this package: its own walk, both route parts in order, then the same sort.
+func Routes(root string) (*analysis.RouteInventory, error) {
+	inv, err := testInventory(root)
+	if err != nil {
+		return nil, err
+	}
+	out := &analysis.RouteInventory{SchemaVersion: analysis.RouteSchemaVersion, Root: root, Routes: []analysis.Route{}, Gaps: []analysis.Gap{}}
+	for _, part := range []func(Inventory) ([]analysis.Route, []analysis.Gap, error){JavaScriptRoutes, PythonRoutes} {
+		routes, gaps, err := part(inv)
+		if err != nil {
+			return nil, err
+		}
+		out.Routes = append(out.Routes, routes...)
+		out.Gaps = append(out.Gaps, gaps...)
+	}
+	sort.Slice(out.Routes, func(i, j int) bool {
+		if out.Routes[i].Registration.File != out.Routes[j].Registration.File {
+			return out.Routes[i].Registration.File < out.Routes[j].Registration.File
+		}
+		if out.Routes[i].Registration.StartByte != out.Routes[j].Registration.StartByte {
+			return out.Routes[i].Registration.StartByte < out.Routes[j].Registration.StartByte
+		}
+		return out.Routes[i].PathPattern < out.Routes[j].PathPattern
+	})
+	sort.Slice(out.Gaps, func(i, j int) bool {
+		if out.Gaps[i].At.File != out.Gaps[j].At.File {
+			return out.Gaps[i].At.File < out.Gaps[j].At.File
+		}
+		if out.Gaps[i].At.StartByte != out.Gaps[j].At.StartByte {
+			return out.Gaps[i].At.StartByte < out.Gaps[j].At.StartByte
+		}
+		return out.Gaps[i].Kind < out.Gaps[j].Kind
+	})
+	return out, nil
+}
+
+// newPythonSet opens a set over a fresh walk for set-level tests.
 func newPythonSet(root string) (*pythonSet, error) {
 	inv, err := testInventory(root)
 	if err != nil {
@@ -74,16 +110,9 @@ func newPythonSet(root string) (*pythonSet, error) {
 	return openPythonSet(inv)
 }
 
-func newPHPSet(root string) (*phpSet, error) {
-	inv, err := testInventory(root)
-	if err != nil {
-		return nil, err
-	}
-	return openPHPSet(inv)
-}
-
-// AC2: a Python-only inventory opens no JS grammar, loads no JS module and runs
-// no PHP set; the JS base report and the Python report are still produced.
+// AC2: a Python-only inventory opens no JS grammar and loads no JS module; the
+// JS base report and the Python report are still produced. The PHP half of
+// this check lives in internal/langphp.
 func TestRunnersWithoutSourcesOpenNoGrammar(t *testing.T) {
 	inv, err := testInventory("testdata/python/routes")
 	if err != nil {
@@ -104,14 +133,8 @@ func TestRunnersWithoutSourcesOpenNoGrammar(t *testing.T) {
 	if len(set.modules) != 0 || len(base.Entries) != 0 || len(base.Limitations) == 0 {
 		t.Fatalf("JS base report loaded %d modules, %d entries", len(set.modules), len(base.Entries))
 	}
-	if php, err := RunPHP(inv, "", nil); php != nil || err != nil {
-		t.Fatalf("RunPHP = %v, %v; want nil, nil", php, err)
-	}
 	if py, err := RunPython(inv, "", nil); err != nil || py == nil || len(py.Entries) == 0 {
 		t.Fatalf("RunPython = %v, %v; want entries", py, err)
-	}
-	if _, err := RunPHP(inv, "missing.php", nil); err == nil {
-		t.Fatal("a PHP entry without PHP files must keep its selection error")
 	}
 }
 

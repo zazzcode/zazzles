@@ -1,4 +1,4 @@
-package parse_test
+package pipeline_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/judge"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 // Finalized reports, rather than internal flow values alone, must carry a
@@ -24,7 +24,7 @@ func TestSummaryWitnessFinalizedCommandRequests(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(root, filename), []byte(source), 0600); err != nil {
 				t.Fatal(err)
 			}
-			report, err := parse.Analyze(root, "")
+			report, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -119,7 +119,7 @@ func TestSummaryWitnessFinalizedCommandRequests(t *testing.T) {
 			if bytes.Equal(requests[0], requests[1]) {
 				t.Fatal("different callers share exact request bytes")
 			}
-			again, err := parse.Analyze(root, "")
+			again, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}

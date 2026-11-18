@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"path"
@@ -7,6 +7,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 type phpCallResolution struct {
@@ -117,7 +118,7 @@ func (s *phpSet) computeReference(m *phpModule, ref string) phpCallResolution {
 	if len(methods) != 1 {
 		return fail("missing_method")
 	}
-	inputs = append(inputs, spanOf(target.module.file, methods[0]))
+	inputs = append(inputs, parse.Span(target.module.file, methods[0]))
 	return phpCallResolution{Kind: kind, Target: &phpBoundCallable{module: target.module, fn: methods[0]}, Inputs: inputs}
 }
 func (s *phpSet) psr4Class(class string) []phpClassTarget {

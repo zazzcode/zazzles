@@ -38,7 +38,7 @@ type pythonModule struct {
 }
 type pythonSet struct {
 	witnessPlans  map[string]*pythonWitnessPlan
-	summaries     map[string]*closedCallable
+	summaries     map[string]*ClosedCallable
 	inputs        map[string]map[analysis.Evidence]pythonInputSource
 	root          string
 	parser        *sitter.Parser
@@ -58,7 +58,7 @@ type pythonSet struct {
 // with no Python files returns nil, nil and opens no grammar; a Python entry
 // always runs so that an unselected entry keeps its error.
 func RunPython(inv Inventory, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
-	if entry == "" && !inv.hasLanguage(lang.Python) {
+	if entry == "" && !inv.HasLanguage(lang.Python) {
 		return nil, nil
 	}
 	py, err := openPythonSet(inv)

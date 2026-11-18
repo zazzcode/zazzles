@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 // builtin reports whether a called name is the unshadowed builtin. A locally
@@ -531,7 +532,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	for i := uint(0); params != nil && i < params.NamedChildCount(); i++ {
 		p := params.NamedChild(i)
 		if p.Kind() != "simple_parameter" {
-			h.gaps = append(h.gaps, analysis.Gap{Kind: "php_parameter_unresolved", Detail: "unsupported helper parameter", At: spanOf(m.file, p)})
+			h.gaps = append(h.gaps, analysis.Gap{Kind: "php_parameter_unresolved", Detail: "unsupported helper parameter", At: parse.Span(m.file, p)})
 			pos++
 			continue
 		}

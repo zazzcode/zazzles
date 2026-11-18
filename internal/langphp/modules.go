@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"crypto/sha256"
@@ -14,6 +14,7 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/guidelines"
 	"github.com/zazzcode/zazzles/internal/lang"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 // phpModule is one parsed PHP file. Plain PHP has no router: every file is a
@@ -24,7 +25,7 @@ type phpModule struct {
 	// source order, indexed lazily for output-context classification.
 	inlineHTMLReady bool
 	inlineHTML      [][2]uint
-	comments        []sourceComment
+	comments        []parse.SourceComment
 	file            string
 	src             []byte
 	hash            string
@@ -41,7 +42,7 @@ type phpSet struct {
 	resolutions     map[string]phpCallResolution
 	project         *phpProjectInputs
 	builtinEffects  map[string]bool
-	summaries       map[string]*closedCallable
+	summaries       map[string]*parse.ClosedCallable
 	root            string
 	parser          *sitter.Parser
 	modules         map[string]*phpModule
@@ -64,11 +65,11 @@ type phpWrite struct {
 	evidence analysis.Evidence
 }
 
-// RunPHP analyzes the inventory's PHP files. A full scan of an inventory with
+// Run analyzes the inventory's PHP files. A full scan of an inventory with
 // no PHP files returns nil, nil and opens no grammar; a PHP entry always runs
 // so that an unselected entry keeps its error.
-func RunPHP(inv Inventory, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
-	if entry == "" && !inv.hasLanguage(lang.PHP) {
+func Run(inv parse.Inventory, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
+	if entry == "" && !inv.HasLanguage(lang.PHP) {
 		return nil, nil
 	}
 	ph, err := openPHPSet(inv)
@@ -79,9 +80,9 @@ func RunPHP(inv Inventory, entry string, checks []analysis.Check) (*analysis.Ana
 	return ph.report(entry, checks)
 }
 
-func openPHPSet(inv Inventory) (*phpSet, error) {
+func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 	root := inv.Root
-	p, err := openParser(php.LanguagePHP())
+	p, err := parse.OpenParser(php.LanguagePHP())
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func openPHPSet(inv Inventory) (*phpSet, error) {
 			// The module is still walked error-tolerantly (PHP executes the
 			// valid code regions of a mostly inline-HTML file), but its
 			// declarations are not indexed and its results may be partial.
-			s.gaps = append(s.gaps, analysis.Gap{Kind: "parse_error", Detail: "PHP syntax errors; module analyzed error-tolerantly and may be incomplete", At: spanOf(file, tree.RootNode())})
+			s.gaps = append(s.gaps, analysis.Gap{Kind: "parse_error", Detail: "PHP syntax errors; module analyzed error-tolerantly and may be incomplete", At: parse.Span(file, tree.RootNode())})
 			continue
 		}
 		m.declarations(tree.RootNode())
@@ -131,14 +132,14 @@ func (m *phpModule) evidence(kind string, n *sitter.Node) analysis.Evidence {
 		return analysis.Evidence{Kind: kind, SHA256: m.hash, Span: analysis.Span{File: m.file}}
 	}
 	if !m.commentsReady {
-		m.comments = sourceComments(m.tree.RootNode(), m.src, false)
+		m.comments = parse.SourceComments(m.tree.RootNode(), m.src, false)
 		m.commentsReady = true
 	}
 	modelText := ""
 	if kind != "file" {
-		modelText = modelSource(m.src, n.StartByte(), n.EndByte(), m.comments)
+		modelText = parse.ModelSource(m.src, n.StartByte(), n.EndByte(), m.comments)
 	}
-	return analysis.Evidence{ModelText: modelText, Kind: kind, Text: n.Utf8Text(m.src), Span: spanOf(m.file, n), SHA256: m.hash}
+	return analysis.Evidence{ModelText: modelText, Kind: kind, Text: n.Utf8Text(m.src), Span: parse.Span(m.file, n), SHA256: m.hash}
 }
 
 // inlineHTMLBefore returns the inline HTML that precedes byte pos in this
@@ -348,7 +349,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 	}
 	s.linkStorage(out)
 	s.linkStoredOnlySessions(out)
-	assembleXSSClaims(out)
+	parse.AssembleXSSClaims(out)
 	if len(checks) > 0 {
 		s.attachChecks(out, checks)
 	}
@@ -363,7 +364,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: r.ID, Version: r.Version, Languages: r.Languages})
 	}
 	s.assemblePHPInputs(out)
-	if err := finalizeEntries(out); err != nil {
+	if err := parse.FinalizeEntries(out); err != nil {
 		return nil, err
 	}
 	return out, nil

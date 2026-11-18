@@ -1,14 +1,16 @@
-// Package parse turns JavaScript, TypeScript and Python source into route evidence.
+// Package parse turns JavaScript, TypeScript and Python source into route evidence
+// and holds the language core API (core_api.go) that other language adapters use.
 //
-// Routes records syntactic registrations. Analyze adds bounded handler resolution
-// and local dependency evidence. Neither mode decides validation adequacy locally.
+// JavaScriptRoutes and PythonRoutes record syntactic registrations for the route
+// inventory that internal/pipeline assembles. The runners add bounded handler
+// resolution and local dependency evidence. Neither mode decides validation
+// adequacy locally.
 package parse
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"unsafe"
 
@@ -18,7 +20,6 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/lang"
-	"github.com/zazzcode/zazzles/internal/walk"
 )
 
 // methods are Express router methods this slice understands.
@@ -32,52 +33,45 @@ var methods = map[string]string{
 	"use":    "USE",
 }
 
-// Routes scans root and returns a syntactic route inventory.
-func Routes(root string) (*analysis.RouteInventory, error) {
-	parsed, err := walk.Walk(root, walk.Options{})
-	if err != nil {
-		return nil, err
-	}
-
+// JavaScriptRoutes returns the JS/TS part of the syntactic route inventory:
+// framework registrations per file, then Next.js filesystem routes, without the
+// files the project's tsconfig excludes. internal/pipeline orders the inventory.
+func JavaScriptRoutes(inv Inventory) ([]analysis.Route, []analysis.Gap, error) {
+	root := inv.Root
 	parsers, err := newParsers()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer parsers.close()
 
-	out := &analysis.RouteInventory{
-		SchemaVersion: analysis.RouteSchemaVersion,
-		Root:          root,
-		Routes:        []analysis.Route{},
-		Gaps:          []analysis.Gap{},
-	}
-
-	for _, file := range parsed.Files {
+	var outRoutes []analysis.Route
+	var outGaps []analysis.Gap
+	for _, file := range inv.Files {
 		if file.Language != lang.JavaScript && file.Language != lang.TypeScript {
 			continue
 		}
 		src, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(file.Path)))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		parser := parsers.forPath(file.Path)
 		routes, gaps, err := extractFile(parser, file.Path, src)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		out.Routes = append(out.Routes, routes...)
-		out.Gaps = append(out.Gaps, gaps...)
+		outRoutes = append(outRoutes, routes...)
+		outGaps = append(outGaps, gaps...)
 	}
 
 	var jsFiles []string
-	for _, file := range parsed.Files {
+	for _, file := range inv.Files {
 		if file.Language == lang.JavaScript || file.Language == lang.TypeScript {
 			jsFiles = append(jsFiles, file.Path)
 		}
 	}
 	nextRoutes, nextGaps, err := nextRouteInventory(root, jsFiles)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if len(nextRoutes) > 0 || len(nextGaps) > 0 {
 		// Next.js scope excludes files the project's tsconfig removes.
@@ -89,57 +83,22 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 				excluded[f] = true
 			}
 		}
-		kept := out.Routes[:0]
-		for _, r := range out.Routes {
+		kept := outRoutes[:0]
+		for _, r := range outRoutes {
 			if !excluded[r.Registration.File] {
 				kept = append(kept, r)
 			}
 		}
-		out.Routes = append(kept, nextRoutes...)
-		keptGaps := out.Gaps[:0]
-		for _, g := range out.Gaps {
+		outRoutes = append(kept, nextRoutes...)
+		keptGaps := outGaps[:0]
+		for _, g := range outGaps {
 			if !excluded[g.At.File] {
 				keptGaps = append(keptGaps, g)
 			}
 		}
-		out.Gaps = append(keptGaps, nextGaps...)
+		outGaps = append(keptGaps, nextGaps...)
 	}
-	inv := Inventory{Root: root, Files: parsed.Files}
-	py, err := openPythonSet(inv)
-	if err != nil {
-		return nil, err
-	}
-	defer py.close()
-	for _, r := range py.routeEntries() {
-		out.Routes = append(out.Routes, r.route)
-	}
-	out.Gaps = append(out.Gaps, py.gaps...)
-	ph, err := openPHPSet(inv)
-	if err != nil {
-		return nil, err
-	}
-	defer ph.close()
-	out.Routes = append(out.Routes, ph.phpRoutes()...)
-	out.Gaps = append(out.Gaps, ph.gaps...)
-	sort.Slice(out.Routes, func(i, j int) bool {
-		if out.Routes[i].Registration.File != out.Routes[j].Registration.File {
-			return out.Routes[i].Registration.File < out.Routes[j].Registration.File
-		}
-		if out.Routes[i].Registration.StartByte != out.Routes[j].Registration.StartByte {
-			return out.Routes[i].Registration.StartByte < out.Routes[j].Registration.StartByte
-		}
-		return out.Routes[i].PathPattern < out.Routes[j].PathPattern
-	})
-	sort.Slice(out.Gaps, func(i, j int) bool {
-		if out.Gaps[i].At.File != out.Gaps[j].At.File {
-			return out.Gaps[i].At.File < out.Gaps[j].At.File
-		}
-		if out.Gaps[i].At.StartByte != out.Gaps[j].At.StartByte {
-			return out.Gaps[i].At.StartByte < out.Gaps[j].At.StartByte
-		}
-		return out.Gaps[i].Kind < out.Gaps[j].Kind
-	})
-	return out, nil
+	return outRoutes, outGaps, nil
 }
 
 type parsers struct {

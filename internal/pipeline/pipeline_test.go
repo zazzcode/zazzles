@@ -14,21 +14,24 @@ import (
 	"github.com/zazzcode/zazzles/internal/parse"
 )
 
-const parseTestdata = "../parse/testdata"
+const (
+	parseTestdata = "../parse/testdata"
+	phpTestdata   = "../langphp/testdata"
+)
 
 // fixtures lists the architecture-baseline repositories: every directory under
 // the language and mixed testdata trees plus the two top-level JS/TS repositories.
 func fixtures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, group := range []string{"javascript", "typescript", "python", "php", "mixed"} {
-		entries, err := os.ReadDir(filepath.Join(parseTestdata, group))
+	for _, tree := range []string{filepath.Join(parseTestdata, "javascript"), filepath.Join(parseTestdata, "typescript"), filepath.Join(parseTestdata, "python"), phpTestdata, filepath.Join(parseTestdata, "mixed")} {
+		entries, err := os.ReadDir(tree)
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, e := range entries {
 			if e.IsDir() {
-				out = append(out, filepath.Join(parseTestdata, group, e.Name()))
+				out = append(out, filepath.Join(tree, e.Name()))
 			}
 		}
 	}

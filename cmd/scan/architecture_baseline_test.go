@@ -27,7 +27,6 @@ var updateArchitectureBaseline = flag.Bool("update-architecture-baseline", false
 
 const (
 	architectureBaselineGolden = "testdata/architecture-baseline.json"
-	parseTestdata              = "../../internal/parse/testdata"
 	repositoryRoot             = "../.."
 )
 
@@ -108,20 +107,20 @@ func TestArchitectureBaseline(t *testing.T) {
 }
 
 // architectureFixtures lists every fixture repository: each directory directly
-// under the language and mixed testdata trees, plus the two top-level JS/TS
+// under the language and mixed testdata trees (PHP's in internal/langphp), plus the two top-level JS/TS
 // repositories. The list is computed and sorted so a new fixture is pinned on its
 // next update instead of going stale in a hand-kept list.
 func architectureFixtures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, group := range []string{"javascript", "typescript", "python", "php", "mixed"} {
-		entries, err := os.ReadDir(filepath.Join(parseTestdata, group))
+	for _, tree := range []string{"internal/parse/testdata/javascript", "internal/parse/testdata/typescript", "internal/parse/testdata/python", "internal/langphp/testdata", "internal/parse/testdata/mixed"} {
+		entries, err := os.ReadDir(filepath.Join(repositoryRoot, tree))
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, e := range entries {
 			if e.IsDir() {
-				out = append(out, "internal/parse/testdata/"+group+"/"+e.Name())
+				out = append(out, tree+"/"+e.Name())
 			}
 		}
 	}

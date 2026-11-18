@@ -1,7 +1,6 @@
-package parse
+package langphp
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -47,46 +46,8 @@ func phpUsesOfKind(r *analysis.AnalysisReport, kind string) []analysis.Candidate
 	return out
 }
 
-func TestPHPRoutes(t *testing.T) {
-	g, err := Routes("testdata/php/routes")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(g.Routes) != 2 {
-		t.Fatalf("routes: %#v", g.Routes)
-	}
-	byPath := map[string]analysis.Route{}
-	for _, r := range g.Routes {
-		if r.Framework != "php" || r.Method != "" {
-			t.Fatalf("unexpected route record %#v", r)
-		}
-		byPath[r.PathPattern] = r
-	}
-	if _, ok := byPath["/index.php"]; !ok {
-		t.Fatalf("missing server-mapped entry: %#v", byPath)
-	}
-	if _, ok := byPath["/admin/login.php"]; !ok {
-		t.Fatalf("missing nested entry: %#v", byPath)
-	}
-	g.Root = "php/routes"
-	encoded := mustJSON(t, g)
-	const golden = "testdata/php/routes/routes.json"
-	if *update {
-		if err := os.WriteFile(golden, encoded, 0644); err != nil {
-			t.Fatal(err)
-		}
-	}
-	want, err := os.ReadFile(golden)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(encoded, want) {
-		t.Fatal("PHP route graph differs; run -update and review")
-	}
-}
-
 func TestPHPEntries(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/routes", "")
+	r := phpAnalyze(t, "testdata/routes", "")
 	if len(r.Entries) != 2 {
 		t.Fatalf("entries: %#v", r.Entries)
 	}
@@ -101,7 +62,7 @@ func TestPHPEntries(t *testing.T) {
 }
 
 func TestPHPIncludeDispatch(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/includes", "index.php")
+	r := phpAnalyze(t, "testdata/includes", "index.php")
 	uses := phpUsesOfKind(r, "xss_candidate")
 	if len(uses) < 2 {
 		t.Fatalf("expected dispatch alternatives to reach the render sink, got %#v", r.Uses)
@@ -138,7 +99,7 @@ func TestPHPIncludeDispatch(t *testing.T) {
 		}
 	}
 
-	dynamic := phpAnalyze(t, "testdata/php/includes", "dynamic.php")
+	dynamic := phpAnalyze(t, "testdata/includes", "dynamic.php")
 	gapFound := false
 	for _, g := range dynamic.Gaps {
 		gapFound = gapFound || g.Kind == "php_dynamic_include"
@@ -161,7 +122,7 @@ func TestPHPIncludeDispatch(t *testing.T) {
 }
 
 func TestSQLPHPContracts(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/sql", "sqli.php")
+	r := phpAnalyze(t, "testdata/sql", "sqli.php")
 	uses := phpUsesOfKind(r, "sql_query_candidate")
 	if len(uses) != 1 {
 		t.Fatalf("sqli uses: %#v", r.Uses)
@@ -194,12 +155,12 @@ func TestSQLPHPContracts(t *testing.T) {
 		t.Fatalf("selection: %#v", u.Components)
 	}
 
-	shadowed := phpAnalyze(t, "testdata/php/sql", "shadowed.php")
+	shadowed := phpAnalyze(t, "testdata/sql", "shadowed.php")
 	if len(phpUsesOfKind(shadowed, "sql_query_candidate")) != 0 {
 		t.Fatal("shadowed mysqli_query became a sink")
 	}
 
-	protected := phpAnalyze(t, "testdata/php/sql", "protected.php")
+	protected := phpAnalyze(t, "testdata/sql", "protected.php")
 	pu := phpUsesOfKind(protected, "sql_query_candidate")
 	if len(pu) != 1 || pu[0].APIModel.ID != "php-pdo-v1" {
 		t.Fatalf("pdo uses: %#v", protected.Uses)
@@ -212,7 +173,7 @@ func TestSQLPHPContracts(t *testing.T) {
 		t.Fatal("prepare+bindParam binding control missing")
 	}
 
-	sqlite := phpAnalyze(t, "testdata/php/sql", "sqlite.php")
+	sqlite := phpAnalyze(t, "testdata/sql", "sqlite.php")
 	su := phpUsesOfKind(sqlite, "sql_query_candidate")
 	if len(su) != 1 || su[0].APIModel.ID != "php-sqlite3-v1" {
 		t.Fatalf("sqlite uses: %#v", sqlite.Uses)
@@ -220,7 +181,7 @@ func TestSQLPHPContracts(t *testing.T) {
 }
 
 func TestCommandPHPOperands(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/command", "ping.php")
+	r := phpAnalyze(t, "testdata/command", "ping.php")
 	uses := phpUsesOfKind(r, "command_execution_candidate")
 	if len(uses) != 1 {
 		t.Fatalf("command uses: %#v", r.Uses)
@@ -240,7 +201,7 @@ func TestCommandPHPOperands(t *testing.T) {
 		t.Fatal("ping.php operand must stay raw")
 	}
 
-	esc := phpAnalyze(t, "testdata/php/command", "escaped.php")
+	esc := phpAnalyze(t, "testdata/command", "escaped.php")
 	eu := phpUsesOfKind(esc, "command_execution_candidate")
 	if len(eu) != 1 {
 		t.Fatalf("escaped uses: %#v", esc.Uses)
@@ -251,7 +212,7 @@ func TestCommandPHPOperands(t *testing.T) {
 }
 
 func TestPHPXSSReflected(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/xss", "reflected.php")
+	r := phpAnalyze(t, "testdata/xss", "reflected.php")
 	uses := phpUsesOfKind(r, "xss_candidate")
 	if len(uses) != 1 || uses[0].XSS.Protection != "raw" || uses[0].XSS.Type != "reflected" {
 		t.Fatalf("reflected: %#v", uses)
@@ -262,7 +223,7 @@ func TestPHPXSSReflected(t *testing.T) {
 	if uses[0].APIModel.ID != "php-html-output-v1" {
 		t.Fatalf("render contract: %#v", uses[0].APIModel)
 	}
-	esc := phpAnalyze(t, "testdata/php/xss", "escaped.php")
+	esc := phpAnalyze(t, "testdata/xss", "escaped.php")
 	euses := phpUsesOfKind(esc, "xss_candidate")
 	if len(euses) != 1 || euses[0].XSS.Protection != "encoded" {
 		t.Fatalf("escaped output must not be raw: %#v", euses)
@@ -270,7 +231,7 @@ func TestPHPXSSReflected(t *testing.T) {
 }
 
 func TestPHPXSSStored(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/xss", "stored.php")
+	r := phpAnalyze(t, "testdata/xss", "stored.php")
 	uses := phpUsesOfKind(r, "xss_candidate")
 	if len(uses) == 0 {
 		t.Fatal("stored rendering missing")
@@ -296,7 +257,7 @@ func TestPHPXSSStored(t *testing.T) {
 // position: the SELECT header resolves the column so the storage key matches
 // its INSERT-recorded write.
 func TestPHPXSSStoredNumericRow(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/xss", "stored_row.php")
+	r := phpAnalyze(t, "testdata/xss", "stored_row.php")
 	for _, u := range phpUsesOfKind(r, "xss_candidate") {
 		if u.XSS.Type != "stored" {
 			continue
@@ -314,7 +275,7 @@ func TestPHPXSSStoredNumericRow(t *testing.T) {
 }
 
 func TestPathPHPOperands(t *testing.T) {
-	fi := phpAnalyze(t, "testdata/php/path", "fi.php")
+	fi := phpAnalyze(t, "testdata/path", "fi.php")
 	fiu := phpUsesOfKind(fi, "path_traversal_candidate")
 	if len(fiu) != 1 || fiu[0].APIModel.ID != "php-include-v1" {
 		t.Fatalf("include candidate: %#v", fiu)
@@ -329,7 +290,7 @@ func TestPathPHPOperands(t *testing.T) {
 
 	// A terminating !in_array membership rejection guards the fall-through
 	// include; an unguarded sibling stays raw.
-	aw := phpAnalyze(t, "testdata/php/path", "allowlist.php")
+	aw := phpAnalyze(t, "testdata/path", "allowlist.php")
 	awu := phpUsesOfKind(aw, "path_traversal_candidate")
 	if len(awu) != 2 {
 		t.Fatalf("allowlist candidates: %#v", awu)
@@ -354,13 +315,13 @@ func TestPathPHPOperands(t *testing.T) {
 		t.Fatalf("role: %#v", fiu[0].Path)
 	}
 
-	fs := phpAnalyze(t, "testdata/php/path", "fs.php")
+	fs := phpAnalyze(t, "testdata/path", "fs.php")
 	fsu := phpUsesOfKind(fs, "path_traversal_candidate")
 	if len(fsu) != 1 || fsu[0].APIModel.ID != "php-filesystem-v1" || fsu[0].Path.Role != "read" {
 		t.Fatalf("filesystem candidate: %#v", fsu)
 	}
 
-	up := phpAnalyze(t, "testdata/php/path", "upload.php")
+	up := phpAnalyze(t, "testdata/path", "upload.php")
 	upu := phpUsesOfKind(up, "path_traversal_candidate")
 	if len(upu) != 1 || upu[0].APIModel.ID != "php-upload-move-v1" {
 		t.Fatalf("upload candidate: %#v", up.Uses)
@@ -386,7 +347,7 @@ func TestPathPHPOperands(t *testing.T) {
 }
 
 func TestCodePHPEval(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/code", "eval.php")
+	r := phpAnalyze(t, "testdata/code", "eval.php")
 	uses := phpUsesOfKind(r, "code_execution_candidate")
 	if len(uses) != 1 {
 		t.Fatalf("code uses: %#v", r.Uses)
@@ -404,7 +365,7 @@ func TestCodePHPEval(t *testing.T) {
 // file_get_contents return whose path is request-derived — path control is
 // content control, so the operand stays tainted through the read.
 func TestCodePHPFileEval(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/code", "file_eval.php")
+	r := phpAnalyze(t, "testdata/code", "file_eval.php")
 	uses := phpUsesOfKind(r, "code_execution_candidate")
 	if len(uses) != 2 {
 		t.Fatalf("code uses: %#v", r.Uses)
@@ -421,7 +382,7 @@ func TestCodePHPFileEval(t *testing.T) {
 }
 
 func TestCodeRedirectPHP(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/code", "redirect.php")
+	r := phpAnalyze(t, "testdata/code", "redirect.php")
 	uses := phpUsesOfKind(r, "open_redirect_candidate")
 	if len(uses) != 1 {
 		t.Fatalf("redirect uses: %#v", r.Uses)
@@ -480,34 +441,8 @@ func phpHasComponent(sel *analysis.ComponentSelection, id string) bool {
 	return strings.Contains(string(raw), "\""+id+"\"")
 }
 
-func TestPHPMixedRepository(t *testing.T) {
-	root := phpFixture(t, map[string]string{
-		"page.php":  "<?php echo $_GET['x'];",
-		"app.py":    "from flask import Flask,request\napp=Flask(__name__)\n@app.get('/py')\ndef h():\n    return request.args.get('name')\n",
-		"server.js": "import express from 'express';const app=express();app.get('/js',(req,res)=>res.send(req.query.name))",
-	})
-	r := phpAnalyze(t, root, "")
-	phpEntries, pyEntries, jsEntries := 0, 0, 0
-	for _, e := range r.Entries {
-		if e.HTTP == nil {
-			continue
-		}
-		switch e.HTTP.Framework {
-		case "php":
-			phpEntries++
-		case "flask":
-			pyEntries++
-		case "express":
-			jsEntries++
-		}
-	}
-	if phpEntries != 1 || pyEntries != 1 || jsEntries != 1 {
-		t.Fatalf("mixed entries php=%d py=%d js=%d", phpEntries, pyEntries, jsEntries)
-	}
-}
-
 func TestPHPSelectionClosures(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/sql", "sqli.php")
+	r := phpAnalyze(t, "testdata/sql", "sqli.php")
 	for _, u := range r.Uses {
 		if u.Components == nil || u.Components.Failure != "" {
 			t.Fatalf("PHP candidate selection failed: %s %#v", u.Kind, u.Components)

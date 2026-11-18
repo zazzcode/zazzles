@@ -19,7 +19,8 @@ import (
 // It classifies every call site of a target with the analyzers' own module sets
 // and resolvers, and attributes each call-site gap on the report to those
 // classes. It never changes analysis output. Set ZAZZLES_MEASURE_ROOT to a target
-// and optionally ZAZZLES_MEASURE_OUT to a JSON output path.
+// and optionally ZAZZLES_MEASURE_OUT to a JSON output path. PHP call sites are
+// measured by internal/langphp's TestPHPCallResolutionMeasure.
 func TestCallResolutionMeasure(t *testing.T) {
 	root := os.Getenv("ZAZZLES_MEASURE_ROOT")
 	if root == "" {
@@ -84,9 +85,8 @@ func bump(m map[string]map[string]int, a, b string) {
 type callSite struct{ language, class string }
 
 type callClassifier struct {
-	js  *moduleSet
-	py  *pythonSet
-	php *phpSet
+	js *moduleSet
+	py *pythonSet
 }
 
 func newCallClassifier(root string) (*callClassifier, error) {
@@ -115,14 +115,10 @@ func newCallClassifier(root string) (*callClassifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	php, err := newPHPSet(root)
-	if err != nil {
-		return nil, err
-	}
-	return &callClassifier{js: js, py: py, php: php}, nil
+	return &callClassifier{js: js, py: py}, nil
 }
 
-func (c *callClassifier) close() { c.js.close(); c.py.close(); c.php.close() }
+func (c *callClassifier) close() { c.js.close(); c.py.close() }
 
 func (c *callClassifier) sites() []callSite {
 	var out []callSite
@@ -144,21 +140,13 @@ func (c *callClassifier) sites() []callSite {
 			})
 		}
 	}
-	for _, file := range c.php.files {
-		if m := c.php.modules[file]; m != nil {
-			walkKinds(m.tree.RootNode(), phpCallKinds, func(n *sitter.Node) {
-				out = append(out, callSite{"php", c.classifyPHP(m, n)})
-			})
-		}
-	}
 	return out
 }
 
 var (
-	jsCallKinds  = map[string]bool{"call_expression": true}
-	pyCallKinds  = map[string]bool{"call": true}
-	phpCallKinds = map[string]bool{"function_call_expression": true, "member_call_expression": true, "nullsafe_member_call_expression": true, "scoped_call_expression": true}
-	jsGlobals    = map[string]bool{"console": true, "JSON": true, "Math": true, "Object": true, "Array": true, "Promise": true, "String": true, "Number": true, "Boolean": true, "Date": true, "RegExp": true, "Error": true, "Symbol": true, "Reflect": true, "process": true, "require": true, "Buffer": true, "setTimeout": true, "setInterval": true, "clearTimeout": true, "parseInt": true, "parseFloat": true, "isNaN": true, "encodeURIComponent": true, "decodeURIComponent": true, "encodeURI": true, "decodeURI": true, "escape": true, "unescape": true, "window": true, "document": true, "fetch": true, "alert": true, "localStorage": true, "sessionStorage": true, "describe": true, "it": true, "expect": true, "beforeEach": true, "afterEach": true}
+	jsCallKinds = map[string]bool{"call_expression": true}
+	pyCallKinds = map[string]bool{"call": true}
+	jsGlobals   = map[string]bool{"console": true, "JSON": true, "Math": true, "Object": true, "Array": true, "Promise": true, "String": true, "Number": true, "Boolean": true, "Date": true, "RegExp": true, "Error": true, "Symbol": true, "Reflect": true, "process": true, "require": true, "Buffer": true, "setTimeout": true, "setInterval": true, "clearTimeout": true, "parseInt": true, "parseFloat": true, "isNaN": true, "encodeURIComponent": true, "decodeURIComponent": true, "encodeURI": true, "decodeURI": true, "escape": true, "unescape": true, "window": true, "document": true, "fetch": true, "alert": true, "localStorage": true, "sessionStorage": true, "describe": true, "it": true, "expect": true, "beforeEach": true, "afterEach": true}
 )
 
 func walkKinds(n *sitter.Node, kinds map[string]bool, fn func(*sitter.Node)) {
@@ -202,14 +190,6 @@ func (c *callClassifier) classifyAt(at analysis.Span) (string, bool) {
 		}
 		if n := exactNode(m.tree, at, pyCallKinds); n != nil {
 			return c.classifyPython(m, n), true
-		}
-	case lang.PHP:
-		m := c.php.modules[at.File]
-		if m == nil {
-			return "", false
-		}
-		if n := exactNode(m.tree, at, phpCallKinds); n != nil {
-			return c.classifyPHP(m, n), true
 		}
 	}
 	return "", false
@@ -300,47 +280,6 @@ func (c *callClassifier) classifyPython(m *pythonModule, call *sitter.Node) stri
 		return "builtin_or_local"
 	}
 	return "member_on_value"
-}
-
-func (c *callClassifier) classifyPHP(m *phpModule, call *sitter.Node) string {
-	switch call.Kind() {
-	case "function_call_expression":
-		fn := call.ChildByFieldName("function")
-		if fn == nil || fn.Kind() != "name" && fn.Kind() != "qualified_name" {
-			return "dynamic"
-		}
-		name := strings.TrimPrefix(string(m.src[fn.StartByte():fn.EndByte()]), "\\")
-		if m.funcs[name] != nil || c.uniquePHPFunction(name) {
-			return "in_repo"
-		}
-		return "builtin"
-	case "scoped_call_expression":
-		scope := call.ChildByFieldName("scope")
-		if scope == nil {
-			return "dynamic"
-		}
-		name := strings.TrimPrefix(string(m.src[scope.StartByte():scope.EndByte()]), "\\")
-		for _, file := range c.php.files {
-			if mod := c.php.modules[file]; mod != nil && mod.classes[name] != nil {
-				return "in_repo_member_unresolved"
-			}
-		}
-		if name == "self" || name == "static" || name == "parent" {
-			return "in_repo_member_unresolved"
-		}
-		return "package"
-	}
-	return "member_on_value"
-}
-
-func (c *callClassifier) uniquePHPFunction(name string) bool {
-	found := 0
-	for _, file := range c.php.files {
-		if mod := c.php.modules[file]; mod != nil && mod.funcs[name] != nil {
-			found++
-		}
-	}
-	return found == 1
 }
 
 // jsIndex counts every JS/TS call site by the production call index (step 1D).

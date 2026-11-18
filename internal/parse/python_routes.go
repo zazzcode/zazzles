@@ -325,3 +325,17 @@ func (s *pythonSet) routeFromRegistration(reg pythonRegistration, handler *sitte
 	return pr
 
 }
+
+// PythonRoutes returns the Python part of the syntactic route inventory.
+func PythonRoutes(inv Inventory) ([]analysis.Route, []analysis.Gap, error) {
+	py, err := openPythonSet(inv)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer py.close()
+	var routes []analysis.Route
+	for _, r := range py.routeEntries() {
+		routes = append(routes, r.route)
+	}
+	return routes, py.gaps, nil
+}

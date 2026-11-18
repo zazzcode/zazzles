@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"regexp"
@@ -8,6 +8,7 @@ import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 var phpSelectRe = regexp.MustCompile(`(?is)^\s*select\s+.+?\s+from\s+([a-zA-Z_][a-zA-Z0-9_]*)\b`)
@@ -116,7 +117,7 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 	fields := []string{}
 	for _, d := range all.deps {
 		if d.key != "" {
-			fields = appendUniqueString(fields, d.key)
+			fields = parse.AppendUniqueString(fields, d.key)
 		}
 	}
 	entryPath := ""
@@ -367,7 +368,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 				continue
 			}
 			for _, w := range writes {
-				related = appendUniqueString(related, w.entry)
+				related = parse.AppendUniqueString(related, w.entry)
 				for _, source := range w.value.deps {
 					nd := source.dep
 					nd.StorageKey = d.StorageKey
@@ -454,7 +455,7 @@ func (s *phpSet) attachChecks(out *analysis.AnalysisReport, checks []analysis.Ch
 	for _, old := range out.Uses {
 		attached := false
 		for _, check := range checks {
-			if check.Kind != "sql_query" || old.Kind != "sql_query_candidate" || !checkContextMatches(out, check, old) {
+			if check.Kind != "sql_query" || old.Kind != "sql_query_candidate" || !parse.CheckContextMatches(out, check, old) {
 				continue
 			}
 			fieldMatch := false

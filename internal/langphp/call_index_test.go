@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"strings"
@@ -17,7 +17,7 @@ func TestPHPProjectResolution(t *testing.T) {
 		{"symfony-resolution", "demo.controller::missing", "unresolved", ""},
 	} {
 		t.Run(tt.root+"/"+tt.reference, func(t *testing.T) {
-			s, err := newPHPSet("testdata/php/" + tt.root)
+			s, err := newPHPSet("testdata/" + tt.root)
 			if err != nil {
 				t.Fatal(err)
 			}

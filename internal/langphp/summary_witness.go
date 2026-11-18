@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 // A witness recipe contains only callable-local operations and source nodes.
@@ -123,7 +124,7 @@ func (s *phpSet) buildPHPWitness(m *phpModule, fn *sitter.Node, depth int) *phpW
 					p.returns |= expr.parameters
 				}
 				if expr != nil && kind == "echo" {
-					p.sinks = append(p.sinks, phpWitnessSink{at: spanOf(m.file, expr.node), family: "xss", parameters: expr.parameters})
+					p.sinks = append(p.sinks, phpWitnessSink{at: parse.Span(m.file, expr.node), family: "xss", parameters: expr.parameters})
 				}
 			}
 			if node.Kind() == "return_statement" {
@@ -266,7 +267,7 @@ func (c *phpWitnessCompiler) expression(n *sitter.Node) *phpWitnessExpr {
 			if family == "sql" {
 				arg = 1
 			}
-			p.sinks = append(p.sinks, phpWitnessSink{at: spanOf(m.file, n), family: family, argument: arg, parameters: e.args[arg].parameters})
+			p.sinks = append(p.sinks, phpWitnessSink{at: parse.Span(m.file, n), family: family, argument: arg, parameters: e.args[arg].parameters})
 		}
 	}
 	return e

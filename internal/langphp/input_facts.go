@@ -1,10 +1,11 @@
-package parse
+package langphp
 
 import (
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 // phpInputSource records acquisition origin per invocation.
@@ -212,7 +213,7 @@ func phpStoredKeys(deps []phpDep) []string {
 	var keys []string
 	for _, d := range deps {
 		if d.dep.Source.Kind == "storage_source" && d.protection != "numeric" && d.protection != "non_content" {
-			keys = appendUniqueString(keys, d.dep.StorageKey)
+			keys = parse.AppendUniqueString(keys, d.dep.StorageKey)
 		}
 	}
 	return keys

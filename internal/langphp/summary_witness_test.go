@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 func phpWitnessHarness(t *testing.T, source string) (*phpSet, *phpModule, *sitter.Node, *phpBoundCallable, []phpValue) {
@@ -76,7 +77,7 @@ func TestPHPSummaryWitnessParity(t *testing.T) {
 }
 
 func TestPHPSummaryWitnessAfterLimit(t *testing.T) {
-	r := phpAnalyze(t, "testdata/php/summary-witnesses", "")
+	r := phpAnalyze(t, "testdata/summary-witnesses", "")
 	commands := phpUsesOfKind(r, "command_execution_candidate")
 	renders := phpUsesOfKind(r, "xss_candidate")
 	if len(commands) != 2 || len(renders) != 2 {
@@ -274,7 +275,7 @@ func TestPHPSummaryWitnessNamedBindingRejected(t *testing.T) {
 func TestPHPSummaryWitnessImplicitReturnGaps(t *testing.T) {
 	for _, body := range []string{"function f($a,$b){echo $a;}", "function f($a,$b){echo $a;return;}"} {
 		s, m, call, target, args := phpWitnessHarness(t, body)
-		gap := analysis.Gap{Kind: "php_expression_unresolved", Detail: "caller uncertainty", At: spanOf(m.file, call)}
+		gap := analysis.Gap{Kind: "php_expression_unresolved", Detail: "caller uncertainty", At: parse.Span(m.file, call)}
 		inline := newPHPWitnessFlow(s, m)
 		inline.gaps = []analysis.Gap{gap}
 		want := inline.boundHelper(call, target, args)

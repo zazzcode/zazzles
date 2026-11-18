@@ -1,4 +1,4 @@
-package parse
+package langphp
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/parse"
 )
 
 type phpBoundCallable struct {
@@ -47,7 +48,7 @@ type phpFlow struct {
 }
 
 func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
-	return analysis.Gap{Kind: kind, Detail: detail, At: spanOf(f.module.file, n)}
+	return analysis.Gap{Kind: kind, Detail: detail, At: parse.Span(f.module.file, n)}
 }
 
 func (f *phpFlow) addUse(kind string, n *sitter.Node, v phpValue) *analysis.CandidateUse {
@@ -438,7 +439,7 @@ func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue 
 	for i := range v.deps {
 		if v.deps[i].key == "" {
 			v.deps[i].key = key
-			v.deps[i].dep.Transfers = append(v.deps[i].dep.Transfers, analysis.Evidence{Kind: "field_projection", Text: key, Span: spanOf(f.module.file, n), SHA256: f.module.hash})
+			v.deps[i].dep.Transfers = append(v.deps[i].dep.Transfers, analysis.Evidence{Kind: "field_projection", Text: key, Span: parse.Span(f.module.file, n), SHA256: f.module.hash})
 		}
 	}
 	return v
@@ -451,12 +452,12 @@ func (f *phpFlow) render(n *sitter.Node, v phpValue) {
 	}
 	m := f.module
 	markup := m.inlineHTMLBefore(n.StartByte())
-	f.recordXSS(m.evidence("html_output", n), v, htmlOutputContext(markup))
+	f.recordXSS(m.evidence("html_output", n), v, parse.HTMLOutputContext(markup))
 	if markup != "" {
 		// The judge sees the markup around an echo embedded in a page, so the
 		// output context (`value="<?php echo $x ?>"`) is source-backed.
-		file := analysis.Evidence{Kind: "file", Text: string(m.src), Span: spanOf(m.file, m.tree.RootNode()), SHA256: m.hash}
+		file := analysis.Evidence{Kind: "file", Text: string(m.src), Span: parse.Span(m.file, m.tree.RootNode()), SHA256: m.hash}
 		u := &f.report.Uses[len(f.report.Uses)-1]
-		u.Context = append(u.Context, renderMarkup(file, int(n.StartByte()), int(n.EndByte())))
+		u.Context = append(u.Context, parse.RenderMarkup(file, int(n.StartByte()), int(n.EndByte())))
 	}
 }

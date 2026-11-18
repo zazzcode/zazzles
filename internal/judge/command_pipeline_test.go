@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -30,7 +30,7 @@ func TestCommandPipelineParity(t *testing.T) {
 	}
 	for _, fx := range fixtures {
 		t.Run(fx.dir, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fx.dir, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fx.dir, "")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -6,12 +6,12 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestOutboundComponentSelection(t *testing.T) {
 	for _, fixture := range []string{"javascript/outbound", "typescript/outbound", "python/outbound"} {
-		r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+		r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 		if err != nil {
 			t.Fatal(err)
 		}

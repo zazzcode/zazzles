@@ -8,14 +8,14 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func commandFixtureUse(t *testing.T, language string) analysis.CandidateUse {
 	t.Helper()
 	sc := commandScenarios()[0] // raw shell text
 	src := sc.sources[language]
-	r, err := parse.Analyze(writeFixture(t, map[string]string{src.file: src.text}), "")
+	r, err := pipeline.Analyze(writeFixture(t, map[string]string{src.file: src.text}), "")
 	if err != nil {
 		t.Fatal(err)
 	}

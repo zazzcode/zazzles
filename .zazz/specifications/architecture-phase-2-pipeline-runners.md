@@ -1,12 +1,13 @@
 # Architecture phase 2 — Pipeline and concurrent language runners
 
-**Branch:** `arch-pipiline-runners` (owner decision 2026-11-18; checkout assigned at phase start)
+**Branch / assigned sibling worktree:** `arch-pipeline-runners` (owner-created, 2026-11-18)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 2. Objective: performance and maintainability
-**Depends on:** phase 1 complete and PR #24 merged into `stage` by the owner
-**Delivery topology:** new branch after PR #24 merges; one separate draft PR into `stage`
+**Depends on:** satisfied — phase 1 complete; [PR #24](https://github.com/zazzcode/zazzles/pull/24) merged into `stage` at `6bf2ca14a63869cb0957eec7f830ba0544b819a7`
+**Delivery topology:** existing owner-created branch/worktree from the phase 1 merge; one separate draft PR into `stage`
 **Coordination:** Lead Agent. A Contributor Agent may do the mechanical caller migration (§9 step 5) after the seam compiles
 **Run log:** `.zazz/ephemeral/architecture-phase-2-pipeline-runners-run-log.md`
 **Drafted:** 2026-11-17
+**Status:** implemented on `arch-pipeline-runners` (2026-11-18); draft PR into `stage` awaiting owner review
 
 ## 1. Capability
 
@@ -55,10 +56,11 @@ Output bytes do not change.
 | `internal/pipeline/pipeline.go`, `pipeline_test.go` | new | `Analyze`, `AnalyzeWithChecks`, `AnalyzeWithOptions`, `Options{DiscoverRoutes bool; Workers int}`; one walk, runner selection, concurrency, `parse.Assemble`, check/pack attachment |
 | `internal/parse/analysis.go` | modified | Split into `Inventory`, `RunJavaScript`, `Assemble`; remove the exported `Analyze*` functions |
 | `internal/parse/python_modules.go`, `php_modules.go` | modified | `RunPython(inv, …)` and `RunPHP(inv, …)` take the shared inventory; no walk |
-| `internal/parse/analyze_test.go` | new (test-only) | `Analyze`/`AnalyzeWithChecks` helpers for internal tests: runners in sequence, then `Assemble` |
-| All files calling `parse.Analyze`, `parse.AnalyzeWithChecks`, `parse.AnalyzeWithOptions`, or `parse.Options` outside `internal/parse` (37 files at the plan baseline; list them in the run log) | modified | Import `internal/pipeline` instead |
+| `internal/parse/parse.go`, `modules.go` | modified | `Routes` passes its own single walk to the Python/PHP sets; a set with no grammars closes cleanly and opens them on its first module load |
+| `internal/parse/analyze_test.go` | new (test-only) | `Analyze`/`AnalyzeWithChecks`/`AnalyzeWithOptions` helpers for internal tests (runners in sequence, then `Assemble`), walk-backed `newPythonSet`/`newPHPSet` for set-level tests, and the AC2 no-grammar test |
+| All files calling `parse.Analyze`, `parse.AnalyzeWithChecks`, `parse.AnalyzeWithOptions`, or `parse.Options` outside `internal/parse` (38 files; listed in the run log) | modified | Import `internal/pipeline` instead |
 | `cmd/scan/architecture_baseline_test.go` | modified | Call `pipeline.AnalyzeWithOptions` |
-| `.zazz/architecture/README.md` §2 and §11, orientation code-structure row | modified | `pipeline` responsibility; `parse` as producer |
+| `.zazz/architecture/README.md` §2, §3 API bullet and §11, orientation code-structure row | modified | `pipeline` responsibility; `parse` as producer |
 | `.zazz/evaluation/architecture-baseline.md` | modified | After measurements and walk count |
 
 Out of scope:
@@ -110,8 +112,9 @@ Additional halts:
 1. **AC1 One walk.** A `pipeline` test with a counting `walk` hook, or a stubbed inventory provider,
    shows exactly one walk for a full scan of `mixed/three-language`. `grep -n "walk.Walk" internal/parse`
    lists only `parse.go` (route inventory).
-2. **AC2 Skip.** For `python/routes` (no JS/TS or PHP files), the JS module set and PHP parser are never
-   created, and Python is the only runner that runs. A test hook records which runners ran. The
+2. **AC2 Skip.** For `python/routes` (no JS/TS or PHP files), no JS grammar is opened, no JS module is
+   loaded and the PHP runner never runs. Python is the only runner that does language work; per D-4
+   the JS runner only builds the fixed base report. A test hook records which runners ran. The
    report matches the golden.
 3. **AC3 Equivalence.** For every phase 0 fixture, `pipeline.AnalyzeWithOptions` with `Workers: 1`
    and with the default produce identical JSON. The test runs both 5 times under `-race`.
@@ -168,10 +171,10 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, opts Option
 
 ## 10. Definition of done
 
-- [ ] Required reading done; standards lookup recorded.
-- [ ] AC1–AC8 verified, with evidence in the run log.
-- [ ] `git diff <phase start HEAD> --stat` matches §4. The caller migration commit is mechanical, with an import and call rename only.
-- [ ] The run log's PR summary states that there are no output changes and gives the before/after timing table.
+- [x] Required reading done; standards lookup recorded.
+- [x] AC1–AC8 verified, with evidence in the run log.
+- [x] `git diff <phase start HEAD> --stat` matches §4. The caller migration commit is mechanical, with an import and call rename only.
+- [x] The run log's PR summary states that there are no output changes and gives the before/after timing table.
 
 ## 11. Open questions
 
@@ -183,15 +186,36 @@ Use the plan's common rules. Record the migrated caller list, race-test output, 
 
 ## 13. Agent implementation prompt
 
-> Start only after the owner merges PR #24. Use the new arch-pipiline-runners branch cut from
-> merged origin/stage in the owner-assigned sibling checkout. Record the starting HEAD and confirm
-> phase 1 completion. Read AGENTS.md, the orientation contents, the plan, and this spec.
-> Follow the plan's session start and common rules. Execute §9 in order. After step 4 compiles, you
-> may delegate step 5 (mechanical caller migration) to one Sonnet Contributor Agent. It changes
-> imports and call names only. Stop on any §6 halt. Finish by committing and pushing, with AC1–AC8
-> evidence in the run log and a separate phase 2 draft PR into stage. Verifier: a fresh-context subagent runs `go test -race ./internal/pipeline ./cmd/scan -count=3`.
-> It confirms no `walk.Walk` call remains in `internal/parse` outside `parse.go`, confirms no exported `parse.Analyze*`
-> remains in non-test files, and diffs the golden against the phase's starting HEAD. It reports PASS or FAIL.
+> Implement phase 2 in the existing owner-created arch-pipeline-runners sibling worktree and
+> branch. PR #24 is merged at 6bf2ca14a63869cb0957eec7f830ba0544b819a7. Do not create a worktree
+> or branch. Read AGENTS.md, then the orientation contents and only relevant sections, the plan's
+> shared/common/session-start rules, this spec in full (including every §14 entry), and the phase 2
+> run log if it exists. Load the required repository skills and matched standards.
+>
+> Verify pwd, branch, git status --short --branch, git worktree list and the predecessor merge.
+> Stop if in a .claude/worktrees checkout or claude/* branch. Preserve existing changes; record
+> the starting HEAD and migrated caller inventory. Run TestArchitectureBaseline before code changes.
+> Reconcile §4 and §9 with the merged phase 1 code before implementing. The golden has no planned
+> delta; do not refresh it to accept a refactor difference.
+>
+> Execute §9 in small verified slices. Keep the mechanical caller migration in its own commit.
+> After the seam compiles, one Contributor Agent may migrate callers in disjoint files in this same
+> checkout; no agent-created worktrees. Stop on §6 or common-rule halts. Preserve fixed merge/error
+> order, entry behavior, native evidence and exact output/request bytes.
+>
+> Offline only: no paid/live model calls or provider credentials. Samples are read-only; verify pins
+> and clean status before/after. Write outputs under the container's _test-findings/<app>/run-arch-2/.
+> Record three-run wall-clock medians, peak RSS and walk counts for all three samples, plus the mixed
+> sequential/default benchmark. Compare with phase 0 and final phase 1 (9.21/3.42/0.60 seconds).
+>
+> Run the full contributor gate (gofmt on changed Go files only, go vet ./..., go build ./...,
+> go test -race ./... -count=1, and TestArchitectureBaseline). A fresh-context verifier subagent runs
+> go test -race ./internal/pipeline ./cmd/scan -count=3, checks walk ownership and removal of exported
+> production parse.Analyze* functions, and confirms the golden is unchanged from starting HEAD.
+> Update the evaluation, architecture/orientation, spec §14 and append-only run log with AC1–AC8
+> evidence. Verify Git user.name and gh profile are zazzcode; commit with [AREA] prefixes, push
+> origin arch-pipeline-runners and open a separate draft PR into stage using pr-builder and the
+> PR standard. Never mark ready or merge. Report commits, AC evidence, deltas, timings, PR and limits.
 
 ## 14. Implementation and review change log
 
@@ -205,5 +229,57 @@ HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.
 ### 2026-11-18 — Separate phase 2 after owner merge
 
 Owner steering: review and merge the current spec's PR, then start a new branch for phase 2.
-Updated header and implementation prompt to require merged phase 1 and the arch-pipiline-runners branch.
+Updated header and implementation prompt to require merged phase 1 and the arch-pipeline-runners branch.
 This changes delivery metadata only; phase 2 is not started by the phase 1 agent.
+
+### 2026-11-18 — Correct branch spelling and assign existing checkout
+
+Owner confirms PR #24 is merged and has created the local arch-pipeline-runners branch/worktree.
+Corrected the earlier branch typo throughout the architecture handoff references. Verified merge
+6bf2ca14a63869cb0957eec7f830ba0544b819a7 and the clean assigned sibling checkout. Updated the header
+and §13 startup prompt to reuse that checkout, preserve the golden, and carry offline verification,
+measurement and draft-PR requirements into the next session. This update changes documentation only;
+phase 2 implementation has not started.
+
+### 2026-11-18 — Implementation reconciliation
+
+Source: Lead Agent, implementing against merged phase 1 code; no owner steering needed. Changed: §4
+file table and caller count, AC2 wording, status header, §10. Rationale and verification impact:
+
+- `parse.Routes` built its Python/PHP sets through the constructors that walked again. They now take
+  an inventory, so `Routes` passes its own existing walk. Route-inventory output is unchanged and AC1's
+  "only `parse.go` walks" holds. `moduleSet.close` now accepts a set that opened no grammar.
+- In `.py`/`.php` entry mode the old code returned the runner's already finalized report without
+  `blockUnlinkedStoredOrigins` or `linkNavigationClaims`. `Assemble` returns that report unchanged.
+  `RunPython`/`RunPHP` skip only a full scan with no files, so an entry that names no file of that
+  language keeps its error.
+- AC2 is reworded to match D-4: the JS runner always builds the base report, but opens no grammar and
+  loads no module when there are no JS/TS files.
+- 38 external caller files were migrated. The plan baseline counted 37 before phase 1 added tests.
+  `internal/parse/summary_witness_integration_test.go` (`package parse_test`) still sees the
+  same-directory test helper and is not migrated.
+- The architecture §3 bullet that named the unqualified `Analyze` now names `pipeline.Analyze`.
+- Delivery is three green commits: runners and pipeline with a temporary production shim, then the
+  mechanical migration, then removal of the shim into the test helper. No contract, AC or output
+  change. Golden unchanged; evidence is in the
+  [evaluation record](../evaluation/architecture-baseline.md#phase-2--pipeline-and-concurrent-language-runners-2026-11-18).
+
+### 2026-11-18 — Post-review hardening
+
+Source: owner request after the verifier's residual risks. Changed: §4 rows for `analysis.go`,
+`modules.go` and `analyze_test.go`. No AC, invariant or output change.
+
+- `moduleSet.load` opens the JS grammars on first use when the set was built without them. Before
+  this, a future load path on a repository with no JS/TS files would have dereferenced nil parsers.
+- Entry normalization and runner selection now live in `parse` as `NormalizeEntry` and
+  `Inventory.Runners`. Both `internal/pipeline` and the parse test helper use them, so the helper
+  can no longer drift from production selection.
+- New tests: `TestModuleSetOpensGrammarsOnFirstLoad` and `TestRunnersFollowEntryModes`.
+- Evidence: the gate (including `-race`) passes, the golden is unchanged, and juice-shop, vulnpy and
+  DVWA bundles are still byte-identical to the starting HEAD.
+
+### 2026-11-18 — PIPELINE scope label
+
+Source: owner approval. The [PR standard](../standards/pr-process.md#pr-titles--bracketed-scope-labels)
+gains a `PIPELINE` label for `internal/pipeline`, which this phase introduces and its first commit
+already uses. This is a documentation change only.

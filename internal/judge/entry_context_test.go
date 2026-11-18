@@ -3,7 +3,7 @@ package judge
 import (
 	"encoding/json"
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"os"
 	"path/filepath"
 	"strings"
@@ -73,7 +73,7 @@ func TestAccountCreationInvocationBindingPolicy(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	r, err := parse.AnalyzeWithChecks(root, "server.ts", []analysis.Check{{ID: "account", Method: "POST", Path: "/accounts", Kind: "account_creation", Fields: []string{"handle"}, Validation: "nonempty handle", Protection: "reject before persistence"}})
+	r, err := pipeline.AnalyzeWithChecks(root, "server.ts", []analysis.Check{{ID: "account", Method: "POST", Path: "/accounts", Kind: "account_creation", Fields: []string{"handle"}, Validation: "nonempty handle", Protection: "reject before persistence"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestBrowserInvocationKeepsRequestBounded(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "browser.js"), []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
-	r, err := parse.Analyze(root, "")
+	r, err := pipeline.Analyze(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}

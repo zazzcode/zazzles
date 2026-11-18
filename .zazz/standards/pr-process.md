@@ -1,5 +1,5 @@
 ---
-last_updated_at: 2026-10-11
+last_updated_at: 2026-11-18
 ---
 
 # PR process
@@ -19,6 +19,7 @@ the tool a PR touches before opening it.
 |---|---|
 | `CLI` | `cmd/scan` — flags, output formats, exit codes |
 | `PARSE` | `internal/parse`, `internal/lang` — Tree-sitter integration, grammars, parsing |
+| `PIPELINE` | `internal/pipeline` — one walk, language-runner selection and concurrency, fixed-order assembly |
 | `ANALYSIS` | `internal/analysis` — shared route, candidate, evidence and assessment records |
 | `GUIDELINES` | `internal/guidelines` — embedded language Analysis Guidelines |
 | `TRACE` | Bounded flow and witnesses currently in `internal/parse`; future dedicated packages |

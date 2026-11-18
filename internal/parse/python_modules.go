@@ -13,7 +13,6 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/guidelines"
 	"github.com/zazzcode/zazzles/internal/lang"
-	"github.com/zazzcode/zazzles/internal/walk"
 )
 
 type pythonImport struct {
@@ -55,17 +54,29 @@ type pythonSet struct {
 	dynamicMembers map[string]map[string]*pythonStaticValue
 }
 
-func newPythonSet(root string) (*pythonSet, error) {
-	manifest, err := walk.Walk(root, walk.Options{})
+// RunPython analyzes the inventory's Python files. A full scan of an inventory
+// with no Python files returns nil, nil and opens no grammar; a Python entry
+// always runs so that an unselected entry keeps its error.
+func RunPython(inv Inventory, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
+	if entry == "" && !inv.hasLanguage(lang.Python) {
+		return nil, nil
+	}
+	py, err := openPythonSet(inv)
 	if err != nil {
 		return nil, err
 	}
+	defer py.close()
+	return py.report(entry, checks)
+}
+
+func openPythonSet(inv Inventory) (*pythonSet, error) {
+	root := inv.Root
 	p, err := openParser(python.Language())
 	if err != nil {
 		return nil, err
 	}
 	s := &pythonSet{root: root, parser: p, modules: map[string]*pythonModule{}, writes: map[string][]pythonWrite{}, text: &moduleSet{root: root, textSources: map[string]analysis.Evidence{}}}
-	for _, f := range manifest.Files {
+	for _, f := range inv.Files {
 		if f.Language == lang.Python {
 			s.files = append(s.files, f.Path)
 		}

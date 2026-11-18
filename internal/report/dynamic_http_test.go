@@ -8,13 +8,13 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestDynamicHTTPContextIsolation(t *testing.T) {
 	for _, fixture := range []string{"javascript/dynamic-dispatch", "typescript/dynamic-dispatch", "python/dynamic-vulnpy/independent-controls"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -39,7 +39,7 @@ func TestDynamicHTTPContextIsolation(t *testing.T) {
 }
 
 func TestDynamicPythonVulnPyTraces(t *testing.T) {
-	r, err := parse.Analyze("../parse/testdata/python/dynamic-vulnpy", "")
+	r, err := pipeline.Analyze("../parse/testdata/python/dynamic-vulnpy", "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,7 +14,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/judge"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	reportpkg "github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -136,7 +136,7 @@ func architectureFixtures(t *testing.T) []string {
 // bytes AssessTrace would send, and the key never leaves the process.
 func architectureSnapshot(t *testing.T, root string) baselineFixture {
 	t.Helper()
-	report, err := parse.AnalyzeWithOptions(root, "", nil, parse.Options{})
+	report, err := pipeline.AnalyzeWithOptions(root, "", nil, pipeline.Options{})
 	if err != nil {
 		t.Fatalf("%s: %v", root, err)
 	}

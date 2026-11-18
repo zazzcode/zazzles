@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestPythonInputRequestCompatibility(t *testing.T) {
@@ -18,7 +18,7 @@ func TestPythonInputRequestCompatibility(t *testing.T) {
 	}
 	for _, fixture := range []string{"routes", "dynamic-vulnpy", "command-injection", "path-traversal", "outbound"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/python/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/python/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}

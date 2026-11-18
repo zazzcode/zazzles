@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +15,7 @@ func TestGraphQLPipelineAndBounds(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
 		t.Run(language, func(t *testing.T) {
 			root := "../parse/testdata/" + language + "/graphql"
-			r, err := parse.Analyze(root, "")
+			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}

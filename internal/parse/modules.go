@@ -88,7 +88,9 @@ func (s *moduleSet) close() {
 	for _, m := range s.modules {
 		m.tree.Close()
 	}
-	s.parsers.close()
+	if s.parsers != nil {
+		s.parsers.close()
+	}
 }
 
 func (s *moduleSet) load(file string) (*sourceModule, error) {
@@ -108,6 +110,16 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 	}
 	if len(src) > 2<<20 {
 		return nil, fmt.Errorf("source exceeds 2 MiB limit: %s", file)
+	}
+	// A set built for an inventory with no JS/TS files opens no grammar; the
+	// first module it ever loads opens them. Every other parser use runs inside
+	// a flow over a loaded module, so it always finds them open.
+	if s.parsers == nil {
+		ps, err := newParsers()
+		if err != nil {
+			return nil, err
+		}
+		s.parsers = ps
 	}
 	parseSource := src
 	parser := s.parsers.forPath(file)

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	reportpkg "github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -30,7 +30,7 @@ def index():
 	if err := os.WriteFile(filepath.Join(root, "app.py"), []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
-	r, err := parse.Analyze(root, "app.py")
+	r, err := pipeline.Analyze(root, "app.py")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -155,8 +155,9 @@ No trace or model judgment proves runtime execution or exploitability.
 ```mermaid
 flowchart TD
     Repo["Target source files"] --> Walk["walk and lang: selected manifest"]
-    Walk --> Parse["parse: Tree-sitter and language/framework adapters"]
-    Parse --> Evidence["analysis: entries, candidate uses, evidence and gaps"]
+    Walk --> Pipeline["pipeline: one walk, runner selection, concurrent runners, fixed-order merge"]
+    Pipeline --> Parse["parse: JS/TS, Python and PHP runners with language/framework adapters"]
+    Parse -->|"Per-language reports; parse.Assemble merges and finalizes"| Evidence["analysis: entries, candidate uses, evidence and gaps"]
     Guidelines["guidelines: embedded Analysis Guidelines"] --> Catalog["analysispacks: analyzer knowledge selection and bounded material"]
     Parse -->|"Verified applicability facts"| Catalog
     Catalog -->|"Selection provenance"| Evidence
@@ -169,13 +170,21 @@ flowchart TD
 ```
 
 Each analyzer uses these stages through the shared engine; the diagram shows processing responsibilities,
-not a sequence of separate analyzers. `cmd/scan` wires these stages. The current request loop is
+not a sequence of separate analyzers. `cmd/scan` wires these stages and calls `internal/pipeline` for
+analysis. The pipeline walks the target once and passes that inventory to each language runner. A full
+scan always runs the JS/TS runner, which owns the base report, and runs Python or PHP only when the
+inventory has files of that language. A language with no files opens no grammar. Runners run
+concurrently and share no mutable state. `parse.Assemble` merges their reports in the fixed JS/TS,
+Python, PHP order and finalizes once, so completion order never affects IDs, JSON order or request
+bytes. When several runners fail, the earliest runner's error in that order is returned. A `.py` or
+`.php` entry runs only that language, and any other entry runs only JS/TS. The current request loop is
 sequential, explicitly capped and prioritizes database and command candidates. Failed or capped requests remain failed/unassessed; no retry or
 provider fallback is automatic. Source evidence and candidate ordering are deterministic for identical
 inputs; live model predictions have no assumed byte-stability guarantee.
 
 There is no general repository IR builder, independent reviewer, persistent cache or severity CI gate
-in this pipeline. Bounded worker pools and richer graph indexes are future architecture choices.
+in this pipeline. Concurrency is limited to the language runners; judge request concurrency and richer
+graph indexes are future architecture choices.
 
 ### Shared analysis knowledge
 
@@ -235,8 +244,10 @@ more than syntax parsing. Shared records do not depend on Tree-sitter nodes or H
 - Python uses `python_*.go` files for local modules, Flask/Blueprint, RESTX and FastAPI routes,
   value/control flow, DB-API, validation, logging, HTTP and template semantics. Supported inline
   template scripts reuse browser analysis. See [Python coverage](../../docs/python-support.md).
-- `Analyze` discovers supported registration files across languages when `--entry` is omitted;
-  `AnalyzeWithChecks` additionally accepts explicitly declared security requirements.
+- `pipeline.Analyze` discovers supported registration files across languages when `--entry` is
+  omitted; `pipeline.AnalyzeWithChecks` additionally accepts explicitly declared security
+  requirements. Each language runner receives the pipeline's single inventory and owns its parsers
+  and module sets.
 - File-extension recognition in `internal/lang` does not imply an implemented language analyzer.
 
 An API name alone is not proof of binding, source control or protection. Unknown calls, dynamic
@@ -524,7 +535,8 @@ incremental invalidation. There is no automatic runtime cache implied by saved e
 | `cmd/scan` | CLI arguments, pipeline wiring, request caps and export modes |
 | `internal/walk` | Target file selection and manifest |
 | `internal/lang` | File-extension language registry |
-| `internal/parse` | Tree-sitter, language/framework resolution, bounded flow and evidence assembly |
+| `internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment |
+| `internal/parse` | Producer of per-language reports: Tree-sitter, language/framework resolution, bounded flow and evidence assembly, exposed as `Inventory` (with `Runners` selection and `NormalizeEntry`), `RunJavaScript`, `RunPython`, `RunPHP` and `Assemble`; route inventory (`Routes`) keeps its own walk |
 | `internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
 | `internal/guidelines` | Embedded versioned language Analysis Guidelines |
 | `internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |
@@ -539,8 +551,8 @@ Today flow/evidence construction lives in `parse`, claim gates in `judge`, and p
 ### Naming and compatibility
 
 `--analyze` is the documented analysis mode; `--strings` remains an external compatibility alias.
-Internal APIs use `Analyze`, `AnalyzeWithChecks`, `CandidateUse` and `AnalysisReport`, with no obsolete
-Go aliases. Fresh analysis reports use schema4, `analysis_guidelines` and per-candidate component
+Internal APIs use `pipeline.Analyze`, `pipeline.AnalyzeWithChecks`, `CandidateUse` and `AnalysisReport`,
+with no obsolete Go aliases; `parse` exports no `Analyze` functions in production code. Fresh analysis reports use schema4, `analysis_guidelines` and per-candidate component
 provenance for SQL, NoSQL, standalone validation, XSS and outbound observations; route inventory stays
 schema1. Export reads schemas1/2/3/4 and preserves original schema provenance and raw
 assessments. Private legacy decoding maps `practice` metadata to `GuidelinesRef` and

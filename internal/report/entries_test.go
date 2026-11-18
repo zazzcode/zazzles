@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"os"
 	"path/filepath"
 	"slices"
@@ -141,7 +141,7 @@ func TestEntrySpecificReportsParsedPipeline(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(root, tc.file), []byte(tc.source), 0600); err != nil {
 				t.Fatal(err)
 			}
-			r, err := parse.Analyze(root, "")
+			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}

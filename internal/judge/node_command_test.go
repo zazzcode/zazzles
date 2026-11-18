@@ -2,7 +2,7 @@ package judge
 
 import (
 	"context"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +26,7 @@ func TestNodeCommandSharedPipeline(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(root, "server.js"), []byte(source), 0600); err != nil {
 				t.Fatal(err)
 			}
-			r, err := parse.Analyze(root, "")
+			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -9,11 +9,11 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestDynamicPythonVulnPyTraces(t *testing.T) {
-	r, err := parse.Analyze("../parse/testdata/python/dynamic-vulnpy", "")
+	r, err := pipeline.Analyze("../parse/testdata/python/dynamic-vulnpy", "")
 	if err != nil {
 		t.Fatal(err)
 	}

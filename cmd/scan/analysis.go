@@ -12,7 +12,7 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
 	"github.com/zazzcode/zazzles/internal/judge"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	reportpkg "github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -46,7 +46,7 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 		fmt.Fprintf(stderr, "scan: %v\n", err)
 		return exitError
 	}
-	report, err := parse.AnalyzeWithOptions(root, entry, checks, parse.Options{DiscoverRoutes: discovery.Enabled})
+	report, err := pipeline.AnalyzeWithOptions(root, entry, checks, pipeline.Options{DiscoverRoutes: discovery.Enabled})
 	if err != nil {
 		fmt.Fprintf(stderr, "scan: %v\n", err)
 		return exitError

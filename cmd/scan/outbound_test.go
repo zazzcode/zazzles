@@ -16,7 +16,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 // Redirect only provider transport to localhost. Target fixture URLs never enter
@@ -58,7 +58,7 @@ def validation():
 			t.Fatal(err)
 		}
 	}
-	r, err := parse.Analyze(root, "")
+	r, err := pipeline.Analyze(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}

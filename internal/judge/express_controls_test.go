@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestMongooseQueryProtectionControls(t *testing.T) {
@@ -32,7 +32,7 @@ func TestMongooseQueryProtectionControls(t *testing.T) {
 			if e := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"dependencies":{"mongoose":"4.2.4"}}`), 0600); e != nil {
 				t.Fatal(e)
 			}
-			r, e := parse.Analyze(root, "")
+			r, e := pipeline.Analyze(root, "")
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -97,7 +97,7 @@ func TestSQLHexConstraintContradiction(t *testing.T) {
 			if e := os.WriteFile(filepath.Join(root, "server.ts"), []byte(source), 0600); e != nil {
 				t.Fatal(e)
 			}
-			r, e := parse.Analyze(root, "")
+			r, e := pipeline.Analyze(root, "")
 			if e != nil {
 				t.Fatal(e)
 			}

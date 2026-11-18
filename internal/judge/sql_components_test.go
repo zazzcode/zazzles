@@ -14,7 +14,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -35,7 +35,7 @@ func sqlFixture(t *testing.T, name, source string) *analysis.AnalysisReport {
 	if err := os.WriteFile(filepath.Join(root, name), []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
-	r, err := parse.Analyze(root, name)
+	r, err := pipeline.Analyze(root, name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,7 +205,7 @@ func TestSQLComponentPipelineParity(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
 		for _, entry := range []string{"graphql", "grpc"} {
 			t.Run(language+"/"+entry, func(t *testing.T) {
-				r, err := parse.Analyze("../parse/testdata/"+language+"/"+entry, "")
+				r, err := pipeline.Analyze("../parse/testdata/"+language+"/"+entry, "")
 				if err != nil {
 					t.Fatal(err)
 				}

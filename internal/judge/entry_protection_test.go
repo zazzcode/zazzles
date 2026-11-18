@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -26,7 +26,7 @@ func TestEntryProtectionCoverage(t *testing.T) {
 	} {
 		fixture := tc.fixture
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -61,7 +61,7 @@ func TestEntryProtectionCoverage(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		r, err := parse.Analyze(root, "")
+		r, err := pipeline.Analyze(root, "")
 		if err != nil {
 			t.Fatal(err)
 		}

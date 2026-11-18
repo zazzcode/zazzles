@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	reportpkg "github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -199,7 +199,7 @@ func BenchmarkEquivalenceSignature(b *testing.B) {
 	if writeErr != nil {
 		b.Fatal(writeErr)
 	}
-	r, err := parse.Analyze(root, "server.ts")
+	r, err := pipeline.Analyze(root, "server.ts")
 	if err != nil {
 		b.Fatal(err)
 	}

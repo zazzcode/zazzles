@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 	"reflect"
 	"strings"
@@ -14,7 +14,7 @@ import (
 
 func TestXSSComponentReportParity(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
-		r, err := parse.Analyze("../parse/testdata/"+language+"/browser-events", "")
+		r, err := pipeline.Analyze("../parse/testdata/"+language+"/browser-events", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -111,7 +111,7 @@ func TestXSSCrossTierComponentParity(t *testing.T) {
 
 func TestXSSComponentInventory(t *testing.T) {
 	for _, fixture := range []string{"javascript/xss-fetch", "javascript/browser-events", "typescript/browser-events", "python/routes", "python/dynamic-vulnpy"} {
-		r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+		r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 		if err != nil {
 			t.Fatal(err)
 		}

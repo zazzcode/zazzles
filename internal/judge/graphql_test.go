@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 )
 
@@ -26,7 +26,7 @@ func TestGraphQLProtectionContexts(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			r, err := parse.Analyze(root, "")
+			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}

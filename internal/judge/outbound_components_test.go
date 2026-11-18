@@ -13,14 +13,14 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 )
 
 func TestOutboundComponentEvidenceParity(t *testing.T) {
 	for _, fixture := range []string{"javascript/outbound", "typescript/outbound", "python/outbound", "javascript/xss-fetch"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -53,7 +53,7 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 }
 
 func TestOutboundObservationNotAssessed(t *testing.T) {
-	r, err := parse.Analyze("../parse/testdata/javascript/outbound", "")
+	r, err := pipeline.Analyze("../parse/testdata/javascript/outbound", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func TestOutboundComponentReportParity(t *testing.T) {
 		}
 	})
 	for _, fixture := range []string{"javascript/outbound", "typescript/outbound", "python/outbound"} {
-		r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+		r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 		if err != nil {
 			t.Fatal(err)
 		}

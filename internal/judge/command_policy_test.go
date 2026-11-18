@@ -10,7 +10,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 // commandAnswers is a deliberately stubbed model answer set.
@@ -166,7 +166,7 @@ func TestCommandPolicyMatrix(t *testing.T) {
 			for _, provider := range []string{"openai", "jev"} {
 				t.Run(sc.name+"/"+language+"/"+provider, func(t *testing.T) {
 					src := sc.sources[language]
-					r, err := parse.Analyze(writeFixture(t, map[string]string{src.file: src.text}), "")
+					r, err := pipeline.Analyze(writeFixture(t, map[string]string{src.file: src.text}), "")
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -219,7 +219,7 @@ func TestCommandMixedInvocations(t *testing.T) {
 	files := map[string]string{
 		"server.js": jsHead + `app.get('/two',(req,res)=>{const v=req.query.name;if(!ALLOWED.includes(v)){return res.status(400).end()}execFile('/usr/bin/lookup',[v],()=>{});exec('echo '+req.query.x,()=>{});res.end()});`,
 	}
-	r, err := parse.Analyze(writeFixture(t, files), "")
+	r, err := pipeline.Analyze(writeFixture(t, files), "")
 	if err != nil {
 		t.Fatal(err)
 	}

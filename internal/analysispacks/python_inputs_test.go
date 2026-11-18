@@ -6,11 +6,11 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestPythonInputSelection(t *testing.T) {
-	r, err := parse.Analyze("../parse/testdata/python/command-injection", "")
+	r, err := pipeline.Analyze("../parse/testdata/python/command-injection", "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -12,7 +12,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func writeFixture(t *testing.T, files map[string]string) string {
@@ -31,7 +31,7 @@ func writeFixture(t *testing.T, files map[string]string) string {
 
 func familyFixtureUse(t *testing.T, files map[string]string, kind string) (analysis.CandidateUse, *analysis.AnalysisReport) {
 	t.Helper()
-	r, err := parse.Analyze(writeFixture(t, files), "")
+	r, err := pipeline.Analyze(writeFixture(t, files), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -379,7 +379,7 @@ func TestNoSQLComponentPipelineParity(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			r, err := parse.Analyze(writeFixture(t, tc.files), "")
+			r, err := pipeline.Analyze(writeFixture(t, tc.files), "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -462,7 +462,7 @@ func TestNoSQLComponentPipelineParity(t *testing.T) {
 		})
 	}
 	t.Run("unknown api gains no candidate", func(t *testing.T) {
-		r, err := parse.Analyze(writeFixture(t, map[string]string{"server.js": `const express=require('express');const users={find(q){return q}};const app=express();app.use(express.json());app.post('/fake',(req,res)=>users.find({name:req.body.name}));`}), "")
+		r, err := pipeline.Analyze(writeFixture(t, map[string]string{"server.js": `const express=require('express');const users={find(q){return q}};const app=express();app.use(express.json());app.post('/fake',(req,res)=>users.find({name:req.body.name}));`}), "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -473,7 +473,7 @@ func TestNoSQLComponentPipelineParity(t *testing.T) {
 		}
 	})
 	t.Run("python nosql gains no detector", func(t *testing.T) {
-		r, err := parse.Analyze(writeFixture(t, map[string]string{"main.py": `from flask import Flask,request\nfrom pymongo import MongoClient\napp=Flask(__name__)\nclient=MongoClient()\n@app.post('/find')\ndef find():\n    return str(client.db.users.find({'name':request.form.get('name')}))\n`}), "")
+		r, err := pipeline.Analyze(writeFixture(t, map[string]string{"main.py": `from flask import Flask,request\nfrom pymongo import MongoClient\napp=Flask(__name__)\nclient=MongoClient()\n@app.post('/find')\ndef find():\n    return str(client.db.users.find({'name':request.form.get('name')}))\n`}), "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -489,7 +489,7 @@ func TestNoSQLComponentPipelineParity(t *testing.T) {
 // neither facet grants the other and no issue is double counted.
 func TestNoSQLValidationClaimIsolation(t *testing.T) {
 	t.Run("policy-invalid field with protected query", func(t *testing.T) {
-		r, err := parse.Analyze(writeFixture(t, map[string]string{
+		r, err := pipeline.Analyze(writeFixture(t, map[string]string{
 			"main.py": `from flask import Flask,request,render_template
 import sqlite3
 app=Flask(__name__)
@@ -553,7 +553,7 @@ def signup():
 		// The guarded selector field stays a selector claim; the free-text
 		// comment field that never reaches a query keeps its own standalone
 		// record. Neither record borrows the other's outcome.
-		r, err := parse.Analyze(writeFixture(t, map[string]string{"server.js": `const express=require('express');const marsdb=require('marsdb');const users=new marsdb.Collection('users');const app=express();app.use(express.json());app.post('/login',(req,res)=>{if(typeof req.body.name!=='string'){return res.status(400).send('bad');}users.find({name:req.body.name});res.end(req.body.comment)});`}), "")
+		r, err := pipeline.Analyze(writeFixture(t, map[string]string{"server.js": `const express=require('express');const marsdb=require('marsdb');const users=new marsdb.Collection('users');const app=express();app.use(express.json());app.post('/login',(req,res)=>{if(typeof req.body.name!=='string'){return res.status(400).send('bad');}users.find({name:req.body.name});res.end(req.body.comment)});`}), "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -761,7 +761,7 @@ def signup():
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			r, err := parse.Analyze(writeFixture(t, tc.files), "")
+			r, err := pipeline.Analyze(writeFixture(t, tc.files), "")
 			if err != nil {
 				t.Fatal(err)
 			}

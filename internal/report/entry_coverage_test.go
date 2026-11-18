@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestEntryProtectionCoverage(t *testing.T) {
 	for _, fixture := range []string{"javascript/graphql", "javascript/grpc"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 // pathAnswers is a deliberately stubbed model answer set.
@@ -29,7 +29,7 @@ func pathStub(t *testing.T, provider string, answers pathAnswers) (*Client, *int
 
 func pathUsesByRoute(t *testing.T, fixture string) (map[string]analysis.CandidateUse, *analysis.AnalysisReport) {
 	t.Helper()
-	r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+	r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 	if err != nil {
 		t.Fatal(err)
 	}

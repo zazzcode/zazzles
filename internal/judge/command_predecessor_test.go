@@ -6,7 +6,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 // TestCommandPredecessorRequests freezes existing-family requests after the
@@ -35,7 +35,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 	c, _ := New("openai", "fixture-model", "k")
 	for fixture, expected := range want {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}

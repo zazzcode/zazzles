@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 // TestReplaySavedRun replays every saved decision of one retained live run offline
@@ -23,7 +23,7 @@ func TestReplaySavedRun(t *testing.T) {
 	if file == "" || traces == "" || root == "" {
 		t.Skip("set ZAZZ_REPLAY_RUN, ZAZZ_REPLAY_TRACES and ZAZZ_REPLAY_ROOT to replay a retained run")
 	}
-	fresh, err := parse.Analyze(root, "")
+	fresh, err := pipeline.Analyze(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}

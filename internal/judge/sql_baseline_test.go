@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"testing"
 )
 
 func TestSQLDiscoveryBaseline(t *testing.T) {
 	for _, fixture := range []string{"string-flow", "javascript/grpc", "typescript/grpc", "javascript/graphql", "typescript/graphql", "javascript/dynamic-dispatch", "typescript/dynamic-dispatch", "python/routes", "python/dynamic-vulnpy"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := parse.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -9,14 +9,14 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
 func TestGRPCPipeline(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
 		t.Run(language, func(t *testing.T) {
 			root := "../parse/testdata/" + language + "/grpc"
-			r, err := parse.Analyze(root, "")
+			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)
 			}

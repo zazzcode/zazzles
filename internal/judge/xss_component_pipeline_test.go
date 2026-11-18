@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/report"
 	"io"
 	"net/http"
@@ -37,7 +37,7 @@ func parsedXSS(t *testing.T, files map[string]string) (*analysis.AnalysisReport,
 			t.Fatal(err)
 		}
 	}
-	r, err := parse.Analyze(root, "")
+	r, err := pipeline.Analyze(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}

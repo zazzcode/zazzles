@@ -353,7 +353,7 @@ exporting a saved report preserves its historical answers. See [decision-model s
 
 ## Judge rate and spending controls
 
-`--judge-limit` (default 10), `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional
+`--judge-limit` / `JUDGE_LIMIT` (built-in default 10), `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional
 `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pacing settings apply to one scan.
 Discovery and assessment share the rate window, and flags override the process environment. The
 first failed request stops new requests. With concurrency above 1, requests already in flight still

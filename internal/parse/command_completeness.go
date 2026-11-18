@@ -14,10 +14,10 @@ var commandRequiredRoles = []string{"input_source", "sink_binding", "invoked_cal
 
 const commandScope = "command execution claim over the supplied entry invocation, verified process API contract, effective operands, execution configuration and guard/transfer context; an unsafe witness needs only its own source-to-operand path"
 
-// commandCompleteness builds the claim-scoped completeness shared by every
+// CommandCompleteness builds the claim-scoped completeness shared by every
 // language adapter. Language adapters supply blockers, guard evidence and
 // supported-transfer evidence they established from source.
-func commandCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
+func CommandCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
 	roles := namespacedRoles(u, "command_")
 	c := &analysis.Completeness{ClaimKind: "command_execution", Required: append([]string{}, commandRequiredRoles...),
 		Evidence: roles, Blockers: blockers, Coverage: coverage, Scope: commandScope}
@@ -45,7 +45,8 @@ func commandCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analy
 // source text and the names it was assigned or projected to.
 var commandIdentifier = regexp.MustCompile(`^\s*([A-Za-z_$][\w$]*)`)
 
-func commandDepNames(d analysis.Dependency) []string {
+// CommandDepNames lists the names that stand for dependency d in guard and blocker text.
+func CommandDepNames(d analysis.Dependency) []string {
 	python := strings.HasSuffix(d.Source.Span.File, ".py")
 	var names []string
 	if !python {
@@ -84,10 +85,10 @@ var stringLiterals = regexp.MustCompile(`"[^"]*"|'[^']*'`)
 
 var presencePunct = regexp.MustCompile(`[\s()!=<>'"&|]`)
 
-// presenceOnlyCondition reports a condition that only tests whether the
+// PresenceOnlyCondition reports a condition that only tests whether the
 // operands exist, are non-empty or have a runtime type. Such a test does not
 // constrain content and is never recorded as a guard.
-func presenceOnlyCondition(condition string, names []string) bool {
+func PresenceOnlyCondition(condition string, names []string) bool {
 	rest := requestAccessors.ReplaceAllString(condition, "")
 	ordered := append([]string{}, names...)
 	// Longest names first so a container prefix never splits a projection.
@@ -103,15 +104,16 @@ func presenceOnlyCondition(condition string, names []string) bool {
 	return rest == ""
 }
 
-var plainIdentifier = regexp.MustCompile(`^[A-Za-z_$][\w$]*$`)
+// PlainIdentifier matches a bare JS/Python identifier.
+var PlainIdentifier = regexp.MustCompile(`^[A-Za-z_$][\w$]*$`)
 
-// mentionsAny matches identifiers by word boundary and expressions exactly.
-func mentionsAny(text string, names []string) bool {
+// MentionsAny matches identifiers by word boundary and expressions exactly.
+func MentionsAny(text string, names []string) bool {
 	for _, name := range names {
 		if name == "" {
 			continue
 		}
-		if plainIdentifier.MatchString(name) {
+		if PlainIdentifier.MatchString(name) {
 			// Text inside string literals is data, never a reference to the operand.
 			text := stringLiterals.ReplaceAllString(text, `""`)
 			if regexp.MustCompile(`(^|[^\w$.])` + regexp.QuoteMeta(name) + `($|[^\w$])`).MatchString(text) {
@@ -124,19 +126,19 @@ func mentionsAny(text string, names []string) bool {
 	return false
 }
 
-// finishOperandPaths applies the per-path guard and blocker rules to any family
+// FinishOperandPaths applies the per-path guard and blocker rules to any family
 // whose facts hold source-to-operand paths; paths is updated in place.
-func finishOperandPaths(u *analysis.CandidateUse, paths []analysis.CommandPath, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, derived [][]string, touches func(analysis.Gap, analysis.Dependency) bool) {
+func FinishOperandPaths(u *analysis.CandidateUse, paths []analysis.CommandPath, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, derived [][]string, touches func(analysis.Gap, analysis.Dependency) bool) {
 	for i := range paths {
 		p := &paths[i]
 		dep := u.Dependencies[p.Dependency]
-		names := commandDepNames(dep)
+		names := CommandDepNames(dep)
 		if p.Dependency < len(derived) {
 			names = append(names, derived[p.Dependency]...)
 		}
 		var controls []int
 		for j, g := range guards {
-			if mentionsAny(g.Text, names) {
+			if MentionsAny(g.Text, names) {
 				controls = append(controls, guardContext[j])
 			}
 		}
@@ -164,14 +166,15 @@ func finishOperandPaths(u *analysis.CandidateUse, paths []analysis.CommandPath, 
 	// A per-path summary so one unresolved sibling is not mistaken for the state of every path.
 	summary := []string{}
 	for _, p := range paths {
-		summary = append(summary, "dependency "+itoa(p.Dependency)+" ("+u.Dependencies[p.Dependency].Source.Text+") -> "+p.Operand+": "+p.Protection)
+		summary = append(summary, "dependency "+Itoa(p.Dependency)+" ("+u.Dependencies[p.Dependency].Source.Text+") -> "+p.Operand+": "+p.Protection)
 	}
 	if len(summary) > 0 {
 		c.ModelFacts = append(c.ModelFacts, "Operand path facts: "+strings.Join(summary, "; ")+".")
 	}
 }
 
-func dedupeGaps(in []analysis.Gap) []analysis.Gap {
+// DedupeGaps drops repeated gaps (same kind, detail and location), keeping first-seen order.
+func DedupeGaps(in []analysis.Gap) []analysis.Gap {
 	seen := map[string]bool{}
 	out := []analysis.Gap{}
 	for _, g := range in {
@@ -184,10 +187,10 @@ func dedupeGaps(in []analysis.Gap) []analysis.Gap {
 	return out
 }
 
-// gapTouchesDependency reports whether the gap lies on this dependency's
+// GapTouchesDependency reports whether the gap lies on this dependency's
 // source or transfer chain, excluding enclosing statements that merely
 // contain unrelated operands.
-func gapTouchesDependency(g analysis.Gap, d analysis.Dependency) bool {
+func GapTouchesDependency(g analysis.Gap, d analysis.Dependency) bool {
 	for _, e := range append([]analysis.Evidence{d.Source}, d.Transfers...) {
 		if e.Kind != "input_source" && e.Kind != "call_argument_dependency" {
 			continue

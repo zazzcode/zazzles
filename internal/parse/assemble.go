@@ -34,7 +34,7 @@ func Assemble(entry string, js, py, php *analysis.AnalysisReport) (*analysis.Ana
 			out.AnalysisGuidelines = append(out.AnalysisGuidelines, more.AnalysisGuidelines...)
 		}
 	}
-	if err := finalizeEntries(out); err != nil {
+	if err := FinalizeEntries(out); err != nil {
 		return nil, err
 	}
 	blockUnlinkedStoredOrigins(out)

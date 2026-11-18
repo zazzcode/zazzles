@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-// renderMarkup supplies the actual surrounding markup, not just the interpolated
+// RenderMarkup supplies the actual surrounding markup, not just the interpolated
 // expression. Bounds limit context size without claiming the slice is a full DOM.
-func renderMarkup(file analysis.Evidence, start, end int) analysis.Evidence {
+func RenderMarkup(file analysis.Evidence, start, end int) analysis.Evidence {
 	before := file.Text[:start]
 	left := strings.LastIndex(before, "\n") + 1
 	tag, closed := strings.LastIndex(before, "<"), strings.LastIndex(before, ">")
@@ -24,5 +24,5 @@ func renderMarkup(file analysis.Evidence, start, end int) analysis.Evidence {
 	if right > end+1024 {
 		right = end + 1024
 	}
-	return textRange(file, left, right, "render_markup_context")
+	return TextRange(file, left, right, "render_markup_context")
 }

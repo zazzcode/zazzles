@@ -7,10 +7,10 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-// commandGuardEvidenceKind names a guard site for the command claim. A
+// CommandGuardEvidenceKind names a guard site for the command claim. A
 // condition that holds only on the rejecting side of an enclosing `if` (its
 // else branch) is a false-branch fact, never an enforced one.
-func commandGuardEvidenceKind(site GuardSite) string {
+func CommandGuardEvidenceKind(site GuardSite) string {
 	if site.Kind == enclosingGuardKind && site.Polarity == guardRejectsWhenTrue {
 		return "branch_false_precondition"
 	}
@@ -28,7 +28,8 @@ type CommandGuardScan struct {
 	sites  []*sitter.Node
 }
 
-func newCommandGuardScan(lang GuardLang, call *sitter.Node, helperSites func(*sitter.Node) []*sitter.Node) *CommandGuardScan {
+// NewCommandGuardScan starts a guard scan for one sink call, with helperSites listing the call sites of an enclosing helper.
+func NewCommandGuardScan(lang GuardLang, call *sitter.Node, helperSites func(*sitter.Node) []*sitter.Node) *CommandGuardScan {
 	g := &CommandGuardScan{lang: lang, call: call, Scope: lang.Scope(call)}
 	g.helper = lang.Climb(call, func(GuardSite) {})
 	g.sites = helperSites(g.helper)
@@ -43,7 +44,7 @@ func (g *CommandGuardScan) names(base map[string]bool, deps []analysis.Dependenc
 		names[name] = true
 	}
 	for _, d := range deps {
-		for _, name := range commandDepNames(d) {
+		for _, name := range CommandDepNames(d) {
 			names[name] = true
 		}
 	}
@@ -67,7 +68,7 @@ func withSources(mentioned, list []string, defs map[string]string) []string {
 		seen[name] = true
 		if def, ok := defs[name]; ok {
 			for _, source := range list {
-				if !seen[source] && mentionsAny(def, []string{source}) {
+				if !seen[source] && MentionsAny(def, []string{source}) {
 					queue = append(queue, source)
 				}
 			}
@@ -90,7 +91,7 @@ func (g *CommandGuardScan) Derived(deps []analysis.Dependency) [][]string {
 		names := map[string]bool{}
 		for _, scope := range scopes {
 			own := map[string]bool{}
-			for _, name := range commandDepNames(d) {
+			for _, name := range CommandDepNames(d) {
 				own[name] = true
 			}
 			g.lang.Derive(scope, own, map[string]string{}, map[string]*sitter.Node{})
@@ -112,7 +113,7 @@ func (g *CommandGuardScan) Collect(base map[string]bool, deps []analysis.Depende
 			return false
 		}
 		text := g.lang.text(site.Cond)
-		return mentionsAny(text, list) && !presenceOnlyCondition(text, list) &&
+		return MentionsAny(text, list) && !PresenceOnlyCondition(text, list) &&
 			!g.lang.AssignedBetween(within, site.End, anchor.StartByte(), withSources(mentionedNames(text, list), list, defs))
 	}
 	var out []GuardSite
@@ -138,11 +139,11 @@ func (g *CommandGuardScan) Collect(base map[string]bool, deps []analysis.Depende
 	return append(out, g.lang.commonGuardSites(perSite)...)
 }
 
-// collectionDefinitions returns the declarations of the constant collections
+// CollectionDefinitions returns the declarations of the constant collections
 // that guard conditions test (`ALLOWED` in `if (!ALLOWED.has(cmd))`), once
 // each, in source order. A guard against an allow-list cannot be judged without
 // the list's contents, which live outside the handler.
-func collectionDefinitions(conditions []*sitter.Node, src []byte, declaration func(name string) *sitter.Node) []*sitter.Node {
+func CollectionDefinitions(conditions []*sitter.Node, src []byte, declaration func(name string) *sitter.Node) []*sitter.Node {
 	seen := map[uint]bool{}
 	var out []*sitter.Node
 	var visit func(*sitter.Node)

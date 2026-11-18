@@ -13,7 +13,8 @@ var pathRequiredRoles = []string{"input_source", "sink_binding", "invoked_callab
 
 const pathScope = "path traversal claim over the supplied entry invocation, verified filesystem API contract, effective path operand and guard/transfer context; an unsafe witness needs only its own source-to-operand path; write content and options are not path sources"
 
-func pathCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
+// PathCompleteness builds the path claim completeness shared by every language adapter.
+func PathCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
 	roles := namespacedRoles(u, "path_")
 	c := &analysis.Completeness{ClaimKind: "path_traversal", Required: append([]string{}, pathRequiredRoles...),
 		Evidence: roles, Blockers: blockers, Coverage: coverage, Scope: pathScope}
@@ -59,8 +60,8 @@ var pathReceivers = map[string]bool{"path": true, "posix": true, "posixpath": tr
 
 var calleeText = regexp.MustCompile(`^\s*(?:await\s+)?([A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*)\s*\(`)
 
-// transformKind classifies one transfer's shape from its source text.
-func transformKind(e analysis.Evidence) string {
+// TransformKind classifies one transfer's shape from its source text.
+func TransformKind(e analysis.Evidence) string {
 	text := strings.TrimSpace(e.Text)
 	switch e.Kind {
 	case "call_argument_dependency", "call_transfer", "path_call", "string_construction", "string_transform":
@@ -94,22 +95,22 @@ func transformKind(e analysis.Evidence) string {
 	return ""
 }
 
-// pathTransforms lists the path-shaping steps on a dependency's value chain in order.
-func pathTransforms(d analysis.Dependency) []string {
+// PathTransforms lists the path-shaping steps on a dependency's value chain in order.
+func PathTransforms(d analysis.Dependency) []string {
 	var out []string
 	for _, e := range d.Transfers {
-		if kind := transformKind(e); kind != "" {
+		if kind := TransformKind(e); kind != "" {
 			out = append(out, kind)
 		}
 	}
 	return out
 }
 
-// pathRoot returns the constant base segment of a join/resolve construction.
-func pathRoot(d analysis.Dependency) string {
-	names := commandDepNames(d)
+// PathRoot returns the constant base segment of a join/resolve construction.
+func PathRoot(d analysis.Dependency) string {
+	names := CommandDepNames(d)
 	for _, e := range d.Transfers {
-		kind := transformKind(e)
+		kind := TransformKind(e)
 		if kind != analysis.PathTransformJoin && kind != analysis.PathTransformResolve {
 			continue
 		}
@@ -118,7 +119,7 @@ func pathRoot(d analysis.Dependency) string {
 			continue
 		}
 		first := strings.TrimSpace(args[0])
-		if first == "" || strings.Contains(first, d.Source.Text) || mentionsAny(first, names) {
+		if first == "" || strings.Contains(first, d.Source.Text) || MentionsAny(first, names) {
 			continue
 		}
 		return first
@@ -260,15 +261,15 @@ func transferPrecedesGuard(u *analysis.CandidateUse, dep analysis.Dependency, ti
 	return false
 }
 
-// finishPathFlows records, per flow, the guards found for that dependency,
+// FinishPathFlows records, per flow, the guards found for that dependency,
 // whether an unresolved transfer blocks it and whether a decode follows a
 // control. A guard that does not mention a dependency never covers it;
 // adequacy is never decided here.
-func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, info *PathGuardInfo, touches func(analysis.Gap, analysis.Dependency) bool) {
+func FinishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, info *PathGuardInfo, touches func(analysis.Gap, analysis.Dependency) bool) {
 	f := u.Path
 	f.Guards = make([]analysis.PathGuard, 0, len(guards))
 	for i, g := range guards {
-		kind := info.Kinds[guardKey(g)]
+		kind := info.Kinds[GuardKey(g)]
 		if kind == "" {
 			kind = analysis.PathGuardUnclassified
 		}
@@ -279,7 +280,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 		dep := u.Dependencies[p.Dependency]
 		var controls []int
 		for j, g := range guards {
-			if info.deps[guardKey(g)][p.Dependency] {
+			if info.deps[GuardKey(g)][p.Dependency] {
 				controls = append(controls, j)
 			}
 		}
@@ -304,7 +305,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 			p.Controls = controls
 			p.Reason = "a dominating or enclosing control mentions this value; its adequacy is not established by the scanner"
 			for ti, e := range dep.Transfers {
-				tk := transformKind(e)
+				tk := TransformKind(e)
 				if tk == analysis.PathTransformDecode || decodeCallText.MatchString(e.Text) {
 					for _, ci := range controls {
 						if transferFollowsGuard(u, dep, ti, guards[ci]) {
@@ -321,7 +322,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 				}
 				if isNormTransform(tk) {
 					for _, ci := range controls {
-						if f.Guards[ci].Kind == analysis.PathGuardSubstring && info.rootContain[guardKey(guards[ci])] && transferPrecedesGuard(u, dep, ti, guards[ci]) {
+						if f.Guards[ci].Kind == analysis.PathGuardSubstring && info.rootContain[GuardKey(guards[ci])] && transferPrecedesGuard(u, dep, ti, guards[ci]) {
 							p.NormalizedBeforeGuard = true
 						}
 					}
@@ -339,7 +340,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 	}
 	summary := []string{}
 	for _, p := range f.Paths {
-		line := "dependency " + itoa(p.Dependency) + " (" + u.Dependencies[p.Dependency].Source.Text + ") -> path: " + p.Protection
+		line := "dependency " + Itoa(p.Dependency) + " (" + u.Dependencies[p.Dependency].Source.Text + ") -> path: " + p.Protection
 		if len(p.Transforms) > 0 {
 			line += " via " + strings.Join(p.Transforms, ",")
 		}
@@ -360,5 +361,5 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 	}
 }
 
-// requestOrigin reports a dependency whose source is a request input field.
-func requestOrigin(d analysis.Dependency) bool { return d.Source.Kind == "input_source" }
+// RequestOrigin reports a dependency whose source is a request input field.
+func RequestOrigin(d analysis.Dependency) bool { return d.Source.Kind == "input_source" }

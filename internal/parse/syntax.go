@@ -7,7 +7,8 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-func openParser(ptr unsafe.Pointer) (*sitter.Parser, error) {
+// OpenParser opens a Tree-sitter parser for one grammar; the caller closes it.
+func OpenParser(ptr unsafe.Pointer) (*sitter.Parser, error) {
 	parser := sitter.NewParser()
 	if err := parser.SetLanguage(sitter.NewLanguage(ptr)); err != nil {
 		parser.Close()
@@ -16,7 +17,8 @@ func openParser(ptr unsafe.Pointer) (*sitter.Parser, error) {
 	return parser, nil
 }
 
-func spanOf(file string, node *sitter.Node) analysis.Span {
+// Span returns the file span of a Tree-sitter node.
+func Span(file string, node *sitter.Node) analysis.Span {
 	start := node.StartPosition()
 	end := node.EndPosition()
 	return analysis.Span{

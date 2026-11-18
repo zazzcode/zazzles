@@ -1,7 +1,7 @@
 package parse
 
-// appendUniqueString appends s to a unless a already holds it.
-func appendUniqueString(a []string, s string) []string {
+// AppendUniqueString appends s to a unless a already holds it.
+func AppendUniqueString(a []string, s string) []string {
 	for _, v := range a {
 		if v == s {
 			return a
@@ -10,7 +10,8 @@ func appendUniqueString(a []string, s string) []string {
 	return append(a, s)
 }
 
-func itoa(i int) string {
+// Itoa formats a non-negative int in decimal.
+func Itoa(i int) string {
 	const digits = "0123456789"
 	if i == 0 {
 		return "0"

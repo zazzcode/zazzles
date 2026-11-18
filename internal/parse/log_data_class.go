@@ -16,7 +16,8 @@ var personalTokens = map[string]bool{"email": true, "phone": true, "mobile": tru
 
 var personalPairs = map[string]bool{"creditcard": true, "cardnumber": true}
 
-func logDataClass(container, key string) (string, string) {
+// LogDataClass classifies a logged request container and key as credential, personal or container data, with a lexicon hint.
+func LogDataClass(container, key string) (string, string) {
 	container = strings.ToLower(container)
 	if key == "" {
 		switch container {
@@ -34,13 +35,14 @@ func logDataClass(container, key string) (string, string) {
 	if container == "cookies" {
 		return "hint", "cookie"
 	}
-	if hint := lexiconHint(key); hint != "" {
+	if hint := LexiconHint(key); hint != "" {
 		return "hint", hint
 	}
 	return "", ""
 }
 
-func lexiconHint(key string) string {
+// LexiconHint classifies a key name as credential or personal data by its name tokens, or returns "".
+func LexiconHint(key string) string {
 	tokens := nameTokens(key)
 	for i, t := range tokens {
 		pair := ""

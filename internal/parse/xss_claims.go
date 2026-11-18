@@ -38,7 +38,8 @@ func dropCodeOwnedXSS(report *analysis.AnalysisReport) {
 	report.Uses = kept
 }
 
-func assembleXSSClaims(report *analysis.AnalysisReport) {
+// AssembleXSSClaims drops code-owned XSS uses and attaches XSS claim completeness to xss_candidate uses.
+func AssembleXSSClaims(report *analysis.AnalysisReport) {
 	dropCodeOwnedXSS(report)
 	for i := range report.Uses {
 		u := &report.Uses[i]

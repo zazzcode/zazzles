@@ -11,11 +11,12 @@ type GuardPolarity int
 
 const (
 	guardRejectsWhenTrue  GuardPolarity = iota // if (cond) { return/throw/abort }, or the else branch of an if
-	guardEnforcesWhenTrue                      // if (cond) { sink } inside consequence
+	GuardEnforcesWhenTrue                      // if (cond) { sink } inside consequence
 )
 
 const (
-	terminatingGuardKind = "terminating_guard"
+	// TerminatingGuardKind is the context kind of a guard that ends the invocation on its rejecting side.
+	TerminatingGuardKind = "terminating_guard"
 	enclosingGuardKind   = "enclosing_guard"
 )
 
@@ -63,11 +64,11 @@ func (l GuardLang) Climb(start *sitter.Node, visit func(GuardSite)) *sitter.Node
 					break
 				}
 				if sib.Kind() == "if_statement" && l.Exits(sib.ChildByFieldName("consequence")) {
-					visit(GuardSite{terminatingGuardKind, guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte()})
+					visit(GuardSite{TerminatingGuardKind, guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte()})
 					// Later code also runs only when each test of an else-if chain whose
 					// consequence exits is false, as long as every earlier arm exits.
 					for link := elseIf(sib); link != nil && l.Exits(link.ChildByFieldName("consequence")); link = elseIf(link) {
-						visit(GuardSite{terminatingGuardKind, guardRejectsWhenTrue, link.ChildByFieldName("condition"), link, sib.EndByte()})
+						visit(GuardSite{TerminatingGuardKind, guardRejectsWhenTrue, link.ChildByFieldName("condition"), link, sib.EndByte()})
 					}
 				}
 			}
@@ -75,7 +76,7 @@ func (l GuardLang) Climb(start *sitter.Node, visit func(GuardSite)) *sitter.Node
 			cond, consequence := p.ChildByFieldName("condition"), p.ChildByFieldName("consequence")
 			if cond != nil && consequence != nil {
 				if child.StartByte() >= consequence.StartByte() && child.EndByte() <= consequence.EndByte() {
-					visit(GuardSite{enclosingGuardKind, guardEnforcesWhenTrue, cond, cond, cond.EndByte()})
+					visit(GuardSite{enclosingGuardKind, GuardEnforcesWhenTrue, cond, cond, cond.EndByte()})
 				} else if alt := p.ChildByFieldName("alternative"); alt != nil && alt.Kind() == "else_clause" && child.StartByte() >= alt.StartByte() && child.EndByte() <= alt.EndByte() {
 					visit(GuardSite{enclosingGuardKind, guardRejectsWhenTrue, cond, cond, cond.EndByte()})
 				}
@@ -120,7 +121,7 @@ func (l GuardLang) Derive(scope *sitter.Node, names map[string]bool, defs map[st
 		walk = func(n *sitter.Node) {
 			if id, v := l.Binding(n); id != nil && v != nil {
 				name := l.text(id)
-				if !names[name] && mentionsAny(l.text(v), list()) {
+				if !names[name] && MentionsAny(l.text(v), list()) {
 					names[name] = true
 					defs[name] = l.text(v)
 					defNodes[name] = v
@@ -191,7 +192,7 @@ func (l GuardLang) AssignedBetween(scope *sitter.Node, from, to uint, mentioned 
 func mentionedNames(cond string, sortedNames []string) []string {
 	var out []string
 	for _, name := range sortedNames {
-		if mentionsAny(cond, []string{name}) {
+		if MentionsAny(cond, []string{name}) {
 			out = append(out, name)
 		}
 	}

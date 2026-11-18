@@ -8,9 +8,9 @@ var ssrfRequiredRoles = []string{"input_source", "sink_binding", "invoked_callab
 
 const ssrfScope = "server-side request forgery claim over the supplied entry invocation, verified outbound client contract, the destination operand and guard/transfer context; request data sent as body or headers is not destination control"
 
-// ssrfCompleteness builds the claim-scoped completeness shared by every
+// SSRFCompleteness builds the claim-scoped completeness shared by every
 // language adapter.
-func ssrfCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
+func SSRFCompleteness(u *analysis.CandidateUse, extraRoles map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
 	roles := namespacedRoles(u, "ssrf_")
 	c := &analysis.Completeness{ClaimKind: "ssrf", Required: append([]string{}, ssrfRequiredRoles...), Evidence: roles, Blockers: blockers, Coverage: coverage, Scope: ssrfScope}
 	if c.Blockers == nil {

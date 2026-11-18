@@ -94,9 +94,11 @@ func (t *TextSources) Files() []string {
 	return files
 }
 
-var simpleTemplateField = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$`)
+// SimpleTemplateField matches a dotted field path, the only template expression treated as a plain field read.
+var SimpleTemplateField = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$`)
 
-func textRange(e analysis.Evidence, start, end int, kind string) analysis.Evidence {
+// TextRange returns e narrowed to e.Text[start:end] as kind, with byte and line spans.
+func TextRange(e analysis.Evidence, start, end int, kind string) analysis.Evidence {
 	before, part := e.Text[:start], e.Text[start:end]
 	e.Kind = kind
 	e.Span.StartByte, e.Span.EndByte = start, end

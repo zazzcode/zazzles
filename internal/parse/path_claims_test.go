@@ -22,7 +22,7 @@ func TestPathComprehensionSelectionIsUnknown(t *testing.T) {
 			u := &analysis.CandidateUse{Dependencies: []analysis.Dependency{dep}, Path: &analysis.PathFacts{Operation: "open", Platform: "posix", Role: "read",
 				Operands: []analysis.PathOperand{{Slot: analysis.PathSlotFile}}, Paths: []analysis.PathFlow{{Dependency: 0, Operand: analysis.PathSlotFile, Protection: "raw"}}}}
 			c := &analysis.Completeness{Evidence: map[string][]analysis.Evidence{}}
-			finishPathFlows(u, c, nil, nil, newPathGuardInfo(), func(analysis.Gap, analysis.Dependency) bool { return false })
+			FinishPathFlows(u, c, nil, nil, NewPathGuardInfo(), func(analysis.Gap, analysis.Dependency) bool { return false })
 			if got := u.Path.Paths[0].Protection; got != tt.want {
 				t.Fatalf("protection %s, want %s", got, tt.want)
 			}

@@ -9,7 +9,9 @@ import (
 	"github.com/zazzcode/zazzles/internal/lang"
 )
 
-func snapshotID(kind string, source analysis.Evidence, owner, key string) string {
+// SnapshotID returns the versioned, content-addressed record ID for one snapshot record, or an
+// unresolved placeholder that FinalizeEntries rejects.
+func SnapshotID(kind string, source analysis.Evidence, owner, key string) string {
 	id, err := analysis.SnapshotRecordID(kind, source, owner, key)
 	if err != nil { // Retain source-backed discovery gaps; malformed evidence is rejected at finalization.
 		return fmt.Sprintf("%s:unresolved:%s:%d:%s", kind, source.Span.File, source.Span.StartByte, key)
@@ -17,20 +19,23 @@ func snapshotID(kind string, source analysis.Evidence, owner, key string) string
 	return id
 }
 
-func httpEntry(r analysis.Route, source analysis.Evidence, instance string) analysis.EntryPoint {
-	return analysis.EntryPoint{ID: snapshotID("entry", source, instance, r.ID+":"+r.Method+":"+r.PathPattern), Kind: "http", Name: r.Method + " " + r.PathPattern, InstanceID: instance, Location: source, HTTP: &analysis.HTTPEntryMetadata{Method: r.Method, Path: r.PathPattern, Framework: r.Framework}}
+// HTTPEntry builds the snapshot HTTP entry for route r registered at source.
+func HTTPEntry(r analysis.Route, source analysis.Evidence, instance string) analysis.EntryPoint {
+	return analysis.EntryPoint{ID: SnapshotID("entry", source, instance, r.ID+":"+r.Method+":"+r.PathPattern), Kind: "http", Name: r.Method + " " + r.PathPattern, InstanceID: instance, Location: source, HTTP: &analysis.HTTPEntryMetadata{Method: r.Method, Path: r.PathPattern, Framework: r.Framework}}
 }
 
-func registerInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint, handler *analysis.Evidence, mechanism string, inputs []analysis.InputBinding, gaps []analysis.Gap) analysis.InvocationContext {
-	reg := analysis.EntryRegistration{ID: snapshotID("registration", entry.Location, entry.ID, "registration"), EntryID: entry.ID, Origin: entry.Location, Gaps: append([]analysis.Gap{}, gaps...)}
+// RegisterInvocation appends the entry, its registration, dispatch binding, handler callable (when
+// new) and invocation context to out, and returns that context.
+func RegisterInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint, handler *analysis.Evidence, mechanism string, inputs []analysis.InputBinding, gaps []analysis.Gap) analysis.InvocationContext {
+	reg := analysis.EntryRegistration{ID: SnapshotID("registration", entry.Location, entry.ID, "registration"), EntryID: entry.ID, Origin: entry.Location, Gaps: append([]analysis.Gap{}, gaps...)}
 	if entry.HTTP != nil {
 		reg.Framework = entry.HTTP.Framework
 	} else if entry.Browser != nil {
 		reg.Framework = entry.Browser.Framework
 	}
-	binding := analysis.DispatchBinding{ID: snapshotID("dispatch", entry.Location, reg.ID, mechanism), EntryID: entry.ID, RegistrationID: reg.ID, Mechanism: mechanism, Resolution: "unresolved", Gaps: append([]analysis.Gap{}, gaps...)}
+	binding := analysis.DispatchBinding{ID: SnapshotID("dispatch", entry.Location, reg.ID, mechanism), EntryID: entry.ID, RegistrationID: reg.ID, Mechanism: mechanism, Resolution: "unresolved", Gaps: append([]analysis.Gap{}, gaps...)}
 	if handler != nil {
-		id := snapshotID("callable", *handler, handler.Span.File, "lexical-body")
+		id := SnapshotID("callable", *handler, handler.Span.File, "lexical-body")
 		binding.CallableID = id
 		binding.Resolution = "resolved"
 		found := false
@@ -49,8 +54,8 @@ func registerInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint,
 	} else if len(binding.Gaps) == 0 {
 		binding.Gaps = []analysis.Gap{{Kind: "dispatch_unresolved", Detail: "No supported callable target", At: entry.Location.Span}}
 	}
-	binding.ID = snapshotID("dispatch", entry.Location, reg.ID, mechanism+":"+binding.CallableID)
-	ctx := analysis.InvocationContext{ID: snapshotID("invocation", entry.Location, binding.ID, "default"), EntryID: entry.ID, DispatchBindingID: binding.ID, Inputs: inputs, Gaps: append([]analysis.Gap{}, gaps...)}
+	binding.ID = SnapshotID("dispatch", entry.Location, reg.ID, mechanism+":"+binding.CallableID)
+	ctx := analysis.InvocationContext{ID: SnapshotID("invocation", entry.Location, binding.ID, "default"), EntryID: entry.ID, DispatchBindingID: binding.ID, Inputs: inputs, Gaps: append([]analysis.Gap{}, gaps...)}
 	out.Entries = append(out.Entries, entry)
 	out.Registrations = append(out.Registrations, reg)
 	out.DispatchBindings = append(out.DispatchBindings, binding)
@@ -58,7 +63,8 @@ func registerInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint,
 	return ctx
 }
 
-func finalizeEntries(out *analysis.AnalysisReport) error {
+// FinalizeEntries dedups callables, rekeys invocations, orders and validates entry records.
+func FinalizeEntries(out *analysis.AnalysisReport) error {
 	// Helpers can accumulate the same callable across language/browser adapter views.
 	seen := map[string]bool{}
 	funcs := out.Callables[:0]
@@ -98,11 +104,13 @@ func finalizeEntries(out *analysis.AnalysisReport) error {
 	return out.ValidateUses()
 }
 
-func httpInput(role, param string, e analysis.Evidence) analysis.InputBinding {
+// HTTPInput binds an external request input of role to handler parameter param.
+func HTTPInput(role, param string, e analysis.Evidence) analysis.InputBinding {
 	return analysis.InputBinding{Role: role, Parameter: param, Origin: analysis.InputOrigin{Kind: "external", Evidence: []analysis.Evidence{e}}}
 }
 
-func inputRole(role string) string { return strings.TrimPrefix(role, "http.") }
+// InputRole strips the "http." prefix from an input binding role.
+func InputRole(role string) string { return strings.TrimPrefix(role, "http.") }
 
 func enrichInvocationEvidence(out *analysis.AnalysisReport) {
 	for i := range out.Uses {
@@ -154,7 +162,7 @@ func enrichInvocationEvidence(out *analysis.AnalysisReport) {
 		}
 		for _, e := range u.Context {
 			switch e.Kind {
-			case "guard_test", "conditional_test", conditionalFalseTest, "branch_precondition", "authentication_adapter", "invoked_callable":
+			case "guard_test", "conditional_test", ConditionalFalseTest, "branch_precondition", "authentication_adapter", "invoked_callable":
 				found := false
 				for _, control := range ctx.Controls {
 					found = found || control.Evidence == e
@@ -185,7 +193,7 @@ func rekeyInvocations(out *analysis.AnalysisReport) {
 			Controls         []analysis.Evidence
 			Gaps             []analysis.Gap
 		}{ctx.Inputs, ctx.Closures, ctx.Receiver, controls, ctx.Gaps})
-		id := snapshotID("invocation", entries[ctx.EntryID].Location, ctx.DispatchBindingID, string(key))
+		id := SnapshotID("invocation", entries[ctx.EntryID].Location, ctx.DispatchBindingID, string(key))
 		keys[ctx.ID] = id
 		ctx.ID = id
 		for j := range ctx.Controls {
@@ -203,7 +211,7 @@ func rekeyInvocations(out *analysis.AnalysisReport) {
 			Context      []analysis.Evidence
 			Check        *analysis.Check
 		}{u.Kind, u.Sink, u.Dependencies, u.Context, u.Check})
-		id := snapshotID("candidate", entries[u.EntryID].Location, u.InvocationContextID, string(key))
+		id := SnapshotID("candidate", entries[u.EntryID].Location, u.InvocationContextID, string(key))
 		// Preserve separately inventoried identical observations deterministically;
 		// differing operand/call witnesses already have distinct structural keys.
 		occurrence := seen[id]

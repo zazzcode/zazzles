@@ -7,7 +7,8 @@ import (
 
 var htmlAttribute = regexp.MustCompile(`(?i)([a-z_:][a-z0-9_:.-]*)\s*=\s*(["']?)[^"']*$`)
 
-func htmlOutputContext(prefix string) string {
+// HTMLOutputContext classifies the HTML output context that follows prefix.
+func HTMLOutputContext(prefix string) string {
 	lower := strings.ToLower(prefix)
 	if strings.LastIndex(lower, "<script") > strings.LastIndex(lower, "</script") && strings.LastIndex(lower, ">") > strings.LastIndex(lower, "<script") {
 		return "script"

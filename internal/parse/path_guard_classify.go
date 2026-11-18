@@ -22,11 +22,13 @@ type PathGuardInfo struct {
 	AmbiguousCallers bool
 }
 
-func newPathGuardInfo() *PathGuardInfo {
+// NewPathGuardInfo returns empty path guard classifications.
+func NewPathGuardInfo() *PathGuardInfo {
 	return &PathGuardInfo{Kinds: map[string]string{}, deps: map[string]map[int]bool{}, rootContain: map[string]bool{}}
 }
 
-func guardKey(e analysis.Evidence) string {
+// GuardKey is the file and byte-span key of a guard evidence item.
+func GuardKey(e analysis.Evidence) string {
 	return fmt.Sprintf("%s:%d:%d", e.Span.File, e.Span.StartByte, e.Span.EndByte)
 }
 
@@ -35,7 +37,7 @@ func (g *PathGuardInfo) Note(e analysis.Evidence, kind string, deps map[int]bool
 }
 
 func (g *PathGuardInfo) NoteWithMeta(e analysis.Evidence, kind string, deps map[int]bool, rootContain bool) {
-	k := guardKey(e)
+	k := GuardKey(e)
 	g.Kinds[k] = kind
 	g.deps[k] = deps
 	g.rootContain[k] = rootContain
@@ -53,7 +55,8 @@ var (
 	// keyPresenceTest is `'k' [not] in <container>`; emptyComparison is `x == ''`, `x != None`.
 	// Neither constrains what a present value contains.
 	keyPresenceTest = regexp.MustCompile(`^\s*(?:not\s+)?r?['"][\w -]*['"]\s+(?:not\s+)?in\s+[A-Za-z_][\w.]*\s*$`)
-	emptyComparison = regexp.MustCompile(`^\s*(?:not\s+)?[\w.\[\]'"]+\s*(?:==|!=|is not|is)\s*(?:''|""|None|null|undefined)\s*$`)
+	// EmptyComparison matches a condition that only compares a value with an empty string, None, null or undefined.
+	EmptyComparison = regexp.MustCompile(`^\s*(?:not\s+)?[\w.\[\]'"]+\s*(?:==|!=|is not|is)\s*(?:''|""|None|null|undefined)\s*$`)
 	// separatorText is a test for a path separator character in the value.
 	separatorText = regexp.MustCompile(`(?:includes|indexOf|contains|find)\s*\(\s*(?:path\.sep|os\.sep|['"][\\/]['"])\s*\)|['"][\\/]['"]\s+(?:not\s+)?in\b|\b(?:os|path)\.sep\s+(?:not\s+)?in\b`)
 	constantList  = regexp.MustCompile(`^[\[\(\{]\s*(?:(?:r?['"][^'"]*['"])\s*(?::\s*[^,\]\)\}]*)?\s*,?\s*)+[\]\)\}]$`)
@@ -69,7 +72,7 @@ func sortedRelated(cond string, defs map[string]string) string {
 	}
 	sort.Strings(keys)
 	for _, name := range keys {
-		if mentionsAny(cond, []string{name}) {
+		if MentionsAny(cond, []string{name}) {
 			related += " " + defs[name]
 		}
 	}
@@ -78,14 +81,14 @@ func sortedRelated(cond string, defs map[string]string) string {
 
 // classifyPathGuardText classifies a control condition string deterministically.
 func classifyPathGuardText(cond string, names []string, defs map[string]string, collectionIs func(string) bool) string {
-	if keyPresenceTest.MatchString(cond) || emptyComparison.MatchString(cond) {
+	if keyPresenceTest.MatchString(cond) || EmptyComparison.MatchString(cond) {
 		return analysis.PathGuardPresenceOrType
 	}
 	text := cond
 	related := sortedRelated(cond, defs)
 	for _, m := range membershipCall.FindAllStringSubmatch(related, -1) {
 		receiver, arg := strings.TrimSpace(m[1]), m[2]
-		if !mentionsAny(arg, names) || mentionsAny(receiver, names) {
+		if !MentionsAny(arg, names) || MentionsAny(receiver, names) {
 			continue
 		}
 		if (strings.HasPrefix(receiver, "[") && constantList.MatchString(receiver)) || collectionIs(receiver) {
@@ -94,7 +97,7 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 	}
 	for _, m := range inOperator.FindAllStringSubmatch(related, -1) {
 		left, right := strings.TrimSpace(m[1]), strings.TrimSpace(m[3])
-		if !mentionsAny(left, names) || mentionsAny(right, names) {
+		if !MentionsAny(left, names) || MentionsAny(right, names) {
 			continue
 		}
 		if constantList.MatchString(right) || collectionIs(right) {
@@ -102,7 +105,7 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 		}
 	}
 	for _, m := range jsSubscriptTest.FindAllStringSubmatch(related, -1) {
-		if mentionsAny(m[2], names) && collectionIs(m[1]) {
+		if MentionsAny(m[2], names) && collectionIs(m[1]) {
 			return analysis.PathGuardAllowlist
 		}
 	}
@@ -129,7 +132,7 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 		return analysis.PathGuardSeparatorText
 	}
 	for _, m := range membershipCall.FindAllStringSubmatch(related, -1) {
-		if mentionsAny(m[1], names) && !mentionsAny(m[2], names) {
+		if MentionsAny(m[1], names) && !MentionsAny(m[2], names) {
 			return analysis.PathGuardSubstring
 		}
 	}
@@ -138,15 +141,15 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 
 func flipPolarity(p GuardPolarity) GuardPolarity {
 	if p == guardRejectsWhenTrue {
-		return guardEnforcesWhenTrue
+		return GuardEnforcesWhenTrue
 	}
 	return guardRejectsWhenTrue
 }
 
-// classifyPathGuardAST evaluates condition syntax with branch polarity and boolean
+// ClassifyPathGuardAST evaluates condition syntax with branch polarity and boolean
 // conjunction/disjunction structure so inverted or conditionally bypassed guards
 // cannot acquire enforcing containment kinds.
-func classifyPathGuardAST(cond *sitter.Node, src []byte, polarity GuardPolarity, names []string, defs map[string]string, defNodes map[string]*sitter.Node, collectionIs, baseConstIs func(string) bool) (string, bool) {
+func ClassifyPathGuardAST(cond *sitter.Node, src []byte, polarity GuardPolarity, names []string, defs map[string]string, defNodes map[string]*sitter.Node, collectionIs, baseConstIs func(string) bool) (string, bool) {
 	if cond == nil {
 		return analysis.PathGuardUnclassified, false
 	}
@@ -201,7 +204,7 @@ func evalGuardAST(n *sitter.Node, src []byte, polarity GuardPolarity, names []st
 			case "&&", "and":
 				lk, lr := evalGuardAST(left, src, polarity, names, defs, defNodes, collectionIs, baseConstIs, depth+1)
 				rk, rr := evalGuardAST(right, src, polarity, names, defs, defNodes, collectionIs, baseConstIs, depth+1)
-				if polarity == guardEnforcesWhenTrue {
+				if polarity == GuardEnforcesWhenTrue {
 					return pickStrongerGuard(lk, lr, rk, rr)
 				}
 				if analysis.EnforcingPathGuard(lk) && analysis.EnforcingPathGuard(rk) {
@@ -233,11 +236,11 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 
 	for _, m := range inOperator.FindAllStringSubmatch(text, -1) {
 		left, neg, right := strings.TrimSpace(m[1]), strings.TrimSpace(m[2]) != "", strings.TrimSpace(m[3])
-		if !mentionsAny(left, names) || mentionsAny(right, names) {
+		if !MentionsAny(left, names) || MentionsAny(right, names) {
 			continue
 		}
 		if constantList.MatchString(right) || collectionIs(right) {
-			if (polarity == guardRejectsWhenTrue && neg) || (polarity == guardEnforcesWhenTrue && !neg) {
+			if (polarity == guardRejectsWhenTrue && neg) || (polarity == GuardEnforcesWhenTrue && !neg) {
 				return analysis.PathGuardAllowlist, false
 			}
 			return analysis.PathGuardInverted, false
@@ -245,9 +248,9 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 	}
 	for _, m := range membershipCall.FindAllStringSubmatch(text, -1) {
 		receiver, arg := strings.TrimSpace(m[1]), m[2]
-		if mentionsAny(arg, names) && !mentionsAny(receiver, names) {
+		if MentionsAny(arg, names) && !MentionsAny(receiver, names) {
 			if (strings.HasPrefix(receiver, "[") && constantList.MatchString(receiver)) || collectionIs(receiver) {
-				if polarity == guardEnforcesWhenTrue {
+				if polarity == GuardEnforcesWhenTrue {
 					return analysis.PathGuardAllowlist, false
 				}
 				return analysis.PathGuardInverted, false
@@ -255,8 +258,8 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 		}
 	}
 	for _, m := range jsSubscriptTest.FindAllStringSubmatch(text, -1) {
-		if mentionsAny(m[2], names) && collectionIs(m[1]) {
-			if polarity == guardEnforcesWhenTrue {
+		if MentionsAny(m[2], names) && collectionIs(m[1]) {
+			if polarity == GuardEnforcesWhenTrue {
 				return analysis.PathGuardAllowlist, false
 			}
 			return analysis.PathGuardInverted, false
@@ -266,7 +269,7 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 		notEq := strings.Contains(text, "!=")
 		eq := !notEq && strings.Contains(text, "==")
 		extractBaseIdentifier(related, names, baseConstIs)
-		if (polarity == guardRejectsWhenTrue && notEq) || (polarity == guardEnforcesWhenTrue && eq) {
+		if (polarity == guardRejectsWhenTrue && notEq) || (polarity == GuardEnforcesWhenTrue && eq) {
 			return analysis.PathGuardCommonPath, false
 		}
 		if notEq || eq {
@@ -277,7 +280,7 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 	if relativeCall.MatchString(related) {
 		extractBaseIdentifier(related, names, baseConstIs)
 		if strings.Contains(related, "is_relative_to") {
-			if polarity == guardEnforcesWhenTrue {
+			if polarity == GuardEnforcesWhenTrue {
 				return analysis.PathGuardRelative, false
 			}
 			return analysis.PathGuardInverted, false
@@ -286,7 +289,7 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 		if polarity == guardRejectsWhenTrue && escapesWhenTrue {
 			return analysis.PathGuardRelative, false
 		}
-		if polarity == guardEnforcesWhenTrue && escapesWhenTrue {
+		if polarity == GuardEnforcesWhenTrue && escapesWhenTrue {
 			return analysis.PathGuardInverted, false
 		}
 		return analysis.PathGuardUnclassified, false
@@ -300,7 +303,7 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 			return analysis.PathGuardInverted, false
 		}
 		extractBaseIdentifier(arg, names, baseConstIs)
-		if polarity == guardEnforcesWhenTrue {
+		if polarity == GuardEnforcesWhenTrue {
 			if boundaryText.MatchString(arg) {
 				return analysis.PathGuardPrefixBoundary, false
 			}
@@ -310,7 +313,7 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 	}
 	for _, m := range membershipCall.FindAllStringSubmatch(text, -1) {
 		receiver, arg := strings.TrimSpace(m[1]), strings.TrimSpace(m[2])
-		if mentionsAny(receiver, names) && !mentionsAny(arg, names) {
+		if MentionsAny(receiver, names) && !MentionsAny(arg, names) {
 			if separatorText.MatchString(text) {
 				if polarity == guardRejectsWhenTrue {
 					return analysis.PathGuardSeparatorText, false
@@ -323,7 +326,7 @@ func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names [
 				}
 				return analysis.PathGuardUnclassified, false
 			}
-			isRootSub := polarity == guardEnforcesWhenTrue && isPositiveRootArg(arg, baseConstIs)
+			isRootSub := polarity == GuardEnforcesWhenTrue && isPositiveRootArg(arg, baseConstIs)
 			return analysis.PathGuardSubstring, isRootSub
 		}
 	}
@@ -338,7 +341,7 @@ func extractBaseIdentifier(expr string, depNames []string, baseConstIs func(stri
 	}
 	found := false
 	for _, tok := range identToken.FindAllString(expr, -1) {
-		if mentionsAny(tok, depNames) {
+		if MentionsAny(tok, depNames) {
 			continue
 		}
 		if baseConstIs(tok) {

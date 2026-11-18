@@ -18,7 +18,7 @@ type ClosedCallable struct {
 
 func (c *ClosedCallable) Closed() bool { return c != nil && c.done && len(c.Reasons) == 0 }
 func (c *ClosedCallable) Reject(kind, file string, n *sitter.Node) {
-	c.Reasons = append(c.Reasons, SummaryReason{Kind: kind, At: spanOf(file, n)})
+	c.Reasons = append(c.Reasons, SummaryReason{Kind: kind, At: Span(file, n)})
 }
 func (c *ClosedCallable) Read(name, file string, n *sitter.Node) {
 	for i, p := range c.Params {

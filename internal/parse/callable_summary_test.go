@@ -135,9 +135,9 @@ func TestCallableSummaryFixpointCap(t *testing.T) {
 	}
 }
 
-// TestClosedSummaryAtRefusals checks the D-14 application: a closed helper with
-// inert arguments loses its refusal gap, while request arguments, closure
-// arguments and helpers that are not closed keep today's gaps.
+// TestClosedSummaryAtRefusals checks closed/inert and full witness applications.
+// Supported parameter-dependent return/sink recipes close refusals; ambient
+// helpers retain their explicit gaps.
 func TestClosedSummaryAtRefusals(t *testing.T) {
 	root := t.TempDir()
 	ticks := strings.Repeat("  tick(0)\n", 30)
@@ -176,14 +176,42 @@ app.listen(3000)
 	if n := count("path_unrelated_helper_limit:tick"); n != 0 {
 		t.Errorf("closed tick(0) refusals kept %d gaps: %s", n, joined)
 	}
-	if count("helper_call_limit:tick") == 0 {
-		t.Errorf("tick(req.query.n) must keep its refusal: %s", joined)
+	if count("helper_call_limit:tick") != 0 {
+		t.Errorf("supported dependent tick return kept its refusal: %s", joined)
 	}
 	if count("path_unrelated_helper_limit:env") == 0 {
 		t.Errorf("env() is not closed and must keep its refusal: %s", joined)
 	}
-	if count("helper_call_limit:d3") == 0 {
-		t.Errorf("a request argument past the depth limit must keep helper_call_limit: %s", joined)
+	if count("helper_call_limit:d3") != 0 {
+		t.Errorf("supported dependent filesystem witness kept its refusal: %s", joined)
+	}
+	found := false
+	for _, u := range r.Uses {
+		if u.Kind != "path_traversal_candidate" || u.Sink.Text != "fs.readFileSync(v)" {
+			continue
+		}
+		found = true
+		if u.Path == nil {
+			t.Fatal("native filesystem facts missing")
+		}
+		if err := u.Path.Validate(len(u.Dependencies), len(u.Context)); err != nil {
+			t.Fatal(err)
+		}
+		if len(u.Dependencies) == 0 || u.Dependencies[0].Source.Text != "req.query.name" {
+			t.Fatalf("caller origin lost: %+v", u.Dependencies)
+		}
+		bindings := 0
+		for _, e := range u.Dependencies[0].Transfers {
+			if e.Kind == "parameter_binding" {
+				bindings++
+			}
+		}
+		if bindings != 4 {
+			t.Fatalf("want all four concrete helper bindings, got %d", bindings)
+		}
+	}
+	if !found {
+		t.Fatal("newly reachable filesystem sink witness missing")
 	}
 }
 

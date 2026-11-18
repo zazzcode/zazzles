@@ -91,6 +91,7 @@ func (f *pythonStatic) stmt(n *sitter.Node) bool {
 			f.returned = f.eval(n.NamedChild(0))
 		} else {
 			f.returned = staticText("None")
+			f.returned.proofString = false
 		}
 		return true
 	case "for_statement":

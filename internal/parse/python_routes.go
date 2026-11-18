@@ -15,6 +15,7 @@ type pythonReceiver struct {
 	uncertain               bool
 }
 type pythonRoute struct {
+	selector      *pythonSelectorBinding
 	generated     bool
 	instance      string
 	closures      map[string]*pythonStaticValue

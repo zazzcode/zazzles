@@ -90,7 +90,7 @@ func TestPHPClosedSummaries(t *testing.T) {
 	}
 }
 
-func TestClosedSummaryRefusals(t *testing.T) {
+func TestClosedAndDependentSummaryRefusals(t *testing.T) {
 	for _, language := range []string{"python", "php"} {
 		t.Run(language, func(t *testing.T) {
 			if language == "python" {
@@ -116,8 +116,24 @@ func TestClosedSummaryRefusals(t *testing.T) {
 						v.deps = []pythonDep{{}}
 					}
 					got := f.boundHelper(call, &pythonBoundCallable{module: m, fn: fn}, []pythonValue{v})
-					if (len(got.gaps) > 0) != tainted {
-						t.Fatalf("tainted=%v gaps=%v", tainted, got.gaps)
+					if len(got.gaps) > 0 {
+						t.Fatalf("supported identity retained refusal: tainted=%v gaps=%v", tainted, got.gaps)
+					}
+					want := 0
+					if tainted {
+						want = 1
+					}
+					if len(got.deps) != want {
+						t.Fatalf("tainted=%v dependencies=%d want=%d", tainted, len(got.deps), want)
+					}
+					if tainted {
+						binding := false
+						for _, e := range got.deps[0].dep.Transfers {
+							binding = binding || e.Kind == "argument_to_parameter"
+						}
+						if !binding {
+							t.Fatal("dependent identity lost concrete parameter witness")
+						}
 					}
 				}
 			} else {
@@ -142,8 +158,24 @@ func TestClosedSummaryRefusals(t *testing.T) {
 						v.deps = []phpDep{{}}
 					}
 					got := f.boundHelper(call, &phpBoundCallable{module: m, fn: m.funcs["f"]}, []phpValue{v})
-					if (len(got.gaps) > 0) != tainted {
-						t.Fatalf("tainted=%v gaps=%v", tainted, got.gaps)
+					if len(got.gaps) > 0 {
+						t.Fatalf("supported identity retained refusal: tainted=%v gaps=%v", tainted, got.gaps)
+					}
+					want := 0
+					if tainted {
+						want = 1
+					}
+					if len(got.deps) != want {
+						t.Fatalf("tainted=%v dependencies=%d want=%d", tainted, len(got.deps), want)
+					}
+					if tainted {
+						binding := false
+						for _, e := range got.deps[0].dep.Transfers {
+							binding = binding || e.Kind == "argument_to_parameter"
+						}
+						if !binding {
+							t.Fatal("dependent identity lost concrete parameter witness")
+						}
 					}
 				}
 			}

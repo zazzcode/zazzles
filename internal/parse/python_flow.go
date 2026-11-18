@@ -20,6 +20,7 @@ type pythonBoundCallable struct {
 }
 
 type pythonValue struct {
+	finite          *pythonFiniteValue
 	callable        *pythonBoundCallable
 	deps            []pythonDep
 	gaps            []analysis.Gap
@@ -48,21 +49,23 @@ type pythonWrite struct {
 	evidence analysis.Evidence
 }
 type pythonFlow struct {
-	set        *pythonSet
-	module     *pythonModule
-	route      pythonRoute
-	invocation analysis.InvocationContext
-	report     *analysis.AnalysisReport
-	env        map[string]pythonValue
-	context    []analysis.Evidence
-	gaps       []analysis.Gap
-	depth      int
-	work       *int
-	stack      map[string]bool
-	returns    pythonValue
-	imports    map[string]pythonImport
-	inputs     map[string]pythonValue
-	guards     map[string][]analysis.Gap
+	selectionActive bool
+	witnessValues   map[uintptr]pythonValue
+	set             *pythonSet
+	module          *pythonModule
+	route           pythonRoute
+	invocation      analysis.InvocationContext
+	report          *analysis.AnalysisReport
+	env             map[string]pythonValue
+	context         []analysis.Evidence
+	gaps            []analysis.Gap
+	depth           int
+	work            *int
+	stack           map[string]bool
+	returns         pythonValue
+	imports         map[string]pythonImport
+	inputs          map[string]pythonValue
+	guards          map[string][]analysis.Gap
 }
 
 func pyBody(n *sitter.Node) *sitter.Node {
@@ -131,6 +134,7 @@ func (s *pythonSet) analyze(out *analysis.AnalysisReport, r pythonRoute) {
 }
 func (f *pythonFlow) clone() *pythonFlow {
 	c := *f
+	c.witnessValues = nil
 	c.env = map[string]pythonValue{}
 	for k, v := range f.env {
 		c.env[k] = v

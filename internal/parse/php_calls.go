@@ -33,6 +33,12 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		values[i] = f.eval(a)
 		all = phpCombine(all, values[i])
 	}
+	return f.callValues(n, nodes, values, all)
+}
+
+// callValues shares the native API models with compiled witness recipes; only
+// argument evaluation differs between the two callers.
+func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpValue, all phpValue) phpValue {
 	name := f.callName(n)
 	if n.Kind() == "member_call_expression" {
 		return f.methodCall(n, nodes, values)
@@ -496,6 +502,9 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 		if f.closedSummaryCall(call, callable, values) {
 			return phpValue{}
 		}
+		if v, ok := f.applyPHPWitness(call, callable, values); ok {
+			return v
+		}
 		v := phpValue{}
 		for _, a := range values {
 			v = phpCombine(v, a)
@@ -611,29 +620,32 @@ func phpCallee(n *sitter.Node) *sitter.Node {
 // phpBuiltinEffectName excludes namespaces and imported function aliases. The
 // legacy parser indexes only top-level function names, so inspect declarations
 // throughout the source set before assigning a builtin contract.
-
 func (f *phpFlow) phpBuiltinEffectName(name string) bool {
-	if strings.ContainsAny(name, "\\\\$") {
+	if strings.ContainsAny(name, "\\$") {
 		return false
 	}
-	if f.set.builtinEffects == nil {
-		f.set.builtinEffects = map[string]bool{}
-		for _, file := range f.set.files {
-			m := f.set.modules[file]
-			if m == nil {
-				continue
-			}
-			phpWalk(m.tree.RootNode(), func(n *sitter.Node) {
-				if n.Kind() == "function_definition" {
-					f.set.builtinEffects[strings.ToLower(phpText(m, phpField(n, "name")))] = true
-				}
-				if n.Kind() == "namespace_definition" || n.Kind() == "namespace_use_declaration" {
-					f.set.builtinEffects["module:"+file] = true
-				}
-			})
-		}
-	}
+	f.set.indexBuiltinEffects()
 	return !f.set.builtinEffects["module:"+f.module.file] && !f.set.builtinEffects[strings.ToLower(name)]
+}
+func (s *phpSet) indexBuiltinEffects() {
+	if s.builtinEffects != nil {
+		return
+	}
+	s.builtinEffects = map[string]bool{}
+	for _, file := range s.files {
+		m := s.modules[file]
+		if m == nil {
+			continue
+		}
+		phpWalk(m.tree.RootNode(), func(n *sitter.Node) {
+			if n.Kind() == "function_definition" {
+				s.builtinEffects[strings.ToLower(phpText(m, phpField(n, "name")))] = true
+			}
+			if n.Kind() == "namespace_definition" || n.Kind() == "namespace_use_declaration" {
+				s.builtinEffects["module:"+file] = true
+			}
+		})
+	}
 }
 
 // phpContentValue retains provenance while forgetting shape and protection

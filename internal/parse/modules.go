@@ -50,6 +50,7 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
+	witnessPlans    map[string]*jsWitnessPlan
 	prismaSchemas   map[string]map[string]map[string]string
 	browserStates   map[string]*browserEvents
 	tsConfigs       map[string]*tsConfig

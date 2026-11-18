@@ -42,6 +42,9 @@ func (f *pythonStatic) lookup(name string) *pythonStaticValue {
 		return &pythonStaticValue{module: m, fn: fn}
 	}
 	if n := m.vars[key]; n != nil {
+		if f.proof && !pythonFiniteExpression(m, n) {
+			return staticUnknown()
+		}
 		guard := "value:" + m.file + ":" + key
 		if f.stack[guard] {
 			return staticUnknown()
@@ -72,7 +75,9 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 		}
 		return f.lookup(pyText(m, n))
 	case "integer", "true", "false", "none":
-		return staticText(pyText(m, n))
+		v := staticText(pyText(m, n))
+		v.proofString = false
+		return v
 	case "list", "tuple", "expression_list":
 		v := &pythonStaticValue{known: true, tainted: new(bool), items: []*pythonStaticValue{}}
 		for i := uint(0); i < n.NamedChildCount(); i++ {
@@ -87,6 +92,10 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 			if !k.known {
 				return staticUnknown()
 			}
+			if v.keyStrings == nil {
+				v.keyStrings = map[string]bool{}
+			}
+			v.keyStrings[k.text] = k.proofString
 			v.fields[k.text] = f.eval(p.ChildByFieldName("value"))
 			v.keys[k.text] = k.evidence
 		}
@@ -122,6 +131,9 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 			return staticUnknown()
 		}
 		if idx.Kind() == "slice" && base.known {
+			if f.proof && !base.proofString {
+				return staticUnknown()
+			}
 			// Bound string slicing uses syntax offsets, including omitted endpoints.
 			raw := strings.Split(pyText(m, idx), ":")
 			if len(raw) != 2 {
@@ -159,9 +171,21 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 			return staticUnknown()
 		}
 		if base.fields != nil {
+			if f.proof {
+				kind := true
+				if value, ok := base.keyStrings[key.text]; ok {
+					kind = value
+				}
+				if kind != key.proofString {
+					return staticUnknown()
+				}
+			}
 			if v := base.fields[key.text]; v != nil {
 				return v
 			}
+		}
+		if f.proof && key.proofString && base.items != nil {
+			return staticUnknown()
 		}
 		if i, err := strconv.Atoi(key.text); err == nil && i >= 0 && i < len(base.items) {
 			return base.items[i]
@@ -174,6 +198,9 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 			return staticUnknown()
 		}
 		a, b := f.eval(n.NamedChild(0)), f.eval(n.NamedChild(1))
+		if f.proof && (!a.proofString || !b.proofString) {
+			return staticUnknown()
+		}
 		if !a.known || !b.known {
 			return staticUnknown()
 		}
@@ -204,6 +231,9 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 	case "binary_operator":
 		a, b := f.eval(n.ChildByFieldName("left")), f.eval(n.ChildByFieldName("right"))
 		if a.known && b.known && pyText(m, n.ChildByFieldName("operator")) == "+" {
+			if f.proof && (!a.proofString || !b.proofString) {
+				return staticUnknown()
+			}
 			if a.items != nil && b.items != nil {
 				out := &pythonStaticValue{known: true, tainted: new(bool), items: append(append([]*pythonStaticValue{}, a.items...), b.items...)}
 				return out
@@ -215,9 +245,13 @@ func (f *pythonStatic) eval(n *sitter.Node) *pythonStaticValue {
 }
 func staticBool(b bool) *pythonStaticValue {
 	if b {
-		return staticText("True")
+		v := staticText("True")
+		v.proofString = false
+		return v
 	}
-	return staticText("False")
+	v := staticText("False")
+	v.proofString = false
+	return v
 }
 func staticTruth(v *pythonStaticValue) bool {
 	return v != nil && v.known && v.text != "False" && v.text != "None" && (v.text != "" || len(v.items) > 0 || len(v.fields) > 0)
@@ -239,6 +273,9 @@ func staticItems(v *pythonStaticValue) ([]*pythonStaticValue, bool) {
 		items := []*pythonStaticValue{}
 		for _, k := range keys {
 			key := staticText(k)
+			if value, ok := v.keyStrings[k]; ok {
+				key.proofString = value
+			}
 			key.evidence = pythonMergeEvidence(v.evidence, v.keys[k])
 			items = append(items, key)
 		}
@@ -294,10 +331,31 @@ func (f *pythonStatic) comprehension(n *sitter.Node) *pythonStaticValue {
 }
 
 func (f *pythonStatic) method(n *sitter.Node, base *pythonStaticValue, method string, args []*pythonStaticValue) (*pythonStaticValue, bool) {
+	if f.proof {
+		switch method {
+		case "format", "replace", "split", "title", "startswith", "endswith":
+			if !base.proofString || base.module != nil || base.fn != nil || base.fields != nil || base.items != nil || base.receiver || base.kind != "" || base.class != nil || base.instance != nil {
+				return staticUnknown(), true
+			}
+			for _, a := range args {
+				if !a.known || a.module != nil || a.fn != nil || a.fields != nil || a.items != nil || a.receiver || a.kind != "" || a.class != nil || a.instance != nil {
+					return staticUnknown(), true
+				}
+				if !a.proofString {
+					return staticUnknown(), true
+				}
+			}
+		}
+	}
+
 	if base.tainted != nil && *base.tainted {
 		return staticUnknown(), true
 	}
 	if base.fields != nil {
+		if f.proof && method == "keys" {
+			items, _ := staticItems(base)
+			return &pythonStaticValue{known: true, items: items}, true
+		}
 		switch method {
 		case "items":
 			keys, _ := staticItems(base)
@@ -312,6 +370,10 @@ func (f *pythonStatic) method(n *sitter.Node, base *pythonStaticValue, method st
 					return v, true
 				}
 				base.fields[args[0].text] = args[1]
+				if base.keyStrings == nil {
+					base.keyStrings = map[string]bool{}
+				}
+				base.keyStrings[args[0].text] = args[0].proofString
 				if base.keys == nil {
 					base.keys = map[string][]analysis.Evidence{}
 				}
@@ -325,6 +387,17 @@ func (f *pythonStatic) method(n *sitter.Node, base *pythonStaticValue, method st
 		return staticText("None"), true
 	}
 	if base.known {
+		if f.proof && method == "split" && len(args) == 1 && args[0].known && args[0].text != "" {
+			parts := strings.Split(base.text, args[0].text)
+			if len(parts) > 128 {
+				return staticUnknown(), true
+			}
+			v := &pythonStaticValue{known: true, items: []*pythonStaticValue{}}
+			for _, part := range parts {
+				v.items = append(v.items, staticText(part))
+			}
+			return v, true
+		}
 		switch method {
 		case "title":
 			return staticText(pythonTitle(base.text)), true
@@ -417,6 +490,9 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 		}
 		return out, true
 	case "importlib.import_module":
+		if f.proof && (len(args) == 0 || !args[0].proofString) {
+			return staticUnknown(), true
+		}
 		name, ok := arg(0)
 		if !ok {
 			return staticUnknown(), true
@@ -492,6 +568,9 @@ func (f *pythonStatic) libraryCall(n *sitter.Node, q string, args []*pythonStati
 	}
 	if q == "getattr" && f.module.vars["getattr"] == nil && f.module.imports["getattr"].node == nil {
 		if len(args) == 2 && args[0].module != nil && args[1].known {
+			if f.proof && !args[1].proofString {
+				return staticUnknown(), true
+			}
 			h := *f
 			h.module = args[0].module
 			h.env = map[string]*pythonStaticValue{}

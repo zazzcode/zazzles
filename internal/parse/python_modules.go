@@ -21,14 +21,15 @@ type pythonImport struct {
 	node         *sitter.Node
 }
 type pythonModule struct {
-	commentsReady bool
-	comments      []sourceComment
-	file          string
-	src           []byte
-	hash          string
-	tree          *sitter.Tree
-	imports       map[string]pythonImport
-	vars, funcs   map[string]*sitter.Node
+	witnessBindingsUnsafe *bool
+	commentsReady         bool
+	comments              []sourceComment
+	file                  string
+	src                   []byte
+	hash                  string
+	tree                  *sitter.Tree
+	imports               map[string]pythonImport
+	vars, funcs           map[string]*sitter.Node
 	// mounts is the lazily built list of possible blueprint/router mount calls;
 	// see mountCalls.
 	mounts      []*sitter.Node
@@ -37,6 +38,7 @@ type pythonModule struct {
 	bindings *pythonBindingIndex
 }
 type pythonSet struct {
+	witnessPlans  map[string]*pythonWitnessPlan
 	summaries     map[string]*closedCallable
 	inputs        map[string]map[analysis.Evidence]pythonInputSource
 	root          string

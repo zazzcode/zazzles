@@ -14,15 +14,17 @@ const staticWorkLimit = 40000
 // Static discovery interprets a finite syntax subset over selected source snapshots.
 // It never loads Python modules or invokes target code in a Python runtime.
 type pythonStaticValue struct {
-	text     string
-	known    bool
-	tainted  *bool
-	items    []*pythonStaticValue
-	keys     map[string][]analysis.Evidence
-	fields   map[string]*pythonStaticValue
-	module   *pythonModule
-	fn       *sitter.Node
-	receiver bool
+	proofString bool
+	keyStrings  map[string]bool
+	text        string
+	known       bool
+	tainted     *bool
+	items       []*pythonStaticValue
+	keys        map[string][]analysis.Evidence
+	fields      map[string]*pythonStaticValue
+	module      *pythonModule
+	fn          *sitter.Node
+	receiver    bool
 	// kind names a framework receiver created by a verified constructor.
 	kind string
 	// routes holds Pyramid route names bound to their patterns.
@@ -35,6 +37,7 @@ type pythonStaticValue struct {
 	evidence        []analysis.Evidence
 }
 type pythonStatic struct {
+	proof      bool
 	set        *pythonSet
 	module     *pythonModule
 	env        map[string]*pythonStaticValue
@@ -48,8 +51,10 @@ type pythonStatic struct {
 	provenance []analysis.Evidence
 }
 
-func staticText(text string) *pythonStaticValue { return &pythonStaticValue{text: text, known: true} }
-func staticUnknown() *pythonStaticValue         { return &pythonStaticValue{} }
+func staticText(text string) *pythonStaticValue {
+	return &pythonStaticValue{text: text, known: true, proofString: true}
+}
+func staticUnknown() *pythonStaticValue { return &pythonStaticValue{} }
 func staticEnv(in map[string]*pythonStaticValue) map[string]*pythonStaticValue {
 	out := map[string]*pythonStaticValue{}
 	for k, v := range in {
@@ -77,6 +82,9 @@ func (f *pythonStatic) evidence(kind string, n *sitter.Node) analysis.Evidence {
 	return f.module.evidence(kind, n)
 }
 func (f *pythonStatic) gap(n *sitter.Node, detail string) {
+	if f.proof {
+		return
+	}
 	f.set.gaps = append(f.set.gaps, analysis.Gap{Kind: "python_dynamic_unresolved", Detail: detail, At: spanOf(f.module.file, n)})
 }
 func (f *pythonStatic) tick(n *sitter.Node) bool {

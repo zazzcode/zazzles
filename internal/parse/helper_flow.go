@@ -31,6 +31,11 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	if f.helpers == nil || callHasSpread(call) {
 		return value{}, false, false
 	}
+	if f.witness != nil {
+		if plan := f.witness.plan.calls[call.Id()]; plan != nil {
+			return f.instantiateJSWitness(call, plan, args)
+		}
+	}
 	hm, helper := f.set.resolveCall(f.module, call)
 	if hm == nil || helper == nil || !supportedCallee(helper) {
 		return value{}, false, false
@@ -52,6 +57,9 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 		// A closed summary stands in for the refused expansion (spec §8b D-14).
 		if f.closedSummaryCall(call, hm, helper, args) {
 			return value{}, true, true
+		}
+		if ret, entered, precise := f.summaryWitnessCall(call, hm, helper, args); entered {
+			return ret, entered, precise
 		}
 		kind := "helper_call_limit"
 		// Unrelated helpers that cannot close over request data are not path blockers

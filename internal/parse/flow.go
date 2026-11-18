@@ -37,6 +37,7 @@ type value struct {
 	web string
 }
 type flow struct {
+	witness          *jsWitnessFrame
 	redirectResponse string
 	nextData         bool
 	report           *analysis.AnalysisReport

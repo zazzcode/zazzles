@@ -235,20 +235,25 @@ and the [implementation contract](../specifications/node-http-input-refactor.md)
 
 ## 3. Parsing and language adapters
 
-`internal/parse` owns Tree-sitter lifetimes, module resolution, framework bindings, bounded flow,
-security operation models and evidence assembly for JS/TS and Python. Its name reflects its origin;
-it currently owns more than syntax parsing. It also holds the **language core API**
-(`internal/parse/core_api.go`): the documented functions and small value types (inventory, spans,
-snapshot IDs, parsers, model source, invocation registration, entry finalization, XSS claim assembly,
-check-context matching and the closed-summary lattice) that an adapter outside `parse` may use. PHP
-lives in `internal/langphp` and imports only that API, never JS flow internals. Shared records do
-not depend on Tree-sitter nodes or HTTP clients.
+Each language has its own adapter package; `internal/parse` is the **language core** they share
+(its name reflects its origin, not syntax parsing alone). The core holds only what at least two
+adapters, `Assemble` or `pipeline` use: the walked `Inventory` and runner selection, `Assemble`,
+entry registration and finalization, the shared claim, completeness and guard engines, spans, model
+source and bounded text sources. Its **language core API** is indexed with one-line contracts in
+`internal/parse/core_api.go`. The core imports no adapter and references no adapter's flow model.
+Shared records do not depend on Tree-sitter nodes or HTTP clients.
 
-- JS/TS analysis covers supported Express/CommonJS/ESM routes, helpers, browser entries,
-  database/logging/outbound operations, templates and selected stored/cross-tier XSS relationships.
-- Python uses `python_*.go` files for local modules, Flask/Blueprint, RESTX and FastAPI routes,
+- `internal/langjs` (JS/TS) owns Tree-sitter module sets, Express/CommonJS/ESM routes, Next.js,
+  helpers, browser entries, GraphQL and unary gRPC, database/logging/outbound operations, templates
+  and selected stored/cross-tier XSS relationships. Its runner builds the base report that
+  `Assemble` requires for a full scan.
+- `internal/langpy` (Python) owns local modules, Flask/Blueprint, RESTX and FastAPI routes,
   value/control flow, DB-API, validation, logging, HTTP and template semantics. Supported inline
-  template scripts reuse browser analysis. See [Python coverage](../../docs/python-support.md).
+  template scripts reuse browser analysis through one bridge, `langjs.AnalyzeInlineScripts`; template
+  text comes from the core `TextSources`. See [Python coverage](../../docs/python-support.md).
+- `internal/langphp` (PHP) owns server-mapped PHP entries and bounded value, control and include flow.
+- Import direction: `langjs`, `langpy` and `langphp` import `parse`; `langpy` also imports `langjs`
+  for the inline-script bridge only; no adapter imports `pipeline`.
 - `pipeline.Analyze` discovers supported registration files across languages when `--entry` is
   omitted; `pipeline.AnalyzeWithChecks` additionally accepts explicitly declared security
   requirements. Each language runner receives the pipeline's single inventory and owns its parsers
@@ -541,8 +546,10 @@ incremental invalidation. There is no automatic runtime cache implied by saved e
 | `internal/walk` | Target file selection and manifest |
 | `internal/lang` | File-extension language registry |
 | `internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment; route inventory (`Routes`, with its own walk and sort) |
-| `internal/parse` | Producer of the JS/TS and Python reports: Tree-sitter, language/framework resolution, bounded flow and evidence assembly, exposed as `Inventory` (with `Runners` selection and `NormalizeEntry`), `RunJavaScript`, `RunPython`, `Assemble` and the route parts `JavaScriptRoutes` and `PythonRoutes`; also the language core API (`core_api.go`) for adapters outside `parse` |
-| `internal/langphp` | PHP adapter: `Run` (report) and `Routes` (route-inventory part); imports `parse`'s core API, never JS flow internals, `pipeline` or another language package |
+| `internal/parse` | Language core: `Inventory` (with `Runners` selection and `NormalizeEntry`), `Assemble`, entry finalization, the shared claim/completeness/guard engines, spans, model source and `TextSources`; the language core API is indexed in `core_api.go`. Imports no language package |
+| `internal/langjs` | JS/TS adapter: `Run` (base report plus JS/TS evidence), `Routes` (route-inventory part), `NewDiscoveryVerifier` and the inline-script bridge `AnalyzeInlineScripts`; imports `parse`, never `pipeline` |
+| `internal/langpy` | Python adapter: `Run` and `Routes`; imports `parse`, and `langjs` only for the inline-script bridge |
+| `internal/langphp` | PHP adapter: `Run` (report) and `Routes` (route-inventory part); imports `parse`'s core API, never another adapter's flow internals, `pipeline` or another language package |
 | `internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
 | `internal/guidelines` | Embedded versioned language Analysis Guidelines |
 | `internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |

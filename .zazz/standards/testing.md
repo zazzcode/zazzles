@@ -38,7 +38,8 @@ Prefer one table over many near-identical test functions:
 
 Parsing and resolution are golden-file tested because the output is large and structural:
 
-- fixtures live under `internal/parse/testdata/<language>/<case>/` as real source files
+- fixtures live under the owning package's `testdata/` (for example `internal/langjs/testdata/<language>/<case>/`,
+  `internal/langpy/testdata/<case>/`; multi-language fixtures in `internal/pipeline/testdata/mixed/`) as real source files
 - expected output lives beside them as a descriptive `.json` golden file
 - update goldens with an explicit `-update` flag, never by hand-editing
 - always review the golden diff in the PR — an unexplained golden change is the whole review
@@ -82,8 +83,8 @@ server, never a live endpoint. The same requirement applies to a future independ
 ```bash
 go test ./...                    # all tests
 go test -race ./...              # race detector
-go test ./internal/parse/...     # one package while iterating
-go test ./internal/parse/... -run TestResolve -update   # refresh goldens
+go test ./internal/langjs/...    # one package while iterating
+go test ./internal/pipeline/... -run TestExpressLoginGolden -update   # refresh goldens
 go vet ./...                     # static checks
 gofmt -l .                       # must print nothing
 ```

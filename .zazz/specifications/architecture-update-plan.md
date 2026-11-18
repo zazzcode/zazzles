@@ -2,7 +2,7 @@
 
 **Status:** Phases 0 and 1 are merged via [PR #24](https://github.com/zazzcode/zazzles/pull/24)
 (`6bf2ca1`) and phase 2 via [PR #25](https://github.com/zazzcode/zazzles/pull/25) (`52cdc36`).
-Phase 3A is implemented on `arch-multi-lang-packaging` in the milestone draft PR; phase 3B continues there.
+Phases 3A and 3B are implemented on `arch-multi-lang-packaging` in the milestone draft PR.
 This document alone authorizes no implementation or paid calls. A phase starts on owner assignment.
 **Baseline reviewed:** `stage` at `3890c1cbb6ff8bebbd707052edaed3bf03bc0ae8` (plan revised on
 `arch-review-clean-up`, 2026-11-17).
@@ -67,7 +67,7 @@ own row. A row with no new candidates is a representation or speed change. It mu
 | One walk and empty-language skip | Mixed fixture; pinned samples | Up to three walks per full scan | One walk; skipped grammars | 2 | None. Measured wall clock |
 | Concurrent language runners | Mixed fixture | Sequential | Concurrent with fixed merge order | 2 | None |
 | PHP as its own package | `php/*` fixtures | Done in 3A: `internal/langphp` on a 20-identifier `parse` core API | None | 3A | None (PHP report hashes change only through the embedded fixture root path) |
-| JS/TS and Python as their own packages | All JS/TS and Python fixtures | Inside `internal/parse` | `internal/langjs`, `internal/langpy`; `parse` is the core | 3B | None |
+| JS/TS and Python as their own packages | All JS/TS and Python fixtures | Done in 3B: `internal/langjs`, `internal/langpy`; `parse` is the core (77-identifier API) | None | 3B | None (report hashes of moved fixtures change only through the embedded fixture root path) |
 | Concurrent judge requests | Stub transport | Sequential | Capped in-flight requests | 4 | None to request bytes. Faster wall clock under caps |
 | Jinja `Environment`/`get_template`/`render` | VulnPy `VP-XSS-JINJA` | Yes: xss-hardening `jinjaFileTemplate`; [final evaluation](../evaluation/xss-hardening/final-evaluation.json) passes | None (the VulnPy guide checkbox is stale) | 5 corrects the guide | None |
 | Recall misses on pinned samples | Python `cases.json` via `docs/samples/evaluate-python.py`; JS/TS and PHP detection guides | Not measured as one list | Measured inventory by cause; closure of the top-ranked miss | 5 | New candidate for the selected miss only, with paired fixtures |
@@ -298,3 +298,9 @@ bullet that deferred the Python move. No implementation in this update.
 Owner decision: open the shared `arch-multi-lang-packaging` draft PR at the end of phase 3A to
 record what is implemented and the passing gate. Phase 3B adds commits to the same PR instead of
 opening it. Status line and the 3A capability row updated.
+
+### 2026-11-18 — Phase 3B implemented in the milestone draft PR
+
+JS/TS and Python moved to `internal/langjs` and `internal/langpy`; `parse` is the language core with a
+77-identifier API indexed in `core_api.go` (the 3A wrappers became renames, C-2). Status line and the
+3B capability row updated. Same root-path-only golden delta as 3A, proved per fixture.

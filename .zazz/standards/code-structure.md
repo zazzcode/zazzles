@@ -17,7 +17,9 @@ Rules:
   branching logic longer than a line or two, that logic belongs in `internal/`.
 - A package owns one concern. If describing a package needs the word "and", split it.
 - Shared analysis records and provenance MUST live in `internal/analysis`, independent of
-  Tree-sitter and HTTP. `parse` currently owns bounded flow/evidence assembly; `judge` owns
+  Tree-sitter and HTTP. `parse` is the language core shared by the `internal/lang*` adapters
+  (code at least two adapters, `Assemble` or `pipeline` use; code one language uses lives in
+  that language's package); the adapters own bounded flow/evidence assembly; `judge` owns
   model transport and claim gates. `walk` MUST remain independent of those stages. Future
   IR/graph/flow packages require actual consumers and a scoped contract.
 - Import cycles are a design error. Fix the boundary rather than hiding it behind an interface.
@@ -43,7 +45,7 @@ so in a comment so the next reader does not try to split it.
 Split by **concern**, not by line count. A split is good when each resulting file can be read and
 understood on its own:
 
-- one pipeline stage per file group inside `internal/parse`, `internal/trace`, and so on
+- one pipeline stage per file group inside `internal/langjs`, `internal/trace`, and so on
 - one standard per concern in `.zazz/standards/`
 - one deliverable per specification directory in `.zazz/specifications/`
 

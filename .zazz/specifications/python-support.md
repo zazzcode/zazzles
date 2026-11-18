@@ -79,6 +79,11 @@ All product changes stay in this worktree. Raw runs are outside it in `_test-fin
 | `.zazz/specifications/`, `.zazz/evaluation/`, `.zazz/docs/zazzles-agent-orientation.md` | modified/new | tracked contract, durable evaluation and current resumption pointers |
 | `.zazz/ephemeral/` | ignored | execution history, scripts and local results |
 
+Paths reflect [architecture phase 3B](architecture-phase-3-js-ts-python-package.md): the adapter moved
+from `internal/parse/python_*.go` to `internal/langpy` (prefix dropped) and its fixtures to
+`internal/langpy/testdata`. It uses `parse`'s language core API and reaches browser analysis only
+through `langjs.AnalyzeInlineScripts`.
+
 Out of scope: new vulnerability families, SCA, other languages, edits/dependency installation
 inside samples, deployment, integration pushes and merge. Draft PR publication into `stage` is
 explicitly authorized for this branch closeout. NoSQL is out of corpus unless
@@ -251,3 +256,10 @@ committing/pushing all worktree changes and creating a draft PR for human review
 remains a separately scoped foundation refactor documented in the tracked follow-up brief.
 **Verification impact:** final documentation/link checks, clean committed/pushed branch and remote
 verification of draft/head/base. No additional scanner behavior or live-model testing is introduced.
+
+### 2026-11-18 — Adapter moved to internal/langpy (architecture phase 3B)
+
+**Source:** [architecture phase 3B](architecture-phase-3-js-ts-python-package.md).
+**Changed sections:** path table note.
+**Summary:** package move only; Python behavior and report bytes are unchanged apart from the
+embedded fixture root of moved fixtures.

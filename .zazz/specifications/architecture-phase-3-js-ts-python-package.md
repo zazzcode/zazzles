@@ -10,7 +10,7 @@ carries 3A and 3B
 external test fixture paths (§9 step 4 and 5) after a stage compiles
 **Run log:** `.zazz/ephemeral/architecture-phase-3-js-ts-python-package-run-log.md`
 **Drafted:** 2026-11-18
-**Status:** not started
+**Status:** implemented on `arch-multi-lang-packaging` (from `8bc0b9a`); in the milestone draft PR #26 with phase 3A
 
 ## 1. Capability
 
@@ -303,3 +303,36 @@ Changed: header, §3, §6, AC5, §9 step 6, §13. Work items:
 - **C-9 Docs already updated in 3A.** Extend, do not rewrite: architecture §3 and §11 (core API
   paragraph, `langphp` row, `pipeline.Routes`), the repository-graph acquisition paragraph, the
   orientation and contributing layout rows, and the `PARSE` label (already covers `internal/lang*`).
+
+### 2026-11-18 — Implemented
+
+Source: implementation session (run log `.zazz/ephemeral/architecture-phase-3-js-ts-python-package-run-log.md`).
+Commits: rehome `ad9080f`, Python bridge `e70577e`, Python move `25b5b30`, JS/TS move `a9df4b1`, C-2
+renames `9bfc2d1`, docs (this commit). Outcomes and deviations:
+
+- **Core API:** 72 identifiers after stage 1, 77 after stage 2 (3A rule: types, functions, methods,
+  vars, consts; struct fields and the pipeline-facing `Assemble`, `NormalizeEntry`, `Options`,
+  `Languages`, `Runners` not counted). `core_api.go` is the index; a check confirms it lists exactly the
+  82 exported identifiers. No core declaration references a JS, Python or PHP flow type.
+- **Bridge shape:** `parse.TextSources` (`NewTextSources`, `Root`, `Read`, `ReadBounded`, `Add`, `Get`,
+  `Files`) replaces the moduleSet text map for both adapters; the inline-script bridge is
+  `langjs.AnalyzeInlineScripts(texts, []langjs.InlineScript{File, Masked, Globals}, out)`. Python keeps its
+  own masking. Golden untouched by the bridge; offline reports byte-identical on the four Python samples.
+- **D-1 correction:** the `bindingIndex` used by `binding_index.go`/`modules.go` is JS's own type; nothing
+  had to leave `python_binding_index.go`.
+- **Stage 2 rehoming** was done inside the JS/TS move commit (pure moves to `inventory.go`,
+  `assemble.go`, `syntax.go`; package doc to `core_api.go`), keeping the five-commit shape.
+- **D-7 name choice:** `parse.go` became `langjs/routes.go`. No other renames; no collisions.
+- **C-3/C-6 test placement:** route goldens that pin sorted bytes (`TestPythonRouteGolden`,
+  `TestExpressLoginGolden`) and the cross-language sample matrices (`TestCommandSourceCases`,
+  `TestPathSourceCases`) live in `internal/pipeline`; adapter route tests use their own unsorted
+  `Routes`. Mixed tests split by language under the same names. Core tests stay in `parse`. The
+  test-name sets before and after each stage match except relabelled `TestWorkersEquivalence` subtests.
+- **C-4:** `mixed/` → `internal/pipeline/testdata/mixed/`; `express-login/`, `string-flow/` →
+  `internal/langjs/testdata/`. Test-only `fixtureRoot` helpers (`testdata_paths_test.go`) in `cmd/scan`,
+  `judge`, `report` and `analysispacks` map tree-qualified fixture names; this is outside the §4 table.
+- **C-1** also covered report hashes embedded in `internal/judge` tests (13 values): each reproduces with
+  the old root mapped back, and the want values were updated.
+- **Docs beyond §4:** fixture paths in `.zazz/standards/testing.md` and file paths in
+  `docs/analysis/nextjs.md` and `xss.md`. Other architecture notes that cite individual source files by
+  their old `internal/parse/` path are left for a follow-up.

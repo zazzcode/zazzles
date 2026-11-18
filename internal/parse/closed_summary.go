@@ -11,14 +11,14 @@ import (
 type ClosedCallable struct {
 	Params         []string
 	reads, returns uint64
-	Reasons        []summaryReason
+	Reasons        []SummaryReason
 	Callees        []analysis.Span
 	done           bool
 }
 
 func (c *ClosedCallable) Closed() bool { return c != nil && c.done && len(c.Reasons) == 0 }
 func (c *ClosedCallable) Reject(kind, file string, n *sitter.Node) {
-	c.Reasons = append(c.Reasons, summaryReason{Kind: kind, At: spanOf(file, n)})
+	c.Reasons = append(c.Reasons, SummaryReason{Kind: kind, At: spanOf(file, n)})
 }
 func (c *ClosedCallable) Read(name, file string, n *sitter.Node) {
 	for i, p := range c.Params {
@@ -32,7 +32,7 @@ func (c *ClosedCallable) Read(name, file string, n *sitter.Node) {
 }
 func (c *ClosedCallable) Finish() { c.done = true }
 
-type summaryReason struct {
+type SummaryReason struct {
 	Kind string
 	At   analysis.Span
 }

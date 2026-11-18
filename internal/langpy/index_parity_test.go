@@ -14,7 +14,7 @@ import (
 // for each caller's own filter, exactly the nodes the whole-module walk did.
 func TestPythonMountIndexParity(t *testing.T) {
 	roots, _ := filepath.Glob("testdata/*")
-	roots = append(roots, "../parse/testdata/mixed/three-language")
+	roots = append(roots, "../pipeline/testdata/mixed/three-language")
 	if root := os.Getenv("ZAZZLES_VULNPY"); root != "" {
 		roots = append(roots, root)
 	}

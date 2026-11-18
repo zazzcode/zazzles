@@ -82,3 +82,27 @@ func TestPythonRouteGolden(t *testing.T) {
 		t.Fatal("Python route graph differs; run -update and review")
 	}
 }
+
+// The JS/TS route content checks of this fixture live in internal/langjs's
+// TestExpressLoginGolden.
+func TestExpressLoginGolden(t *testing.T) {
+	g, err := Routes("../langjs/testdata/express-login")
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.Root = "testdata/express-login"
+	encoded := mustJSON(t, g)
+	const golden = "../langjs/testdata/express-login/routes.json"
+	if *update {
+		if err := os.WriteFile(golden, encoded, 0o644); err != nil {
+			t.Fatalf("write golden: %v", err)
+		}
+	}
+	want, err := os.ReadFile(golden)
+	if err != nil {
+		t.Fatalf("read golden: %v", err)
+	}
+	if !bytes.Equal(encoded, want) {
+		t.Fatalf("route inventory differs from golden\n got:\n%s\nwant:\n%s", encoded, want)
+	}
+}

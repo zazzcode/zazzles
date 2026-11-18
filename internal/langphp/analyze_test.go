@@ -5,6 +5,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
+	"github.com/zazzcode/zazzles/internal/langjs"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
@@ -33,7 +34,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options par
 	run := inv.Runners(entry)
 	var js, php *analysis.AnalysisReport
 	if run.JavaScript {
-		js, err = parse.RunJavaScript(inv, entry, checks, options)
+		js, err = langjs.Run(inv, entry, checks, options)
 	}
 	if err == nil && run.PHP {
 		php, err = Run(inv, entry, checks)

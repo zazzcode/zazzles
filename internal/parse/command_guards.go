@@ -23,13 +23,13 @@ func commandGuardEvidenceKind(site GuardSite) string {
 type CommandGuardScan struct {
 	lang   GuardLang
 	call   *sitter.Node
-	scope  *sitter.Node
+	Scope  *sitter.Node
 	helper *sitter.Node
 	sites  []*sitter.Node
 }
 
 func newCommandGuardScan(lang GuardLang, call *sitter.Node, helperSites func(*sitter.Node) []*sitter.Node) *CommandGuardScan {
-	g := &CommandGuardScan{lang: lang, call: call, scope: lang.Scope(call)}
+	g := &CommandGuardScan{lang: lang, call: call, Scope: lang.Scope(call)}
 	g.helper = lang.Climb(call, func(GuardSite) {})
 	g.sites = helperSites(g.helper)
 	return g
@@ -81,7 +81,7 @@ func withSources(mentioned, list []string, defs map[string]string) []string {
 // computed from it (`const clean = cmd.trim()`), so a control on a derived value
 // is attributed to the dependency it came from.
 func (g *CommandGuardScan) Derived(deps []analysis.Dependency) [][]string {
-	scopes := []*sitter.Node{g.scope}
+	scopes := []*sitter.Node{g.Scope}
 	for _, site := range g.sites {
 		scopes = append(scopes, g.lang.Scope(site))
 	}
@@ -116,9 +116,9 @@ func (g *CommandGuardScan) Collect(base map[string]bool, deps []analysis.Depende
 			!g.lang.AssignedBetween(within, site.End, anchor.StartByte(), withSources(mentionedNames(text, list), list, defs))
 	}
 	var out []GuardSite
-	list, defs := g.names(base, deps, g.scope)
+	list, defs := g.names(base, deps, g.Scope)
 	g.lang.Climb(g.call, func(site GuardSite) {
-		if accepts(site, g.call, g.scope, list, defs) {
+		if accepts(site, g.call, g.Scope, list, defs) {
 			out = append(out, site)
 		}
 	})

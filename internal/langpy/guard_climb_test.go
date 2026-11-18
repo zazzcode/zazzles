@@ -10,11 +10,9 @@ import (
 	"github.com/zazzcode/zazzles/internal/parse"
 )
 
-// guardSiteLabel renders a guard site as kind/polarity/condition. Rejecting is
-// parse's zero GuardPolarity.
 func guardSiteLabel(l parse.GuardLang, g parse.GuardSite) string {
 	polarity := "enforces"
-	if g.Polarity == 0 {
+	if g.Polarity != parse.GuardEnforcesWhenTrue {
 		polarity = "rejects"
 	}
 	return fmt.Sprintf("%s/%s/%s", g.Kind, polarity, strings.Join(strings.Fields(g.Cond.Utf8Text(l.Src)), " "))

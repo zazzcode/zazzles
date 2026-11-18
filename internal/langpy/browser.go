@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/langjs"
 	"github.com/zazzcode/zazzles/internal/parse"
 )
 
@@ -14,7 +15,7 @@ var pythonJQueryCDN = regexp.MustCompile(`(?i)\bsrc\s*=\s*["']https://code\.jque
 // browserTemplates hands literal inline JavaScript to the browser adapter.
 // Masking preserves the original file offsets, lines and snapshot hash.
 func (s *pythonSet) browserTemplates(out *analysis.AnalysisReport) error {
-	var scripts []parse.InlineScript
+	var scripts []langjs.InlineScript
 	for _, file := range s.text.Files() {
 		snapshot, _ := s.text.Get(file)
 		matches := pythonScript.FindAllStringSubmatchIndex(snapshot.Text, -1)
@@ -53,7 +54,7 @@ func (s *pythonSet) browserTemplates(out *analysis.AnalysisReport) error {
 		if !hasScript {
 			continue
 		}
-		scripts = append(scripts, parse.InlineScript{File: file, Masked: masked, Globals: globals})
+		scripts = append(scripts, langjs.InlineScript{File: file, Masked: masked, Globals: globals})
 	}
-	return parse.AnalyzeInlineScripts(s.text, scripts, out)
+	return langjs.AnalyzeInlineScripts(s.text, scripts, out)
 }

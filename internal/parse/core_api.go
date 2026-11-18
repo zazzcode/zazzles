@@ -1,3 +1,9 @@
+// Package parse is the language core. It holds what at least two language
+// adapters (internal/langjs, internal/langpy, internal/langphp), Assemble or
+// internal/pipeline use: the walked Inventory and runner selection, entry
+// finalization, Assemble, the shared claim, completeness and guard engines,
+// spans, model source and text sources. It imports no language adapter and
+// decides no validation adequacy locally.
 package parse
 
 import (
@@ -10,8 +16,8 @@ import (
 
 // Language core API.
 //
-// The identifiers below are the extension point for language adapters that
-// live outside this package (internal/langphp today). They expose only
+// The identifiers below are the extension point for the language adapters
+// (internal/langjs, internal/langpy, internal/langphp). They expose only
 // functions and small value types over analysis records and Tree-sitter nodes;
 // no adapter reaches into the JS/TS flow model (flow, value, moduleSet,
 // sourceModule). Defined elsewhere in this package and part of the same API:
@@ -26,8 +32,6 @@ import (
 //
 //   - TextSources (NewTextSources, Root, Read, ReadBounded, Add, Get, Files): bounded,
 //     root-confined reader and snapshot set for template and schema text.
-//   - InlineScript, AnalyzeInlineScripts: the one bridge from a non-JS adapter to the browser
-//     adapter (inline scripts isolated from text sources).
 //   - GuardLang (Climb, Derive, Scope, AssignedBetween; grammar hooks Src, Blocks, Function,
 //     Exits, Binding, Writes): the lexical guard engine adapted to one grammar.
 //   - GuardSite, GuardPolarity: one control that dominates or encloses a call.
@@ -247,3 +251,28 @@ func TextRange(e analysis.Evidence, start int, end int, kind string) analysis.Ev
 func TransformKind(e analysis.Evidence) string {
 	return transformKind(e)
 }
+
+// Shared helpers the JS/TS adapter also uses (phase 3B).
+
+// ConditionalFalseTest is the invocation control for a test that is false on
+// every path of the invocation (for example an early-throw guard's test).
+const ConditionalFalseTest = conditionalFalseTest
+
+// EmptyComparison matches a condition that only compares a value with an empty string, None, null or undefined.
+var EmptyComparison = emptyComparison
+
+// EvidenceRoles groups context evidence by kind.
+func EvidenceRoles(context []analysis.Evidence) map[string][]analysis.Evidence {
+	return evidenceRoles(context)
+}
+
+// GuardEnforcesWhenTrue is the polarity of a guard whose true branch holds the guarded call.
+const GuardEnforcesWhenTrue = guardEnforcesWhenTrue
+
+// LexiconHint classifies a key name as credential or personal data by its name tokens, or returns "".
+func LexiconHint(key string) string {
+	return lexiconHint(key)
+}
+
+// PlainIdentifier matches a bare JS/Python identifier.
+var PlainIdentifier = plainIdentifier

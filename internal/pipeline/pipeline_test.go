@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"testing"
 
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	parseTestdata = "../parse/testdata"
+	jsTestdata    = "../langjs/testdata"
+	mixedTestdata = "testdata/mixed"
 	pyTestdata    = "../langpy/testdata"
 	phpTestdata   = "../langphp/testdata"
 )
@@ -25,7 +27,7 @@ const (
 func fixtures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, tree := range []string{filepath.Join(parseTestdata, "javascript"), filepath.Join(parseTestdata, "typescript"), pyTestdata, phpTestdata, filepath.Join(parseTestdata, "mixed")} {
+	for _, tree := range []string{filepath.Join(jsTestdata, "javascript"), filepath.Join(jsTestdata, "typescript"), pyTestdata, phpTestdata, mixedTestdata} {
 		entries, err := os.ReadDir(tree)
 		if err != nil {
 			t.Fatal(err)
@@ -36,7 +38,7 @@ func fixtures(t *testing.T) []string {
 			}
 		}
 	}
-	out = append(out, filepath.Join(parseTestdata, "express-login"), filepath.Join(parseTestdata, "string-flow"))
+	out = append(out, filepath.Join(jsTestdata, "express-login"), filepath.Join(jsTestdata, "string-flow"))
 	sort.Strings(out)
 	return out
 }
@@ -57,7 +59,7 @@ func reportJSON(t *testing.T, root string, opts Options) []byte {
 // AC3: sequential and concurrent runners produce identical reports.
 func TestWorkersEquivalence(t *testing.T) {
 	for _, root := range fixtures(t) {
-		t.Run(filepath.Base(filepath.Dir(root))+"/"+filepath.Base(root), func(t *testing.T) {
+		t.Run(strings.TrimPrefix(root, "../"), func(t *testing.T) {
 			want := reportJSON(t, root, Options{Workers: 1})
 			for i := 0; i < 5; i++ {
 				if got := reportJSON(t, root, Options{Workers: 1}); !bytes.Equal(got, want) {
@@ -103,7 +105,7 @@ func (r *recordingStages) stages() stages {
 // AC1: a full mixed-language scan walks the target exactly once and runs every
 // language, with output identical to the production entry point.
 func TestFullScanWalksOnce(t *testing.T) {
-	root := filepath.Join(parseTestdata, "mixed", "three-language")
+	root := filepath.Join(mixedTestdata, "three-language")
 	rec := &recordingStages{ran: map[int]bool{}}
 	got, err := rec.stages().analyze(root, "", nil, Options{})
 	if err != nil {
@@ -139,7 +141,7 @@ func TestPythonOnlyScanSkipsPHP(t *testing.T) {
 }
 
 func TestEntryModesSelectOneLanguage(t *testing.T) {
-	root := filepath.Join(parseTestdata, "mixed", "three-language")
+	root := filepath.Join(mixedTestdata, "three-language")
 	for entry, want := range map[string]int{"app.py": pythonRunner, "index.php": phpRunner, "server.js": javascriptRunner} {
 		rec := &recordingStages{ran: map[int]bool{}}
 		if _, err := rec.stages().analyze(root, entry, nil, Options{}); err != nil {
@@ -180,7 +182,7 @@ func TestEarliestRunnerErrorWins(t *testing.T) {
 }
 
 func BenchmarkPipelineMixed(b *testing.B) {
-	root := filepath.Join(parseTestdata, "mixed", "three-language")
+	root := filepath.Join(mixedTestdata, "three-language")
 	for _, bc := range []struct {
 		name string
 		opts Options

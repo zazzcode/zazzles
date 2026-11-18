@@ -195,7 +195,7 @@ func TestOutboundObservationCLI(t *testing.T) {
 		http.DefaultTransport = outboundStubTransport{target, previous, t}
 		var out, stderr bytes.Buffer
 		bundle := t.TempDir()
-		code := run([]string{"--analyze", "--json", "--judge", provider, "--judge-model", "fixture-model", "--judge-limit", "100", "--output-dir", bundle, "../../internal/parse/testdata/javascript/outbound"}, &out, &stderr)
+		code := run([]string{"--analyze", "--json", "--judge", provider, "--judge-model", "fixture-model", "--judge-limit", "100", "--output-dir", bundle, "../../internal/langjs/testdata/javascript/outbound"}, &out, &stderr)
 		http.DefaultTransport = previous
 		stub.Close()
 		// Observations make no call; the one verified fetch whose destination is a

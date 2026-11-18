@@ -9,6 +9,7 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
+	"github.com/zazzcode/zazzles/internal/langjs"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
@@ -33,7 +34,7 @@ func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (*analysis.A
 	run := inv.Runners(entry)
 	var js, py *analysis.AnalysisReport
 	if run.JavaScript {
-		js, err = parse.RunJavaScript(inv, entry, checks, parse.Options{})
+		js, err = langjs.Run(inv, entry, checks, parse.Options{})
 	}
 	if err == nil && run.Python {
 		py, err = Run(inv, entry, checks)

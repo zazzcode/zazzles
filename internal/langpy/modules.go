@@ -2,7 +2,7 @@
 // through bounded value, control and call flow for the supported web
 // frameworks, and builds on the language core API exported by internal/parse
 // (core_api.go). Its one JS/TS seam is the inline-script bridge
-// (parse.AnalyzeInlineScripts). Run produces the Python report and Routes the
+// (langjs.AnalyzeInlineScripts). Run produces the Python report and Routes the
 // Python part of the route inventory. Only internal/pipeline calls them.
 package langpy
 

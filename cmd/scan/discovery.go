@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/judge"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/langjs"
 	"io"
 )
 
@@ -16,7 +16,7 @@ type discoveryOptions struct {
 
 func runNodeDiscovery(root, entry string, r *analysis.AnalysisReport, c *judge.Client, limit int, traces string, stderr io.Writer) bool {
 	proposals := r.Discovery
-	verifier, err := parse.NewDiscoveryVerifier(root, r)
+	verifier, err := langjs.NewDiscoveryVerifier(root, r)
 	if err != nil {
 		r.Gaps = append(r.Gaps, analysis.Gap{Kind: "discovery_failed", Detail: err.Error()})
 		return true

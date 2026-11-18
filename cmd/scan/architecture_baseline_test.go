@@ -113,7 +113,7 @@ func TestArchitectureBaseline(t *testing.T) {
 func architectureFixtures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, tree := range []string{"internal/parse/testdata/javascript", "internal/parse/testdata/typescript", "internal/langpy/testdata", "internal/langphp/testdata", "internal/parse/testdata/mixed"} {
+	for _, tree := range []string{"internal/langjs/testdata/javascript", "internal/langjs/testdata/typescript", "internal/langpy/testdata", "internal/langphp/testdata", "internal/pipeline/testdata/mixed"} {
 		entries, err := os.ReadDir(filepath.Join(repositoryRoot, tree))
 		if err != nil {
 			t.Fatal(err)
@@ -124,7 +124,7 @@ func architectureFixtures(t *testing.T) []string {
 			}
 		}
 	}
-	out = append(out, "internal/parse/testdata/express-login", "internal/parse/testdata/string-flow")
+	out = append(out, "internal/langjs/testdata/express-login", "internal/langjs/testdata/string-flow")
 	sort.Strings(out)
 	return out
 }

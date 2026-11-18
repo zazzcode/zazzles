@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/langjs"
 	"github.com/zazzcode/zazzles/internal/langphp"
 	"github.com/zazzcode/zazzles/internal/langpy"
 	"github.com/zazzcode/zazzles/internal/parse"
@@ -25,7 +26,7 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 		Routes:        []analysis.Route{},
 		Gaps:          []analysis.Gap{},
 	}
-	for _, part := range []func(parse.Inventory) ([]analysis.Route, []analysis.Gap, error){parse.JavaScriptRoutes, langpy.Routes, langphp.Routes} {
+	for _, part := range []func(parse.Inventory) ([]analysis.Route, []analysis.Gap, error){langjs.Routes, langpy.Routes, langphp.Routes} {
 		routes, gaps, err := part(inv)
 		if err != nil {
 			return nil, err

@@ -22,7 +22,7 @@ feature phase does not start until the foundation phases it depends on have merg
 |---|---|---|
 | **Accuracy** | A closed, source-backed gap that turns a recorded miss into a candidate; registration facts that stay visible instead of silently dropped | A package move; a new analyzer per framework; asking the model to invent missing edges |
 | **Performance** | One directory walk; skipping languages with no files; concurrent language runners; concurrent judge requests under the RPM/TPM caps | Evidence slicing. Request sizes were measured and S1 slicing was deferred ([ledger](../architecture/request-size-and-evidence-relevance.md#evidence-ledger)) |
-| **Maintainability** | A byte-level compatibility baseline every refactor runs; one indexed registration store; an explicit orchestration seam; PHP in its own package; files named for behavior | A fourth copy of `flow.go`; a graph or IR package with no consumer |
+| **Maintainability** | A byte-level compatibility baseline every refactor runs; one per-file syntax and binding index; an explicit orchestration seam; PHP in its own package; files named for behavior | A fourth copy of `flow.go`; a graph or IR package with no consumer |
 
 ## What already exists
 
@@ -82,7 +82,7 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 | Phase | Objective | Spec | Worktree | Depends on (merged) |
 |---|---|---|---|---|
 | 0 | Maintainability (refactor guard) | [Compatibility baseline](architecture-phase-0-compatibility-baseline.md) | `arch-compat-baseline` | This plan |
-| 1 | Maintainability | [Registration graph](architecture-phase-1-registration-graph.md) | `graph-registration-store` | 0 |
+| 1 | Speed, accuracy | [Source index and callable summaries](architecture-phase-1-source-index.md) (replaces the registration graph) | `arch-review-clean-up` | 0 |
 | 2 | Performance, maintainability | [Pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md) | `analysis-pipeline` | 1 |
 | 3 | Maintainability | [PHP language package](architecture-phase-3-php-package.md) | `langphp-package` | 2 |
 | 4 | Performance | [Parallel judge](architecture-phase-4-parallel-judge.md) | `parallel-judge` | 0 |
@@ -171,10 +171,14 @@ from offline `Preview`, equivalence signatures, report JSON and SARIF hashes, an
 It covers JS/TS, Python, PHP, and a new three-language fixture. It also records offline wall clock
 and peak RSS on pinned samples as the "before" numbers.
 
-**1 — Registration graph.** A new leaf package, `internal/graph`, is an immutable, indexed,
-deterministic store over the finalized catalog. Its schema covers persistent versus dense IDs,
-relation validity, duplicates, unresolved bindings, and immutability. Registrations gain a separate
-origin, path shape, and resolution. The PHP callable language is fixed. Nothing else changes in reports or requests.
+**1 — Source index and callable summaries.** This replaces the registration graph, which improved neither
+speed nor findings. Profiles show 59% of juice-shop CPU in whole-module syntax re-walks
+(`bindingReassigned`), and most recall loss is at calls the per-language inline helper expansion
+cannot follow (depth 3, budget 24). The phase builds, per file, a flat syntax index and a binding
+index (steps 1A–1B, speed, byte-identical). Across the repository it builds a call index (1C,
+resolution measurement) and per-callable parameter summaries applied at call sites (1D–1E,
+accuracy, listed recall deltas). Library mode, Symfony and Drupal build on the call index and
+summaries.
 
 **2 — Pipeline and concurrent runners.** A new `internal/pipeline` owns one walk, empty-language
 skip, concurrent JS/TS, Python, and PHP runners, the fixed-order merge, and finalization.
@@ -251,3 +255,6 @@ language-adapter section. User docs change only when a flag or supported framewo
   - Wrote one spec per phase.
 - 2026-11-17 — Owner decision: phases 0–3 run serially in `arch-review-clean-up`, one session per
   phase, with one milestone draft PR. See [phase sequence](#phase-sequence).
+- 2026-11-17 — Owner decision: phase 1 is now the [source index and callable summaries](architecture-phase-1-source-index.md)
+  spec. The registration graph is superseded and was never committed. Later specs that cite its
+  D-5/D-7 tables are repointed to that spec's L3 resolution kinds and L5 model tables when each starts.

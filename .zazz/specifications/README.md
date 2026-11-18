@@ -20,7 +20,8 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 - [Architecture update plan](architecture-update-plan.md) — foundation first (accuracy, performance, maintainability), then features. Capability matrix and one spec per phase, run in series:
   [0 compatibility baseline](architecture-phase-0-compatibility-baseline.md) (implemented:
   `TestArchitectureBaseline`, [before measurements](../evaluation/architecture-baseline.md)),
-  [1 registration graph](architecture-phase-1-registration-graph.md),
+  [1 source index and callable summaries](architecture-phase-1-source-index.md) (replaces the superseded
+  [registration graph](architecture-phase-1-registration-graph.md)),
   [2 pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md),
   [3 PHP package](architecture-phase-3-php-package.md),
   [4 parallel judge](architecture-phase-4-parallel-judge.md),

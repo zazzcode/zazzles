@@ -1,4 +1,7 @@
-# Architecture phase 1 — Registration graph
+# Architecture phase 1 — Registration graph (superseded)
+
+**Status:** Superseded 2026-11-17 by [source index and callable summaries](architecture-phase-1-source-index.md).
+Not implemented. Kept as the record of the rejected design; do not execute.
 
 **Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 1. Objective: maintainability, with registration facts made visible

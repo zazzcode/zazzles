@@ -132,8 +132,8 @@ that changes results fails the build.
 was implemented and then backed out. That catalog was never where scans spent time or lost
 findings. Profiles showed the cost in repeated syntax walks. Measurement showed the misses at calls
 flow cannot follow: helper expansion limits, methods on values of unknown type, and unmodeled
-library or builtin calls. The source index targets those directly. Call summaries remove expansion
-limits, receiver typing resolves method calls, and model tables cover libraries and builtins.
+library or builtin calls. The source index targets those directly. Closed summaries resolve eligible
+expansion refusals, receiver typing resolves method calls, and model tables cover libraries and builtins.
 Library-mode analysis and Symfony and Drupal support build on the same call index and summaries
 instead of adding analyzers. The [repository graph design](../.zazz/architecture/repository-graph.md#implementation-direction-source-index-not-a-graph-store-2026-11-17)
 records the decision.

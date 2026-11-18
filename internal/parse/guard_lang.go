@@ -6,13 +6,13 @@ import (
 )
 
 // guardLang returns the guard engine adapter for a JavaScript or TypeScript module.
-func (m *sourceModule) guardLang() guardLang {
-	return guardLang{
-		src:      m.src,
-		blocks:   map[string]bool{"statement_block": true, "program": true},
-		function: func(n *sitter.Node) bool { return isFunction(n) || n.Kind() == "function_declaration" },
-		exits:    m.jsAlwaysExits,
-		binding: func(n *sitter.Node) (*sitter.Node, *sitter.Node) {
+func (m *sourceModule) guardLang() GuardLang {
+	return GuardLang{
+		Src:      m.src,
+		Blocks:   map[string]bool{"statement_block": true, "program": true},
+		Function: func(n *sitter.Node) bool { return isFunction(n) || n.Kind() == "function_declaration" },
+		Exits:    m.jsAlwaysExits,
+		Binding: func(n *sitter.Node) (*sitter.Node, *sitter.Node) {
 			if n.Kind() != "variable_declarator" {
 				return nil, nil
 			}
@@ -22,7 +22,7 @@ func (m *sourceModule) guardLang() guardLang {
 			}
 			return id, v
 		},
-		writes: func(n *sitter.Node) []*sitter.Node {
+		Writes: func(n *sitter.Node) []*sitter.Node {
 			switch n.Kind() {
 			case "assignment_expression", "augmented_assignment_expression":
 				if left := n.ChildByFieldName("left"); left != nil {

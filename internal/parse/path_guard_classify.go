@@ -13,30 +13,30 @@ import (
 // pathGuardInfo records, while the syntax context is available, the kind of
 // each guard and which dependencies' derived values it mentions. The assembly
 // reads it back when it attaches guards to flows.
-type pathGuardInfo struct {
-	kinds       map[string]string
+type PathGuardInfo struct {
+	Kinds       map[string]string
 	deps        map[string]map[int]bool
 	rootContain map[string]bool
 	// ambiguousCallers records a helper with several call sites where not every
 	// call site enforces containment, so controls cannot be merged across callers.
-	ambiguousCallers bool
+	AmbiguousCallers bool
 }
 
-func newPathGuardInfo() *pathGuardInfo {
-	return &pathGuardInfo{kinds: map[string]string{}, deps: map[string]map[int]bool{}, rootContain: map[string]bool{}}
+func newPathGuardInfo() *PathGuardInfo {
+	return &PathGuardInfo{Kinds: map[string]string{}, deps: map[string]map[int]bool{}, rootContain: map[string]bool{}}
 }
 
 func guardKey(e analysis.Evidence) string {
 	return fmt.Sprintf("%s:%d:%d", e.Span.File, e.Span.StartByte, e.Span.EndByte)
 }
 
-func (g *pathGuardInfo) note(e analysis.Evidence, kind string, deps map[int]bool) {
-	g.noteWithMeta(e, kind, deps, false)
+func (g *PathGuardInfo) Note(e analysis.Evidence, kind string, deps map[int]bool) {
+	g.NoteWithMeta(e, kind, deps, false)
 }
 
-func (g *pathGuardInfo) noteWithMeta(e analysis.Evidence, kind string, deps map[int]bool, rootContain bool) {
+func (g *PathGuardInfo) NoteWithMeta(e analysis.Evidence, kind string, deps map[int]bool, rootContain bool) {
 	k := guardKey(e)
-	g.kinds[k] = kind
+	g.Kinds[k] = kind
 	g.deps[k] = deps
 	g.rootContain[k] = rootContain
 }
@@ -136,7 +136,7 @@ func classifyPathGuardText(cond string, names []string, defs map[string]string, 
 	return analysis.PathGuardUnclassified
 }
 
-func flipPolarity(p guardPolarity) guardPolarity {
+func flipPolarity(p GuardPolarity) GuardPolarity {
 	if p == guardRejectsWhenTrue {
 		return guardEnforcesWhenTrue
 	}
@@ -146,7 +146,7 @@ func flipPolarity(p guardPolarity) guardPolarity {
 // classifyPathGuardAST evaluates condition syntax with branch polarity and boolean
 // conjunction/disjunction structure so inverted or conditionally bypassed guards
 // cannot acquire enforcing containment kinds.
-func classifyPathGuardAST(cond *sitter.Node, src []byte, polarity guardPolarity, names []string, defs map[string]string, defNodes map[string]*sitter.Node, collectionIs, baseConstIs func(string) bool) (string, bool) {
+func classifyPathGuardAST(cond *sitter.Node, src []byte, polarity GuardPolarity, names []string, defs map[string]string, defNodes map[string]*sitter.Node, collectionIs, baseConstIs func(string) bool) (string, bool) {
 	if cond == nil {
 		return analysis.PathGuardUnclassified, false
 	}
@@ -164,7 +164,7 @@ func classifyPathGuardAST(cond *sitter.Node, src []byte, polarity guardPolarity,
 	return raw, false
 }
 
-func evalGuardAST(n *sitter.Node, src []byte, polarity guardPolarity, names []string, defs map[string]string, defNodes map[string]*sitter.Node, collectionIs, baseConstIs func(string) bool, depth int) (string, bool) {
+func evalGuardAST(n *sitter.Node, src []byte, polarity GuardPolarity, names []string, defs map[string]string, defNodes map[string]*sitter.Node, collectionIs, baseConstIs func(string) bool, depth int) (string, bool) {
 	if n == nil || depth > 8 {
 		return "", false
 	}
@@ -227,7 +227,7 @@ func pickStrongerGuard(lk string, lr bool, rk string, rr bool) (string, bool) {
 	return rk, rr
 }
 
-func evalAtomicGuard(n *sitter.Node, src []byte, polarity guardPolarity, names []string, defs map[string]string, collectionIs, baseConstIs func(string) bool) (string, bool) {
+func evalAtomicGuard(n *sitter.Node, src []byte, polarity GuardPolarity, names []string, defs map[string]string, collectionIs, baseConstIs func(string) bool) (string, bool) {
 	text := strings.TrimSpace(n.Utf8Text(src))
 	related := sortedRelated(text, defs)
 

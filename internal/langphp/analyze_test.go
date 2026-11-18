@@ -73,7 +73,7 @@ func newPHPSet(root string) (*phpSet, error) {
 // inventory with no PHP files runs no PHP set, and a PHP entry keeps its
 // selection error.
 func TestRunnersWithoutSourcesOpenNoGrammar(t *testing.T) {
-	inv, err := testInventory("../parse/testdata/python/routes")
+	inv, err := testInventory("../langpy/testdata/routes")
 	if err != nil {
 		t.Fatal(err)
 	}

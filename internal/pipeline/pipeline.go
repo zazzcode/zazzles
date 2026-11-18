@@ -12,6 +12,7 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
 	"github.com/zazzcode/zazzles/internal/langphp"
+	"github.com/zazzcode/zazzles/internal/langpy"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
@@ -69,7 +70,7 @@ func productionStages() stages {
 		runners: [runnerCount]runFunc{
 			javascriptRunner: parse.RunJavaScript,
 			pythonRunner: func(inv parse.Inventory, entry string, checks []analysis.Check, _ parse.Options) (*analysis.AnalysisReport, error) {
-				return parse.RunPython(inv, entry, checks)
+				return langpy.Run(inv, entry, checks)
 			},
 			phpRunner: func(inv parse.Inventory, entry string, checks []analysis.Check, _ parse.Options) (*analysis.AnalysisReport, error) {
 				return langphp.Run(inv, entry, checks)

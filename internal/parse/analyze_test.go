@@ -12,10 +12,11 @@ import (
 )
 
 // Analyze, AnalyzeWithChecks and AnalyzeWithOptions keep the package's
-// internal tests on one unqualified call. They run the JS/TS and Python runners
-// in the fixed order and share production's Assemble; internal/pipeline owns the
-// production orchestration, its concurrency and the PHP runner (internal/langphp).
-// Tests that need PHP output live in internal/pipeline or internal/langphp.
+// internal tests on one unqualified call. They run the JS/TS runner and share
+// production's Assemble; internal/pipeline owns the production orchestration,
+// its concurrency and the Python (internal/langpy) and PHP (internal/langphp)
+// runners. Tests that need Python or PHP output live in those packages or in
+// internal/pipeline.
 func Analyze(root, entry string) (*analysis.AnalysisReport, error) {
 	return AnalyzeWithChecks(root, entry, nil)
 }
@@ -35,17 +36,14 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	}
 	// Same selection as internal/pipeline, run one after another in merge order.
 	run := inv.Runners(entry)
-	var js, py *analysis.AnalysisReport
+	var js *analysis.AnalysisReport
 	if run.JavaScript {
 		js, err = RunJavaScript(inv, entry, checks, options)
-	}
-	if err == nil && run.Python {
-		py, err = RunPython(inv, entry, checks)
 	}
 	if err != nil {
 		return nil, err
 	}
-	out, err := Assemble(entry, js, py, nil)
+	out, err := Assemble(entry, js, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -64,15 +62,15 @@ func testInventory(root string) (Inventory, error) {
 	return Inventory{Root: root, Files: files.Files}, nil
 }
 
-// Routes mirrors internal/pipeline.Routes for the JS/TS and Python fixtures of
-// this package: its own walk, both route parts in order, then the same sort.
+// Routes mirrors internal/pipeline.Routes for the JS/TS fixtures of this
+// package: its own walk, the JS/TS route part, then the same sort.
 func Routes(root string) (*analysis.RouteInventory, error) {
 	inv, err := testInventory(root)
 	if err != nil {
 		return nil, err
 	}
 	out := &analysis.RouteInventory{SchemaVersion: analysis.RouteSchemaVersion, Root: root, Routes: []analysis.Route{}, Gaps: []analysis.Gap{}}
-	for _, part := range []func(Inventory) ([]analysis.Route, []analysis.Gap, error){JavaScriptRoutes, PythonRoutes} {
+	for _, part := range []func(Inventory) ([]analysis.Route, []analysis.Gap, error){JavaScriptRoutes} {
 		routes, gaps, err := part(inv)
 		if err != nil {
 			return nil, err
@@ -101,20 +99,11 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 	return out, nil
 }
 
-// newPythonSet opens a set over a fresh walk for set-level tests.
-func newPythonSet(root string) (*pythonSet, error) {
-	inv, err := testInventory(root)
-	if err != nil {
-		return nil, err
-	}
-	return openPythonSet(inv)
-}
-
 // AC2: a Python-only inventory opens no JS grammar and loads no JS module; the
-// JS base report and the Python report are still produced. The PHP half of
-// this check lives in internal/langphp.
+// JS base report is still produced. The Python and PHP halves of this check
+// live in internal/langpy and internal/langphp.
 func TestRunnersWithoutSourcesOpenNoGrammar(t *testing.T) {
-	inv, err := testInventory("testdata/python/routes")
+	inv, err := testInventory("../langpy/testdata/routes")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,15 +122,12 @@ func TestRunnersWithoutSourcesOpenNoGrammar(t *testing.T) {
 	if len(set.modules) != 0 || len(base.Entries) != 0 || len(base.Limitations) == 0 {
 		t.Fatalf("JS base report loaded %d modules, %d entries", len(set.modules), len(base.Entries))
 	}
-	if py, err := RunPython(inv, "", nil); err != nil || py == nil || len(py.Entries) == 0 {
-		t.Fatalf("RunPython = %v, %v; want entries", py, err)
-	}
 }
 
 // A set that opened no grammar still loads a module it is later allowed to
 // load: the first load opens the grammars.
 func TestModuleSetOpensGrammarsOnFirstLoad(t *testing.T) {
-	inv, err := testInventory("testdata/python/routes")
+	inv, err := testInventory("../langpy/testdata/routes")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +153,7 @@ func TestRunnersFollowEntryModes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pyOnly, err := testInventory("testdata/python/routes")
+	pyOnly, err := testInventory("../langpy/testdata/routes")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -19,8 +19,9 @@ import (
 // It classifies every call site of a target with the analyzers' own module sets
 // and resolvers, and attributes each call-site gap on the report to those
 // classes. It never changes analysis output. Set ZAZZLES_MEASURE_ROOT to a target
-// and optionally ZAZZLES_MEASURE_OUT to a JSON output path. PHP call sites are
-// measured by internal/langphp's TestPHPCallResolutionMeasure.
+// and optionally ZAZZLES_MEASURE_OUT to a JSON output path. Python and PHP call
+// sites are measured by internal/langpy's TestPythonCallResolutionMeasure and
+// internal/langphp's TestPHPCallResolutionMeasure.
 func TestCallResolutionMeasure(t *testing.T) {
 	root := os.Getenv("ZAZZLES_MEASURE_ROOT")
 	if root == "" {
@@ -86,7 +87,6 @@ type callSite struct{ language, class string }
 
 type callClassifier struct {
 	js *moduleSet
-	py *pythonSet
 }
 
 func newCallClassifier(root string) (*callClassifier, error) {
@@ -111,14 +111,10 @@ func newCallClassifier(root string) (*callClassifier, error) {
 			}
 		}
 	}
-	py, err := newPythonSet(root)
-	if err != nil {
-		return nil, err
-	}
-	return &callClassifier{js: js, py: py}, nil
+	return &callClassifier{js: js}, nil
 }
 
-func (c *callClassifier) close() { c.js.close(); c.py.close() }
+func (c *callClassifier) close() { c.js.close() }
 
 func (c *callClassifier) sites() []callSite {
 	var out []callSite
@@ -133,19 +129,11 @@ func (c *callClassifier) sites() []callSite {
 			out = append(out, callSite{"javascript", c.classifyJS(m, n)})
 		})
 	}
-	for _, file := range c.py.files {
-		if m := c.py.modules[file]; m != nil {
-			walkKinds(m.tree.RootNode(), pyCallKinds, func(n *sitter.Node) {
-				out = append(out, callSite{"python", c.classifyPython(m, n)})
-			})
-		}
-	}
 	return out
 }
 
 var (
 	jsCallKinds = map[string]bool{"call_expression": true}
-	pyCallKinds = map[string]bool{"call": true}
 	jsGlobals   = map[string]bool{"console": true, "JSON": true, "Math": true, "Object": true, "Array": true, "Promise": true, "String": true, "Number": true, "Boolean": true, "Date": true, "RegExp": true, "Error": true, "Symbol": true, "Reflect": true, "process": true, "require": true, "Buffer": true, "setTimeout": true, "setInterval": true, "clearTimeout": true, "parseInt": true, "parseFloat": true, "isNaN": true, "encodeURIComponent": true, "decodeURIComponent": true, "encodeURI": true, "decodeURI": true, "escape": true, "unescape": true, "window": true, "document": true, "fetch": true, "alert": true, "localStorage": true, "sessionStorage": true, "describe": true, "it": true, "expect": true, "beforeEach": true, "afterEach": true}
 )
 
@@ -182,14 +170,6 @@ func (c *callClassifier) classifyAt(at analysis.Span) (string, bool) {
 		}
 		if n := exactNode(m.tree, at, jsCallKinds); n != nil {
 			return c.classifyJS(m, n), true
-		}
-	case lang.Python:
-		m := c.py.modules[at.File]
-		if m == nil {
-			return "", false
-		}
-		if n := exactNode(m.tree, at, pyCallKinds); n != nil {
-			return c.classifyPython(m, n), true
 		}
 	}
 	return "", false
@@ -245,39 +225,6 @@ func (c *callClassifier) classifyJS(m *sourceModule, call *sitter.Node) string {
 	}
 	if jsGlobals[name] {
 		return "builtin"
-	}
-	return "member_on_value"
-}
-
-func (c *callClassifier) classifyPython(m *pythonModule, call *sitter.Node) string {
-	fn := call.ChildByFieldName("function")
-	if fn == nil || (fn.Kind() != "identifier" && fn.Kind() != "attribute") {
-		return "dynamic"
-	}
-	name := pyText(m, fn)
-	root := calleeRoot(name)
-	target, key := c.py.resolve(m, name, 0)
-	if target == nil {
-		return "dynamic"
-	}
-	parts := strings.Split(key, ".")
-	if target != m { // resolved through an import of an in-repository module
-		if len(parts) == 1 && target.funcs[parts[0]] != nil {
-			return "in_repo"
-		}
-		return "in_repo_member_unresolved"
-	}
-	if _, imported := m.imports[root]; imported {
-		return "package"
-	}
-	if len(parts) == 1 && m.funcs[parts[0]] != nil {
-		return "in_repo"
-	}
-	if m.funcs[root] != nil || m.vars[root] != nil {
-		return "member_on_value"
-	}
-	if fn.Kind() == "identifier" {
-		return "builtin_or_local"
 	}
 	return "member_on_value"
 }

@@ -161,64 +161,6 @@ func commandRoutes(r *analysis.AnalysisReport) map[string][]analysis.CandidateUs
 	return out
 }
 
-func TestCommandPythonOperands(t *testing.T) {
-	r := analyzeFixture(t, "python/command-injection")
-	routes := commandRoutes(r)
-	type want struct {
-		op, api, effective, argv string
-		slots                    []string // slots that carry request dependencies
-	}
-	for path, w := range map[string]want{
-		"/system":         {"os.system", "python-os-shell-v1", "enabled", "none", []string{"shell_command"}},
-		"/popen":          {"os.popen", "python-os-shell-v1", "enabled", "none", []string{"shell_command"}},
-		"/argv":           {"subprocess.check_output", "python-subprocess-v1", "disabled", "literal_list", []string{"argument:1"}},
-		"/shell-string":   {"subprocess.run", "python-subprocess-v1", "enabled", "none", []string{"shell_command"}},
-		"/shell-sequence": {"subprocess.call", "python-subprocess-v1", "enabled", "literal_list", []string{"argument:1"}},
-		"/keyword":        {"subprocess.Popen", "python-subprocess-v1", "enabled", "none", []string{"shell_command"}},
-		"/executable":     {"subprocess.run", "python-subprocess-v1", "disabled", "literal_list", []string{"executable_override"}},
-		"/interpreter":    {"subprocess.run", "python-subprocess-v1", "enabled", "literal_list", []string{"shell_command"}},
-		"/alias":          {"subprocess.run", "python-subprocess-v1", "enabled", "none", []string{"shell_command"}},
-	} {
-		t.Run(path, func(t *testing.T) {
-			uses := routes[path]
-			if len(uses) != 1 {
-				t.Fatalf("candidates = %d, want 1", len(uses))
-			}
-			u := uses[0]
-			f := u.Command
-			if f == nil || f.Operation != w.op || f.ContractID != w.api || f.EffectiveShellMode != w.effective || f.ArgvShape != w.argv || f.Platform != "posix" {
-				t.Fatalf("facts: %+v", f)
-			}
-			validCommandFacts(t, u)
-			got := []string{}
-			for _, o := range f.Operands {
-				if len(o.Dependencies) > 0 {
-					got = append(got, o.Slot)
-				}
-			}
-			if strings.Join(got, ",") != strings.Join(w.slots, ",") {
-				t.Fatalf("request-derived slots %v, want %v (operands %+v)", got, w.slots, f.Operands)
-			}
-			for _, role := range commandRequiredRoles {
-				if len(u.Completeness.Evidence[role]) == 0 {
-					t.Fatalf("role %s has no evidence", role)
-				}
-			}
-			if len(u.Completeness.Blockers) != 0 {
-				t.Fatalf("blockers: %+v", u.Completeness.Blockers)
-			}
-			if u.Components == nil || u.Components.Failure != "" {
-				t.Fatalf("selection: %+v", u.Components)
-			}
-		})
-	}
-	for _, path := range []string{"/constant", "/stdio"} {
-		if n := len(routes[path]); n != 0 {
-			t.Errorf("%s produced %d candidates; constant and data-only calls are negative", path, n)
-		}
-	}
-}
-
 func commandSources(t *testing.T, files map[string]string, entry string) []analysis.CandidateUse {
 	t.Helper()
 	root := t.TempDir()
@@ -277,46 +219,6 @@ func TestCommandBindingsAndOptions(t *testing.T) {
 			}
 		})
 	}
-	py := func(name, head, body string, want int, op, shell string) tc {
-		return tc{name, "app.py", "from flask import Flask, request\n" + head + "app = Flask(__name__)\n@app.route('/p')\ndef p():\n" + body + "\n    return ''\n", want, op, shell}
-	}
-	pcases := []tc{
-		py("import os", "import os\n", "    os.system('echo ' + request.args.get('x', ''))", 1, "os.system", "enabled"),
-		py("os alias", "import os as o\n", "    o.popen('echo ' + request.args.get('x', ''))", 1, "os.popen", "enabled"),
-		py("from import", "from subprocess import check_output as co\n", "    co(['ls', request.args.get('x', '')])", 1, "subprocess.check_output", "disabled"),
-		py("shell kwarg true", "import subprocess\n", "    subprocess.call('ls ' + request.args.get('x', ''), shell=True)", 1, "subprocess.call", "enabled"),
-		py("dynamic shell kwarg", "import subprocess\n", "    subprocess.call('ls ' + request.args.get('x', ''), shell=request.args.get('s'))", 1, "subprocess.call", "unknown"),
-		py("kwargs spread", "import subprocess\n", "    subprocess.run(['ls', request.args.get('x', '')], **{'shell': True})", 1, "subprocess.run", "disabled"),
-		py("local alias", "import subprocess\nrun = subprocess.run\n", "    run(['ls', request.args.get('x', '')])", 1, "subprocess.run", "disabled"),
-		py("reassigned alias", "import subprocess\nrun = subprocess.run\nrun = print\n", "    run(['ls', request.args.get('x', '')])", 0, "", ""),
-		py("local variable shadows os", "import os\n", "    os = FakeOS()\n    os.system('echo ' + request.args.get('x', ''))", 0, "", ""),
-		py("monkey patch", "import os\nos.system = print\n", "    os.system('echo ' + request.args.get('x', ''))", 0, "", ""),
-		py("fake module object", "class os:\n    @staticmethod\n    def system(c):\n        pass\n", "    os.system('echo ' + request.args.get('x', ''))", 0, "", ""),
-		py("windows interpreter", "import subprocess\n", "    subprocess.run(['cmd', '/c', request.args.get('x', '')])", 1, "subprocess.run", "unknown"),
-	}
-	for _, c := range pcases {
-		t.Run("python/"+c.name, func(t *testing.T) {
-			uses := commandSources(t, map[string]string{c.file: c.source}, "")
-			if len(uses) != c.want {
-				t.Fatalf("candidates = %d, want %d", len(uses), c.want)
-			}
-			if c.want == 0 {
-				return
-			}
-			f := uses[0].Command
-			if f.Operation != c.operation || f.EffectiveShellMode != c.shell {
-				t.Fatalf("facts %+v", f)
-			}
-			validCommandFacts(t, uses[0])
-		})
-	}
-	// Local module shadowing: a project os.py defeats the standard-library binding.
-	t.Run("python/local module shadow", func(t *testing.T) {
-		uses := commandSources(t, map[string]string{"os.py": "def system(c):\n    pass\n", "app.py": "import os\nfrom flask import Flask, request\napp = Flask(__name__)\n@app.route('/p')\ndef p():\n    os.system('echo ' + request.args.get('x', ''))\n    return ''\n"}, "")
-		if len(uses) != 0 {
-			t.Fatalf("shadowed module produced %d candidates", len(uses))
-		}
-	})
 	// Browser-only entries never select a Node process contract.
 	t.Run("browser entries", func(t *testing.T) {
 		root := t.TempDir()

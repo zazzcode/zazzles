@@ -11,7 +11,7 @@ import (
 func TestEntryProtectionCoverage(t *testing.T) {
 	for _, fixture := range []string{"javascript/graphql", "javascript/grpc"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 			if err != nil {
 				t.Fatal(err)
 			}

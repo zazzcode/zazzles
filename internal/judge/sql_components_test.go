@@ -205,7 +205,7 @@ func TestSQLComponentPipelineParity(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
 		for _, entry := range []string{"graphql", "grpc"} {
 			t.Run(language+"/"+entry, func(t *testing.T) {
-				r, err := pipeline.Analyze("../parse/testdata/"+language+"/"+entry, "")
+				r, err := pipeline.Analyze(fixtureRoot(language+"/"+entry), "")
 				if err != nil {
 					t.Fatal(err)
 				}

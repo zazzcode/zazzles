@@ -16,6 +16,7 @@ import (
 
 const (
 	parseTestdata = "../parse/testdata"
+	pyTestdata    = "../langpy/testdata"
 	phpTestdata   = "../langphp/testdata"
 )
 
@@ -24,7 +25,7 @@ const (
 func fixtures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, tree := range []string{filepath.Join(parseTestdata, "javascript"), filepath.Join(parseTestdata, "typescript"), filepath.Join(parseTestdata, "python"), phpTestdata, filepath.Join(parseTestdata, "mixed")} {
+	for _, tree := range []string{filepath.Join(parseTestdata, "javascript"), filepath.Join(parseTestdata, "typescript"), pyTestdata, phpTestdata, filepath.Join(parseTestdata, "mixed")} {
 		entries, err := os.ReadDir(tree)
 		if err != nil {
 			t.Fatal(err)
@@ -123,7 +124,7 @@ func TestFullScanWalksOnce(t *testing.T) {
 // AC2: a Python-only repository never invokes the PHP runner; the JS runner
 // only builds the base report (parse tests show it opens no grammar).
 func TestPythonOnlyScanSkipsPHP(t *testing.T) {
-	root := filepath.Join(parseTestdata, "python", "routes")
+	root := filepath.Join(pyTestdata, "routes")
 	rec := &recordingStages{ran: map[int]bool{}}
 	got, err := rec.stages().analyze(root, "", nil, Options{})
 	if err != nil {

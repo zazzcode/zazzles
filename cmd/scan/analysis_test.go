@@ -106,7 +106,7 @@ func TestBrowserEventPipeline(t *testing.T) {
 func TestDynamicPythonVulnPyTraces(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
 	var out, stderr bytes.Buffer
-	if code := run([]string{"--analyze", "--json", "../../internal/parse/testdata/python/dynamic-vulnpy"}, &out, &stderr); code != exitOK {
+	if code := run([]string{"--analyze", "--json", "../../internal/langpy/testdata/dynamic-vulnpy"}, &out, &stderr); code != exitOK {
 		t.Fatalf("code=%d stderr=%s", code, stderr.String())
 	}
 	var r analysis.AnalysisReport

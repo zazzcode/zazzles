@@ -264,11 +264,11 @@ func transferPrecedesGuard(u *analysis.CandidateUse, dep analysis.Dependency, ti
 // whether an unresolved transfer blocks it and whether a decode follows a
 // control. A guard that does not mention a dependency never covers it;
 // adequacy is never decided here.
-func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, info *pathGuardInfo, touches func(analysis.Gap, analysis.Dependency) bool) {
+func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardContext []int, info *PathGuardInfo, touches func(analysis.Gap, analysis.Dependency) bool) {
 	f := u.Path
 	f.Guards = make([]analysis.PathGuard, 0, len(guards))
 	for i, g := range guards {
-		kind := info.kinds[guardKey(g)]
+		kind := info.Kinds[guardKey(g)]
 		if kind == "" {
 			kind = analysis.PathGuardUnclassified
 		}
@@ -290,7 +290,7 @@ func finishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 			}
 		}
 		switch {
-		case info.ambiguousCallers:
+		case info.AmbiguousCallers:
 			p.Protection = "unknown"
 			p.Reason = "the operation is in a helper with several call sites, at least one without an enforcing control; per-call-site coverage is not modeled"
 		case unknown:

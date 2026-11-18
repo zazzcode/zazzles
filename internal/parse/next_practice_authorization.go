@@ -35,7 +35,7 @@ func (s *moduleSet) practiceClientAuthorization(ps *practiceSet, m *sourceModule
 			continue
 		}
 		var relevant []analysis.Evidence
-		m.guardLang().climb(r.call, func(g guardSite) {
+		m.guardLang().Climb(r.call, func(g GuardSite) {
 			for _, gate := range gates {
 				if g.Cond != nil && gate.Span.StartByte == int(g.Cond.StartByte()) && gate.Span.EndByte == int(g.Cond.EndByte()) {
 					relevant = append(relevant, gate)

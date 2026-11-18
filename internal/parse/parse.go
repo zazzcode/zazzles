@@ -1,8 +1,9 @@
-// Package parse turns JavaScript, TypeScript and Python source into route evidence
-// and holds the language core API (core_api.go) that other language adapters use.
+// Package parse turns JavaScript and TypeScript source into route evidence
+// and holds the language core API (core_api.go) that the other language
+// adapters (internal/langpy, internal/langphp) use.
 //
-// JavaScriptRoutes and PythonRoutes record syntactic registrations for the route
-// inventory that internal/pipeline assembles. The runners add bounded handler
+// JavaScriptRoutes records syntactic registrations for the route inventory
+// that internal/pipeline assembles. The runner adds bounded handler
 // resolution and local dependency evidence. Neither mode decides validation
 // adequacy locally.
 package parse

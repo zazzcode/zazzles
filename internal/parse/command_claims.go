@@ -201,7 +201,7 @@ func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms 
 	for n := range names {
 		nameList = append(nameList, n)
 	}
-	for _, site := range scan.collect(names, u.Dependencies, nil) {
+	for _, site := range scan.Collect(names, u.Dependencies, nil) {
 		// In Next.js code a truthiness or type-only schema test of the value is
 		// not a destination or argument control.
 		if next && nonContainingTest(m, site.Cond, nameList, u) {
@@ -288,5 +288,5 @@ func (s *moduleSet) commandDerivedNames(u *analysis.CandidateUse) [][]string {
 	if call == nil {
 		return nil
 	}
-	return newCommandGuardScan(m.guardLang(), call, func(helper *sitter.Node) []*sitter.Node { return jsHelperCallSites(m, u.Context, helper) }).derived(u.Dependencies)
+	return newCommandGuardScan(m.guardLang(), call, func(helper *sitter.Node) []*sitter.Node { return jsHelperCallSites(m, u.Context, helper) }).Derived(u.Dependencies)
 }

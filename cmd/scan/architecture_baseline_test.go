@@ -107,13 +107,13 @@ func TestArchitectureBaseline(t *testing.T) {
 }
 
 // architectureFixtures lists every fixture repository: each directory directly
-// under the language and mixed testdata trees (PHP's in internal/langphp), plus the two top-level JS/TS
+// under the language and mixed testdata trees (Python's in internal/langpy, PHP's in internal/langphp), plus the two top-level JS/TS
 // repositories. The list is computed and sorted so a new fixture is pinned on its
 // next update instead of going stale in a hand-kept list.
 func architectureFixtures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, tree := range []string{"internal/parse/testdata/javascript", "internal/parse/testdata/typescript", "internal/parse/testdata/python", "internal/langphp/testdata", "internal/parse/testdata/mixed"} {
+	for _, tree := range []string{"internal/parse/testdata/javascript", "internal/parse/testdata/typescript", "internal/langpy/testdata", "internal/langphp/testdata", "internal/parse/testdata/mixed"} {
 		entries, err := os.ReadDir(filepath.Join(repositoryRoot, tree))
 		if err != nil {
 			t.Fatal(err)

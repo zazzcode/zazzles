@@ -15,11 +15,11 @@ func practiceMessageUnenforced(m *sourceModule, cb, body *sitter.Node, name stri
 		}
 		protected := false
 		// Replacing the event or its members loses the original sender relation.
-		if l.assignedBetween(body, body.StartByte(), n.StartByte(), []string{name}) {
+		if l.AssignedBetween(body, body.StartByte(), n.StartByte(), []string{name}) {
 			unguarded = true
 			return
 		}
-		enclosing := l.climb(n, func(g guardSite) {
+		enclosing := l.Climb(n, func(g GuardSite) {
 			if practicePredicate(m, g.Cond, g.Polarity == guardEnforcesWhenTrue, func(left, right *sitter.Node) bool {
 				if left.Utf8Text(m.src) != name+".origin" {
 					return false
@@ -30,7 +30,7 @@ func practiceMessageUnenforced(m *sourceModule, cb, body *sitter.Node, name stri
 				}
 				u, err := url.Parse(origin)
 				return err == nil && (u.Scheme == "https" || u.Scheme == "http") && u.Host != "" && u.User == nil && u.Path == "" && u.RawQuery == "" && u.Fragment == "" && !strings.Contains(u.Host, "*")
-			}) && !l.assignedBetween(body, g.End, n.StartByte(), []string{name}) {
+			}) && !l.AssignedBetween(body, g.End, n.StartByte(), []string{name}) {
 				protected = true
 			}
 		})
@@ -90,7 +90,7 @@ func practiceServerRoleEnforced(m *sourceModule, handler *sitter.Node) bool {
 			if !identity && !practiceRejectResponse(m, n, body) {
 				relevant++
 				allowed := false
-				m.guardLang().climb(n, func(g guardSite) {
+				m.guardLang().Climb(n, func(g GuardSite) {
 					if practicePredicate(m, g.Cond, g.Polarity == guardEnforcesWhenTrue, func(left, right *sitter.Node) bool {
 						role, ok := stringLiteral(right, m.src)
 						if !ok || role != "admin" || !strings.HasSuffix(left.Utf8Text(m.src), ".role") {

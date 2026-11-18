@@ -491,7 +491,6 @@ func gapKind(gaps []analysis.Gap, kind string) bool {
 func TestEntrySelectors(t *testing.T) {
 	for _, tc := range []struct{ name, file, source string }{
 		{"http", "app.ts", `import express from 'express';import {Sequelize} from 'sequelize';const db=new Sequelize('sqlite::memory:');const a=express();const b=express();function handler(req,res){db.query('SELECT '+req.query.email)}a.get('/same',handler);b.get('/same',handler);`},
-		{"python", "app.py", "from flask import Flask, request\nimport sqlite3\napp=Flask(__name__)\n@app.route('/same')\ndef view():\n    db=sqlite3.connect('test.db')\n    return db.execute('SELECT '+request.args.get('email')).fetchall()\n"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()

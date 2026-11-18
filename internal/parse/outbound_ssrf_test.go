@@ -55,12 +55,6 @@ func TestOutboundDestinationOrigin(t *testing.T) {
 			t.Fatalf("uses=%+v", uses)
 		}
 	})
-	t.Run("python second-order destination", func(t *testing.T) {
-		uses := outboundUses(t, map[string]string{"app.py": "from flask import Flask, request\nimport requests\napp = Flask(__name__)\n@app.route('/x')\ndef x():\n    r = requests.get('https://api.invalid/next')\n    requests.get(r.text)\n    requests.post('https://api.invalid/fixed', data=request.args.get('v'))\n    return 'ok'\n"})
-		if len(uses) != 1 || uses[0].Kind != "outbound_http_candidate" || uses[0].Outbound.DestinationOrigin != analysis.DestinationExternalData {
-			t.Fatalf("uses=%+v", uses)
-		}
-	})
 }
 
 func TestSSRFCandidates(t *testing.T) {
@@ -73,7 +67,6 @@ func TestSSRFCandidates(t *testing.T) {
 		{"axios default import", map[string]string{"server.ts": "import express from 'express';import axios from 'axios';const app=express();app.get('/x',async (req,res)=>{await axios.get(req.query.url as string);res.send('ok')});"}, "axios-url-v1"},
 		{"axios namespace default", map[string]string{"server.ts": "import express from 'express';import * as axios from 'axios';const app=express();app.get('/x',async (req,res)=>{await axios.default.get(req.query.url as string);res.send('ok')});"}, "axios-url-v1"},
 		{"axios require post", map[string]string{"server.js": "const express=require('express');const axios=require('axios');const app=express();app.post('/x',(req,res)=>{axios.post(req.body.target,{a:1});res.send('ok')});"}, "axios-url-v1"},
-		{"python requests", map[string]string{"app.py": "from flask import Flask, request\nimport requests\napp = Flask(__name__)\n@app.route('/x')\ndef x():\n    requests.get(request.args.get('url'))\n    return 'ok'\n"}, "python-http-url-v1"},
 		{"shadowed fetch", map[string]string{"server.js": "const express=require('express');const app=express();app.get('/x',(req,res)=>{const fetch=v=>v;fetch(req.query.url);res.send('ok')});"}, ""},
 		{"local axios object", map[string]string{"server.js": "const express=require('express');const axios={get:x=>x};const app=express();app.get('/x',(req,res)=>{axios.get(req.query.url);res.send('ok')});"}, ""},
 		{"axios config object", map[string]string{"server.js": "const express=require('express');const axios=require('axios');const app=express();app.get('/x',(req,res)=>{axios({url:req.query.url});res.send('ok')});"}, ""},

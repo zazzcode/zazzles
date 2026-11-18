@@ -12,7 +12,7 @@ import (
 
 type pathGuardScan struct {
 	m        *sourceModule
-	info     *pathGuardInfo
+	info     *PathGuardInfo
 	guards   []analysis.Evidence
 	decls    []analysis.Evidence
 	declSeen map[int]bool
@@ -42,9 +42,9 @@ func localFunctionName(m *sourceModule, fn *sitter.Node) string {
 
 // pathGuards finds statements that dominate or enclose the filesystem call and
 // mention a request-derived path value, and classifies each with AST polarity.
-func (s *moduleSet) pathGuards(info *pathGuardInfo) func(*analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) {
+func (s *moduleSet) pathGuards(info *PathGuardInfo) func(*analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) {
 	return func(u *analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) {
-		info.ambiguousCallers = false
+		info.AmbiguousCallers = false
 		m := s.modules[u.Sink.Span.File]
 		if m == nil {
 			return nil, nil
@@ -81,7 +81,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 		}
 	}
 	lang := m.guardLang()
-	scope := lang.scope(call)
+	scope := lang.Scope(call)
 	type depNames struct {
 		idx   int
 		names map[string]bool
@@ -101,7 +101,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 		for _, name := range commandDepNames(d) {
 			names[name] = true
 		}
-		lang.derive(scope, names, defs, defNodes)
+		lang.Derive(scope, names, defs, defNodes)
 		list := make([]string, 0, len(names))
 		for name := range names {
 			list = append(list, name)
@@ -132,7 +132,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 		}
 		return true
 	}
-	consider := func(kind string, polarity guardPolarity, cond, whole *sitter.Node, guardEnd uint) {
+	consider := func(kind string, polarity GuardPolarity, cond, whole *sitter.Node, guardEnd uint) {
 		if cond == nil || scan.seen[int(whole.StartByte())] {
 			return
 		}
@@ -149,7 +149,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 					mentioned = append(mentioned, name)
 				}
 			}
-			if lang.assignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
+			if lang.AssignedBetween(scope, guardEnd, call.StartByte(), mentioned) {
 				continue
 			}
 			covered[d.idx] = true
@@ -167,11 +167,11 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 			return
 		}
 		ev := m.evidence(kind, whole)
-		info.noteWithMeta(ev, class, covered, rootContain)
+		info.NoteWithMeta(ev, class, covered, rootContain)
 		scan.guards = append(scan.guards, ev)
 	}
 	climb := func(start *sitter.Node) *sitter.Node {
-		return lang.climb(start, func(site guardSite) {
+		return lang.Climb(start, func(site GuardSite) {
 			consider(site.Kind, site.Polarity, site.Cond, site.Whole, site.End)
 		})
 	}
@@ -191,7 +191,7 @@ func (scan *pathGuardScan) run(u *analysis.CandidateUse, call *sitter.Node) {
 					scan.seen[t.Span.StartByte] = true
 					ev := t
 					ev.Kind = "component_sanitizer"
-					scan.info.noteWithMeta(ev, analysis.PathGuardComponentSanitizer, map[int]bool{i: true}, false)
+					scan.info.NoteWithMeta(ev, analysis.PathGuardComponentSanitizer, map[int]bool{i: true}, false)
 					scan.guards = append(scan.guards, ev)
 					break // one sanitizer per path; its assignment repeats it
 				}
@@ -248,7 +248,7 @@ func (scan *pathGuardScan) lookupPreconditions(call *sitter.Node, dep int, names
 						if args := def.ChildByFieldName("arguments"); args != nil && strings.Contains(args.Utf8Text(m.src), "where") && mentionsAny(args.Utf8Text(m.src), names) {
 							scan.seen[int(n.StartByte())] = true
 							ev := m.evidence("guard_test", n)
-							scan.info.noteWithMeta(ev, analysis.PathGuardUnclassified, map[int]bool{dep: true}, false)
+							scan.info.NoteWithMeta(ev, analysis.PathGuardUnclassified, map[int]bool{dep: true}, false)
 							scan.guards = append(scan.guards, ev)
 						}
 					}
@@ -296,12 +296,12 @@ func (scan *pathGuardScan) checkHelperCallers(u *analysis.CandidateUse, helper *
 			climb(site)
 			siteEnforcing := false
 			for _, g := range scan.guards[before:] {
-				if analysis.EnforcingPathGuard(info.kinds[guardKey(g)]) {
+				if analysis.EnforcingPathGuard(info.Kinds[guardKey(g)]) {
 					siteEnforcing = true
 				}
 			}
 			if !siteEnforcing {
-				info.ambiguousCallers = true
+				info.AmbiguousCallers = true
 			}
 		}
 	} else if len(sites) == 1 {
@@ -319,7 +319,7 @@ func (scan *pathGuardScan) attachImplicitGuards(u *analysis.CandidateUse) {
 			}
 		}
 		ev := u.Context[e.Context]
-		info.note(ev, analysis.PathGuardLibraryEntryCheck, covered)
+		info.Note(ev, analysis.PathGuardLibraryEntryCheck, covered)
 		scan.guards = append(scan.guards, ev)
 	}
 	if u.Path.ContractID == analysispacks.ExpressSendContract {
@@ -331,7 +331,7 @@ func (scan *pathGuardScan) attachImplicitGuards(u *analysis.CandidateUse) {
 				}
 			}
 			ev := m.evidence("framework_root", root)
-			info.note(ev, analysis.PathGuardFrameworkRoot, covered)
+			info.Note(ev, analysis.PathGuardFrameworkRoot, covered)
 			scan.guards = append(scan.guards, ev)
 		}
 	}

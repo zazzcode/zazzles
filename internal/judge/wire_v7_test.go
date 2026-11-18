@@ -102,7 +102,7 @@ func TestWireV7EnvelopeAndProvenance(t *testing.T) {
 func TestWireV7KeepsDependencyAndControlWitnesses(t *testing.T) {
 	for _, fixture := range []string{"javascript/grpc", "typescript/graphql", "python/routes", "javascript/command-injection", "javascript/path-traversal", "python/outbound", "javascript/xss-fetch"} {
 		t.Run(fixture, func(t *testing.T) {
-			report, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+			report, err := pipeline.Analyze(fixtureRoot(fixture), "")
 			if err != nil {
 				t.Fatal(err)
 			}

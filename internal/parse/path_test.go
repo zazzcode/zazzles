@@ -208,58 +208,6 @@ func TestPathCommonJSBindings(t *testing.T) {
 	}
 }
 
-func TestPathPythonOperands(t *testing.T) {
-	r := analyzeFixture(t, "python/path-traversal")
-	uses := pathUses(r)
-	open := "open"
-	for route, want := range map[string]pathCase{
-		"/v/open":            {operation: open, role: "read", protection: "raw", file: "app.py"},
-		"/v/join":            {operation: open, role: "read", protection: "raw", transforms: []string{"join"}},
-		"/v/write":           {operation: open, role: "write", protection: "raw"},
-		"/v/io-open":         {operation: "io.open", role: "read", protection: "raw"},
-		"/v/pathlib-read":    {operation: "pathlib.Path.read_text", role: "read", protection: "raw", transforms: []string{"join"}},
-		"/v/pathlib-bytes":   {operation: "pathlib.Path.read_bytes", role: "read", protection: "raw", transforms: []string{"path_object"}},
-		"/v/pathlib-write":   {operation: "pathlib.Path.write_text", role: "write", protection: "raw"},
-		"/v/normpath-only":   {operation: open, role: "read", protection: "raw", transforms: []string{"normalize"}},
-		"/v/try-except":      {operation: open, role: "read", protection: "raw"},
-		"/v/blacklist":       {operation: open, role: "read", protection: "guarded", guards: []string{"dotdot_text"}},
-		"/v/reassigned":      {operation: open, role: "read", protection: "raw"},
-		"/v/sibling-branch":  {operation: open, role: "read", protection: "raw"},
-		"/v/helper":          {operation: open, role: "read", protection: "raw", transforms: []string{"join"}},
-		"/p/allowlist":       {operation: open, role: "read", protection: "guarded", guards: []string{"allowlist"}},
-		"/p/allowlist-tuple": {operation: open, role: "read", protection: "guarded", guards: []string{"allowlist"}},
-		"/p/prefix-boundary": {operation: open, role: "read", protection: "guarded", guards: []string{"prefix_boundary"}},
-		"/p/commonpath":      {operation: open, role: "read", protection: "guarded", guards: []string{"commonpath"}},
-		"/p/realpath":        {operation: open, role: "read", protection: "guarded", guards: []string{"commonpath"}, transforms: []string{"realpath"}},
-		"/u/prefix-bare":     {operation: open, role: "read", protection: "guarded", guards: []string{"prefix_bare"}},
-		"/u/missing-helper":  {operation: open, role: "read", protection: "unknown", blocked: true},
-		"/u/basename":        {operation: open, role: "read", protection: "raw", transforms: []string{"reduce"}},
-	} {
-		t.Run(route, func(t *testing.T) {
-			u, ok := uses[route]
-			if !ok {
-				t.Fatalf("no path candidate for %s", route)
-			}
-			checkPathCase(t, route, u, want)
-		})
-	}
-	for _, route := range []string{"/n/constant", "/n/content-only", "/n/stored", "/n/shadow-def", "/n/shadow-import", "/n/shadow-local"} {
-		if _, ok := uses[route]; ok {
-			t.Fatalf("%s must not be a path candidate", route)
-		}
-	}
-	t.Run("write text is not a path source", func(t *testing.T) {
-		for _, route := range []string{"/v/write", "/v/pathlib-write"} {
-			u := uses[route]
-			for _, p := range u.Path.Paths {
-				if src := u.Dependencies[p.Dependency].Source.Text; strings.Contains(src, "text") {
-					t.Fatalf("%s: write content became a path flow: %s", route, src)
-				}
-			}
-		}
-	})
-}
-
 func TestPathComprehensionSelectionIsUnknown(t *testing.T) {
 	src := analysis.Evidence{Kind: "input_source", Text: `environ["PATH_INFO"]`, Span: analysis.Span{File: "app.py"}}
 	for name, tt := range map[string]struct {
@@ -486,61 +434,6 @@ app.get('/enclosing-positive', (req: Request, res: Response) => {
 			t.Errorf("%s guard kinds %v, want [%s]", route, got, want)
 		}
 	}
-
-	pyRoot := pythonFixture(t, map[string]string{"app.py": `
-import os
-from flask import Flask, abort, request
-app = Flask(__name__)
-ROOT = os.path.abspath("uploads")
-ALLOWED = {"a.txt", "b.txt"}
-
-@app.route("/negated-consequence")
-def neg_cons():
-    full = os.path.abspath(os.path.join(ROOT, request.args.get("f", "")))
-    if not full.startswith(ROOT + os.sep):
-        return open(full).read()
-    return "ok"
-
-@app.route("/inverted-terminating")
-def inv_term():
-    name = request.args.get("f", "")
-    if name in ALLOWED:
-        abort(403)
-    return open(os.path.join(ROOT, name)).read()
-
-@app.route("/conjunct-bypass")
-def conj_bypass():
-    name = request.args.get("f", "")
-    if not request.args.get("admin") and name not in ALLOWED:
-        abort(403)
-    return open(os.path.join(ROOT, name)).read()
-
-@app.route("/disjunct-enforced")
-def disj_enforced():
-    name = request.args.get("f", "")
-    if not request.args.get("admin") or name not in ALLOWED:
-        abort(403)
-    return open(os.path.join(ROOT, name)).read()
-`})
-	pyReport, err := Analyze(pyRoot, "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	pyUses := pathUses(pyReport)
-	for _, route := range []string{"/negated-consequence", "/inverted-terminating", "/conjunct-bypass"} {
-		u, ok := pyUses[route]
-		if !ok {
-			t.Fatalf("python missing candidate %s", route)
-		}
-		for _, k := range guardKinds(u) {
-			if analysis.EnforcingPathGuard(k) {
-				t.Errorf("python %s wrongly received enforcing guard kind %s", route, k)
-			}
-		}
-	}
-	if got := guardKinds(pyUses["/disjunct-enforced"]); len(got) != 1 || got[0] != analysis.PathGuardAllowlist {
-		t.Errorf("python /disjunct-enforced guards %v, want [allowlist]", got)
-	}
 }
 
 func TestPathFalseProtectionControls(t *testing.T) {
@@ -615,78 +508,6 @@ app.get('/mixed-helper-callers', (req: Request, res: Response) => {
 	}
 	if u := tsUses["/mixed-helper-callers"]; u.Path.Paths[0].Protection != "unknown" {
 		t.Errorf("/mixed-helper-callers protection=%s, want unknown", u.Path.Paths[0].Protection)
-	}
-
-	pyRoot := pythonFixture(t, map[string]string{
-		"helpers.py": "def pick_dir():\n    return '/tmp/x'\n",
-		"app.py": `
-import io
-import os
-from pathlib import Path
-from flask import Flask, abort, request, send_from_directory
-from helpers import pick_dir
-app = Flask(__name__)
-ROOT = os.path.abspath("uploads")
-SPLAT_MAP = {"a.txt": 1, **os.environ}
-MUTATED_SET = {"a.txt"}
-MUTATED_SET.add("b.txt")
-
-@app.route("/unresolved-send-dir")
-def unresolved_send():
-    return send_from_directory(pick_dir(), request.args.get("f", ""))
-
-@app.route("/dict-splat")
-def dict_splat():
-    name = request.args.get("f", "")
-    if name not in SPLAT_MAP:
-        abort(403)
-    return open(os.path.join(ROOT, name)).read()
-
-@app.route("/mutated-set")
-def mutated_set():
-    name = request.args.get("f", "")
-    if name not in MUTATED_SET:
-        abort(403)
-    return open(os.path.join(ROOT, name)).read()
-
-@app.route("/pathlib-unlink")
-def pathlib_unlink():
-    Path(ROOT, request.args.get("f", "")).unlink()
-    return "ok"
-`,
-		"patched.py": `
-import io
-from flask import Flask, request
-app = Flask(__name__)
-io.open = lambda p: p
-@app.route("/monkey-patched-io")
-def patched_io():
-    return io.open(request.args.get("f", ""))
-`,
-	})
-	pyReport, err := Analyze(pyRoot, "app.py")
-	if err != nil {
-		t.Fatal(err)
-	}
-	pyUses := pathUses(pyReport)
-	if got := guardKinds(pyUses["/unresolved-send-dir"]); len(got) != 0 {
-		t.Errorf("/unresolved-send-dir wrongly attached guards %v", got)
-	}
-	if got := guardKinds(pyUses["/dict-splat"]); len(got) != 1 || got[0] != analysis.PathGuardUnclassified {
-		t.Errorf("/dict-splat guards %v, want [unclassified]", got)
-	}
-	if got := guardKinds(pyUses["/mutated-set"]); len(got) != 1 || got[0] != analysis.PathGuardUnclassified {
-		t.Errorf("/mutated-set guards %v, want [unclassified]", got)
-	}
-	if u, ok := pyUses["/pathlib-unlink"]; !ok || u.Path.Operation != "pathlib.Path.unlink" || u.Path.Role != "delete" {
-		t.Errorf("/pathlib-unlink missing or wrong role: %+v", u.Path)
-	}
-	patchedReport, err := Analyze(pyRoot, "patched.py")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := pathUses(patchedReport)["/monkey-patched-io"]; ok {
-		t.Errorf("monkey-patched io.open must not earn verified contract")
 	}
 }
 

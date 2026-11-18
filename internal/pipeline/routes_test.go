@@ -60,3 +60,25 @@ func TestPHPRoutes(t *testing.T) {
 		t.Fatal("PHP route graph differs; run -update and review")
 	}
 }
+
+func TestPythonRouteGolden(t *testing.T) {
+	g, err := Routes("../langpy/testdata/routes")
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.Root = "python/routes"
+	encoded := mustJSON(t, g)
+	const golden = "../langpy/testdata/routes/routes.json"
+	if *update {
+		if err := os.WriteFile(golden, encoded, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	want, err := os.ReadFile(golden)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(encoded, want) {
+		t.Fatal("Python route graph differs; run -update and review")
+	}
+}

@@ -13,7 +13,6 @@ func TestCommonEntryExistingConsumers(t *testing.T) {
 	for _, tc := range []struct{ name, file, source string }{
 		{"javascript HTTP", "app.js", `import express from 'express';const app=express();app.get('/x',(req,res)=>res.send(req.query.q));`},
 		{"typescript HTTP", "app.ts", `import express from 'express';const app=express();app.get('/x',(req,res)=>res.send(req.query.q));`},
-		{"Python HTTP", "app.py", "from flask import Flask, request\napp = Flask(__name__)\n@app.route('/x')\ndef view():\n    return request.args.get('q')\n"},
 		{"browser", "browser.js", `document.body.innerHTML=location.hash`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

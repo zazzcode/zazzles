@@ -32,7 +32,7 @@ func practiceConst(m *sourceModule, at *sitter.Node) *sitter.Node {
 					if v == nil || v.EndByte() >= at.StartByte() || !strings.HasPrefix(statement.Utf8Text(m.src), "const ") {
 						return nil
 					}
-					if m.guardLang().assignedBetween(m.tree.RootNode(), v.EndByte(), uint(len(m.src)), []string{name}) {
+					if m.guardLang().AssignedBetween(m.tree.RootNode(), v.EndByte(), uint(len(m.src)), []string{name}) {
 						return nil
 					}
 					return v

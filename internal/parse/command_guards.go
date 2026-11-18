@@ -10,7 +10,7 @@ import (
 // commandGuardEvidenceKind names a guard site for the command claim. A
 // condition that holds only on the rejecting side of an enclosing `if` (its
 // else branch) is a false-branch fact, never an enforced one.
-func commandGuardEvidenceKind(site guardSite) string {
+func commandGuardEvidenceKind(site GuardSite) string {
 	if site.Kind == enclosingGuardKind && site.Polarity == guardRejectsWhenTrue {
 		return "branch_false_precondition"
 	}
@@ -20,24 +20,24 @@ func commandGuardEvidenceKind(site guardSite) string {
 // commandGuardScan finds the controls around one process call for either
 // language: the call's own dominating and enclosing controls and, for a call
 // inside a local helper, the controls its call sites have in common.
-type commandGuardScan struct {
-	lang   guardLang
+type CommandGuardScan struct {
+	lang   GuardLang
 	call   *sitter.Node
 	scope  *sitter.Node
 	helper *sitter.Node
 	sites  []*sitter.Node
 }
 
-func newCommandGuardScan(lang guardLang, call *sitter.Node, helperSites func(*sitter.Node) []*sitter.Node) *commandGuardScan {
-	g := &commandGuardScan{lang: lang, call: call, scope: lang.scope(call)}
-	g.helper = lang.climb(call, func(guardSite) {})
+func newCommandGuardScan(lang GuardLang, call *sitter.Node, helperSites func(*sitter.Node) []*sitter.Node) *CommandGuardScan {
+	g := &CommandGuardScan{lang: lang, call: call, scope: lang.Scope(call)}
+	g.helper = lang.Climb(call, func(GuardSite) {})
 	g.sites = helperSites(g.helper)
 	return g
 }
 
 // names extends the base names with every dependency's own names and values
 // derived from them in one scope. defs maps each derived name to its definition.
-func (g *commandGuardScan) names(base map[string]bool, deps []analysis.Dependency, scope *sitter.Node) ([]string, map[string]string) {
+func (g *CommandGuardScan) names(base map[string]bool, deps []analysis.Dependency, scope *sitter.Node) ([]string, map[string]string) {
 	names := map[string]bool{}
 	for name := range base {
 		names[name] = true
@@ -48,7 +48,7 @@ func (g *commandGuardScan) names(base map[string]bool, deps []analysis.Dependenc
 		}
 	}
 	defs := map[string]string{}
-	g.lang.derive(scope, names, defs, map[string]*sitter.Node{})
+	g.lang.Derive(scope, names, defs, map[string]*sitter.Node{})
 	return sortedNameList(names), defs
 }
 
@@ -80,10 +80,10 @@ func withSources(mentioned, list []string, defs map[string]string) []string {
 // call's scope and the scopes of its helper call sites, extended with values
 // computed from it (`const clean = cmd.trim()`), so a control on a derived value
 // is attributed to the dependency it came from.
-func (g *commandGuardScan) derived(deps []analysis.Dependency) [][]string {
+func (g *CommandGuardScan) Derived(deps []analysis.Dependency) [][]string {
 	scopes := []*sitter.Node{g.scope}
 	for _, site := range g.sites {
-		scopes = append(scopes, g.lang.scope(site))
+		scopes = append(scopes, g.lang.Scope(site))
 	}
 	out := make([][]string, len(deps))
 	for i, d := range deps {
@@ -93,7 +93,7 @@ func (g *commandGuardScan) derived(deps []analysis.Dependency) [][]string {
 			for _, name := range commandDepNames(d) {
 				own[name] = true
 			}
-			g.lang.derive(scope, own, map[string]string{}, map[string]*sitter.Node{})
+			g.lang.Derive(scope, own, map[string]string{}, map[string]*sitter.Node{})
 			for name := range own {
 				names[name] = true
 			}
@@ -106,18 +106,18 @@ func (g *commandGuardScan) derived(deps []analysis.Dependency) [][]string {
 // collect returns the controls whose condition mentions an operand, is not a
 // presence-only test, and is not invalidated by an assignment between the
 // control and the call. keep filters sites a language already models elsewhere.
-func (g *commandGuardScan) collect(base map[string]bool, deps []analysis.Dependency, keep func(guardSite) bool) []guardSite {
-	accepts := func(site guardSite, anchor, within *sitter.Node, list []string, defs map[string]string) bool {
+func (g *CommandGuardScan) Collect(base map[string]bool, deps []analysis.Dependency, keep func(GuardSite) bool) []GuardSite {
+	accepts := func(site GuardSite, anchor, within *sitter.Node, list []string, defs map[string]string) bool {
 		if site.Cond == nil || (keep != nil && !keep(site)) {
 			return false
 		}
 		text := g.lang.text(site.Cond)
 		return mentionsAny(text, list) && !presenceOnlyCondition(text, list) &&
-			!g.lang.assignedBetween(within, site.End, anchor.StartByte(), withSources(mentionedNames(text, list), list, defs))
+			!g.lang.AssignedBetween(within, site.End, anchor.StartByte(), withSources(mentionedNames(text, list), list, defs))
 	}
-	var out []guardSite
+	var out []GuardSite
 	list, defs := g.names(base, deps, g.scope)
-	g.lang.climb(g.call, func(site guardSite) {
+	g.lang.Climb(g.call, func(site GuardSite) {
 		if accepts(site, g.call, g.scope, list, defs) {
 			out = append(out, site)
 		}
@@ -125,11 +125,11 @@ func (g *commandGuardScan) collect(base map[string]bool, deps []analysis.Depende
 	if len(g.sites) == 0 {
 		return out
 	}
-	perSite := make([][]guardSite, len(g.sites))
+	perSite := make([][]GuardSite, len(g.sites))
 	for i, site := range g.sites {
-		within := g.lang.scope(site)
+		within := g.lang.Scope(site)
 		callerList, callerDefs := g.names(base, deps, within)
-		g.lang.climb(site, func(found guardSite) {
+		g.lang.Climb(site, func(found GuardSite) {
 			if accepts(found, site, within, callerList, callerDefs) {
 				perSite[i] = append(perSite[i], found)
 			}

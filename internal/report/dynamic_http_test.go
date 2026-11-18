@@ -14,7 +14,7 @@ import (
 func TestDynamicHTTPContextIsolation(t *testing.T) {
 	for _, fixture := range []string{"javascript/dynamic-dispatch", "typescript/dynamic-dispatch", "python/dynamic-vulnpy/independent-controls"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -39,7 +39,7 @@ func TestDynamicHTTPContextIsolation(t *testing.T) {
 }
 
 func TestDynamicPythonVulnPyTraces(t *testing.T) {
-	r, err := pipeline.Analyze("../parse/testdata/python/dynamic-vulnpy", "")
+	r, err := pipeline.Analyze("../langpy/testdata/dynamic-vulnpy", "")
 	if err != nil {
 		t.Fatal(err)
 	}

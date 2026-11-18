@@ -27,7 +27,7 @@ func TestMixedEntryPipeline(t *testing.T) {
 		{"python/dynamic-vulnpy", "", 38, 31},
 	}
 	for _, fixture := range fixtures {
-		source := filepath.Join("../../internal/parse/testdata", fixture.source)
+		source := fixtureRoot(fixture.source)
 		err := filepath.WalkDir(source, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err

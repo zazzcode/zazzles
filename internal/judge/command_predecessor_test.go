@@ -35,7 +35,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 	c, _ := New("openai", "fixture-model", "k")
 	for fixture, expected := range want {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 			if err != nil {
 				t.Fatal(err)
 			}

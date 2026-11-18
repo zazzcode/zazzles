@@ -6,13 +6,10 @@
 package pipeline
 
 import (
-	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
-	"github.com/zazzcode/zazzles/internal/lang"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
@@ -83,10 +80,7 @@ func (st stages) analyze(root, entry string, checks []analysis.Check, opts Optio
 	if err := analysispacks.Validate(); err != nil {
 		return nil, err
 	}
-	entry = filepath.ToSlash(filepath.Clean(entry))
-	if entry == "." {
-		entry = ""
-	}
+	entry = parse.NormalizeEntry(entry)
 	inv, err := st.walk(root)
 	if err != nil {
 		return nil, err
@@ -106,26 +100,9 @@ func (st stages) analyze(root, entry string, checks []analysis.Check, opts Optio
 	return out, nil
 }
 
-// selectRunners keeps today's entry modes: a Python or PHP entry runs only that
-// language and any other entry runs only JS/TS. A full scan always runs JS/TS,
-// which owns the base report, plus each other language the inventory contains.
 func selectRunners(inv parse.Inventory, entry string) [runnerCount]bool {
-	var selected [runnerCount]bool
-	switch ext := strings.ToLower(filepath.Ext(entry)); {
-	case ext == ".py":
-		selected[pythonRunner] = true
-	case ext == ".php" || ext == ".phtml":
-		selected[phpRunner] = true
-	default:
-		selected[javascriptRunner] = true
-	}
-	if entry == "" {
-		for _, f := range inv.Files {
-			selected[pythonRunner] = selected[pythonRunner] || f.Language == lang.Python
-			selected[phpRunner] = selected[phpRunner] || f.Language == lang.PHP
-		}
-	}
-	return selected
+	l := inv.Runners(entry)
+	return [runnerCount]bool{javascriptRunner: l.JavaScript, pythonRunner: l.Python, phpRunner: l.PHP}
 }
 
 // run executes the selected runners into fixed slots. The returned error is the

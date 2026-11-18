@@ -536,7 +536,7 @@ incremental invalidation. There is no automatic runtime cache implied by saved e
 | `internal/walk` | Target file selection and manifest |
 | `internal/lang` | File-extension language registry |
 | `internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment |
-| `internal/parse` | Producer of per-language reports: Tree-sitter, language/framework resolution, bounded flow and evidence assembly, exposed as `Inventory`, `RunJavaScript`, `RunPython`, `RunPHP` and `Assemble`; route inventory (`Routes`) keeps its own walk |
+| `internal/parse` | Producer of per-language reports: Tree-sitter, language/framework resolution, bounded flow and evidence assembly, exposed as `Inventory` (with `Runners` selection and `NormalizeEntry`), `RunJavaScript`, `RunPython`, `RunPHP` and `Assemble`; route inventory (`Routes`) keeps its own walk |
 | `internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
 | `internal/guidelines` | Embedded versioned language Analysis Guidelines |
 | `internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |

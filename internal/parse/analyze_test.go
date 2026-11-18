@@ -1,8 +1,8 @@
 package parse
 
 import (
+	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -26,28 +26,22 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	if err := analysispacks.Validate(); err != nil {
 		return nil, err
 	}
-	entry = filepath.ToSlash(filepath.Clean(entry))
-	if entry == "." {
-		entry = ""
-	}
+	entry = NormalizeEntry(entry)
 	inv, err := testInventory(root)
 	if err != nil {
 		return nil, err
 	}
+	// Same selection as internal/pipeline, run one after another in merge order.
+	run := inv.Runners(entry)
 	var js, py, php *analysis.AnalysisReport
-	switch ext := strings.ToLower(filepath.Ext(entry)); {
-	case ext == ".py":
-		py, err = RunPython(inv, entry, checks)
-	case ext == ".php" || ext == ".phtml":
-		php, err = RunPHP(inv, entry, checks)
-	default:
+	if run.JavaScript {
 		js, err = RunJavaScript(inv, entry, checks, options)
-		if err == nil && entry == "" {
-			py, err = RunPython(inv, entry, checks)
-		}
-		if err == nil && entry == "" {
-			php, err = RunPHP(inv, entry, checks)
-		}
+	}
+	if err == nil && run.Python {
+		py, err = RunPython(inv, entry, checks)
+	}
+	if err == nil && run.PHP {
+		php, err = RunPHP(inv, entry, checks)
 	}
 	if err != nil {
 		return nil, err
@@ -118,5 +112,56 @@ func TestRunnersWithoutSourcesOpenNoGrammar(t *testing.T) {
 	}
 	if _, err := RunPHP(inv, "missing.php", nil); err == nil {
 		t.Fatal("a PHP entry without PHP files must keep its selection error")
+	}
+}
+
+// A set that opened no grammar still loads a module it is later allowed to
+// load: the first load opens the grammars.
+func TestModuleSetOpensGrammarsOnFirstLoad(t *testing.T) {
+	inv, err := testInventory("testdata/python/routes")
+	if err != nil {
+		t.Fatal(err)
+	}
+	set, _, err := openJavaScriptSet(inv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.close()
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "late.js"), []byte("const x = 1;\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	set.root = root
+	set.allowed["late.js"] = true
+	m, err := set.load("late.js")
+	if err != nil || set.parsers == nil || m.tree.RootNode().HasError() {
+		t.Fatalf("load = %v, %v; parsers open = %v", m, err, set.parsers != nil)
+	}
+}
+
+func TestRunnersFollowEntryModes(t *testing.T) {
+	inv, err := testInventory("testdata/mixed/three-language")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pyOnly, err := testInventory("testdata/python/routes")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		inv   Inventory
+		entry string
+		want  Languages
+	}{
+		{inv, NormalizeEntry("."), Languages{JavaScript: true, Python: true, PHP: true}},
+		{pyOnly, "", Languages{JavaScript: true, Python: true}},
+		{inv, NormalizeEntry("./app.py"), Languages{Python: true}},
+		{inv, "index.php", Languages{PHP: true}},
+		{inv, "view.PHTML", Languages{PHP: true}},
+		{inv, "server.js", Languages{JavaScript: true}},
+	} {
+		if got := tc.inv.Runners(tc.entry); got != tc.want {
+			t.Errorf("Runners(%q) = %+v, want %+v", tc.entry, got, tc.want)
+		}
 	}
 }

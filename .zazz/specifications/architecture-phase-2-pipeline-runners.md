@@ -56,7 +56,7 @@ Output bytes do not change.
 | `internal/pipeline/pipeline.go`, `pipeline_test.go` | new | `Analyze`, `AnalyzeWithChecks`, `AnalyzeWithOptions`, `Options{DiscoverRoutes bool; Workers int}`; one walk, runner selection, concurrency, `parse.Assemble`, check/pack attachment |
 | `internal/parse/analysis.go` | modified | Split into `Inventory`, `RunJavaScript`, `Assemble`; remove the exported `Analyze*` functions |
 | `internal/parse/python_modules.go`, `php_modules.go` | modified | `RunPython(inv, …)` and `RunPHP(inv, …)` take the shared inventory; no walk |
-| `internal/parse/parse.go`, `modules.go` | modified | `Routes` passes its own single walk to the Python/PHP sets; `moduleSet.close` tolerates a set with no grammars |
+| `internal/parse/parse.go`, `modules.go` | modified | `Routes` passes its own single walk to the Python/PHP sets; a set with no grammars closes cleanly and opens them on its first module load |
 | `internal/parse/analyze_test.go` | new (test-only) | `Analyze`/`AnalyzeWithChecks`/`AnalyzeWithOptions` helpers for internal tests (runners in sequence, then `Assemble`), walk-backed `newPythonSet`/`newPHPSet` for set-level tests, and the AC2 no-grammar test |
 | All files calling `parse.Analyze`, `parse.AnalyzeWithChecks`, `parse.AnalyzeWithOptions`, or `parse.Options` outside `internal/parse` (38 files; listed in the run log) | modified | Import `internal/pipeline` instead |
 | `cmd/scan/architecture_baseline_test.go` | modified | Call `pipeline.AnalyzeWithOptions` |
@@ -263,3 +263,18 @@ file table and caller count, AC2 wording, status header, §10. Rationale and ver
   mechanical migration, then removal of the shim into the test helper. No contract, AC or output
   change. Golden unchanged; evidence is in the
   [evaluation record](../evaluation/architecture-baseline.md#phase-2--pipeline-and-concurrent-language-runners-2026-11-18).
+
+### 2026-11-18 — Post-review hardening
+
+Source: owner request after the verifier's residual risks. Changed: §4 rows for `analysis.go`,
+`modules.go` and `analyze_test.go`. No AC, invariant or output change.
+
+- `moduleSet.load` opens the JS grammars on first use when the set was built without them. Before
+  this, a future load path on a repository with no JS/TS files would have dereferenced nil parsers.
+- Entry normalization and runner selection now live in `parse` as `NormalizeEntry` and
+  `Inventory.Runners`. Both `internal/pipeline` and the parse test helper use them, so the helper
+  can no longer drift from production selection.
+- New tests: `TestModuleSetOpensGrammarsOnFirstLoad` and `TestRunnersFollowEntryModes`.
+- Evidence: the gate (including `-race`) passes, the golden is unchanged, and juice-shop, vulnpy and
+  DVWA bundles are still byte-identical to the starting HEAD.
+

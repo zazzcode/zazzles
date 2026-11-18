@@ -554,3 +554,20 @@ paid calls were made.
 AC1 serial outputs are pinned in `internal/judge/testdata/schedule_serial/`. There are twelve
 scenarios, captured from the pre-change scheduler in `15d0f92`. Each file pins the report and
 saved traces by SHA-256 and keeps the assessments and limitations readable.
+
+### Live owner-capped check (2026-11-18)
+
+Owner-approved OpenAI `gpt-6-luna` requests against Juice Shop `f189f52`, which was clean before and
+after. Offline analysis took 9.5 s in two runs. Judging time is wall clock minus that.
+
+| Run | Requests | Completed | Input tokens | Wall clock | Judging |
+|---|---|---|---|---|---|
+| Full scan, N=4, RPM 450, TPM 1M | 157 | 157 | 770,517 | 192.1 s | ~183 s (TPM-paced) |
+| A/B, N=1, RPM 450, TPM 0 | 40 | 40 | 329,255 | 21.0 s | ~11.5 s |
+| A/B, N=4, RPM 450, TPM 0 | 40 | 40 | 329,255 | 12.1 s | ~2.6 s (≈4.4×) |
+
+The same A/B with TPM 1M took 73.8 s at N=1 and 70.6 s at N=4. In both runs the local TPM window was
+the bottleneck. The reservation is request bytes plus 4,096, about 24k per Juice Shop request, while
+the provider reports about 4.9k input tokens per request. The first 40 reservations total 1.48M, so
+request 27 waits for the rolling window at any concurrency. A token-based estimate is a follow-up
+outside this phase. Results and every attempt count are in `_test-findings/juice-shop/run-arch-4*`.

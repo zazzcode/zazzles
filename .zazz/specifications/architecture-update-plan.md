@@ -175,10 +175,11 @@ and peak RSS on pinned samples as the "before" numbers.
 speed nor findings. Profiles show 59% of juice-shop CPU in whole-module syntax re-walks
 (`bindingReassigned`), and most recall loss is at calls the per-language inline helper expansion
 cannot follow (depth 3, budget 24). The phase builds, per file, a flat syntax index and a binding
-index (steps 1A–1B, speed, byte-identical). Across the repository it builds a call index (1C,
-resolution measurement) and per-callable parameter summaries applied at call sites (1D–1E,
-accuracy, listed recall deltas). Library mode, Symfony and Drupal build on the call index and
-summaries.
+index (steps 1A–1B, speed, byte-identical), and measures call resolution (1C). It then builds a
+production call index with receiver typing and a closed effect table (1D), and per-callable
+parameter summaries applied at call sites (1E for JS/TS, 1F for Python and PHP). Both 1D and the
+summaries change output only through listed recall deltas. Library mode builds on 1E, and Symfony
+and Drupal on 1F.
 
 **2 — Pipeline and concurrent runners.** A new `internal/pipeline` owns one walk, empty-language
 skip, concurrent JS/TS, Python, and PHP runners, the fixed-order merge, and finalization.

@@ -192,11 +192,14 @@ new analyzer. Source, sink and control models stay in `internal/analysispacks`.
 | **1A** | L1 + L2 for JS/TS; replace `bindingReassigned` and the other whole-module walks on the browser/flow hot path | Speed (juice-shop) | Byte-identical |
 | 1B | L1 + L2 for Python and PHP; replace `pyWalk` and PHP equivalents on hot paths; bundle encode-once | Speed (vulnpy, DVWA) | Byte-identical |
 | 1C | L3 call index for all three languages, in measurement mode: report call-site resolution rates per sample; no flow change | Accuracy baseline | Byte-identical |
-| 1D | L4 summaries for JS/TS: shadow mode, then switch-over; remove inline helper expansion | Accuracy + speed | Listed recall deltas only |
-| 1E | L4 summaries for Python and PHP; Symfony/Drupal L3 inputs (PSR-4, service maps) | Accuracy + speed | Listed recall deltas only |
+| 1D | Production L3 call index for JS/TS and Python, with receiver typing and a typed-method effect table that flow reads at its unresolved-call points | Accuracy | Listed deltas only |
+| 1E | L4 summaries for JS/TS: shadow mode, then switch-over; remove inline helper expansion | Accuracy + speed | Listed recall deltas only |
+| 1F | L4 summaries for Python and PHP; PHP builtin effect tables; Symfony/Drupal L3 inputs (PSR-4, service maps) | Accuracy + speed | Listed recall deltas only |
 
-Later plan phases: library mode (phase 8) needs 1D; Symfony (6) and Drupal (9) need 1E and
-phase 3. Phase 5 (recall gaps) uses the 1C resolution report as its inventory.
+Later plan phases: library mode (phase 8) needs 1E. Symfony (6) and Drupal (9) need 1F and
+phase 3. Phase 5 (recall gaps) uses the 1C resolution report as its inventory. Express middleware
+chain composition (juice-shop `middleware_unresolved`, 318) is an L5 adapter item for phase 5, not
+call resolution.
 
 ## 4. Step 1A scope (the current contract)
 
@@ -259,7 +262,7 @@ Additional halts:
 AC5's target comes from the profile: the replaced walk is 59% of CPU, and CGo/`Kind()` cost spans
 most of the rest. If the measured gain is smaller, record the new profile and ask before changing scope.
 
-## 8. Step contracts 1B–1E (outline; complete before each starts)
+## 8. Step contracts 1B–1F (outline; complete before each starts)
 
 - **1B:** the same ACs for Python and PHP (vulnpy target ≤ 5 s, DVWA no regression). Bundle encode-once
   keeps bundle bytes identical.
@@ -278,12 +281,94 @@ most of the rest. If the measured gain is smaller, record the new profile and as
   (2) the evaluation record gets, per sample, the call-site class counts and the gap-kind × class
   table; (3) the golden is unchanged and there is no production diff. The production call index is
   promoted in 1D, where summaries consume it.
-- **1D:** a shadow run on every JS/TS fixture and juice-shop proves that summary-applied flow
+- **1D:** see [§8a](#8a-step-1d-contract-call-index-and-receiver-typing).
+- **1E:** a shadow run on every JS/TS fixture and juice-shop proves that summary-applied flow
   reproduces the inline results wherever inline resolved the call. Each new candidate or removed
   gap is listed, with answer-key evidence. `helper_call_limit` and `path_unrelated_helper_limit`
-  no longer occur on fixtures.
-- **1E:** the same for Python and PHP, plus PSR-4 and service-map resolution, with Symfony and
-  Drupal fixtures added under `internal/parse/testdata/php/`.
+  no longer occur on fixtures. Target: juice-shop's 559 limit-induced in-repository gaps (1C).
+- **1F:** the same for Python and PHP, plus PHP builtin effect tables (DVWA's 210
+  `php_call_unresolved`) and PSR-4 and service-map resolution. Symfony and Drupal fixtures are added
+  under `internal/parse/testdata/php/`.
+
+## 8a. Step 1D contract: call index and receiver typing
+
+### Evidence
+
+The 1C measurement attributes the largest class of call gaps to methods on values of unknown type:
+713 on juice-shop and 582 on vulnpy, plus 313 vulnpy `input_validation_unresolved`. By callee
+(phase 1B bundles), the gaps concentrate on a few typed receivers:
+
+| Sample | Gap | Top callees |
+|---|---|---|
+| juice-shop | `unknown_call_result` 1,272 | `challenge.save` 280 (Sequelize instance), `HintModel.count` 140 (Sequelize model), `os.hostname`/`type`/`release` 210 (Node builtin), `config.get` 108 (package), `new Date` 74, `JSON.stringify` 70 (builtins), `req.header` 64 (framework request) |
+| vulnpy | `python_dispatch_unresolved` 523 | `response.append` 314 (local `list`), `trigger_name.replace` 64 (local `str`) |
+| vulnpy | `python_call_unresolved` 131 | `trigger_name.replace` 64 (`str`), `getattr` 64 (dynamic) |
+
+### Scope
+
+| Path | New / modified | Purpose |
+|---|---|---|
+| `internal/parse/call_index.go`, `call_index_test.go` | new | Per-module JS/TS and Python call index, built once per module: call site → resolution `{kind, target, receiver type, reason}` |
+| `internal/parse/receiver_types.go`, `receiver_types_test.go` | new | Receiver type facts from binding-stable declarations: literals, imports, `new`/constructor calls, Sequelize model identity and finder results, framework request and response parameters |
+| `internal/parse/call_effects.go` | new | Closed effect table keyed by (receiver type, method): `independent_result`, `receiver_transfer`, `argument_transfer(i)`, `container_write(i)`, `unknown` |
+| `internal/parse/flow.go`, `python_calls.go` | modified | At the existing `unknown_call_result`, `python_call_unresolved` and `python_dispatch_unresolved` emission points only: apply the indexed effect when one exists; otherwise keep the gap exactly as today |
+| `internal/parse/call_resolution_measure_test.go` | modified | Classify from the production index; add the typed classes |
+| `cmd/scan/testdata/architecture-baseline.json`, affected parse goldens | modified | Listed deltas only (AC3) |
+| `.zazz/evaluation/architecture-baseline.md`, `.zazz/architecture/README.md`, `repository-graph.md` | modified | Results; implemented L3 subset |
+
+Out of scope: summaries (1E), PHP (1F), middleware chains (phase 5), judge request wire changes,
+and new candidate families.
+
+### Decisions
+
+- **D-7 Resolution kinds:** `direct`, `imported`, `method_on_known_class(type)`, `builtin_method(type)`,
+  `package_member(module)`, and `unresolved(reason)`, where the reason is `dynamic_callee`,
+  `unknown_receiver`, `unknown_import_member`, `ambiguous` or `dynamic_write`.
+  `in_repo` parity: wherever `resolveCall` or `pythonSet.resolve` finds a definition today, the
+  index gives the same target.
+- **D-8 Receiver typing is conservative.** A type comes only from a declaration that the binding
+  index shows is never reassigned, written through or dynamically writable. Anything else is
+  `unknown_receiver`. Types are never inferred from method names.
+- **D-9 Effects are flow facts, never protection.** No effect marks a value safe or validated.
+  `independent_result` means only "the result carries none of the receiver's or arguments'
+  dependencies, and no request source" (for example `os.hostname()`). It never removes a dependency
+  that a caller already holds. `container_write(i)` adds argument i's dependencies to the receiver
+  value. The table is closed, and a method missing from it stays `unknown`.
+- **D-10 Framework request objects keep their acquisition models.** `req.header` and similar stay
+  owned by the Node input models. The index only routes the call to them.
+
+### Acceptance criteria
+
+1. **AC1 Index.** `call_index_test.go` has table cases for each kind and reason: reassigned and
+   dynamically written receivers resolve to `unresolved`; shadowed names; re-exports; and Python
+   `from x import y`. Parity: the index target equals `resolveCall`/`pythonSet.resolve` on every
+   fixture call site where those resolve (and on juice-shop and vulnpy with their env vars).
+2. **AC2 Effects reach flow.** On juice-shop, `unknown_call_result` is at most 800 (1,272 before).
+   On vulnpy, `python_dispatch_unresolved` is at most 250 (523 before). Every removed gap is replaced
+   by an effect from the table, and the 1D harness lists the effect counts.
+3. **AC3 Listed deltas only.** The architecture golden and parse goldens change only for uses whose
+   gaps, dependencies or evidence changed through an AC2 effect. The run log lists each changed
+   fixture, with a JSON diff excerpt. No candidate is removed. Each new candidate is checked against
+   the sample answer keys and detection guides before commit. An unsupported new candidate is a halt.
+4. **AC4 No speed regression.** The 3-run medians on juice-shop, vulnpy and DVWA are within 5% of
+   step 1B, or faster.
+5. **AC5 Gate and docs.** The contributor gate passes. The architecture README and repository-graph
+   document list L3 as implemented for JS/TS and Python.
+
+### Halts (in addition to §6)
+
+- A removed candidate, or a new candidate that the answer keys or detection guides do not support.
+- A type assigned to a binding that the binding index shows can be written.
+- An effect that would need a new judge request field.
+
+### Execution sequence
+
+1. Red: AC1 table cases. Then implement `receiver_types.go` and `call_index.go`, with no flow change,
+   and run the parity test plus the golden (byte-identical at this point).
+2. Switch the measurement harness to the index, and record the typed-class tables.
+3. Red: effect cases per table row. Implement `call_effects.go`, and wire the three emission points.
+4. Regenerate goldens, review each delta (AC3), and check new candidates against the answer keys.
+5. Measure AC2 and AC4. Write docs, run the gate and verifier, then commit and push.
 
 ## 9. TDD entry point and execution sequence (step 1A)
 
@@ -405,3 +490,11 @@ written against these numbers before it starts.
 Docs updated: `.zazz/architecture/repository-graph.md` (abandoned graph data model, and why the source
 index is better), `.zazz/architecture.md` §3 and the graph storage decision, and
 `docs/technical-approach.md` (engine structure and performance).
+
+### 2026-11-18 — Step 1D contract written; steps renumbered
+
+Source: owner ("Write 1D contract") and the 1C measurement. 1D is now the production call index with
+receiver typing and a closed effect table (§8a). The JS/TS summaries move to 1E. Python and PHP
+summaries, PHP builtin effect tables and Symfony/Drupal resolution move to 1F. Library mode now
+depends on 1E, and Symfony and Drupal on 1F.
+

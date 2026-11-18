@@ -386,20 +386,22 @@ same call). The gaps cluster on a few helpers that many routes reach through
 | `challengeUtils.solveIf` (entries) | 56 | 0 | a `criteria` closure argument over the request |
 | `findFilesWithCodeChallenges`, `sanitizeSecure` | 9 recursive | 0 | `fs` calls; request-derived arguments |
 
-`helper_call_limit` and `path_unrelated_helper_limit` already do not occur in any parse or
-architecture fixture. The inline tests `checks_test.go` "recursion stops" and "fourth helper is a
-limit" pass request data into the refused helper and keep their gaps.
+On fixtures, `path_unrelated_helper_limit` occurs once: `typescript/path-traversal-expanded`
+route `/v/irrelevant-helper-budget`, with 3 gaps on `tick(0)` past the budget, where `tick` is
+`return n`. `helper_call_limit` does not occur. The inline tests `checks_test.go` "recursion stops"
+and "fourth helper is a limit" pass request data into the refused helper and keep their gaps.
 
 ### Scope
 
 | Path | New / modified | Purpose |
 |---|---|---|
-| `internal/parse/callable_summary.go` | new | L4 summary per JS/TS callable: parameter-indexed read and return sets, blocking reasons with spans, callees; built once per callable, bottom-up over the L3 call index with an SCC fixpoint |
+| `internal/parse/callable_summary.go`, `callable_summary_scan.go` | new | L4 summary per JS/TS callable: parameter-indexed read and return sets, blocking reasons with spans, callees; built once per callable, bottom-up over the L3 call index with an SCC fixpoint |
 | `internal/parse/callable_summary_test.go` | new | Table cases for every reason and for parameter indexing, recursion and the iteration cap |
-| `internal/parse/summary_shadow_test.go` | new | Shadow parity: summary against inline expansion at every precise inline expansion, on every JS/TS fixture and on juice-shop with `ZAZZLES_JUICE_SHOP` |
+| `internal/parse/summary_shadow_test.go` | new | Shadow parity: summary against inline expansion at every precise inline expansion, on every JS/TS fixture and on juice-shop with `ZAZZLES_JUICE_SHOP`; attribution of remaining limit gaps (AC4) |
 | `internal/parse/helper_flow.go` | modified | Apply a closed summary at the limit and recursion refusals; a nil-by-default shadow hook |
 | `internal/parse/flow.go` | modified | Apply a closed summary at the in-repository `unknown_call_result` fallthrough |
 | `internal/parse/modules.go` | modified | Per-set summary cache |
+| `cmd/scan/testdata/architecture-baseline.json` | modified | The AC3 delta only |
 | `.zazz/evaluation/architecture-baseline.md`, `.zazz/architecture/README.md` §3, `.zazz/architecture/repository-graph.md` | modified | Results; L4 implemented for JS/TS |
 
 Out of scope: Python and PHP summaries (1F), store summaries over module state, new effect-table
@@ -416,7 +418,7 @@ rows, witness reconstruction through summaries, judge request wire changes and n
   (`eval`, `with`, `new Function`, `import()`), `unmodeled_call` (any call that is not an
   in-repository callable or a 1D `independent_result` table entry, which covers every sink and
   source API), `unmodeled_constructor`, `heap_write` (a write to a parameter or module binding),
-  `callee_not_closed`, `unsupported_parameters`, `summary_limit` (more than 64 parameters) and
+  `callee_not_closed`, `callee_not_loaded` (an in-repository module the scan has not loaded; a summary build never loads one, so it cannot change the reported files or the cached call index), `unsupported_parameters`, `summary_limit` (more than 64 parameters) and
   `summary_fixpoint_limit`. A summary is **closed** when it has no reason.
 - **D-12 Bottom-up, once.** Summaries are computed on first use and cached on the module set,
   in a Tarjan walk over the callees that `resolveCall` (the L3 index's direct and imported
@@ -450,8 +452,11 @@ rows, witness reconstruction through summaries, judge request wire changes and n
    `returns` parameters. Where the summary is closed and the arguments at `reads` parameters are
    inert, the inline body records no use and the result has no dependency. There are zero disagreements,
    and the test reports the number of sites checked.
-3. **AC3 Golden.** `TestArchitectureBaseline` and every parse golden pass with no update. No
-   fixture has `helper_call_limit` or `path_unrelated_helper_limit`.
+3. **AC3 Golden.** The only architecture-golden delta is the `/v/irrelevant-helper-budget`
+   candidate. Its 3 `tick(0)` gaps go, so its request and signature digests and the fixture's report
+   and SARIF hashes change, and its candidate ID stays the same. Every other fixture and every parse golden is
+   unchanged. No fixture use has `helper_call_limit` or `path_unrelated_helper_limit`, and the shadow
+   test asserts this.
 4. **AC4 Listed deltas.** For juice-shop, vulnpy and DVWA, the run log and evaluation record list
    removed gaps by kind and callee, re-keyed candidates (same kind, entry and sink) and new
    candidates. No candidate is removed. Each new candidate is checked against `docs/samples/*` and the
@@ -467,7 +472,7 @@ rows, witness reconstruction through summaries, judge request wire changes and n
 - A removed candidate, or a new candidate that the answer keys or detection guides do not support.
 - A shadow disagreement. A summary bug is fixed. An inline-engine bug is recorded, and the owner
   decides before anything changes.
-- Any fixture golden change.
+- Any fixture golden change other than AC3's.
 
 ### Execution sequence
 
@@ -645,3 +650,48 @@ Source: owner ("write the 1E contract first as §8b") and the 1D handoff evidenc
 JS/TS summaries applied at inline-expansion refusals with inert arguments (D-14). Inline expansion
 stays wherever it expands (D-15). Full replacement, with per-caller `param → sink` instantiation and
 witness reconstruction, is a recorded deviation from §3's 1E row and needs an owner decision.
+
+### 2026-11-18 — Step 1E implemented
+
+Source: implementation of §8b. Files: `callable_summary.go` and `callable_summary_scan.go` (split for the
+file-size standard), `callable_summary_test.go`, `summary_shadow_test.go`, one application point
+each in `helper_flow.go` (limit and recursion refusals) and `flow.go` (the in-repository
+`unknown_call_result` fallthrough), a nil-by-default shadow hook in `helper_flow.go`, caches in
+`modules.go`, and the AC3 golden delta.
+
+Corrections and deviations:
+- **The contract's evidence was wrong about fixtures.** `path_unrelated_helper_limit` occurred once
+  on a fixture (`typescript/path-traversal-expanded`, `/v/irrelevant-helper-budget`, 3 gaps on
+  `tick(0)`). This is the delta §8's 1E outline asked for, so AC3 and the golden halt were corrected
+  to name it, instead of halting. The candidate ID is unchanged. No path test now reaches the
+  `path_unrelated_helper_limit` branch of `pathGapCovered`. `TestClosedSummaryAtRefusals` still
+  produces that gap kind, on a helper that is not closed.
+- **Inline expansion is not replaced (D-15).** Summaries apply only at refusals with inert arguments.
+  Per-caller `parameter → sink` instantiation and witness reconstruction need an owner decision on
+  the witness format, because they change evidence and request bytes on every helper path.
+- **Closed is strict.** Any call outside the in-repository callables and the 1D `independent_result`
+  table blocks closure, which covers every sink and source API. So does any module binding that is
+  mutated, escapes or is a call receiver. That leaves `utils.ctfFlag` (`crypto`), `totalCheatScore`
+  (`solves.push`), `calculateCheatScore` (`logger`) and `solveIf` (closure argument) blocked.
+  Their 416 remaining gaps are attributed by reason in the evaluation record.
+- **Summaries load nothing.** The verifier-style review found that a deep summary scan could load
+  modules that inline expansion never reaches. `out.Files` and the guideline list come from every
+  loaded module, so a single-entry scan's output could have changed. A build now refuses new loads,
+  reports `callee_not_loaded` instead, and never writes the 1D resolution cache. Whole-repository scans
+  load every file first, so their output is unaffected.
+- **Verifier fixes (soundness).** The fresh-context verifier found three holes, none present in the corpus.
+  (A) the receiver of a 1D table call (`new Date(x).m()`) was not walked; (B) locals were matched by
+  name across nested scopes; (C) module constants were too loose: a nested callable's free names, member
+  reads passed as arguments, and function objects. Fixes: walk non-identifier receivers; scope-aware
+  `boundInScope`; free names of nested callables are `free_variable`; member reads are stable only where consumed
+  or returned; function declarations need stable references; only a direct field of a fresh literal
+  may be written. Regression cases are in `TestCallableSummaries`. juice-shop output is unchanged.
+- **AC5 open for juice-shop:** the final binary's median is 11.15 s (+7.7% vs 1D) against 10.63 s
+  before the fixes; it was not isolated from machine state. The owner decides whether to accept it or to profile.
+- **Returns are name-level.** `returns` is an over-approximation from a name taint fixpoint. It is used only by
+  the shadow test today and is the input for per-caller instantiation later.
+
+Results: juice-shop limit-induced gaps on in-repository callables 553 → 416, with 207 gaps removed in total
+(70 outbound uses at `webhook.notify`). There are no candidate, status or ID-order changes. vulnpy and DVWA
+are identical. Shadow parity holds on 1,193 expansions. vulnpy and DVWA are within 5% of 1D; juice-shop is +7.7% (AC5 open). Details are in the
+evaluation record.

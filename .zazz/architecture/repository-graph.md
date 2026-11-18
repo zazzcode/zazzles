@@ -46,8 +46,11 @@ backed out before commit, for four reasons:
   package and builtin calls.
 - **One structure per question.** Per-file syntax and binding indexes answer local questions in
   O(1). A repository call index records each call site with an explicit resolution kind, and
-  unresolved sites stay records, never dropped. Per-callable parameter summaries are computed once
-  and applied at every call site, which replaces per-route inline expansion and its depth and budget limits.
+  unresolved sites stay records, never dropped. Per-callable parameter summaries are computed once.
+  **Implemented (JS/TS, step 1E):** a closed summary answers a call that inline expansion refuses,
+  when its arguments are inert. On juice-shop this removed 207 gaps with no candidate change.
+  **Planned:** summaries applied at every call site, which replaces per-route inline expansion and
+  its depth and budget limits, and Python and PHP summaries.
 - **Built for the next features.** Library mode reads "parameter k reaches a sink" straight from an
   exported function's summary. Symfony and Drupal add PSR-4 and service-container resolution as call
   index inputs and route syntax as model tables, rather than new analyzers.

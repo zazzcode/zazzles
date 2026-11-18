@@ -1170,6 +1170,13 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		}
 		f.noteInputTouch(values, name)
 	}
+	// An in-repository callee that inline expansion did not resolve: a closed
+	// summary with inert arguments gives the empty result (spec §8b D-14).
+	if f.set != nil && f.helpers != nil {
+		if hm, helper := f.set.resolveCall(f.module, n); helper != nil && f.closedSummaryCall(n, hm, helper, values) {
+			return value{}
+		}
+	}
 	v := value{}
 	for _, a := range values {
 		v = combine(v, a)

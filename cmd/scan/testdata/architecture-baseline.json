@@ -3028,8 +3028,8 @@
       {
         "id": "candidate:v1:f9657bfd63d27f8f81d1151e1ef3532d6d69b9ebc54f0b5a8b68b2f03af4af08",
         "kind": "path_traversal_candidate",
-        "request_sha256": "decba360b983cd12da063671ac71f122777c864354d0d402a9b90007ac23865e",
-        "signature_sha256": "16e5b34a174548279cbae61b336f5d41e367217efe94730845a45d219d11717e"
+        "request_sha256": "139979f671eeccf921cc36ea188ba13847c1c0a1d1151ceb7a1fc7f78563ef8a",
+        "signature_sha256": "01a0cab1dca3e4a8e67409870bc156ee4d63cbf0c214a8fb34c9e4618c12ea2c"
       },
       {
         "id": "candidate:v1:1ecee7d7f9f3d6b1a4867fbc7742b5faa9e1233f499f4e445178e2c5e8f711cb",
@@ -3062,8 +3062,8 @@
         "signature_sha256": "25c0983c00b6c2f6ed11287ecfa0f9ee2a9a2810ddf5574903c9ff4edf01e47a"
       }
     ],
-    "report_sha256": "f2d2a142671a53e77a18669352ec11654229471eb688c43d7d9ad954a379d9b5",
-    "sarif_sha256": "93b5676a7e91d5e4f3d1bfffa38863d24cdc3112480958499b10b4c50dcc52e0",
+    "report_sha256": "c2f5392c867b7d93021c40f10f4ff1dfa39ab42b8a2bbd20b8e6de7e5e91a17b",
+    "sarif_sha256": "8f50ea388160e45089a9a58890588fbaaf3fd30d17ded261470d4a333390fa60",
     "entries": 18,
     "registrations": 18,
     "dispatch_bindings": 18,

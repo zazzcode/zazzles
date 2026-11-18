@@ -41,11 +41,18 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	}
 	key := fmt.Sprintf("%s:%d", hm.file, helper.StartByte())
 	if f.helpers.stack[key] {
+		if f.closedSummaryCall(call, hm, helper, args) {
+			return value{}, true, true
+		}
 		g := f.gap("recursive_helper", "recursive helper call is not re-entered: "+name, call)
 		f.gaps = append(f.gaps, g)
 		return value{}, false, false
 	}
 	if f.helpers.budget <= 0 || f.depth >= 3 {
+		// A closed summary stands in for the refused expansion (spec §8b D-14).
+		if f.closedSummaryCall(call, hm, helper, args) {
+			return value{}, true, true
+		}
 		kind := "helper_call_limit"
 		// Unrelated helpers that cannot close over request data are not path blockers
 		// (path_modeled.go); keep that classification on the shared single pass.
@@ -135,6 +142,9 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 		}
 	}
 	if !precise {
+		if summaryShadow != nil {
+			summaryShadow(f, call, hm, helper, args, value{}, false, child.uses)
+		}
 		return value{}, true, false
 	}
 	for _, r := range child.returns {
@@ -143,8 +153,16 @@ func (f *flow) enterHelper(call *sitter.Node, name string, args []value) (ret va
 	if len(child.returns) > 1 {
 		ret.gaps = append(ret.gaps, f.gap("conditional_merge", "multiple helper returns merged without path feasibility: "+name, call))
 	}
+	if summaryShadow != nil {
+		summaryShadow(f, call, hm, helper, args, ret, true, child.uses)
+	}
 	return ret, true, true
 }
+
+// summaryShadow, when set by a test, observes every inline expansion so the
+// summary parity test can compare it with the callee's summary. It is nil in
+// production.
+var summaryShadow func(f *flow, call *sitter.Node, hm *sourceModule, helper *sitter.Node, args []value, ret value, precise bool, uses []analysis.CandidateUse)
 
 func supportedCallee(n *sitter.Node) bool {
 	return n.Kind() == "function_declaration" || isFunction(n)

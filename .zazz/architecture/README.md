@@ -263,10 +263,19 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   per module to `direct`, `imported`, `method_on_known_class`, `builtin_method`, `package_member` or
   `unresolved(reason)`. Receiver types come only from binding-stable declarations. `call_effects.go`
   is a closed table of flow effects (`independent_result`, `container_write`); it never records protection.
-- **Planned:** container-service resolution; per-callable parameter summaries, which replace inline helper
-  expansion and its depth and budget limits; a flat syntax index for flow evaluation; and binding
-  indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the call
-  index and summaries.
+- **Implemented (summaries, JS/TS):** `callable_summary.go` and `callable_summary_scan.go` build one
+  parameter-indexed summary per callable, bottom-up over the call index with a bounded SCC fixpoint:
+  the parameters the body reads, the parameters that may reach its result, and every blocking reason
+  with a span (an unmodeled call, a mutable module binding, a closure, `this`/`arguments`, a heap
+  write, dynamic code). A summary with no reason is closed. Flow applies a closed summary only where
+  inline expansion refuses a call (depth, budget or recursion), or leaves an in-repository result
+  unresolved, and every argument the body reads is inert. Inline expansion is unchanged wherever it
+  expands. `summary_shadow_test.go` checks every inline expansion against the summary.
+- **Planned:** container-service resolution; replacing inline helper expansion with summaries
+  (per-caller `parameter → sink` instantiation and witness reconstruction) and summaries for
+  Python and PHP; store summaries over module state; a flat syntax index for flow evaluation; and
+  binding indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the
+  call index and summaries.
 
 Offline effect so far, with byte-identical reports: juice-shop 64.16 s → 9.89 s, vulnpy 7.98 s →
 3.49 s, DVWA 1.01 s → 0.61 s ([measurements](../evaluation/architecture-baseline.md)).
@@ -374,8 +383,10 @@ Source availability does not establish complete control flow or runtime feasibil
 ### Bounded interprocedural flow second
 
 Resolved helper arguments/parameters and returns carry dependency witnesses and source provenance.
-Unknown bindings, recursion and reached expansion bounds cannot establish protection. General reusable
-function summaries and whole-program heap/control analysis remain planned.
+Unknown bindings, recursion and reached expansion bounds cannot establish protection. A closed JS/TS
+callable summary stands in for a refused expansion only when its arguments carry nothing
+([source index](#source-index)). Summaries that carry dependencies through a callee, and
+whole-program heap/control analysis, remain planned.
 
 ### Guards and mitigations
 

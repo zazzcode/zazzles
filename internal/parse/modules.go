@@ -43,6 +43,9 @@ type sourceModule struct {
 	bindings *bindingIndex
 	// calls caches call-site resolutions by node; see call_index.go.
 	calls map[uintptr]callResolution
+	// refsUnstable names module bindings with a use that is not a plain read;
+	// see callable_summary.go.
+	refsUnstable map[string]bool
 }
 
 type moduleSet struct {
@@ -72,6 +75,11 @@ type moduleSet struct {
 	parsers         *parsers
 	modules         map[string]*sourceModule
 	allowed         map[string]bool
+	// summaries caches L4 callable summaries by callable key; see callable_summary.go.
+	summaries map[string]*callableSummary
+	// summaryNoLoad is set while summaries are built: a summary never loads a
+	// module, so it cannot change which files a scan reports.
+	summaryNoLoad bool
 }
 
 func (s *moduleSet) close() {
@@ -85,6 +93,9 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 	file = filepath.ToSlash(filepath.Clean(file))
 	if m := s.modules[file]; m != nil {
 		return m, nil
+	}
+	if s.summaryNoLoad {
+		return nil, fmt.Errorf("module not loaded while building summaries: %s", file)
 	}
 	if !s.allowed[file] {
 		return nil, fmt.Errorf("module outside selected target sources: %s", file)

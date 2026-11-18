@@ -199,3 +199,69 @@ Report deltas, compared with the step 1B bundles:
 
 What remains on juice-shop is the 1E summary work and framework models: `challenge.save` 280 (a
 parameter receiver), `utils.*`/`antiCheat.*` 207 (in-repository), and `req.header` 64 (Node input models, D-10).
+
+## Phase 1 step 1E: JS/TS callable summaries (2026-11-18)
+
+Same method. The binary was built after step 1E. Bundles are in `_test-findings/<app>/run-arch-1e/`.
+Each sample was at its pin with an empty `git status --porcelain --ignored` before and after.
+
+Summaries apply only at inline-expansion refusals and at the in-repository `unknown_call_result`
+fallthrough, when the callee's summary is closed and every argument it reads is inert
+([spec §8b](../specifications/architecture-phase-1-source-index.md#8b-step-1e-contract-jsts-callable-summaries), D-14).
+Inline expansion is unchanged wherever it expands.
+
+**Shadow parity (AC2).** `TestSummaryShadowParity` checks every inline expansion against the callee's
+summary. It covered 38 expansions on the JS/TS fixtures and 1,155 on juice-shop (448 precise, 10
+where a closed summary applies), with no disagreements. A mutation check, which treated every summary as
+closed, produced 6 disagreements on juice-shop (a `file_read` and an `unresolved_source` acquired
+inside the callee). The oracle therefore detects an unsound summary.
+
+**Golden (AC3).** One fixture use changed: `typescript/path-traversal-expanded`
+`/v/irrelevant-helper-budget` lost 3 `path_unrelated_helper_limit` gaps on `tick(0)`. Its candidate
+ID is unchanged, while its request and signature digests and the fixture's report and SARIF hashes changed.
+No other fixture or parse golden changed. No fixture use has `helper_call_limit` or
+`path_unrelated_helper_limit`.
+
+**Report deltas (AC4), compared with the step 1D bundles:**
+
+- **juice-shop:** 207 gaps removed, and none added. All are on the 70 `outbound_http_candidate` uses at the
+  `webhook.notify` `fetch` (`lib/webhook.ts`): 67 `path_unrelated_helper_limit` and 70
+  `unknown_call_result` on `utils.version()`, plus 70 follow-on `unknown_value` on the `utils`
+  namespace receiver. `utils.version` reads only the `package.json` import. Candidate IDs, their
+  order, dependencies, context, sinks and finding statuses (236 needs_review, 15 poor_practice) are
+  unchanged. Only the 70 findings' `blocking_evidence` lists shrank. No candidate was added,
+  removed or re-keyed. The 70 uses match the sample answer key (`docs/samples/juice-shop/findings.json`,
+  70 `outbound_http_candidate` uses at `lib/webhook.ts`). The webhook destination is
+  `process.env.SOLUTIONS_WEBHOOK`, not request data.
+- **vulnpy and DVWA:** `findings.json` is identical to 1D apart from `root`. Neither runs JS/TS summary code.
+
+**Limit-induced gaps on in-repository callables, juice-shop:** 553 after 1D → 416 after 1E. The 553
+are `path_unrelated_helper_limit` 257, `recursive_helper` 9 and `unknown_call_result` on
+in-repository callees 287. The 1C figure of 559 was measured on the 1B bundles. `TestSummaryRemainingReasons`
+attributes every remaining gap to its callee summary's first reason. None is on a closed
+callee with inert arguments (the AC4 target):
+
+| Gaps | Gap kind | Callee | First blocking reason |
+|---|---|---|---|
+| 70 | `unknown_call_result` | `antiCheat.calculateCheatScore` | `unmodeled_call` (`logger.info`, a log sink) |
+| 67 + 67 | `path_unrelated_helper_limit`, `unknown_call_result` | `totalCheatScore` | `mutable_module_binding` (`solves`, mutated by `push`) |
+| 67 + 67 | `path_unrelated_helper_limit`, `unknown_call_result` | `utils.ctfFlag` | `unmodeled_call` (`crypto.createHmac`) |
+| 56 | `path_unrelated_helper_limit` (entries) | `challengeUtils.solveIf` | `unmodeled_call` (the `criteria` closure argument) |
+| 8 | `unknown_call_result` | `utils.extractFilename` | `unmodeled_call` (the global `decodeURIComponent`) |
+| 7 | `recursive_helper` | `findFilesWithCodeChallenges` | `unmodeled_call` (`fs`) |
+| 3 | `unknown_call_result` | `getCtfKey` | `mutable_module_binding` (`cachedCtfKey`) |
+| 2 | `recursive_helper` | `sanitizeSecure` | `callee_not_closed` |
+| 1 + 1 | `unknown_call_result` | `calculateApplicableDiscount`, `utils.jwtFrom` | `imported_value`, `unsupported_parameters` |
+
+Closing the rest needs store summaries over module state (`solves`, `cachedCtfKey`), effect-table
+rows for pure package and builtin calls (`crypto`, `median`, `decodeURIComponent`, string methods), and per-caller
+instantiation for closure and request arguments. These are recorded as deferred in the spec.
+
+| Sample | Wall clock (median; runs) | vs 1D | Max RSS (largest of 3 runs) |
+|---|---|---|---|
+| juice-shop | 10.63 s (10.95, 10.59, 10.63) before the verifier fixes; final binary 11.15 s (11.48, 11.14, 11.21, 11.10, 11.10, 11.17) | +2.7%; final +7.7% (**outside AC5's 5%**, open) | 248 MiB; final 242 MiB |
+| vulnpy | 3.51 s (3.57, 3.50, 3.51) | −1.7% | 2,057 MiB |
+| DVWA | 0.69 s (0.66, 0.72, 0.69); re-time 0.60 s (0.66, 0.60, 0.59, 0.60, 0.59) | +13%; re-time −1.6% | 454 MiB |
+
+The final juice-shop binary adds the verifier's scope fixes. Its output is byte-identical to the earlier 1E bundles, and its median is 11.15 s. Whether that cost comes from the scope checks or from machine state was not isolated (no A/B in one sitting), so AC5 stays open for juice-shop. vulnpy and DVWA run no JS/TS summary code. DVWA runs no changed code. The first batch's sub-second median was outside 5%, and an immediate
+5-run re-time on the same binary gave 0.60 s against 1D's 0.61 s, so the first batch is treated as noise.

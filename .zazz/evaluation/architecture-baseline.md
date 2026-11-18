@@ -259,9 +259,9 @@ instantiation for closure and request arguments. These are recorded as deferred 
 
 | Sample | Wall clock (median; runs) | vs 1D | Max RSS (largest of 3 runs) |
 |---|---|---|---|
-| juice-shop | 10.63 s (10.95, 10.59, 10.63) before the verifier fixes; final binary 11.15 s (11.48, 11.14, 11.21, 11.10, 11.10, 11.17) | +2.7%; final +7.7% (**outside AC5's 5%**, open) | 248 MiB; final 242 MiB |
+| juice-shop | 10.63 s (10.95, 10.59, 10.63) before the verifier fixes; final binary 11.15 s (11.48, 11.14, 11.21, 11.10, 11.10, 11.17) | +2.7%; final +7.7% (outside AC5's 5%; accepted by the owner 2026-11-18) | 248 MiB; final 242 MiB |
 | vulnpy | 3.51 s (3.57, 3.50, 3.51) | −1.7% | 2,057 MiB |
 | DVWA | 0.69 s (0.66, 0.72, 0.69); re-time 0.60 s (0.66, 0.60, 0.59, 0.60, 0.59) | +13%; re-time −1.6% | 454 MiB |
 
-The final juice-shop binary adds the verifier's scope fixes. Its output is byte-identical to the earlier 1E bundles, and its median is 11.15 s. Whether that cost comes from the scope checks or from machine state was not isolated (no A/B in one sitting), so AC5 stays open for juice-shop. vulnpy and DVWA run no JS/TS summary code. DVWA runs no changed code. The first batch's sub-second median was outside 5%, and an immediate
+The final juice-shop binary adds the verifier's scope fixes. Its output is byte-identical to the earlier 1E bundles, and its median is 11.15 s. Whether that cost comes from the scope checks or from machine state was not isolated (no A/B in one sitting), The owner accepted the juice-shop result on 2026-11-18. vulnpy and DVWA run no JS/TS summary code. DVWA runs no changed code. The first batch's sub-second median was outside 5%, and an immediate
 5-run re-time on the same binary gave 0.60 s against 1D's 0.61 s, so the first batch is treated as noise.

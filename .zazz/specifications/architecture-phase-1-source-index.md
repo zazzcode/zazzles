@@ -686,12 +686,12 @@ Corrections and deviations:
   `boundInScope`; free names of nested callables are `free_variable`; member reads are stable only where consumed
   or returned; function declarations need stable references; only a direct field of a fresh literal
   may be written. Regression cases are in `TestCallableSummaries`. juice-shop output is unchanged.
-- **AC5 open for juice-shop:** the final binary's median is 11.15 s (+7.7% vs 1D) against 10.63 s
-  before the fixes; it was not isolated from machine state. The owner decides whether to accept it or to profile.
+- **AC5 accepted for juice-shop (owner, 2026-11-18: "Accept it"):** the final binary's median is
+  11.15 s (+7.7% vs 1D), against 10.63 s before the fixes. It was not isolated from machine state.
 - **Returns are name-level.** `returns` is an over-approximation from a name taint fixpoint. It is used only by
   the shadow test today and is the input for per-caller instantiation later.
 
 Results: juice-shop limit-induced gaps on in-repository callables 553 → 416, with 207 gaps removed in total
 (70 outbound uses at `webhook.notify`). There are no candidate, status or ID-order changes. vulnpy and DVWA
-are identical. Shadow parity holds on 1,193 expansions. vulnpy and DVWA are within 5% of 1D; juice-shop is +7.7% (AC5 open). Details are in the
+are identical. Shadow parity holds on 1,193 expansions. vulnpy and DVWA are within 5% of 1D; juice-shop is +7.7%, which the owner accepted. Details are in the
 evaluation record.

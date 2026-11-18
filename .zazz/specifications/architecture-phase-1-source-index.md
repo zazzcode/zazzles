@@ -1,6 +1,7 @@
 # Architecture phase 1 — Source index and callable summaries
 
-**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
+**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–1 share it; topology updated 2026-11-18)
+**Status:** Phase 1 complete; draft PR #24 awaits owner review and merge.
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 1. Objective: **speed and accuracy**
 **Replaces:** [registration graph](architecture-phase-1-registration-graph.md) (superseded 2026-11-17, owner decision)
 **Depends on:** phase 0 (`TestArchitectureBaseline`) committed on `arch-review-clean-up` with green gates
@@ -193,7 +194,7 @@ new analyzer. Source, sink and control models stay in `internal/analysispacks`.
 | 1B | L1 + L2 for Python and PHP; replace `pyWalk` and PHP equivalents on hot paths; bundle encode-once | Speed (vulnpy, DVWA) | Byte-identical |
 | 1C | L3 call index for all three languages, in measurement mode: report call-site resolution rates per sample; no flow change | Accuracy baseline | Byte-identical |
 | 1D | Production L3 call index for JS/TS and Python, with receiver typing and a typed-method effect table that flow reads at its unresolved-call points | Accuracy | Listed deltas only |
-| 1E | L4 summaries for JS/TS: shadow mode, then switch-over; remove inline helper expansion | Accuracy + speed | Listed recall deltas only |
+| 1E | L4 closed JS/TS summaries: shadow mode, then refusal application; §8d completes dependent witnesses | Accuracy + speed | Listed recall deltas only |
 | 1F | L4 summaries for Python and PHP; PHP builtin effect tables; Symfony/Drupal L3 inputs (PSR-4, service maps) | Accuracy + speed | Listed recall deltas only |
 
 Later plan phases: library mode (phase 8) needs 1E. Symfony (6) and Drupal (9) need 1F and
@@ -435,10 +436,11 @@ rows, witness reconstruction through summaries, judge request wire changes and n
   the refusal gap is not recorded, and the helper counts as entered, because a closed body has no
   sink to seek. Anything else keeps today's behavior exactly.
 - **D-15 Inline expansion stays where it expands.** Every precise inline expansion is untouched,
-  so its output is byte-identical by construction. Full replacement of inline expansion, with
-  per-caller instantiation of `param → sink` and witness reconstruction, is deferred. It would
-  change evidence and request bytes on every helper path, and the witness format needs an owner
-  decision. This is a deviation from §3's 1E row.
+  so its output is byte-identical by construction. Step 1E initially deferred parameter-dependent
+  witness reconstruction. The owner's completion assignment (§8d, D-20–D-25 in its separate
+  contract) resolves the witness format using existing native evidence and implements bounded
+  `parameter → return/sink` instantiation at supported refusals. General replacement of unsupported
+  inline/control/state shapes remains outside that subset.
 
 ### Acceptance criteria
 
@@ -586,7 +588,8 @@ shadow verification before refusal hooks; effects and reviewed delta; resolution
 profiled optimization; sample comparisons/timings; gate, fresh verifier, docs, commits, push and PR.
 Preserve sample pins/clean status before and after, and use no live model calls or credentials.
 All §6/§8b halts apply. Unsupported configuration remains unresolved. Do not rebaseline an unlisted
-delta. Full witness reconstruction and replacement of successful expansion remain deferred (D-15).
+delta. This initial 1F contract's closed/inert scope is extended by §8d's concrete witness contract;
+successful inline paths remain the byte-compatibility oracle (D-15).
 
 ## 8d. Phase 1 completion contract
 
@@ -608,13 +611,16 @@ parity, target-gap closure and final gates. Route adapters remain phases 6/9.
 
 ## 10. Definition of done (step 1A)
 
+Historical step 1A checklist; §14 records its accepted implementation adjustments. The current
+phase-completion checklist is in the [completion contract](architecture-phase-1-summary-completion.md#10-definition-of-done).
+
 - [ ] AC1–AC6, with evidence in the run log.
 - [ ] `git diff <step start> --stat` matches §4.
 - [ ] The run log lists replaced call sites, before and after profiles, and the golden unchanged.
 
 ## 11. Open questions
 
-1. Does the owner want 1B's bundle encode-once in this phase, or kept with phase 2's output work? Default: 1B.
+1. **Resolved in 1B:** buffered writes closed the measured syscall cost; encode-once was not needed.
 2. Library mode scope beyond npm (PyPI, Packagist) after phase 8: not needed for 1A–1E.
 3. **Resolved by owner, 2026-11-18:** keep phase 1 open and complete dynamic-import resolution
    plus full summary witnesses under the [separate contract](architecture-phase-1-summary-completion.md).
@@ -816,7 +822,7 @@ Source: owner assignment. Added §8c for Python/PHP refusal summaries, six PHP b
 PSR-4 and service-map resolution inputs, performance investigation and phase closure. Checked phase
 6 D-3 and phase 9 D-1; their route adapters stay deferred. The 64 vulnpy limit gaps call a dynamic
 import helper, so closure is measured by applicability and remaining gaps require attribution.
-The owner requests a phases 0/1 milestone draft PR now; phases 2/3 stay later work on this branch.
+The owner requests a phases 0/1 milestone draft PR; phase 2 starts on a new branch after owner merge (2026-11-18 steering).
 
 ### 2026-11-18 — Step 1F implemented and technically verified
 
@@ -851,10 +857,11 @@ Review corrections: decorated/root-shadowed Python helpers, conflicting class/al
 private/abstract PHP targets, absolute-resource rebasing, Composer provenance, mutating-array stale
 projections and cross-module namespace exclusions all have regression coverage.
 
-**Phase 1 status: implementation verified; completion pending the owner's §11 decision on the
-64 dynamic-import limit gaps.** All 64 remain at `trigger/util.py:54`; unsupported assignment syntax
-and `import_module` block closure. Full witness reconstruction, per-caller sink/store instantiation,
-recursive Python/PHP summary closure, general alias/heap modeling and full YAML remain deferred.
+**At initial 1F delivery:** implementation was verified and closure awaited the owner's decision on
+the 64 dynamic-import limits. At that point all 64 remained at `trigger/util.py:54`, and the initial
+closed subset could not handle their assignment/import effects. The completion below closes those
+gaps and adds concrete parameter witnesses. Broader recursive/state summaries, general alias/heap
+modeling and full YAML remain outside the supported subset.
 Symfony/Drupal route adapters remain phases 6/9. See the
 [evaluation](../evaluation/architecture-baseline.md#phase-1-step-1f--pythonphp-summaries-and-php-resolution-inputs-2026-11-18).
 
@@ -865,3 +872,32 @@ The owner declined the 64-gap deferral, then explicitly authorized finishing rem
 dynamic-import resolution and full summary witnesses; route adapters stay in phases 6/9.
 Added §8d and the separate completion contract, resolving §11's decision. Phase 1 stays open until
 the completion contract passes; earlier technical acceptance does not imply phase completion.
+
+### 2026-11-18 — Phase 2 follows owner review and merge
+
+The owner plans to review and merge PR #24 after this spec, then begin phase 2 on a new
+arch-pipiline-runners branch. Phase 1 remains the current task; no phase 2 code or new worktree is created.
+
+### 2026-11-18 — Phase 1 complete
+
+The owner declined the 64-gap deferral and assigned the separate completion contract (§8d).
+Contract 7119b51 preceded code 4b01e42 and typed TypeScript regression 912446a.
+All completion ACs now have evidence:
+
+- Concrete parameter-return/sink/control witnesses for supported JS/TS, Python and PHP helper DAGs
+  reconstruct native evidence per caller. Existing inline/closed fast paths stay unchanged.
+- Exact, invocation-specific finite registry/import proofs close all 64 vulnpy helper limits and
+  64 unresolved-getattr gaps without losing source provenance or granting protection.
+- No sample candidate is added or removed. Juice Shop/DVWA reports are unchanged from delivered 1F;
+  128 vulnpy candidates are re-keyed by changed evidence, statuses unchanged. All 34 existing golden
+  rows are unchanged; only the two reviewed witness fixtures are added.
+- Offline request/signature audit: 251/251 Juice Shop and 240/240 DVWA outcomes unchanged; vulnpy
+  3,222 unchanged and exactly 128 changed. Non-use request-input/catalog/file metadata matches.
+- Final three-run medians are 9.21 s / 3.42 s / 0.60 s; all meet the completion threshold.
+  Scoped parity, mutation, atomic-rejection, finalized-request, full contributor and independent
+  verifier checks pass. Cache/recipe counts and native-control regressions are recorded.
+
+**Phase 1 is complete.** Broader control/state/recursive recipes remain explicit unsupported cases;
+general heap analysis, full YAML and route adapters are not claimed. Symfony/Drupal routes remain
+phases 6/9. The owner reviews and merges draft PR #24, then starts phase 2 separately on
+arch-pipiline-runners. No phase 2 branch, worktree or implementation was created here.

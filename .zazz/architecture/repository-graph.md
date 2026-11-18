@@ -53,10 +53,15 @@ backed out before commit, for four reasons:
   at inert-argument expansion refusals. Ambient reads, decorators, mutation, unsupported binding and
   recursive cycles remain explicit blocking reasons. PHP builtin content effects preserve dependency
   provenance without granting protection; mutating container effects invalidate stale projections.
-  **Planned:** summaries applied at every call site, replacing per-route inline expansion and its
-  depth and budget limits, with caller-specific witnesses and sink/store instantiation.
+  **Implemented (complete parameter witnesses):** all three languages also cache bounded
+  straight-line/helper-DAG recipes with parameter-return/sink maps and original spans. Instantiation
+  reuses native models with concrete caller values at supported refusals, rebuilding facts and
+  evidence rather than copying a candidate template. Python additionally uses invocation-specific
+  finite registry/import proofs, preserving every input source while removing the 64 measured
+  dynamic-import helper limits. Broader control-flow, recursion and module-state recipes remain
+  explicit unknowns; successful old paths stay byte-identical.
 - **Built for the next features.** Library mode reads "parameter k reaches a sink" straight from an
-  exported function's summary after witness instantiation is implemented. Symfony and Drupal now have
+  exported function's summary using the implemented witness machinery. Symfony and Drupal now have
   source-only PSR-4 and bounded service-container resolution inputs in the PHP call index. Their route
   adapters remain phases 6/9; they reuse PHP flow instead of adding analyzers.
 - **Same boundaries.** Indexes are immutable after build and deterministic by key. Each new layer

@@ -327,7 +327,7 @@ Each output's `deltas.json` records bundle paths, field/gap differences, normali
 `src/vulnpy/trigger/util.py:54`, `_get_trigger_module(name)`. Its body assigns a module-name
 expression and returns `import_module(module_name)` at lines 23–25. The summary is blocked by
 unsupported assignment syntax and an unmodeled dynamic-import call. It is not closed; no applicable
-closed/inert sample refusal remains. Dynamic-import deferral for phase closure awaits the owner.
+closed/inert sample refusal remains. The owner declined deferral; the completion section below records the closure.
 
 ### Performance (AC5)
 
@@ -353,11 +353,117 @@ twice against the old walk. The table uses unprofiled final full-bundle runs.
 The first sandboxed race run could not bind local `httptest` ports; no live provider was involved.
 The final contributor gate permits local stub listeners and passes changed-file gofmt, vet, build,
 the full race suite and the architecture baseline. Fresh-context technical verification is PASS;
-phase closure still awaits the dynamic-import disposition in spec §11. Evidence is recorded in
+the owner subsequently assigned the dynamic-import/witness completion recorded below. Evidence is recorded in
 spec §14 and the local run log.
 
 Fresh review found and fixed decorated/root-shadowed Python helpers, conflicting service definitions,
 private/abstract PHP targets, absolute-resource rebasing, config provenance, stale `array_shift`
 projections and cross-module namespace exclusions. Regression tests cover these cases.
-Full witness reconstruction, per-caller sink/store instantiation, recursive Python/PHP summary closure,
-general alias/heap modeling, full YAML and Symfony/Drupal route adapters remain deferred.
+At initial 1F delivery, full witnesses were still pending. The completion below delivers bounded native
+witness instantiation. Broader recursive/state summaries, alias/heap modeling, full YAML and route
+adapters remain outside the supported subset.
+
+## Phase 1 completion — Finite imports and concrete witnesses (2026-11-18)
+
+Contract [summary completion](../specifications/architecture-phase-1-summary-completion.md),
+committed first as `7119b51`. Implementation `4b01e42`; typed TypeScript end-to-end regression
+`912446a`. The owner rejected deferring the 64 import-related limits and authorized finishing
+phase 1 here. Symfony/Drupal route adapters remain phases 6/9.
+
+### Concrete witnesses and acceptance
+
+- **AC1:** cached parameter-indexed recipes instantiate dependent returns, native controls and sinks
+  with actual caller values and original spans. JS/TS, Python and PHP preserve native parameter,
+  assignment, operation, helper-return and sink evidence. The existing closed/inert fast path stays
+  first, and successful inline paths are untouched.
+- Native differential tests cover fan-out, locals, transforms, command/control, filesystem, code,
+  logging, verified SQL and helper DAGs. JS fixture shadow checks 44 expansions, 38 supported complete
+  witnesses, zero mismatches. PHP verifies implicit versus explicit return gaps as well as return,
+  complete use bytes and context. Python compares the full internal return value (including
+  protection/bindings) and serialized public evidence. Deliberately changed parameter/span recipes
+  are detected.
+- **AC2:** unsupported calls/binding/control/state, async callables without invocation proof, cycles
+  and instruction limits reject before any effects. Cache/source-load checks and two-caller
+  provenance tests pass. Finalized reports for JavaScript, typed TypeScript, Python and PHP produce
+  valid native command facts, exact offline requests and equivalence signatures beyond old depths.
+- **AC3:** finite import/selector facts belong to one generated invocation and its exact registry,
+  arguments and source target. Typed immutable proof values are separate from dependencies and
+  protection; ordinary flow conditions are not folded. Import aliases, shadowing, reassignment,
+  reflection/deletion, escaped namespaces, custom receivers, scalar/index type mismatches, wrong
+  invocation/arguments/target, nonfinite values and bounded registry-copy failures have negatives.
+  The targeted `util.py:54` helper gaps are **64 → 0**.
+
+### Final sample deltas and wire compatibility (AC4)
+
+Compared with delivered 1F's `verified-run-1` bundles:
+
+| Sample | Candidates | Added / removed | Re-keyed | Final delta |
+|---|---:|---|---:|---|
+| juice-shop | 251 | 0 / 0 | 0 | Normalized JSON unchanged |
+| vulnpy | 3,350 | 0 / 0 | 128 | 64 helper-limit and 64 unresolved-getattr gaps removed; no gap added |
+| DVWA | 240 | 0 / 0 | 0 | Normalized JSON unchanged; retains 1F's 210 builtin-gap closure |
+
+All previous semantic candidate keys and input-source spans remain. Status distributions are unchanged.
+The 128 vulnpy rows change dependency/input-fact evidence and IDs; 64 path rows additionally change
+gap, completeness and path metadata. No protection is invented. Changed evidence requires new
+judgments; old model answers are not transferred.
+
+An additional offline audit loads the saved reports, restores their supported read views using
+`AnalysisReport.BindUses`, and calls `Preview`/`EquivalenceSignature` without network access:
+
+| Sample | Identical request/signature outcomes | Changed outcomes |
+|---|---:|---:|
+| juice-shop | 251 | 0 |
+| vulnpy | 3,222 | 128 |
+| DVWA | 240 | 0 |
+
+Preview/signature errors, where already present, are compared too. All non-use request-input,
+catalog, file and limitation metadata hashes match. Output: `request-signature-audit.json`.
+Every pre-existing architecture golden row is unchanged. Only
+`javascript/summary-witnesses` (6 uses, including native commands/raw output/validation) and
+`php/summary-witnesses` (4 controlled command/encoded output uses) are added, with no request or
+signature errors. The native facts are checked before the baseline update.
+
+### Final performance and cache evidence (AC5)
+
+Same optimized, offline full-bundle method, no credentials passed to the scanner. Three sequential
+runs per clean pinned sample, after implementation froze and without concurrent verification load.
+
+| Sample | Phase 0 | 1B | 1D | Final 1E | Initial 1F | Completion median (runs) | vs initial 1F | Max RSS |
+|---|---:|---:|---:|---:|---:|---:|---|---:|---:|
+| juice-shop | 64.16 s | 9.89 s | 10.35 s | 11.15 s | 9.34 s | **9.21 s** (9.50, 9.21, 9.19) | −1.4% | 253 MiB |
+| vulnpy | 7.98 s | 3.49 s | 3.57 s | 3.51 s | 3.43 s | **3.42 s** (3.47, 3.42, 3.41) | −0.3% | 1,952 MiB |
+| DVWA | 1.01 s | 0.61 s | 0.61 s | 0.60 s | 0.62 s | **0.60 s** (0.67, 0.60, 0.60) | −3.2% | 459 MiB |
+
+All samples meet the within-5% criterion. Juice Shop is 17.4% faster than final 1E, reversing its
+accepted timing increase. A read-only Go overlay recorded caches at set close after timing:
+
+| Primary sample/language | Compiled witness plans | Supported plans | Closed-summary cache entries | Largest expanded plan cost |
+|---|---:|---:|---:|---:|
+| juice-shop / JS/TS | 23 | 1 | 241 | 69 |
+| vulnpy / Python | 11 | 1 | 3 | 18 |
+| DVWA / PHP | 12 | 0 | 12 | 4 |
+
+Counts describe lazily requested plans, including unsupported plans retained with reasons; they are
+not a repository-wide coverage denominator. Python has two selection-requiring plans. Full native
+sink witnesses are demonstrated by the fixtures; existing sample sinks generally already expand
+inline. The JSONL also records zero-plan auxiliary language sets. No production instrumentation or
+scan output field was added.
+
+### Verification and delivery (AC6)
+
+Changed-file formatting, vet, build, full race suite and the architecture baseline pass. A fresh
+independent verifier exercised isolated mutation/alias/receiver/type probes with the race detector
+and reviewed final deltas, exact requests, cache counts and timings. Corrections include hidden
+receiver subtrees, reassigned helper bindings, inherited implicit-return gaps, async functions,
+mutated/deleted/escaped imports, exact scalar/index types, and finite-proof branch joins.
+
+Artifacts: `_test-findings/<app>/run-arch-1f/summary-completion/` contains `run-{1,2,3}/`,
+`measurements.json`, `deltas.json`, `request-signature-audit.json` and `plan-cache-counts.jsonl`.
+The Juice Shop directory holds the shared scoped/gate logs. All three sample pins and clean status
+were checked before/after; no sample edits, model calls, keys, dependencies or worktrees were added.
+
+Phase 1 is complete within the documented bounded source-index/witness contracts. General heap/
+module-state summaries, broader control-flow/recursive recipes and full YAML remain unsupported
+with explicit gaps; they are not claimed by this evidence. Route adapters remain phases 6/9.
+The owner reviews and merges draft PR #24; phase 2 then starts separately on `arch-pipiline-runners`.

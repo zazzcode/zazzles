@@ -1,9 +1,9 @@
 # Architecture phase 0 — Compatibility baseline
 
-**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
+**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–1 share it; topology updated 2026-11-18)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 0. Objective: maintainability (refactor guard)
 **Depends on:** the revised plan committed on `arch-review-clean-up`
-**Delivery topology:** one deliverable; its commits join the phases 0–3 milestone draft PR into `stage`
+**Delivery topology:** one deliverable; its commits join the phases 0–1 milestone draft PR into `stage`
 **Coordination:** Lead Agent alone, local run log
 **Run log:** `.zazz/ephemeral/architecture-phase-0-compatibility-baseline-run-log.md`
 **Drafted:** 2026-11-17
@@ -175,7 +175,7 @@ Use the path in the header, with the sections from the plan's common rules. Samp
 > Record the starting HEAD. Read AGENTS.md, the orientation contents, the
 > [plan](architecture-update-plan.md), and this spec. Follow the plan's session start and common
 > rules. Implement §9 in order and keep the production diff empty. Stop on any §6 halt. Finish with
-> the contributor gate, commit, and push the branch, with AC1–AC7 evidence in the run log; the phase 3
+> the contributor gate, commit, and push the branch, with AC1–AC7 evidence in the run log; the phase 1
 > session opens the milestone draft PR. Verifier: have a
 > fresh-context subagent run `go test ./cmd/scan -run TestArchitectureBaseline -count=2`. It should
 > confirm the golden covers every directory D-2 selects and that the diff touches only §4 paths,
@@ -203,3 +203,8 @@ adaptive helper names:
 - An Express GET with `db.query` and Flask's `sqlite3` cursor match the §4 fixture description.
 
 Verification impact: none. AC1–AC7 evidence is in the run log.
+
+### 2026-11-18 — Milestone boundary updated
+
+The owner will review/merge phases 0 and 1 in PR #24, then start phase 2 separately.
+Updated current delivery metadata; the phase 0 implementation and evidence are unchanged.

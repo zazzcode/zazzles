@@ -3,6 +3,7 @@
 **Worktree / branch:** `arch-review-clean-up`; no new worktrees.
 **Parent contract:** [source index](architecture-phase-1-source-index.md), §8c/§14.
 **Plan:** [architecture update](architecture-update-plan.md), phase 1.
+**Status:** Implemented and verified; phase 1 complete.
 **Starting HEAD:** `9d138d3`.
 **Review shape:** extend the existing [draft PR #24](https://github.com/zazzcode/zazzles/pull/24)
 into `stage`; no merge or ready-for-review transition.
@@ -51,12 +52,14 @@ already proves a finite target and the current call's inputs match that selectio
 | Paths | Change | Purpose |
 |---|---|---|
 | `internal/parse/*summary_witness*.go` and matching tests | new | Cached per-language witness recipes, caller instantiation and parity |
+| `internal/parse/{closed_summary,callable_summary}_test.go` | modified | Retain inert checks and assert newly supported dependent refusal witnesses |
 | `internal/parse/helper_flow.go`, `flow.go`, `modules.go` and matched JS model/clone helpers | modified | Native-value injection, witness application and cache ownership |
 | `internal/parse/python_*.go` and matched tests | modified | Finite selector/import resolution, native-value injection and summary integration |
 | `internal/parse/php_*.go` and matched tests | modified | Native evaluated-value seams, witness integration and cache ownership |
 | `internal/parse/testdata/{javascript,typescript,python,php}/summary-witnesses/` | new if useful | Minimal positive/negative witness fixtures |
 | `cmd/scan/testdata/architecture-baseline.json` | modified | Listed deltas only |
 | This contract, parent §8d/§11/§14, evaluation, architecture README/repository graph, technical approach | modified | Current scope, evidence, phase closure |
+| Architecture plan and phase 0/2 delivery metadata | modified | Owner review/merge boundary, then a separate phase 2 branch |
 | Existing local run log and PR body | append / update | Execution and draft review evidence |
 
 The allowed implementation directory is `internal/parse/`; shared record/model changes need a
@@ -153,10 +156,10 @@ Reuse existing family assertion helpers; avoid a second set of fact semantics.
 
 ## 10. Definition of done
 
-- [ ] AC1–AC6 evidenced; all changed golden rows explained.
-- [ ] No unsupported candidate or missing resolved-path witness.
-- [ ] All 64 targeted dynamic-import limit gaps closed soundly.
-- [ ] Phase 1 status and draft PR accurately describe delivered versus remaining limits.
+- [x] AC1–AC6 evidenced; all changed golden rows explained.
+- [x] No unsupported candidate or missing resolved-path witness.
+- [x] All 64 targeted dynamic-import limit gaps closed soundly.
+- [x] Phase 1 status and draft PR accurately describe delivered versus remaining limits.
 
 ## 11. Open questions
 
@@ -184,3 +187,19 @@ The owner chose “Keep phase 1 open for a separate dynamic-import contract,” 
 “lets fix all this stuff while we are here.” Clarification: “Finish remaining phase 1 work;
 keep route adapters in phases 6/9.” This contract owns dynamic-import resolution and full
 parameter-dependent summary witnesses. Existing phase 1 evidence remains the comparison baseline.
+
+### 2026-11-18 — Owner sets the next branch boundary
+
+The owner will PR-review and merge after this spec, then start a new arch-pipiline-runners branch.
+This task finishes phase 1 and updates its draft only; phase 2 starts after the owner's merge.
+Plan and phase 0/2 delivery metadata are updated to remove the stale shared milestone instruction.
+
+### 2026-11-18 — Implementation and verification complete
+
+Implementation 4b01e42 and typed TypeScript regression 912446a fulfill AC1–AC6. Native-model witness
+recipes and strict finite import proofs are tested independently for caller/span/protection parity,
+mutation rejection and source retention. All 64 targeted limits plus 64 getattr gaps are removed;
+no candidate is added/removed, and every old golden row remains unchanged. Exact-request/signature
+outcomes change only for the 128 re-keyed vulnpy candidates. Final medians 9.21/3.42/0.60 seconds
+pass the speed gate. Contributor and fresh-context verification pass; durable evidence is in the
+architecture evaluation record and parent §14. The next branch is arch-pipiline-runners after owner merge.

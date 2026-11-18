@@ -1,9 +1,9 @@
 # Architecture phase 2 — Pipeline and concurrent language runners
 
-**Worktree / branch:** `arch-review-clean-up` (owner decision 2026-11-17; phases 0–3 share it)
+**Branch:** `arch-pipiline-runners` (owner decision 2026-11-18; checkout assigned at phase start)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 2. Objective: performance and maintainability
-**Depends on:** phase 1 committed on `arch-review-clean-up` with green gates
-**Delivery topology:** one deliverable; its commits join the phases 0–3 milestone draft PR into `stage`
+**Depends on:** phase 1 complete and PR #24 merged into `stage` by the owner
+**Delivery topology:** new branch after PR #24 merges; one separate draft PR into `stage`
 **Coordination:** Lead Agent. A Contributor Agent may do the mechanical caller migration (§9 step 5) after the seam compiles
 **Run log:** `.zazz/ephemeral/architecture-phase-2-pipeline-runners-run-log.md`
 **Drafted:** 2026-11-17
@@ -183,12 +183,13 @@ Use the plan's common rules. Record the migrated caller list, race-test output, 
 
 ## 13. Agent implementation prompt
 
-> Work in the `arch-review-clean-up` worktree (`<DEV_ROOT>/zazzcode/zazzles/arch-review-clean-up`).
-> Confirm the phase 1 commits are on the branch and its run log shows green gates; record the starting HEAD. Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md), and this spec.
+> Start only after the owner merges PR #24. Use the new arch-pipiline-runners branch cut from
+> merged origin/stage in the owner-assigned sibling checkout. Record the starting HEAD and confirm
+> phase 1 completion. Read AGENTS.md, the orientation contents, the plan, and this spec.
 > Follow the plan's session start and common rules. Execute §9 in order. After step 4 compiles, you
 > may delegate step 5 (mechanical caller migration) to one Sonnet Contributor Agent. It changes
 > imports and call names only. Stop on any §6 halt. Finish by committing and pushing, with AC1–AC8
-> evidence in the run log; the phase 3 session opens the milestone draft PR. Verifier: a fresh-context subagent runs `go test -race ./internal/pipeline ./cmd/scan -count=3`.
+> evidence in the run log and a separate phase 2 draft PR into stage. Verifier: a fresh-context subagent runs `go test -race ./internal/pipeline ./cmd/scan -count=3`.
 > It confirms no `walk.Walk` call remains in `internal/parse` outside `parse.go`, confirms no exported `parse.Analyze*`
 > remains in non-test files, and diffs the golden against the phase's starting HEAD. It reports PASS or FAIL.
 
@@ -200,3 +201,9 @@ Source: owner, in the planning session. Runs in the `arch-review-clean-up` workt
 session, after the previous phase's commits, with no new worktree. Changed: header, §10 scope diff
 base, §13 prompt. Verification impact: the scope diff is taken from this phase's recorded starting
 HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.
+
+### 2026-11-18 — Separate phase 2 after owner merge
+
+Owner steering: review and merge the current spec's PR, then start a new branch for phase 2.
+Updated header and implementation prompt to require merged phase 1 and the arch-pipiline-runners branch.
+This changes delivery metadata only; phase 2 is not started by the phase 1 agent.

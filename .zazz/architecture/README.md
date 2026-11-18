@@ -277,6 +277,18 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   chains; ambient reads, decorators, mutation, unsupported syntax/binding and cycles remain blocked.
   Return parameters conservatively include every read parameter. Successful inline expansion stays
   unchanged. Shadow tests compare these summaries with real inline expansions.
+- **Implemented (complete witnesses):** each language's `*summary_witness*.go` caches a bounded
+  parameter-indexed recipe for returns, modeled transforms and sinks, with original source spans
+  and resolved helper DAGs. At supported expansion refusals, concrete caller values instantiate the
+  existing native flow/model operations, producing the same parameter, assignment, control,
+  helper-return and sink evidence as inline execution. Candidate IDs and model facts are rebuilt
+  per caller. Unsupported state/control/binding, async calls without an invocation proof, cycles and
+  size limits retain explicit refusal behavior. Previously resolved inline/inert paths stay unchanged.
+- **Implemented (finite Python dispatch):** a generated registry context can prove exact selector
+  arguments and the corresponding source module/callable without importing code. Typed, immutable
+  finite-value proofs are invocation-specific and separate from taint/protection; ordinary branches
+  are not folded from those proofs. Shadowed, mutated, escaped, deleted, nonfinite or mismatched
+  import bindings remain unresolved. This closes the measured 64 vulnpy helper-limit gaps.
 - **Implemented (PHP resolution inputs):** `php_call_index.go` and `php_project_resolution.go`
   provide exact Composer PSR-4 FQCN/method lookup and bounded Symfony/Drupal service maps, with
   `psr4`, `container_service` and explicit unresolved reasons. Symfony block-map autowiring resources
@@ -287,14 +299,16 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   stale container shape. The table never establishes validation or context-appropriate encoding.
 - **Implemented (lexical query cache):** immutable per-module `(node, name)` shadow queries reuse
   the original resolver's answers, avoiding repeated parent walks without expanding its semantics.
-- **Planned:** replacing inline helper expansion with summaries
-  (per-caller `parameter → sink` instantiation and witness reconstruction);
-  store summaries over module state; a flat syntax index for flow evaluation; and
+- **Planned:** broader branch/loop/recursive witness recipes and store summaries over module state;
+  a flat syntax index for flow evaluation; and
   binding indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the
   call index and summaries.
 
 Offline effect so far, with byte-identical reports: juice-shop 64.16 s → 9.89 s, vulnpy 7.98 s →
 3.49 s, DVWA 1.01 s → 0.61 s ([measurements](../evaluation/architecture-baseline.md)).
+Final phase 1 medians are 9.21 s, 3.42 s and 0.60 s respectively. Later accuracy steps have only
+the listed gap/evidence deltas; no sample candidate is removed. Changed witnesses require fresh
+judgment and cannot reuse an answer to the old request.
 
 ### Shared, language and framework layers
 
@@ -399,10 +413,10 @@ Source availability does not establish complete control flow or runtime feasibil
 ### Bounded interprocedural flow second
 
 Resolved helper arguments/parameters and returns carry dependency witnesses and source provenance.
-Unknown bindings, recursion and reached expansion bounds cannot establish protection. A closed JS/TS
-callable summary stands in for a refused expansion only when its arguments carry nothing
-([source index](#source-index)). Summaries that carry dependencies through a callee, and
-whole-program heap/control analysis, remain planned.
+Unknown bindings, recursion and reached expansion bounds cannot establish protection. Closed/inert
+summaries retain their fast path; bounded JS/TS, Python and PHP witness recipes additionally carry
+dependent values through supported callees and native sink models at expansion refusals
+([source index](#source-index)). Whole-program heap/control analysis remains planned.
 
 ### Guards and mitigations
 

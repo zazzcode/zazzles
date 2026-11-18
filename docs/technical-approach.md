@@ -120,13 +120,20 @@ graph library. Each layer answers one kind of question and is built once per sca
 |---|---|---|
 | Per-file binding index | "Is this name reassigned, written through, aliased or passed on?" in constant time | Implemented for JS/TS, plus Python mount calls |
 | Repository call index | Which callable each call site reaches, with an explicit resolution kind; unresolved calls stay visible | JS/TS and Python production index; PHP direct/imported targets plus PSR-4 and bounded service-map resolution inputs |
-| Callable summaries | Which parameters a callable reads or returns, with source-backed reasons it cannot close | JS/TS and a narrower Python/PHP subset at inert-argument expansion refusals; full sink/store instantiation and witnesses remain planned |
+| Callable summaries | Parameter-return/sink maps, modeled transforms and concrete per-caller evidence, with reasons unsupported effects cannot close | Cached bounded recipes for JS/TS, Python and PHP at supported expansion refusals; existing inline/closed fast paths remain compatible |
 
 The first refactors replaced whole-file syntax re-walks and unbuffered report writes. Offline scan
 time dropped from 64.16 s to 9.89 s on OWASP Juice Shop, 7.98 s to 3.49 s on VulnPy and 1.01 s to
 0.61 s on DVWA. Findings, reports and model requests stayed byte-identical. A compatibility
 golden test pins candidate IDs, request bytes and report hashes for every fixture, so a refactor
 that changes results fails the build.
+
+Final phase 1 medians are 9.21 s for Juice Shop, 3.42 s for VulnPy and 0.60 s for DVWA.
+Typed finite registry/import proofs close VulnPy's 64 measured helper limits without executing
+imports or discarding request provenance. Summary recipes rebuild native parameter, control and
+sink witnesses for each caller; unsupported control flow, state, cycles and binding retain gaps.
+The [evaluation record](../.zazz/evaluation/architecture-baseline.md) lists the exact evidence deltas
+and offline request compatibility checks. Symfony/Drupal route adapters remain later phases.
 
 **Graph data model: tried and dropped.** A typed in-memory graph over the route and handler catalog
 was implemented and then backed out. That catalog was never where scans spent time or lost
@@ -282,7 +289,7 @@ protection, abstention/coverage, evidence usefulness and remediation correctness
 resources and model cost. Fewer alerts alone does not establish improvement. The same agent's source
 review, implementation and calibration are not independent findings review.
 
-Independent LLM Findings Review, full callable-summary witness instantiation, automatic incremental caches, severity
+Independent LLM Findings Review, broader control/state witness recipes, automatic incremental caches, severity
 CI gates and dependency scanning remain planned. Current analysis is bounded static evidence, not
 runtime confirmation or a security certificate. Paid model judgment also introduces source-transmission,
 service-availability and cost considerations; offline evidence inspection remains available.

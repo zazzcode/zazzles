@@ -1,7 +1,7 @@
 # Architecture update plan
 
-**Status:** Plan and phase specs only. No implementation, refactor, or paid calls are authorized by
-this document. A phase starts when the owner assigns its worktree and says to implement its spec.
+**Status:** Phases 0 and 1 are implemented and verified in draft PR #24; later phases remain planned.
+This document alone authorizes no implementation or paid calls. A phase starts on owner assignment.
 **Baseline reviewed:** `stage` at `3890c1cbb6ff8bebbd707052edaed3bf03bc0ae8` (plan revised on
 `arch-review-clean-up`, 2026-11-17).
 **Languages in scope:** JavaScript/TypeScript, Python, and PHP. Go as a target language is out of this plan.
@@ -83,7 +83,7 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 |---|---|---|---|---|
 | 0 | Maintainability (refactor guard) | [Compatibility baseline](architecture-phase-0-compatibility-baseline.md) | `arch-compat-baseline` | This plan |
 | 1 | Speed, accuracy | [Source index and callable summaries](architecture-phase-1-source-index.md) (replaces the registration graph) | `arch-review-clean-up` | 0 |
-| 2 | Performance, maintainability | [Pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md) | `analysis-pipeline` | 1 |
+| 2 | Performance, maintainability | [Pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md) | `arch-pipiline-runners` | 1 |
 | 3 | Maintainability | [PHP language package](architecture-phase-3-php-package.md) | `langphp-package` | 2 |
 | 4 | Performance | [Parallel judge](architecture-phase-4-parallel-judge.md) | `parallel-judge` | 0 |
 | 5 | Accuracy | [Measured recall gaps](architecture-phase-5-accuracy-gaps.md) | `recall-gap-inventory` | 1 |
@@ -92,11 +92,14 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 | 8 | Feature | [npm library mode](architecture-phase-8-npm-library-mode.md) | `npm-library-mode` | 2, 7 |
 | 9 | Feature | [Drupal](architecture-phase-9-drupal.md) | `php-drupal` | 6 |
 
-**Owner decision, 2026-11-17: phases 0–3 run in the `arch-review-clean-up` worktree.** They use
-one fresh session per phase, strictly in order, on that one branch, with no new worktrees.
-"Depends on (merged)" means for these phases that the previous phase's commits are on this branch
-and passed its gates. Phases 0–3 ship together with this plan in one milestone draft PR into
-`stage`, with commits grouped by phase. Phases 4–9 keep the per-phase worktree model above.
+**Owner decision, 2026-11-18: phases 0 and 1 finish in the assigned arch-review-clean-up
+worktree and draft PR #24.** The owner reviews and merges that PR. Phase 2 starts afterward
+from the merged origin/stage on a new branch named arch-pipiline-runners, with its own draft PR.
+The phase 2 checkout/worktree is assigned when that phase starts; phase 1 creates no new worktree.
+Do not append phase 2 implementation to PR #24. Phase 3 topology is confirmed when it is assigned.
+
+This supersedes the 2026-11-17 plan to ship phases 0–3 together on one branch. No phase 2
+implementation is authorized by this delivery-topology update.
 
 The table order is the default. Phases 4 and 5 depend only on phase 0 or 1, so the owner may run
 them earlier without changing their specs. They are kept after phase 3 so the core refactors land
@@ -155,7 +158,7 @@ Every phase spec's §6 points here and adds only its own halt conditions.
 
 1. Read AGENTS.md, the orientation contents, this plan, and the phase spec.
 2. Confirm that every "Depends on" phase is merged into `origin/stage` (`git log origin/stage --oneline`).
-   Cut the worktree from that SHA and record it. For phases 0–3 in `arch-review-clean-up`, confirm
+   Cut the worktree from that SHA and record it. For phases 0–1 in `arch-review-clean-up`, confirm
    instead that the previous phase's commits are on the branch and that its run log records green
    gates. Record the starting HEAD.
 3. Run `go test ./cmd/scan -run TestArchitectureBaseline -count=1` on the fresh cut. If it fails
@@ -259,3 +262,7 @@ language-adapter section. User docs change only when a flag or supported framewo
 - 2026-11-17 — Owner decision: phase 1 is now the [source index and callable summaries](architecture-phase-1-source-index.md)
   spec. The registration graph is superseded and was never committed. Later specs that cite its
   D-5/D-7 tables are repointed to that spec's L3 resolution kinds and L5 model tables when each starts.
+
+- 2026-11-18 — Owner plans to review and merge the phases 0/1 PR, then start phase 2 on
+  a new arch-pipiline-runners branch. Updated phase sequence and startup exception; no phase 2
+  implementation or worktree creation occurs during phase 1.

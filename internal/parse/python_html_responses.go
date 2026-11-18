@@ -148,7 +148,7 @@ func (f *pythonFlow) moduleRelativePath(n *sitter.Node) (string, bool) {
 }
 
 func (f *pythonFlow) renderJinjaFile(n *sitter.Node, template pythonValue) {
-	file, ok := f.set.text.readText(template.literal)
+	file, ok := f.set.text.Read(template.literal)
 	if !ok {
 		v := f.evalChildren(pyField(n, "arguments"))
 		v.gaps = append(v.gaps, f.gap("template_parse_unresolved", "template could not be read inside target", n))

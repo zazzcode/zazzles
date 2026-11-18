@@ -240,10 +240,7 @@ func (s *moduleSet) graphqlSchema(m *sourceModule, n *sitter.Node) ([]graphqlFie
 			}
 			p := graphqlSDL{src: src, file: file, hash: fmt.Sprintf("%x", sha256.Sum256(src))}
 			fields, err := p.read(string(src))
-			if s.textSources == nil {
-				s.textSources = map[string]analysis.Evidence{}
-			}
-			s.textSources[file] = p.evidence(0, len(src))
+			s.texts().Add(file, p.evidence(0, len(src)))
 			if err != nil {
 				return fields, []analysis.Gap{{Kind: "graphql_sdl_unsupported", Detail: err.Error(), At: p.evidence(0, len(src)).Span}}
 			}

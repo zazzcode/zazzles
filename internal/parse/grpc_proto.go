@@ -301,10 +301,7 @@ func (s *moduleSet) grpcProto(path string, at analysis.Span) grpcProtoResult {
 	if err != nil {
 		result.gaps = []analysis.Gap{{Kind: "grpc_proto_unsupported", Detail: err.Error(), At: p.evidence(0, len(src)).Span}}
 	}
-	if s.textSources == nil {
-		s.textSources = map[string]analysis.Evidence{}
-	}
-	s.textSources[file] = p.evidence(0, len(src))
+	s.texts().Add(file, p.evidence(0, len(src)))
 	if s.grpcProtos == nil {
 		s.grpcProtos = map[string]grpcProtoResult{}
 	}

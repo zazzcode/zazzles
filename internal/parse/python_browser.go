@@ -1,34 +1,21 @@
 package parse
 
 import (
-	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 
-	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
 var pythonScript = regexp.MustCompile(`(?is)<script\b([^>]*)>(.*?)</script\s*>`)
 var pythonJQueryCDN = regexp.MustCompile(`(?i)\bsrc\s*=\s*["']https://code\.jquery\.com/jquery-[0-9]+\.[0-9]+\.[0-9]+(?:\.min)?\.js["']`)
 
-// browserTemplates hands literal inline JavaScript to the existing browser
-// adapter. Masking preserves the original file offsets, lines and snapshot hash.
+// browserTemplates hands literal inline JavaScript to the browser adapter.
+// Masking preserves the original file offsets, lines and snapshot hash.
 func (s *pythonSet) browserTemplates(out *analysis.AnalysisReport) error {
-	parsers, err := newParsers()
-	if err != nil {
-		return err
-	}
-	set := &moduleSet{root: s.root, parsers: parsers, modules: map[string]*sourceModule{}, allowed: map[string]bool{}, textSources: s.text.textSources}
-	defer set.close()
-	files := []string{}
-	for file := range s.text.textSources {
-		files = append(files, file)
-	}
-	sort.Strings(files)
-	for _, file := range files {
-		snapshot := s.text.textSources[file]
+	var scripts []InlineScript
+	for _, file := range s.text.Files() {
+		snapshot, _ := s.text.Get(file)
 		matches := pythonScript.FindAllStringSubmatchIndex(snapshot.Text, -1)
 		if len(matches) == 0 {
 			continue
@@ -65,12 +52,7 @@ func (s *pythonSet) browserTemplates(out *analysis.AnalysisReport) error {
 		if !hasScript {
 			continue
 		}
-		tree := parsers.js.Parse(masked, nil)
-		if tree == nil {
-			return fmt.Errorf("no inline JavaScript tree for %s", file)
-		}
-		set.modules[file] = &sourceModule{file: file, src: original, hash: snapshot.SHA256, tree: tree, funcs: map[string]*sitter.Node{}, exports: map[string]*sitter.Node{}, imports: map[string]importBinding{}, express: map[string]bool{}, receivers: map[string]bool{}, browserGlobals: globals}
-		set.allowed[file] = true
+		scripts = append(scripts, InlineScript{File: file, Masked: masked, Globals: globals})
 	}
-	return set.browser(out)
+	return AnalyzeInlineScripts(s.text, scripts, out)
 }

@@ -34,7 +34,7 @@ func (s *pythonSet) formPolicies(r pythonRoute) []analysis.Evidence {
 		if !ok {
 			return
 		}
-		file, ok := s.text.readText(filepath.ToSlash(filepath.Join(r.receiver.templates, name)))
+		file, ok := s.text.Read(filepath.ToSlash(filepath.Join(r.receiver.templates, name)))
 		if !ok {
 			return
 		}

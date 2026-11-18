@@ -1,16 +1,12 @@
 package parse
 
 import (
-	"crypto/sha256"
-	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/walk"
 )
 
 var ejsOutput = regexp.MustCompile(`<%([=-])\s*([\s\S]*?)\s*[-_]?%>`)
@@ -18,51 +14,19 @@ var handlebarsOutput = regexp.MustCompile(`\{\{(\{?)([^{}]+)\}\}\}?`)
 var pugOutput = regexp.MustCompile(`([!#])\{([^}]+)\}`)
 
 func (s *moduleSet) readText(file string) (analysis.Evidence, bool) {
-	return s.readBounded(file, 2<<20)
+	return s.texts().Read(file)
 }
 
-// readBounded reads a regular file inside the scan root, outside skipped
-// directories and symlink escapes, no larger than limit bytes.
 func (s *moduleSet) readBounded(file string, limit int64) (analysis.Evidence, bool) {
-	file = filepath.ToSlash(filepath.Clean(file))
-	if file == "." || filepath.IsAbs(file) || strings.HasPrefix(file, "../") {
-		return analysis.Evidence{}, false
+	return s.texts().ReadBounded(file, limit)
+}
+
+// texts returns the set's text sources, created on first use.
+func (s *moduleSet) texts() *TextSources {
+	if s.text == nil {
+		s.text = NewTextSources(s.root)
 	}
-	for _, part := range strings.Split(file, "/") {
-		for _, skipped := range walk.DefaultSkipDirs {
-			if part == skipped {
-				return analysis.Evidence{}, false
-			}
-		}
-	}
-	if e, ok := s.textSources[file]; ok {
-		return e, true
-	}
-	path := filepath.Join(s.root, filepath.FromSlash(file))
-	real, err := filepath.EvalSymlinks(path)
-	root, rootErr := filepath.EvalSymlinks(s.root)
-	if err != nil || rootErr != nil {
-		return analysis.Evidence{}, false
-	}
-	relative, err := filepath.Rel(root, real)
-	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return analysis.Evidence{}, false
-	}
-	info, err := os.Stat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Size() > limit {
-		return analysis.Evidence{}, false
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return analysis.Evidence{}, false
-	}
-	e := analysis.Evidence{Kind: "template", Text: string(data), SHA256: fmt.Sprintf("%x", sha256.Sum256(data)),
-		Span: analysis.Span{File: file, StartLine: 1, EndLine: strings.Count(string(data), "\n") + 1, EndByte: len(data)}}
-	if s.textSources == nil {
-		s.textSources = map[string]analysis.Evidence{}
-	}
-	s.textSources[file] = e
-	return e, true
+	return s.text
 }
 
 func (f *flow) renderSettings() (string, string, []analysis.Evidence) {

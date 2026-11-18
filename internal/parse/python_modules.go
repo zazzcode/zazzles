@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -45,7 +44,7 @@ type pythonSet struct {
 	modules       map[string]*pythonModule
 	files         []string
 	gaps          []analysis.Gap
-	text          *moduleSet
+	text          *TextSources
 	writes        map[string][]pythonWrite
 	staticInvalid map[string]bool
 	// tampered caches command-API shadowing and monkey-patch facts.
@@ -75,7 +74,7 @@ func openPythonSet(inv Inventory) (*pythonSet, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &pythonSet{root: root, parser: p, modules: map[string]*pythonModule{}, writes: map[string][]pythonWrite{}, text: &moduleSet{root: root, textSources: map[string]analysis.Evidence{}}}
+	s := &pythonSet{root: root, parser: p, modules: map[string]*pythonModule{}, writes: map[string][]pythonWrite{}, text: NewTextSources(root)}
 	for _, f := range inv.Files {
 		if f.Language == lang.Python {
 			s.files = append(s.files, f.Path)
@@ -412,13 +411,8 @@ func (s *pythonSet) report(entry string, checks []analysis.Check) (*analysis.Ana
 			out.Files = append(out.Files, e)
 		}
 	}
-	keys := []string{}
-	for k := range s.text.textSources {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		e := s.text.textSources[k]
+	for _, k := range s.text.Files() {
+		e, _ := s.text.Get(k)
 		e.Kind = "file"
 		e.Text = ""
 		out.Files = append(out.Files, e)

@@ -204,15 +204,11 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 		m := s.modules[k]
 		out.Files = append(out.Files, m.evidence("file", m.tree.RootNode()))
 	}
-	textKeys := make([]string, 0, len(s.textSources))
-	for key := range s.textSources {
-		if s.modules[key] == nil {
-			textKeys = append(textKeys, key)
+	for _, key := range s.texts().Files() {
+		if s.modules[key] != nil {
+			continue
 		}
-	}
-	sort.Strings(textKeys)
-	for _, key := range textKeys {
-		e := s.textSources[key]
+		e, _ := s.texts().Get(key)
 		e.Kind, e.Text = "file", ""
 		out.Files = append(out.Files, e)
 	}

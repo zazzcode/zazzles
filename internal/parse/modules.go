@@ -69,7 +69,7 @@ type moduleSet struct {
 	producers       []jsonProducer
 	modelEvidence   map[string][]analysis.Evidence
 	mountedOrigins  map[string]bool
-	textSources     map[string]analysis.Evidence
+	text            *TextSources
 	packageFiles    map[string]*packageFile
 	contextLimits   []analysis.Gap
 	contextFields   []string

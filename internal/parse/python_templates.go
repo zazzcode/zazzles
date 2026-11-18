@@ -92,7 +92,7 @@ func (f *pythonFlow) renderTemplate(n *sitter.Node) {
 		f.recordXSS(f.module.evidence("template_render", n), pyProtect(v, "unknown"), "unknown", nil)
 		return
 	}
-	file, found := f.set.text.readText(filepath.ToSlash(filepath.Join(folder, name)))
+	file, found := f.set.text.Read(filepath.ToSlash(filepath.Join(folder, name)))
 	if !found {
 		v := f.evalChildren(n.ChildByFieldName("arguments"))
 		v.gaps = append(v.gaps, f.gap("template_parse_unresolved", "template could not be read inside target", n))

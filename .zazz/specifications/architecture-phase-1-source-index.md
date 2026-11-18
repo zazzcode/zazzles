@@ -4,7 +4,7 @@
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 1. Objective: **speed and accuracy**
 **Replaces:** [registration graph](architecture-phase-1-registration-graph.md) (superseded 2026-11-17, owner decision)
 **Depends on:** phase 0 (`TestArchitectureBaseline`) committed on `arch-review-clean-up` with green gates
-**Delivery topology:** this spec holds the design for all languages and the contract for step 1A. Steps 1B–1E each get
+**Delivery topology:** this spec holds the design for all languages and the contract for step 1A. Steps 1B–1F each get
 a short contract section here, filled in before they start. Their commits join the milestone draft PR into `stage`.
 **Coordination:** Lead Agent. Contributor Agents may own disjoint per-language files within one step.
 **Run log:** `.zazz/ephemeral/architecture-phase-1-source-index-run-log.md`
@@ -283,9 +283,7 @@ most of the rest. If the measured gain is smaller, record the new profile and as
   promoted in 1D, where summaries consume it.
 - **1D:** see [§8a](#8a-step-1d-contract-call-index-and-receiver-typing).
 - **1E:** see [§8b](#8b-step-1e-contract-jsts-callable-summaries).
-- **1F:** the same for Python and PHP, plus PHP builtin effect tables (DVWA's 210
-  `php_call_unresolved`) and PSR-4 and service-map resolution. Symfony and Drupal fixtures are added
-  under `internal/parse/testdata/php/`.
+- **1F:** see [§8c](#8c-step-1f-contract-pythonphp-summaries-and-php-resolution-inputs).
 
 ## 8a. Step 1D contract: call index and receiver typing
 
@@ -483,6 +481,112 @@ rows, witness reconstruction through summaries, judge request wire changes and n
 4. Wire D-14 at the refusals and the fallthrough. AC3 green.
 5. Scan the three samples, diff against 1D bundles (AC4), and measure AC5.
 6. Gate, verifier, docs, commit and push. Append to the run log.
+
+## 8c. Step 1F contract: Python/PHP summaries and PHP resolution inputs
+
+### Evidence and scope
+
+Starting HEAD: `22f6adc`. This is the final step of phase 1. The owner assigns implementation,
+performance investigation, phase closure, and a milestone draft PR for phases 0 and 1 into `stage`.
+The later phase 2/3 package and pipeline changes remain separate.
+
+The 1E bundles contain 64 vulnpy `work_limit` gaps, all at `_get_trigger_module(name)` in
+`trigger/util.py:54`. That helper calls dynamic `import_module`; it is not closed under D-13.
+The target is zero **applicable** closed/inert refusals remaining, with all 64 baseline gaps
+accounted for even where dynamic loading prevents closure. No package-import effect is inferred.
+DVWA's 210 `php_call_unresolved` gaps are on `array_shift`, `json_decode`, `base64_decode`,
+`base64_encode`, `strrpos`, and `addslashes` (the 1C builtin classification). Effects retain
+content dependencies, and never imply protection.
+
+Required downstream reading: [phase 6](architecture-phase-6-symfony.md) D-3 (PSR-4 FQCN to
+file and method, including `__invoke`), and [phase 9](architecture-phase-9-drupal.md) D-1
+(neutral config-to-callable helper). Their old registration-graph references do not define this
+step. Route adapters, request inputs, Doctrine, Twig, Form API, extensions and route configuration
+inventory remain phases 6/9. Services resolution inputs are delivered here per the owner assignment.
+
+Allowed paths (all in the assigned checkout):
+
+| Path | New / modified | Purpose |
+|---|---|---|
+| `internal/parse/python_callable_summary.go`, `php_callable_summary.go`, `closed_summary.go` and matching tests | new | Cached closed/inert summaries, parameter read/return sets, conservative reasons, cycle handling and shadow checks |
+| `internal/parse/python_modules.go`, `php_modules.go`, `python_calls.go`, `php_calls.go` | modified | Cache and refusal-only hooks; PHP builtin fallthrough effect |
+| `internal/analysispacks/php_effects.go` and tests | new | Closed builtin content-effect table |
+| `internal/parse/php_call_index.go`, `php_project_resolution.go` and matching tests | new | Direct/imported/PSR-4/service resolution with explicit unresolved reasons |
+| `internal/parse/testdata/php/{symfony-resolution,drupal-resolution}/` | new | Small resolution fixtures; no route adapters |
+| `internal/parse/callable_summary*.go`, `modules.go`, `commonjs.go`, `binding_index.go` and matching tests | modified if profiling supports it | Byte-preserving JS/TS performance improvements, cached context-independent facts only |
+| `cmd/scan/testdata/architecture-baseline.json` | modified | Listed effect deltas and new fixtures only |
+| `.zazz/evaluation/architecture-baseline.md`, this spec §14, `.zazz/architecture/{README,repository-graph}.md`, `docs/technical-approach.md` | modified | Phase closure, evidence and capability boundaries |
+
+### Decisions
+
+- **D-16 Refusal-only summaries for Python and PHP.** D-13/D-15 apply: leave successful inline
+  expansion byte-identical; apply only a closed callable with inert supplied arguments and supported
+  binding. Record parameter-indexed reads/returns (conservative over-approximation is allowed),
+  callee edges and source spans. Reject defaults with effects, variadics, references, ambient reads,
+  heap/global writes, unknown calls, closures, receivers with hidden state, and unsupported syntax.
+  Cached bottom-up cycle handling is bounded; an unresolved cycle/limit stays an explicit reason.
+  Summary construction neither executes flow nor loads modules nor changes resolution caches.
+  Each language may use a narrower closed subset than JS/TS; rejected cases retain existing gaps.
+- **D-17 Builtins are content effects.** Table lookup happens after existing models and user
+  helpers, only at the unresolved fallthrough. Content transforms transfer the selected arguments'
+  dependencies with unknown protection, preserving the existing transfer evidence; `strrpos`
+  returns position information while retaining dependency provenance. `array_shift` returns
+  container content and retains its conservative container dependency. No sanitizer claim is added.
+  Namespaced, dynamic, imported/aliased and user-defined names must not acquire builtin effects.
+- **D-18 Neutral PHP call index.** Resolve existing direct/cross-file callables first, preserving
+  their exact targets. Additional kinds are `psr4` and `container_service`; unknown/ambiguous,
+  missing class/method, dynamic configuration, or unsafe path stays `unresolved(reason)`.
+  PSR-4 comes only from root `composer.json` `autoload.psr-4`, supports string/array directories,
+  longest namespace prefix, and exact source FQCN identity. No basename similarity or vendor execution.
+  Symfony `config/services.yaml`/`services.yaml` explicit class/alias entries and `_defaults.autowire`
+  with namespace resource maps, and Drupal `*.services.yml` service class maps are inputs.
+  Bound the config subset; unsupported YAML is unresolved, never guessed. No Composer, Symfony,
+  Drupal, PHP or container execution. Source configuration and target spans accompany resolutions.
+  A small source-only block-map reader avoids taking phase 6's unanswered YAML dependency decision;
+  flow YAML, tags, anchors, imports and dynamic configuration remain unsupported.
+- **D-19 Performance by evidence.** Profile the 1E JS/TS summary path and remove repeated work
+  only with parity evidence. No dependency, entry or candidate may disappear to improve timing.
+
+### Acceptance criteria and verification
+
+1. **AC1 Summaries.** Table-driven Python/PHP tests cover closed identity/constant and helper
+   chains, inert versus request arguments, source/sink calls, ambient/global/heap mutation,
+   unsupported binding, recursion and limits. A refusal case removes only its `work_limit` gap;
+   successful inline expansion is unchanged. Shadow hooks check precise inline expansions on
+   fixtures and env-gated vulnpy/DVWA: applicable summaries record no uses and no dependent result.
+   Mutation checks prove the shadow oracle rejects a deliberately unsound summary.
+2. **AC2 PHP effects.** Tests exercise every table row with request-derived content, unknown
+   protection, shadowed/namespaced/dynamic counterparts, and container mutation. Account for all
+   210 DVWA gaps; target zero remaining gaps for the six listed unshadowed builtin calls.
+3. **AC3 Resolution.** Symfony/Drupal fixtures prove PSR-4 FQCN/method and `__invoke`, explicit
+   service IDs, aliases, Symfony autowiring, and Drupal service-to-class maps; missing, ambiguous,
+   escaping paths, dynamic configuration and unsupported YAML stay unresolved. Tests consume the
+   index, assert resolution kinds/targets/provenance, and check legacy-target parity.
+4. **AC4 Compatibility and deltas.** `TestArchitectureBaseline` is byte-identical before switching.
+   After switching, only PHP effects on the six named builtins, closed/inert Python/PHP refusal
+   gaps and new fixture additions may change it. Diff each fixture and sample by candidate identity
+   (kind, entry, sink), IDs, status, evidence and gap kind/callee against 1E. New candidates must
+   match DVWA/vulnpy detection guides and answer keys. A removed or unsupported new candidate is
+   a halt. Attribute all remaining vulnpy limit gaps by summary blocking reason.
+5. **AC5 Performance.** Run three offline full-bundle timings per pinned sample under
+   `_test-findings/<app>/run-arch-1f/`, recording runs, median and peak RSS beside phase 0/1B/1D/1E.
+   Target within 5% of final 1E or faster; investigate the accepted 1E Juice Shop increase with a
+   same-session profile/A-B when reasonable. A miss is reported for owner decision.
+6. **AC6 Closure.** Contributor gate: gofmt on changed Go files only, `go vet ./...`, `go build ./...`,
+   `go test -race ./... -count=1`, `go test ./cmd/scan -run TestArchitectureBaseline -count=1`.
+   A fresh-context verifier independently checks these ACs, sample deltas and limits. Update the
+   evaluation record, §14 phase completion, architecture README, repository graph, technical approach
+   if capabilities change, and append the run log. Commit with `[AREA]` prefixes, push only
+   `origin arch-review-clean-up`; prepare the draft milestone PR per `pr-builder`, never merge.
+
+### Execution and halts
+
+Commit this contract first (`[SPEC]`). Implement red/green slices: summary records and tests,
+shadow verification before refusal hooks; effects and reviewed delta; resolution fixtures/index;
+profiled optimization; sample comparisons/timings; gate, fresh verifier, docs, commits, push and PR.
+Preserve sample pins/clean status before and after, and use no live model calls or credentials.
+All §6/§8b halts apply. Unsupported configuration remains unresolved. Do not rebaseline an unlisted
+delta. Full witness reconstruction and replacement of successful expansion remain deferred (D-15).
 
 ## 9. TDD entry point and execution sequence (step 1A)
 
@@ -695,3 +799,11 @@ Results: juice-shop limit-induced gaps on in-repository callables 553 → 416, w
 (70 outbound uses at `webhook.notify`). There are no candidate, status or ID-order changes. vulnpy and DVWA
 are identical. Shadow parity holds on 1,193 expansions. vulnpy and DVWA are within 5% of 1D; juice-shop is +7.7%, which the owner accepted. Details are in the
 evaluation record.
+
+### 2026-11-18 — Step 1F contract written
+
+Source: owner assignment. Added §8c for Python/PHP refusal summaries, six PHP builtin effects,
+PSR-4 and service-map resolution inputs, performance investigation and phase closure. Checked phase
+6 D-3 and phase 9 D-1; their route adapters stay deferred. The 64 vulnpy limit gaps call a dynamic
+import helper, so closure is measured by applicability and remaining gaps require attribution.
+The owner requests a phases 0/1 milestone draft PR now; phases 2/3 stay later work on this branch.

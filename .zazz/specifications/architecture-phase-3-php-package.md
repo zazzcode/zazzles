@@ -9,7 +9,7 @@ Both ship in one milestone draft PR into `stage`
 **Coordination:** Lead Agent alone. The moves are tightly coupled
 **Run log:** `.zazz/ephemeral/architecture-phase-3-php-package-run-log.md`
 **Drafted:** 2026-11-17. **Reconciled** against merged phase 2 code: 2026-11-18 (§14)
-**Status:** not started
+**Status:** implemented on `arch-multi-lang-packaging` (from `f4ebb6d`); awaits phase 3B and the milestone draft PR
 
 ## 1. Capability
 
@@ -48,7 +48,8 @@ implement. Output bytes do not change.
 ## 3. Invariants
 
 - `TestArchitectureBaseline` passes with no update except fixture keys: keys under
-  `internal/parse/testdata/php/` move to `internal/langphp/testdata/`. Digests must not change.
+  `internal/parse/testdata/php/` move to `internal/langphp/testdata/`. Digests must not change,
+  except PHP `report_sha256` values, which embed the fixture root path (§14, 2026-11-18 owner decision).
 - Route-inventory output (`--routes` and its JSON) is unchanged for every fixture.
 - `langphp` imports `internal/parse` (core API), `internal/analysis`, `internal/lang`, and Tree-sitter.
   It does not import `internal/pipeline` or any other language package. `internal/parse` never imports
@@ -144,7 +145,9 @@ Additional halts:
 3. **AC3** `internal/parse/core_api.go` documents each exported identifier as part of the language
    core API, with a one-line contract. The run log lists the count, which must be 30 or fewer.
 4. **AC4** No file matches `internal/parse/p[0-9]_*.go`, and `git log --follow` works for each renamed file.
-5. **AC5** `TestArchitectureBaseline` passes. The golden diff is PHP key renames only, and digests are unchanged.
+5. **AC5** `TestArchitectureBaseline` passes. The golden diff is PHP key renames plus PHP
+   `report_sha256` values that change only through the embedded root path (proved by re-hashing with
+   the old root); request, signature and SARIF digests, IDs and counts are unchanged.
 6. **AC6** `go test ./internal/langphp ./internal/pipeline -count=1` and `cmd/scan` `TestPHPCLI` and the
    route-inventory tests pass. The contributor gate passes.
 7. **AC7** The docs in §4 name `internal/langphp`, `pipeline.Routes`, and the core API. Orientation no
@@ -260,3 +263,32 @@ step 4. No implementation has started. Changed:
 
 Verification impact: AC1, AC2, AC6 and AC7 gain the route-inventory checks. The 30-identifier halt
 is unchanged.
+
+### 2026-11-18 — Implementation, golden root-path delta (owner decision)
+
+Source: Lead Agent implementing §9 from starting HEAD `f4ebb6d`; owner decision in session.
+Changed:
+
+- **§6 halt fired and was resolved by the owner.** Moving the PHP fixtures changes `report_sha256`
+  for all ten PHP fixtures, because the normalized report embeds `root`, the fixture path. Re-hashing
+  each new report with the root replaced by the old path reproduces every old hash. No request,
+  signature or SARIF digest, ID or count changed, and no JS/TS, Python or mixed fixture changed. The
+  owner accepted the root-only delta; §3 and AC5 now say so.
+- **Core API (AC3): 20 identifiers.** `Inventory`, `Inventory.HasLanguage`, `ClosedCallable` with
+  `Closed`/`Reject`/`Read`/`Finish` and exported fields `Params`, `Callees`, `Reasons` (`Reasons` only
+  for the PHP halves of the closed-summary tests), and wrappers `SourceComment`, `SnapshotID`, `Span`,
+  `OpenParser`, `SourceComments`, `ModelSource`, `RegisterInvocation`, `FinalizeEntries`,
+  `AssembleXSSClaims`, `HTMLOutputContext`, `RenderMarkup`, `CheckContextMatches`,
+  `AppendUniqueString`. Runner entry points `JavaScriptRoutes` and `PythonRoutes` (called by
+  `pipeline.Routes`) sit beside phase 2's `RunJavaScript`/`RunPython` and are not counted.
+- **D-3 neutral file:** `internal/parse/string_sets.go`.
+- **D-7 test moves:** `TestPHPRoutes`, `TestPHPMixedRepository`, `dvwa_test.go` and
+  `summary_witness_integration_test.go` move to `internal/pipeline`. The shared closed-summary tests
+  split by language under the same names. The PHP call-resolution measurement becomes
+  `langphp.TestPHPCallResolutionMeasure` (output `ZAZZLES_MEASURE_PHP_OUT`). `parse` keeps a
+  test-only `Routes` mirror for its JS/TS and Python route tests. The architecture-baseline and
+  pipeline fixture lists read PHP fixtures from `internal/langphp/testdata`.
+- `langphp` also imports `internal/guidelines`, as `php_modules.go` did before the move.
+
+Verification impact: route-inventory JSON is byte-identical for all 41 fixtures between the
+pre-move and post-move binaries. The full gate is green. Evidence is in the run log.

@@ -76,7 +76,9 @@ policy enforces completeness/consistency. This boundary applies equally to HTTP,
 message consumers. Adding a framework or transport MUST NOT duplicate a security analyzer.
 
 The implemented Node slice uses this pattern for bounded Express/Fastify/Hapi HTTP contexts and
-existing GraphQL/gRPC records. Python adapters remain unchanged pending the root proposal. Optional
+existing GraphQL/gRPC records. Python adapters remain unchanged pending the root proposal. The PHP
+adapter lives in `internal/langphp` and reaches shared registration and finalization only through
+`parse`'s language core API (`core_api.go`); route inventory is assembled by `pipeline.Routes`. Optional
 model-assisted discovery produces source-referenced proposals outside the trusted graph. Verified
 source existence is not verified dispatch; unknown wrappers remain provisional, not new edges.
 

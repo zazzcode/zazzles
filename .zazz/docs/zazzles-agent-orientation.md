@@ -37,13 +37,14 @@ provider fallback is assigned.
 | --- | --- | --- |
 | `cmd/scan/` | CLI flags, configuration, limits, output wiring and exit codes | [CLI use](../../docs/running-scans.md), [contributor checks](../../docs/contributing.md#contributing) |
 | `internal/walk/`, `internal/lang/` | File inventory and supported-language detection | [Parsing](../architecture/README.md#3-parsing-and-language-adapters) |
-| `internal/pipeline/` | One walk, language-runner selection and concurrency, fixed-order assembly, check/pack attachment | [Pipeline](../architecture/README.md#2-pipeline) |
-| `internal/parse/` | Per-language runners (producer): Tree-sitter bindings, imports/entries, bounded flow, source-backed candidate assembly | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
+| `internal/pipeline/` | One walk, language-runner selection and concurrency, fixed-order assembly, check/pack attachment, route inventory (`pipeline.Routes`) | [Pipeline](../architecture/README.md#2-pipeline) |
+| `internal/parse/` | JS/TS and Python runners (producer): Tree-sitter bindings, imports/entries, bounded flow, source-backed candidate assembly; language core API (`core_api.go`) |
+| `internal/langphp/` | PHP adapter (`Run`, `Routes`) on the `parse` core API | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
 | `internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture/README.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
 | `internal/analysispacks/`, `internal/guidelines/` | Embedded contracts, selected guidance, questions and versions | [Selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) |
 | `internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture/README.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
 | `internal/report/` | Findings, Review/Protected presentation, JSON/HTML/SARIF and bundles | [Reporting design](../architecture/reporting-and-sarif.md), [HTML design](../architecture/html-reporting.md) |
-| `internal/parse/testdata/` | Small JS/TS/Python regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
+| `internal/parse/testdata/`, `internal/langphp/testdata/` | Small JS/TS/Python and PHP regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
 | `docs/`, `.zazz/`, `.agents/skills/` | User docs; internal contracts/design/evaluation; development skills | [Document owners](#documentation-map) |
 
 Each [analyzer](../architecture/README.md#analyzer-terminology) spans the shared engine's activities.

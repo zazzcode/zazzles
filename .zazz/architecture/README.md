@@ -236,8 +236,13 @@ and the [implementation contract](../specifications/node-http-input-refactor.md)
 ## 3. Parsing and language adapters
 
 `internal/parse` owns Tree-sitter lifetimes, module resolution, framework bindings, bounded flow,
-security operation models and evidence assembly. Its name reflects its origin; it currently owns
-more than syntax parsing. Shared records do not depend on Tree-sitter nodes or HTTP clients.
+security operation models and evidence assembly for JS/TS and Python. Its name reflects its origin;
+it currently owns more than syntax parsing. It also holds the **language core API**
+(`internal/parse/core_api.go`): the documented functions and small value types (inventory, spans,
+snapshot IDs, parsers, model source, invocation registration, entry finalization, XSS claim assembly,
+check-context matching and the closed-summary lattice) that an adapter outside `parse` may use. PHP
+lives in `internal/langphp` and imports only that API, never JS flow internals. Shared records do
+not depend on Tree-sitter nodes or HTTP clients.
 
 - JS/TS analysis covers supported Express/CommonJS/ESM routes, helpers, browser entries,
   database/logging/outbound operations, templates and selected stored/cross-tier XSS relationships.
@@ -300,7 +305,7 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   finite-value proofs are invocation-specific and separate from taint/protection; ordinary branches
   are not folded from those proofs. Shadowed, mutated, escaped, deleted, nonfinite or mismatched
   import bindings remain unresolved. This closes the measured 64 vulnpy helper-limit gaps.
-- **Implemented (PHP resolution inputs):** `php_call_index.go` and `php_project_resolution.go`
+- **Implemented (PHP resolution inputs):** `internal/langphp` `call_index.go` and `project_resolution.go`
   provide exact Composer PSR-4 FQCN/method lookup and bounded Symfony/Drupal service maps, with
   `psr4`, `container_service` and explicit unresolved reasons. Symfony block-map autowiring resources
   and explicit class/alias maps, and Drupal `*.services.yml` classes carry config/definition spans.
@@ -535,8 +540,9 @@ incremental invalidation. There is no automatic runtime cache implied by saved e
 | `cmd/scan` | CLI arguments, pipeline wiring, request caps and export modes |
 | `internal/walk` | Target file selection and manifest |
 | `internal/lang` | File-extension language registry |
-| `internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment |
-| `internal/parse` | Producer of per-language reports: Tree-sitter, language/framework resolution, bounded flow and evidence assembly, exposed as `Inventory` (with `Runners` selection and `NormalizeEntry`), `RunJavaScript`, `RunPython`, `RunPHP` and `Assemble`; route inventory (`Routes`) keeps its own walk |
+| `internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment; route inventory (`Routes`, with its own walk and sort) |
+| `internal/parse` | Producer of the JS/TS and Python reports: Tree-sitter, language/framework resolution, bounded flow and evidence assembly, exposed as `Inventory` (with `Runners` selection and `NormalizeEntry`), `RunJavaScript`, `RunPython`, `Assemble` and the route parts `JavaScriptRoutes` and `PythonRoutes`; also the language core API (`core_api.go`) for adapters outside `parse` |
+| `internal/langphp` | PHP adapter: `Run` (report) and `Routes` (route-inventory part); imports `parse`'s core API, never JS flow internals, `pipeline` or another language package |
 | `internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
 | `internal/guidelines` | Embedded versioned language Analysis Guidelines |
 | `internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |

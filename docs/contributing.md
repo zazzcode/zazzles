@@ -38,12 +38,14 @@ private environment configuration are covered in [getting started](getting-start
 | Path | Responsibility |
 |---|---|
 | `cmd/scan/` | CLI arguments, configuration, output wiring, and exit codes |
-| `internal/parse/` | Supported-language parsing, entry discovery, flow and evidence assembly |
+| `internal/pipeline/` | One walk, language-runner selection, fixed-order assembly, and route inventory |
+| `internal/parse/` | JS/TS and Python parsing, entry discovery, flow and evidence assembly; the language core API for other adapters |
+| `internal/langphp/` | PHP adapter built on the `internal/parse` core API |
 | `internal/analysis/` | Shared evidence, candidate, entry, and report records |
 | `internal/analysispacks/` | Embedded interpretation components and API contracts |
 | `internal/judge/` | Provider requests, scheduling, replay, and evidence-based classification |
 | `internal/report/` | Findings, HTML, JSON, SARIF, and output bundles |
-| `internal/parse/testdata/` | Small source fixtures and regression repositories |
+| `internal/parse/testdata/`, `internal/langphp/testdata/` | Small source fixtures and regression repositories |
 | `docs/` | User guides, analysis rules, contributor notes, and curated sample reports |
 | `.zazz/` | Internal architecture, plans, implementation contracts, and evaluation evidence |
 

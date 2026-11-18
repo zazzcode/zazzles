@@ -29,7 +29,8 @@ import (
 // SourceComment is the byte range of one comment excluded from model source.
 type SourceComment = sourceComment
 
-// SnapshotID returns the versioned, content-addressed record ID for one snapshot record.
+// SnapshotID returns the versioned, content-addressed record ID for one snapshot record, or an
+// unresolved placeholder that FinalizeEntries rejects.
 func SnapshotID(kind string, source analysis.Evidence, owner, key string) string {
 	return snapshotID(kind, source, owner, key)
 }
@@ -50,7 +51,8 @@ func ModelSource(src []byte, start, end uint, comments []SourceComment) string {
 	return modelSource(src, start, end, comments)
 }
 
-// RegisterInvocation appends the entry, its dispatch binding and invocation context to out.
+// RegisterInvocation appends the entry, its registration, dispatch binding, handler callable (when
+// new) and invocation context to out, and returns that context.
 func RegisterInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint, handler *analysis.Evidence, mechanism string, inputs []analysis.InputBinding, gaps []analysis.Gap) analysis.InvocationContext {
 	return registerInvocation(out, entry, handler, mechanism, inputs, gaps)
 }
@@ -58,7 +60,7 @@ func RegisterInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint,
 // FinalizeEntries dedups callables, rekeys invocations, orders and validates entry records.
 func FinalizeEntries(out *analysis.AnalysisReport) error { return finalizeEntries(out) }
 
-// AssembleXSSClaims derives XSS claims from the report's render and data candidates.
+// AssembleXSSClaims drops code-owned XSS uses and attaches XSS claim completeness to xss_candidate uses.
 func AssembleXSSClaims(out *analysis.AnalysisReport) { assembleXSSClaims(out) }
 
 // HTMLOutputContext classifies the HTML output context that follows prefix.

@@ -192,4 +192,20 @@ Use the plan's common rules. Record the captured AC1 baselines and the timing ta
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+- 2026-11-18 — Implementation. Changes beyond the §4 table:
+  - `internal/judge/limits_test.go` updates its call sites, because `acquire` now returns a
+    reservation and `complete` takes it.
+  - `cmd/scan/analysis.go` passes the resolved concurrency into `ScheduleOptions`. It was in §2
+    reading but missing from §4.
+  - `cmd/scan/schedule_cli_test.go` and `cmd/scan/outbound_test.go` make their stub request
+    counters atomic. With the default of 4, `-race` flags them. The race is in test-only state,
+    not on `Client`, so the §6 halt does not apply.
+  - `internal/judge/testdata/schedule_serial/` holds the AC1 goldens.
+- D-2 refinement: a promoted member is the group's next member that reaches HTTP. A member that
+  fails preflight gets its offline outcome and never takes a slot.
+- Known serial difference, outside every AC1 scenario: a leader fails without halting (no
+  limiter, or a non-halting answer-detail failure) while `--judge-limit` binds. A serial run gave
+  the next equivalent member the freed slot. The plan gives it to the next leader in priority
+  order (D-1, no refunds), and the member reports `judge request limit reached`.
+- `LimitSummary` says "up to N assessment requests in flight" instead of "requests remain
+  sequential" when N > 1. With N = 1 the text is unchanged.

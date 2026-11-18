@@ -160,7 +160,8 @@ Use `--route /rest/user/login` to select an exact path pattern before model requ
 Offline assessment is `not_run`. For provider selection and key instructions, including personal-key
 ownership and Jev configuration, see [decision-model setup](decision-models.md).
 `--judge openai` uses the primary OpenAI Luna Decisions model and transmits bounded evidence;
-`--judge-limit` caps assessment requests (default 10, no retries). Manage spending in your API account. A requested judge failure, a record whose required evidence alone is over the request limit (`evidence_too_large`) or an exhausted request cap exits 1
+`--judge-limit` caps assessment requests (default 10, no retries), and `--judge-concurrency`
+caps how many run at once (default 4; `1` is serial). Manage spending in your API account. A requested judge failure, a record whose required evidence alone is over the request limit (`evidence_too_large`) or an exhausted request cap exits 1
 with its report retained. Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
 
@@ -352,8 +353,10 @@ exporting a saved report preserves its historical answers. See [decision-model s
 
 ## Judge rate and spending controls
 
-The continuation CLI supports shared per-scan dollar-budget and RPM/TPM settings for discovery and
-assessment. Configure explicit maximum input pricing with a dollar budget; flags override process
-environment. See the [settings table and examples](decision-models.md#rate-and-spending-configuration).
-Refusals leave incomplete records and a nonzero exit status. Final full verification of the continuation
-checkpoint is pending at the owner's request.
+`--judge-limit` / `JUDGE_LIMIT`, `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional
+`--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pacing settings apply to one scan.
+Discovery and assessment share the rate window, and flags override the process environment. The
+first failed request stops new requests. With concurrency above 1, requests already in flight still
+finish and are counted. See the [settings and their interaction](decision-models.md#rate-and-spending-configuration).
+Refusals leave incomplete records and a nonzero exit status. Spending is managed in the provider
+account; the scanner has no dollar budget.

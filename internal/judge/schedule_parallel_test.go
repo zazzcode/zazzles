@@ -46,7 +46,7 @@ type scheduleStub struct {
 	bodies   [][]byte
 }
 
-func (s *scheduleStub) client(t *testing.T) *Client {
+func (s *scheduleStub) client(t testing.TB) *Client {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		var raw bytes.Buffer
@@ -141,7 +141,7 @@ func scheduleSQLReport(t *testing.T, groups, members int) *analysis.AnalysisRepo
 	return &r
 }
 
-func parseScheduleSQLReport(t *testing.T, groups, members int) *analysis.AnalysisReport {
+func parseScheduleSQLReport(t testing.TB, groups, members int) *analysis.AnalysisReport {
 	t.Helper()
 	var src strings.Builder
 	src.WriteString(`import express from 'express';import {Sequelize} from 'sequelize';const app=express();const db=new Sequelize('sqlite::memory:');`)
@@ -618,5 +618,31 @@ func TestSchedulePacingUnderConcurrency(t *testing.T) {
 	}
 	if tpmStub.count() != 0 {
 		t.Fatal("a refused reservation reached HTTP")
+	}
+}
+
+// BenchmarkScheduleLatency produces the AC9 stub timing table: 40 distinct
+// signatures at a fixed 200 ms stub latency for N = 1, 2, 4 and 8:
+//
+//	go test ./internal/judge -run '^$' -bench BenchmarkScheduleLatency -benchtime 1x
+func BenchmarkScheduleLatency(b *testing.B) {
+	r := parseScheduleSQLReport(b, 40, 1)
+	for _, n := range []int{1, 2, 4, 8} {
+		b.Run(fmt.Sprintf("N=%d", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				b.StopTimer()
+				stub := &scheduleStub{before: func(int, []byte) { time.Sleep(200 * time.Millisecond) }}
+				c := stub.client(b)
+				run := *r
+				run.Uses = append([]analysis.CandidateUse(nil), r.Uses...)
+				run.Limitations = nil
+				b.StartTimer()
+				c.AssessScheduled(context.Background(), &run, ScheduleOptions{Limit: 40, Concurrency: n})
+				b.StopTimer()
+				if stub.count() != 40 || stub.maxConc > n {
+					b.Fatalf("requests=%d max in flight=%d", stub.count(), stub.maxConc)
+				}
+			}
+		})
 	}
 }

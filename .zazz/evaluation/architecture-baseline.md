@@ -533,3 +533,24 @@ earlier phases. vulnpy and DVWA run two or three runners at once, which can rais
 Artifacts: `_test-findings/<app>/run-arch-2/` holds `run-{1,2,3}/` (first default batch),
 `ab/{old,new,seq}-{1,2,3}/`, `walk-count/{old,new}/` and `pins.log`. The Juice Shop directory also
 holds `measurements.json`, `bench-pipeline-mixed.txt` and the gate logs.
+
+## Phase 4 — parallel judge requests (2026-11-18)
+
+Stub timing for AC9: `BenchmarkScheduleLatency` (`internal/judge/schedule_parallel_test.go`) runs 40
+distinct signatures, each with a local `httptest` stub that waits a fixed 200 ms. The run uses
+`--judge-limit` 40 and no RPM/TPM pacing, on an Apple M6 with go1.27.3 and `-benchtime 1x`.
+
+| N | Wall clock | Speed-up over N=1 | Requests | Max in flight |
+|---|---|---|---|---|
+| 1 | 8.15 s | 1.00× | 40 | 1 |
+| 2 | 4.11 s | 1.98× | 40 | ≤2 |
+| 4 | 2.09 s | 3.91× | 40 | ≤4 |
+| 8 | 1.08 s | 7.56× | 40 | ≤8 |
+
+Wall clock scales with `N` when stub latency dominates and pacing does not bind. Request bytes and
+token usage are the same at every `N`. Live provider latency and quota behavior are unverified. No
+paid calls were made.
+
+AC1 serial outputs are pinned in `internal/judge/testdata/schedule_serial/`. There are twelve
+scenarios, captured from the pre-change scheduler in `15d0f92`. Each file pins the report and
+saved traces by SHA-256 and keeps the assessments and limitations readable.

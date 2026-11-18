@@ -66,6 +66,19 @@ tokenizer. Oversized requests stop explicitly, and waits can be canceled. With p
 the scanner skips rate-window bookkeeping. Spending is managed in the provider console; the
 scanner has no dollar budget or token-price configuration.
 
+`--judge-concurrency N` (or `JUDGE_CONCURRENCY`, default 4) caps assessment requests in flight at
+once. The value must be a positive integer, and the flag overrides the environment. `1` sends one
+request at a time, as earlier releases did. Concurrency changes wall clock only: request bytes,
+report order, equivalent-context reuse and token cost are the same at every setting. Before any
+request starts, the scanner assigns the `--judge-limit` slots in priority order, so the same
+candidates are judged whatever the response timing. RPM and TPM pacing still apply to every
+request, so a low RPM limits throughput more than concurrency does.
+
+The first failed request stops new requests, as it does serially. With `N` above 1, up to `N − 1`
+other requests may already be in flight when that failure happens. Those requests still complete,
+and their answers and usage are recorded. A serial run would not have sent them. The
+`Decision-model limits` line in the report counts every attempt, including these.
+
 ## Scope a live run
 
 Confirm the target root, entry file, selected route, and allowed source evidence before running:

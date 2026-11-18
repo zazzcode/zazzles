@@ -2,8 +2,9 @@ package parse
 
 import (
 	"fmt"
-	sitter "github.com/tree-sitter/go-tree-sitter"
 	"strings"
+
+	sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 func (s *pythonSet) callableSummary(m *pythonModule, fn *sitter.Node) *ClosedCallable {
@@ -107,3 +108,7 @@ func (f *pythonFlow) closedSummaryCall(call *sitter.Node, target *pythonBoundCal
 // Nil outside shadow tests; it observes successful expansions without changing
 // the flow's result or summary applicability.
 var pythonSummaryShadow func(*pythonFlow, *sitter.Node, *pythonBoundCallable, []pythonValue, pythonValue, int)
+
+func inertPython(v pythonValue) bool {
+	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.table == "" && v.driver == "" && v.templateEscape == "" && !v.unknown && !v.built && !v.rendered && v.callable == nil && v.methods == nil && v.thread == nil
+}

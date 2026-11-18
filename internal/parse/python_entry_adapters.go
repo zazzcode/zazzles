@@ -275,18 +275,6 @@ func (s *pythonSet) adapterEntries(out *[]pythonRoute, sites map[string]int) {
 	}
 }
 
-func itoa(i int) string {
-	const digits = "0123456789"
-	if i == 0 {
-		return "0"
-	}
-	var b []byte
-	for ; i > 0; i /= 10 {
-		b = append([]byte{digits[i%10]}, b...)
-	}
-	return string(b)
-}
-
 // pyramidInclude runs `config.include("pkg.module")`: the module's includeme
 // registers routes on a fresh Configurator receiver.
 func (s *pythonSet) pyramidInclude(m *pythonModule, call *sitter.Node, f *pythonStatic) {

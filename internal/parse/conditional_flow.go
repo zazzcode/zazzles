@@ -16,9 +16,6 @@ import (
 const (
 	branchTruePrecondition  = "branch_true_precondition"
 	branchFalsePrecondition = "branch_false_precondition"
-	// conditionalFalseTest is the invocation control for a test that is false on
-	// every path of the invocation (for example an early-throw guard's test).
-	conditionalFalseTest = "conditional_false_test"
 )
 
 // armControlKinds are context kinds that state a fact about one path. At a join of

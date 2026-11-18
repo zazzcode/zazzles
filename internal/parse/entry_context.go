@@ -21,16 +21,6 @@ func httpEntry(r analysis.Route, source analysis.Evidence, instance string) anal
 	return analysis.EntryPoint{ID: snapshotID("entry", source, instance, r.ID+":"+r.Method+":"+r.PathPattern), Kind: "http", Name: r.Method + " " + r.PathPattern, InstanceID: instance, Location: source, HTTP: &analysis.HTTPEntryMetadata{Method: r.Method, Path: r.PathPattern, Framework: r.Framework}}
 }
 
-func browserEntry(m *sourceModule, nodeEvidence analysis.Evidence, name, category string) analysis.EntryPoint {
-	// A source-scope marker is not a callback registration/body. Relevant bounded
-	// excerpts already live in each use; sending the whole module would inflate
-	// otherwise bounded judge requests and imply unsupported dispatch evidence.
-	nodeEvidence.Text = ""
-	nodeEvidence.ModelText = ""
-	instance := "browser:" + m.file + ":" + m.hash
-	return analysis.EntryPoint{ID: snapshotID("entry", nodeEvidence, instance, category+":"+name), Kind: "browser", Name: name, InstanceID: instance, Location: nodeEvidence, Browser: &analysis.BrowserEntryMetadata{Category: category}}
-}
-
 func registerInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint, handler *analysis.Evidence, mechanism string, inputs []analysis.InputBinding, gaps []analysis.Gap) analysis.InvocationContext {
 	reg := analysis.EntryRegistration{ID: snapshotID("registration", entry.Location, entry.ID, "registration"), EntryID: entry.ID, Origin: entry.Location, Gaps: append([]analysis.Gap{}, gaps...)}
 	if entry.HTTP != nil {
@@ -108,44 +98,11 @@ func finalizeEntries(out *analysis.AnalysisReport) error {
 	return out.ValidateUses()
 }
 
-func (f *flow) seedInvocation() {
-	for _, input := range f.invocation.Inputs {
-		switch input.Role {
-		case "http.request":
-			f.request = input.Parameter
-		case "http.response":
-			f.response = input.Parameter
-		case "http.query", "http.body", "http.params", "http.headers":
-			if f.parts == nil {
-				f.parts = map[string]string{}
-			}
-			f.parts[input.Parameter] = inputRole(input.Role)
-		default:
-			v := value{}
-			for _, source := range input.Origin.Evidence {
-				source.Kind = "input_source"
-				v.deps = append(v.deps, analysis.Dependency{Source: source})
-			}
-			if input.Origin.Kind == "unknown" {
-				v.gaps = append(v.gaps, analysis.Gap{Kind: "input_origin_unknown", Detail: input.Role})
-			}
-			f.env[input.Parameter] = v
-		}
-	}
-}
-
 func httpInput(role, param string, e analysis.Evidence) analysis.InputBinding {
 	return analysis.InputBinding{Role: role, Parameter: param, Origin: analysis.InputOrigin{Kind: "external", Evidence: []analysis.Evidence{e}}}
 }
 
 func inputRole(role string) string { return strings.TrimPrefix(role, "http.") }
-
-func browserInvocation(entry analysis.EntryPoint) analysis.InvocationContext {
-	reg := snapshotID("registration", entry.Location, entry.ID, "registration")
-	callable := snapshotID("callable", entry.Location, entry.Location.Span.File, "lexical-body")
-	binding := snapshotID("dispatch", entry.Location, reg, "browser_source_slice:"+callable)
-	return analysis.InvocationContext{ID: snapshotID("invocation", entry.Location, binding, "default"), EntryID: entry.ID, DispatchBindingID: binding}
-}
 
 func enrichInvocationEvidence(out *analysis.AnalysisReport) {
 	for i := range out.Uses {

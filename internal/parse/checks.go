@@ -434,12 +434,3 @@ func applyContextCheck(r *analysis.AnalysisReport, check analysis.Check, entry a
 	}
 	r.Uses = selected
 }
-
-func checkContextMatches(r *analysis.AnalysisReport, c analysis.Check, u analysis.CandidateUse) bool {
-	for _, ctx := range r.InvocationContexts {
-		if ctx.ID == u.InvocationContextID {
-			return c.NormalizedSelector().MatchesContext(r, ctx)
-		}
-	}
-	return false
-}

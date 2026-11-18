@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
-	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
 // Callable summaries (source index layer L4, step 1E; spec §8b). A summary is a
@@ -27,11 +26,6 @@ const (
 // summaryMaxRounds caps the fixpoint rounds of one recursive component. A
 // variable only so a test can reach the cap.
 var summaryMaxRounds = 16
-
-type summaryReason struct {
-	Kind string
-	At   analysis.Span
-}
 
 type summarySite struct {
 	call   *sitter.Node

@@ -16,7 +16,6 @@ import (
 var ejsOutput = regexp.MustCompile(`<%([=-])\s*([\s\S]*?)\s*[-_]?%>`)
 var handlebarsOutput = regexp.MustCompile(`\{\{(\{?)([^{}]+)\}\}\}?`)
 var pugOutput = regexp.MustCompile(`([!#])\{([^}]+)\}`)
-var simpleTemplateField = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$`)
 
 func (s *moduleSet) readText(file string) (analysis.Evidence, bool) {
 	return s.readBounded(file, 2<<20)
@@ -64,16 +63,6 @@ func (s *moduleSet) readBounded(file string, limit int64) (analysis.Evidence, bo
 	}
 	s.textSources[file] = e
 	return e, true
-}
-
-func textRange(e analysis.Evidence, start, end int, kind string) analysis.Evidence {
-	before, part := e.Text[:start], e.Text[start:end]
-	e.Kind = kind
-	e.Span.StartByte, e.Span.EndByte = start, end
-	e.Span.StartLine = strings.Count(before, "\n") + 1
-	e.Span.EndLine = e.Span.StartLine + strings.Count(part, "\n")
-	e.Text = part
-	return e
 }
 
 func (f *flow) renderSettings() (string, string, []analysis.Evidence) {

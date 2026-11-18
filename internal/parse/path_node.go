@@ -244,9 +244,6 @@ func (b *jsPathBuilder) operand(slot, kind string, n *sitter.Node, v value) {
 	b.facts.Operands = append(b.facts.Operands, o)
 }
 
-// requestOrigin reports a dependency whose source is a request input field.
-func requestOrigin(d analysis.Dependency) bool { return d.Source.Kind == "input_source" }
-
 func (b *jsPathBuilder) gap(kind, detail string, n *sitter.Node) {
 	b.gaps = append(b.gaps, b.f.gap(kind, detail, n))
 }

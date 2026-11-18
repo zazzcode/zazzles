@@ -32,6 +32,7 @@ func (c *ClosedCallable) Read(name, file string, n *sitter.Node) {
 }
 func (c *ClosedCallable) Finish() { c.done = true }
 
-func inertPython(v pythonValue) bool {
-	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.table == "" && v.driver == "" && v.templateEscape == "" && !v.unknown && !v.built && !v.rendered && v.callable == nil && v.methods == nil && v.thread == nil
+type summaryReason struct {
+	Kind string
+	At   analysis.Span
 }

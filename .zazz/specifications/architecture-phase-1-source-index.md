@@ -400,7 +400,7 @@ and "fourth helper is a limit" pass request data into the refused helper and kee
 | `internal/parse/summary_shadow_test.go` | new | Shadow parity: summary against inline expansion at every precise inline expansion, on every JS/TS fixture and on juice-shop with `ZAZZLES_JUICE_SHOP`; attribution of remaining limit gaps (AC4) |
 | `internal/parse/helper_flow.go` | modified | Apply a closed summary at the limit and recursion refusals; a nil-by-default shadow hook |
 | `internal/parse/flow.go` | modified | Apply a closed summary at the in-repository `unknown_call_result` fallthrough |
-| `internal/parse/modules.go` | modified | Per-set summary cache |
+| `internal/parse/modules.go` | modified | Per-set summary cache, per-module reference-stability cache, and the no-load guard used while summaries are built |
 | `cmd/scan/testdata/architecture-baseline.json` | modified | The AC3 delta only |
 | `.zazz/evaluation/architecture-baseline.md`, `.zazz/architecture/README.md` §3, `.zazz/architecture/repository-graph.md` | modified | Results; L4 implemented for JS/TS |
 

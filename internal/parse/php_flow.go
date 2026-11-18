@@ -175,15 +175,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 	case "object_creation_expression":
 		return f.objectCreation(n)
 	case "cast_expression":
-		kind := castKind(m, n)
-		v := f.evalChildren(n)
-		switch kind {
-		case "int", "integer", "float", "double":
-			return phpTransfer(phpProtect(v, "numeric"), m.evidence("numeric_conversion", n))
-		case "string":
-			return phpTransfer(v, m.evidence("string_conversion", n))
-		}
-		return phpTransfer(v, m.evidence("type_cast", n))
+		return f.castValue(n, f.evalChildren(n))
 	case "unary_op_expression", "error_suppression_expression", "clone_expression":
 		return f.evalChildren(n)
 	case "conditional_expression":
@@ -248,6 +240,16 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 	}
 }
 
+func (f *phpFlow) castValue(n *sitter.Node, v phpValue) phpValue {
+	switch castKind(f.module, n) {
+	case "int", "integer", "float", "double":
+		return phpTransfer(phpProtect(v, "numeric"), f.module.evidence("numeric_conversion", n))
+	case "string":
+		return phpTransfer(v, f.module.evidence("string_conversion", n))
+	}
+	return phpTransfer(v, f.module.evidence("type_cast", n))
+}
+
 func castKind(m *phpModule, n *sitter.Node) string {
 	for i := uint(0); i < n.ChildCount(); i++ {
 		c := n.Child(i)
@@ -266,7 +268,6 @@ func castKind(m *phpModule, n *sitter.Node) string {
 }
 
 func (f *phpFlow) binaryExpression(n *sitter.Node) phpValue {
-	m := f.module
 	left, right := phpField(n, "left"), phpField(n, "right")
 	if left == nil || right == nil {
 		return f.evalChildren(n)
@@ -274,10 +275,15 @@ func (f *phpFlow) binaryExpression(n *sitter.Node) phpValue {
 	op := ""
 	for i := uint(0); i < n.ChildCount(); i++ {
 		if c := n.Child(i); c != nil && !c.IsNamed() {
-			op = strings.TrimSpace(c.Utf8Text(m.src))
+			op = strings.TrimSpace(c.Utf8Text(f.module.src))
 		}
 	}
 	a, b := f.eval(left), f.eval(right)
+	return f.binaryValues(n, op, a, b)
+}
+
+func (f *phpFlow) binaryValues(n *sitter.Node, op string, a, b phpValue) phpValue {
+	m := f.module
 	switch op {
 	case ".":
 		v := phpCombine(a, b)
@@ -295,13 +301,16 @@ func (f *phpFlow) binaryExpression(n *sitter.Node) phpValue {
 }
 
 func (f *phpFlow) assign(n *sitter.Node) phpValue {
-	m := f.module
 	left, right := phpField(n, "left"), phpField(n, "right")
 	v := f.eval(right)
 	if n.Kind() == "augmented_assignment_expression" {
 		v = phpCombine(f.eval(left), v)
 		v.built = true
 	}
+	return f.assignValue(n, left, v)
+}
+func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
+	m := f.module
 	v = phpTransfer(v, m.evidence("assignment", n))
 	if len(f.condition) > 0 && len(v.literals) > 0 {
 		lits := append([]phpLiteral{}, v.literals...)

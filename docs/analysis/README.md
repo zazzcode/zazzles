@@ -45,7 +45,7 @@ They do not implement detection or override missing evidence, application requir
 evidence validation checks. Unlike the product guides on this page, their text is included in model requests.
 
 “Poor practice” remains a finding classification for established defects. It is independent of the
-former `Practice` name for guideline documents. See the [architecture terminology](../../.zazz/architecture.md#1-architecture-premise).
+former `Practice` name for guideline documents. See the [architecture terminology](../../.zazz/architecture/README.md#1-architecture-premise).
 
 Fixed interpretation sentences for query and middleware facts are owned by one embedded note
 document, [`facts.md`](../../internal/guidelines/facts.md). A candidate's `model_facts` carry only a

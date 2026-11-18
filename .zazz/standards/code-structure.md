@@ -5,7 +5,7 @@ to `cmd/`, `internal/`, `.zazz/`, and `.agents/skills/`.
 
 ## 1. Package layout
 
-The [architecture package map](../architecture.md#11-implemented-package-boundaries) owns package
+The [architecture package map](../architecture/README.md#11-implemented-package-boundaries) owns package
 responsibilities; new boundaries are finalized in greenlit specs. The map is not an instruction to
 scaffold packages. Keep the CLI under `cmd/scan` and implementation under `internal/`.
 

@@ -13,7 +13,7 @@ func (s *moduleSet) resolveCall(m *sourceModule, call *sitter.Node) (*sourceModu
 		return nil, nil
 	}
 	name := fn.Utf8Text(m.src)
-	if shadowed(call, strings.Split(name, ".")[0], m.src) {
+	if m.cachedShadowed(call, strings.Split(name, ".")[0]) {
 		return nil, nil
 	}
 	if fn.Kind() != "identifier" {
@@ -112,4 +112,23 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 func (s *moduleSet) verifiedSQLLibrarySink(m *sourceModule, call *sitter.Node) bool {
 	_, _, _, ok := s.sqlLibraryCall(m, call)
 	return ok
+}
+
+// shadowQuery keys an immutable lexical query by syntax node and name.
+type shadowQuery struct {
+	node uintptr
+	name string
+}
+
+func (m *sourceModule) cachedShadowed(n *sitter.Node, name string) bool {
+	k := shadowQuery{n.Id(), name}
+	if v, ok := m.shadowQueries[k]; ok {
+		return v
+	}
+	if m.shadowQueries == nil {
+		m.shadowQueries = map[shadowQuery]bool{}
+	}
+	v := shadowed(n, name, m.src)
+	m.shadowQueries[k] = v
+	return v
 }

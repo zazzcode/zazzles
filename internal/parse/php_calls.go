@@ -7,6 +7,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 // builtin reports whether a called name is the unshadowed builtin. A locally
@@ -32,6 +33,12 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		values[i] = f.eval(a)
 		all = phpCombine(all, values[i])
 	}
+	return f.callValues(n, nodes, values, all)
+}
+
+// callValues shares the native API models with compiled witness recipes; only
+// argument evaluation differs between the two callers.
+func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpValue, all phpValue) phpValue {
 	name := f.callName(n)
 	if n.Kind() == "member_call_expression" {
 		return f.methodCall(n, nodes, values)
@@ -265,6 +272,16 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		return f.boundHelper(n, target, values)
 	}
 
+	// Keep the fallback's dependency/protection/evidence shape. The table closes
+	// only the missing content effect; it does not turn a transform into protection.
+	if effect, ok := analysispacks.PHPBuiltinContentEffect(qname); ok && f.phpBuiltinEffectName(qname) && len(values) >= effect.MinArgs && len(values) <= effect.MaxArgs && len(all.deps) > 0 {
+		v := phpContentValue(all)
+		if effect.MutatesArgument {
+			f.invalidateContentReceiver(nodes[effect.Argument])
+		}
+		return phpTransfer(v, f.module.evidence("call_argument_dependency", n))
+	}
+
 	if len(all.deps) > 0 {
 		v := phpProtect(all, "unknown")
 		v = phpTransfer(v, f.module.evidence("call_argument_dependency", n))
@@ -482,6 +499,12 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	m, fn := callable.module, callable.fn
 	key := fmt.Sprintf("%s:%d", m.file, fn.StartByte())
 	if f.depth >= phpHelperDepthLimit || *f.work >= phpHelperWorkLimit || f.stack[key] {
+		if f.closedSummaryCall(call, callable, values) {
+			return phpValue{}
+		}
+		if v, ok := f.applyPHPWitness(call, callable, values); ok {
+			return v
+		}
 		v := phpValue{}
 		for _, a := range values {
 			v = phpCombine(v, a)
@@ -494,6 +517,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	f.stack[key] = true
 	defer delete(f.stack, key)
 	f.context = append(f.context, m.evidence("helper_definition", fn), f.module.evidence("call_binding", call))
+	usesBefore := len(f.report.Uses)
 	h := f.clone()
 	h.module = m
 	h.depth++
@@ -560,6 +584,9 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	if !terminated {
 		h.returns.gaps = append(h.returns.gaps, h.gaps...)
 	}
+	if phpSummaryShadow != nil {
+		phpSummaryShadow(f, call, callable, values, h.returns, len(f.report.Uses)-usesBefore)
+	}
 	return phpTransfer(h.returns, f.module.evidence("helper_return", call))
 }
 
@@ -588,4 +615,55 @@ func phpCallee(n *sitter.Node) *sitter.Node {
 		return fn
 	}
 	return phpField(n, "name")
+}
+
+// phpBuiltinEffectName excludes namespaces and imported function aliases. The
+// legacy parser indexes only top-level function names, so inspect declarations
+// throughout the source set before assigning a builtin contract.
+func (f *phpFlow) phpBuiltinEffectName(name string) bool {
+	if strings.ContainsAny(name, "\\$") {
+		return false
+	}
+	f.set.indexBuiltinEffects()
+	return !f.set.builtinEffects["module:"+f.module.file] && !f.set.builtinEffects[strings.ToLower(name)]
+}
+func (s *phpSet) indexBuiltinEffects() {
+	if s.builtinEffects != nil {
+		return
+	}
+	s.builtinEffects = map[string]bool{}
+	for _, file := range s.files {
+		m := s.modules[file]
+		if m == nil {
+			continue
+		}
+		phpWalk(m.tree.RootNode(), func(n *sitter.Node) {
+			if n.Kind() == "function_definition" {
+				s.builtinEffects[strings.ToLower(phpText(m, phpField(n, "name")))] = true
+			}
+			if n.Kind() == "namespace_definition" || n.Kind() == "namespace_use_declaration" {
+				s.builtinEffects["module:"+file] = true
+			}
+		})
+	}
+}
+
+// phpContentValue retains provenance while forgetting shape and protection
+// that a transform or a reindexed container can no longer justify.
+func phpContentValue(v phpValue) phpValue {
+	v = phpProtect(v, "unknown")
+	return phpValue{deps: v.deps, gaps: v.gaps, evidence: v.evidence, unknown: v.unknown, built: v.built}
+}
+func (f *phpFlow) invalidateContentReceiver(n *sitter.Node) {
+	for n != nil && n.Kind() == "subscript_expression" {
+		n, _ = phpSubscriptParts(n)
+	}
+	if n == nil || n.Kind() != "variable_name" {
+		return
+	}
+	name := phpVarName(f.module, n)
+	if v, ok := f.env[name]; ok {
+		f.env[name] = phpContentValue(v)
+		f.markDirty(name)
+	}
 }

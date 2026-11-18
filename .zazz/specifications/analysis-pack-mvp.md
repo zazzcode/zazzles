@@ -95,7 +95,7 @@ MAY acquire narrowly scoped companion files after baseline inventory, recorded i
 | `internal/report/` and `cmd/scan/` wiring/tests | Narrow modify/test | Carry provenance, read saved reports, preserve all three output formats |
 | `internal/parse/testdata/` | Narrow add | Small synthetic cases only where existing fixtures do not cover the matrix |
 | `.zazz/architecture/analysis-packs.md` | New | Catalog inventory, ownership, supported limits, migration ledger and compatibility decision |
-| `.zazz/architecture.md`, `.zazz/project/implementation-plan.md` | Narrow modify | Link implemented boundary and explicit follow-on migration tasks |
+| `.zazz/architecture/README.md`, `.zazz/project/implementation-plan.md` | Narrow modify | Link implemented boundary and explicit follow-on migration tasks |
 | `docs/technical-approach.md`, `docs/analysis/database-injection.md`, `docs/decision-models.md` | Narrow modify if behavior described changes | Explain embedded selection/provenance and replay limits without claiming broader detection |
 | `.zazz/specifications/analysis-pack-mvp.md`, `README.md` in that directory | Modify | Contract refinements and discoverability |
 | `README.md` | Modify | Explain implemented SQL component capabilities and their limits |

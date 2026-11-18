@@ -22,7 +22,7 @@ evaluation; source-only fixtures support initial adapter acceptance. Deliverable
 ## Governing design
 
 Read [AGENTS.md](../../AGENTS.md), the [orientation](../docs/zazzles-agent-orientation.md), then
-[architecture: entry/dispatch](../architecture.md#multiple-entry-and-dispatch-mechanisms),
+[architecture: entry/dispatch](../architecture/README.md#multiple-entry-and-dispatch-mechanisms),
 [repository graph](../architecture/repository-graph.md), [evidence/claims](../architecture/evidence-and-claims.md)
 and [trace judgment](../architecture/trace-judgment.md). These documents own the semantic boundaries;
 this brief defines a bounded follow-up rather than a second canonical schema.

@@ -21,16 +21,25 @@ type pythonImport struct {
 	node         *sitter.Node
 }
 type pythonModule struct {
-	commentsReady bool
-	comments      []sourceComment
-	file          string
-	src           []byte
-	hash          string
-	tree          *sitter.Tree
-	imports       map[string]pythonImport
-	vars, funcs   map[string]*sitter.Node
+	witnessBindingsUnsafe *bool
+	commentsReady         bool
+	comments              []sourceComment
+	file                  string
+	src                   []byte
+	hash                  string
+	tree                  *sitter.Tree
+	imports               map[string]pythonImport
+	vars, funcs           map[string]*sitter.Node
+	// mounts is the lazily built list of possible blueprint/router mount calls;
+	// see mountCalls.
+	mounts      []*sitter.Node
+	mountsReady bool
+	// bindings is the lazily built write index; see python_binding_index.go.
+	bindings *pythonBindingIndex
 }
 type pythonSet struct {
+	witnessPlans  map[string]*pythonWitnessPlan
+	summaries     map[string]*closedCallable
 	inputs        map[string]map[analysis.Evidence]pythonInputSource
 	root          string
 	parser        *sitter.Parser
@@ -115,6 +124,48 @@ func pyWalk(n *sitter.Node, fn func(*sitter.Node)) {
 		pyWalk(n.NamedChild(i), fn)
 	}
 }
+
+// mountCalls returns, in pyWalk order, every call whose callee could be a
+// register_blueprint or include_router mount: an attribute callee with that
+// name, or callee text ending in it. Callers apply their own exact filter. The
+// list is built once per module, replacing a whole-repository walk per route.
+func (m *pythonModule) mountCalls() []*sitter.Node {
+	if !m.mountsReady {
+		m.mountsReady = true
+		pyWalk(m.tree.RootNode(), func(n *sitter.Node) {
+			if isMountCall(m, n) {
+				m.mounts = append(m.mounts, n)
+			}
+		})
+	}
+	return m.mounts
+}
+
+func isMountCall(m *pythonModule, n *sitter.Node) bool {
+	if n.Kind() != "call" {
+		return false
+	}
+	fn := n.ChildByFieldName("function")
+	if fn == nil {
+		return false
+	}
+	text := pyText(m, fn)
+	if strings.HasSuffix(text, ".register_blueprint") || strings.HasSuffix(text, ".include_router") {
+		return true
+	}
+	if fn.Kind() != "attribute" {
+		return false
+	}
+	method := pyText(m, fn.ChildByFieldName("attribute"))
+	return method == "register_blueprint" || method == "include_router"
+}
+
+func eachNode(nodes []*sitter.Node, fn func(*sitter.Node)) {
+	for _, n := range nodes {
+		fn(n)
+	}
+}
+
 func pyText(m *pythonModule, n *sitter.Node) string {
 	if n == nil {
 		return ""

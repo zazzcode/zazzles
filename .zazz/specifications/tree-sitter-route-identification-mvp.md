@@ -1,7 +1,7 @@
 # Tree-sitter route identification — Deliverable Specification
 
 Historical contract/evidence below retains its original names. Current package, CLI and report
-names are documented in the [implemented architecture](../architecture.md#naming-and-compatibility).
+names are documented in the [implemented architecture](../architecture/README.md#naming-and-compatibility).
 
 **Worktree / branch:** `tree-sitter-route-identification-mvp`
 **Feature:** JS/TS API route and syntactic code-path inventory
@@ -40,9 +40,9 @@ Read this specification end to end first.
 
 ### 1.b Feature / Milestone Context
 
-- [`.zazz/architecture.md` §3 Parsing and language adapters](../architecture.md#3-parsing-and-language-adapters) — a query match is syntax, not proof of a sink.
-- [`.zazz/architecture.md` §4 Normalized representation and graph views](../architecture.md#4-normalized-representation-and-graph-views) — spans and provenance; this slice does not implement the full IR.
-- [`.zazz/architecture.md` §11 Proposed package boundaries](../architecture.md#11-proposed-package-boundaries) — add `internal/parse` and `internal/graph` only as this spec uses them.
+- [`.zazz/architecture/README.md` §3 Parsing and language adapters](../architecture/README.md#3-parsing-and-language-adapters) — a query match is syntax, not proof of a sink.
+- [`.zazz/architecture/README.md` §4 Normalized representation and graph views](../architecture/README.md#4-normalized-representation-and-graph-views) — spans and provenance; this slice does not implement the full IR.
+- [`.zazz/architecture/README.md` §11 Proposed package boundaries](../architecture/README.md#11-implemented-package-boundaries) — add `internal/parse` and `internal/graph` only as this spec uses them.
 - [`.zazz/project/implementation-plan.md` First build](../project/implementation-plan.md#first-build) — this spec is the first slice. Later phases stay proposed.
 
 ### 1.c Prior Specifications In This Delivery Effort

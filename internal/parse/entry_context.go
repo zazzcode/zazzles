@@ -3,10 +3,10 @@ package parse
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/lang"
 )
 
 func snapshotID(kind string, source analysis.Evidence, owner, key string) string {
@@ -48,14 +48,13 @@ func registerInvocation(out *analysis.AnalysisReport, entry analysis.EntryPoint,
 			found = found || f.ID == id
 		}
 		if !found {
-			language := "javascript"
-			ext := filepath.Ext(handler.Span.File)
-			if ext == ".py" {
-				language = "python"
-			} else if ext == ".ts" || ext == ".tsx" {
-				language = "typescript"
+			// The callable's language follows its file. Unknown extensions keep the
+			// historical JavaScript label.
+			language := lang.JavaScript
+			if detected, ok := lang.Detect(handler.Span.File); ok {
+				language = detected
 			}
-			out.Callables = append(out.Callables, analysis.Callable{ID: id, Language: language, Definition: *handler})
+			out.Callables = append(out.Callables, analysis.Callable{ID: id, Language: string(language), Definition: *handler})
 		}
 	} else if len(binding.Gaps) == 0 {
 		binding.Gaps = []analysis.Gap{{Kind: "dispatch_unresolved", Detail: "No supported callable target", At: entry.Location.Span}}

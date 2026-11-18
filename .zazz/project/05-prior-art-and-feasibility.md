@@ -1,7 +1,7 @@
 # 05 — Prior art, Bearer study, and feasibility assessment
 
 **Reviewed 2026-10-19.** Concept-stage research, not an implementation spec or a benchmark result.
-The chosen roles remain [Jev Assessment → Findings Review](../architecture.md). This note records
+The chosen roles remain [Jev Assessment → Findings Review](../architecture/README.md). This note records
 originality/feasibility judgments and a focused read-only study of the supplied Bearer checkout.
 
 ## Opinion
@@ -43,7 +43,7 @@ Source: [authors' overview](https://github.com/iris-sast/iris#-overview).
 
 IRIS is an architectural reference, not a dependency or implementation template. Zazzles's analysis,
 model clients, orchestration, and evaluation harnesses are Go, as defined in the
-[architecture](../architecture.md#1-architecture-premise). Studying IRIS does not introduce Python
+[architecture](../architecture/README.md#1-architecture-premise). Studying IRIS does not introduce Python
 or CodeQL into zazzles's planned runtime.
 
 **Jev Security Scan:** a Python tool reviewing Agent Skills/MCP/source for suspicious behavior. It

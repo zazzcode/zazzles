@@ -36,17 +36,17 @@ provider fallback is assigned.
 | Path | Owns | Read more only when needed |
 | --- | --- | --- |
 | `cmd/scan/` | CLI flags, configuration, limits, output wiring and exit codes | [CLI use](../../docs/running-scans.md), [contributor checks](../../docs/contributing.md#contributing) |
-| `internal/walk/`, `internal/lang/` | File inventory and supported-language detection | [Parsing](../architecture.md#3-parsing-and-language-adapters) |
+| `internal/walk/`, `internal/lang/` | File inventory and supported-language detection | [Parsing](../architecture/README.md#3-parsing-and-language-adapters) |
 | `internal/parse/` | Tree-sitter bindings, imports/entries, bounded flow, source-backed candidate assembly | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
-| `internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
+| `internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture/README.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
 | `internal/analysispacks/`, `internal/guidelines/` | Embedded contracts, selected guidance, questions and versions | [Selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) |
-| `internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
+| `internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture/README.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
 | `internal/report/` | Findings, Review/Protected presentation, JSON/HTML/SARIF and bundles | [Reporting design](../architecture/reporting-and-sarif.md), [HTML design](../architecture/html-reporting.md) |
 | `internal/parse/testdata/` | Small JS/TS/Python regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
 | `docs/`, `.zazz/`, `.agents/skills/` | User docs; internal contracts/design/evaluation; development skills | [Document owners](#documentation-map) |
 
-Each [analyzer](../architecture.md#analyzer-terminology) spans the shared engine's activities.
-Use the architecture's [evidence validation terminology](../architecture.md#evidence-validation)
+Each [analyzer](../architecture/README.md#analyzer-terminology) spans the shared engine's activities.
+Use the architecture's [evidence validation terminology](../architecture/README.md#evidence-validation)
 and follow the [code structure rules](../standards/code-structure.md#1-package-layout).
 
 ## Portable workspace and DEV_ROOT
@@ -162,7 +162,7 @@ Write reports to the container's `_test-findings/<app>/run-<id>/` via `--output-
 | Owner | Start at |
 | --- | --- |
 | Product goals and roadmap | [Capability boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries), [complete delivery list](../project/implementation-plan.md#complete-delivery-list) |
-| Architecture | [Request size and relevance](../architecture/request-size-and-evidence-relevance.md), [Pipeline](../architecture.md#2-pipeline), [package map](../architecture.md#11-implemented-package-boundaries), [judge boundary](../architecture.md#provider-neutral-judge-boundary) |
+| Architecture | [Request size and relevance](../architecture/request-size-and-evidence-relevance.md), [Pipeline](../architecture/README.md#2-pipeline), [package map](../architecture/README.md#11-implemented-package-boundaries), [judge boundary](../architecture/README.md#provider-neutral-judge-boundary) |
 | Product rules | [Analysis index](../../docs/analysis/README.md), [database rules](../../docs/analysis/database-injection.md), [input rules](../../docs/analysis/input-validation.md), [XSS rules](../../docs/analysis/xss.md) |
 | User setup/output | [Setup](../../docs/getting-started.md), [scan options](../../docs/running-scans.md), [interpretation](../../docs/interpreting-results.md) |
 | Contracts and process | [Spec index](../specifications/README.md#specification-index), [execution records](agent-execution-discipline.md#execution-records), [standards index](../standards/index.yaml) |

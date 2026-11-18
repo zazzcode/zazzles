@@ -10,6 +10,7 @@ func pyJoin(a, b pythonValue, depth int) pythonValue {
 		return a
 	}
 	result := pyCombine(a, b)
+	result.finite = joinPythonFinite(a.finite, b.finite)
 	if a.binding != b.binding || a.driver != b.driver {
 		result.binding, result.driver = "", ""
 		result.unknown = true

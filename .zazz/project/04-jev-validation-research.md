@@ -3,7 +3,7 @@
 **Research reviewed 2026-10-19; concept-stage recommendations.** No live Jev tests have been run for
 zazzles. The Project Owner has not yet signed up or obtained a key. This durable note preserves the
 research independently of temporary chat attachments. Related:
-[proposal](03-jev-design-proposal.md), [architecture](../architecture.md),
+[proposal](03-jev-design-proposal.md), [architecture](../architecture/README.md),
 [implementation plan](implementation-plan.md).
 
 ## Answer to the capability question
@@ -61,7 +61,7 @@ The architecture uses **Jev Assessment**, followed by **Findings Review** by the
 Reviewer**. Jev experiments focus on recognizing whether candidate strings are adequately validated
 or sanitized for the named sink; the reviewer examines identified issues against source evidence.
 These roles are the chosen direction. Effectiveness, model selection, evidence needs, and thresholds
-remain experimental. The [architecture](../architecture.md#8-jev-assessment-and-findings-review)
+remain experimental. The [architecture](../architecture/README.md#8-decision-assessment-and-findings-review)
 owns the stage contracts, diagrams, independent-review procedure, and disagreement handling.
 
 A capable LLM may help assess custom helpers, interacting checks, and unfamiliar framework behavior,
@@ -111,7 +111,7 @@ revision/challenge mapping, safe counterparts, exclusions, and label-leakage con
 
 ## Current integration direction
 
-The [architecture](../architecture.md#current-provider-decision) owns the current provider decision.
+The [architecture](../architecture/README.md#current-provider-decision) owns the current provider decision.
 This file preserves TypeSafe-specific research and setup only; it does not establish OpenAI behavior.
 [Setup](../docs/openai-decisions-setup.md) owns credentials; no live OpenAI evaluation has been run.
 

@@ -3,8 +3,69 @@
 **Design direction, 2026-10-31.** This document owns the graph structure for analyzing a **target
 repository**: the application source under analysis, distinct from zazzles's own repository. It is a
 proposed semantic design; the current route-v1 artifact is only a syntax inventory. The
-[architecture](../architecture.md) owns pipeline/provider contracts and the
+[architecture](README.md) owns pipeline/provider contracts and the
 [implementation contract](../specifications/route-string-validation.md) declares the implemented subset.
+
+## Implementation direction: source index, not a graph store (2026-11-17)
+
+The semantic model below still holds: canonical records, provenance, value and guard facts, and
+bounded traversal. Its storage is now the layered
+[source index](../specifications/architecture-phase-1-source-index.md), not a general graph store.
+
+### Graph data model: attempted and abandoned
+
+Architecture phase 1 first implemented a typed in-memory graph, `internal/graph`. It used dense
+node IDs assigned at freeze time, CSR adjacency, and a relation table for EXPOSES, HAS_BINDING,
+DISPATCHES_TO, INSTANTIATES and INPUT_FROM_ENTRY over the entry catalog. Its own tests passed, and
+canonical ordering through it kept every architecture-baseline fixture byte-identical. It was
+backed out before commit, for four reasons:
+
+1. **It indexed the wrong data.** The entry catalog (entries, registrations, dispatch bindings,
+   callables) is at most about 11k records, and lookups in it were never on the hot path. Profiles
+   put juice-shop's cost elsewhere: 59% of CPU went to whole-module syntax re-walks
+   (`bindingReassigned`), and about 21 GB went to Tree-sitter CGo string and node allocations.
+2. **It did not touch recall.** Missed findings come from calls that flow cannot follow: unresolved
+   callees, helper expansion limits, and methods on values of unknown type. The catalog graph had no
+   value or call edges, so it could not change a single candidate.
+3. **Its strict invariants did not match real callers.** The catalog is queried before finalization:
+   router mounts select entries while callables are still duplicated and registrations still
+   reference removed entries. Hand-built partial catalogs are also rendered. A strict graph rejected
+   both, which meant either a second, field-based code path or edits outside the phase.
+4. **Its only output was classification metadata.** It would have added registration origin, path
+   shape and resolution to reports, which is useful but changes neither speed nor findings.
+
+### Why the source index is better
+
+- **Speed, measured.** A per-file binding write index, buffered bundle writes and a per-module
+  Python mount-call index cut offline scans from 64.16 s to 9.89 s (juice-shop), 7.98 s to 3.49 s
+  (vulnpy) and 1.01 s to 0.61 s (DVWA). Reports and judge requests are byte-identical.
+- **Accuracy, targeted by measurement.** The step 1C call-resolution measurement
+  ([evaluation](../evaluation/architecture-baseline.md#phase-1-step-1c-call-site-resolution-2026-11-18))
+  assigns each call gap to the mechanism that would fix it: callable summaries for limit-induced
+  gaps on in-repository callables, receiver typing for methods on values, and model tables for
+  package and builtin calls.
+- **One structure per question.** Per-file syntax and binding indexes answer local questions in
+  O(1). A repository call index records each call site with an explicit resolution kind, and
+  unresolved sites stay records, never dropped. Per-callable parameter summaries are computed once.
+  **Implemented (JS/TS, step 1E):** a closed summary answers a call that inline expansion refuses,
+  when its arguments are inert. On juice-shop this removed 207 gaps with no candidate change.
+  **Implemented (Python/PHP):** a narrower cached closed-expression/helper-chain subset also applies
+  at inert-argument expansion refusals. Ambient reads, decorators, mutation, unsupported binding and
+  recursive cycles remain explicit blocking reasons. PHP builtin content effects preserve dependency
+  provenance without granting protection; mutating container effects invalidate stale projections.
+  **Implemented (complete parameter witnesses):** all three languages also cache bounded
+  straight-line/helper-DAG recipes with parameter-return/sink maps and original spans. Instantiation
+  reuses native models with concrete caller values at supported refusals, rebuilding facts and
+  evidence rather than copying a candidate template. Python additionally uses invocation-specific
+  finite registry/import proofs, preserving every input source while removing the 64 measured
+  dynamic-import helper limits. Broader control-flow, recursion and module-state recipes remain
+  explicit unknowns; successful old paths stay byte-identical.
+- **Built for the next features.** Library mode reads "parameter k reaches a sink" straight from an
+  exported function's summary using the implemented witness machinery. Symfony and Drupal now have
+  source-only PSR-4 and bounded service-container resolution inputs in the PHP call index. Their route
+  adapters remain phases 6/9; they reuse PHP flow instead of adding analyzers.
+- **Same boundaries.** Indexes are immutable after build and deterministic by key. Each new layer
+  runs beside the code it replaces until parity is proved, and protection is still never a stored bit.
 
 ## Acquisition adapters and shared value facts
 
@@ -25,7 +86,7 @@ Start at explicit analysis entry points. HTTP routes and browser entries are cur
 GraphQL fields and unary gRPC methods also have bounded implemented adapters; message consumers,
 commands and other roots remain future acquisition adapters. Separate entry
 identity, registration, dispatch binding and callable identity as described in the
-[entry/dispatch decision](../architecture.md#multiple-entry-and-dispatch-mechanisms).
+[entry/dispatch decision](README.md#multiple-entry-and-dispatch-mechanisms).
 Follow supported internal control and value dependencies,
 including strings sent in outbound service calls, values received in responses, and their subsequent
 uses. Prepare evidence for a semantic judge (GPT Decisions, Jev, or another explicit provider) to assess

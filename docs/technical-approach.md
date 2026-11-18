@@ -1,6 +1,6 @@
 # Technical approach and design strengths
 
-[Documentation](README.md) · [Philosophy](philosophy.md) · [Implemented architecture](../.zazz/architecture.md)
+[Documentation](README.md) · [Philosophy](philosophy.md) · [Implemented architecture](../.zazz/architecture/README.md)
 
 ## Source-backed analysis with constrained semantic judgment
 
@@ -13,7 +13,7 @@ The Go scanner reads application source, resolves supported language/framework b
 values into security-sensitive operations. Each candidate carries source spans and hashes, relevant
 helpers, branch conditions, operation operand roles, library contracts and unresolved facts. The
 semantic judge receives this evidence together with versioned language **Analysis Guidelines**.
-The [architecture](../.zazz/architecture.md#evidence-validation) defines the deterministic evidence
+The [architecture](../.zazz/architecture/README.md#evidence-validation) defines the deterministic evidence
 checks applied to the model answers; the predictions themselves are not assumed deterministic.
 
 The model is part of security judgment, rather than only a prose explanation of a preexisting alert.
@@ -111,6 +111,40 @@ claim and separately report the unmet validation policy. Conversely, a missing b
 stays Review: the model cannot invent a restriction merely because the field has a familiar name.
 A construction defect can also merit repair without establishing an injection exploit.
 
+## Analysis engine structure and performance
+
+Zazzles keeps repository structure in a **layered source index**, not a general graph database or
+graph library. Each layer answers one kind of question and is built once per scan:
+
+| Layer | Answers | Status |
+|---|---|---|
+| Per-file binding index | "Is this name reassigned, written through, aliased or passed on?" in constant time | Implemented for JS/TS, plus Python mount calls |
+| Repository call index | Which callable each call site reaches, with an explicit resolution kind; unresolved calls stay visible | JS/TS and Python production index; PHP direct/imported targets plus PSR-4 and bounded service-map resolution inputs |
+| Callable summaries | Parameter-return/sink maps, modeled transforms and concrete per-caller evidence, with reasons unsupported effects cannot close | Cached bounded recipes for JS/TS, Python and PHP at supported expansion refusals; existing inline/closed fast paths remain compatible |
+
+The first refactors replaced whole-file syntax re-walks and unbuffered report writes. Offline scan
+time dropped from 64.16 s to 9.89 s on OWASP Juice Shop, 7.98 s to 3.49 s on VulnPy and 1.01 s to
+0.61 s on DVWA. Findings, reports and model requests stayed byte-identical. A compatibility
+golden test pins candidate IDs, request bytes and report hashes for every fixture, so a refactor
+that changes results fails the build.
+
+Final phase 1 medians are 9.21 s for Juice Shop, 3.42 s for VulnPy and 0.60 s for DVWA.
+Typed finite registry/import proofs close VulnPy's 64 measured helper limits without executing
+imports or discarding request provenance. Summary recipes rebuild native parameter, control and
+sink witnesses for each caller; unsupported control flow, state, cycles and binding retain gaps.
+The [evaluation record](../.zazz/evaluation/architecture-baseline.md) lists the exact evidence deltas
+and offline request compatibility checks. Symfony/Drupal route adapters remain later phases.
+
+**Graph data model: tried and dropped.** A typed in-memory graph over the route and handler catalog
+was implemented and then backed out. That catalog was never where scans spent time or lost
+findings. Profiles showed the cost in repeated syntax walks. Measurement showed the misses at calls
+flow cannot follow: helper expansion limits, methods on values of unknown type, and unmodeled
+library or builtin calls. The source index targets those directly. Closed summaries resolve eligible
+expansion refusals, receiver typing resolves method calls, and model tables cover libraries and builtins.
+Library-mode analysis and Symfony and Drupal support build on the same call index and summaries
+instead of adding analyzers. The [repository graph design](../.zazz/architecture/repository-graph.md#implementation-direction-source-index-not-a-graph-store-2026-11-17)
+records the decision.
+
 ## Relationship to established SAST
 
 The common-entry design follows established static-analysis principles: represent program structure,
@@ -179,7 +213,7 @@ Analyzer**. Its **analysis pack** supplies applicable versioned knowledge, compo
 **analysis components**. The **shared analysis engine** supplies parsing, flow/evidence, judgment and
 reporting infrastructure. Reflected, stored and client-side/DOM XSS are capabilities within the XSS
 Analyzer. These terms describe responsibilities, not separate engines or Go packages. See the
-[architecture vocabulary](../.zazz/architecture.md#analyzer-terminology) for the canonical definitions.
+[architecture vocabulary](../.zazz/architecture/README.md#analyzer-terminology) for the canonical definitions.
 
 Analysis knowledge ships in the binary: compiled language/framework and flow adapters, verified API
 contracts, embedded Analysis Guidelines, claim questions and Go evidence policy. Application `--checks`
@@ -255,7 +289,7 @@ protection, abstention/coverage, evidence usefulness and remediation correctness
 resources and model cost. Fewer alerts alone does not establish improvement. The same agent's source
 review, implementation and calibration are not independent findings review.
 
-Independent LLM Findings Review, a full repository IR/graph, automatic incremental caches, severity
+Independent LLM Findings Review, broader control/state witness recipes, automatic incremental caches, severity
 CI gates and dependency scanning remain planned. Current analysis is bounded static evidence, not
 runtime confirmation or a security certificate. Paid model judgment also introduces source-transmission,
 service-availability and cost considerations; offline evidence inspection remains available.

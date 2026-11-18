@@ -1,10 +1,10 @@
 # 02 — Proposed project scope
 
 **Concept stage, 2026-10-19.** Scope and quality targets remain subject to refinement. This document,
-the [architecture](../architecture.md), and the [phased plan](implementation-plan.md) are inputs to
+the [architecture](../architecture/README.md), and the [phased plan](implementation-plan.md) are inputs to
 future specifications; none is permission to implement.
 
-**Provider decision (2026-10-31):** the [architecture](../architecture.md#current-provider-decision)
+**Provider decision (2026-10-31):** the [architecture](../architecture/README.md#current-provider-decision)
 owns the current provider decision; this document defers to it.
 
 ## Objective

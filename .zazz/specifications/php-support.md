@@ -30,9 +30,9 @@ because it adds a new language without changing JS/TS/Python behavior.
 - [Execution discipline: verification](../docs/agent-execution-discipline.md#verification-discipline),
   [contributor verification](../../docs/contributing.md#verification).
 - [Capability checklist](../project/implementation-plan.md#supported-capability-checklist).
-- [Architecture: parsing and language adapters](../architecture.md#3-parsing-and-language-adapters),
-  [acquisition and value facts](../architecture.md#acquisition-and-value-facts),
-  [package boundaries](../architecture.md#11-implemented-package-boundaries).
+- [Architecture: parsing and language adapters](../architecture/README.md#3-parsing-and-language-adapters),
+  [acquisition and value facts](../architecture/README.md#acquisition-and-value-facts),
+  [package boundaries](../architecture/README.md#11-implemented-package-boundaries).
 - [Analysis packs: boundary and ownership](../architecture/analysis-packs.md#boundary-and-ownership),
   [descriptor and selection contract](../architecture/analysis-packs.md#descriptor-and-selection-contract).
 - [Evidence and claims](../architecture/evidence-and-claims.md),

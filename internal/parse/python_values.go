@@ -14,6 +14,7 @@ func pyCombine(a, b pythonValue) pythonValue {
 	if pyEmpty(b) {
 		return a
 	}
+	a.finite = nil
 	if !a.constant || !b.constant || a.literal != b.literal {
 		a.constant = false
 		a.literal = ""
@@ -85,6 +86,20 @@ func (f *pythonFlow) evalChildren(n *sitter.Node) pythonValue {
 	return v
 }
 func (f *pythonFlow) eval(n *sitter.Node) pythonValue {
+	v := f.evalNative(n)
+	v.finite = nil
+	if proof := f.proveFinite(n); proof != nil {
+		v.finite = &pythonFiniteValue{proof, f.invocation.ID}
+	}
+	return v
+}
+func (f *pythonFlow) evalNative(n *sitter.Node) pythonValue {
+	if n != nil {
+		if v, ok := f.witnessValues[n.Id()]; ok {
+			return v
+		}
+	}
+
 	if n == nil {
 		return pythonValue{}
 	}

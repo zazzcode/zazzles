@@ -64,6 +64,9 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	if method == "append" && len(values) == 1 && f.route.route.Framework == "wsgi" && len(values[0].deps) > 0 && f.wsgiHTML() && f.wsgiDispatchBranch(n) {
 		f.recordXSS(m.evidence("html_response", n), values[0], "html_text", nil)
 	}
+	if v, ok := f.containerWrite(n, object, method, receiver, values); ok {
+		return v
+	}
 	if receiver.binding == "jinja_template" && method == "render" {
 		arguments := all
 		// Escaping affects substituted variables, never text compiled as template source.
@@ -127,6 +130,7 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		return pyTransfer(all, m.evidence("string_conversion", n))
 	}
 	if method == "format" || method == "join" {
+
 		v := pyCombine(receiver, all)
 		v.built = true
 		return pyTransfer(v, m.evidence("string_construction", n))
@@ -156,6 +160,10 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 			return f.helper(n, target, target.funcs[key], values)
 		}
 	}
+	if v, ok := f.finiteCall(n, name, q, values, all); ok {
+		return v
+	}
+
 	v := pyCombine(receiver, all)
 	if len(v.deps) > 0 {
 		// parse_qs decodes a query string and keeps its content: no effect on protection.
@@ -191,6 +199,14 @@ func (f *pythonFlow) boundHelper(call *sitter.Node, callable *pythonBoundCallabl
 	f.context = append(f.context, callable.evidence...)
 	key := fmt.Sprintf("%s:%d", m.file, fn.StartByte())
 	if f.depth >= 3 || *f.work >= 24 || f.stack[key] {
+
+		if f.closedSummaryCall(call, callable, values) {
+			return pythonValue{}
+		}
+		if v, ok := f.applyWitness(call, callable, values); ok {
+			return v
+		}
+
 		v := pythonValue{}
 		for _, a := range values {
 			v = pyCombine(v, a)
@@ -202,9 +218,16 @@ func (f *pythonFlow) boundHelper(call *sitter.Node, callable *pythonBoundCallabl
 	*f.work++
 	f.stack[key] = true
 	defer delete(f.stack, key)
+	return f.helperFrame(call, callable, values, nil)
+}
+
+func (f *pythonFlow) helperFrame(call *sitter.Node, callable *pythonBoundCallable, values []pythonValue, plan *pythonWitnessPlan) pythonValue {
+	m, fn := callable.module, callable.fn
 	f.context = append(f.context, m.evidence("helper_definition", fn), f.module.evidence("call_binding", call))
+	usesBefore := len(f.report.Uses)
 	h := f.clone()
 	h.module = m
+	h.selectionActive = f.selectionActive || f.selectorMatches(callable, values)
 	h.depth++
 	h.env = map[string]pythonValue{}
 	for k, v := range callable.closure {
@@ -248,10 +271,27 @@ func (f *pythonFlow) boundHelper(call *sitter.Node, callable *pythonBoundCallabl
 		h.env[pyText(m, name)] = v
 		pos++
 	}
-	h.block(fn.ChildByFieldName("body"))
+	if plan == nil {
+		h.block(fn.ChildByFieldName("body"))
+	} else {
+		h.witnessValues = map[uintptr]pythonValue{}
+		for _, op := range plan.ops {
+			v := h.witnessExpression(op.expr)
+			if op.returned {
+				h.returns = pyCombine(h.returns, v)
+				break
+			}
+			if op.expr != nil {
+				h.markGuard(op.expr.node, v)
+			}
+		}
+	}
 	f.mergeGuards(h)
 	f.context = pythonMergeEvidence(f.context, h.context)
 	h.returns.gaps = append(h.returns.gaps, h.gaps...)
+	if pythonSummaryShadow != nil {
+		pythonSummaryShadow(f, call, callable, values, h.returns, len(f.report.Uses)-usesBefore)
+	}
 	return pyTransfer(h.returns, f.module.evidence("helper_return", call))
 }
 func (f *pythonFlow) outbound(q string) bool {

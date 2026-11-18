@@ -37,6 +37,7 @@ type value struct {
 	web string
 }
 type flow struct {
+	witness          *jsWitnessFrame
 	redirectResponse string
 	nextData         bool
 	report           *analysis.AnalysisReport
@@ -1170,6 +1171,13 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		}
 		f.noteInputTouch(values, name)
 	}
+	// An in-repository callee that inline expansion did not resolve: a closed
+	// summary with inert arguments gives the empty result (spec §8b D-14).
+	if f.set != nil && f.helpers != nil {
+		if hm, helper := f.set.resolveCall(f.module, n); helper != nil && f.closedSummaryCall(n, hm, helper, values) {
+			return value{}
+		}
+	}
 	v := value{}
 	for _, a := range values {
 		v = combine(v, a)
@@ -1192,7 +1200,7 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			}
 		}
 	}
-	if len(v.deps) == 0 {
+	if len(v.deps) == 0 && !f.independentCall(n) {
 		v.gaps = append(v.gaps, f.gap("unknown_call_result", "call result is not modeled: "+name, n))
 	}
 	return f.transfer(v, "call_argument_dependency", n)

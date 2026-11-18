@@ -1,12 +1,12 @@
 # Route identification and string-validation assessment
 
 Historical contract/evidence below retains its original names. Current package, CLI and report
-names are documented in the [implemented architecture](../architecture.md#naming-and-compatibility).
+names are documented in the [implemented architecture](../architecture/README.md#naming-and-compatibility).
 
 **Reviewed 2026-10-31 on `route-string-validation`, scanner commit `5836908`.** This records initial verification
 and planning. The user subsequently authorized implementation in this worktree; see the
 [current contract](../specifications/route-string-validation.md). The [implementation plan](implementation-plan.md#route-string-validation-delivery-sequence)
-owns the next delivery sequence; the [architecture](../architecture.md) owns technical contracts.
+owns the next delivery sequence; the [architecture](../architecture/README.md) owns technical contracts.
 
 ## Route verification
 
@@ -60,7 +60,7 @@ The immediate risks are semantic correctness and delivery order.
 | High | Login/search handlers are imported factories returning request handlers. Current same-file call steps cannot reach `req.body.email` or `req.query.q`. | Resolve the selected import/export/factory/wrapper subset with lexical scope. Prove registration → returned handler → actual source/sink spans; unresolved constructs stay uncertain. |
 | High | Pathless middleware is omitted, and `USE` is a registration rather than a concrete HTTP method. Mount prefixes and order are not composed. | Model required middleware/mount semantics before claiming effective protection. In the first slice, report unsupported chains as gaps and scope judgments to explicit source/sink cases. Never infer missing protection from an omitted middleware step. |
 | High | Proposed next verdicts “covered, unvalidated, unsanitized, uncertain” mix unrelated facets. SQL parameter binding can protect a use without sanitization. | Separate validation, transformation, sink-specific protection, and evidence completeness. Report potential protection gaps; missing validation alone is not a vulnerability. |
-| High | The old architecture selects TypeSafe Jev; the 2026-10-24 plan selects OpenAI Decisions. | The provider-neutral judge boundary in the [current architecture](../architecture.md#current-provider-decision) resolves this. Do not reuse TypeSafe schemas or assume its performance/accuracy transfers. |
+| High | The old architecture selects TypeSafe Jev; the 2026-10-24 plan selects OpenAI Decisions. | The provider-neutral judge boundary in the [current architecture](../architecture/README.md#current-provider-decision) resolves this. Do not reuse TypeSafe schemas or assume its performance/accuracy transfers. |
 | Medium | The long-term backlog places the first production model adapter after broad interprocedural analysis. It also lists parser evaluation/extraction despite an existing MVP. | Deliver a bounded SQL vertical slice and a separate early provider experiment. Audit/reuse existing parser code; expand IR and cross-function analysis only for demonstrated cases. |
 | Medium | Route-v1 IDs embed byte offsets, and output has no snapshot hash or distinction between inferred and observed relationships. | Preserve v1 compatibility unless a spec versions the contract. Give security candidates separate snapshot-bound evidence and explicit provenance; design stable finding identity before baselines. |
 | Medium | Some whole-tree parse failures are incomplete training snippets; client calls also generate dynamic-path noise. | Report selected/excluded/failed files and reasons. Pin corpus selection. An exclusion changes the analysis scope, not the safety of excluded code. |

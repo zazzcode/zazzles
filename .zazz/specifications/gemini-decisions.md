@@ -11,7 +11,7 @@ The analyzer itself is outside this contract. Implemented acceptance evidence is
 ## Required reading and decisions
 
 Read [agent rules](../../AGENTS.md#authorization-and-delivery),
-[provider boundary](../architecture.md#provider-neutral-judge-boundary),
+[provider boundary](../architecture/README.md#provider-neutral-judge-boundary),
 [claim gates](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes),
 [testing](../standards/testing.md#7-semantic-adapter-stubbing) and
 [code structure](../standards/code-structure.md#1-package-layout).

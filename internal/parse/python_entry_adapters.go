@@ -382,6 +382,7 @@ func (s *pythonSet) wsgiRegistry(m *pythonModule, name string, fn *sitter.Node, 
 		}
 	})
 	keys, _ := staticItems(registry)
+	frozenRegistry := cloneFiniteRegistry(registry)
 	registration := m.evidence("entry_registration", fn)
 	for _, k := range keys {
 		triggers, ok := staticItems(registry.fields[k.text])
@@ -390,11 +391,17 @@ func (s *pythonSet) wsgiRegistry(m *pythonModule, name string, fn *sitter.Node, 
 		}
 		for _, t := range triggers {
 			var bound *pythonBoundCallable
+			var selection *pythonSelectorBinding
 			for _, sel := range selectors {
 				h := *f
 				h.module = sel.module
 				if v := h.invoke(fn, sel, []*pythonStaticValue{staticText(k.text), staticText(t.text)}); v.fn != nil && v.module != nil {
 					bound = &pythonBoundCallable{module: v.module, fn: v.fn, evidence: []analysis.Evidence{sel.module.evidence("registry_selector", sel.fn), m.evidence("registry_item", fn)}}
+					regModule, regName := s.resolve(m, "TRIGGER_MAP", 0)
+					if frozenRegistry != nil && k.proofString && t.proofString {
+						selection = &pythonSelectorBinding{selector: &pythonBoundCallable{module: sel.module, fn: sel.fn}, arguments: []string{k.text, t.text}, target: bound, registry: frozenRegistry, registryModule: regModule, registryName: regName}
+					}
+
 					break
 				}
 			}
@@ -407,6 +414,7 @@ func (s *pythonSet) wsgiRegistry(m *pythonModule, name string, fn *sitter.Node, 
 			route := s.routeFromRegistration(reg, fn, "GET")
 			route.generated = true
 			route.dispatch = bound
+			route.selector = selection
 			route.provenance = append([]analysis.Evidence{registration}, k.evidence...)
 			route.instance = m.file + ":" + m.hash + ":wsgi"
 			route.route.ID += ":" + k.text + ":" + t.text

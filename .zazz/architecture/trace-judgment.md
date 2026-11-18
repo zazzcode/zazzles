@@ -1,6 +1,6 @@
 # Source traces and claim judgments
 
-[Architecture](../architecture.md#7-evidence-bundle-contract) · [Evidence and claims](evidence-and-claims.md)
+[Architecture](README.md#7-evidence-bundle-contract) · [Evidence and claims](evidence-and-claims.md)
 
 ## Acquisition and semantic reasoning boundary
 
@@ -52,7 +52,7 @@ The model envelope supplies language Analysis Guidelines from `internal/guidelin
 `analysis_guidelines`. This scanner-authored guidance is separate from source data and API contracts.
 Guideline versions and full text participate in exact-request identity; historical reports remain
 readable without making their old answers reusable for changed inputs. See
-[naming and compatibility](../architecture.md#naming-and-compatibility).
+[naming and compatibility](README.md#naming-and-compatibility).
 
 Common source/handler roles are `input_source` and `invoked_callable`. Structural entry
 registration, dispatch and supported invocation-binding roles supplement claim-specific

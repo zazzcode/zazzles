@@ -15,6 +15,7 @@ type pythonReceiver struct {
 	uncertain               bool
 }
 type pythonRoute struct {
+	selector      *pythonSelectorBinding
 	generated     bool
 	instance      string
 	closures      map[string]*pythonStaticValue
@@ -251,7 +252,7 @@ func (s *pythonSet) mountPrefix(m *pythonModule, name string, r pythonReceiver) 
 		if mod == nil {
 			continue
 		}
-		pyWalk(mod.tree.RootNode(), func(n *sitter.Node) {
+		eachNode(mod.mountCalls(), func(n *sitter.Node) {
 			if n.Kind() != "call" {
 				return
 			}

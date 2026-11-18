@@ -1,0 +1,3 @@
+services:
+  example.greeter:
+    class: 'Drupal\example\Greeter'

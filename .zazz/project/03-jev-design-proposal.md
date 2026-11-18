@@ -3,7 +3,7 @@
 **Latest proposal: 2026-10-19.** This is a concept and research record, not an approved implementation
 specification. This record owns the design change, rationale, research concepts, graph/library choices,
 and open decisions. See the [overview](../project.md) for status and the
-[architecture](../architecture.md) for current technical contracts.
+[architecture](../architecture/README.md) for current technical contracts.
 
 ## Proposed change and rationale
 
@@ -16,7 +16,7 @@ dataflow analysis rather than asking a model to reconstruct value movement from 
 The proposal has merit because it gives software ownership of repeatable facts and restricts model
 work to named semantic decisions. Jev is chosen for the objective of fast, lower-cost assessment
 across many candidates, followed by deeper LLM review of identified issues. The
-[architecture](../architecture.md#1-architecture-premise) defines the all-Go implementation boundary.
+[architecture](../architecture/README.md#1-architecture-premise) defines the all-Go implementation boundary.
 Its value is conditional on measured accuracy and on the engineering effort needed to prepare adequate evidence.
 The earlier premise that a model is broadly better than static analysis is not a design fact.
 
@@ -71,17 +71,17 @@ accepted implementation code, and their incomplete package URLs are replaced by 
 
 | Supplied concept | Durable home | Adopted direction or refinement |
 |---|---|---|
-| Go versus Rust, cyclic graphs, concurrency, distribution | [Architecture premise](../architecture.md#1-architecture-premise), [parser](../architecture.md#3-parsing-and-language-adapters) | Go implementation; benchmark resource/build behavior. Broad ecosystem, competitor-language, and performance claims are not selection evidence |
-| Tree-sitter CST and S-expression source/sink/validator queries | [Parsing](../architecture.md#3-parsing-and-language-adapters) | Syntax captures feed adapters; a match does not establish a flow or effective protection |
-| Assignment tracking and cross-function execution graphs | [IR/graphs](../architecture.md#4-normalized-representation-and-graph-views), [flow](../architecture.md#5-go-analysis-engine) | Separate CFG, call, and value dependencies; cycle-aware bounded analysis rather than a DAG or DFS alone |
-| Structural filtering before paid inference | [Candidate selection](../architecture.md#6-detection-and-candidate-selection) | Filter using established facts; retain gaps and coverage. Encountering a sanitizer alone never discharges a candidate |
-| Send snippets and path context to Jev | [Evidence bundles](../architecture.md#7-evidence-bundle-contract) | Include actual value use, guards, helpers, sink semantics, provenance, and explicit missing context |
-| Typed Noul/Choice decisions and richer CWE metadata | [Jev contract](../architecture.md#8-jev-assessment-and-findings-review), [report records](../architecture.md#9-findings-comparison-and-ci) | Atomic questions and validated responses; Go owns mappings/severity. Model confidence questions do not establish calibration |
-| Sanitizer subtree fingerprint cache; memory/Redis suggestion | [Persistence](../architecture.md#10-persistence-and-determinism) | Context/dependency-aware local cache first; no globally safe helper hash or Redis dependency adopted |
-| Async parsing, graph, and inference pools | [Pipeline](../architecture.md#2-pipeline) | Bounded workers, ownership, cancellation, backpressure, and deterministic merging |
-| Multi-language normalization into universal primitives | [IR/graphs](../architecture.md#4-normalized-representation-and-graph-views), [adapters](../architecture.md#3-parsing-and-language-adapters) | Shared Go IR with language-specific lowering/transfer semantics; source/sink/sanitizer labels alone are insufficient |
+| Go versus Rust, cyclic graphs, concurrency, distribution | [Architecture premise](../architecture/README.md#1-architecture-premise), [parser](../architecture/README.md#3-parsing-and-language-adapters) | Go implementation; benchmark resource/build behavior. Broad ecosystem, competitor-language, and performance claims are not selection evidence |
+| Tree-sitter CST and S-expression source/sink/validator queries | [Parsing](../architecture/README.md#3-parsing-and-language-adapters) | Syntax captures feed adapters; a match does not establish a flow or effective protection |
+| Assignment tracking and cross-function execution graphs | [IR/graphs](../architecture/README.md#4-normalized-representation-and-graph-views), [flow](../architecture/README.md#5-go-analysis-engine) | Separate CFG, call, and value dependencies; cycle-aware bounded analysis rather than a DAG or DFS alone |
+| Structural filtering before paid inference | [Candidate selection](../architecture/README.md#6-detection-and-candidate-selection) | Filter using established facts; retain gaps and coverage. Encountering a sanitizer alone never discharges a candidate |
+| Send snippets and path context to Jev | [Evidence bundles](../architecture/README.md#7-evidence-bundle-contract) | Include actual value use, guards, helpers, sink semantics, provenance, and explicit missing context |
+| Typed Noul/Choice decisions and richer CWE metadata | [Jev contract](../architecture/README.md#8-decision-assessment-and-findings-review), [report records](../architecture/README.md#9-findings-comparison-and-ci) | Atomic questions and validated responses; Go owns mappings/severity. Model confidence questions do not establish calibration |
+| Sanitizer subtree fingerprint cache; memory/Redis suggestion | [Persistence](../architecture/README.md#10-persistence-and-determinism) | Context/dependency-aware local cache first; no globally safe helper hash or Redis dependency adopted |
+| Async parsing, graph, and inference pools | [Pipeline](../architecture/README.md#2-pipeline) | Bounded workers, ownership, cancellation, backpressure, and deterministic merging |
+| Multi-language normalization into universal primitives | [IR/graphs](../architecture/README.md#4-normalized-representation-and-graph-views), [adapters](../architecture/README.md#3-parsing-and-language-adapters) | Shared Go IR with language-specific lowering/transfer semantics; source/sink/sanitizer labels alone are insufficient |
 | Go libraries and executable blueprints | [Candidate libraries](#library-choices) | Verify/pin the chosen parser and stdlib adapters; use zazzles-owned adjacency; no unchecked client code adopted |
-| JSON/SARIF, CLI, and CI alerts | [Reports/CI](../architecture.md#9-findings-comparison-and-ci), [capabilities](01-functionality.md) | JSON/Markdown first, SARIF later; configurable policy distinguishes findings from incomplete analysis |
+| JSON/SARIF, CLI, and CI alerts | [Reports/CI](../architecture/README.md#9-findings-comparison-and-ci), [capabilities](01-functionality.md) | JSON/Markdown first, SARIF later; configurable policy distinguishes findings from incomplete analysis |
 | Parsing → graph → semantic analysis → reporting phases | [Sequenced implementation plan](implementation-plan.md) | Corpus/semantic feasibility early, then bounded engine slices, integration, reporting, and further languages; separate specs/worktrees |
 | Fast, cheap decisions and aggressive filtering | [Quality hypotheses](02-project-scope.md#non-functional-hypotheses) | Measure end-to-end latency/spend and missed candidates; no adopted 250 ms, fractional-cent, or 98% filtering guarantee |
 
@@ -124,7 +124,7 @@ Sources: [Gonum interfaces and implicit-graph example](https://pkg.go.dev/gonum.
 [traversal algorithms](https://pkg.go.dev/gonum.org/v1/gonum/graph/traverse), reviewed 2026-10-19.
 Gonum can work with custom storage, so this is not a permanent either/or decision.
 
-The [architecture](../architecture.md#graph-storage-decision) owns the storage/read-view contract.
+The [architecture](../architecture/README.md#graph-storage-decision) owns the storage/read-view contract.
 Current domain requirements are sufficient to choose that direction without a separate library
 comparison project. `analysis-ir-contract` and `local-cfg` must validate relation preservation, cycles,
 stable traversal, and bounded work on representative fixtures; collect build/traversal time and peak
@@ -197,7 +197,7 @@ phase grouping does not appoint an owner or authorize a live API experiment.
 
 ## Current provider decision
 
-The [architecture](../architecture.md#current-provider-decision) owns the 2026-10-31 provider
+The [architecture](../architecture/README.md#current-provider-decision) owns the 2026-10-31 provider
 decision (GPT Decisions or Jev, OpenAI first, future adapters allowed); [setup](../docs/openai-decisions-setup.md)
 owns credentials. Earlier Jev-specific rationale, API examples, and questions in this proposal are
 historical context; provider schemas, quality, availability, and performance MUST be verified separately.

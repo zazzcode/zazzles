@@ -19,7 +19,7 @@ from claim completeness. The [reporting design](../architecture/reporting-and-sa
 presentation distinction between actionable poor practice, unresolved Review, and scoped protection.
 A model answer does not fill missing source evidence or erase an independently established practice.
 
-The [architecture](../architecture.md#provider-neutral-judge-boundary) owns provider responsibilities;
+The [architecture](../architecture/README.md#provider-neutral-judge-boundary) owns provider responsibilities;
 a new adapter needs its own wire validation, capabilities, and tests. Alternative adapters can be
 verified with local stubs without changing the user's live-provider restriction.
 

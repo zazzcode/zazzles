@@ -25,7 +25,7 @@ The pre-migration boundary coupled analysis starts and invocation identity to HT
 
 The implementation MUST preserve existing bounded flow, sink models, raw assessments,
 claim policy, and snapshot evidence. It MUST NOT require a full repository IR rewrite.
-Existing [package boundaries](../architecture.md#11-implemented-package-boundaries) remain.
+Existing [package boundaries](README.md#11-implemented-package-boundaries) remain.
 
 ## 2. Semantic records and cardinality
 
@@ -316,7 +316,7 @@ and reinterpreting old answers. The phase contracts require direct negative cont
 
 ## 11. Sources and ownership
 
-- [Implemented architecture §3](../architecture.md#3-parsing-and-language-adapters),
+- [Implemented architecture §3](README.md#3-parsing-and-language-adapters),
   [repository graph: canonical records](repository-graph.md#canonical-records-and-views),
   [trace judgment](trace-judgment.md#separate-judgments-and-gates).
 - [Apollo resolver documentation](https://www.apollographql.com/docs/apollo-server/data/resolvers)

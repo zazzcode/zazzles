@@ -17,6 +17,19 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
+- [Architecture update plan](architecture-update-plan.md) — foundation first (accuracy, performance, maintainability), then features. Capability matrix and one spec per phase, run in series:
+  [0 compatibility baseline](architecture-phase-0-compatibility-baseline.md) (implemented:
+  `TestArchitectureBaseline`, [before measurements](../evaluation/architecture-baseline.md)),
+  [1 source index and callable summaries](architecture-phase-1-source-index.md) (replaces the superseded
+  [registration graph](architecture-phase-1-registration-graph.md)),
+  [2 pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md),
+  [3 PHP package](architecture-phase-3-php-package.md),
+  [4 parallel judge](architecture-phase-4-parallel-judge.md),
+  [5 measured recall gaps](architecture-phase-5-accuracy-gaps.md),
+  [6 Symfony](architecture-phase-6-symfony.md),
+  [7 npm corpus and baseline](architecture-phase-7-npm-corpus.md),
+  [8 npm library mode](architecture-phase-8-npm-library-mode.md),
+  [9 Drupal](architecture-phase-9-drupal.md). Each unimplemented phase starts on owner assignment.
 - [Shared Gemini Decisions provider](gemini-decisions.md) — interactive shared-provider integration and bounded live smoke before analyzer work.
 - [Path Traversal Analyzer](path-traversal.md) — JS/TS/Python filesystem, Zip Slip (`adm-zip`/`unzipper`) and `hbs` layout containment analysis; implemented and live-verified across all eight sample apps.
 - [Path Traversal Tier-1 Hardening](path-traversal-hardening.md) — AST branch-polarity/conjunction soundness, normalization-sensitive substring policy, false-protection closures, guarded constant/import excerpt injection, determinism and file-size split; implemented and live-verified.

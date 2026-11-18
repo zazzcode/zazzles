@@ -1,9 +1,22 @@
 # Architecture
 
-**Implemented architecture, updated 2026-11-07.** This document owns package responsibilities,
+**Implemented architecture, updated 2026-11-18.** This document owns package responsibilities,
 terminology and pipeline boundaries. Planned components are labeled explicitly. Product direction
-lives in [project.md](project.md), decisions in the [proposal](project/03-jev-design-proposal.md),
-and delivery order in the [implementation plan](project/implementation-plan.md).
+lives in [project.md](../project.md), decisions in the [proposal](../project/03-jev-design-proposal.md),
+and delivery order in the [implementation plan](../project/implementation-plan.md). The topic
+documents in this directory (for example the [repository graph](repository-graph.md) and
+[analysis packs](analysis-packs.md)) own their own designs.
+
+> **Engine direction (2026-11-18): layered source index.** Repository structure is held in
+> per-file binding and syntax indexes, a repository call index with explicit resolution kinds, and
+> per-callable parameter summaries, each built once per scan and immutable afterwards. There is no
+> general graph store; a typed graph over the entry catalog was
+> [tried and abandoned](repository-graph.md#graph-data-model-attempted-and-abandoned). The first
+> index steps cut offline scans from 64.16 s to 9.89 s (OWASP Juice Shop), 7.98 s to 3.49 s (VulnPy)
+> and 1.01 s to 0.61 s (DVWA), with byte-identical findings, reports and model requests. The call
+> index and summaries target the measured call-resolution gaps. See [§3 Source index](#source-index),
+> the [spec](../specifications/architecture-phase-1-source-index.md) and the
+> [measurements](../evaluation/architecture-baseline.md).
 
 ## Analyzer terminology
 
@@ -33,8 +46,8 @@ pack selection alone does not implement that analyzer's security assessment.
 These documentation names do not rename packages, catalog IDs, candidate kinds, protocols, CLI
 flags or finding-type labels. A report's **SQL Injection** type describes the concern being assessed;
 **SQL Injection Analyzer** names the capability. Historical specifications and evaluation records
-retain their original wording and contracts. The [analyzer and pack ledger](architecture/analysis-packs.md#current-implementation-status)
-and [capability checklist](project/implementation-plan.md#supported-capability-checklist) own current status.
+retain their original wording and contracts. The [analyzer and pack ledger](analysis-packs.md#current-implementation-status)
+and [capability checklist](../project/implementation-plan.md#supported-capability-checklist) own current status.
 
 ## Evidence validation
 
@@ -57,7 +70,7 @@ use OpenAI Decisions with `gpt-6-luna`; transport support does not establish equ
 accuracy. Gemini uses only `gemini-decision-1` on v1beta Decisions; one
 `JUDGE_DECISION_MODEL` applies to every analyzer. Jev has stub coverage but no live evaluation
 in this delivery. Credentials do not select a provider or authorize a paid request. No provider/model
-fallback occurs. See [decision-model setup](../docs/decision-models.md).
+fallback occurs. See [decision-model setup](../../docs/decision-models.md).
 
 Decision-model judgment is core to a completed security assessment. Offline inventory, evidence
 inspection, deterministic construction findings and saved-report export remain available.
@@ -70,7 +83,7 @@ There is no implemented reviewer stage or reviewer-completion field in current r
 
 ## Design rationale and strengths
 
-The [technical approach](../docs/technical-approach.md) explains the combination of bounded static
+The [technical approach](../../docs/technical-approach.md) explains the combination of bounded static
 evidence, semantic judgment, separate claims, explicit blockers and preservation/repair guidance.
 It compares documented SAST capabilities, distinguishes product differentiation from established
 prior art and links measured case evidence and known misses. Better recall, precision, cost and
@@ -78,18 +91,18 @@ novel-repository generalization remain hypotheses until matched independent eval
 
 ## Detailed analysis designs
 
-- [Repository graph](architecture/repository-graph.md): target-repository graph direction and bounded implemented subsets.
-- [Evidence and claims](architecture/evidence-and-claims.md): source slices, requirements and completeness.
-- [Trace judgment](architecture/trace-judgment.md): implemented evidence bundles, gates and exact-request replay.
-- [Reporting and SARIF](architecture/reporting-and-sarif.md): report records and implemented bounded SARIF export.
-- [Standalone HTML](architecture/html-reporting.md): human-facing report and disclosure rows.
-- [SCA follow-on](architecture/sca-design.md): planned dependency auditing.
-- [Analyzers and analysis packs](architecture/analysis-packs.md): SQL/NoSQL/validation/XSS and outbound-observation ownership, selection, bounds,
-  provenance, compatibility and incremental migration ledger; [original proposal](project/analysis-pack-mvp.md).
+- [Repository graph](repository-graph.md): target-repository graph direction and bounded implemented subsets.
+- [Evidence and claims](evidence-and-claims.md): source slices, requirements and completeness.
+- [Trace judgment](trace-judgment.md): implemented evidence bundles, gates and exact-request replay.
+- [Reporting and SARIF](reporting-and-sarif.md): report records and implemented bounded SARIF export.
+- [Standalone HTML](html-reporting.md): human-facing report and disclosure rows.
+- [SCA follow-on](sca-design.md): planned dependency auditing.
+- [Analyzers and analysis packs](analysis-packs.md): SQL/NoSQL/validation/XSS and outbound-observation ownership, selection, bounds,
+  provenance, compatibility and incremental migration ledger; [original proposal](../project/analysis-pack-mvp.md).
 
 ## Product boundaries and shared engine
 
-The [project goals](project.md#four-product-capabilities) distinguish Scan, Inspect, Audit and Fix.
+The [project goals](../project.md#four-product-capabilities) distinguish Scan, Inspect, Audit and Fix.
 The architecture below describes the current bounded Scan engine. It also emits existing validation
 and construction-practice findings. Inspect as a distinct capability, dependency Audit and automated
 Fix are planned. The goals do not imply separate implemented commands or engines.
@@ -175,7 +188,7 @@ contracts, claim questions and evidence obligations. Parse records a determinist
 judge validates that selection and supplies the applicable material alongside source evidence.
 SQL, NoSQL, standalone validation and XSS use it for assessment. Outbound uses it for observations
 without a security questionnaire; logging retains its existing active path pending migration.
-The [component design](architecture/analysis-packs.md#boundary-and-ownership) owns exact boundaries,
+The [component design](analysis-packs.md#boundary-and-ownership) owns exact boundaries,
 limits, provenance and verification. Packs are embedded, not externally loaded plugins.
 
 ### Acquisition and value facts
@@ -208,8 +221,8 @@ keeps its existing behavior; migration to the shared input-fact model remains de
 Model-assisted discovery is a separate opt-in acquisition phase with its own protocol/cap/traces.
 The model selects snapshot-bound alternatives; source and dispatch validation belongs to the engine.
 Only independently established bindings are trusted. Unverified proposals remain provisional coverage,
-never synthetic entry/flow edges or vulnerability findings. See [Node input guidance](../docs/analysis/node-inputs.md)
-and the [implementation contract](specifications/node-http-input-refactor.md).
+never synthetic entry/flow edges or vulnerability findings. See [Node input guidance](../../docs/analysis/node-inputs.md)
+and the [implementation contract](../specifications/node-http-input-refactor.md).
 
 ## 3. Parsing and language adapters
 
@@ -221,7 +234,7 @@ more than syntax parsing. Shared records do not depend on Tree-sitter nodes or H
   database/logging/outbound operations, templates and selected stored/cross-tier XSS relationships.
 - Python uses `python_*.go` files for local modules, Flask/Blueprint, RESTX and FastAPI routes,
   value/control flow, DB-API, validation, logging, HTTP and template semantics. Supported inline
-  template scripts reuse browser analysis. See [Python coverage](../docs/python-support.md).
+  template scripts reuse browser analysis. See [Python coverage](../../docs/python-support.md).
 - `Analyze` discovers supported registration files across languages when `--entry` is omitted;
   `AnalyzeWithChecks` additionally accepts explicitly declared security requirements.
 - File-extension recognition in `internal/lang` does not imply an implemented language analyzer.
@@ -229,6 +242,73 @@ more than syntax parsing. Shared records do not depend on Tree-sitter nodes or H
 An API name alone is not proof of binding, source control or protection. Unknown calls, dynamic
 registration, helper limits and unsupported control/heap behavior retain explicit uncertainty.
 Adapter-specific limits and current case evidence belong in their contracts and coverage guides.
+
+### Source index
+
+Repeated whole-module syntax walks are replaced by per-file indexes that are built once and
+immutable afterwards ([source index spec](../specifications/architecture-phase-1-source-index.md)).
+
+- **Implemented (JS/TS):** `binding_index.go` is a module's binding write index. It records
+  identifier assignment targets, written member paths, aliasing declarations and escaping uses.
+  `bindingReassigned` and `contractBindingStable` read it, with the same name-based, module-wide
+  answers the walks gave. `binding_parity_test.go` keeps the old walks as oracles.
+- **Implemented (Python):** each module keeps its candidate `register_blueprint`/`include_router`
+  mount calls (`mountCalls`), replacing a whole-repository walk per route. `python_index_parity_test.go`
+  checks it against the old walk.
+- **Implemented (reports):** bundle files are written through a buffered writer.
+- **Measured:** `call_resolution_measure_test.go` classifies every call site, and every call gap,
+  by resolution class on a target. See the
+  [results](../evaluation/architecture-baseline.md#phase-1-step-1c-call-site-resolution-2026-11-18).
+- **Implemented (call index, JS/TS and Python):** `call_index.go` resolves each call site once
+  per module to `direct`, `imported`, `method_on_known_class`, `builtin_method`, `package_member` or
+  `unresolved(reason)`. Receiver types come only from binding-stable declarations. `call_effects.go`
+  is a closed table of flow effects (`independent_result`, `container_write`); it never records protection.
+- **Implemented (summaries, JS/TS):** `callable_summary.go` and `callable_summary_scan.go` build one
+  parameter-indexed summary per callable, bottom-up over the call index with a bounded SCC fixpoint:
+  the parameters the body reads, the parameters that may reach its result, and every blocking reason
+  with a span (an unmodeled call, a mutable module binding, a closure, `this`/`arguments`, a heap
+  write, dynamic code). A summary with no reason is closed. Flow applies a closed summary only where
+  inline expansion refuses a call (depth, budget or recursion), or leaves an in-repository result
+  unresolved, and every argument the body reads is inert. Inline expansion is unchanged wherever it
+  expands. `summary_shadow_test.go` checks every inline expansion against the summary.
+- **Implemented (summaries, Python/PHP):** `closed_summary.go` and each language's
+  `*_callable_summary.go` cache parameter-indexed closed summaries at expansion refusals with inert
+  positional arguments. The initial subset accepts simple expressions and direct/imported helper
+  chains; ambient reads, decorators, mutation, unsupported syntax/binding and cycles remain blocked.
+  Return parameters conservatively include every read parameter. Successful inline expansion stays
+  unchanged. Shadow tests compare these summaries with real inline expansions.
+- **Implemented (complete witnesses):** each language's `*summary_witness*.go` caches a bounded
+  parameter-indexed recipe for returns, modeled transforms and sinks, with original source spans
+  and resolved helper DAGs. At supported expansion refusals, concrete caller values instantiate the
+  existing native flow/model operations, producing the same parameter, assignment, control,
+  helper-return and sink evidence as inline execution. Candidate IDs and model facts are rebuilt
+  per caller. Unsupported state/control/binding, async calls without an invocation proof, cycles and
+  size limits retain explicit refusal behavior. Previously resolved inline/inert paths stay unchanged.
+- **Implemented (finite Python dispatch):** a generated registry context can prove exact selector
+  arguments and the corresponding source module/callable without importing code. Typed, immutable
+  finite-value proofs are invocation-specific and separate from taint/protection; ordinary branches
+  are not folded from those proofs. Shadowed, mutated, escaped, deleted, nonfinite or mismatched
+  import bindings remain unresolved. This closes the measured 64 vulnpy helper-limit gaps.
+- **Implemented (PHP resolution inputs):** `php_call_index.go` and `php_project_resolution.go`
+  provide exact Composer PSR-4 FQCN/method lookup and bounded Symfony/Drupal service maps, with
+  `psr4`, `container_service` and explicit unresolved reasons. Symfony block-map autowiring resources
+  and explicit class/alias maps, and Drupal `*.services.yml` classes carry config/definition spans.
+  Unsupported YAML stays unresolved. These are resolution inputs; route adapters remain later work.
+- **Implemented (PHP effects):** the closed `analysispacks.PHPBuiltinContentEffect` table retains
+  content dependencies with unknown protection for six builtins. Mutating `array_shift` invalidates
+  stale container shape. The table never establishes validation or context-appropriate encoding.
+- **Implemented (lexical query cache):** immutable per-module `(node, name)` shadow queries reuse
+  the original resolver's answers, avoiding repeated parent walks without expanding its semantics.
+- **Planned:** broader branch/loop/recursive witness recipes and store summaries over module state;
+  a flat syntax index for flow evaluation; and
+  binding indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the
+  call index and summaries.
+
+Offline effect so far, with byte-identical reports: juice-shop 64.16 s → 9.89 s, vulnpy 7.98 s →
+3.49 s, DVWA 1.01 s → 0.61 s ([measurements](../evaluation/architecture-baseline.md)).
+Final phase 1 medians are 9.21 s, 3.42 s and 0.60 s respectively. Later accuracy steps have only
+the listed gap/evidence deltas; no sample candidate is removed. Changed witnesses require fresh
+judgment and cannot reuse an answer to the old request.
 
 ### Shared, language and framework layers
 
@@ -244,7 +324,7 @@ Next.js is an entry adapter over the JS/TS layer, not a separate analyzer. A JS/
 rule therefore applies to Express and Next.js alike, unless it depends on a framework construct (for
 example a Next.js catch-all `[...path]` parameter). Python shares only the claim, policy and reporting layer; a JS/TS flow
 rule has no Python effect until the Python adapter gets an equivalent with its own paired fixtures.
-The user-facing summary is [detection capabilities](../docs/detection-capabilities.md).
+The user-facing summary is [detection capabilities](../../docs/detection-capabilities.md).
 
 ### Multiple entry and dispatch mechanisms
 
@@ -281,11 +361,11 @@ policy or sink protection. Unknown runtime composition, dispatch, applicable gua
 remain explicit gaps, including entries with no candidate. Transport relationships are metadata and
 do not multiply resolver uses. No entry-wide safety label or runtime execution claim is produced.
 
-The [implemented subsets and limits](../docs/running-scans.md#common-entry-selection-and-tagged-checks)
-and [design](architecture/common-entry-dispatch.md) own the bounded contracts. The
-[acceptance results](evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05)
+The [implemented subsets and limits](../../docs/running-scans.md#common-entry-selection-and-tagged-checks)
+and [design](common-entry-dispatch.md) own the bounded contracts. The
+[acceptance results](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05)
 record actual adapter-to-claim/report checks and unchanged HTTP/browser evidence. Automated acceptance and bounded localhost rendered interaction/narrow-layout review pass. The
-[SQL/NoSQL closeout](evaluation/common-entry-dispatch-results.md#sqlnosql-only-accuracy-refresh-and-rendered-review)
+[SQL/NoSQL closeout](../evaluation/common-entry-dispatch-results.md#sqlnosql-only-accuracy-refresh-and-rendered-review)
 records the later accuracy refresh and remaining calibration limits; the common-entry milestone
 merged through PR #8 on 2026-11-05. Broader GraphQL/gRPC application evaluation and a
 full repository IR remain separate work.
@@ -302,7 +382,7 @@ Three structures MUST remain distinct:
 - **Evidence trace graph:** `internal/judge` projects supplied dependencies/control edges into a
   request-local graph with evidence references, operand roles and a coverage ledger. It discovers
   no additional calls from surrounding text.
-- **Repository graph:** the broader [repository graph design](architecture/repository-graph.md)
+- **Repository graph:** the broader [repository graph design](repository-graph.md)
   describes planned canonical modules, operations, control flow and adjacency indexes. The complete
   generalized IR and indexes are not implemented by the current record package.
 
@@ -311,10 +391,16 @@ fingerprints. Candidate identities remain independent of model answers and repor
 
 ### Graph storage decision
 
-**Planned:** use owned typed Go adjacency structures for the generalized repository graph; preserve
-relation kinds, provenance, parallel relations and self-edges. Traversal state remains separate from
-shared records. CFG/call graphs can contain cycles and require bounded worklists and explicit limits.
-Gonum is not a storage dependency. See the [decision rationale](project/03-jev-design-proposal.md#graph-representation-decision).
+**Decided (2026-11-17):** no general graph store. Repository structure is held in the layered
+[source index](../specifications/architecture-phase-1-source-index.md): per-file syntax and binding
+indexes, a repository call index with explicit resolution kinds, and per-callable summaries. A typed
+in-memory graph over the entry catalog was implemented and abandoned. It indexed data that was never
+on the hot path and could not change recall; see
+[graph data model: attempted and abandoned](repository-graph.md#graph-data-model-attempted-and-abandoned).
+Relation kinds, provenance and cycle handling still apply: call cycles are handled as bounded
+fixpoints over strongly connected components, with explicit limit gaps. Traversal state remains
+separate from shared records, and Gonum is not a storage dependency. See the earlier
+[decision rationale](../project/03-jev-design-proposal.md#graph-representation-decision).
 
 ## 5. Go analysis engine
 
@@ -327,8 +413,10 @@ Source availability does not establish complete control flow or runtime feasibil
 ### Bounded interprocedural flow second
 
 Resolved helper arguments/parameters and returns carry dependency witnesses and source provenance.
-Unknown bindings, recursion and reached expansion bounds cannot establish protection. General reusable
-function summaries and whole-program heap/control analysis remain planned.
+Unknown bindings, recursion and reached expansion bounds cannot establish protection. Closed/inert
+summaries retain their fast path; bounded JS/TS, Python and PHP witness recipes additionally carry
+dependent values through supported callees and native sink models at expansion refusals
+([source index](#source-index)). Whole-program heap/control analysis remains planned.
 
 ### Guards and mitigations
 
@@ -356,15 +444,15 @@ They are embedded with `go:embed` and selected by language. Report metadata reta
 unmigrated-family model inputs include the full applicable document. SQL, NoSQL, standalone
 validation and XSS select validated sections
 through the component catalog and record their digests. The Go document is preparatory guidance and does
-not imply implemented Go source analysis. Root [analysis guides](../docs/analysis/README.md) describe
+not imply implemented Go source analysis. Root [analysis guides](../../docs/analysis/README.md) describe
 product behavior; `.zazz/standards/` governs development. Neither is loaded dynamically by the binary.
 
 ## 7. Evidence bundle contract
 
 Request size, evidence relevance, the request budget and planned compaction are designed in
-[request size and evidence relevance](architecture/request-size-and-evidence-relevance.md).
+[request size and evidence relevance](request-size-and-evidence-relevance.md).
 
-The [trace judgment design](architecture/trace-judgment.md) owns evidence-version 3: deduplicated
+The [trace judgment design](trace-judgment.md) owns evidence-version 3: deduplicated
 source evidence, dependency witnesses, trace/control edges, roles, required evidence, API contracts,
 exact field constraints and remaining blockers. Supplied evidence means present, not complete or
 protective. Source/comments are untrusted data, never model instructions.
@@ -466,17 +554,17 @@ Golden fixtures verify parsing, source spans and deterministic evidence. Paired 
 raw/protected/unknown paths and existing languages. Local HTTP stubs verify provider transports, malformed
 answers, cancellation, payload limits, evidence validation and replay identity. CLI tests cover analysis,
 compatibility flags, schema-1/schema-2 exports and mixed-language bundles. Native Go test/race, vet,
-build and formatting checks follow the [contributor guide](../docs/contributing.md).
+build and formatting checks follow the [contributor guide](../../docs/contributing.md).
 
 Live sample calibration and source-reviewed case checks do not establish whole-program recall,
-runtime exploitation, provider parity or independent findings review. See the [Python results](evaluation/python-support-results.md)
-and [XSS results](evaluation/xss-implementation-results.md) for measured coverage and remaining gaps.
-The [proposal decision register](project/03-jev-design-proposal.md#open-decision-register) owns open design
-choices; the [scope](project/02-project-scope.md) owns project-level risks.
+runtime exploitation, provider parity or independent findings review. See the [Python results](../evaluation/python-support-results.md)
+and [XSS results](../evaluation/xss-implementation-results.md) for measured coverage and remaining gaps.
+The [proposal decision register](../project/03-jev-design-proposal.md#open-decision-register) owns open design
+choices; the [scope](../project/02-project-scope.md) owns project-level risks.
 
 ## CLI report artifacts
 
-The [reporting design](architecture/reporting-and-sarif.md) owns canonical JSON/SARIF; the
-[HTML design](architecture/html-reporting.md) owns the human-facing report. Current scan bundles contain
+The [reporting design](reporting-and-sarif.md) owns canonical JSON/SARIF; the
+[HTML design](html-reporting.md) owns the human-facing report. Current scan bundles contain
 `findings.json`, `findings.html` and `findings.sarif`. Saved reports can be exported without rescanning
 or model calls; comparator results remain separate evaluation artifacts.

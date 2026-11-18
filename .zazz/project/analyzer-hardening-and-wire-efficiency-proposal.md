@@ -3,7 +3,7 @@
 **Date:** 2026-11-14  
 **Context:** Independent review of the Path Traversal Analyzer ([contract](../specifications/path-traversal.md#1-capability-and-prerequisite), [checkpoint results](../evaluation/path-traversal-results.md#scope-and-outcome)) and cross-cutting audit of the shared parse/catalog/judge/CLI architecture across **Command Injection**, **XSS**, **SQL**, **NoSQL**, **Input Validation**, **Sensitive Data Logging**, and **Outbound Observations**.
 
-See [AGENTS.md](../../AGENTS.md#authorization-and-delivery), [architecture](../architecture.md#2-pipeline), [agent orientation](../docs/zazzles-agent-orientation.md#documentation-map), [analysis-pack bounds](../architecture/analysis-packs.md#bounds-and-compatibility), and [certainty roadmap](analysis-certainty-improvements.md#prioritized-increments).
+See [AGENTS.md](../../AGENTS.md#authorization-and-delivery), [architecture](../architecture/README.md#2-pipeline), [agent orientation](../docs/zazzles-agent-orientation.md#documentation-map), [analysis-pack bounds](../architecture/analysis-packs.md#bounds-and-compatibility), and [certainty roadmap](analysis-certainty-improvements.md#prioritized-increments).
 
 ---
 

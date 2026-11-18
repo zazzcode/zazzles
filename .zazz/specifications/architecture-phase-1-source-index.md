@@ -343,3 +343,12 @@ Source: implementation. Changed against §4, §7 and §9:
 Verification impact: `TestArchitectureBaseline` is unchanged, and juice-shop JSON and SARIF are
 byte-identical. Measurements are in `.zazz/evaluation/architecture-baseline.md`.
 
+
+### 2026-11-17 — PHP callable language (owner request)
+
+Source: owner ("make sure to fix … the PHP callable-language fix"). `registerInvocation` takes the
+callable language from `internal/lang` detection instead of an extension `if` chain that labelled PHP
+callables `javascript`. Unknown extensions keep `javascript`. Listed golden delta: `report_sha256`
+only, for `php/{code,command,includes,path,routes,sql,xss}` and `mixed/three-language`. Request
+digests, signatures, use rows, counts and SARIF hashes are unchanged; the judge does not read
+callables. Report diff: `"language": "javascript"` → `"php"` on PHP callables only.

@@ -1,3 +1,8 @@
+// Package langphp is the PHP language adapter. It analyzes server-mapped PHP
+// files through bounded value, control and include flow, and builds on the
+// language core API exported by internal/parse (core_api.go); it never reaches
+// into JS/TS flow internals. Run produces the PHP report and Routes the PHP
+// part of the route inventory. Only internal/pipeline calls them.
 package langphp
 
 import (

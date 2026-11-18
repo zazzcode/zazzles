@@ -9,7 +9,7 @@ Both ship in one milestone draft PR into `stage`
 **Coordination:** Lead Agent alone. The moves are tightly coupled
 **Run log:** `.zazz/ephemeral/architecture-phase-3-php-package-run-log.md`
 **Drafted:** 2026-11-17. **Reconciled** against merged phase 2 code: 2026-11-18 (§14)
-**Status:** implemented on `arch-multi-lang-packaging` (from `f4ebb6d`); awaits phase 3B and the milestone draft PR
+**Status:** implemented on `arch-multi-lang-packaging` (from `f4ebb6d`); in the milestone draft PR, which phase 3B extends
 
 ## 1. Capability
 
@@ -195,7 +195,7 @@ func Routes(root string) (*analysis.RouteInventory, error)
 ```
 
 4. **Commit 3:** the D-4 renames.
-5. **Commit 4:** docs. Then the gate. Do not push or open the PR yet; phase 3B continues on this branch.
+5. **Commit 4:** docs. Then the gate. The owner then opened the milestone draft PR early (§14); phase 3B continues on this branch.
 
 ## 10. Definition of done
 
@@ -292,3 +292,9 @@ Changed:
 
 Verification impact: route-inventory JSON is byte-identical for all 41 fixtures between the
 pre-move and post-move binaries. The full gate is green. Evidence is in the run log.
+
+### 2026-11-18 — Milestone draft PR opened at the end of 3A (owner decision)
+
+Source: owner, after 3A verification. The branch is pushed and the shared milestone draft PR into
+`stage` is opened now to log the 3A implementation and its passing gate. Phase 3B pushes further
+commits to that PR. Changed: status, §9 step 5. Verification impact: none.

@@ -271,9 +271,25 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   inline expansion refuses a call (depth, budget or recursion), or leaves an in-repository result
   unresolved, and every argument the body reads is inert. Inline expansion is unchanged wherever it
   expands. `summary_shadow_test.go` checks every inline expansion against the summary.
-- **Planned:** container-service resolution; replacing inline helper expansion with summaries
-  (per-caller `parameter → sink` instantiation and witness reconstruction) and summaries for
-  Python and PHP; store summaries over module state; a flat syntax index for flow evaluation; and
+- **Implemented (summaries, Python/PHP):** `closed_summary.go` and each language's
+  `*_callable_summary.go` cache parameter-indexed closed summaries at expansion refusals with inert
+  positional arguments. The initial subset accepts simple expressions and direct/imported helper
+  chains; ambient reads, decorators, mutation, unsupported syntax/binding and cycles remain blocked.
+  Return parameters conservatively include every read parameter. Successful inline expansion stays
+  unchanged. Shadow tests compare these summaries with real inline expansions.
+- **Implemented (PHP resolution inputs):** `php_call_index.go` and `php_project_resolution.go`
+  provide exact Composer PSR-4 FQCN/method lookup and bounded Symfony/Drupal service maps, with
+  `psr4`, `container_service` and explicit unresolved reasons. Symfony block-map autowiring resources
+  and explicit class/alias maps, and Drupal `*.services.yml` classes carry config/definition spans.
+  Unsupported YAML stays unresolved. These are resolution inputs; route adapters remain later work.
+- **Implemented (PHP effects):** the closed `analysispacks.PHPBuiltinContentEffect` table retains
+  content dependencies with unknown protection for six builtins. Mutating `array_shift` invalidates
+  stale container shape. The table never establishes validation or context-appropriate encoding.
+- **Implemented (lexical query cache):** immutable per-module `(node, name)` shadow queries reuse
+  the original resolver's answers, avoiding repeated parent walks without expanding its semantics.
+- **Planned:** replacing inline helper expansion with summaries
+  (per-caller `parameter → sink` instantiation and witness reconstruction);
+  store summaries over module state; a flat syntax index for flow evaluation; and
   binding indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the
   call index and summaries.
 

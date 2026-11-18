@@ -49,11 +49,16 @@ backed out before commit, for four reasons:
   unresolved sites stay records, never dropped. Per-callable parameter summaries are computed once.
   **Implemented (JS/TS, step 1E):** a closed summary answers a call that inline expansion refuses,
   when its arguments are inert. On juice-shop this removed 207 gaps with no candidate change.
-  **Planned:** summaries applied at every call site, which replaces per-route inline expansion and
-  its depth and budget limits, and Python and PHP summaries.
+  **Implemented (Python/PHP):** a narrower cached closed-expression/helper-chain subset also applies
+  at inert-argument expansion refusals. Ambient reads, decorators, mutation, unsupported binding and
+  recursive cycles remain explicit blocking reasons. PHP builtin content effects preserve dependency
+  provenance without granting protection; mutating container effects invalidate stale projections.
+  **Planned:** summaries applied at every call site, replacing per-route inline expansion and its
+  depth and budget limits, with caller-specific witnesses and sink/store instantiation.
 - **Built for the next features.** Library mode reads "parameter k reaches a sink" straight from an
-  exported function's summary. Symfony and Drupal add PSR-4 and service-container resolution as call
-  index inputs and route syntax as model tables, rather than new analyzers.
+  exported function's summary after witness instantiation is implemented. Symfony and Drupal now have
+  source-only PSR-4 and bounded service-container resolution inputs in the PHP call index. Their route
+  adapters remain phases 6/9; they reuse PHP flow instead of adding analyzers.
 - **Same boundaries.** Indexes are immutable after build and deterministic by key. Each new layer
   runs beside the code it replaces until parity is proved, and protection is still never a stored bit.
 

@@ -513,7 +513,7 @@ Allowed paths (all in the assigned checkout):
 | `internal/analysispacks/php_effects.go` and tests | new | Closed builtin content-effect table |
 | `internal/parse/php_call_index.go`, `php_project_resolution.go` and matching tests | new | Direct/imported/PSR-4/service resolution with explicit unresolved reasons |
 | `internal/parse/testdata/php/{symfony-resolution,drupal-resolution}/` | new | Small resolution fixtures; no route adapters |
-| `internal/parse/callable_summary*.go`, `modules.go`, `commonjs.go`, `binding_index.go` and matching tests | modified if profiling supports it | Byte-preserving JS/TS performance improvements, cached context-independent facts only |
+| `internal/parse/callable_summary*.go`, `modules.go`, `helper_resolution.go`, `call_index.go`, `commonjs.go`, `binding_index.go` and matching tests | modified if profiling supports it | Byte-preserving JS/TS performance improvements, cached context-independent facts only |
 | `cmd/scan/testdata/architecture-baseline.json` | modified | Listed effect deltas and new fixtures only |
 | `.zazz/evaluation/architecture-baseline.md`, this spec §14, `.zazz/architecture/{README,repository-graph}.md`, `docs/technical-approach.md` | modified | Phase closure, evidence and capability boundaries |
 
@@ -609,6 +609,9 @@ delta. Full witness reconstruction and replacement of successful expansion remai
 
 1. Does the owner want 1B's bundle encode-once in this phase, or kept with phase 2's output work? Default: 1B.
 2. Library mode scope beyond npm (PyPI, Packagist) after phase 8: not needed for 1A–1E.
+3. **1F closure pending owner decision:** all 64 vulnpy `work_limit` gaps call the dynamic-import
+   helper `_get_trigger_module`. Defer dynamic-import resolution and close phase 1, or keep the
+   phase open for a separate contract? The implementation preserves those gaps; no approval is assumed.
 
 ## 12. Run log protocol
 
@@ -807,3 +810,43 @@ PSR-4 and service-map resolution inputs, performance investigation and phase clo
 6 D-3 and phase 9 D-1; their route adapters stay deferred. The 64 vulnpy limit gaps call a dynamic
 import helper, so closure is measured by applicability and remaining gaps require attribution.
 The owner requests a phases 0/1 milestone draft PR now; phases 2/3 stay later work on this branch.
+
+### 2026-11-18 — Step 1F implemented and technically verified
+
+Source: owner assignment and fresh-context verification. Contract `dfec39b`; immutable shadow-query
+cache `b50cac0`; Python/PHP summaries, PHP effects and resolution inputs `a3f8dcc`.
+
+- **AC1:** cached parameter-indexed closed expressions and helper chains apply only at inert
+  positional-argument refusals. Successful inline paths stay unchanged. Python/PHP summaries are
+  narrower than JS/TS: assignments, defaults, decorators, variadics/references, ambient reads,
+  mutation, unsupported syntax and recursive cycles remain blocked. Return sets conservatively
+  include all read parameters. Shadow verification covers 7,645 Python and 4,093 PHP expansions,
+  two applicable each, zero disagreements; a deliberately unsound summary is detected by real flow.
+- **AC2:** the six-builtin effect table removes all 210 DVWA `php_call_unresolved` gaps with unknown
+  protection retained. `array_shift` invalidates stale result/receiver shape. Namespaces are excluded
+  per caller module, and same-named user declarations stay excluded across the set.
+- **AC3:** PHP direct/imported legacy targets are preserved. Neutral PSR-4 and bounded block-map
+  Symfony/Drupal service resolution supplies config/definition spans and explicit unresolved reasons.
+  Missing/ambiguous/inaccessible targets, unsafe paths, unsupported YAML and conflicting service
+  definitions remain unresolved. No route adapter was added.
+- **AC4:** only the two new resolution fixtures are added to the architecture golden. Every existing
+  fixture is unchanged. Juice Shop and vulnpy normalized JSON are identical to 1E. DVWA changes
+  gap/completeness/input-fact gap metadata on 92 uses: 210 gaps removed, none added. No sample
+  candidate is added, removed or re-keyed; IDs, ordering and statuses stay unchanged.
+- **AC5:** final three-run full-bundle medians are 9.34 s / 3.43 s / 0.62 s, all within 5% of final
+  1E or faster. Juice Shop improves 16.2% from 11.15 s. Cached lexical queries remove repeated parent
+  walks; 37,220 fixture/sample call queries match the original lookup twice.
+- **AC6 technical gate:** changed-file gofmt, vet, build, full race suite and architecture baseline
+  all pass. A fresh-context verifier reports technical PASS. Sandbox-only loopback listener failures
+  in the first race attempt were resolved by running local stub tests with the required permission.
+
+Review corrections: decorated/root-shadowed Python helpers, conflicting class/alias mappings,
+private/abstract PHP targets, absolute-resource rebasing, Composer provenance, mutating-array stale
+projections and cross-module namespace exclusions all have regression coverage.
+
+**Phase 1 status: implementation verified; completion pending the owner's §11 decision on the
+64 dynamic-import limit gaps.** All 64 remain at `trigger/util.py:54`; unsupported assignment syntax
+and `import_module` block closure. Full witness reconstruction, per-caller sink/store instantiation,
+recursive Python/PHP summary closure, general alias/heap modeling and full YAML remain deferred.
+Symfony/Drupal route adapters remain phases 6/9. See the
+[evaluation](../evaluation/architecture-baseline.md#phase-1-step-1f--pythonphp-summaries-and-php-resolution-inputs-2026-11-18).

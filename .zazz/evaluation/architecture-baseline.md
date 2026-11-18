@@ -265,3 +265,99 @@ instantiation for closure and request arguments. These are recorded as deferred 
 
 The final juice-shop binary adds the verifier's scope fixes. Its output is byte-identical to the earlier 1E bundles, and its median is 11.15 s. Whether that cost comes from the scope checks or from machine state was not isolated (no A/B in one sitting), The owner accepted the juice-shop result on 2026-11-18. vulnpy and DVWA run no JS/TS summary code. DVWA runs no changed code. The first batch's sub-second median was outside 5%, and an immediate
 5-run re-time on the same binary gave 0.60 s against 1D's 0.61 s, so the first batch is treated as noise.
+
+## Phase 1 step 1F — Python/PHP summaries and PHP resolution inputs (2026-11-18)
+
+Contract: [source index §8c](../specifications/architecture-phase-1-source-index.md#8c-step-1f-contract-pythonphp-summaries-and-php-resolution-inputs).
+Starting HEAD `22f6adc`; contract `dfec39b`. Evaluation was offline with no model calls or
+credentials, new dependencies or sample edits. Samples were clean before/after at the original
+pins: juice-shop `f189f521266f42c6bd05884468292000cee852ed`, vulnpy
+`b81885e58283a3449b578d20c20557aff637e5ea`, DVWA
+`a1978a2fed195acd093010af6395f86a281537ca`.
+
+### Acceptance evidence
+
+- **AC1 summaries:** cached parameter-indexed closed expressions/helper chains apply only at
+  expansion refusals with inert positional arguments. Return sets conservatively include all read
+  parameters. Defaults, variadics/references, decorators, ambient reads, mutation, unsupported syntax
+  and cycles remain blocked. Successful inline expansion is unchanged.
+- `TestPythonPHPSummaryShadow` checked 7,645 Python and 4,093 PHP expansions (two applicable
+  closed/inert expansions each), zero disagreements. `TestSummaryShadowMutation` deliberately
+  closes a source-acquiring helper and detects its dependent inline result/use. Table/refusal/limit
+  tests cover the subset's boundaries.
+- **AC2 effects:** `TestPHPBuiltinContentEffects`, `TestPHPBuiltinContentEffectShadowing`,
+  `TestPHPArrayShiftInvalidatesShape` and `TestPHPBuiltinEffectsIgnoreUnrelatedNamespaces`
+  cover dependency retention with unknown protection, excluded names, mutating shape invalidation
+  and namespace isolation.
+- **AC3 resolution:** `TestPHPProjectResolution`, `TestPHPProjectResolutionBounds`,
+  `TestPHPLegacyResolutionParity`, `TestPHPServiceTargetRegressions` and
+  `TestPHPAbsoluteServiceResource` cover exact FQCN/method and `__invoke`, Composer string/array
+  directories, Symfony services/aliases/autowiring resources, Drupal service classes, provenance,
+  legacy targets, missing/ambiguous/unsafe targets and unsupported configuration.
+  Fixtures: `php/symfony-resolution` and `php/drupal-resolution`. No route adapter is added.
+- **AC4 golden:** only those two fixtures are added. Every existing fixture's IDs, request,
+  signature, report and SARIF hashes and counts are unchanged.
+
+### Sample deltas against 1E
+
+| Sample | Candidates | Added / removed / re-keyed | Report change |
+|---|---:|---|---|
+| juice-shop | 251 | 0 / 0 / 0 | JSON unchanged after normalizing root |
+| vulnpy | 3,350 | 0 / 0 / 0 | JSON unchanged after normalizing root |
+| DVWA | 240 | 0 / 0 / 0 | 210 builtin gaps removed on 92 uses |
+
+Statuses and ordered IDs are unchanged. DVWA changes only `gaps`, `completeness` and input-fact
+gap metadata, with dependency, transfer/context evidence and protection facts unchanged.
+
+| Builtin | Removed `php_call_unresolved` gaps |
+|---|---:|
+| `array_shift` | 165 |
+| `json_decode` | 5 |
+| `base64_decode` | 16 |
+| `base64_encode` | 16 |
+| `strrpos` | 4 |
+| `addslashes` | 4 |
+| **Total** | **210** |
+
+No gap is added. There are no new candidates requiring answer-key adjudication; the
+[DVWA](dvwa-detection-guide.md) and [vulnpy](vulnpy-detection-guide.md) expectations are preserved.
+Each output's `deltas.json` records bundle paths, field/gap differences, normalized hashes and statuses.
+
+**Remaining vulnpy limits:** all 64 `work_limit` gaps remain at
+`src/vulnpy/trigger/util.py:54`, `_get_trigger_module(name)`. Its body assigns a module-name
+expression and returns `import_module(module_name)` at lines 23–25. The summary is blocked by
+unsupported assignment syntax and an unmodeled dynamic-import call. It is not closed; no applicable
+closed/inert sample refusal remains. Dynamic-import deferral for phase closure awaits the owner.
+
+### Performance (AC5)
+
+Same full-bundle method as phase 0: optimized binary, `--analyze --output-dir`, three sequential
+runs, `/usr/bin/time -l`, no judge/model configuration. Outputs:
+`_test-findings/<app>/run-arch-1f/verified-run-{1,2,3}/`; `measurements.json` records all values.
+
+| Sample | Phase 0 | 1A | 1B | 1D | Final 1E | 1F median (runs) | vs 1E | Max RSS |
+|---|---:|---:|---:|---:|---:|---|---:|---:|
+| juice-shop | 64.16 s | 10.19 s | 9.89 s | 10.35 s | 11.15 s | **9.34 s** (9.24, 9.34, 9.35) | −16.2% | 244 MiB |
+| vulnpy | 7.98 s | 7.83 s | 3.49 s | 3.57 s | 3.51 s | **3.43 s** (3.43, 3.43, 3.43) | −2.3% | 1,994 MiB |
+| DVWA | 1.01 s | 0.97 s | 0.61 s | 0.61 s | 0.60 s | **0.62 s** (0.62, 0.61, 0.62) | +3.3% | 466 MiB |
+
+All samples meet the within-5%-of-final-1E criterion. Step 1C was measurement-only.
+Fresh performance review found summary construction about 0.10 s CPU versus `shadowed` parent walks
+2.14 s (17.5%). Caching immutable `(node ID, name)` queries preserved the answers.
+The analysis-only overlay experiment measured 10.80/11.95 s before and 9.49/9.50 s after with
+identical report hashes. `TestShadowCacheParity` checked 37,220 fixture/Juice Shop call queries
+twice against the old walk. The table uses unprofiled final full-bundle runs.
+
+### Verification and limits (AC6)
+
+The first sandboxed race run could not bind local `httptest` ports; no live provider was involved.
+The final contributor gate permits local stub listeners and passes changed-file gofmt, vet, build,
+the full race suite and the architecture baseline. Fresh-context technical verification is PASS;
+phase closure still awaits the dynamic-import disposition in spec §11. Evidence is recorded in
+spec §14 and the local run log.
+
+Fresh review found and fixed decorated/root-shadowed Python helpers, conflicting service definitions,
+private/abstract PHP targets, absolute-resource rebasing, config provenance, stale `array_shift`
+projections and cross-module namespace exclusions. Regression tests cover these cases.
+Full witness reconstruction, per-caller sink/store instantiation, recursive Python/PHP summary closure,
+general alias/heap modeling, full YAML and Symfony/Drupal route adapters remain deferred.

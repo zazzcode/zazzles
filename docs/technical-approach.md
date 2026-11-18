@@ -119,8 +119,8 @@ graph library. Each layer answers one kind of question and is built once per sca
 | Layer | Answers | Status |
 |---|---|---|
 | Per-file binding index | "Is this name reassigned, written through, aliased or passed on?" in constant time | Implemented for JS/TS, plus Python mount calls |
-| Repository call index | Which callable each call site reaches, with an explicit resolution kind; unresolved calls stay visible as records | Measured; production index planned |
-| Callable summaries | What each function does with each parameter (returns, sinks, stores, controls), computed once and applied at every call site | Planned |
+| Repository call index | Which callable each call site reaches, with an explicit resolution kind; unresolved calls stay visible | JS/TS and Python production index; PHP direct/imported targets plus PSR-4 and bounded service-map resolution inputs |
+| Callable summaries | Which parameters a callable reads or returns, with source-backed reasons it cannot close | JS/TS and a narrower Python/PHP subset at inert-argument expansion refusals; full sink/store instantiation and witnesses remain planned |
 
 The first refactors replaced whole-file syntax re-walks and unbuffered report writes. Offline scan
 time dropped from 64.16 s to 9.89 s on OWASP Juice Shop, 7.98 s to 3.49 s on VulnPy and 1.01 s to
@@ -282,7 +282,7 @@ protection, abstention/coverage, evidence usefulness and remediation correctness
 resources and model cost. Fewer alerts alone does not establish improvement. The same agent's source
 review, implementation and calibration are not independent findings review.
 
-Independent LLM Findings Review, the production call index and callable summaries, automatic incremental caches, severity
+Independent LLM Findings Review, full callable-summary witness instantiation, automatic incremental caches, severity
 CI gates and dependency scanning remain planned. Current analysis is bounded static evidence, not
 runtime confirmation or a security certificate. Paid model judgment also introduces source-transmission,
 service-availability and cost considerations; offline evidence inspection remains available.

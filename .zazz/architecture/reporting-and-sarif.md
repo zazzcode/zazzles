@@ -143,7 +143,7 @@ Public [analysis rules](../../docs/analysis/README.md) describe SQL/NoSQL and va
 
 Current analysis JSON uses schema4 and `analysis_guidelines`; schemas1–4 remain readable
 through private compatibility decoding, retaining original source/schema/answer provenance.
-See [naming and compatibility](../architecture.md#naming-and-compatibility).
+See [naming and compatibility](README.md#naming-and-compatibility).
 
 ## Common entry migration
 

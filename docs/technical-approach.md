@@ -1,6 +1,6 @@
 # Technical approach and design strengths
 
-[Documentation](README.md) · [Philosophy](philosophy.md) · [Implemented architecture](../.zazz/architecture.md)
+[Documentation](README.md) · [Philosophy](philosophy.md) · [Implemented architecture](../.zazz/architecture/README.md)
 
 ## Source-backed analysis with constrained semantic judgment
 
@@ -13,7 +13,7 @@ The Go scanner reads application source, resolves supported language/framework b
 values into security-sensitive operations. Each candidate carries source spans and hashes, relevant
 helpers, branch conditions, operation operand roles, library contracts and unresolved facts. The
 semantic judge receives this evidence together with versioned language **Analysis Guidelines**.
-The [architecture](../.zazz/architecture.md#evidence-validation) defines the deterministic evidence
+The [architecture](../.zazz/architecture/README.md#evidence-validation) defines the deterministic evidence
 checks applied to the model answers; the predictions themselves are not assumed deterministic.
 
 The model is part of security judgment, rather than only a prose explanation of a preexisting alert.
@@ -206,7 +206,7 @@ Analyzer**. Its **analysis pack** supplies applicable versioned knowledge, compo
 **analysis components**. The **shared analysis engine** supplies parsing, flow/evidence, judgment and
 reporting infrastructure. Reflected, stored and client-side/DOM XSS are capabilities within the XSS
 Analyzer. These terms describe responsibilities, not separate engines or Go packages. See the
-[architecture vocabulary](../.zazz/architecture.md#analyzer-terminology) for the canonical definitions.
+[architecture vocabulary](../.zazz/architecture/README.md#analyzer-terminology) for the canonical definitions.
 
 Analysis knowledge ships in the binary: compiled language/framework and flow adapters, verified API
 contracts, embedded Analysis Guidelines, claim questions and Go evidence policy. Application `--checks`

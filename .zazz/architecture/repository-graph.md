@@ -3,7 +3,7 @@
 **Design direction, 2026-10-31.** This document owns the graph structure for analyzing a **target
 repository**: the application source under analysis, distinct from zazzles's own repository. It is a
 proposed semantic design; the current route-v1 artifact is only a syntax inventory. The
-[architecture](../architecture.md) owns pipeline/provider contracts and the
+[architecture](README.md) owns pipeline/provider contracts and the
 [implementation contract](../specifications/route-string-validation.md) declares the implemented subset.
 
 ## Implementation direction: source index, not a graph store (2026-11-17)
@@ -73,7 +73,7 @@ Start at explicit analysis entry points. HTTP routes and browser entries are cur
 GraphQL fields and unary gRPC methods also have bounded implemented adapters; message consumers,
 commands and other roots remain future acquisition adapters. Separate entry
 identity, registration, dispatch binding and callable identity as described in the
-[entry/dispatch decision](../architecture.md#multiple-entry-and-dispatch-mechanisms).
+[entry/dispatch decision](README.md#multiple-entry-and-dispatch-mechanisms).
 Follow supported internal control and value dependencies,
 including strings sent in outbound service calls, values received in responses, and their subsequent
 uses. Prepare evidence for a semantic judge (GPT Decisions, Jev, or another explicit provider) to assess

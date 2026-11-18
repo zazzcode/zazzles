@@ -60,7 +60,7 @@ Symfony and plain-PHP results are unchanged.
 | `internal/langphp/*_test.go`, `internal/langphp/testdata/drupal/<case>/` | new | Paired fixtures (§8) |
 | `internal/lang/lang.go`, `lang_test.go` | modified | `.module`, `.install`, `.theme`, `.profile`, `.engine` → PHP; `.inc` → PHP only when the file begins with `<?php` |
 | `internal/walk/walk.go` | modified | `*.routing.yml` in `Config` (name reserved in phase 6) |
-| `docs/php-support.md`, `docs/detection-capabilities.md`, `docs/analysis/xss.md`, `.zazz/project/implementation-plan.md`, `.zazz/architecture.md` §3 | modified | Supported Drupal subset, `#markup` rule, limits |
+| `docs/php-support.md`, `docs/detection-capabilities.md`, `docs/analysis/xss.md`, `.zazz/project/implementation-plan.md`, `.zazz/architecture/README.md` §3 | modified | Supported Drupal subset, `#markup` rule, limits |
 | `.zazz/evaluation/drupal-results.md` | new | Fixture matrix; optional sample under OQ-1 |
 
 Out of scope:

@@ -21,7 +21,7 @@ integration. External findings retain their provenance and do not inherit Zazzle
 by being imported.
 
 Each analyzer uses the shared engine for extraction, model assessment, evidence validation and
-reporting. The [architecture](architecture.md#evidence-validation) owns these definitions and the
+reporting. The [architecture](architecture/README.md#evidence-validation) owns these definitions and the
 boundary between evidence validation and security policy.
 
 ## Shared decision-model support
@@ -187,7 +187,7 @@ remains useful, with omitted assessment/review stages explicitly marked.
 writes a JSON route index of Express-style JS/TS registrations and the handler names at the call.
 It does not follow imports or decide whether a string is validated. The OpenAI Decisions API
 (`gpt-6-luna`) is the later assessor of validation and sanitization. It is not called in this slice.
-The [architecture provider decision](architecture.md#current-provider-decision) keeps explicit
+The [architecture provider decision](architecture/README.md#current-provider-decision) keeps explicit
 OpenAI, Gemini and Jev adapters behind a shared judge. `JUDGE_DECISION_MODEL` selects one model
 for every analyzer; `--judge` enables calls and must match the model. Gemini accepts only
 `gemini-decision-1` through v1beta Decisions. Jev remains stub-tested, without live validation here.
@@ -202,7 +202,7 @@ Start with a small JS/TS slice, then expand from measured results. The
 sequence, and interfaces. The [scope](project/02-project-scope.md) defines boundaries, quality
 hypotheses, and risks. First-release coverage remains undecided.
 
-Technical responsibilities live in the [architecture](architecture.md). The
+Technical responsibilities live in the [architecture](architecture/README.md). The
 [design proposal](project/03-jev-design-proposal.md) owns the change from generative call-path review
 to supported Go dataflow plus bounded semantic classification, along with the rationale, retained
 concepts, and open decisions. The [Jev research](project/04-jev-validation-research.md) records published
@@ -258,7 +258,7 @@ its catalog migration remains pending. The **Command Injection Analyzer** ([resu
 **XSS hardening** ([results](evaluation/xss-hardening-results.md)) and **Path Traversal Analyzer**
 ([results](evaluation/path-traversal-results.md)) are delivered and live-verified across the pinned
 sample corpus. XSS includes reflected, stored and client-side/DOM capabilities rather than separate
-engines. The [architecture terminology](architecture.md#analyzer-terminology) distinguishes analyzer
+engines. The [architecture terminology](architecture/README.md#analyzer-terminology) distinguishes analyzer
 capabilities, analysis-pack knowledge and the shared analysis engine.
 
 The catalog also supports [outbound observations](specifications/components-03-outbound.md), without

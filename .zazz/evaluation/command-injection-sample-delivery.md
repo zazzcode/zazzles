@@ -40,7 +40,7 @@ python3 docs/samples/refresh.py --scan <FINAL_SCAN_BINARY> \
 
 ## Final implemented-state documentation gate
 
-Before implementation is declared ready for merge, update the root README, `.zazz/architecture.md`,
+Before implementation is declared ready for merge, update the root README, `.zazz/architecture/README.md`,
 `.zazz/architecture/analysis-packs.md`, `.zazz/project.md`, `.zazz/project/01-functionality.md`,
 `.zazz/project/implementation-plan.md`, `docs/technical-approach.md`, public command-analysis guide,
 and agent orientation to describe the delivered Command Injection Analyzer and its actual tested

@@ -30,8 +30,8 @@ question contract exists.
 
 - The proposal sections named in the header, plus the phase 7 corpus and answer keys.
 - [Phase 2 spec](architecture-phase-2-pipeline-runners.md) (pipeline and runner seam), and phase 1 D-7 (mechanism table).
-- [Entry/dispatch decision](../architecture.md#multiple-entry-and-dispatch-mechanisms),
-  [acquisition and value facts](../architecture.md#acquisition-and-value-facts).
+- [Entry/dispatch decision](../architecture/README.md#multiple-entry-and-dispatch-mechanisms),
+  [acquisition and value facts](../architecture/README.md#acquisition-and-value-facts).
 - Code: `internal/parse/modules.go` and `commonjs.go` (current import and export resolution and
   its stated re-export limits), `command_claims.go`, `code_*`, `internal/report` classification.
 - [Reporting design](../architecture/reporting-and-sarif.md), [interpreting results](../../docs/interpreting-results.md).

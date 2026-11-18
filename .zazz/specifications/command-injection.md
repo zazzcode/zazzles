@@ -20,7 +20,7 @@ worktree or split/stack is required.
 
 **Terminology:** an Analyzer is the capability spanning extraction, interpretation, judgment and reporting; an analysis
 pack supplies versioned knowledge composed of reusable analysis components. The shared analysis engine supplies common
-infrastructure. Follow the [canonical vocabulary](../architecture.md#analyzer-terminology). `command` remains the
+infrastructure. Follow the [canonical vocabulary](../architecture/README.md#analyzer-terminology). `command` remains the
 internal family key and `pack.command` the pack ID. Existing IDs and locked specifications are unchanged.
 
 ## 2. Focused required reading
@@ -95,7 +95,7 @@ file groups, not a general rewrite.
 | `docs/analysis/command-injection.md`, `docs/analysis/README.md` | New / modified | Public implemented rules and guidance |
 | `docs/samples/{juice-shop,vulnpy,nodejs-goof,vulnerable-typescript-app}/`, sample README/index and refresh tooling only as needed | Modified / new artifacts | Final canonical samples, metadata, attribution and links |
 | `.zazz/evaluation/{command-injection-sample-delivery.md,vulnerable-typescript-app-detection-guide.md,command-injection-results.md,vulnpy-detection-guide.md,vulnpy-command-injection-sources.json,nodejs-goof-capabilities.md,juice-shop/}` plus command case/evaluator files | New / modified | Independent reference matrix, reproducible comparisons and acceptance evidence |
-| `.zazz/project.md`, `.zazz/architecture.md`, `.zazz/architecture/{analysis-packs,evidence-and-claims,trace-judgment}.md`, `.zazz/project/{implementation-plan,01-functionality}.md`, README/index | Modified as needed | Synchronize delivered capability/limits after verification; not extra required reading for code work |
+| `.zazz/project.md`, `.zazz/architecture/README.md`, `.zazz/architecture/{analysis-packs,evidence-and-claims,trace-judgment}.md`, `.zazz/project/{implementation-plan,01-functionality}.md`, README/index | Modified as needed | Synchronize delivered capability/limits after verification; not extra required reading for code work |
 
 Identify exact prerequisite files and tests in the run log before editing. The user's full-corpus acceptance instruction
 includes bounded command-relevant entry/dispatch/flow repairs necessary for all §8 positives. It supersedes the earlier

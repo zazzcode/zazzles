@@ -35,7 +35,7 @@ unresolvable controller. Neither is dropped. Plain-PHP behavior (DVWA) is unchan
 - Plan [shared rules](architecture-update-plan.md#shared-rules-for-every-phase), and phase 1 spec D-5 and D-7 (relations, mechanism table).
 - [Phase 3 spec](architecture-phase-3-php-package.md) §9 and `internal/parse/core_api.go` (language core API).
 - [PHP support contract](php-support.md) D-2 to D-7 (server-mapped entries, input facts, SQL, XSS models), [PHP results](../evaluation/php-support-results.md).
-- [Architecture: shared, language and framework layers](../architecture.md#shared-language-and-framework-layers), [entry/dispatch](../architecture.md#multiple-entry-and-dispatch-mechanisms).
+- [Architecture: shared, language and framework layers](../architecture/README.md#shared-language-and-framework-layers), [entry/dispatch](../architecture/README.md#multiple-entry-and-dispatch-mechanisms).
 - Analysis rules: [database injection](../../docs/analysis/database-injection.md), [XSS](../../docs/analysis/xss.md), [input validation](../../docs/analysis/input-validation.md).
 - Python Jinja precedent for lexical template output: `internal/parse/python_templates.go` (`safe` filter handling).
 - Container-root `repository-code-organization-review-proposal.md`, "Per planned extension", the Symfony row (requirements only).
@@ -67,7 +67,7 @@ unresolvable controller. Neither is dropped. Plain-PHP behavior (DVWA) is unchan
 | `internal/analysis/entry_graph.go` | modified | Add `attribute_route`, `annotation_route`, and `config_route` to the static mechanism table |
 | `internal/analysispacks`, `internal/guidelines` | modified only if a contract ID is needed | Doctrine and Twig contract identities (`php-doctrine-dbal-v1`, `php-doctrine-orm-v1`, `twig-output-v1`) |
 | `go.mod`, `go.sum` | modified if OQ-1 is approved | YAML parser |
-| `docs/php-support.md`, `docs/detection-capabilities.md`, `.zazz/project/implementation-plan.md` capability checklist, `.zazz/architecture.md` §3 | modified | Supported Symfony subset and limits |
+| `docs/php-support.md`, `docs/detection-capabilities.md`, `.zazz/project/implementation-plan.md` capability checklist, `.zazz/architecture/README.md` §3 | modified | Supported Symfony subset and limits |
 | `.zazz/evaluation/symfony-results.md` | new | Fixture matrix; optional sample results under OQ-2 |
 
 Out of scope:

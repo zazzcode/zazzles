@@ -12,7 +12,7 @@ remediations.
 ## PR titles — bracketed scope labels
 
 Every PR title begins with one or more bracketed scope labels, before any descriptive text. Labels map to
-the package layout in [architecture package map](../architecture.md#11-implemented-package-boundaries), so a reader can tell which part of
+the package layout in [architecture package map](../architecture/README.md#11-implemented-package-boundaries), so a reader can tell which part of
 the tool a PR touches before opening it.
 
 | Label | Scope |

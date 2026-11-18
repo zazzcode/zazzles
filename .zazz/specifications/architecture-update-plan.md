@@ -5,8 +5,8 @@ this document. A phase starts when the owner assigns its worktree and says to im
 **Baseline reviewed:** `stage` at `3890c1cbb6ff8bebbd707052edaed3bf03bc0ae8` (plan revised on
 `arch-review-clean-up`, 2026-11-17).
 **Languages in scope:** JavaScript/TypeScript, Python, and PHP. Go as a target language is out of this plan.
-**Durable design:** [package boundaries](../architecture.md#11-implemented-package-boundaries),
-[language and framework layers](../architecture.md#shared-language-and-framework-layers),
+**Durable design:** [package boundaries](../architecture/README.md#11-implemented-package-boundaries),
+[language and framework layers](../architecture/README.md#shared-language-and-framework-layers),
 [repository graph](../architecture/repository-graph.md),
 [request size and evidence relevance](../architecture/request-size-and-evidence-relevance.md).
 The owner's container-root dynamic-route graph note is the design reference: one typed in-memory
@@ -230,7 +230,7 @@ Each needs its own proposal or contract.
 
 ## Docs each phase updates
 
-Each spec lists its exact sections. Phases 1–3 update the [architecture](../architecture.md) package
+Each spec lists its exact sections. Phases 1–3 update the [architecture](../architecture/README.md) package
 map and §4. Phase 1 also updates the [repository graph](../architecture/repository-graph.md), so
 implemented and proposed records stay distinct. Phase 3 updates the orientation code-structure and
 testdata rows. Feature phases update the detection guide, the capability checklist, and the

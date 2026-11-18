@@ -30,9 +30,9 @@ Request bytes and candidate IDs do not change.
   [shared rules](architecture-update-plan.md#shared-rules-for-every-phase).
 - [Repository graph](../architecture/repository-graph.md#canonical-records-and-views),
   [identity and provenance](../architecture/repository-graph.md#source-locations-identity-and-provenance).
-- [Architecture §4](../architecture.md#4-normalized-representation-and-graph-views),
-  [graph storage decision](../architecture.md#graph-storage-decision),
-  [entry/dispatch decision](../architecture.md#multiple-entry-and-dispatch-mechanisms).
+- [Architecture §4](../architecture/README.md#4-normalized-representation-and-graph-views),
+  [graph storage decision](../architecture/README.md#graph-storage-decision),
+  [entry/dispatch decision](../architecture/README.md#multiple-entry-and-dispatch-mechanisms).
 - Code: `internal/analysis/entries.go`, `entry_ids.go`, `entry_validation.go` (`index()`),
   `report_entries.go` (`Handler`, `EntryGaps`, `SelectEntries`, `validateReferences`);
   `internal/parse/entry_context.go` (`registerInvocation`, `finalizeEntries`).
@@ -66,7 +66,7 @@ Request bytes and candidate IDs do not change.
 | `internal/parse/entry_context.go` | modified | Callable language from `internal/lang`; classify after canonicalization |
 | `cmd/scan/architecture_baseline_test.go`, `cmd/scan/testdata/architecture-baseline.json` | modified | Regenerated golden with the AC8 deltas; optional `-graph-sample` stats test |
 | `internal/parse/python_input_baseline_test.go` golden (`testdata/python/input-baseline.json`) | modified | Regenerated for the additive registration field |
-| `.zazz/architecture/repository-graph.md`, `.zazz/architecture.md` (§4, graph storage decision, §11) | modified | Implemented subset versus proposed |
+| `.zazz/architecture/repository-graph.md`, `.zazz/architecture/README.md` (§4, graph storage decision, §11) | modified | Implemented subset versus proposed |
 | `docs/interpreting-results.md` | modified only if it lists registration fields | Classification meaning |
 | `.zazz/evaluation/architecture-baseline.md` | modified | Graph node/edge counts, build time, and heap delta on samples |
 

@@ -166,7 +166,7 @@ Full details and provenance live with the sample; new framework/family work rema
 
 ## Architecture and terminology closeout verification
 
-The naming migration and [implemented architecture](../architecture.md) now distinguish Analysis
+The naming migration and [implemented architecture](../architecture/README.md) now distinguish Analysis
 Guidelines, candidate uses, route inventories, evidence trace graphs and the planned repository graph.
 The [technical approach](../../docs/technical-approach.md) records design strengths, primary SAST/prior-art
 references and evaluation limits. Dynamic route/GraphQL entry-model pressure points are documented

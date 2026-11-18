@@ -33,7 +33,7 @@ Output bytes do not change.
   `walk.Walk`); `python_browser.go` (Python builds its own JS parser set); `cmd/scan/analysis.go`.
 - [Testing: concurrency](../standards/testing.md#6-concurrency), [code structure](../standards/code-structure.md#1-package-layout)
   ("Import cycles are a design error").
-- [Architecture §2 pipeline](../architecture.md#2-pipeline), [§11](../architecture.md#11-implemented-package-boundaries).
+- [Architecture §2 pipeline](../architecture/README.md#2-pipeline), [§11](../architecture/README.md#11-implemented-package-boundaries).
 
 ## 3. Invariants
 
@@ -58,7 +58,7 @@ Output bytes do not change.
 | `internal/parse/analyze_test.go` | new (test-only) | `Analyze`/`AnalyzeWithChecks` helpers for internal tests: runners in sequence, then `Assemble` |
 | All files calling `parse.Analyze`, `parse.AnalyzeWithChecks`, `parse.AnalyzeWithOptions`, or `parse.Options` outside `internal/parse` (37 files at the plan baseline; list them in the run log) | modified | Import `internal/pipeline` instead |
 | `cmd/scan/architecture_baseline_test.go` | modified | Call `pipeline.AnalyzeWithOptions` |
-| `.zazz/architecture.md` §2 and §11, orientation code-structure row | modified | `pipeline` responsibility; `parse` as producer |
+| `.zazz/architecture/README.md` §2 and §11, orientation code-structure row | modified | `pipeline` responsibility; `parse` as producer |
 | `.zazz/evaluation/architecture-baseline.md` | modified | After measurements and walk count |
 
 Out of scope:

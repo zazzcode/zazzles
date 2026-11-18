@@ -27,7 +27,7 @@ behavior they implement. Output bytes do not change.
 - Plan [what already exists](architecture-update-plan.md#what-already-exists), [phase 2 spec](architecture-phase-2-pipeline-runners.md) §5.
 - [Code structure](../standards/code-structure.md#1-package-layout), [file size thresholds](../standards/code-structure.md#2-file-size-thresholds).
 - [PHP support contract](php-support.md) §4 and §5 (what the adapter owns), [PHP results](../evaluation/php-support-results.md).
-- [Architecture: shared, language and framework layers](../architecture.md#shared-language-and-framework-layers), [§11](../architecture.md#11-implemented-package-boundaries).
+- [Architecture: shared, language and framework layers](../architecture/README.md#shared-language-and-framework-layers), [§11](../architecture/README.md#11-implemented-package-boundaries).
 - [Orientation: code structure](../docs/zazzles-agent-orientation.md#code-structure).
 
 ## 3. Invariants
@@ -54,7 +54,7 @@ behavior they implement. Output bytes do not change.
 | `internal/parse/p1_*.go` … `p4_*.go` | renamed | See D-4 |
 | `internal/parse/analyze_test.go` | modified | Drop the PHP runner from the test helper |
 | `cmd/scan/testdata/architecture-baseline.json` | modified | PHP fixture keys only |
-| `.zazz/architecture.md` §3 and §11, `.zazz/architecture/repository-graph.md` (acquisition adapters), orientation code-structure and testdata rows, `docs/contributing.md` repository layout | modified | New package and core API |
+| `.zazz/architecture/README.md` §3 and §11, `.zazz/architecture/repository-graph.md` (acquisition adapters), orientation code-structure and testdata rows, `docs/contributing.md` repository layout | modified | New package and core API |
 | `.zazz/specifications/php-support.md` §4 | modified | Paths now under `internal/langphp`, with a change-log entry |
 
 Out of scope: moving Python or JS/TS; behavior changes; new PHP families; Symfony. Review shape:

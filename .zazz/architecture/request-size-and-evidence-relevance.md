@@ -1,6 +1,6 @@
 # Request size and evidence relevance
 
-[Architecture](../architecture.md#7-evidence-bundle-contract) · [Trace judgment](trace-judgment.md) · [Evidence and claims](evidence-and-claims.md)
+[Architecture](README.md#7-evidence-bundle-contract) · [Trace judgment](trace-judgment.md) · [Evidence and claims](evidence-and-claims.md)
 
 This document owns the design for keeping decision requests small and relevant. It covers how
 evidence is selected and represented, and what happens when a request is too large. It records the

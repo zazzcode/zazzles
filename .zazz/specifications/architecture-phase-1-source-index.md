@@ -211,7 +211,7 @@ call resolution.
 | `internal/parse/commonjs.go` and the hot-path callers of `bindingReassigned`, `shadowed`, `walkCalls` | modified | Query L2/L1 instead of re-walking; listed per file in the run log before editing |
 | `internal/parse/binding_parity_test.go` | new | Differential test: old walk and L2 answers agree on every JS/TS fixture and on juice-shop when `ZAZZLES_JUICE_SHOP` is set |
 | `.zazz/evaluation/architecture-baseline.md` | modified | After measurements |
-| `.zazz/architecture.md` §3 and §11, `.zazz/architecture/repository-graph.md` | modified | Source index layers; implemented versus planned |
+| `.zazz/architecture/README.md` §3 and §11, `.zazz/architecture/repository-graph.md` | modified | Source index layers; implemented versus planned |
 
 Out of scope for 1A: Python and PHP indexes, the call index, summaries, flow semantics, report fields and judge requests.
 
@@ -488,7 +488,7 @@ parallel accuracy track, owned per language in `internal/analysispacks`. The 1D 
 written against these numbers before it starts.
 
 Docs updated: `.zazz/architecture/repository-graph.md` (abandoned graph data model, and why the source
-index is better), `.zazz/architecture.md` §3 and the graph storage decision, and
+index is better), `.zazz/architecture/README.md` §3 and the graph storage decision, and
 `docs/technical-approach.md` (engine structure and performance).
 
 ### 2026-11-18 — Step 1D contract written; steps renumbered

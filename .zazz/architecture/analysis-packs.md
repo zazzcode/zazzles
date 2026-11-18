@@ -2,7 +2,7 @@
 
 <a id="embedded-analysis-components"></a>
 
-The [architecture terminology](../architecture.md#analyzer-terminology) distinguishes an **Analyzer**
+The [architecture terminology](README.md#analyzer-terminology) distinguishes an **Analyzer**
 (the assessment capability), its supporting **analysis pack** (versioned knowledge), reusable
 **analysis components**, and the **shared analysis engine**. Internal family registrations group
 related candidate kinds and protocols; they do not require separate engines or packages.

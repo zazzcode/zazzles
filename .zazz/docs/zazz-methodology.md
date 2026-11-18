@@ -134,7 +134,7 @@ zazzles's current proposals; workflow skills and standards describe how approved
 | ------- | ------- |
 | [Project Document](../project.md) | Zazzles's top-level product orientation. |
 | [Document Storage](../../AGENTS.md#document-model) | Defines where durable docs, active implementation scratch, completed specs, project plans, roadmaps, and milestones live. |
-| [Architecture](../architecture.md) | Zazzles's proposed technical shape. |
+| [Architecture](../architecture/README.md) | Zazzles's proposed technical shape. |
 | [Proposals](../project/03-jev-design-proposal.md) | Current proposal, rationale, research inputs, and open decisions. |
 | [Features and Project Milestones](../project/implementation-plan.md) | Proposed phases/spec slices; milestones and owners remain to be assigned. |
 | [Specifications](../../.agents/skills/spec-builder/SKILL.md) | Defines deliverable specifications as bounded execution contracts. |
@@ -152,7 +152,7 @@ Zazz uses a project-first document model:
 
 - `project.md` explains the product's purpose, users, major capabilities, and durable operating assumptions.
 - `architecture.md` or `architecture/` explains intended technical shape and important system decisions.
-  Scan uses `.zazz/architecture.md`.
+  Scan uses `.zazz/architecture/README.md`.
 - `proposals/` or a declared project-doc location records decisions when the path is uncertain.
   Scan currently keeps its proposal/research docs in `.zazz/project/`.
 - `features/` or a declared project-doc location describes long-lived capabilities and roadmap increments.

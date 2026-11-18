@@ -66,7 +66,7 @@ an in-place contract revision. Unrelated cleanup is outside scope.
 
 | `docs/samples/evaluate-python.py` | modified only if required | Canonical report input compatibility without changing expected cases |
 | `.zazz/evaluation/common-entry-dispatch-results.md` | new | Durable source-reviewed outcomes, commands and limitations |
-| `.zazz/architecture.md; .zazz/architecture/common-entry-dispatch.md; .zazz/architecture/reporting-and-sarif.md, html-reporting.md` | modified | Actual implemented package/report contracts |
+| `.zazz/architecture/README.md; .zazz/architecture/common-entry-dispatch.md; .zazz/architecture/reporting-and-sarif.md, html-reporting.md` | modified | Actual implemented package/report contracts |
 | `docs/running-scans.md, interpreting-results.md, analysis/README.md; .zazz/project/common-entry-dispatch.md; .zazz/specifications/README.md` | modified | Capability/compatibility status and discoverable results |
 | `.zazz/specifications/common-entry-dispatch-08-acceptance.md` | modified if needed | Contract decisions and evidence links |
 | `.zazz/ephemeral/common-entry-dispatch-08-acceptance-run-log.md` | ignored local | Append-only execution evidence |

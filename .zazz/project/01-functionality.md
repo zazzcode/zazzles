@@ -1,10 +1,10 @@
 # 01 — Proposed functionality
 
 **Concept-stage proposal, 2026-10-19.** These are desired capabilities, not built or accepted behavior.
-Technical context: [architecture](../architecture.md). Delivery boundaries:
+Technical context: [architecture](../architecture/README.md). Delivery boundaries:
 [scope](02-project-scope.md) and [implementation plan](implementation-plan.md).
 
-**Provider decision (2026-10-31):** the [architecture](../architecture.md#current-provider-decision)
+**Provider decision (2026-10-31):** the [architecture](../architecture/README.md#current-provider-decision)
 owns the current provider decision; this document defers to it.
 
 ## Purpose and users
@@ -55,7 +55,7 @@ Future command/API details require their own contracts.
 
 ## Analyzer vocabulary
 
-Use the [canonical terminology](../architecture.md#analyzer-terminology): an **Analyzer** is an
+Use the [canonical terminology](../architecture/README.md#analyzer-terminology): an **Analyzer** is an
 assessment capability; an **analysis pack** supplies its versioned interpretation knowledge;
 **analysis components** are reusable knowledge items; the **shared analysis engine** supplies common
 infrastructure. The XSS Analyzer includes reflected, stored and client-side/DOM/framework capabilities.

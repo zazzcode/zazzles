@@ -14,7 +14,7 @@ principles and future goals; they do not independently authorize implementation.
 
 ## Analyzer terminology
 
-Use the [current architecture vocabulary](../architecture.md#analyzer-terminology): **Analyzer** names
+Use the [current architecture vocabulary](../architecture/README.md#analyzer-terminology): **Analyzer** names
 the assessment capability (for example, SQL Injection Analyzer or XSS Analyzer), **analysis pack**
 names its supporting versioned knowledge, and **analysis component** names a reusable catalog item.
 The **shared analysis engine** supplies common infrastructure. This proposal retains the historical

@@ -37,7 +37,7 @@ unresolvable controller. Neither is dropped. Plain-PHP behavior (DVWA) is unchan
 - [PHP support contract](php-support.md) D-2 to D-7 (server-mapped entries, input facts, SQL, XSS models), [PHP results](../evaluation/php-support-results.md).
 - [Architecture: shared, language and framework layers](../architecture/README.md#shared-language-and-framework-layers), [entry/dispatch](../architecture/README.md#multiple-entry-and-dispatch-mechanisms).
 - Analysis rules: [database injection](../../docs/analysis/database-injection.md), [XSS](../../docs/analysis/xss.md), [input validation](../../docs/analysis/input-validation.md).
-- Python Jinja precedent for lexical template output: `internal/parse/python_templates.go` (`safe` filter handling).
+- Python Jinja precedent for lexical template output: `internal/langpy/templates.go` (`safe` filter handling).
 - Container-root `repository-code-organization-review-proposal.md`, "Per planned extension", the Symfony row (requirements only).
 
 ## 3. Invariants
@@ -218,4 +218,7 @@ Use the plan's common rules. Record the OQ answers verbatim, the fixture matrix,
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-18 — Paths after architecture phase 3B
+
+Source: [phase 3B](architecture-phase-3-js-ts-python-package.md) moved JS/TS to `internal/langjs` and
+Python to `internal/langpy`; `internal/parse` is the language core. Changed: §2 required-reading path for the Jinja precedent. No scope change.

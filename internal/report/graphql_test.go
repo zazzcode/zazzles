@@ -14,7 +14,7 @@ import (
 func TestGraphQLPipelineAndBounds(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
 		t.Run(language, func(t *testing.T) {
-			root := "../parse/testdata/" + language + "/graphql"
+			root := "../langjs/testdata/" + language + "/graphql"
 			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)

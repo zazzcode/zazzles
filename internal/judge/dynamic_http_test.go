@@ -13,7 +13,7 @@ import (
 )
 
 func TestDynamicPythonVulnPyTraces(t *testing.T) {
-	r, err := pipeline.Analyze("../parse/testdata/python/dynamic-vulnpy", "")
+	r, err := pipeline.Analyze("../langpy/testdata/dynamic-vulnpy", "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestPythonInputSelection(t *testing.T) {
-	r, err := pipeline.Analyze("../parse/testdata/python/command-injection", "")
+	r, err := pipeline.Analyze("../langpy/testdata/command-injection", "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -19,7 +19,7 @@ import (
 func TestPathPipelineParity(t *testing.T) {
 	for _, dir := range []string{"typescript/path-traversal", "javascript/path-traversal", "python/path-traversal", "typescript/path-traversal-expanded"} {
 		t.Run(dir, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+dir, "")
+			r, err := pipeline.Analyze(fixtureRoot(dir), "")
 			if err != nil {
 				t.Fatal(err)
 			}

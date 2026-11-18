@@ -5,16 +5,18 @@ import (
 	"strings"
 )
 
-type sourceComment struct{ start, end uint }
+// SourceComment is the byte range of one comment excluded from model source.
+type SourceComment struct{ start, end uint }
 
-// Comments and standalone Python docstrings are presentation data, not operation
-// witnesses. Keep their byte positions while excluding their prose from model input.
-func sourceComments(root *sitter.Node, src []byte, python bool) []sourceComment {
-	var out []sourceComment
+// SourceComments lists the comments (and, for Python, standalone docstrings)
+// under root. They are presentation data, not operation witnesses: callers keep
+// their byte positions while excluding their prose from model input.
+func SourceComments(root *sitter.Node, src []byte, python bool) []SourceComment {
+	var out []SourceComment
 	var visit func(*sitter.Node)
 	visit = func(n *sitter.Node) {
 		if n.Kind() == "comment" {
-			out = append(out, sourceComment{n.StartByte(), n.EndByte()})
+			out = append(out, SourceComment{n.StartByte(), n.EndByte()})
 			return
 		}
 		if python && n.Kind() == "expression_statement" && n.NamedChildCount() == 1 && n.NamedChild(0).Kind() == "string" {
@@ -33,7 +35,7 @@ func sourceComments(root *sitter.Node, src []byte, python bool) []sourceComment 
 						continue
 					}
 					if c.Id() == n.Id() {
-						out = append(out, sourceComment{n.StartByte(), n.EndByte()})
+						out = append(out, SourceComment{n.StartByte(), n.EndByte()})
 						return
 					}
 					break
@@ -47,7 +49,9 @@ func sourceComments(root *sitter.Node, src []byte, python bool) []sourceComment 
 	visit(root)
 	return out
 }
-func modelSource(src []byte, start, end uint, comments []sourceComment) string {
+
+// ModelSource returns src[start:end] with comment prose blanked, for model input.
+func ModelSource(src []byte, start, end uint, comments []SourceComment) string {
 	var masked []byte
 	for _, c := range comments {
 		a, b := c.start, c.end

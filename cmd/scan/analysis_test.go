@@ -13,7 +13,7 @@ import (
 
 func TestAnalysisModeCompatibility(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
-	root := "../../internal/parse/testdata/string-flow"
+	root := "../../internal/langjs/testdata/string-flow"
 	var canonical []byte
 	for _, mode := range []string{"--analyze", "--strings"} {
 		var out, stderr bytes.Buffer
@@ -67,7 +67,7 @@ func TestSavedAnalysisSchemaExports(t *testing.T) {
 
 func TestBrowserEventPipeline(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
-	root := "../../internal/parse/testdata/javascript/browser-events"
+	root := "../../internal/langjs/testdata/javascript/browser-events"
 	var out, stderr bytes.Buffer
 	if code := run([]string{"--analyze", "--json", root}, &out, &stderr); code != exitOK {
 		t.Fatalf("code=%d stderr=%s", code, stderr.String())
@@ -106,7 +106,7 @@ func TestBrowserEventPipeline(t *testing.T) {
 func TestDynamicPythonVulnPyTraces(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
 	var out, stderr bytes.Buffer
-	if code := run([]string{"--analyze", "--json", "../../internal/parse/testdata/python/dynamic-vulnpy"}, &out, &stderr); code != exitOK {
+	if code := run([]string{"--analyze", "--json", "../../internal/langpy/testdata/dynamic-vulnpy"}, &out, &stderr); code != exitOK {
 		t.Fatalf("code=%d stderr=%s", code, stderr.String())
 	}
 	var r analysis.AnalysisReport
@@ -137,7 +137,7 @@ func TestGraphQLPipelineAndBounds(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
 	for _, language := range []string{"javascript", "typescript"} {
 		t.Run(language, func(t *testing.T) {
-			root := "../../internal/parse/testdata/" + language + "/graphql"
+			root := "../../internal/langjs/testdata/" + language + "/graphql"
 			var out, stderr bytes.Buffer
 			if code := run([]string{"--analyze", "--json", "--entry-kind", "graphql", root}, &out, &stderr); code != exitOK {
 				t.Fatalf("code=%d stderr=%s", code, stderr.String())
@@ -204,7 +204,7 @@ func TestGRPCPipeline(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
 	for _, language := range []string{"javascript", "typescript"} {
 		t.Run(language, func(t *testing.T) {
-			root := "../../internal/parse/testdata/" + language + "/grpc"
+			root := "../../internal/langjs/testdata/" + language + "/grpc"
 			var out, stderr bytes.Buffer
 			if code := run([]string{"--analyze", "--json", "--entry-kind", "grpc", root}, &out, &stderr); code != exitOK {
 				t.Fatalf("code=%d stderr=%s", code, stderr.String())

@@ -52,7 +52,7 @@ func TestClientResultsHaveSeparateHeadingsAndIdentity(t *testing.T) {
 func TestBrowserEventPipeline(t *testing.T) {
 	for _, lang := range []string{"javascript", "typescript"} {
 		t.Run(lang, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+lang+"/browser-events", "")
+			r, err := pipeline.Analyze(fixtureRoot(lang+"/browser-events"), "")
 			if err != nil {
 				t.Fatal(err)
 			}

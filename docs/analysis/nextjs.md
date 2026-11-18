@@ -52,7 +52,7 @@ framework-neutral and was added with the vuln-nextjs lab.
 
 ## Regression evidence
 
-Each rule has paired fixtures in `internal/parse/nextjs_test.go` (segment conversion, wrappers,
+Each rule has paired fixtures in `internal/langjs/nextjs_test.go` (segment conversion, wrappers,
 web-request origins and a shadowed `headers`, tsconfig aliases, zod/pino/SSRF, client React flow,
 pages/middleware/actions, Pages Router API routes, navigation exits, client calls that are not routes, upload filename
 sanitizers, Prisma stored and fetched-content links, `getServerSideProps` pages with PGlite).

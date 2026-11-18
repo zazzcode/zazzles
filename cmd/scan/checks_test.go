@@ -13,7 +13,7 @@ import (
 
 func TestEntrySelectors(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
-	root := "../../internal/parse/testdata/string-flow"
+	root := "../../internal/langjs/testdata/string-flow"
 	var out, stderr bytes.Buffer
 	if code := run([]string{"--analyze", "--json", root}, &out, &stderr); code != exitOK {
 		t.Fatal(stderr.String())

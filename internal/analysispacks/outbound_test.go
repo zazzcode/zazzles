@@ -11,7 +11,7 @@ import (
 
 func TestOutboundComponentSelection(t *testing.T) {
 	for _, fixture := range []string{"javascript/outbound", "typescript/outbound", "python/outbound"} {
-		r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+		r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 		if err != nil {
 			t.Fatal(err)
 		}

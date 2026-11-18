@@ -99,7 +99,7 @@ func TestRunUsageErrors(t *testing.T) {
 }
 
 func TestRoutesCLI(t *testing.T) {
-	root := filepath.Join("..", "..", "internal", "parse", "testdata", "express-login")
+	root := filepath.Join("..", "..", "internal", "langjs", "testdata", "express-login")
 	var stdout, stderr bytes.Buffer
 
 	if code := run([]string{"--routes", root}, &stdout, &stderr); code != exitOK {
@@ -165,7 +165,7 @@ func TestRunMissingPath(t *testing.T) {
 }
 
 func TestStringsCLI(t *testing.T) {
-	root := filepath.Join("..", "..", "internal", "parse", "testdata", "string-flow")
+	root := filepath.Join("..", "..", "internal", "langjs", "testdata", "string-flow")
 	var out, errOut bytes.Buffer
 	if code := run([]string{"--analyze", "--json", "--entry", "server.ts", root}, &out, &errOut); code != exitOK {
 		t.Fatalf("code=%d stderr=%s", code, errOut.String())
@@ -198,7 +198,7 @@ func TestStringsCLI(t *testing.T) {
 }
 
 func TestStringsRouteFilter(t *testing.T) {
-	root := filepath.Join("..", "..", "internal", "parse", "testdata", "string-flow")
+	root := filepath.Join("..", "..", "internal", "langjs", "testdata", "string-flow")
 	var out, errOut bytes.Buffer
 	if code := run([]string{"--analyze", "--json", "--entry", "server.ts", "--route", "/login", root}, &out, &errOut); code != exitOK {
 		t.Fatalf("code %d: %s", code, errOut.String())
@@ -236,7 +236,7 @@ func TestCheckFileValidation(t *testing.T) {
 }
 
 func TestSARIFCLI(t *testing.T) {
-	root := filepath.Join("..", "..", "internal", "parse", "testdata", "string-flow")
+	root := filepath.Join("..", "..", "internal", "langjs", "testdata", "string-flow")
 	var out, errOut bytes.Buffer
 	if code := run([]string{"--analyze", "--sarif", "--entry", "server.ts", root}, &out, &errOut); code != exitOK {
 		t.Fatalf("code=%d stderr=%s", code, errOut.String())

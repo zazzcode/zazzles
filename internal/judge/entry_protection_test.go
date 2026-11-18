@@ -26,7 +26,7 @@ func TestEntryProtectionCoverage(t *testing.T) {
 	} {
 		fixture := tc.fixture
 		t.Run(fixture, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -57,7 +57,7 @@ func TestEntryProtectionCoverage(t *testing.T) {
 		for _, fixture := range []struct{ source, dest string }{
 			{"javascript/grpc", ""}, {"python/dynamic-vulnpy/apps", "apps"}, {"python/dynamic-vulnpy/src", "src"}, {"python/dynamic-vulnpy/independent-controls", "independent-controls"}, {"javascript/graphql", "graphql"}, {"javascript/browser-events", "events"}, {"typescript/dynamic-dispatch", "http"},
 		} {
-			if err := os.CopyFS(filepath.Join(root, fixture.dest), os.DirFS("../parse/testdata/"+fixture.source)); err != nil {
+			if err := os.CopyFS(filepath.Join(root, fixture.dest), os.DirFS(fixtureRoot(fixture.source))); err != nil {
 				t.Fatal(err)
 			}
 		}

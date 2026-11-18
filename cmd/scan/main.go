@@ -16,7 +16,7 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/judge"
 	"github.com/zazzcode/zazzles/internal/lang"
-	"github.com/zazzcode/zazzles/internal/parse"
+	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
 
@@ -184,7 +184,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 func runRoutes(root string, asJSON bool, stdout, stderr io.Writer) int {
-	scanned, err := parse.Routes(root)
+	scanned, err := pipeline.Routes(root)
 	if err != nil {
 		fmt.Fprintf(stderr, "scan: %v\n", err)
 		return exitError

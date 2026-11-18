@@ -20,7 +20,7 @@ import (
 func TestOutboundComponentEvidenceParity(t *testing.T) {
 	for _, fixture := range []string{"javascript/outbound", "typescript/outbound", "python/outbound", "javascript/xss-fetch"} {
 		t.Run(fixture, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+			r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -39,11 +39,12 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			// Analyzer protection/flow (P5): findings gain assessment_state and
 			// blocking_evidence; constant-destination outbound summaries gain one
 			// sentence. Parser output for these fixtures is otherwise unchanged.
+			// Phase 3B: fixtures moved to internal/langpy and internal/langjs; only the embedded root changed.
 			want := map[string]string{
-				"javascript/outbound":  "fe83c6051cd20ca23b4f425e0d98d6a810e1c268b084d0de296086a34315f672",
-				"typescript/outbound":  "f17e446623de7faed72652a0337b0daed885a89d089b954a1742208ed26b0e94",
-				"python/outbound":      "997d2c824b0e720b5bd20397161a37b9bf499bc97c821e0ec5b919eaade7ed14",
-				"javascript/xss-fetch": "468e9d7d75aa7c626843e3ce9a263f6a334240b37449f1f3b671116c837a8396",
+				"javascript/outbound":  "e40be57fa9dc6a305333a415da79d90343c09fb371686b7bff836d4ff5e67a6c",
+				"typescript/outbound":  "84cec5040cda90e3db77002ed6ab90a95ef5087e1e3672da85d6fa9f580b5cad",
+				"python/outbound":      "8c5685993fd472b04bd05218ca4ebcc29d31538636568f0efa63f2912114ece9",
+				"javascript/xss-fetch": "e15396cfbafce6174b3b7125c113b7f6789d27eff03b6b4e97bafe72bd77c5e9",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)
@@ -53,7 +54,7 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 }
 
 func TestOutboundObservationNotAssessed(t *testing.T) {
-	r, err := pipeline.Analyze("../parse/testdata/javascript/outbound", "")
+	r, err := pipeline.Analyze("../langjs/testdata/javascript/outbound", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +99,7 @@ func TestOutboundComponentReportParity(t *testing.T) {
 		}
 	})
 	for _, fixture := range []string{"javascript/outbound", "typescript/outbound", "python/outbound"} {
-		r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+		r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 		if err != nil {
 			t.Fatal(err)
 		}

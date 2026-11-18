@@ -18,7 +18,7 @@ import (
 func TestGraphQLProtectionContexts(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript", "unknown-guard"} {
 		t.Run(language, func(t *testing.T) {
-			root := "../parse/testdata/" + language + "/graphql"
+			root := "../langjs/testdata/" + language + "/graphql"
 			if language == "unknown-guard" {
 				root = t.TempDir()
 				source := "import {ApolloServer} from '@apollo/server';import {Sequelize} from 'sequelize';const db=new Sequelize('sqlite::memory:');new ApolloServer({typeDefs:`type Query { unknown(email:String):String }`,resolvers:{Query:{unknown:(p,args)=>{guard(args.email);return db.query('SELECT '+args.email)}}}});"

@@ -48,7 +48,7 @@ func TestExportHTMLFromSavedReport(t *testing.T) {
 }
 
 func TestOutputDirectoryPrecedenceAndStdout(t *testing.T) {
-	target, err := filepath.Abs("../../internal/parse/testdata/string-flow")
+	target, err := filepath.Abs("../../internal/langjs/testdata/string-flow")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func (failingReportTransport) RoundTrip(*http.Request) (*http.Response, error) {
 }
 
 func TestFailedJudgeRetainsOutputBundle(t *testing.T) {
-	target, err := filepath.Abs("../../internal/parse/testdata/string-flow")
+	target, err := filepath.Abs("../../internal/langjs/testdata/string-flow")
 	if err != nil {
 		t.Fatal(err)
 	}

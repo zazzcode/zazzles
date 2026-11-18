@@ -18,7 +18,7 @@ the tool a PR touches before opening it.
 | Label | Scope |
 |---|---|
 | `CLI` | `cmd/scan` — flags, output formats, exit codes |
-| `PARSE` | `internal/parse`, `internal/lang` — Tree-sitter integration, grammars, parsing |
+| `PARSE` | `internal/parse`, `internal/lang`, `internal/lang*` language packages (e.g. `internal/langphp`) — Tree-sitter integration, grammars, parsing, language adapters |
 | `PIPELINE` | `internal/pipeline` — one walk, language-runner selection and concurrency, fixed-order assembly |
 | `ANALYSIS` | `internal/analysis` — shared route, candidate, evidence and assessment records |
 | `GUIDELINES` | `internal/guidelines` — embedded language Analysis Guidelines |

@@ -30,7 +30,7 @@ func TestCommandPipelineParity(t *testing.T) {
 	}
 	for _, fx := range fixtures {
 		t.Run(fx.dir, func(t *testing.T) {
-			r, err := pipeline.Analyze("../parse/testdata/"+fx.dir, "")
+			r, err := pipeline.Analyze(fixtureRoot(fx.dir), "")
 			if err != nil {
 				t.Fatal(err)
 			}

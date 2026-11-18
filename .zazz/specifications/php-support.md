@@ -86,16 +86,16 @@ reviewable together. All product edits stay in this worktree; raw run artifacts 
 | --- | --- | --- |
 | `go.mod`, `go.sum` | modified | pin `tree-sitter-php` (v0.23.x line, `go-tree-sitter v0.24.0`-compatible) |
 | `internal/lang/lang.go`, `lang_test.go` | modified | `PHP` language constant; `.php`/`.phtml` extensions |
-| `internal/parse/php_modules.go` | new | `phpSet`/`phpModule`, grammar wiring, include resolution, `report()` |
-| `internal/parse/php_entries.go` | new | server-mapped HTTP entries; conditional include dispatch alternatives |
-| `internal/parse/php_flow.go` | new | bounded value/control flow, superglobals, interpolation, HTML accumulation |
-| `internal/parse/php_calls.go` | new | call dispatch to family models |
-| `internal/parse/php_sql.go`, `php_command.go`, `php_path.go` | new | SQL/command/path sink tables and claims; SQL storage keys |
-| `internal/parse/php_xss.go`, `php_code_redirect.go` | new | reflected/stored XSS rendering model; eval and `header()` redirect claims |
-| `internal/parse/php_input_facts.go` | new | superglobal origin mapping; `source.php-input-v1` fact assembly |
-| `internal/parse/parse.go`, `analysis.go` | modified | PHP dispatch/merge for `--routes` and `AnalyzeWithOptions`; entry-file error strings |
-| `internal/parse/testdata/php/**` | new | per-family fixtures and a trimmed DVWA-shaped module fixture |
-| `internal/parse/php_*_test.go`, `cmd/scan/php_test.go` | new | per-family and CLI regression tests |
+| `internal/langphp/modules.go` (was `internal/parse/php_modules.go`) | new | `phpSet`/`phpModule`, grammar wiring, include resolution, `report()` |
+| `internal/langphp/entries.go` | new | server-mapped HTTP entries; conditional include dispatch alternatives |
+| `internal/langphp/flow.go` | new | bounded value/control flow, superglobals, interpolation, HTML accumulation |
+| `internal/langphp/calls.go` | new | call dispatch to family models |
+| `internal/langphp/sql.go`, `command.go`, `path.go` | new | SQL/command/path sink tables and claims; SQL storage keys |
+| `internal/langphp/xss.go`, `code_redirect.go` | new | reflected/stored XSS rendering model; eval and `header()` redirect claims |
+| `internal/langphp/input_facts.go` | new | superglobal origin mapping; `source.php-input-v1` fact assembly |
+| `internal/parse/analysis.go`, `internal/pipeline/pipeline.go`, `routes.go` | modified | PHP runner selection and merge for `--routes` (`pipeline.Routes`) and analysis; entry-file error strings |
+| `internal/langphp/testdata/**` | new | per-family fixtures and a trimmed DVWA-shaped module fixture |
+| `internal/langphp/*_test.go`, `cmd/scan/php_test.go` | new | per-family and CLI regression tests |
 | `internal/analysispacks/families.go`, `select.go`, `descriptors.go`, `contracts.go`, `command.go`, `path.go`, `*_test.go` | modified | PHP family language lists, `php-*` contracts, `source.php-input-v1` selection |
 | `internal/guidelines/php.md` (+ per-family `*_php.md` sections) | new | versioned PHP Analysis Guidelines consumed by `FamilyBody` |
 | `cmd/scan/main.go` | modified | `--entry` help text covers PHP |
@@ -106,6 +106,9 @@ reviewable together. All product edits stay in this worktree; raw run artifacts 
 | `.zazz/evaluation/php-support-results.md`, `.zazz/evaluation/dvwa-detection-guide.md` | new | durable acceptance evidence and source-reviewed expectations |
 | `docs/php-support.md`, `docs/samples/dvwa/**`, `docs/samples/README.md`, `README.md` | new/modified | user-facing coverage doc; published DVWA reports at paid closeout |
 | `.zazz/ephemeral/php-support-run-log.md` | ignored | append-only execution record |
+
+Paths reflect [architecture phase 3A](architecture-phase-3-php-package.md): the adapter moved from
+`internal/parse/php_*.go` to `internal/langphp` (prefix dropped) and uses `parse`'s language core API.
 
 Out of scope: Drupal, Symfony, Laravel, Twig or any framework adapter; composer/vendor dependency
 resolution; NoSQL; SSRF/outbound and logging families for PHP; client/DOM XSS inside PHP-emitted
@@ -470,3 +473,14 @@ nesting 8. PHP guideline version 2 (inline-HTML output context).
 Evaluation of record and sample analysis in `.zazz/evaluation/php-support-results.md` and
 `.zazz/evaluation/php-sample-analysis.md`; 721 review requests. The published
 `docs/samples/dvwa/` reports remain pinned to scanner `1deee35` by their metadata.
+
+### 2026-11-18 — Adapter moved to `internal/langphp` (architecture phase 3A)
+
+**Source.** [Architecture phase 3A](architecture-phase-3-php-package.md), `arch-multi-lang-packaging`.
+
+**Summary.** §4 paths updated: PHP sources, tests and fixtures now live in `internal/langphp`
+(`langphp.Run`, `langphp.Routes`), route-inventory orchestration in `pipeline.Routes`. Behavior and
+bounds are unchanged; other sections keep their original file names as history.
+
+**Verification impact.** None to PHP output. The architecture golden's PHP report hashes changed only
+for the embedded fixture root path; request and SARIF digests are unchanged.

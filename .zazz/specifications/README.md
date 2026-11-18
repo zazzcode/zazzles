@@ -23,7 +23,8 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
   [1 source index and callable summaries](architecture-phase-1-source-index.md) (replaces the superseded
   [registration graph](architecture-phase-1-registration-graph.md)),
   [2 pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md),
-  [3 PHP package](architecture-phase-3-php-package.md),
+  [3A PHP package](architecture-phase-3-php-package.md),
+  [3B JS/TS and Python packages](architecture-phase-3-js-ts-python-package.md),
   [4 parallel judge](architecture-phase-4-parallel-judge.md),
   [5 measured recall gaps](architecture-phase-5-accuracy-gaps.md),
   [6 Symfony](architecture-phase-6-symfony.md),

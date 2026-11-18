@@ -18,7 +18,7 @@ import (
 func TestGRPCInputRolesAndControls(t *testing.T) {
 	for _, language := range []string{"javascript", "typescript"} {
 		t.Run(language, func(t *testing.T) {
-			root := "../parse/testdata/" + language + "/grpc"
+			root := "../langjs/testdata/" + language + "/grpc"
 			r, err := pipeline.Analyze(root, "")
 			if err != nil {
 				t.Fatal(err)

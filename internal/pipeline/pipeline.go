@@ -1,8 +1,9 @@
 // Package pipeline orchestrates one repository analysis: it walks the target
 // once, selects the language runners the inventory and entry need, runs them
 // concurrently, merges their reports in the fixed JS/TS, Python, PHP order and
-// attaches declared checks and analysis packs. internal/parse produces the
-// per-language reports; it does not orchestrate.
+// attaches declared checks and analysis packs. It also assembles the syntactic
+// route inventory (Routes). internal/parse and internal/langphp produce the
+// per-language reports; they do not orchestrate.
 package pipeline
 
 import (
@@ -10,6 +11,9 @@ import (
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
+	"github.com/zazzcode/zazzles/internal/langjs"
+	"github.com/zazzcode/zazzles/internal/langphp"
+	"github.com/zazzcode/zazzles/internal/langpy"
 	"github.com/zazzcode/zazzles/internal/parse"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
@@ -65,12 +69,12 @@ func productionStages() stages {
 			return parse.Inventory{Root: root, Files: files.Files}, nil
 		},
 		runners: [runnerCount]runFunc{
-			javascriptRunner: parse.RunJavaScript,
+			javascriptRunner: langjs.Run,
 			pythonRunner: func(inv parse.Inventory, entry string, checks []analysis.Check, _ parse.Options) (*analysis.AnalysisReport, error) {
-				return parse.RunPython(inv, entry, checks)
+				return langpy.Run(inv, entry, checks)
 			},
 			phpRunner: func(inv parse.Inventory, entry string, checks []analysis.Check, _ parse.Options) (*analysis.AnalysisReport, error) {
-				return parse.RunPHP(inv, entry, checks)
+				return langphp.Run(inv, entry, checks)
 			},
 		},
 	}

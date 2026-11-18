@@ -7,15 +7,16 @@ import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
-type guardPolarity int
+type GuardPolarity int
 
 const (
-	guardRejectsWhenTrue  guardPolarity = iota // if (cond) { return/throw/abort }, or the else branch of an if
-	guardEnforcesWhenTrue                      // if (cond) { sink } inside consequence
+	guardRejectsWhenTrue  GuardPolarity = iota // if (cond) { return/throw/abort }, or the else branch of an if
+	GuardEnforcesWhenTrue                      // if (cond) { sink } inside consequence
 )
 
 const (
-	terminatingGuardKind = "terminating_guard"
+	// TerminatingGuardKind is the context kind of a guard that ends the invocation on its rejecting side.
+	TerminatingGuardKind = "terminating_guard"
 	enclosingGuardKind   = "enclosing_guard"
 )
 
@@ -23,9 +24,9 @@ const (
 // recorded as evidence: the condition for an enclosing site, the whole
 // statement for a terminating one. End is the byte after which an assignment to
 // a name the condition mentions makes the control inspect a different value.
-type guardSite struct {
+type GuardSite struct {
 	Kind     string
-	Polarity guardPolarity
+	Polarity GuardPolarity
 	Cond     *sitter.Node
 	Whole    *sitter.Node
 	End      uint
@@ -34,40 +35,40 @@ type guardSite struct {
 // guardLang adapts the lexical guard engine to one grammar: which node kinds
 // hold statement lists and functions, which statements cannot fall through, and
 // how a declaration or assignment names the variable it writes.
-type guardLang struct {
-	src      []byte
-	blocks   map[string]bool
-	function func(*sitter.Node) bool
-	exits    func(*sitter.Node) bool
+type GuardLang struct {
+	Src      []byte
+	Blocks   map[string]bool
+	Function func(*sitter.Node) bool
+	Exits    func(*sitter.Node) bool
 	// binding returns the identifier a declaration or assignment initializes
 	// from a value, for derived-name closure.
-	binding func(*sitter.Node) (name, value *sitter.Node)
+	Binding func(*sitter.Node) (name, value *sitter.Node)
 	// writes returns the target nodes an assignment, augmented assignment,
 	// walrus or loop header writes: identifiers, members, patterns.
-	writes func(*sitter.Node) []*sitter.Node
+	Writes func(*sitter.Node) []*sitter.Node
 }
 
-func (l guardLang) text(n *sitter.Node) string { return n.Utf8Text(l.src) }
+func (l GuardLang) text(n *sitter.Node) string { return n.Utf8Text(l.Src) }
 
 // climb visits every sibling terminating `if` before start in its enclosing
 // blocks and every enclosing `if`, innermost first, and returns the enclosing
 // function so callers can attribute a local helper's call sites.
-func (l guardLang) climb(start *sitter.Node, visit func(guardSite)) *sitter.Node {
+func (l GuardLang) Climb(start *sitter.Node, visit func(GuardSite)) *sitter.Node {
 	child := start
 	for p := start.Parent(); p != nil; p = p.Parent() {
 		switch {
-		case l.blocks[p.Kind()]:
+		case l.Blocks[p.Kind()]:
 			for i := uint(0); i < p.NamedChildCount(); i++ {
 				sib := p.NamedChild(i)
 				if sib.StartByte() >= child.StartByte() {
 					break
 				}
-				if sib.Kind() == "if_statement" && l.exits(sib.ChildByFieldName("consequence")) {
-					visit(guardSite{terminatingGuardKind, guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte()})
+				if sib.Kind() == "if_statement" && l.Exits(sib.ChildByFieldName("consequence")) {
+					visit(GuardSite{TerminatingGuardKind, guardRejectsWhenTrue, sib.ChildByFieldName("condition"), sib, sib.EndByte()})
 					// Later code also runs only when each test of an else-if chain whose
 					// consequence exits is false, as long as every earlier arm exits.
-					for link := elseIf(sib); link != nil && l.exits(link.ChildByFieldName("consequence")); link = elseIf(link) {
-						visit(guardSite{terminatingGuardKind, guardRejectsWhenTrue, link.ChildByFieldName("condition"), link, sib.EndByte()})
+					for link := elseIf(sib); link != nil && l.Exits(link.ChildByFieldName("consequence")); link = elseIf(link) {
+						visit(GuardSite{TerminatingGuardKind, guardRejectsWhenTrue, link.ChildByFieldName("condition"), link, sib.EndByte()})
 					}
 				}
 			}
@@ -75,14 +76,14 @@ func (l guardLang) climb(start *sitter.Node, visit func(guardSite)) *sitter.Node
 			cond, consequence := p.ChildByFieldName("condition"), p.ChildByFieldName("consequence")
 			if cond != nil && consequence != nil {
 				if child.StartByte() >= consequence.StartByte() && child.EndByte() <= consequence.EndByte() {
-					visit(guardSite{enclosingGuardKind, guardEnforcesWhenTrue, cond, cond, cond.EndByte()})
+					visit(GuardSite{enclosingGuardKind, GuardEnforcesWhenTrue, cond, cond, cond.EndByte()})
 				} else if alt := p.ChildByFieldName("alternative"); alt != nil && alt.Kind() == "else_clause" && child.StartByte() >= alt.StartByte() && child.EndByte() <= alt.EndByte() {
-					visit(guardSite{enclosingGuardKind, guardRejectsWhenTrue, cond, cond, cond.EndByte()})
+					visit(GuardSite{enclosingGuardKind, guardRejectsWhenTrue, cond, cond, cond.EndByte()})
 				}
 			}
 		}
 		child = p
-		if l.function(p) {
+		if l.Function(p) {
 			return p
 		}
 	}
@@ -90,11 +91,11 @@ func (l guardLang) climb(start *sitter.Node, visit func(guardSite)) *sitter.Node
 }
 
 // scope returns the function enclosing n, or the tree root when there is none.
-func (l guardLang) scope(n *sitter.Node) *sitter.Node {
+func (l GuardLang) Scope(n *sitter.Node) *sitter.Node {
 	scope := n
 	for p := n.Parent(); p != nil; p = p.Parent() {
 		scope = p
-		if l.function(p) {
+		if l.Function(p) {
 			break
 		}
 	}
@@ -105,7 +106,7 @@ func (l guardLang) scope(n *sitter.Node) *sitter.Node {
 // (`const rel = path.relative(root, full)`) so a check on the derived value is
 // attributed to the operand it came from; defs keeps each derived definition.
 // The closure is bounded to four rounds.
-func (l guardLang) derive(scope *sitter.Node, names map[string]bool, defs map[string]string, defNodes map[string]*sitter.Node) {
+func (l GuardLang) Derive(scope *sitter.Node, names map[string]bool, defs map[string]string, defNodes map[string]*sitter.Node) {
 	list := func() []string {
 		out := make([]string, 0, len(names))
 		for name := range names {
@@ -118,9 +119,9 @@ func (l guardLang) derive(scope *sitter.Node, names map[string]bool, defs map[st
 		changed := false
 		var walk func(*sitter.Node)
 		walk = func(n *sitter.Node) {
-			if id, v := l.binding(n); id != nil && v != nil {
+			if id, v := l.Binding(n); id != nil && v != nil {
 				name := l.text(id)
-				if !names[name] && mentionsAny(l.text(v), list()) {
+				if !names[name] && MentionsAny(l.text(v), list()) {
 					names[name] = true
 					defs[name] = l.text(v)
 					defNodes[name] = v
@@ -143,7 +144,7 @@ func (l guardLang) derive(scope *sitter.Node, names map[string]bool, defs map[st
 // value. Writes through members (`req.query.c = x`), destructuring, tuple
 // targets, walrus expressions and loop headers all count. A write that encloses
 // the call (`x = run(x)`) evaluates the call first, so the control still applies.
-func (l guardLang) assignedBetween(scope *sitter.Node, from, to uint, mentioned []string) bool {
+func (l GuardLang) AssignedBetween(scope *sitter.Node, from, to uint, mentioned []string) bool {
 	found := false
 	var identifiers func(*sitter.Node, func(string))
 	identifiers = func(n *sitter.Node, visit func(string)) {
@@ -175,7 +176,7 @@ func (l guardLang) assignedBetween(scope *sitter.Node, from, to uint, mentioned 
 			return
 		}
 		if n.StartByte() >= from && n.EndByte() <= to {
-			for _, target := range l.writes(n) {
+			for _, target := range l.Writes(n) {
 				found = found || writesName(target)
 			}
 		}
@@ -191,7 +192,7 @@ func (l guardLang) assignedBetween(scope *sitter.Node, from, to uint, mentioned 
 func mentionedNames(cond string, sortedNames []string) []string {
 	var out []string
 	for _, name := range sortedNames {
-		if mentionsAny(cond, []string{name}) {
+		if MentionsAny(cond, []string{name}) {
 			out = append(out, name)
 		}
 	}
@@ -209,21 +210,21 @@ func sortedNameList(names map[string]bool) []string {
 
 // guardSignature identifies a control across call sites by kind, polarity and
 // whitespace-normalized condition text.
-func (l guardLang) guardSignature(g guardSite) string {
+func (l GuardLang) guardSignature(g GuardSite) string {
 	return g.Kind + "|" + string(rune('0'+int(g.Polarity))) + "|" + strings.Join(strings.Fields(l.text(g.Cond)), " ")
 }
 
 // commonGuardSites keeps the controls present at every call site of a local
 // helper; with one site that site's controls apply unchanged. A control present
 // at only some callers does not protect the others.
-func (l guardLang) commonGuardSites(perSite [][]guardSite) []guardSite {
+func (l GuardLang) commonGuardSites(perSite [][]GuardSite) []GuardSite {
 	if len(perSite) == 0 {
 		return nil
 	}
 	if len(perSite) == 1 {
 		return perSite[0]
 	}
-	var common []guardSite
+	var common []GuardSite
 	for _, g := range perSite[0] {
 		key, everywhere := l.guardSignature(g), true
 		for _, other := range perSite[1:] {

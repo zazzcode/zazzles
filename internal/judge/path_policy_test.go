@@ -29,7 +29,7 @@ func pathStub(t *testing.T, provider string, answers pathAnswers) (*Client, *int
 
 func pathUsesByRoute(t *testing.T, fixture string) (map[string]analysis.CandidateUse, *analysis.AnalysisReport) {
 	t.Helper()
-	r, err := pipeline.Analyze("../parse/testdata/"+fixture, "")
+	r, err := pipeline.Analyze(fixtureRoot(fixture), "")
 	if err != nil {
 		t.Fatal(err)
 	}

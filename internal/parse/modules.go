@@ -88,7 +88,9 @@ func (s *moduleSet) close() {
 	for _, m := range s.modules {
 		m.tree.Close()
 	}
-	s.parsers.close()
+	if s.parsers != nil {
+		s.parsers.close()
+	}
 }
 
 func (s *moduleSet) load(file string) (*sourceModule, error) {

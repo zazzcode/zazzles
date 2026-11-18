@@ -14,7 +14,6 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/guidelines"
 	"github.com/zazzcode/zazzles/internal/lang"
-	"github.com/zazzcode/zazzles/internal/walk"
 )
 
 // phpModule is one parsed PHP file. Plain PHP has no router: every file is a
@@ -65,17 +64,29 @@ type phpWrite struct {
 	evidence analysis.Evidence
 }
 
-func newPHPSet(root string) (*phpSet, error) {
-	manifest, err := walk.Walk(root, walk.Options{})
+// RunPHP analyzes the inventory's PHP files. A full scan of an inventory with
+// no PHP files returns nil, nil and opens no grammar; a PHP entry always runs
+// so that an unselected entry keeps its error.
+func RunPHP(inv Inventory, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
+	if entry == "" && !inv.hasLanguage(lang.PHP) {
+		return nil, nil
+	}
+	ph, err := openPHPSet(inv)
 	if err != nil {
 		return nil, err
 	}
+	defer ph.close()
+	return ph.report(entry, checks)
+}
+
+func openPHPSet(inv Inventory) (*phpSet, error) {
+	root := inv.Root
 	p, err := openParser(php.LanguagePHP())
 	if err != nil {
 		return nil, err
 	}
 	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
-	for _, f := range manifest.Files {
+	for _, f := range inv.Files {
 		if f.Language == lang.PHP {
 			s.files = append(s.files, f.Path)
 		}

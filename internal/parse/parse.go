@@ -104,7 +104,8 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 		}
 		out.Gaps = append(keptGaps, nextGaps...)
 	}
-	py, err := newPythonSet(root)
+	inv := Inventory{Root: root, Files: parsed.Files}
+	py, err := openPythonSet(inv)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +114,7 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 		out.Routes = append(out.Routes, r.route)
 	}
 	out.Gaps = append(out.Gaps, py.gaps...)
-	ph, err := newPHPSet(root)
+	ph, err := openPHPSet(inv)
 	if err != nil {
 		return nil, err
 	}

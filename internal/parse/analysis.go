@@ -8,85 +8,76 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/analysispacks"
 	"github.com/zazzcode/zazzles/internal/guidelines"
 	"github.com/zazzcode/zazzles/internal/lang"
 	"github.com/zazzcode/zazzles/internal/walk"
 )
 
-// Analyze resolves route and browser entries and extracts bounded security evidence.
-// Entry limits registration files; dependency modules remain inside the target manifest.
-func Analyze(root, entry string) (*analysis.AnalysisReport, error) {
-	return AnalyzeWithChecks(root, entry, nil)
-}
-
-// AnalyzeWithChecks assembles security evidence with optional declared requirements.
-func AnalyzeWithChecks(root, entry string, checks []analysis.Check) (*analysis.AnalysisReport, error) {
-	return AnalyzeWithOptions(root, entry, checks, Options{})
+// Inventory is the single walk result shared by every language runner. Runners
+// filter its files by language; none walks the target again.
+type Inventory struct {
+	Root  string
+	Files []walk.File
 }
 
 // Options controls optional acquisition discovery without changing Python adapters.
 type Options struct{ DiscoverRoutes bool }
 
-// AnalyzeWithOptions shares the same parsed module set with optional discovery.
-func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Options) (result *analysis.AnalysisReport, resultErr error) {
-	defer func() {
-		if resultErr == nil && result != nil {
-			result.RecordCheckMatches(checks)
-			for i := range result.Uses {
-				analysispacks.Attach(&result.Uses[i])
+func (inv Inventory) hasLanguage(languages ...lang.Language) bool {
+	for _, f := range inv.Files {
+		for _, l := range languages {
+			if f.Language == l {
+				return true
 			}
 		}
-	}()
+	}
+	return false
+}
 
-	if err := analysispacks.Validate(); err != nil {
-		return nil, err
-	}
-	entry = filepath.ToSlash(filepath.Clean(entry))
-	if entry == "." {
-		entry = ""
-	}
-	if strings.EqualFold(filepath.Ext(entry), ".py") {
-		py, err := newPythonSet(root)
-		if err != nil {
-			return nil, err
-		}
-		defer py.close()
-		return py.report(entry, checks)
-	}
-	if ext := strings.ToLower(filepath.Ext(entry)); ext == ".php" || ext == ".phtml" {
-		ph, err := newPHPSet(root)
-		if err != nil {
-			return nil, err
-		}
-		defer ph.close()
-		return ph.report(entry, checks)
-	}
-	files, err := walk.Walk(root, walk.Options{})
+// RunJavaScript resolves JS/TS route and browser entries and extracts bounded
+// security evidence. It always returns the base report with its fixed
+// limitations; a repository with no JS/TS files opens no grammar and loads no
+// module. A non-empty entry must be a normalized, selected JS/TS file.
+func RunJavaScript(inv Inventory, entry string, checks []analysis.Check, options Options) (*analysis.AnalysisReport, error) {
+	set, selected, err := openJavaScriptSet(inv)
 	if err != nil {
 		return nil, err
 	}
-	ps, err := newParsers()
-	if err != nil {
-		return nil, err
-	}
-	out0 := &analysis.AnalysisReport{}
-	set := &moduleSet{root: root, parsers: ps, modules: map[string]*sourceModule{}, allowed: map[string]bool{}}
 	defer set.close()
+	return set.javascriptReport(selected, entry, checks, options)
+}
+
+// openJavaScriptSet allows the inventory's JS/TS files in walk order. It opens
+// the grammars only when there is at least one such file.
+func openJavaScriptSet(inv Inventory) (*moduleSet, []string, error) {
+	var ps *parsers
+	if inv.hasLanguage(lang.JavaScript, lang.TypeScript) {
+		var err error
+		if ps, err = newParsers(); err != nil {
+			return nil, nil, err
+		}
+	}
+	set := &moduleSet{root: inv.Root, parsers: ps, modules: map[string]*sourceModule{}, allowed: map[string]bool{}}
 	var selected []string
-	for _, f := range files.Files {
+	for _, f := range inv.Files {
 		if f.Language == lang.JavaScript || f.Language == lang.TypeScript {
 			set.allowed[f.Path] = true
 			selected = append(selected, f.Path)
 		}
 	}
-	set.detectNextProjects(selected)
+	return set, selected, nil
+}
+
+func (s *moduleSet) javascriptReport(selected []string, entry string, checks []analysis.Check, options Options) (*analysis.AnalysisReport, error) {
+	root := s.root
+	out0 := &analysis.AnalysisReport{}
+	s.detectNextProjects(selected)
 	if entry == "" {
-		selected = set.applyNextScope(out0, selected)
+		selected = s.applyNextScope(out0, selected)
 	}
 	if entry != "" {
 		entry = filepath.ToSlash(filepath.Clean(entry))
-		if !set.allowed[entry] {
+		if !s.allowed[entry] {
 			return nil, fmt.Errorf("entry must be a selected JS/TS file relative to target root: %s", entry)
 		}
 		selected = []string{entry}
@@ -99,7 +90,7 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	}}
 	out.Gaps = append(out.Gaps, out0.Gaps...)
 	for _, file := range selected {
-		m, err := set.load(file)
+		m, err := s.load(file)
 		if err != nil {
 			return nil, err
 		}
@@ -108,17 +99,17 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 			continue
 		}
 		if options.DiscoverRoutes {
-			out.Discovery = set.nodeDiscoveryAlternatives(m, out.Discovery, 1000)
+			out.Discovery = s.nodeDiscoveryAlternatives(m, out.Discovery, 1000)
 		}
-		set.graphqlEntries(out, m)
-		set.grpcEntries(out, m)
-		set.nodeFrameworkEntries(out, m)
-		if p := set.nextProjectFor(file); p != nil {
-			set.nextRouteEntries(out, m, p)
-			set.pagesAPIEntries(out, m, p)
-			set.pagesPageEntries(out, m, p)
-			set.nextPageEntries(out, m, p)
-			set.nextActionEntries(out, m, p)
+		s.graphqlEntries(out, m)
+		s.grpcEntries(out, m)
+		s.nodeFrameworkEntries(out, m)
+		if p := s.nextProjectFor(file); p != nil {
+			s.nextRouteEntries(out, m, p)
+			s.pagesAPIEntries(out, m, p)
+			s.pagesPageEntries(out, m, p)
+			s.nextPageEntries(out, m, p)
+			s.nextActionEntries(out, m, p)
 		}
 		locals := map[string]*sitter.Node{}
 		collectFuncs(m.tree.RootNode(), m.src, locals)
@@ -131,29 +122,29 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 			if obj == nil || obj.Kind() != "identifier" || !m.receivers[obj.Utf8Text(m.src)] {
 				return
 			}
-			if set.finiteRoutes(out, m, call, obj.Utf8Text(m.src)) {
+			if s.finiteRoutes(out, m, call, obj.Utf8Text(m.src)) {
 				return
 			}
 			routes, _ := routesFromCall(file, m.src, call, locals)
 			for _, r := range routes {
-				set.analyzeRoute(out, m, m, r, call, obj.Utf8Text(m.src), nil, r.PathPattern, "")
+				s.analyzeRoute(out, m, m, r, call, obj.Utf8Text(m.src), nil, r.PathPattern, "")
 			}
 		})
 	}
-	set.mountedRoutes(out, selected)
-	set.pathConfiguredMounts(out, selected)
-	if err := set.browser(out); err != nil {
+	s.mountedRoutes(out, selected)
+	s.pathConfiguredMounts(out, selected)
+	if err := s.browser(out); err != nil {
 		return nil, err
 	}
-	set.registerRESTResources()
-	set.linkStoredXSS(out)
-	set.linkCrossTierXSS(out)
-	set.linkTokenClaims(out)
+	s.registerRESTResources()
+	s.linkStoredXSS(out)
+	s.linkCrossTierXSS(out)
+	s.linkTokenClaims(out)
 	assembleXSSClaims(out)
-	set.assembleCommandClaims(out)
-	set.assemblePathClaims(out)
-	set.assembleSSRFClaims(out)
-	set.assembleInterpreterClaims(out)
+	s.assembleCommandClaims(out)
+	s.assemblePathClaims(out)
+	s.assembleSSRFClaims(out)
+	s.assembleInterpreterClaims(out)
 	// Check assembly rebuilds the use list for its own claim families; the
 	// command and path claims are independent of explicit check files and are kept whole.
 	var commandUses []analysis.CandidateUse
@@ -167,46 +158,58 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 	}
 	if len(checks) > 0 {
 		out.Uses = rest
-		set.buildChecks(out, checks)
+		s.buildChecks(out, checks)
 		out.Uses = append(out.Uses, commandUses...)
 	} else {
-		set.automaticQueries(out)
+		s.automaticQueries(out)
 	}
-	set.assembleNodeInputs(out)
-	set.nextPractice(out, selected)
-	keys := make([]string, 0, len(set.modules))
-	for k := range set.modules {
+	s.assembleNodeInputs(out)
+	s.nextPractice(out, selected)
+	keys := make([]string, 0, len(s.modules))
+	for k := range s.modules {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		m := set.modules[k]
+		m := s.modules[k]
 		out.Files = append(out.Files, m.evidence("file", m.tree.RootNode()))
 	}
-	textKeys := make([]string, 0, len(set.textSources))
-	for key := range set.textSources {
-		if set.modules[key] == nil {
+	textKeys := make([]string, 0, len(s.textSources))
+	for key := range s.textSources {
+		if s.modules[key] == nil {
 			textKeys = append(textKeys, key)
 		}
 	}
 	sort.Strings(textKeys)
 	for _, key := range textKeys {
-		e := set.textSources[key]
+		e := s.textSources[key]
 		e.Kind, e.Text = "file", ""
 		out.Files = append(out.Files, e)
 	}
 	for _, item := range guidelines.ForPaths(keys) {
 		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: item.ID, Version: item.Version, Languages: item.Languages})
 	}
-	if entry == "" {
-		py, err := newPythonSet(root)
-		if err != nil {
-			return nil, err
+	return out, nil
+}
+
+// Assemble merges language reports in the fixed JS/TS, Python, PHP order and
+// finalizes the merge once. A nil report is a language that did not run. A
+// Python or PHP entry passes only that runner's report, which is already final
+// and is returned unchanged.
+func Assemble(entry string, js, py, php *analysis.AnalysisReport) (*analysis.AnalysisReport, error) {
+	if js == nil {
+		if entry == "" || (py == nil) == (php == nil) {
+			return nil, fmt.Errorf("assemble: a report without JS/TS needs exactly one Python or PHP entry report")
 		}
-		defer py.close()
-		more, err := py.report("", checks)
-		if err != nil {
-			return nil, err
+		if py != nil {
+			return py, nil
+		}
+		return php, nil
+	}
+	out := js
+	for _, more := range []*analysis.AnalysisReport{py, php} {
+		if more == nil {
+			continue
 		}
 		out.MergeEntries(more)
 		out.Uses = append(out.Uses, more.Uses...)
@@ -215,23 +218,6 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, options Opt
 		if len(more.Entries) > 0 {
 			out.Limitations = append(out.Limitations, more.Limitations...)
 			out.AnalysisGuidelines = append(out.AnalysisGuidelines, more.AnalysisGuidelines...)
-		}
-		ph, err := newPHPSet(root)
-		if err != nil {
-			return nil, err
-		}
-		defer ph.close()
-		phpMore, err := ph.report("", checks)
-		if err != nil {
-			return nil, err
-		}
-		out.MergeEntries(phpMore)
-		out.Uses = append(out.Uses, phpMore.Uses...)
-		out.Gaps = append(out.Gaps, phpMore.Gaps...)
-		out.Files = append(out.Files, phpMore.Files...)
-		if len(phpMore.Entries) > 0 {
-			out.Limitations = append(out.Limitations, phpMore.Limitations...)
-			out.AnalysisGuidelines = append(out.AnalysisGuidelines, phpMore.AnalysisGuidelines...)
 		}
 	}
 	if err := finalizeEntries(out); err != nil {

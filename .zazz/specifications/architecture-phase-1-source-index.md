@@ -588,6 +588,13 @@ Preserve sample pins/clean status before and after, and use no live model calls 
 All §6/§8b halts apply. Unsupported configuration remains unresolved. Do not rebaseline an unlisted
 delta. Full witness reconstruction and replacement of successful expansion remain deferred (D-15).
 
+## 8d. Phase 1 completion contract
+
+The owner rejected deferring the 64 dynamic-import gaps and authorized completing remaining phase 1
+work here, including full parameter-dependent summary witnesses. The separate
+[completion contract](architecture-phase-1-summary-completion.md) owns the bounded implementation,
+parity, target-gap closure and final gates. Route adapters remain phases 6/9.
+
 ## 9. TDD entry point and execution sequence (step 1A)
 
 1. Red: AC1 test over fixtures against an empty `syntax_index.go`.
@@ -609,9 +616,9 @@ delta. Full witness reconstruction and replacement of successful expansion remai
 
 1. Does the owner want 1B's bundle encode-once in this phase, or kept with phase 2's output work? Default: 1B.
 2. Library mode scope beyond npm (PyPI, Packagist) after phase 8: not needed for 1A–1E.
-3. **1F closure pending owner decision:** all 64 vulnpy `work_limit` gaps call the dynamic-import
-   helper `_get_trigger_module`. Defer dynamic-import resolution and close phase 1, or keep the
-   phase open for a separate contract? The implementation preserves those gaps; no approval is assumed.
+3. **Resolved by owner, 2026-11-18:** keep phase 1 open and complete dynamic-import resolution
+   plus full summary witnesses under the [separate contract](architecture-phase-1-summary-completion.md).
+   Symfony/Drupal route adapters stay in phases 6/9.
 
 ## 12. Run log protocol
 
@@ -850,3 +857,11 @@ and `import_module` block closure. Full witness reconstruction, per-caller sink/
 recursive Python/PHP summary closure, general alias/heap modeling and full YAML remain deferred.
 Symfony/Drupal route adapters remain phases 6/9. See the
 [evaluation](../evaluation/architecture-baseline.md#phase-1-step-1f--pythonphp-summaries-and-php-resolution-inputs-2026-11-18).
+
+
+### 2026-11-18 — Phase 1 completion assigned
+
+The owner declined the 64-gap deferral, then explicitly authorized finishing remaining phase 1 work:
+dynamic-import resolution and full summary witnesses; route adapters stay in phases 6/9.
+Added §8d and the separate completion contract, resolving §11's decision. Phase 1 stays open until
+the completion contract passes; earlier technical acceptance does not imply phase completion.

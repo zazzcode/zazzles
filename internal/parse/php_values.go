@@ -210,3 +210,7 @@ func phpMergeGaps(a, b []analysis.Gap) []analysis.Gap { return phpUnion(a, b) }
 func phpMergeEvidence(a, b []analysis.Evidence) []analysis.Evidence { return phpUnion(a, b) }
 
 func phpDedupeEvidence(list []analysis.Evidence) []analysis.Evidence { return phpUnion(list) }
+
+func inertPHP(v phpValue) bool {
+	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.class == "" && v.driver == "" && v.table == "" && v.columns == nil && v.sqlText == nil && v.sqlParams == nil && v.sqlWrites == nil && v.escapes == nil && v.bindingControls == nil && !v.unknown && !v.built
+}

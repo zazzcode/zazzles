@@ -35,6 +35,3 @@ func (c *closedCallable) finish() { c.done = true }
 func inertPython(v pythonValue) bool {
 	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.table == "" && v.driver == "" && v.templateEscape == "" && !v.unknown && !v.built && !v.rendered && v.callable == nil && v.methods == nil && v.thread == nil
 }
-func inertPHP(v phpValue) bool {
-	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.class == "" && v.driver == "" && v.table == "" && v.columns == nil && v.sqlText == nil && v.sqlParams == nil && v.sqlWrites == nil && v.escapes == nil && v.bindingControls == nil && !v.unknown && !v.built
-}

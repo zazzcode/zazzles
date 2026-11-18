@@ -14,14 +14,6 @@ import (
 var pythonJinjaOutput = regexp.MustCompile(`(?s)\{\{\s*(.*?)\s*\}\}`)
 var pythonJinjaTag = regexp.MustCompile(`(?s)\{%\s*(.*?)\s*%\}`)
 
-func appendUniqueString(a []string, s string) []string {
-	for _, v := range a {
-		if v == s {
-			return a
-		}
-	}
-	return append(a, s)
-}
 func (f *pythonFlow) recordXSS(sink analysis.Evidence, v pythonValue, context string, extra []analysis.Evidence) {
 	if len(v.deps) == 0 {
 		return

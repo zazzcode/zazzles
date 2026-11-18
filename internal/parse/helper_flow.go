@@ -13,7 +13,7 @@ import (
 type helperExpansion struct {
 	budget int
 	stack  map[string]bool
-	// storeWrites holds the ids of server-held stores written in this flow (p3_keyed_store.go).
+	// storeWrites holds the ids of server-held stores written in this flow (keyed_store_lookup.go).
 	storeWrites map[string]bool
 }
 

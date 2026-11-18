@@ -20,8 +20,7 @@ type sourceModule struct {
 	// recovered names the byte-preserving grammar workarounds that parsed this module.
 	recovered []string
 	// awaitedCalls are generic calls whose `await` was blanked for parsing.
-	awaitedCalls     map[uint]bool
-	contractBindings map[string]bool
+	awaitedCalls map[uint]bool
 	// commandNames holds CommonJS destructured child_process members. They are
 	// kept apart from imports so no other analyzer's module resolution changes.
 	commandNames map[string]importBinding
@@ -40,6 +39,8 @@ type sourceModule struct {
 	imports        map[string]importBinding
 	express        map[string]bool
 	receivers      map[string]bool
+	// bindings is the lazily built write index; see binding_index.go.
+	bindings *bindingIndex
 }
 
 type moduleSet struct {

@@ -66,3 +66,23 @@ env -u OPENAI_API_KEY -u GEMINI_API_KEY -u JEV_API_KEY /usr/bin/time -l <scratch
 Sample paths are `<DEV_ROOT>/juice-shop`, `<DEV_ROOT>/vulnpy` and `<DEV_ROOT>/zazzcode/DVWA`.
 Read `real` and `maximum resident set size` (bytes on macOS) from the `time` output. Read entry and
 candidate counts from the bundle's `findings.json`. Compare medians on the same machine only.
+
+## Phase 1 step 1A: binding write index (2026-11-17)
+
+Same machine and method as the before measurements. The binary was built from `arch-review-clean-up`
+after step 1A. `TestArchitectureBaseline` is unchanged. For all three samples, `findings.json` (without `root`)
+and `findings.sarif` are byte-identical to the before runs.
+
+| Sample | Wall clock (median; runs) | Change | Max RSS | Entries | Candidates |
+|---|---|---|---|---|---|
+| juice-shop | 10.19 s (10.30, 10.19, 10.18) | −84% (6.3× faster) | 276 MiB (median 251) | 175 | 251 |
+| vulnpy | 7.83 s (7.87, 7.82, 7.83) | −2% | 2,077 MiB | 2,214 | 3,350 |
+| DVWA | 0.97 s (1.06, 0.96, 0.97) | −4% | 414 MiB | 174 | 240 |
+
+The gain comes from replacing two whole-module syntax walks, `bindingReassigned` and the uncached
+`contractBindingStable`, with one per-module index. juice-shop peak RSS went up from 255 MiB (max)
+and 238 MiB (median) to 276 MiB and 251 MiB, which overlaps run-to-run variance.
+
+After 1A, juice-shop analysis takes 6.2 s of a 10.7 s profiled run. The rest is flow evaluation
+(`flow.statement`/`eval`), `walkCalls` and the parent walk in `shadowed` (12%). vulnpy's time is
+mostly bundle writing (step 1B).

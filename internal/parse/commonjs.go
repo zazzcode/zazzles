@@ -128,19 +128,7 @@ func topLevelBinding(m *sourceModule, name string) bool {
 }
 
 func bindingReassigned(m *sourceModule, name string) bool {
-	found := false
-	var visit func(*sitter.Node)
-	visit = func(n *sitter.Node) {
-		if n.Kind() == "assignment_expression" || n.Kind() == "augmented_assignment_expression" {
-			left := n.ChildByFieldName("left")
-			found = found || (left != nil && left.Kind() == "identifier" && left.Utf8Text(m.src) == name)
-		}
-		for i := uint(0); i < n.NamedChildCount() && !found; i++ {
-			visit(n.NamedChild(i))
-		}
-	}
-	visit(m.tree.RootNode())
-	return found
+	return m.bindingWrites().assigned[name]
 }
 
 // readDefaultDestructuring records `const { endpoint } = http` where `http` is a

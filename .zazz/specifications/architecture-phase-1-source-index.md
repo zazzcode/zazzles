@@ -320,3 +320,26 @@ The PHP label fix can be filed as a separate one-line correctness change. Profil
 in §1 come from phase 0 binaries and bundles on the pinned samples. Specs that cite registration-graph D-5/D-7
 (phases 5, 6, 8, 9) are repointed to this spec's L3 resolution kinds and L5 model tables when each of
 them starts.
+
+### 2026-11-17 — Step 1A implemented
+
+Source: implementation. Changed against §4, §7 and §9:
+
+- **L2 shipped as the binding write index** (`internal/parse/binding_index.go`). It records
+  identifier assignment targets, written member paths (with `.`/`[` prefixes), aliasing
+  declarators and escaping uses. `bindingReassigned` and `contractBindingStable` read it. Scope
+  resolution and declarations were not built: they have no consumer before 1C, and a scope-aware
+  answer would change output, because both functions are name-based and module-wide by contract.
+- **L1 (flat syntax index) was not built in 1A.** The write index alone met AC5's wall-clock target
+  (64.16 s → 10.19 s on juice-shop), and the remaining profile is flow evaluation, not whole-module
+  walks. L1 moves to the step that converts flow evaluation, and AC1 moves with it.
+- AC2 and AC3 are covered by `binding_parity_test.go`, with the old walks as oracles: 531 names in
+  47 fixture files, and 17,479 names in 704 juice-shop files with `ZAZZLES_JUICE_SHOP`.
+  Single-use escape checks are capped at 4 uses per name, because the oracle walks the module once per call.
+- AC5's RSS clause is a near miss: juice-shop max RSS 255 → 276 MiB (median 238 → 251 MiB).
+  The owner decides whether to accept it or to compact the index.
+- The `contractBindings` per-module cache was removed; the index replaces it.
+
+Verification impact: `TestArchitectureBaseline` is unchanged, and juice-shop JSON and SARIF are
+byte-identical. Measurements are in `.zazz/evaluation/architecture-baseline.md`.
+

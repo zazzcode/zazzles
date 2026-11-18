@@ -230,6 +230,20 @@ An API name alone is not proof of binding, source control or protection. Unknown
 registration, helper limits and unsupported control/heap behavior retain explicit uncertainty.
 Adapter-specific limits and current case evidence belong in their contracts and coverage guides.
 
+### Source index
+
+Repeated whole-module syntax walks are replaced by per-file indexes that are built once and
+immutable afterwards ([source index spec](specifications/architecture-phase-1-source-index.md)).
+
+- **Implemented (JS/TS):** `binding_index.go` is a module's binding write index. It records
+  identifier assignment targets, written member paths, aliasing declarations and escaping uses.
+  `bindingReassigned` and `contractBindingStable` read it, with the same name-based, module-wide
+  answers the walks gave. `binding_parity_test.go` keeps the old walks as oracles.
+- **Planned:** the same index for Python and PHP; a flat syntax index; a repository call index
+  with explicit resolution kinds; and per-callable parameter summaries, which replace inline
+  helper expansion and its depth and budget limits. Library mode, Symfony and Drupal build on the
+  call index and summaries.
+
 ### Shared, language and framework layers
 
 Analysis has three layers. A rule belongs to the most widely shared layer that can state it correctly:

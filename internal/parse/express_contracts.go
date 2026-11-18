@@ -35,61 +35,7 @@ func importedContractCall(m *sourceModule, call *sitter.Node) (importBinding, st
 }
 
 func contractBindingStable(m *sourceModule, name string, allowed ...*sitter.Node) bool {
-	if m.contractBindings == nil {
-		m.contractBindings = map[string]bool{}
-	}
-	if stable, ok := m.contractBindings[name]; ok && len(allowed) == 0 {
-		return stable
-	}
-	stable := !bindingReassigned(m, name)
-	var visit func(*sitter.Node)
-	visit = func(n *sitter.Node) {
-		if !stable {
-			return
-		}
-		var left *sitter.Node
-		switch n.Kind() {
-		case "assignment_expression", "augmented_assignment_expression":
-			left = n.ChildByFieldName("left")
-		case "update_expression":
-			left = n.ChildByFieldName("argument")
-		}
-		if left != nil {
-			text := left.Utf8Text(m.src)
-			if text == name || strings.HasPrefix(text, name+".") || strings.HasPrefix(text, name+"[") {
-				stable = false
-				return
-			}
-		}
-		if n.Kind() == "identifier" && n.Utf8Text(m.src) == name {
-			if p := n.Parent(); p != nil {
-				switch p.Kind() {
-				case "arguments", "return_statement", "spread_element":
-					permitted := false
-					for _, item := range allowed {
-						if item != nil && n.StartByte() == item.StartByte() && n.EndByte() == item.EndByte() {
-							permitted = true
-						}
-					}
-					if !permitted {
-						stable = false
-					}
-				case "variable_declarator":
-					if v := p.ChildByFieldName("value"); v != nil && v.StartByte() == n.StartByte() {
-						stable = false
-					}
-				}
-			}
-		}
-		for i := uint(0); i < n.NamedChildCount(); i++ {
-			visit(n.NamedChild(i))
-		}
-	}
-	visit(m.tree.RootNode())
-	if len(allowed) == 0 {
-		m.contractBindings[name] = stable
-	}
-	return stable
+	return m.bindingWrites().contractStable(name, allowed)
 }
 
 func literalContractOptions(m *sourceModule, n *sitter.Node, depth int, session bool) bool {

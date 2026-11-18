@@ -466,4 +466,4 @@ were checked before/after; no sample edits, model calls, keys, dependencies or w
 Phase 1 is complete within the documented bounded source-index/witness contracts. General heap/
 module-state summaries, broader control-flow/recursive recipes and full YAML remain unsupported
 with explicit gaps; they are not claimed by this evidence. Route adapters remain phases 6/9.
-The owner reviews and merges draft PR #24; phase 2 then starts separately on `arch-pipiline-runners`.
+The owner merged PR #24 at `6bf2ca1`; phase 2 has a separate assigned `arch-pipeline-runners` worktree.

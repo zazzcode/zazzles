@@ -190,7 +190,7 @@ parameter-dependent summary witnesses. Existing phase 1 evidence remains the com
 
 ### 2026-11-18 — Owner sets the next branch boundary
 
-The owner will PR-review and merge after this spec, then start a new arch-pipiline-runners branch.
+The owner will PR-review and merge after this spec, then start a new arch-pipeline-runners branch.
 This task finishes phase 1 and updates its draft only; phase 2 starts after the owner's merge.
 Plan and phase 0/2 delivery metadata are updated to remove the stale shared milestone instruction.
 
@@ -202,4 +202,4 @@ mutation rejection and source retention. All 64 targeted limits plus 64 getattr 
 no candidate is added/removed, and every old golden row remains unchanged. Exact-request/signature
 outcomes change only for the 128 re-keyed vulnpy candidates. Final medians 9.21/3.42/0.60 seconds
 pass the speed gate. Contributor and fresh-context verification pass; durable evidence is in the
-architecture evaluation record and parent §14. The next branch is arch-pipiline-runners after owner merge.
+architecture evaluation record and parent §14. The next branch is arch-pipeline-runners after owner merge.

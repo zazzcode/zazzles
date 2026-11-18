@@ -1,9 +1,9 @@
 # Architecture phase 2 — Pipeline and concurrent language runners
 
-**Branch:** `arch-pipiline-runners` (owner decision 2026-11-18; checkout assigned at phase start)
+**Branch / assigned sibling worktree:** `arch-pipeline-runners` (owner-created, 2026-11-18)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 2. Objective: performance and maintainability
-**Depends on:** phase 1 complete and PR #24 merged into `stage` by the owner
-**Delivery topology:** new branch after PR #24 merges; one separate draft PR into `stage`
+**Depends on:** satisfied — phase 1 complete; [PR #24](https://github.com/zazzcode/zazzles/pull/24) merged into `stage` at `6bf2ca14a63869cb0957eec7f830ba0544b819a7`
+**Delivery topology:** existing owner-created branch/worktree from the phase 1 merge; one separate draft PR into `stage`
 **Coordination:** Lead Agent. A Contributor Agent may do the mechanical caller migration (§9 step 5) after the seam compiles
 **Run log:** `.zazz/ephemeral/architecture-phase-2-pipeline-runners-run-log.md`
 **Drafted:** 2026-11-17
@@ -183,15 +183,36 @@ Use the plan's common rules. Record the migrated caller list, race-test output, 
 
 ## 13. Agent implementation prompt
 
-> Start only after the owner merges PR #24. Use the new arch-pipiline-runners branch cut from
-> merged origin/stage in the owner-assigned sibling checkout. Record the starting HEAD and confirm
-> phase 1 completion. Read AGENTS.md, the orientation contents, the plan, and this spec.
-> Follow the plan's session start and common rules. Execute §9 in order. After step 4 compiles, you
-> may delegate step 5 (mechanical caller migration) to one Sonnet Contributor Agent. It changes
-> imports and call names only. Stop on any §6 halt. Finish by committing and pushing, with AC1–AC8
-> evidence in the run log and a separate phase 2 draft PR into stage. Verifier: a fresh-context subagent runs `go test -race ./internal/pipeline ./cmd/scan -count=3`.
-> It confirms no `walk.Walk` call remains in `internal/parse` outside `parse.go`, confirms no exported `parse.Analyze*`
-> remains in non-test files, and diffs the golden against the phase's starting HEAD. It reports PASS or FAIL.
+> Implement phase 2 in the existing owner-created arch-pipeline-runners sibling worktree and
+> branch. PR #24 is merged at 6bf2ca14a63869cb0957eec7f830ba0544b819a7. Do not create a worktree
+> or branch. Read AGENTS.md, then the orientation contents and only relevant sections, the plan's
+> shared/common/session-start rules, this spec in full (including every §14 entry), and the phase 2
+> run log if it exists. Load the required repository skills and matched standards.
+>
+> Verify pwd, branch, git status --short --branch, git worktree list and the predecessor merge.
+> Stop if in a .claude/worktrees checkout or claude/* branch. Preserve existing changes; record
+> the starting HEAD and migrated caller inventory. Run TestArchitectureBaseline before code changes.
+> Reconcile §4 and §9 with the merged phase 1 code before implementing. The golden has no planned
+> delta; do not refresh it to accept a refactor difference.
+>
+> Execute §9 in small verified slices. Keep the mechanical caller migration in its own commit.
+> After the seam compiles, one Contributor Agent may migrate callers in disjoint files in this same
+> checkout; no agent-created worktrees. Stop on §6 or common-rule halts. Preserve fixed merge/error
+> order, entry behavior, native evidence and exact output/request bytes.
+>
+> Offline only: no paid/live model calls or provider credentials. Samples are read-only; verify pins
+> and clean status before/after. Write outputs under the container's _test-findings/<app>/run-arch-2/.
+> Record three-run wall-clock medians, peak RSS and walk counts for all three samples, plus the mixed
+> sequential/default benchmark. Compare with phase 0 and final phase 1 (9.21/3.42/0.60 seconds).
+>
+> Run the full contributor gate (gofmt on changed Go files only, go vet ./..., go build ./...,
+> go test -race ./... -count=1, and TestArchitectureBaseline). A fresh-context verifier subagent runs
+> go test -race ./internal/pipeline ./cmd/scan -count=3, checks walk ownership and removal of exported
+> production parse.Analyze* functions, and confirms the golden is unchanged from starting HEAD.
+> Update the evaluation, architecture/orientation, spec §14 and append-only run log with AC1–AC8
+> evidence. Verify Git user.name and gh profile are zazzcode; commit with [AREA] prefixes, push
+> origin arch-pipeline-runners and open a separate draft PR into stage using pr-builder and the
+> PR standard. Never mark ready or merge. Report commits, AC evidence, deltas, timings, PR and limits.
 
 ## 14. Implementation and review change log
 
@@ -205,5 +226,14 @@ HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.
 ### 2026-11-18 — Separate phase 2 after owner merge
 
 Owner steering: review and merge the current spec's PR, then start a new branch for phase 2.
-Updated header and implementation prompt to require merged phase 1 and the arch-pipiline-runners branch.
+Updated header and implementation prompt to require merged phase 1 and the arch-pipeline-runners branch.
 This changes delivery metadata only; phase 2 is not started by the phase 1 agent.
+
+### 2026-11-18 — Correct branch spelling and assign existing checkout
+
+Owner confirms PR #24 is merged and has created the local arch-pipeline-runners branch/worktree.
+Corrected the earlier branch typo throughout the architecture handoff references. Verified merge
+6bf2ca14a63869cb0957eec7f830ba0544b819a7 and the clean assigned sibling checkout. Updated the header
+and §13 startup prompt to reuse that checkout, preserve the golden, and carry offline verification,
+measurement and draft-PR requirements into the next session. This update changes documentation only;
+phase 2 implementation has not started.

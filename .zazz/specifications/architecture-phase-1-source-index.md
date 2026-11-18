@@ -876,7 +876,7 @@ the completion contract passes; earlier technical acceptance does not imply phas
 ### 2026-11-18 — Phase 2 follows owner review and merge
 
 The owner plans to review and merge PR #24 after this spec, then begin phase 2 on a new
-arch-pipiline-runners branch. Phase 1 remains the current task; no phase 2 code or new worktree is created.
+arch-pipeline-runners branch. Phase 1 remains the current task; no phase 2 code or new worktree is created.
 
 ### 2026-11-18 — Phase 1 complete
 
@@ -900,4 +900,4 @@ All completion ACs now have evidence:
 **Phase 1 is complete.** Broader control/state/recursive recipes remain explicit unsupported cases;
 general heap analysis, full YAML and route adapters are not claimed. Symfony/Drupal routes remain
 phases 6/9. The owner reviews and merges draft PR #24, then starts phase 2 separately on
-arch-pipiline-runners. No phase 2 branch, worktree or implementation was created here.
+arch-pipeline-runners. No phase 2 branch, worktree or implementation was created here.

@@ -1,6 +1,7 @@
 # Architecture update plan
 
-**Status:** Phases 0 and 1 are implemented and verified in draft PR #24; later phases remain planned.
+**Status:** Phases 0 and 1 are merged via [PR #24](https://github.com/zazzcode/zazzles/pull/24)
+(`6bf2ca1`); phase 2 has the assigned `arch-pipeline-runners` checkout; implementation remains planned.
 This document alone authorizes no implementation or paid calls. A phase starts on owner assignment.
 **Baseline reviewed:** `stage` at `3890c1cbb6ff8bebbd707052edaed3bf03bc0ae8` (plan revised on
 `arch-review-clean-up`, 2026-11-17).
@@ -83,7 +84,7 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 |---|---|---|---|---|
 | 0 | Maintainability (refactor guard) | [Compatibility baseline](architecture-phase-0-compatibility-baseline.md) | `arch-compat-baseline` | This plan |
 | 1 | Speed, accuracy | [Source index and callable summaries](architecture-phase-1-source-index.md) (replaces the registration graph) | `arch-review-clean-up` | 0 |
-| 2 | Performance, maintainability | [Pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md) | `arch-pipiline-runners` | 1 |
+| 2 | Performance, maintainability | [Pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md) | `arch-pipeline-runners` | 1 |
 | 3 | Maintainability | [PHP language package](architecture-phase-3-php-package.md) | `langphp-package` | 2 |
 | 4 | Performance | [Parallel judge](architecture-phase-4-parallel-judge.md) | `parallel-judge` | 0 |
 | 5 | Accuracy | [Measured recall gaps](architecture-phase-5-accuracy-gaps.md) | `recall-gap-inventory` | 1 |
@@ -93,9 +94,10 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 | 9 | Feature | [Drupal](architecture-phase-9-drupal.md) | `php-drupal` | 6 |
 
 **Owner decision, 2026-11-18: phases 0 and 1 finish in the assigned arch-review-clean-up
-worktree and draft PR #24.** The owner reviews and merges that PR. Phase 2 starts afterward
-from the merged origin/stage on a new branch named arch-pipiline-runners, with its own draft PR.
-The phase 2 checkout/worktree is assigned when that phase starts; phase 1 creates no new worktree.
+worktree and PR #24.** The owner has merged that PR. Phase 2 uses the new
+arch-pipeline-runners branch from merged stage, with its own draft PR.
+PR #24 is now merged at `6bf2ca1`; the owner has created the `arch-pipeline-runners` sibling
+worktree and branch. Phase 2 MUST reuse that checkout and MUST NOT create another worktree.
 Do not append phase 2 implementation to PR #24. Phase 3 topology is confirmed when it is assigned.
 
 This supersedes the 2026-11-17 plan to ship phases 0–3 together on one branch. No phase 2
@@ -264,5 +266,11 @@ language-adapter section. User docs change only when a flag or supported framewo
   D-5/D-7 tables are repointed to that spec's L3 resolution kinds and L5 model tables when each starts.
 
 - 2026-11-18 — Owner plans to review and merge the phases 0/1 PR, then start phase 2 on
-  a new arch-pipiline-runners branch. Updated phase sequence and startup exception; no phase 2
+  a new arch-pipeline-runners branch. Updated phase sequence and startup exception; no phase 2
   implementation or worktree creation occurs during phase 1.
+
+### 2026-11-18 — Correct phase 2 branch spelling after phase 1 merge
+
+Owner confirms PR #24 is merged and the new local branch/worktree is arch-pipeline-runners.
+Corrected phase 2 branch references and refreshed its implementation prompt to reuse the existing
+checkout. Phase 2 implementation remains for the new agent session; no code changes in this update.

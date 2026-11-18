@@ -282,10 +282,7 @@ most of the rest. If the measured gain is smaller, record the new profile and as
   table; (3) the golden is unchanged and there is no production diff. The production call index is
   promoted in 1D, where summaries consume it.
 - **1D:** see [§8a](#8a-step-1d-contract-call-index-and-receiver-typing).
-- **1E:** a shadow run on every JS/TS fixture and juice-shop proves that summary-applied flow
-  reproduces the inline results wherever inline resolved the call. Each new candidate or removed
-  gap is listed, with answer-key evidence. `helper_call_limit` and `path_unrelated_helper_limit`
-  no longer occur on fixtures. Target: juice-shop's 559 limit-induced in-repository gaps (1C).
+- **1E:** see [§8b](#8b-step-1e-contract-jsts-callable-summaries).
 - **1F:** the same for Python and PHP, plus PHP builtin effect tables (DVWA's 210
   `php_call_unresolved`) and PSR-4 and service-map resolution. Symfony and Drupal fixtures are added
   under `internal/parse/testdata/php/`.
@@ -369,6 +366,118 @@ and new candidate families.
 3. Red: effect cases per table row. Implement `call_effects.go`, and wire the three emission points.
 4. Regenerate goldens, review each delta (AC3), and check new candidates against the answer keys.
 5. Measure AC2 and AC4. Write docs, run the gate and verifier, then commit and push.
+
+## 8b. Step 1E contract: JS/TS callable summaries
+
+### Evidence
+
+The 1C measurement counts 559 limit-induced gaps on in-repository callables on juice-shop. In the
+step 1D bundle they are `path_unrelated_helper_limit` 257 (201 on uses, 56 on entries),
+`recursive_helper` 9, and `unknown_call_result` on in-repository callees (the follow-on gap at the
+same call). The gaps cluster on a few helpers that many routes reach through
+`challengeUtils.solve` → `webhook.notify`, past the depth-3 limit:
+
+| Helper (juice-shop `f189f52`) | Limit gaps | Follow-on `unknown_call_result` | What the body reads or calls |
+|---|---|---|---|
+| `utils.version` | 67 | 70 | the `package.json` import only |
+| `utils.ctfFlag` → `getCtfKey` | 67 | 67 | `crypto` chain (package), `fs.readFileSync`, the module `let cachedCtfKey` (written) |
+| `antiCheat.totalCheatScore` | 67 | 67 | the module array `solves` (mutated by `push`), `median` (package) |
+| `antiCheat.calculateCheatScore` | 0 (entered, not precise) | 70 | `logger` (a log sink), `config`, `solves.push`, other module state |
+| `challengeUtils.solveIf` (entries) | 56 | 0 | a `criteria` closure argument over the request |
+| `findFilesWithCodeChallenges`, `sanitizeSecure` | 9 recursive | 0 | `fs` calls; request-derived arguments |
+
+`helper_call_limit` and `path_unrelated_helper_limit` already do not occur in any parse or
+architecture fixture. The inline tests `checks_test.go` "recursion stops" and "fourth helper is a
+limit" pass request data into the refused helper and keep their gaps.
+
+### Scope
+
+| Path | New / modified | Purpose |
+|---|---|---|
+| `internal/parse/callable_summary.go` | new | L4 summary per JS/TS callable: parameter-indexed read and return sets, blocking reasons with spans, callees; built once per callable, bottom-up over the L3 call index with an SCC fixpoint |
+| `internal/parse/callable_summary_test.go` | new | Table cases for every reason and for parameter indexing, recursion and the iteration cap |
+| `internal/parse/summary_shadow_test.go` | new | Shadow parity: summary against inline expansion at every precise inline expansion, on every JS/TS fixture and on juice-shop with `ZAZZLES_JUICE_SHOP` |
+| `internal/parse/helper_flow.go` | modified | Apply a closed summary at the limit and recursion refusals; a nil-by-default shadow hook |
+| `internal/parse/flow.go` | modified | Apply a closed summary at the in-repository `unknown_call_result` fallthrough |
+| `internal/parse/modules.go` | modified | Per-set summary cache |
+| `.zazz/evaluation/architecture-baseline.md`, `.zazz/architecture/README.md` §3, `.zazz/architecture/repository-graph.md` | modified | Results; L4 implemented for JS/TS |
+
+Out of scope: Python and PHP summaries (1F), store summaries over module state, new effect-table
+rows, witness reconstruction through summaries, judge request wire changes and new candidate families.
+
+### Decisions
+
+- **D-11 Summary record.** Per callable (key `file:startByte`, the inline expansion key): parameter
+  count, `reads` (parameters referenced anywhere in the body), `returns` (parameters whose names
+  may reach a `return` or an expression body, by a name-level fixpoint over declarations,
+  assignments and in-repository callee summaries), in-repository callees, and blocking
+  **reasons**, each with a span. Reasons: `free_variable` (an enclosing-function binding),
+  `mutable_module_binding`, `imported_value`, `this_or_arguments`, `dynamic_code`
+  (`eval`, `with`, `new Function`, `import()`), `unmodeled_call` (any call that is not an
+  in-repository callable or a 1D `independent_result` table entry, which covers every sink and
+  source API), `unmodeled_constructor`, `heap_write` (a write to a parameter or module binding),
+  `callee_not_closed`, `unsupported_parameters`, `summary_limit` (more than 64 parameters) and
+  `summary_fixpoint_limit`. A summary is **closed** when it has no reason.
+- **D-12 Bottom-up, once.** Summaries are computed on first use and cached on the module set,
+  in a Tarjan walk over the callees that `resolveCall` (the L3 index's direct and imported
+  resolution) returns. An SCC starts optimistic (closed, empty returns) and iterates to a fixpoint,
+  capped at 16 rounds; hitting the cap adds `summary_fixpoint_limit` to every member.
+- **D-13 Closed means "reads only its parameters and load-time constants and calls nothing
+  unmodeled".** Module bindings count as constants only when declared once at top level, never
+  assigned or written through (L2 binding index), never the receiver of a call, and not aliased or escaped;
+  `.json` imports are constants. It is a flow fact, never protection (D-9): it never marks a
+  value safe, and it never drops a dependency.
+- **D-14 Application is at refusals only, with inert arguments.** At `helper_call_limit`,
+  `path_unrelated_helper_limit` and `recursive_helper` refusals, and at the in-repository
+  `unknown_call_result` fallthrough, a closed summary applies when every argument at a `reads`
+  parameter is inert: no dependencies, no gaps, no request, response, gRPC, GraphQL, web, model or
+  path markers, and not the request or response name. The call result is then the empty value,
+  the refusal gap is not recorded, and the helper counts as entered, because a closed body has no
+  sink to seek. Anything else keeps today's behavior exactly.
+- **D-15 Inline expansion stays where it expands.** Every precise inline expansion is untouched,
+  so its output is byte-identical by construction. Full replacement of inline expansion, with
+  per-caller instantiation of `param → sink` and witness reconstruction, is deferred. It would
+  change evidence and request bytes on every helper path, and the witness format needs an owner
+  decision. This is a deviation from §3's 1E row.
+
+### Acceptance criteria
+
+1. **AC1 Summaries.** `callable_summary_test.go` covers each D-11 reason, a closed chain through
+   an in-repository callee, a `.json` import, a 1D table call, `reads` and `returns` indexing, a
+   recursive SCC that is closed, one that is not, and the iteration cap.
+2. **AC2 Shadow parity.** At every precise inline expansion on every JS/TS fixture and on
+   juice-shop (`ZAZZLES_JUICE_SHOP`), the inline result's dependencies all come from arguments at
+   `returns` parameters. Where the summary is closed and the arguments at `reads` parameters are
+   inert, the inline body records no use and the result has no dependency. There are zero disagreements,
+   and the test reports the number of sites checked.
+3. **AC3 Golden.** `TestArchitectureBaseline` and every parse golden pass with no update. No
+   fixture has `helper_call_limit` or `path_unrelated_helper_limit`.
+4. **AC4 Listed deltas.** For juice-shop, vulnpy and DVWA, the run log and evaluation record list
+   removed gaps by kind and callee, re-keyed candidates (same kind, entry and sink) and new
+   candidates. No candidate is removed. Each new candidate is checked against `docs/samples/*` and the
+   detection guides. Every remaining limit-induced gap on juice-shop is counted by its summary's first
+   blocking reason. Target: zero remaining limit-induced gaps whose callee is closed and whose arguments are inert.
+5. **AC5 Speed.** 3-run medians on juice-shop, vulnpy and DVWA are within 5% of step 1D, or faster.
+6. **AC6 Gate and docs.** The contributor gate passes. The architecture README §3 and the
+   repository-graph document list L4 as implemented for JS/TS (refusal application) and the rest
+   as planned.
+
+### Halts (in addition to §6)
+
+- A removed candidate, or a new candidate that the answer keys or detection guides do not support.
+- A shadow disagreement. A summary bug is fixed. An inline-engine bug is recorded, and the owner
+  decides before anything changes.
+- Any fixture golden change.
+
+### Execution sequence
+
+1. Commit this contract on its own (`[SPEC]`).
+2. Red: AC1 cases. Implement `callable_summary.go`. AC1 green.
+3. Add the shadow hook and `summary_shadow_test.go`. AC2 green on fixtures and juice-shop, with no
+   flow change yet.
+4. Wire D-14 at the refusals and the fallthrough. AC3 green.
+5. Scan the three samples, diff against 1D bundles (AC4), and measure AC5.
+6. Gate, verifier, docs, commit and push. Append to the run log.
 
 ## 9. TDD entry point and execution sequence (step 1A)
 
@@ -529,3 +638,10 @@ Verifier notes, accepted as known limits for later tightening:
 - **Python aliases:** aliasing through call arguments, returns or containers is missed. A missed alias
   is a missed dependency, never a false finding, which matches the previous behavior.
 
+
+### 2026-11-18 — Step 1E contract written
+
+Source: owner ("write the 1E contract first as §8b") and the 1D handoff evidence. §8b scopes 1E to
+JS/TS summaries applied at inline-expansion refusals with inert arguments (D-14). Inline expansion
+stays wherever it expands (D-15). Full replacement, with per-caller `param → sink` instantiation and
+witness reconstruction, is a recorded deviation from §3's 1E row and needs an owner decision.

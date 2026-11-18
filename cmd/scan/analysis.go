@@ -20,7 +20,7 @@ func runAnalysis(root, entry, checksFile, provider, model string, limit int, asJ
 	return runAnalysisConfigured(root, entry, checksFile, provider, model, limit, asJSON, asSARIF, outputDir, traceDir, skipped, nil, stdout, stderr, scope, discoveryOptions{})
 }
 
-func runAnalysisConfigured(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped, only []string, stdout, stderr io.Writer, scope analysis.EntrySelection, discovery discoveryOptions, runtimeLimits ...judge.Limits) int {
+func runAnalysisConfigured(root, entry, checksFile, provider, model string, limit int, asJSON, asSARIF bool, outputDir, traceDir string, skipped, only []string, stdout, stderr io.Writer, scope analysis.EntrySelection, discovery discoveryOptions, runtime ...judgeRuntime) int {
 	var client *judge.Client
 	if provider != "" {
 		var err error
@@ -34,8 +34,8 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 			fmt.Fprintf(stderr, "scan: %v\n", err)
 			return exitError
 		}
-		if len(runtimeLimits) > 0 {
-			if err := client.SetLimits(runtimeLimits[0]); err != nil {
+		if len(runtime) > 0 {
+			if err := client.SetLimits(runtime[0].limits); err != nil {
 				fmt.Fprintf(stderr, "scan: %v\n", err)
 				return exitUsage
 			}
@@ -66,6 +66,9 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 	}
 	if client != nil {
 		opts := judge.ScheduleOptions{Limit: limit, SkippedFamilies: skipped, OnlyFamilies: only}
+		if len(runtime) > 0 {
+			opts.Concurrency = runtime[0].concurrency
+		}
 		if traceDir != "" {
 			opts.SaveTrace = func(id string, trace judge.DecisionTrace) error { return writeTrace(traceDir, id, trace) }
 		}

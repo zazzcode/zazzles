@@ -9,15 +9,26 @@ import (
 	"github.com/zazzcode/zazzles/internal/judge"
 )
 
-type judgeLimitFlags struct{ rpm, tpm *string }
+type judgeLimitFlags struct{ rpm, tpm, concurrency *string }
+
+// defaultJudgeConcurrency caps in-flight assessment requests when neither the
+// flag nor JUDGE_CONCURRENCY is set. RPM and TPM pacing still bound throughput.
+const defaultJudgeConcurrency = 4
+
+// judgeRuntime is the resolved scan-local judge pacing and concurrency.
+type judgeRuntime struct {
+	limits      judge.Limits
+	concurrency int
+}
 
 func addJudgeLimitFlags(fs *flag.FlagSet) judgeLimitFlags {
 	return judgeLimitFlags{
 		fs.String("judge-rpm", "", "shared requests per rolling minute; defaults to JUDGE_RPM; 0 disables pacing"),
 		fs.String("judge-tpm", "", "shared estimated input tokens per rolling minute; defaults to JUDGE_TPM; 0 disables pacing"),
+		fs.String("judge-concurrency", "", fmt.Sprintf("maximum assessment requests in flight; defaults to JUDGE_CONCURRENCY, else %d; 1 is serial", defaultJudgeConcurrency)),
 	}
 }
-func (f judgeLimitFlags) resolve(fs *flag.FlagSet, getenv func(string) string) (judge.Limits, int, error) {
+func (f judgeLimitFlags) resolve(fs *flag.FlagSet, getenv func(string) string) (judgeRuntime, int, error) {
 	var cfg judge.Limits
 	explicit := map[string]bool{}
 	fs.Visit(func(f *flag.Flag) { explicit[f.Name] = true })
@@ -40,26 +51,34 @@ func (f judgeLimitFlags) resolve(fs *flag.FlagSet, getenv func(string) string) (
 	}
 	rpm, err := integer("judge-rpm", "JUDGE_RPM", *f.rpm)
 	if err != nil || rpm > int64(^uint(0)>>1) {
-		return cfg, 0, fmt.Errorf("--judge-rpm requires a bounded nonnegative integer")
+		return judgeRuntime{}, 0, fmt.Errorf("--judge-rpm requires a bounded nonnegative integer")
 	}
 	cfg.RPM = int(rpm)
 	if cfg.TPM, err = integer("judge-tpm", "JUDGE_TPM", *f.tpm); err != nil {
-		return cfg, 0, err
+		return judgeRuntime{}, 0, err
+	}
+	concurrency := defaultJudgeConcurrency
+	if s := value("judge-concurrency", "JUDGE_CONCURRENCY", *f.concurrency); s != "" || explicit["judge-concurrency"] {
+		v, e := strconv.Atoi(s)
+		if e != nil || v < 1 {
+			return judgeRuntime{}, 0, fmt.Errorf("--judge-concurrency requires a positive integer")
+		}
+		concurrency = v
 	}
 	limit := 10
 	if raw := getenv("JUDGE_LIMIT"); !explicit["judge-limit"] && raw != "" {
 		v, e := strconv.Atoi(strings.TrimSpace(raw))
 		if e != nil || v < 1 {
-			return cfg, 0, fmt.Errorf("JUDGE_LIMIT requires a positive integer")
+			return judgeRuntime{}, 0, fmt.Errorf("JUDGE_LIMIT requires a positive integer")
 		}
 		limit = v
 	}
 	if explicit["judge-limit"] {
 		v, e := strconv.Atoi(fs.Lookup("judge-limit").Value.String())
 		if e != nil || v < 1 {
-			return cfg, 0, fmt.Errorf("--judge-limit requires a positive integer")
+			return judgeRuntime{}, 0, fmt.Errorf("--judge-limit requires a positive integer")
 		}
 		limit = v
 	}
-	return cfg, limit, nil
+	return judgeRuntime{cfg, concurrency}, limit, nil
 }

@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -76,9 +77,9 @@ def validation():
 	for _, provider := range []string{"openai", "jev"} {
 		for _, limit := range []int{1, 3, 100} {
 			t.Run(fmt.Sprintf("%s/cap%d", provider, limit), func(t *testing.T) {
-				calls := 0
+				var calls atomic.Int64 // the scheduler sends requests concurrently
 				stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-					calls++
+					calls.Add(1)
 					raw, _ := io.ReadAll(req.Body)
 					var p map[string]json.RawMessage
 					if err := json.Unmarshal(raw, &p); err != nil {
@@ -175,8 +176,8 @@ def validation():
 						}
 					}
 				}
-				if calls != expected || calls > limit {
-					t.Fatalf("calls=%d expected=%d cap=%d", calls, expected, limit)
+				if got := int(calls.Load()); got != expected || got > limit {
+					t.Fatalf("calls=%d expected=%d cap=%d", got, expected, limit)
 				}
 			})
 		}

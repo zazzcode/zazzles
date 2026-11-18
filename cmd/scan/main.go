@@ -14,7 +14,6 @@ import (
 	"sort"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
-	"github.com/zazzcode/zazzles/internal/judge"
 	"github.com/zazzcode/zazzles/internal/lang"
 	"github.com/zazzcode/zazzles/internal/pipeline"
 	"github.com/zazzcode/zazzles/internal/walk"
@@ -148,16 +147,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	if *analyzeMode {
-		limits := judge.Limits{}
+		var runtime judgeRuntime
 		if *judgeProvider != "" {
 			var err error
-			limits, *judgeLimit, err = limitFlags.resolve(flags, os.Getenv)
+			runtime, *judgeLimit, err = limitFlags.resolve(flags, os.Getenv)
 			if err != nil {
 				fmt.Fprintf(stderr, "scan: %v\n", err)
 				return exitUsage
 			}
 		}
-		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, only, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit}, limits)
+		return runAnalysisConfigured(flags.Arg(0), *entry, *checksFile, *judgeProvider, *judgeModel, *judgeLimit, *asJSON, *asSARIF, *outputDir, *traceDir, skipped, only, stdout, stderr, analysis.EntrySelection{RegistrationFile: *entry, Route: *routeFilter, Kind: *entryKind, ID: *entryID}, discoveryOptions{Enabled: *discoverRoutes, Limit: *discoveryLimit}, runtime)
 	}
 	if *routes {
 		return runRoutes(flags.Arg(0), *asJSON, stdout, stderr)

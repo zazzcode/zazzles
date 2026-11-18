@@ -19,14 +19,23 @@ func TestJudgeLimitConfiguration(t *testing.T) {
 		rpm     int
 		tpm     int64
 		limit   int
+		conc    int
 	}{
-		{"environment", nil, map[string]string{"JUDGE_RPM": "60", "JUDGE_TPM": "600000", "JUDGE_LIMIT": "30"}, false, 60, 600000, 30},
-		{"flags override", []string{"--judge-rpm=2", "--judge-tpm=50000", "--judge-limit=5"}, map[string]string{"JUDGE_RPM": "invalid", "JUDGE_TPM": "invalid", "JUDGE_LIMIT": "invalid"}, false, 2, 50000, 5},
-		{"malformed", nil, map[string]string{"JUDGE_RPM": "NaN"}, true, 0, 0, 0},
-		{"negative", nil, map[string]string{"JUDGE_TPM": "-1"}, true, 0, 0, 0},
-		{"overflow", nil, map[string]string{"JUDGE_RPM": "9999999999999999999999"}, true, 0, 0, 0},
-		{"bad limit", nil, map[string]string{"JUDGE_LIMIT": "no"}, true, 0, 0, 0},
-		{"removed cost environment ignored", nil, map[string]string{"JUDGE_BUDGET_USD": "invalid", "JUDGE_INPUT_USD_PER_MILLION": "invalid"}, false, 0, 0, 10},
+		{"environment", nil, map[string]string{"JUDGE_RPM": "60", "JUDGE_TPM": "600000", "JUDGE_LIMIT": "30", "JUDGE_CONCURRENCY": "2"}, false, 60, 600000, 30, 2},
+		{"flags override", []string{"--judge-rpm=2", "--judge-tpm=50000", "--judge-limit=5", "--judge-concurrency=8"}, map[string]string{"JUDGE_RPM": "invalid", "JUDGE_TPM": "invalid", "JUDGE_LIMIT": "invalid", "JUDGE_CONCURRENCY": "invalid"}, false, 2, 50000, 5, 8},
+		{"malformed", nil, map[string]string{"JUDGE_RPM": "NaN"}, true, 0, 0, 0, 0},
+		{"negative", nil, map[string]string{"JUDGE_TPM": "-1"}, true, 0, 0, 0, 0},
+		{"overflow", nil, map[string]string{"JUDGE_RPM": "9999999999999999999999"}, true, 0, 0, 0, 0},
+		{"bad limit", nil, map[string]string{"JUDGE_LIMIT": "no"}, true, 0, 0, 0, 0},
+		{"removed cost environment ignored", nil, map[string]string{"JUDGE_BUDGET_USD": "invalid", "JUDGE_INPUT_USD_PER_MILLION": "invalid"}, false, 0, 0, 10, 4},
+		{"concurrency default", nil, nil, false, 0, 0, 10, 4},
+		{"concurrency serial", []string{"--judge-concurrency=1"}, nil, false, 0, 0, 10, 1},
+		{"concurrency zero", []string{"--judge-concurrency=0"}, nil, true, 0, 0, 0, 0},
+		{"concurrency negative", []string{"--judge-concurrency=-2"}, nil, true, 0, 0, 0, 0},
+		{"concurrency non-integer", []string{"--judge-concurrency=2.5"}, nil, true, 0, 0, 0, 0},
+		{"concurrency empty flag", []string{"--judge-concurrency="}, map[string]string{"JUDGE_CONCURRENCY": "3"}, true, 0, 0, 0, 0},
+		{"concurrency environment zero", nil, map[string]string{"JUDGE_CONCURRENCY": "0"}, true, 0, 0, 0, 0},
+		{"concurrency environment non-integer", nil, map[string]string{"JUDGE_CONCURRENCY": "four"}, true, 0, 0, 0, 0},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			fs := flag.NewFlagSet("test", flag.ContinueOnError)
@@ -36,12 +45,13 @@ func TestJudgeLimitConfiguration(t *testing.T) {
 			if err := fs.Parse(tt.args); err != nil {
 				t.Fatal(err)
 			}
-			cfg, limit, err := f.resolve(fs, func(k string) string { return tt.env[k] })
+			runtime, limit, err := f.resolve(fs, func(k string) string { return tt.env[k] })
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("error=%v", err)
 			}
-			if err == nil && (cfg.RPM != tt.rpm || cfg.TPM != tt.tpm || limit != tt.limit) {
-				t.Fatalf("cfg=%+v limit=%d", cfg, limit)
+			cfg := runtime.limits
+			if err == nil && (cfg.RPM != tt.rpm || cfg.TPM != tt.tpm || limit != tt.limit || runtime.concurrency != tt.conc) {
+				t.Fatalf("runtime=%+v limit=%d", runtime, limit)
 			}
 		})
 	}
@@ -90,5 +100,21 @@ func TestRemovedCostFlagsRejected(t *testing.T) {
 		if code := run([]string{"--analyze", "--judge", "openai", name, t.TempDir()}, &out, &stderr); code != exitUsage {
 			t.Fatalf("%s exit=%d", name, code)
 		}
+	}
+}
+
+func TestJudgeConcurrencyUsageErrors(t *testing.T) {
+	t.Setenv("JUDGE_CONCURRENCY", "")
+	t.Setenv("OPENAI_API_KEY", "synthetic-noncredential")
+	for _, value := range []string{"0", "-1", "two", "1.5"} {
+		var out, stderr bytes.Buffer
+		if code := run([]string{"--analyze", "--judge", "openai", "--judge-concurrency=" + value, t.TempDir()}, &out, &stderr); code != exitUsage || !strings.Contains(stderr.String(), "--judge-concurrency requires a positive integer") {
+			t.Fatalf("%s: exit=%d stderr=%s", value, code, stderr.String())
+		}
+	}
+	t.Setenv("JUDGE_CONCURRENCY", "0")
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--analyze", "--judge", "openai", t.TempDir()}, &out, &stderr); code != exitUsage {
+		t.Fatalf("environment zero: exit=%d", code)
 	}
 }

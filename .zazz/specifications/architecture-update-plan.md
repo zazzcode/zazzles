@@ -65,7 +65,8 @@ own row. A row with no new candidates is a representation or speed change. It mu
 | PHP callable language | `php/*` | Mislabeled `javascript` | Correct `php` | 1 | Report delta on PHP fixtures only |
 | One walk and empty-language skip | Mixed fixture; pinned samples | Up to three walks per full scan | One walk; skipped grammars | 2 | None. Measured wall clock |
 | Concurrent language runners | Mixed fixture | Sequential | Concurrent with fixed merge order | 2 | None |
-| PHP as its own package | `php/*` fixtures | Inside `internal/parse` | `internal/langphp` with an explicit core API | 3 | None |
+| PHP as its own package | `php/*` fixtures | Inside `internal/parse` | `internal/langphp` with an explicit core API | 3A | None |
+| JS/TS and Python as their own packages | All JS/TS and Python fixtures | Inside `internal/parse` | `internal/langjs`, `internal/langpy`; `parse` is the core | 3B | None |
 | Concurrent judge requests | Stub transport | Sequential | Capped in-flight requests | 4 | None to request bytes. Faster wall clock under caps |
 | Jinja `Environment`/`get_template`/`render` | VulnPy `VP-XSS-JINJA` | Yes: xss-hardening `jinjaFileTemplate`; [final evaluation](../evaluation/xss-hardening/final-evaluation.json) passes | None (the VulnPy guide checkbox is stale) | 5 corrects the guide | None |
 | Recall misses on pinned samples | Python `cases.json` via `docs/samples/evaluate-python.py`; JS/TS and PHP detection guides | Not measured as one list | Measured inventory by cause; closure of the top-ranked miss | 5 | New candidate for the selected miss only, with paired fixtures |
@@ -85,7 +86,8 @@ previous phase has merged. Each phase ends in a draft PR into `stage`. Do not st
 | 0 | Maintainability (refactor guard) | [Compatibility baseline](architecture-phase-0-compatibility-baseline.md) | `arch-compat-baseline` | This plan |
 | 1 | Speed, accuracy | [Source index and callable summaries](architecture-phase-1-source-index.md) (replaces the registration graph) | `arch-review-clean-up` | 0 |
 | 2 | Performance, maintainability | [Pipeline and concurrent runners](architecture-phase-2-pipeline-runners.md) | `arch-pipeline-runners` | 1 |
-| 3 | Maintainability | [PHP language package](architecture-phase-3-php-package.md) | `langphp-package` | 2 |
+| 3A | Maintainability | [PHP language package](architecture-phase-3-php-package.md) | `arch-multi-lang-packaging` | 2 |
+| 3B | Maintainability | [JS/TS and Python language packages](architecture-phase-3-js-ts-python-package.md) | `arch-multi-lang-packaging` | 3A (same branch) |
 | 4 | Performance | [Parallel judge](architecture-phase-4-parallel-judge.md) | `parallel-judge` | 0 |
 | 5 | Accuracy | [Measured recall gaps](architecture-phase-5-accuracy-gaps.md) | `recall-gap-inventory` | 1 |
 | 6 | Feature | [Symfony](architecture-phase-6-symfony.md) | `php-symfony` | 3 |
@@ -98,7 +100,11 @@ worktree and PR #24.** The owner has merged that PR. Phase 2 uses the new
 arch-pipeline-runners branch from merged stage, with its own draft PR.
 PR #24 is now merged at `6bf2ca1`; the owner has created the `arch-pipeline-runners` sibling
 worktree and branch. Phase 2 MUST reuse that checkout and MUST NOT create another worktree.
-Do not append phase 2 implementation to PR #24. Phase 3 topology is confirmed when it is assigned.
+Do not append phase 2 implementation to PR #24.
+
+**Owner decision, 2026-11-18: phases 3A and 3B share the `arch-multi-lang-packaging` worktree.**
+Phase 2 merged via PR #25 (`52cdc36`). 3A (PHP) runs first, then 3B (JS/TS and Python), as
+commits on one branch with one milestone draft PR into `stage`.
 
 This supersedes the 2026-11-17 plan to ship phases 0–3 together on one branch. No phase 2
 implementation is authorized by this delivery-topology update.
@@ -190,8 +196,12 @@ and Drupal on 1F.
 skip, concurrent JS/TS, Python, and PHP runners, the fixed-order merge, and finalization.
 `internal/parse` exposes runners and stays a producer. Callers move from `parse.Analyze` to `pipeline.Analyze`.
 
-**3 — PHP language package.** PHP sources, tests, and fixtures move to `internal/langphp`. It
+**3A — PHP language package.** PHP sources, tests, and fixtures move to `internal/langphp`. It
 imports an explicit, small `parse` core API. Phase-named `p1_`–`p4_` files are renamed by behavior.
+
+**3B — JS/TS and Python language packages.** Python moves to `internal/langpy`, with its JS
+coupling reduced to a template text reader in core and one inline-script bridge. JS/TS then moves to
+`internal/langjs`, and `internal/parse` keeps only the language core.
 
 **4 — Parallel judge.** A deterministic plan pass groups equivalent signatures and assigns request
 slots. Then a capped worker pool sends leaders, with `--judge-concurrency` defaulting to 4. Order,
@@ -221,8 +231,6 @@ output are covered.
 
 Each needs its own proposal or contract.
 
-- Moving Python to `internal/langpy`, which first needs a JS template/browser API.
-  JS/TS stays in `internal/parse`.
 - NestJS. Container-root plans name it, and it is a future registration producer on the JS/TS layer.
 - npm proposal phases 2–3 (compile-to-JS, deserialization, dynamic-load sinks, and the prototype
   pollution pack), the parameter-trust judge question, the feasibility consumer, and proposal 4 chains.
@@ -237,7 +245,7 @@ Each needs its own proposal or contract.
 
 Each spec lists its exact sections. Phases 1–3 update the [architecture](../architecture/README.md) package
 map and §4. Phase 1 also updates the [repository graph](../architecture/repository-graph.md), so
-implemented and proposed records stay distinct. Phase 3 updates the orientation code-structure and
+implemented and proposed records stay distinct. Phases 3A and 3B update the orientation code-structure and
 testdata rows. Feature phases update the detection guide, the capability checklist, and the
 language-adapter section. User docs change only when a flag or supported framework changes
 (phases 4, 6, 8, and 9).
@@ -274,3 +282,11 @@ language-adapter section. User docs change only when a flag or supported framewo
 Owner confirms PR #24 is merged and the new local branch/worktree is arch-pipeline-runners.
 Corrected phase 2 branch references and refreshed its implementation prompt to reuse the existing
 checkout. Phase 2 implementation remains for the new agent session; no code changes in this update.
+
+### 2026-11-18 — Split phase 3 into 3A and 3B in one worktree
+
+Owner assigned the `arch-multi-lang-packaging` worktree for the PHP spec and asked for a JS/TS and
+Python separation spec in the same worktree. Phase 3 becomes 3A (PHP, reconciled against merged
+phase 2 names) and 3B ([JS/TS and Python](architecture-phase-3-js-ts-python-package.md)). Updated
+the phase table, capability matrix, phase summaries and docs line, and removed the "Explicitly later"
+bullet that deferred the Python move. No implementation in this update.

@@ -239,10 +239,21 @@ immutable afterwards ([source index spec](specifications/architecture-phase-1-so
   identifier assignment targets, written member paths, aliasing declarations and escaping uses.
   `bindingReassigned` and `contractBindingStable` read it, with the same name-based, module-wide
   answers the walks gave. `binding_parity_test.go` keeps the old walks as oracles.
-- **Planned:** the same index for Python and PHP; a flat syntax index; a repository call index
-  with explicit resolution kinds; and per-callable parameter summaries, which replace inline
-  helper expansion and its depth and budget limits. Library mode, Symfony and Drupal build on the
-  call index and summaries.
+- **Implemented (Python):** each module keeps its candidate `register_blueprint`/`include_router`
+  mount calls (`mountCalls`), replacing a whole-repository walk per route. `python_index_parity_test.go`
+  checks it against the old walk.
+- **Implemented (reports):** bundle files are written through a buffered writer.
+- **Measured:** `call_resolution_measure_test.go` classifies every call site, and every call gap,
+  by resolution class on a target. See the
+  [results](evaluation/architecture-baseline.md#phase-1-step-1c-call-site-resolution-2026-11-18).
+- **Planned:** a production call index with receiver typing (`method_on_known_class`) and
+  container-service resolution; per-callable parameter summaries, which replace inline helper
+  expansion and its depth and budget limits; a flat syntax index for flow evaluation; and binding
+  indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the call
+  index and summaries.
+
+Offline effect so far, with byte-identical reports: juice-shop 64.16 s → 9.89 s, vulnpy 7.98 s →
+3.49 s, DVWA 1.01 s → 0.61 s ([measurements](evaluation/architecture-baseline.md)).
 
 ### Shared, language and framework layers
 
@@ -325,10 +336,16 @@ fingerprints. Candidate identities remain independent of model answers and repor
 
 ### Graph storage decision
 
-**Planned:** use owned typed Go adjacency structures for the generalized repository graph; preserve
-relation kinds, provenance, parallel relations and self-edges. Traversal state remains separate from
-shared records. CFG/call graphs can contain cycles and require bounded worklists and explicit limits.
-Gonum is not a storage dependency. See the [decision rationale](project/03-jev-design-proposal.md#graph-representation-decision).
+**Decided (2026-11-17):** no general graph store. Repository structure is held in the layered
+[source index](specifications/architecture-phase-1-source-index.md): per-file syntax and binding
+indexes, a repository call index with explicit resolution kinds, and per-callable summaries. A typed
+in-memory graph over the entry catalog was implemented and abandoned. It indexed data that was never
+on the hot path and could not change recall; see
+[graph data model: attempted and abandoned](architecture/repository-graph.md#graph-data-model-attempted-and-abandoned).
+Relation kinds, provenance and cycle handling still apply: call cycles are handled as bounded
+fixpoints over strongly connected components, with explicit limit gaps. Traversal state remains
+separate from shared records, and Gonum is not a storage dependency. See the earlier
+[decision rationale](project/03-jev-design-proposal.md#graph-representation-decision).
 
 ## 5. Go analysis engine
 

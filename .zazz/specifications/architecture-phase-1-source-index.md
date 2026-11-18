@@ -263,8 +263,21 @@ most of the rest. If the measured gain is smaller, record the new profile and as
 
 - **1B:** the same ACs for Python and PHP (vulnpy target ≤ 5 s, DVWA no regression). Bundle encode-once
   keeps bundle bytes identical.
-- **1C:** per-sample tables of call sites by resolution kind and reason, written to the evaluation
-  record. Byte-identical golden. This becomes the recall inventory phase 5 uses.
+- **1C (contract):** measurement only, with no production change. An env-gated test harness,
+  `internal/parse/call_resolution_measure_test.go` (`ZAZZLES_MEASURE_ROOT`, optional
+  `ZAZZLES_MEASURE_OUT`), loads every JS/TS, Python and PHP module of a target with the analyzers'
+  own module sets. It classifies every call site with the analyzers' own resolvers
+  (`moduleSet.resolveCall`; `pythonSet.resolve`/`funcs`; PHP `funcs`, unique cross-module functions
+  and classes) into: `in_repo` (a definition is found); `in_repo_member_unresolved` (the callee
+  root is an in-repository module or class, but the member is not found); `package` (the callee root
+  is an import from outside the repository, or a PHP class not defined in it); `builtin` (an unbound
+  global or builtin name); `member_on_value` (a method on a local value whose type is unknown); and
+  `dynamic` (any other callee expression). It also attributes every call-related gap on candidate
+  flows (the gap's span is a call node) to the same classes. ACs: (1) the harness runs on
+  juice-shop, vulnpy and DVWA and writes `_test-findings/<app>/run-arch-1c/call-resolution.json`;
+  (2) the evaluation record gets, per sample, the call-site class counts and the gap-kind × class
+  table; (3) the golden is unchanged and there is no production diff. The production call index is
+  promoted in 1D, where summaries consume it.
 - **1D:** a shadow run on every JS/TS fixture and juice-shop proves that summary-applied flow
   reproduces the inline results wherever inline resolved the call. Each new candidate or removed
   gap is listed, with answer-key evidence. `helper_call_limit` and `path_unrelated_helper_limit`
@@ -369,3 +382,26 @@ Source: implementation, after a profile of the step 1A binary. Changed against �
   after the PHP-fix commit. File scope: `internal/report/bundle.go`, `internal/parse/python_modules.go`,
   `python_routes.go`, `python_dynamic_registrations.go`, `python_index_parity_test.go`, and docs.
 
+
+### 2026-11-18 — Step 1C measured; 1D reprioritized
+
+Source: step 1C measurement
+([evaluation](../evaluation/architecture-baseline.md#phase-1-step-1c-call-site-resolution-2026-11-18)).
+`call_resolution_measure_test.go` was added. It is test-only, there is no production diff, and the
+golden is unchanged. Findings:
+
+- Summaries close the limit-induced gaps on in-repository callables: juice-shop 559 and vulnpy 64.
+- The largest class is methods on values of unknown type: juice-shop 713 (including all 318
+  `middleware_unresolved`), and vulnpy 582 (515 `python_dispatch_unresolved`).
+- Package and builtin calls need model tables: juice-shop 337 package and 150 builtin; all 210 DVWA
+  `php_call_unresolved` gaps are PHP builtins.
+
+Impact on 1D: build the production call index first, with `method_on_known_class` receiver typing
+(constructor, import and annotation facts) as its first resolution kind beyond direct and imported
+calls. Then build summaries for JS/TS in shadow mode. Builtin and package model-table growth is a
+parallel accuracy track, owned per language in `internal/analysispacks`. The 1D contract is
+written against these numbers before it starts.
+
+Docs updated: `.zazz/architecture/repository-graph.md` (abandoned graph data model, and why the source
+index is better), `.zazz/architecture.md` §3 and the graph storage decision, and
+`docs/technical-approach.md` (engine structure and performance).

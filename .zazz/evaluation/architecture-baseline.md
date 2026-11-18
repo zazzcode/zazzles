@@ -106,3 +106,60 @@ SARIF are identical, and `findings.json` differs only in 169 callable `"language
 - **Python mount calls are indexed per module.** `mountPrefix` and `dynamicMounts` walked every Python
   file for each route. Each module now keeps its possible `register_blueprint`/`include_router`
   calls in walk order, and each caller applies its original filter.
+
+## Phase 1 step 1C: call-site resolution (2026-11-18)
+
+Measured with `ZAZZLES_MEASURE_ROOT=<sample> ZAZZLES_MEASURE_OUT=_test-findings/<app>/run-arch-1c/call-resolution.json
+go test ./internal/parse -run TestCallResolutionMeasure -count=1`, offline, at the pins above. The
+harness uses the analyzers' own module sets and resolvers, so a class shows what flow can follow
+today. Classes:
+- `in_repo`: a definition is found;
+- `in_repo_member_unresolved`: the root is an in-repository module or class, but the member is not found;
+- `package`: an import from outside the repository;
+- `builtin`, or `builtin_or_local` for Python identifiers with no module binding;
+- `member_on_value`: a method on a value whose type is unknown;
+- `dynamic`: any other callee.
+
+### Call sites
+
+| Sample | Language | Sites | in_repo | in-repo member | package | builtin | member_on_value | dynamic / local |
+|---|---|---|---|---|---|---|---|---|
+| juice-shop | JS/TS | 36,697 | 1,930 | 345 | 7,578 | 6,293 | 12,148 | 7,158 / 1,245 |
+| vulnpy | Python | 866 | 164 | 23 | 250 | 131 | 298 | 0 |
+| DVWA | PHP | 2,315 | 521 | 18 | 1 | 1,563 | 212 | 0 |
+
+### Call-site gaps on report records, by class
+
+| Sample | Gap kind | Count | in_repo | in-repo member | package | builtin | member_on_value | dynamic |
+|---|---|---|---|---|---|---|---|---|
+| juice-shop | `unknown_call_result` | 1,272 | 287 | 141 | 326 | 74 | 356 | 87 (+1 local) |
+| juice-shop | `middleware_unresolved` | 318 | – | – | – | – | 318 | – |
+| juice-shop | `path_unrelated_helper_limit` | 257 | 257 | – | – | – | – | – |
+| juice-shop | `unknown_transfer` | 74 | 6 | 5 | 11 | 5 | 39 | 7 (+1 local) |
+| juice-shop | `external_response_unresolved` | 71 | – | – | – | 71 | – | – |
+| juice-shop | `recursive_helper` | 9 | 9 | – | – | – | – | – |
+| vulnpy | `python_dispatch_unresolved` | 523 | – | – | 8 | – | 515 | – |
+| vulnpy | `python_call_unresolved` | 131 | – | – | – | 64 | 67 | – |
+| vulnpy | `work_limit` | 64 | 64 | – | – | – | – | – |
+| DVWA | `php_call_unresolved` | 210 | – | – | – | 210 | – | – |
+
+**What this means for 1D and 1E:**
+- **Summaries** close the gaps the expansion limits cause on in-repository callables: 559 on juice-shop
+  (`unknown_call_result` 287, `path_unrelated_helper_limit` 257, `recursive_helper` 9, transfer 6)
+  and 64 `work_limit` gaps on vulnpy.
+- **Receiver typing** is needed for the largest class, methods on values whose type is unknown: 713 on
+  juice-shop and 582 on vulnpy. The L3 call index needs `method_on_known_class` resolution,
+  using constructors, imports and annotations.
+- **Model tables** are needed for package and builtin calls: 337 package and 150 builtin on juice-shop,
+  and all 210 DVWA `php_call_unresolved` gaps, which are PHP builtins. Summaries cannot help there.
+
+**Precision caveats** (from the verifier's review):
+- The gap tables count only gaps whose span is exactly a call node, so they are lower bounds.
+- The tables show each sample's primary language. DVWA also has 167 JS and 20 Python call sites, and
+  juice-shop has 22 Python sites.
+- Smaller kinds are omitted. For example, vulnpy's 313 `input_validation_unresolved` gaps are all
+  `member_on_value`, so the receiver-typing class there is larger than 582.
+- PHP method calls (`->`) are always `member_on_value`. A PHP function name that is unique in the
+  repository counts as `in_repo` regardless of includes. Any class outside the repository, PHP
+  built-in classes included, counts as `package`.
+- The JS `builtin` class uses a fixed list of globals, so it is a lower bound.

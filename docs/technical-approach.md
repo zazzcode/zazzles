@@ -111,6 +111,33 @@ claim and separately report the unmet validation policy. Conversely, a missing b
 stays Review: the model cannot invent a restriction merely because the field has a familiar name.
 A construction defect can also merit repair without establishing an injection exploit.
 
+## Analysis engine structure and performance
+
+Zazzles keeps repository structure in a **layered source index**, not a general graph database or
+graph library. Each layer answers one kind of question and is built once per scan:
+
+| Layer | Answers | Status |
+|---|---|---|
+| Per-file binding index | "Is this name reassigned, written through, aliased or passed on?" in constant time | Implemented for JS/TS, plus Python mount calls |
+| Repository call index | Which callable each call site reaches, with an explicit resolution kind; unresolved calls stay visible as records | Measured; production index planned |
+| Callable summaries | What each function does with each parameter (returns, sinks, stores, controls), computed once and applied at every call site | Planned |
+
+The first refactors replaced whole-file syntax re-walks and unbuffered report writes. Offline scan
+time dropped from 64.16 s to 9.89 s on OWASP Juice Shop, 7.98 s to 3.49 s on VulnPy and 1.01 s to
+0.61 s on DVWA. Findings, reports and model requests stayed byte-identical. A compatibility
+golden test pins candidate IDs, request bytes and report hashes for every fixture, so a refactor
+that changes results fails the build.
+
+**Graph data model: tried and dropped.** A typed in-memory graph over the route and handler catalog
+was implemented and then backed out. That catalog was never where scans spent time or lost
+findings. Profiles showed the cost in repeated syntax walks. Measurement showed the misses at calls
+flow cannot follow: helper expansion limits, methods on values of unknown type, and unmodeled
+library or builtin calls. The source index targets those directly. Call summaries remove expansion
+limits, receiver typing resolves method calls, and model tables cover libraries and builtins.
+Library-mode analysis and Symfony and Drupal support build on the same call index and summaries
+instead of adding analyzers. The [repository graph design](../.zazz/architecture/repository-graph.md#implementation-direction-source-index-not-a-graph-store-2026-11-17)
+records the decision.
+
 ## Relationship to established SAST
 
 The common-entry design follows established static-analysis principles: represent program structure,
@@ -255,7 +282,7 @@ protection, abstention/coverage, evidence usefulness and remediation correctness
 resources and model cost. Fewer alerts alone does not establish improvement. The same agent's source
 review, implementation and calibration are not independent findings review.
 
-Independent LLM Findings Review, a full repository IR/graph, automatic incremental caches, severity
+Independent LLM Findings Review, the production call index and callable summaries, automatic incremental caches, severity
 CI gates and dependency scanning remain planned. Current analysis is bounded static evidence, not
 runtime confirmation or a security certificate. Paid model judgment also introduces source-transmission,
 service-availability and cost considerations; offline evidence inspection remains available.

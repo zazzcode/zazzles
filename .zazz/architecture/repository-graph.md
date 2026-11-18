@@ -6,6 +6,54 @@ proposed semantic design; the current route-v1 artifact is only a syntax invento
 [architecture](../architecture.md) owns pipeline/provider contracts and the
 [implementation contract](../specifications/route-string-validation.md) declares the implemented subset.
 
+## Implementation direction: source index, not a graph store (2026-11-17)
+
+The semantic model below still holds: canonical records, provenance, value and guard facts, and
+bounded traversal. Its storage is now the layered
+[source index](../specifications/architecture-phase-1-source-index.md), not a general graph store.
+
+### Graph data model: attempted and abandoned
+
+Architecture phase 1 first implemented a typed in-memory graph, `internal/graph`. It used dense
+node IDs assigned at freeze time, CSR adjacency, and a relation table for EXPOSES, HAS_BINDING,
+DISPATCHES_TO, INSTANTIATES and INPUT_FROM_ENTRY over the entry catalog. Its own tests passed, and
+canonical ordering through it kept every architecture-baseline fixture byte-identical. It was
+backed out before commit, for four reasons:
+
+1. **It indexed the wrong data.** The entry catalog (entries, registrations, dispatch bindings,
+   callables) is at most about 11k records, and lookups in it were never on the hot path. Profiles
+   put juice-shop's cost elsewhere: 59% of CPU went to whole-module syntax re-walks
+   (`bindingReassigned`), and about 21 GB went to Tree-sitter CGo string and node allocations.
+2. **It did not touch recall.** Missed findings come from calls that flow cannot follow: unresolved
+   callees, helper expansion limits, and methods on values of unknown type. The catalog graph had no
+   value or call edges, so it could not change a single candidate.
+3. **Its strict invariants did not match real callers.** The catalog is queried before finalization:
+   router mounts select entries while callables are still duplicated and registrations still
+   reference removed entries. Hand-built partial catalogs are also rendered. A strict graph rejected
+   both, which meant either a second, field-based code path or edits outside the phase.
+4. **Its only output was classification metadata.** It would have added registration origin, path
+   shape and resolution to reports, which is useful but changes neither speed nor findings.
+
+### Why the source index is better
+
+- **Speed, measured.** A per-file binding write index, buffered bundle writes and a per-module
+  Python mount-call index cut offline scans from 64.16 s to 9.89 s (juice-shop), 7.98 s to 3.49 s
+  (vulnpy) and 1.01 s to 0.61 s (DVWA). Reports and judge requests are byte-identical.
+- **Accuracy, targeted by measurement.** The step 1C call-resolution measurement
+  ([evaluation](../evaluation/architecture-baseline.md#phase-1-step-1c-call-site-resolution-2026-11-18))
+  assigns each call gap to the mechanism that would fix it: callable summaries for limit-induced
+  gaps on in-repository callables, receiver typing for methods on values, and model tables for
+  package and builtin calls.
+- **One structure per question.** Per-file syntax and binding indexes answer local questions in
+  O(1). A repository call index records each call site with an explicit resolution kind, and
+  unresolved sites stay records, never dropped. Per-callable parameter summaries are computed once
+  and applied at every call site, which replaces per-route inline expansion and its depth and budget limits.
+- **Built for the next features.** Library mode reads "parameter k reaches a sink" straight from an
+  exported function's summary. Symfony and Drupal add PSR-4 and service-container resolution as call
+  index inputs and route syntax as model tables, rather than new analyzers.
+- **Same boundaries.** Indexes are immutable after build and deterministic by key. Each new layer
+  runs beside the code it replaces until parity is proved, and protection is still never a stored bit.
+
 ## Acquisition adapters and shared value facts
 
 Acquisition adapters establish registration, callable and external-input provenance. Shared value

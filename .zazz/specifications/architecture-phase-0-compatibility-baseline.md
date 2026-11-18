@@ -189,3 +189,17 @@ Source: owner, in the planning session. Runs in the `arch-review-clean-up` workt
 session, after the previous phase's commits, with no new worktree. Changed: header, §10 scope diff
 base, §13 prompt. Verification impact: the scope diff is taken from this phase's recorded starting
 HEAD, not `origin/stage`. The PR is the shared milestone draft PR into `stage`.
+
+### 2026-11-17 — Implementation
+
+Source: implementation session. Changed: no contract sections. Recorded adaptations within §9's
+adaptive helper names:
+
+- Each use row also carries `signature_error` when `EquivalenceSignature` fails. This happens
+  in the same cases as `preview_error`, so the golden records the failure instead of an empty digest.
+- The mixed fixture's JS handler uses a verified `sequelize` client. With an unbound `db` receiver,
+  `Preview` reported unverified SQL component selection, so no request bytes would have been pinned
+  for that language.
+- An Express GET with `db.query` and Flask's `sqlite3` cursor match the §4 fixture description.
+
+Verification impact: none. AC1–AC7 evidence is in the run log.

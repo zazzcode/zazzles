@@ -32,7 +32,7 @@ question contract exists.
 - [Phase 2 spec](architecture-phase-2-pipeline-runners.md) (pipeline and runner seam), and phase 1 D-7 (mechanism table).
 - [Entry/dispatch decision](../architecture/README.md#multiple-entry-and-dispatch-mechanisms),
   [acquisition and value facts](../architecture/README.md#acquisition-and-value-facts).
-- Code: `internal/parse/modules.go` and `commonjs.go` (current import and export resolution and
+- Code: `internal/langjs/modules.go` and `commonjs.go` (current import and export resolution and
   its stated re-export limits), `command_claims.go`, `code_*`, `internal/report` classification.
 - [Reporting design](../architecture/reporting-and-sarif.md), [interpreting results](../../docs/interpreting-results.md).
 
@@ -51,9 +51,9 @@ question contract exists.
 
 | Path | New / modified | Purpose |
 |---|---|---|
-| `internal/parse/library_exports.go`, `library_exports_test.go` | new | `package.json` entry fields, conditional `exports` maps (`import`/`require`/`default`, subpaths), re-export following (`export * from`, `export {x} from`, `module.exports = require(…)`, `exports.x = …`), preferring `.ts` source over emitted `.js` when `types`/`source` point to it |
-| `internal/parse/library_entries.go` | new | `library_export` entries, registrations (mechanism `export_binding`), dispatch, caller-argument inputs |
-| `internal/parse/testdata/library/<case>/` | new | Synthetic packages (§8) |
+| `internal/langjs/library_exports.go`, `library_exports_test.go` | new | `package.json` entry fields, conditional `exports` maps (`import`/`require`/`default`, subpaths), re-export following (`export * from`, `export {x} from`, `module.exports = require(…)`, `exports.x = …`), preferring `.ts` source over emitted `.js` when `types`/`source` point to it |
+| `internal/langjs/library_entries.go` | new | `library_export` entries, registrations (mechanism `export_binding`), dispatch, caller-argument inputs |
+| `internal/langjs/testdata/library/<case>/` | new | Synthetic packages (§8) |
 | `internal/analysis/entries.go`, `entry_validation.go`, `entry_graph.go` | modified | `LibraryEntryMetadata{Package, Version, Export, Condition}`; input origin kind `caller_argument`; mechanism table entry |
 | `internal/pipeline/pipeline.go` | modified | `Options.Library`: JS/TS runner only, library entry discovery |
 | `internal/report/*` | modified | `conditional_weakness` presentation in JSON, HTML, and SARIF (SARIF level `warning`) for library entries only |
@@ -187,4 +187,7 @@ Use the plan's common rules. Record the corpus pins checked, the per-row outcome
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-18 — Paths after architecture phase 3B
+
+Source: [phase 3B](architecture-phase-3-js-ts-python-package.md) moved JS/TS to `internal/langjs` and
+Python to `internal/langpy`; `internal/parse` is the language core. Changed: §2 code paths and §4 file table (new files land in `internal/langjs`). No scope change.

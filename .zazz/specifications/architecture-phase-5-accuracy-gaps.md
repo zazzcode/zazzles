@@ -23,7 +23,7 @@ Judgment-level accuracy is out of scope: a candidate that exists but lands in Re
 Protected recognition. That belongs to the container-root follow-on accuracy handoff.
 
 The plan's earlier assumption that `VP-XSS-JINJA` was open is wrong. xss-hardening delivered
-`jinjaFileTemplate` (`internal/parse/python_html_responses.go`), and the case passes in
+`jinjaFileTemplate` (`internal/langpy/html_responses.go`), and the case passes in
 [final evaluation](../evaluation/xss-hardening/final-evaluation.json). This phase corrects the stale
 checkbox in the [VulnPy guide](../evaluation/vulnpy-detection-guide.md).
 
@@ -54,7 +54,7 @@ checkbox in the [VulnPy guide](../evaluation/vulnpy-detection-guide.md).
 |---|---|---|
 | `.zazz/evaluation/recall-gap-inventory.md` | new | Matrix: case ID, sample and pin, language, family, source anchor, current output, cause class, owning layer, estimated scope, recovered-by |
 | `.zazz/evaluation/vulnpy-detection-guide.md` | modified | Correct the stale Jinja checkbox with a link to the xss-hardening evidence |
-| Selected gap's adapter files (one language package or `internal/parse` area), plus fixtures under its `testdata/<language>/<case>/` | modified or new | Closure, decided at D-3 and recorded in §14 |
+| Selected gap's adapter files (one language package, `internal/langjs`, `internal/langpy` or `internal/langphp`, or the `internal/parse` core), plus fixtures under that package's `testdata/` | modified or new | Closure, decided at D-3 and recorded in §14 |
 | `cmd/scan/testdata/architecture-baseline.json` | modified | Expected delta for the new fixture and the changed fixture only |
 | The family's analysis guide and detection guide | modified | Recovered case and remaining limits |
 | This spec | modified | §4 and §7 closure rows are filled in after selection, with a change-log entry |
@@ -164,4 +164,7 @@ Use the plan's common rules. Record the per-sample scan commands, evaluator outp
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-18 — Paths after architecture phase 3B
+
+Source: [phase 3B](architecture-phase-3-js-ts-python-package.md) moved JS/TS to `internal/langjs` and
+Python to `internal/langpy`; `internal/parse` is the language core. Changed: §1 code path and §4 scope row. No scope change.

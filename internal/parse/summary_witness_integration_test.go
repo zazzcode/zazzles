@@ -17,7 +17,7 @@ import (
 // Finalized reports, rather than internal flow values alone, must carry a
 // complete native witness into the offline request builder.
 func TestSummaryWitnessFinalizedCommandRequests(t *testing.T) {
-	for _, language := range []string{"javascript", "python", "php"} {
+	for _, language := range []string{"javascript", "typescript", "python", "php"} {
 		t.Run(language, func(t *testing.T) {
 			filename, source, left, right := summaryCommandSource(language)
 			root := t.TempDir()
@@ -135,7 +135,7 @@ func TestSummaryWitnessFinalizedCommandRequests(t *testing.T) {
 func summaryCommandSource(language string) (filename, source, left, right string) {
 	left, right = "left_command", "right_command"
 	switch language {
-	case "javascript":
+	case "javascript", "typescript":
 		filename = "app.js"
 		source = "const express = require('express');\nconst { exec } = require('child_process');\nconst app = express();\nfunction leaf(x) { exec(x); return x; }\n"
 		for i := 4; i >= 0; i-- {
@@ -146,6 +146,13 @@ func summaryCommandSource(language string) (filename, source, left, right string
 			source += fmt.Sprintf("function h%d(x) { return %s(x); }\n", i, next)
 		}
 		source += "app.get('/left', (req,res) => { h0(req.query.left_command); res.send('done'); });\napp.get('/right', (req,res) => { h0(req.query.right_command); res.send('done'); });\n"
+		if language == "typescript" {
+			filename = "app.ts"
+			source = strings.ReplaceAll(source, "function leaf(x)", "function leaf(x: string)")
+			for i := 0; i <= 4; i++ {
+				source = strings.ReplaceAll(source, fmt.Sprintf("function h%d(x)", i), fmt.Sprintf("function h%d(x: string)", i))
+			}
+		}
 	case "python":
 		filename = "app.py"
 		source = "from flask import Flask, request\nimport os\napp=Flask(__name__)\ndef leaf(x):\n os.system(x)\n return x\n"

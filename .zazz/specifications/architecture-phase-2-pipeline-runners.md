@@ -278,3 +278,8 @@ Source: owner request after the verifier's residual risks. Changed: §4 rows for
 - Evidence: the gate (including `-race`) passes, the golden is unchanged, and juice-shop, vulnpy and
   DVWA bundles are still byte-identical to the starting HEAD.
 
+### 2026-11-18 — PIPELINE scope label
+
+Source: owner approval. The [PR standard](../standards/pr-process.md#pr-titles--bracketed-scope-labels)
+gains a `PIPELINE` label for `internal/pipeline`, which this phase introduces and its first commit
+already uses. This is a documentation change only.

@@ -32,21 +32,21 @@ func TestDecisionRateWindowAndCancellation(t *testing.T) {
 		return ctx.Err()
 	}
 	for i := 0; i < 3; i++ {
-		if err := l.acquire(context.Background(), 100); err != nil {
+		if _, err := l.acquire(context.Background(), 100); err != nil {
 			t.Fatal(err)
 		}
-		l.complete(nil, "")
+		l.complete(0, nil, "")
 	}
 	if len(waits) != 1 || waits[0] < time.Minute {
 		t.Fatalf("rolling window waits %v", waits)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if err := l.acquire(ctx, 100); err == nil {
+	if _, err := l.acquire(ctx, 100); err == nil {
 		t.Fatal("canceled request must not be admitted")
 	}
 	small, _ := newRequestLimiter(Limits{TPM: 10})
-	if err := small.acquire(context.Background(), 100); err == nil {
+	if _, err := small.acquire(context.Background(), 100); err == nil {
 		t.Fatal("oversized reservation must not wait forever")
 	}
 }
@@ -93,10 +93,10 @@ func TestDisabledPacingDoesNotRetainRateWindow(t *testing.T) {
 	l, _ := newRequestLimiter(Limits{})
 	l.now = func() time.Time { t.Fatal("disabled pacing should not read the clock"); return time.Time{} }
 	for i := 0; i < 10; i++ {
-		if err := l.acquire(context.Background(), 100); err != nil {
+		if _, err := l.acquire(context.Background(), 100); err != nil {
 			t.Fatal(err)
 		}
-		l.complete([]byte(`{"usage":{"input_tokens":100}}`), "")
+		l.complete(0, []byte(`{"usage":{"input_tokens":100}}`), "")
 	}
 	if len(l.window) != 0 || l.attempts != 10 || l.input != 1000 {
 		t.Fatalf("window=%d attempts=%d input=%d", len(l.window), l.attempts, l.input)

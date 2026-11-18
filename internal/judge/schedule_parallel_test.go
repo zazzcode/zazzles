@@ -8,13 +8,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/pipeline"
@@ -115,9 +118,30 @@ func (s *scheduleStub) count() int {
 	return s.requests
 }
 
+var scheduleReports = struct {
+	sync.Mutex
+	parsed map[[2]int]*analysis.AnalysisReport
+}{parsed: map[[2]int]*analysis.AnalysisReport{}}
+
 // scheduleSQLReport parses groups distinct SQL handlers, each registered on
-// members routes, so every group is one equivalence signature.
+// members routes, so every group is one equivalence signature. Parses are
+// memoized; each caller gets its own Uses and Limitations, which the scheduler
+// replaces or appends but never mutates in place.
 func scheduleSQLReport(t *testing.T, groups, members int) *analysis.AnalysisReport {
+	t.Helper()
+	scheduleReports.Lock()
+	defer scheduleReports.Unlock()
+	key := [2]int{groups, members}
+	if scheduleReports.parsed[key] == nil {
+		scheduleReports.parsed[key] = parseScheduleSQLReport(t, groups, members)
+	}
+	r := *scheduleReports.parsed[key]
+	r.Uses = append([]analysis.CandidateUse(nil), r.Uses...)
+	r.Limitations = append([]string(nil), r.Limitations...)
+	return &r
+}
+
+func parseScheduleSQLReport(t *testing.T, groups, members int) *analysis.AnalysisReport {
 	t.Helper()
 	var src strings.Builder
 	src.WriteString(`import express from 'express';import {Sequelize} from 'sequelize';const app=express();const db=new Sequelize('sqlite::memory:');`)
@@ -205,11 +229,19 @@ type scheduleOutcome struct {
 	Traces   map[string]DecisionTrace `json:"traces"`
 }
 
-func (sc scheduleScenario) options(limit int, save func(string, DecisionTrace) error) ScheduleOptions {
-	return ScheduleOptions{Limit: limit, SkippedFamilies: sc.skip, OnlyFamilies: sc.only, SaveTrace: save}
+func (sc scheduleScenario) options(limit, concurrency int, save func(string, DecisionTrace) error) ScheduleOptions {
+	return ScheduleOptions{Limit: limit, Concurrency: concurrency, SkippedFamilies: sc.skip, OnlyFamilies: sc.only, SaveTrace: save}
 }
 
-func runScheduleScenario(t *testing.T, sc scheduleScenario, stub *scheduleStub) scheduleOutcome {
+func runScheduleScenario(t *testing.T, sc scheduleScenario, stub *scheduleStub, concurrency int) scheduleOutcome {
+	t.Helper()
+	c, r, opts := prepareScheduleScenario(t, sc, stub, concurrency)
+	return runPrepared(t, c, r, opts, stub)
+}
+
+// prepareScheduleScenario builds the report, stub client and options; traces
+// are collected into the returned options' SaveTrace.
+func prepareScheduleScenario(t *testing.T, sc scheduleScenario, stub *scheduleStub, concurrency int) (*Client, *analysis.AnalysisReport, ScheduleOptions) {
 	t.Helper()
 	if sc.requestLimit > 0 {
 		withRequestLimit(t, sc.requestLimit)
@@ -230,18 +262,26 @@ func runScheduleScenario(t *testing.T, sc scheduleScenario, stub *scheduleStub) 
 			t.Fatal(err)
 		}
 	}
+	return c, r, sc.options(sc.limit, concurrency, nil)
+}
+
+func runPrepared(t *testing.T, c *Client, r *analysis.AnalysisReport, opts ScheduleOptions, stub *scheduleStub) scheduleOutcome {
+	t.Helper()
 	var mu sync.Mutex
 	traces := map[string]DecisionTrace{}
-	save := func(id string, trace DecisionTrace) error {
+	var savedOrder []string
+	opts.SaveTrace = func(id string, trace DecisionTrace) error {
 		mu.Lock()
 		defer mu.Unlock()
 		if _, dup := traces[id]; dup {
 			t.Errorf("trace %s saved twice", id)
 		}
 		traces[id] = trace
+		savedOrder = append(savedOrder, id)
 		return nil
 	}
-	failed := c.AssessScheduled(context.Background(), r, sc.options(sc.limit, save))
+	failed := c.AssessScheduled(context.Background(), r, opts)
+	assertSavedInPriorityOrder(t, r, savedOrder)
 	if summary := c.LimitSummary(); summary != "" {
 		r.Limitations = append(r.Limitations, summary)
 	}
@@ -310,7 +350,7 @@ func marshalOutcome(t *testing.T, o scheduleOutcome) []byte {
 func TestScheduleSerialGolden(t *testing.T) {
 	for _, sc := range serialScenarios {
 		t.Run(sc.name, func(t *testing.T) {
-			got := marshalOutcome(t, runScheduleScenario(t, sc, &scheduleStub{}))
+			got := marshalOutcome(t, runScheduleScenario(t, sc, &scheduleStub{}, 1))
 			path := filepath.Join("testdata", "schedule_serial", sc.name+".json")
 			if *updateScheduleGolden {
 				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -335,4 +375,248 @@ func TestScheduleSerialGolden(t *testing.T) {
 func sha256Hex(data []byte) string {
 	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:])
+}
+
+// assertSavedInPriorityOrder checks that SaveTrace ran in priority order.
+func assertSavedInPriorityOrder(t *testing.T, r *analysis.AnalysisReport, saved []string) {
+	t.Helper()
+	rank := map[string]int{}
+	order := make([]int, len(r.Uses))
+	for i := range order {
+		order[i] = i
+	}
+	sort.SliceStable(order, func(i, j int) bool {
+		return securitySinkPriority(r.Uses[order[i]]) < securitySinkPriority(r.Uses[order[j]])
+	})
+	for k, i := range order {
+		rank[r.Uses[i].ID] = k
+	}
+	for k := 1; k < len(saved); k++ {
+		if rank[saved[k-1]] >= rank[saved[k]] {
+			t.Fatalf("SaveTrace out of priority order: %s before %s", saved[k-1], saved[k])
+		}
+	}
+}
+
+// TestScheduleParallelMatchesSerialGolden runs every AC1 scenario whose stub
+// does not depend on request arrival order at N=4 against the same golden.
+func TestScheduleParallelMatchesSerialGolden(t *testing.T) {
+	for _, sc := range serialScenarios {
+		if sc.status != nil || sc.malformed != nil {
+			continue // ordinal-keyed failures are arrival-order dependent above N=1
+		}
+		t.Run(sc.name, func(t *testing.T) {
+			out := runScheduleScenario(t, sc, &scheduleStub{}, 4)
+			// LimitSummary names the concurrency by design; everything else must match.
+			out.Report = bytes.ReplaceAll(out.Report, []byte("up to 4 assessment requests in flight"), []byte("requests remain sequential"))
+			got := marshalOutcome(t, out)
+			want, err := os.ReadFile(filepath.Join("testdata", "schedule_serial", sc.name+".json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(got, want) {
+				t.Fatal("N=4 output differs from the serial golden")
+			}
+		})
+	}
+}
+
+// TestScheduleParallelEquivalence is AC2: with a response fixed per request and
+// a random per-request delay, N=4 output equals N=1 output for 20 seeds.
+func TestScheduleParallelEquivalence(t *testing.T) {
+	sc := scheduleScenario{name: "equivalence", groups: 6, members: 2, claims: true, limit: 5, limits: &Limits{}}
+	deterministic := func(seed int64) *scheduleStub {
+		rng := rand.New(rand.NewSource(seed))
+		var mu sync.Mutex
+		return &scheduleStub{
+			usage: func(body []byte) int { return 10 + int(sha256.Sum256(body)[0]%7) },
+			before: func(int, []byte) {
+				mu.Lock()
+				d := time.Duration(rng.Intn(3000)) * time.Microsecond
+				mu.Unlock()
+				time.Sleep(d)
+			},
+		}
+	}
+	serial := marshalOutcome(t, runScheduleScenario(t, sc, deterministic(0), 1))
+	for seed := int64(1); seed <= 20; seed++ {
+		if got := marshalOutcome(t, runScheduleScenario(t, sc, deterministic(seed), 4)); !bytes.Equal(got, serial) {
+			t.Fatalf("seed %d: N=4 output differs from N=1", seed)
+		}
+	}
+}
+
+// TestScheduleDispatchesConcurrently is AC3: with N=4, four distinct
+// signatures are in flight together, never more than four, and each
+// equivalent group sends one request.
+func TestScheduleDispatchesConcurrently(t *testing.T) {
+	const n, groups = 4, 8
+	var mu sync.Mutex
+	batches := map[int]chan struct{}{}
+	arrived := map[int]int{}
+	stub := &scheduleStub{}
+	stub.before = func(k int, _ []byte) {
+		batch := (k - 1) / n
+		mu.Lock()
+		if batches[batch] == nil {
+			batches[batch] = make(chan struct{})
+		}
+		ch := batches[batch]
+		arrived[batch]++
+		if arrived[batch] == n {
+			close(ch)
+		}
+		mu.Unlock()
+		select {
+		case <-ch:
+		case <-time.After(10 * time.Second):
+			t.Errorf("request %d: %d requests never reached the stub together", k, n)
+		}
+	}
+	sc := scheduleScenario{name: "concurrency", groups: groups, members: 3, limit: 10, limits: &Limits{}}
+	out := runScheduleScenario(t, sc, stub, n)
+	if out.Requests != groups {
+		t.Fatalf("requests=%d, want one per equivalent group (%d)", out.Requests, groups)
+	}
+	if stub.maxConc != n {
+		t.Fatalf("max in flight=%d, want %d", stub.maxConc, n)
+	}
+	if out.Failed {
+		t.Fatal("concurrent run reported incomplete assessments")
+	}
+}
+
+// TestScheduleCapUsesPriorityLeaders is AC4: ten distinct signatures and
+// Limit=3 send exactly the first three leaders in priority order.
+func TestScheduleCapUsesPriorityLeaders(t *testing.T) {
+	stub := &scheduleStub{}
+	sc := scheduleScenario{name: "cap", groups: 10, members: 1, limit: 3, limits: &Limits{}}
+	c, r, opts := prepareScheduleScenario(t, sc, stub, 4)
+	want := map[string]bool{}
+	for _, u := range r.Uses[:3] { // every use is priority 0, so priority order is report order
+		trace, err := c.Preview(u)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want[string(trace.Request)] = true
+	}
+	runPrepared(t, c, r, opts, stub)
+	if len(stub.bodies) != 3 {
+		t.Fatalf("requests=%d, want 3", len(stub.bodies))
+	}
+	for _, body := range stub.bodies {
+		if !want[string(body)] {
+			t.Fatal("a request outside the first three priority leaders reached HTTP")
+		}
+	}
+	for k, u := range r.Uses {
+		if k < 3 && u.Assessment.Status != "completed" || k >= 3 && (u.Assessment.Status != "not_run" || u.Assessment.Reason != "judge request limit reached") {
+			t.Fatalf("use %d: %+v", k, u.Assessment)
+		}
+	}
+}
+
+// TestScheduleHaltStopsAcquisition is AC5: request #2 fails; no request is
+// acquired after the failure is recorded, at most 2+(N-1) requests are sent,
+// and every candidate without an answer carries the limiter's stop reason.
+func TestScheduleHaltStopsAcquisition(t *testing.T) {
+	for _, n := range []int{1, 4} {
+		t.Run(fmt.Sprintf("N=%d", n), func(t *testing.T) {
+			stub := &scheduleStub{status: failOrdinal(2, http.StatusInternalServerError)}
+			sc := scheduleScenario{name: "halt", groups: 10, members: 2, limit: 10, limits: &Limits{}}
+			c, r, opts := prepareScheduleScenario(t, sc, stub, n)
+			if n > 1 {
+				// Hold the other in-flight requests until the failure is recorded,
+				// so the bound is checked at its widest.
+				stub.before = func(k int, _ []byte) {
+					deadline := time.Now().Add(10 * time.Second)
+					for k != 2 && c.limiter.haltReason() == "" && time.Now().Before(deadline) {
+						time.Sleep(time.Millisecond)
+					}
+				}
+			}
+			out := runPrepared(t, c, r, opts, stub)
+			if out.Requests > 2+(n-1) || c.limiter.attempts != out.Requests {
+				t.Fatalf("requests=%d attempts=%d, want at most %d and equal", out.Requests, c.limiter.attempts, 2+(n-1))
+			}
+			failures := 0
+			for _, u := range r.Uses {
+				switch {
+				case u.Assessment.Status == "completed":
+				case u.Assessment.Reason == "judge HTTP 500":
+					failures++
+				case u.Assessment.Reason != "judge limit: stopped after judge HTTP 500":
+					t.Fatalf("%s: %+v", u.ID, u.Assessment)
+				}
+			}
+			if failures != 1 || !out.Failed {
+				t.Fatalf("failures=%d failed=%v", failures, out.Failed)
+			}
+		})
+	}
+}
+
+// TestSchedulePacingUnderConcurrency is AC6: with an injected clock, RPM=2
+// and N=4 never admit more than two requests in any rolling minute, and the
+// TPM reservation refusal keeps its message.
+func TestSchedulePacingUnderConcurrency(t *testing.T) {
+	stub := &scheduleStub{}
+	sc := scheduleScenario{name: "pacing", groups: 7, members: 2, limit: 10, limits: &Limits{RPM: 2}}
+	c, r, opts := prepareScheduleScenario(t, sc, stub, 4)
+	var clockMu sync.Mutex
+	clock := time.Unix(0, 0)
+	admitted := map[uint64]time.Time{}
+	observe := func() { // caller holds c.limiter.mu
+		for _, e := range c.limiter.window {
+			admitted[e.id] = e.at
+		}
+	}
+	c.limiter.now = func() time.Time {
+		observe() // every window entry is seen before any later prune
+		clockMu.Lock()
+		defer clockMu.Unlock()
+		return clock
+	}
+	c.limiter.wait = func(ctx context.Context, d time.Duration) error {
+		clockMu.Lock()
+		clock = clock.Add(d)
+		clockMu.Unlock()
+		return ctx.Err()
+	}
+	out := runPrepared(t, c, r, opts, stub)
+	c.limiter.mu.Lock()
+	observe()
+	c.limiter.mu.Unlock()
+	if out.Failed || out.Requests != sc.groups || len(admitted) != sc.groups {
+		t.Fatalf("failed=%v requests=%d admitted=%d", out.Failed, out.Requests, len(admitted))
+	}
+	var times []time.Time
+	for _, at := range admitted {
+		times = append(times, at)
+	}
+	sort.Slice(times, func(i, j int) bool { return times[i].Before(times[j]) })
+	for i := range times {
+		inWindow := 0
+		for _, at := range times[i:] {
+			if at.Sub(times[i]) < time.Minute {
+				inWindow++
+			}
+		}
+		if inWindow > 2 {
+			t.Fatalf("%d requests admitted in the minute from %v", inWindow, times[i])
+		}
+	}
+
+	tpm := scheduleScenario{name: "tpm", groups: 3, members: 1, limit: 10, limits: &Limits{TPM: 1}}
+	tpmStub := &scheduleStub{}
+	c, r, opts = prepareScheduleScenario(t, tpm, tpmStub, 4)
+	runPrepared(t, c, r, opts, tpmStub)
+	for _, u := range r.Uses {
+		if u.Assessment.Reason != "judge limit: request token reservation exceeds the configured TPM window" {
+			t.Fatal(u.Assessment)
+		}
+	}
+	if tpmStub.count() != 0 {
+		t.Fatal("a refused reservation reached HTTP")
+	}
 }

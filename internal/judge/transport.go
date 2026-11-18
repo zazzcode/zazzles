@@ -9,15 +9,16 @@ import (
 	"net/http"
 )
 
-// exchange shares bounded, no-retry transport across semantic protocols.
+// exchange shares bounded, no-retry transport across semantic protocols. It is
+// safe for concurrent use: the limiter reserves and reconciles under its own lock
+// and holds no lock across the HTTP call.
 func (c *Client) exchange(ctx context.Context, payload []byte, trace *DecisionTrace) (data []byte, reason string) {
 	if c.limiter != nil {
-		c.limiter.series.Lock()
-		defer c.limiter.series.Unlock()
-		if err := c.limiter.acquire(ctx, len(payload)); err != nil {
+		id, err := c.limiter.acquire(ctx, len(payload))
+		if err != nil {
 			return nil, err.Error()
 		}
-		defer func() { c.limiter.complete(data, reason) }()
+		defer func() { c.limiter.complete(id, data, reason) }()
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(payload))
 	if err != nil {

@@ -194,6 +194,9 @@ func (f *pythonFlow) boundHelper(call *sitter.Node, callable *pythonBoundCallabl
 	f.context = append(f.context, callable.evidence...)
 	key := fmt.Sprintf("%s:%d", m.file, fn.StartByte())
 	if f.depth >= 3 || *f.work >= 24 || f.stack[key] {
+		if f.closedSummaryCall(call, callable, values) {
+			return pythonValue{}
+		}
 		v := pythonValue{}
 		for _, a := range values {
 			v = pyCombine(v, a)
@@ -206,6 +209,7 @@ func (f *pythonFlow) boundHelper(call *sitter.Node, callable *pythonBoundCallabl
 	f.stack[key] = true
 	defer delete(f.stack, key)
 	f.context = append(f.context, m.evidence("helper_definition", fn), f.module.evidence("call_binding", call))
+	usesBefore := len(f.report.Uses)
 	h := f.clone()
 	h.module = m
 	h.depth++
@@ -255,6 +259,9 @@ func (f *pythonFlow) boundHelper(call *sitter.Node, callable *pythonBoundCallabl
 	f.mergeGuards(h)
 	f.context = pythonMergeEvidence(f.context, h.context)
 	h.returns.gaps = append(h.returns.gaps, h.gaps...)
+	if pythonSummaryShadow != nil {
+		pythonSummaryShadow(f, call, callable, values, h.returns, len(f.report.Uses)-usesBefore)
+	}
 	return pyTransfer(h.returns, f.module.evidence("helper_return", call))
 }
 func (f *pythonFlow) outbound(q string) bool {

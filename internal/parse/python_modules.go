@@ -37,6 +37,7 @@ type pythonModule struct {
 	bindings *pythonBindingIndex
 }
 type pythonSet struct {
+	summaries     map[string]*closedCallable
 	inputs        map[string]map[analysis.Evidence]pythonInputSource
 	root          string
 	parser        *sitter.Parser

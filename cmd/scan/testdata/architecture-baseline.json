@@ -647,6 +647,18 @@
     "uses_count": 2,
     "gaps": 0
   },
+  "internal/parse/testdata/php/drupal-resolution": {
+    "uses": [],
+    "report_sha256": "92715e28f0d8e0824b31930e6b52b9aaf47e019e9756658c5034fbe33e394c06",
+    "sarif_sha256": "170da0c97656663a0e86eefd6fb07e6cc979ed1631c604debdf8eb278e21acaf",
+    "entries": 1,
+    "registrations": 1,
+    "dispatch_bindings": 1,
+    "callables": 1,
+    "invocation_contexts": 1,
+    "uses_count": 0,
+    "gaps": 0
+  },
   "internal/parse/testdata/php/includes": {
     "uses": [
       {
@@ -799,6 +811,18 @@
     "callables": 4,
     "invocation_contexts": 4,
     "uses_count": 6,
+    "gaps": 0
+  },
+  "internal/parse/testdata/php/symfony-resolution": {
+    "uses": [],
+    "report_sha256": "d4657e295b325daf1ec391dbbe2af7155fcad1fd023c1e6640efbff178555ea2",
+    "sarif_sha256": "dab47b46e1305c7ef2a9f73b1ef203d8adf933b5cbf28ea07f463bfc1c70810f",
+    "entries": 1,
+    "registrations": 1,
+    "dispatch_bindings": 1,
+    "callables": 1,
+    "invocation_contexts": 1,
+    "uses_count": 0,
     "gaps": 0
   },
   "internal/parse/testdata/php/xss": {

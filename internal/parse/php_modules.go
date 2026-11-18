@@ -38,11 +38,15 @@ type phpModule struct {
 
 // phpSet owns the parsed PHP modules of one scan root.
 type phpSet struct {
-	root    string
-	parser  *sitter.Parser
-	modules map[string]*phpModule
-	files   []string
-	gaps    []analysis.Gap
+	resolutions    map[string]phpCallResolution
+	project        *phpProjectInputs
+	builtinEffects map[string]bool
+	summaries      map[string]*closedCallable
+	root           string
+	parser         *sitter.Parser
+	modules        map[string]*phpModule
+	files          []string
+	gaps           []analysis.Gap
 	// inputs indexes acquisition per invocation context, never by span alone.
 	inputs map[string]map[analysis.Evidence]phpInputSource
 	// writes links SQL storage keys to their writing values (stored XSS).

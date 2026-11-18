@@ -1,6 +1,7 @@
 package report
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -58,7 +59,12 @@ func WriteBundle(base string, r *analysis.AnalysisReport) (string, error) {
 		if err != nil {
 			return dir, err
 		}
-		err = output.write(f)
+		// Renderers emit many small writes; buffer them so each is not a syscall.
+		w := bufio.NewWriterSize(f, 1<<20)
+		err = output.write(w)
+		if err == nil {
+			err = w.Flush()
+		}
 		closeErr := f.Close()
 		if err != nil {
 			return dir, fmt.Errorf("write %s: %w", path, err)

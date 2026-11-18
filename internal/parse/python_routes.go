@@ -251,7 +251,7 @@ func (s *pythonSet) mountPrefix(m *pythonModule, name string, r pythonReceiver) 
 		if mod == nil {
 			continue
 		}
-		pyWalk(mod.tree.RootNode(), func(n *sitter.Node) {
+		eachNode(mod.mountCalls(), func(n *sitter.Node) {
 			if n.Kind() != "call" {
 				return
 			}

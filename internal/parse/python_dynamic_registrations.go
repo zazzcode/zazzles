@@ -204,7 +204,7 @@ func (s *pythonSet) dynamicMounts(m *pythonModule, name string, recv pythonRecei
 		if mod == nil {
 			continue
 		}
-		pyWalk(mod.tree.RootNode(), func(n *sitter.Node) {
+		eachNode(mod.mountCalls(), func(n *sitter.Node) {
 			if n.Kind() != "call" {
 				return
 			}

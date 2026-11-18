@@ -73,7 +73,7 @@ Same machine and method as the before measurements. The binary was built from `a
 after step 1A. `TestArchitectureBaseline` is unchanged. For all three samples, `findings.json` (without `root`)
 and `findings.sarif` are byte-identical to the before runs.
 
-| Sample | Wall clock (median; runs) | Change | Max RSS | Entries | Candidates |
+| Sample | Wall clock (median; runs) | Change | Max RSS (largest of 3 runs) | Entries | Candidates |
 |---|---|---|---|---|---|
 | juice-shop | 10.19 s (10.30, 10.19, 10.18) | −84% (6.3× faster) | 276 MiB (median 251) | 175 | 251 |
 | vulnpy | 7.83 s (7.87, 7.82, 7.83) | −2% | 2,077 MiB | 2,214 | 3,350 |
@@ -86,3 +86,23 @@ and 238 MiB (median) to 276 MiB and 251 MiB, which overlaps run-to-run variance.
 After 1A, juice-shop analysis takes 6.2 s of a 10.7 s profiled run. The rest is flow evaluation
 (`flow.statement`/`eval`), `walkCalls` and the parent walk in `shadowed` (12%). vulnpy's time is
 mostly bundle writing (step 1B).
+
+## Phase 1 step 1B: bundle write buffering and Python mount index (2026-11-17)
+
+Same method. The binary was built after step 1B, which includes the PHP callable-language fix.
+`TestArchitectureBaseline` matches the post-fix golden. Compared with the step 1A bundles, juice-shop
+and vulnpy `findings.json`, `findings.html` and `findings.sarif` are byte-identical. For DVWA, HTML and
+SARIF are identical, and `findings.json` differs only in 169 callable `"language"` values
+(`javascript` → `php`, the listed fix).
+
+| Sample | Wall clock (median; runs) | vs before | Max RSS (largest of 3 runs) | Entries | Candidates |
+|---|---|---|---|---|---|
+| juice-shop | 9.89 s (9.77, 9.89, 9.94) | 64.16 s → 9.89 s (6.5×) | 261 MiB | 175 | 251 |
+| vulnpy | 3.49 s (3.49, 3.47, 3.52) | 7.98 s → 3.49 s (2.3×) | 1,955 MiB | 2,214 | 3,350 |
+| DVWA | 0.61 s (0.69, 0.60, 0.61) | 1.01 s → 0.61 s (1.7×) | 462 MiB (median 422) | 174 | 240 |
+
+- **Bundle writes are buffered.** The HTML template wrote straight to the file, and on vulnpy 2.37 s
+  went to raw `write` syscalls for a 95 MB page. The bundle now writes through a 1 MiB `bufio.Writer`.
+- **Python mount calls are indexed per module.** `mountPrefix` and `dynamicMounts` walked every Python
+  file for each route. Each module now keeps its possible `register_blueprint`/`include_router`
+  calls in walk order, and each caller applies its original filter.

@@ -352,3 +352,20 @@ callables `javascript`. Unknown extensions keep `javascript`. Listed golden delt
 only, for `php/{code,command,includes,path,routes,sql,xss}` and `mixed/three-language`. Request
 digests, signatures, use rows, counts and SARIF hashes are unchanged; the judge does not read
 callables. Report diff: `"language": "javascript"` → `"php"` on PHP callables only.
+
+### 2026-11-17 — Step 1B implemented
+
+Source: implementation, after a profile of the step 1A binary. Changed against §3 and §8 (1B):
+
+- **The bundle cost was syscalls, not encoding.** `WriteBundle` now buffers each output file
+  (`internal/report/bundle.go`). No encode-once change was needed. All bundle bytes are identical.
+- **Python hot walk:** `mountPrefix` and `dynamicMounts` re-walked every Python module for each
+  route. A per-module `mountCalls` index (`python_modules.go`) replaces that. Parity:
+  `python_index_parity_test.go` checks the index against the old walk, under both callers' filters,
+  on 19 fixture modules and on 113 vulnpy modules with `ZAZZLES_VULNPY`.
+- **PHP:** the DVWA scan is 0.61 s, and no PHP whole-module walk is hot, so no PHP index was added.
+  The PHP binding index moves to the step that first needs PHP binding queries (1C/1E).
+- Results: vulnpy 3.49 s (target at most 5 s), DVWA 0.61 s, juice-shop 9.89 s. The golden is unchanged
+  after the PHP-fix commit. File scope: `internal/report/bundle.go`, `internal/parse/python_modules.go`,
+  `python_routes.go`, `python_dynamic_registrations.go`, `python_index_parity_test.go`, and docs.
+

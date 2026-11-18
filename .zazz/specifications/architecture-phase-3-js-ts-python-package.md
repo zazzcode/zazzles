@@ -3,7 +3,8 @@
 **Branch / assigned sibling worktree:** `arch-multi-lang-packaging` (owner-assigned, 2026-11-18)
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 3B. Objective: maintainability
 **Depends on:** [phase 3A](architecture-phase-3-php-package.md) committed on this branch with green gates
-**Delivery topology:** second of two deliverables on this branch; one milestone draft PR into `stage`
+**Delivery topology:** second of two deliverables on this branch; one milestone draft PR into `stage`,
+already open as [PR #26](https://github.com/zazzcode/zazzles/pull/26). 3B pushes to it and updates its body
 carries 3A and 3B
 **Coordination:** Lead Agent. Moves interlock, so do not delegate them. A Contributor Agent may update
 external test fixture paths (§9 step 4 and 5) after a stage compiles
@@ -49,7 +50,9 @@ Fixtures move with their language. Output bytes do not change.
 ## 3. Invariants
 
 - `TestArchitectureBaseline` passes. The only golden change is fixture keys moving to the new
-  `testdata/` paths. Digests must not change.
+  `testdata/` paths. Digests must not change, except `report_sha256` of moved fixtures, which embeds
+  the fixture root path. That delta is allowed only with the 3A proof: re-hashing each new report with
+  the old root path reproduces the old hash (§14, carry-over C-1).
 - Route-inventory output is unchanged for every fixture.
 - Import direction: `parse` imports no `lang*` package. `langjs` imports `parse`. `langpy` imports
   `parse` and, for the browser bridge only, `langjs`. `langphp` imports only `parse`. No language
@@ -139,7 +142,8 @@ Additional halts:
   need a JS, Python or PHP flow type. Stop with the list and a proposal.
 - The bridge (§9 step 3) cannot reproduce today's inline-script or template evidence without
   changing a golden byte.
-- Any golden digest change or route-inventory change.
+- Any golden digest change other than the root-path-only `report_sha256` delta proved per C-1, or any
+  route-inventory change.
 - A moved file needs a logic edit beyond qualification, outside the stage 1 bridge commit.
 - An import cycle appears that the D-5 ownership rule does not resolve.
 
@@ -155,7 +159,8 @@ Additional halts:
 4. **AC4 Core API.** `core_api.go` documents each exported identifier with a one-line contract.
    The run log records the count after each stage; each is 90 or fewer.
 5. **AC5 Golden.** `TestArchitectureBaseline` passes after each stage. The golden diff is fixture-key
-   renames only.
+   renames plus moved-fixture `report_sha256` values proved root-path-only (C-1); request, signature
+   and SARIF digests, IDs and counts unchanged.
 6. **AC6 Tests.** `go test ./internal/langjs ./internal/langpy ./internal/langphp ./internal/parse ./internal/pipeline -count=1`,
    `cmd/scan` CLI and route-inventory tests, and the contributor gate (including `-race`) pass.
 7. **AC7 Renames.** `git diff -M --stat <3B start HEAD>` shows the moved files as renames, and a spot diff
@@ -200,7 +205,8 @@ func Run(inv parse.Inventory, entry string, checks []analysis.Check) (*analysis.
 func Routes(inv parse.Inventory) ([]analysis.Route, []analysis.Gap, error)
 ```
 
-6. **Commit 5: docs.** Then the gate, push, and the milestone draft PR into `stage`.
+6. **Commit 5: docs.** Then the gate, push to the open milestone PR (#26), and update its body with the
+   3B section and evidence. Do not open another PR.
 
 ## 10. Definition of done
 
@@ -225,10 +231,12 @@ after each stage, and every collision rename (D-7).
 > and `git worktree list`. Confirm the phase 3A commits are on the branch and its run log records green
 > gates; record the starting HEAD. Read AGENTS.md, the orientation contents, the [plan](architecture-update-plan.md),
 > the [phase 3A spec](architecture-phase-3-php-package.md) and this spec. Run `TestArchitectureBaseline`
-> before any change. Execute §9 in order as five commits. Do not delegate the moves; a Contributor
+> before any change. Read the §14 "Carry-over from phase 3A" entry first. Execute §9 in order as five
+> commits (plus the C-2 consolidation commit). Do not delegate the moves; a Contributor
 > Agent may update external fixture paths after a stage compiles. Stop on any §6 halt. If a stage 2
-> halt fires, keep stage 1, record the halt, and ask the owner. Finish by pushing and opening the
-> milestone draft PR into `stage` covering phases 3A and 3B, per the PR process standard.
+> halt fires, keep stage 1, record the halt, and ask the owner. Finish by pushing to the open
+> milestone draft [PR #26](https://github.com/zazzcode/zazzles/pull/26) and updating its body with the
+> 3B section, per the PR process standard. Do not open a new PR.
 > Verifier: a fresh-context subagent runs `go list -deps` on every package in §3, confirms the moves
 > are renames with only qualification edits outside commit 2, runs `TestArchitectureBaseline` and the
 > route-inventory tests, and reports PASS or FAIL.
@@ -242,3 +250,56 @@ alongside the PHP spec. Measurements: a type-checked cross-reference of non-test
 files at `52cdc36` (D-1), plus a scan that found 138 of the 148 non-Python, non-PHP files reference
 JS flow types. The scan supports D-5: core is the handful of neutral files plus rehomed helpers, and
 everything else is the JS/TS adapter.
+
+### 2026-11-18 — Carry-over from phase 3A (work items for the 3B session)
+
+Source: phase 3A implementation (`f4ebb6d`..`2673b46`, run log
+`.zazz/ephemeral/architecture-phase-3-php-package-run-log.md`) and owner decisions in that session.
+Changed: header, §3, §6, AC5, §9 step 6, §13. Work items:
+
+- **C-1 Golden root-path delta.** The normalized report embeds `root`, so moving a fixture changes
+  its `report_sha256` while request, signature and SARIF digests stay equal. In 3A the owner accepted
+  this for the ten PHP fixtures after a proof. For every JS/TS, Python and mixed fixture moved here:
+  regenerate with `-update-architecture-baseline` and prove each changed `report_sha256` reproduces the
+  old value when the new root string is replaced by the old path (3A used a temporary, uncommitted
+  `cmd/scan` test). Any other digest, ID or count change is still a halt. Record the proof in the run log.
+- **C-2 Replace the 3A wrappers with renames (no transitional cruft).** 3A exported most of the core
+  API as one-line wrappers in `core_api.go` (`Span` → `spanOf`, `SnapshotID` → `snapshotID`, and so on)
+  to keep its diff small. Once JS/TS and Python leave `parse`, rename the real functions to the
+  exported names, delete the wrappers, and keep `core_api.go` as the documented index of the API
+  (contract comments stay). Do this in its own late commit so the moves stay reviewable. The 3A list
+  of 20 identifiers is the baseline count for AC4. `ClosedCallable.Reasons` is exported only for tests.
+- **C-3 One route sort.** `internal/parse/analyze_test.go` keeps a test-only `Routes` mirror (JS/TS
+  plus Python, same sort as `pipeline.Routes`). When the route tests move to `langjs`/`langpy`, or to
+  `pipeline` if they need several languages, delete the mirror so the comparator exists only in
+  `pipeline.Routes`. `parse.JavaScriptRoutes` and `parse.PythonRoutes` become `langjs.Routes` and
+  `langpy.Routes`.
+- **C-4 Fixture lists and cross-package paths.** These must point at the new testdata trees:
+  - `cmd/scan/architecture_baseline_test.go` `architectureFixtures` and the `fixtures` list in
+    `internal/pipeline/pipeline_test.go`.
+  - `cmd/scan` tests that hard-code `../../internal/parse/testdata/...`.
+  - `internal/langphp/analyze_test.go` `TestRunnersWithoutSourcesOpenNoGrammar`, which reads
+    `../parse/testdata/python/routes`.
+
+  Decide where `mixed/`, `express-login` and `string-flow` live, and record it.
+- **C-5 Test helpers per D-6.** `langphp`'s test helper calls `parse.RunJavaScript` for the JS base
+  report. It must call `langjs.Run` after stage 2. `langpy` needs the same helper shape (JS base,
+  Python, `parse.Assemble`).
+- **C-6 Tests that mix languages.** 3A's test-relocation pattern applies:
+  - Tests that need several runners' output go to `internal/pipeline`.
+  - Table tests that loop over languages split by language under the same test names (precedent:
+    `closed_summary_test.go` in `parse` and `langphp`).
+  - Remaining Python/JS cases in `internal/parse` to check: `closed_summary_test.go` (Python half),
+    `call_resolution_measure_test.go` (JS+Python classifier; 3A split PHP into
+    `langphp.TestPHPCallResolutionMeasure` with `ZAZZLES_MEASURE_PHP_OUT`), `analyze_test.go`
+    runner tests, and `python_index_parity_test.go` (reads `mixed/three-language`).
+- **C-7 Route-inventory proof.** Build `cmd/scan` before and after each stage (check out the earlier
+  commit in place, then return to the branch; no extra worktree). Compare `--routes --json .` byte for
+  byte in every fixture directory. 3A compared 41 fixtures with no differences.
+- **C-8 Tooling notes.** No `gopls` is installed. 3A used scratch go/types tools (a cross-reference
+  and a type-checked renamer) kept in the session scratchpad. macOS `sed` has no `\b`; use `perl -pi`
+  for word-boundary qualification. External test packages (`package parse_test`) can call
+  same-directory `_test.go` helpers; account for them when moving files.
+- **C-9 Docs already updated in 3A.** Extend, do not rewrite: architecture §3 and §11 (core API
+  paragraph, `langphp` row, `pipeline.Routes`), the repository-graph acquisition paragraph, the
+  orientation and contributing layout rows, and the `PARSE` label (already covers `internal/lang*`).

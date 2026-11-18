@@ -163,3 +163,39 @@ today. Classes:
   repository counts as `in_repo` regardless of includes. Any class outside the repository, PHP
   built-in classes included, counts as `package`.
 - The JS `builtin` class uses a fixed list of globals, so it is a lower bound.
+
+## Phase 1 step 1D: call index and receiver typing (2026-11-18)
+
+Same method. The binary was built after step 1D. `TestArchitectureBaseline` and every parse golden are
+unchanged, because no fixture reaches the typed receivers.
+
+Counts cover gaps on both uses and entries. Uses alone: vulnpy 389 → 75.
+
+| Sample | Gap kind | Before (1B) | After (1D) | AC2 target |
+|---|---|---|---|---|
+| juice-shop | `unknown_call_result` | 1,272 | 668 | ≤ 800 |
+| vulnpy | `python_dispatch_unresolved` | 523 | 81 | ≤ 250 |
+
+Report deltas, compared with the step 1B bundles:
+
+- **juice-shop:** 604 `unknown_call_result` gaps removed (`os.*`, `config.get`, `JSON.stringify`,
+  `Math.*`, `new Date()` instance methods, `HintModel.count`). One use also lost 2
+  `unknown_control_effect` gaps and 1 `conditional_merge` gap, which existed only because its branches
+  differed by those removed gaps. No gaps were added. Candidate IDs are identical and in the same
+  order, and finding statuses are unchanged (236 needs_review, 15 poor_practice).
+- **vulnpy:** 442 `python_dispatch_unresolved` gaps removed (`response.append` on the module-stable
+  local list in `wsgi/app.py`). No gaps were added. 125 `input_validation_candidate` records were
+  re-keyed, with the same kind, entry and sink, because their evidence changed. No candidate was
+  added or removed by (kind, entry, sink), and finding statuses are unchanged.
+- **DVWA:** byte-identical.
+- **Recall gain on a new test fixture** (`TestPythonContainerWrite`): a request value appended to a
+  local list and returned through `"".join(...)` is now an `xss_candidate`. The 1B binary missed it.
+
+| Sample | Wall clock (median; runs) | vs 1B | Max RSS (largest of 3 runs) |
+|---|---|---|---|
+| juice-shop | 10.35 s (10.63, 10.35, 10.26) | +4.7% (within AC4's 5%) | 241 MiB |
+| vulnpy | 3.57 s (3.60, 3.57, 3.52) | +2.3% | 2,069 MiB |
+| DVWA | 0.61 s (0.68, 0.61, 0.60) | 0% | 459 MiB |
+
+What remains on juice-shop is the 1E summary work and framework models: `challenge.save` 280 (a
+parameter receiver), `utils.*`/`antiCheat.*` 207 (in-repository), and `req.header` 64 (Node input models, D-10).

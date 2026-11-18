@@ -41,6 +41,8 @@ type sourceModule struct {
 	receivers      map[string]bool
 	// bindings is the lazily built write index; see binding_index.go.
 	bindings *bindingIndex
+	// calls caches call-site resolutions by node; see call_index.go.
+	calls map[uintptr]callResolution
 }
 
 type moduleSet struct {

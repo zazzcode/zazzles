@@ -34,7 +34,7 @@ func TestCallResolutionMeasure(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer c.close()
-	out := callMeasurement{Sites: map[string]map[string]int{}, Gaps: map[string]map[string]int{}}
+	out := callMeasurement{Sites: map[string]map[string]int{}, Gaps: map[string]map[string]int{}, Index: c.jsIndex()}
 	for _, site := range c.sites() {
 		bump(out.Sites, site.language, site.class)
 	}
@@ -70,6 +70,8 @@ type callMeasurement struct {
 	Sites map[string]map[string]int `json:"call_sites"`
 	// Gaps counts report gaps whose span is a call site, per gap kind and class.
 	Gaps map[string]map[string]int `json:"call_site_gaps"`
+	// Index counts JS/TS call sites by production call-index kind and receiver or reason.
+	Index map[string]int `json:"js_call_index"`
 }
 
 func bump(m map[string]map[string]int, a, b string) {
@@ -339,4 +341,16 @@ func (c *callClassifier) uniquePHPFunction(name string) bool {
 		}
 	}
 	return found == 1
+}
+
+// jsIndex counts every JS/TS call site by the production call index (step 1D).
+func (c *callClassifier) jsIndex() map[string]int {
+	out := map[string]int{}
+	for _, m := range c.js.modules {
+		walkKinds(m.tree.RootNode(), jsCallKinds, func(n *sitter.Node) {
+			r := c.js.callResolution(m, n)
+			out[r.Kind.String()+":"+r.Receiver+r.Reason]++
+		})
+	}
+	return out
 }

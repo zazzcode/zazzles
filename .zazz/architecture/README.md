@@ -259,8 +259,11 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
 - **Measured:** `call_resolution_measure_test.go` classifies every call site, and every call gap,
   by resolution class on a target. See the
   [results](../evaluation/architecture-baseline.md#phase-1-step-1c-call-site-resolution-2026-11-18).
-- **Planned:** a production call index with receiver typing (`method_on_known_class`) and
-  container-service resolution; per-callable parameter summaries, which replace inline helper
+- **Implemented (call index, JS/TS and Python):** `call_index.go` resolves each call site once
+  per module to `direct`, `imported`, `method_on_known_class`, `builtin_method`, `package_member` or
+  `unresolved(reason)`. Receiver types come only from binding-stable declarations. `call_effects.go`
+  is a closed table of flow effects (`independent_result`, `container_write`); it never records protection.
+- **Planned:** container-service resolution; per-callable parameter summaries, which replace inline helper
   expansion and its depth and budget limits; a flat syntax index for flow evaluation; and binding
   indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the call
   index and summaries.

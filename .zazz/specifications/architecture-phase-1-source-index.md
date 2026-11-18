@@ -498,3 +498,34 @@ receiver typing and a closed effect table (§8a). The JS/TS summaries move to 1E
 summaries, PHP builtin effect tables and Symfony/Drupal resolution move to 1F. Library mode now
 depends on 1E, and Symfony and Drupal on 1F.
 
+### 2026-11-18 — Step 1D implemented
+
+Source: implementation of §8a. Files: `internal/parse/call_index.go`, `call_effects.go`,
+`python_binding_index.go`, `call_index_test.go`, one-line hooks in `flow.go` (the
+`unknown_call_result` point) and `python_calls.go` (before the generic method fallback), caches
+in `modules.go`/`python_modules.go`, and the harness's index counts.
+
+Deviations from §8a:
+- Receiver types come from the existing binding facts, not a separate `receiver_types.go`. JS uses
+  `bindingWrites` plus `modelIdentity` and import bindings. Python uses a new name-based
+  `pythonBindingIndex` (single write, list literal, not aliased, no `global`/`nonlocal`, no dynamic writes).
+- The effect table holds two effects: `independent_result` (JS, applied only where a call already
+  has no dependencies) and `container_write` (Python `append`/`extend`/`insert` on a local list).
+  The other effect kinds in §8a are deferred to the steps that need them.
+- AC1 parity holds by construction: the index calls `resolveCall` first and keeps its result.
+
+Results: juice-shop `unknown_call_result` 1,272 → 668; vulnpy `python_dispatch_unresolved` 523 → 81.
+Gaps were only removed. No candidate was added or removed by (kind, entry, sink). 125 vulnpy
+input-validation candidates were re-keyed by changed evidence. Speed is within 5% of 1B. A new
+fixture shows a recall gain. Details are in the evaluation record.
+
+Verifier notes, accepted as known limits for later tightening:
+- **Shadowing forms:** `shadowed()` does not see single-parameter arrows, destructured parameters,
+  `catch` bindings or `for…of` names. A shadowing local with request dependencies is unaffected,
+  because the effect applies only to calls with no dependencies.
+- **`module:config`:** an in-repository `config` module reached only through a tsconfig path alias
+  would be typed as the `config` package.
+- **`sequelize_model.count`:** returns a stored aggregate (a number). This is accepted for gap suppression.
+- **Python aliases:** aliasing through call arguments, returns or containers is missed. A missed alias
+  is a missed dependency, never a false finding, which matches the previous behavior.
+

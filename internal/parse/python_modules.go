@@ -33,6 +33,8 @@ type pythonModule struct {
 	// see mountCalls.
 	mounts      []*sitter.Node
 	mountsReady bool
+	// bindings is the lazily built write index; see python_binding_index.go.
+	bindings *pythonBindingIndex
 }
 type pythonSet struct {
 	inputs        map[string]map[analysis.Evidence]pythonInputSource

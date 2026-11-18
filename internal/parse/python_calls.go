@@ -64,6 +64,9 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	if method == "append" && len(values) == 1 && f.route.route.Framework == "wsgi" && len(values[0].deps) > 0 && f.wsgiHTML() && f.wsgiDispatchBranch(n) {
 		f.recordXSS(m.evidence("html_response", n), values[0], "html_text", nil)
 	}
+	if v, ok := f.containerWrite(n, object, method, receiver, values); ok {
+		return v
+	}
 	if receiver.binding == "jinja_template" && method == "render" {
 		arguments := all
 		// Escaping affects substituted variables, never text compiled as template source.

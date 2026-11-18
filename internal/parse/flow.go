@@ -1192,7 +1192,7 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			}
 		}
 	}
-	if len(v.deps) == 0 {
+	if len(v.deps) == 0 && !f.independentCall(n) {
 		v.gaps = append(v.gaps, f.gap("unknown_call_result", "call result is not modeled: "+name, n))
 	}
 	return f.transfer(v, "call_argument_dependency", n)

@@ -16,6 +16,7 @@ type importBinding struct {
 	declaration  *sitter.Node
 }
 type sourceModule struct {
+	shadowQueries        map[shadowQuery]bool
 	interpreterMutations map[string]bool
 	// recovered names the byte-preserving grammar workarounds that parsed this module.
 	recovered []string

@@ -82,7 +82,7 @@ func (s *moduleSet) resolveCallSite(m *sourceModule, call *sitter.Node) callReso
 		return callResolution{Reason: "dynamic_callee"}
 	}
 	root := object.Utf8Text(m.src)
-	if shadowed(call, root, m.src) {
+	if m.cachedShadowed(call, root) {
 		return callResolution{Reason: "shadowed"}
 	}
 	writes := m.bindingWrites()
@@ -110,7 +110,7 @@ func (s *moduleSet) resolveCallSite(m *sourceModule, call *sitter.Node) callReso
 // unboundBuiltin reports whether name refers to the global builtin object: it is
 // listed, has no module binding, is never written and is not shadowed here.
 func (s *moduleSet) unboundBuiltin(m *sourceModule, call *sitter.Node, name string) bool {
-	if !jsBuiltinObjects[name] || shadowed(call, name, m.src) {
+	if !jsBuiltinObjects[name] || m.cachedShadowed(call, name) {
 		return false
 	}
 	if _, ok := m.imports[name]; ok || m.funcs[name] != nil || topVariable(m, name) != nil {

@@ -37,7 +37,8 @@ provider fallback is assigned.
 | --- | --- | --- |
 | `cmd/scan/` | CLI flags, configuration, limits, output wiring and exit codes | [CLI use](../../docs/running-scans.md), [contributor checks](../../docs/contributing.md#contributing) |
 | `internal/walk/`, `internal/lang/` | File inventory and supported-language detection | [Parsing](../architecture/README.md#3-parsing-and-language-adapters) |
-| `internal/parse/` | Tree-sitter bindings, imports/entries, bounded flow, source-backed candidate assembly | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
+| `internal/pipeline/` | One walk, language-runner selection and concurrency, fixed-order assembly, check/pack attachment | [Pipeline](../architecture/README.md#2-pipeline) |
+| `internal/parse/` | Per-language runners (producer): Tree-sitter bindings, imports/entries, bounded flow, source-backed candidate assembly | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
 | `internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture/README.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
 | `internal/analysispacks/`, `internal/guidelines/` | Embedded contracts, selected guidance, questions and versions | [Selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) |
 | `internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture/README.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |

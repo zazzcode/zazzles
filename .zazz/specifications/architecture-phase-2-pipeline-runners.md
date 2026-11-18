@@ -7,6 +7,7 @@
 **Coordination:** Lead Agent. A Contributor Agent may do the mechanical caller migration (§9 step 5) after the seam compiles
 **Run log:** `.zazz/ephemeral/architecture-phase-2-pipeline-runners-run-log.md`
 **Drafted:** 2026-11-17
+**Status:** implemented on `arch-pipeline-runners` (2026-11-18); draft PR into `stage` awaiting owner review
 
 ## 1. Capability
 
@@ -55,10 +56,11 @@ Output bytes do not change.
 | `internal/pipeline/pipeline.go`, `pipeline_test.go` | new | `Analyze`, `AnalyzeWithChecks`, `AnalyzeWithOptions`, `Options{DiscoverRoutes bool; Workers int}`; one walk, runner selection, concurrency, `parse.Assemble`, check/pack attachment |
 | `internal/parse/analysis.go` | modified | Split into `Inventory`, `RunJavaScript`, `Assemble`; remove the exported `Analyze*` functions |
 | `internal/parse/python_modules.go`, `php_modules.go` | modified | `RunPython(inv, …)` and `RunPHP(inv, …)` take the shared inventory; no walk |
-| `internal/parse/analyze_test.go` | new (test-only) | `Analyze`/`AnalyzeWithChecks` helpers for internal tests: runners in sequence, then `Assemble` |
-| All files calling `parse.Analyze`, `parse.AnalyzeWithChecks`, `parse.AnalyzeWithOptions`, or `parse.Options` outside `internal/parse` (37 files at the plan baseline; list them in the run log) | modified | Import `internal/pipeline` instead |
+| `internal/parse/parse.go`, `modules.go` | modified | `Routes` passes its own single walk to the Python/PHP sets; `moduleSet.close` tolerates a set with no grammars |
+| `internal/parse/analyze_test.go` | new (test-only) | `Analyze`/`AnalyzeWithChecks`/`AnalyzeWithOptions` helpers for internal tests (runners in sequence, then `Assemble`), walk-backed `newPythonSet`/`newPHPSet` for set-level tests, and the AC2 no-grammar test |
+| All files calling `parse.Analyze`, `parse.AnalyzeWithChecks`, `parse.AnalyzeWithOptions`, or `parse.Options` outside `internal/parse` (38 files; listed in the run log) | modified | Import `internal/pipeline` instead |
 | `cmd/scan/architecture_baseline_test.go` | modified | Call `pipeline.AnalyzeWithOptions` |
-| `.zazz/architecture/README.md` §2 and §11, orientation code-structure row | modified | `pipeline` responsibility; `parse` as producer |
+| `.zazz/architecture/README.md` §2, §3 API bullet and §11, orientation code-structure row | modified | `pipeline` responsibility; `parse` as producer |
 | `.zazz/evaluation/architecture-baseline.md` | modified | After measurements and walk count |
 
 Out of scope:
@@ -110,8 +112,9 @@ Additional halts:
 1. **AC1 One walk.** A `pipeline` test with a counting `walk` hook, or a stubbed inventory provider,
    shows exactly one walk for a full scan of `mixed/three-language`. `grep -n "walk.Walk" internal/parse`
    lists only `parse.go` (route inventory).
-2. **AC2 Skip.** For `python/routes` (no JS/TS or PHP files), the JS module set and PHP parser are never
-   created, and Python is the only runner that runs. A test hook records which runners ran. The
+2. **AC2 Skip.** For `python/routes` (no JS/TS or PHP files), no JS grammar is opened, no JS module is
+   loaded and the PHP runner never runs. Python is the only runner that does language work; per D-4
+   the JS runner only builds the fixed base report. A test hook records which runners ran. The
    report matches the golden.
 3. **AC3 Equivalence.** For every phase 0 fixture, `pipeline.AnalyzeWithOptions` with `Workers: 1`
    and with the default produce identical JSON. The test runs both 5 times under `-race`.
@@ -168,10 +171,10 @@ func AnalyzeWithOptions(root, entry string, checks []analysis.Check, opts Option
 
 ## 10. Definition of done
 
-- [ ] Required reading done; standards lookup recorded.
-- [ ] AC1–AC8 verified, with evidence in the run log.
-- [ ] `git diff <phase start HEAD> --stat` matches §4. The caller migration commit is mechanical, with an import and call rename only.
-- [ ] The run log's PR summary states that there are no output changes and gives the before/after timing table.
+- [x] Required reading done; standards lookup recorded.
+- [x] AC1–AC8 verified, with evidence in the run log.
+- [x] `git diff <phase start HEAD> --stat` matches §4. The caller migration commit is mechanical, with an import and call rename only.
+- [x] The run log's PR summary states that there are no output changes and gives the before/after timing table.
 
 ## 11. Open questions
 
@@ -237,3 +240,26 @@ Corrected the earlier branch typo throughout the architecture handoff references
 and §13 startup prompt to reuse that checkout, preserve the golden, and carry offline verification,
 measurement and draft-PR requirements into the next session. This update changes documentation only;
 phase 2 implementation has not started.
+
+### 2026-11-18 — Implementation reconciliation
+
+Source: Lead Agent, implementing against merged phase 1 code; no owner steering needed. Changed: §4
+file table and caller count, AC2 wording, status header, §10. Rationale and verification impact:
+
+- `parse.Routes` built its Python/PHP sets through the constructors that walked again. They now take
+  an inventory, so `Routes` passes its own existing walk. Route-inventory output is unchanged and AC1's
+  "only `parse.go` walks" holds. `moduleSet.close` now accepts a set that opened no grammar.
+- In `.py`/`.php` entry mode the old code returned the runner's already finalized report without
+  `blockUnlinkedStoredOrigins` or `linkNavigationClaims`. `Assemble` returns that report unchanged.
+  `RunPython`/`RunPHP` skip only a full scan with no files, so an entry that names no file of that
+  language keeps its error.
+- AC2 is reworded to match D-4: the JS runner always builds the base report, but opens no grammar and
+  loads no module when there are no JS/TS files.
+- 38 external caller files were migrated. The plan baseline counted 37 before phase 1 added tests.
+  `internal/parse/summary_witness_integration_test.go` (`package parse_test`) still sees the
+  same-directory test helper and is not migrated.
+- The architecture §3 bullet that named the unqualified `Analyze` now names `pipeline.Analyze`.
+- Delivery is three green commits: runners and pipeline with a temporary production shim, then the
+  mechanical migration, then removal of the shim into the test helper. No contract, AC or output
+  change. Golden unchanged; evidence is in the
+  [evaluation record](../evaluation/architecture-baseline.md#phase-2--pipeline-and-concurrent-language-runners-2026-11-18).

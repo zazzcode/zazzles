@@ -1,7 +1,7 @@
 # Architecture update plan
 
 **Status:** Phases 0 and 1 are merged via [PR #24](https://github.com/zazzcode/zazzles/pull/24)
-(`6bf2ca1`); phase 2 has the assigned `arch-pipeline-runners` checkout; implementation remains planned.
+(`6bf2ca1`); phase 2 is implemented on `arch-pipeline-runners` and awaits owner review in its own draft PR.
 This document alone authorizes no implementation or paid calls. A phase starts on owner assignment.
 **Baseline reviewed:** `stage` at `3890c1cbb6ff8bebbd707052edaed3bf03bc0ae8` (plan revised on
 `arch-review-clean-up`, 2026-11-17).

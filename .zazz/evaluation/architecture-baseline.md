@@ -467,3 +467,69 @@ Phase 1 is complete within the documented bounded source-index/witness contracts
 module-state summaries, broader control-flow/recursive recipes and full YAML remain unsupported
 with explicit gaps; they are not claimed by this evidence. Route adapters remain phases 6/9.
 The owner merged PR #24 at `6bf2ca1`; phase 2 has a separate assigned `arch-pipeline-runners` worktree.
+
+## Phase 2 — pipeline and concurrent language runners (2026-11-18)
+
+[Contract](../specifications/architecture-phase-2-pipeline-runners.md). `internal/pipeline` walks the
+target once, skips languages with no files, runs the JS/TS, Python and PHP runners concurrently and
+merges them through `parse.Assemble` in the fixed order. There are no listed output deltas:
+`TestArchitectureBaseline` passes against the phase 1 golden with no update.
+
+### Method
+
+Offline `--analyze`, provider keys unset, `/usr/bin/time -l`, one sitting on the same machine as
+phase 0. Three variants were interleaved run by run, three runs each:
+
+- **before**: the starting HEAD `7bb2213` (phase 1 final production code), built with a read-only
+  `go build -overlay` of the pre-change sources;
+- **default**: this phase, one runner goroutine per selected language;
+- **sequential**: this phase with `Workers: 1` forced through a build overlay.
+
+Walk counts come from a stderr counter overlaid on `walk.Walk` for one extra run of each binary.
+Sample pins and empty `git status --porcelain --ignored` were checked before and after every batch.
+
+### Results
+
+| Sample | Phase 0 | Final phase 1 (recorded) | Before, same sitting | Default (runs) | Sequential | Max RSS before / default | Walks before → after |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| juice-shop | 64.16 s | 9.21 s | 9.81 s | **9.79 s** (9.72, 9.79, 9.79) | 9.82 s | 243 / 246 MiB | 3 → 1 |
+| vulnpy | 7.98 s | 3.42 s | 3.67 s | **3.69 s** (3.65, 3.69, 3.69) | 3.68 s | 1,993 / 2,094 MiB | 3 → 1 |
+| DVWA | 1.01 s | 0.60 s | 0.64 s | **0.62 s** (0.62, 0.62, 0.62) | 0.63 s | 423 / 460 MiB | 3 → 1 |
+
+`findings.json`, `findings.sarif` and `findings.html` are byte-identical across all nine runs of
+each sample (before, default and sequential). Entry and candidate counts are unchanged: 175/251,
+2,214/3,350 and 174/240.
+
+The same-sitting "before" medians are 4–7% above the recorded phase 1 numbers. The before binary
+moved by the same amount, so the difference is machine state, not this phase. Against the
+same-sitting before, every sample is within run-to-run noise.
+
+None of the three samples shows a parallel gain, as expected: each is dominated by one language.
+Juice Shop loads 657 JS/TS modules and 3 Python files, vulnpy is Python-only apart from one
+template, and DVWA analyzes 169 PHP files, 9 JS files and 1 Python file. The removed walks and the
+skipped grammars are small next to that one runner. Peak RSS is within the run-to-run spread of
+earlier phases. vulnpy and DVWA run two or three runners at once, which can raise the peak slightly.
+
+`BenchmarkPipelineMixed` on `mixed/three-language` (6 × 40 iterations) gives a sequential median of
+1.03 ms/op and a default median of 0.77 ms/op, 1.34× faster. Allocations rise from 578 KB to
+604 KB per op, for goroutine and slot overhead.
+
+### Acceptance evidence
+
+- **One walk (AC1).** `TestFullScanWalksOnce` counts one walk for `mixed/three-language`. In
+  production `internal/parse`, only `parse.go` (route inventory) calls `walk.Walk`.
+- **Skip (AC2).** `TestPythonOnlyScanSkipsPHP` never invokes the PHP runner for `python/routes`.
+  `TestRunnersWithoutSourcesOpenNoGrammar` shows that the JS runner opens no grammar and loads no
+  module there, and that `RunPHP` returns `nil, nil`.
+- **Equivalence (AC3).** `TestWorkersEquivalence` compares `Workers: 1` with the default five times
+  on all 36 baseline fixtures, under `-race`.
+- **Error order (AC4).** `TestEarliestRunnerErrorWins` makes PHP fail first and Python fail second,
+  and gets Python's error at 0, 2 and 3 workers.
+- **Entry modes (AC5).** The existing `cmd/scan` entry tests pass unchanged.
+  `TestEntryModesSelectOneLanguage` confirms that a `.py`, `.php` or JS entry runs one runner.
+- **Gate (AC8).** `gofmt` on changed files, `go vet ./...`, `go build ./...`,
+  `go test -race ./... -count=1` and `TestArchitectureBaseline` pass.
+
+Artifacts: `_test-findings/<app>/run-arch-2/` holds `run-{1,2,3}/` (first default batch),
+`ab/{old,new,seq}-{1,2,3}/`, `walk-count/{old,new}/` and `pins.log`. The Juice Shop directory also
+holds `measurements.json`, `bench-pipeline-mixed.txt` and the gate logs.

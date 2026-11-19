@@ -37,3 +37,25 @@ func unlinkedStoredOnly(deps []analysis.Dependency) bool {
 	}
 	return true
 }
+
+// KeepStoredOriginFacts keeps write-set evidence only on records whose stored
+// origin is unresolved: the rule is shared by every language, and an adapter
+// may attach the facts to any storage read. A record with a linked or request
+// origin does not carry them.
+func KeepStoredOriginFacts(report *analysis.AnalysisReport) {
+	for i := range report.Uses {
+		u := &report.Uses[i]
+		if u.StoredOrigin == nil {
+			continue
+		}
+		blocked := false
+		if u.Completeness != nil {
+			for _, g := range u.Completeness.Blockers {
+				blocked = blocked || g.Kind == "storage_origin_unresolved"
+			}
+		}
+		if !blocked || len(u.StoredOrigin.Stores) == 0 {
+			u.StoredOrigin = nil
+		}
+	}
+}

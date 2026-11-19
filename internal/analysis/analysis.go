@@ -28,31 +28,35 @@ type Dependency struct {
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.
 type CandidateUse struct {
-	InputFacts          *InputFacts         `json:"input_facts,omitempty"`
-	Components          *ComponentSelection `json:"analysis_components,omitempty"`
-	XSS                 *XSSFacts           `json:"xss,omitempty"`
-	Command             *CommandFacts       `json:"command,omitempty"`
-	Path                *PathFacts          `json:"path,omitempty"`
-	Code                *CodeFacts          `json:"code,omitempty"`
-	Redirect            *RedirectFacts      `json:"redirect,omitempty"`
-	Outbound            *OutboundFacts      `json:"outbound,omitempty"`
-	APIModel            *APIModel           `json:"api_model,omitempty"`
-	ControlEdges        []ControlEdge       `json:"control_edges,omitempty"`
-	Check               *Check              `json:"check,omitempty"`
-	Completeness        *Completeness       `json:"completeness,omitempty"`
-	ID                  string              `json:"id"`
-	EntryID             string              `json:"entry_id"`
-	InvocationContextID string              `json:"invocation_context_id"`
-	EntryKind           string              `json:"-"`
-	EntryFacts          *EntryPoint         `json:"-"`
-	InvocationFacts     *InvocationContext  `json:"-"`
-	DispatchFacts       *DispatchBinding    `json:"-"`
-	Kind                string              `json:"kind"`
-	Sink                Evidence            `json:"sink"`
-	Dependencies        []Dependency        `json:"dependencies"`
-	Context             []Evidence          `json:"context"`
-	Gaps                []Gap               `json:"gaps"`
-	Assessment          Assessment          `json:"assessment"`
+	InputFacts *InputFacts         `json:"input_facts,omitempty"`
+	Components *ComponentSelection `json:"analysis_components,omitempty"`
+	XSS        *XSSFacts           `json:"xss,omitempty"`
+	Command    *CommandFacts       `json:"command,omitempty"`
+	Path       *PathFacts          `json:"path,omitempty"`
+	Code       *CodeFacts          `json:"code,omitempty"`
+	Redirect   *RedirectFacts      `json:"redirect,omitempty"`
+	Outbound   *OutboundFacts      `json:"outbound,omitempty"`
+	// StoredOrigin is write-set evidence for a record whose stored origin is
+	// unresolved (blocked by storage_origin_unresolved). It is evidence, not a
+	// verdict: the record stays Review.
+	StoredOrigin        *StoredOriginFacts `json:"stored_origin,omitempty"`
+	APIModel            *APIModel          `json:"api_model,omitempty"`
+	ControlEdges        []ControlEdge      `json:"control_edges,omitempty"`
+	Check               *Check             `json:"check,omitempty"`
+	Completeness        *Completeness      `json:"completeness,omitempty"`
+	ID                  string             `json:"id"`
+	EntryID             string             `json:"entry_id"`
+	InvocationContextID string             `json:"invocation_context_id"`
+	EntryKind           string             `json:"-"`
+	EntryFacts          *EntryPoint        `json:"-"`
+	InvocationFacts     *InvocationContext `json:"-"`
+	DispatchFacts       *DispatchBinding   `json:"-"`
+	Kind                string             `json:"kind"`
+	Sink                Evidence           `json:"sink"`
+	Dependencies        []Dependency       `json:"dependencies"`
+	Context             []Evidence         `json:"context"`
+	Gaps                []Gap              `json:"gaps"`
+	Assessment          Assessment         `json:"assessment"`
 }
 
 // Assessment preserves the judge's result independently from structural evidence.

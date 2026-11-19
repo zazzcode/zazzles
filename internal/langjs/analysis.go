@@ -130,6 +130,7 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	s.linkCrossTierXSS(out)
 	s.linkTokenClaims(out)
 	parse.AssembleXSSClaims(out)
+	s.attachStoredWriteSets(out)
 	s.assembleCommandClaims(out)
 	s.assemblePathClaims(out)
 	s.assembleSSRFClaims(out)

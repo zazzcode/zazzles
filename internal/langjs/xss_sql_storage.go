@@ -237,3 +237,170 @@ func modelInit(m *sourceModule, call *sitter.Node) (string, *sitter.Node) {
 	}
 	return obj.Utf8Text(m.src), args.NamedChild(0)
 }
+
+var (
+	sqlWriteStatement = regexp.MustCompile(`(?is)\b(?:insert\s+(?:or\s+\w+\s+)?into|replace\s+into|update)\s+["'\x60]?(\w+)`)
+	sqlCreateTable    = regexp.MustCompile(`(?is)\bcreate\s+table\s+(?:if\s+not\s+exists\s+)?["'\x60]?(\w+)`)
+	sqlPlaceholder    = regexp.MustCompile(`\?|\$\d+|:\w+|@\w+`)
+	staticReadCall    = regexp.MustCompile("^[\\w.$]+\\(\\s*(\"[^\"]*\"|'[^']*'|`[^`$]*`)\\s*[,)]")
+)
+
+// attachStoredWriteSets gives every record that reads a stored key its write
+// census: each write statement found in scanned source for the key, whether
+// its values are literals, whether the read query is static and whether the
+// store is closed. The shared parse rule keeps the facts only on records whose
+// stored origin stays unresolved. Nothing here changes a dependency or status.
+func (s *moduleSet) attachStoredWriteSets(report *analysis.AnalysisReport) {
+	tables := map[string]*sqlTableCensus{}
+	for i := range report.Uses {
+		u := &report.Uses[i]
+		var stores []analysis.StoredWriteSet
+		seen := map[string]bool{}
+		for _, d := range u.Dependencies {
+			// A file read is not a written store; its origin gap stands alone.
+			if d.StorageKey == "" || strings.HasPrefix(d.StorageKey, "file:") || seen[d.StorageKey] {
+				continue
+			}
+			seen[d.StorageKey] = true
+			set := analysis.StoredWriteSet{Key: d.StorageKey, Writes: []analysis.StoredWrite{}, ClosedStore: "unknown", StaticRead: staticRead(d)}
+			if table, ok := sqlTable(d.StorageKey); ok {
+				census := tables[table]
+				if census == nil {
+					census = s.sqlCensus(table)
+					tables[table] = census
+				}
+				set.Writes = append(set.Writes, census.writes...)
+				set.Schema, set.ClosedStore = census.schema, census.closed
+			}
+			for _, w := range s.storageWrites[d.StorageKey] {
+				if !containsWrite(set.Writes, w.sink) {
+					set.Writes = append(set.Writes, analysis.StoredWrite{Evidence: w.sink, Literal: len(w.value.deps) == 0})
+				}
+			}
+			stores = append(stores, set)
+		}
+		if len(stores) > 0 {
+			u.StoredOrigin = &analysis.StoredOriginFacts{Stores: stores}
+		}
+	}
+}
+
+type sqlTableCensus struct {
+	writes []analysis.StoredWrite
+	schema *analysis.Evidence
+	closed string
+}
+
+func sqlTable(key string) (string, bool) {
+	if !strings.HasPrefix(key, "sql:") {
+		return "", false
+	}
+	table, _, ok := strings.Cut(strings.TrimPrefix(key, "sql:"), ".")
+	return table, ok && table != ""
+}
+
+// staticRead reports a stored dependency read by a query call whose first
+// argument is one string literal with no substitution.
+func staticRead(d analysis.Dependency) bool {
+	for _, t := range d.Transfers {
+		if t.Kind == "storage_query" {
+			return staticReadCall.MatchString(strings.TrimSpace(t.Text))
+		}
+	}
+	return false
+}
+
+func containsWrite(writes []analysis.StoredWrite, e analysis.Evidence) bool {
+	for _, w := range writes {
+		if w.Evidence.Span.File == e.Span.File && w.Evidence.Span.StartByte <= e.Span.StartByte && e.Span.EndByte <= w.Evidence.Span.EndByte {
+			return true
+		}
+		if e.Span.File == w.Evidence.Span.File && e.Span.StartByte <= w.Evidence.Span.StartByte && w.Evidence.Span.EndByte <= e.Span.EndByte {
+			return true
+		}
+	}
+	return false
+}
+
+// sqlCensus finds, in every loaded module, the SQL text that writes or
+// creates table. A write is literal when its text has no placeholder,
+// substitution or concatenation. The store is closed when its schema is in
+// source and the database is an in-memory sql.js database created there.
+func (s *moduleSet) sqlCensus(table string) *sqlTableCensus {
+	c := &sqlTableCensus{closed: "open"}
+	var files []string
+	for file := range s.modules {
+		files = append(files, file)
+	}
+	sort.Strings(files)
+	inMemory := false
+	for _, file := range files {
+		m := s.modules[file]
+		var walk func(n *sitter.Node)
+		walk = func(n *sitter.Node) {
+			if n == nil {
+				return
+			}
+			switch n.Kind() {
+			case "new_expression":
+				ctor, args := n.ChildByFieldName("constructor"), n.ChildByFieldName("arguments")
+				if ctor != nil && strings.HasSuffix(ctor.Utf8Text(m.src), "Database") && (args == nil || args.NamedChildCount() == 0) {
+					inMemory = true
+				}
+			case "string", "template_string":
+				text, literal := sqlLiteralText(m, n)
+				for _, match := range sqlCreateTable.FindAllStringSubmatch(text, -1) {
+					if strings.EqualFold(match[1], table) && c.schema == nil {
+						e := m.evidence("storage_schema", n)
+						c.schema = &e
+					}
+				}
+				for _, match := range sqlWriteStatement.FindAllStringSubmatch(text, -1) {
+					if strings.EqualFold(match[1], table) {
+						c.writes = append(c.writes, analysis.StoredWrite{Evidence: m.evidence("storage_write", n), Literal: literal && !sqlPlaceholder.MatchString(stripSQLStrings(text))})
+						break
+					}
+				}
+				return
+			}
+			for i := uint(0); i < n.NamedChildCount(); i++ {
+				walk(n.NamedChild(i))
+			}
+		}
+		walk(m.tree.RootNode())
+	}
+	if c.schema != nil {
+		c.closed = "unknown"
+		if inMemory {
+			c.closed = "closed"
+		}
+	}
+	return c
+}
+
+// sqlLiteralText returns the text of a string or template and whether it is
+// a whole literal: no substitution and not one operand of a concatenation.
+func sqlLiteralText(m *sourceModule, n *sitter.Node) (string, bool) {
+	literal := n.Parent() == nil || n.Parent().Kind() != "binary_expression"
+	if n.Kind() == "string" {
+		text, _ := stringLiteral(n, m.src)
+		return text, literal
+	}
+	var b strings.Builder
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		child := n.NamedChild(i)
+		if child.Kind() == "template_substitution" {
+			literal = false
+			b.WriteString("${}")
+			continue
+		}
+		b.WriteString(child.Utf8Text(m.src))
+	}
+	return b.String(), literal
+}
+
+// stripSQLStrings removes quoted SQL string values so a ':' or '?' inside a
+// literal value is not read as a placeholder.
+func stripSQLStrings(text string) string {
+	return regexp.MustCompile(`'(?:[^']|'')*'`).ReplaceAllString(text, "''")
+}

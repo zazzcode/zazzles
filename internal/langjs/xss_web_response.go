@@ -28,18 +28,37 @@ func (f *flow) webResponseConstructor(n *sitter.Node) (value, bool) {
 	}
 	// Mirror eval's default case: transfer(children(n)), where the arguments
 	// child is itself transfer(children(arguments)).
-	out, body := value{}, value{}
+	var operands []*sitter.Node // arguments without comments
+	for j := uint(0); j < args.NamedChildCount(); j++ {
+		if a := args.NamedChild(j); a.Kind() != "comment" {
+			operands = append(operands, a)
+		}
+	}
+	if len(operands) == 0 {
+		return value{}, false
+	}
+	out, body, limited := value{}, value{}, false
 	for i := uint(0); i < n.NamedChildCount(); i++ {
 		child := n.NamedChild(i)
 		if child.Kind() != "arguments" || child.StartByte() != args.StartByte() {
 			out = combine(out, f.eval(child))
 			continue
 		}
+		// eval(arguments) counts one unit of work and enforces the limit.
 		f.work++
+		if f.work > 10000 {
+			gap := f.gap("work_limit", "handler expression work limit reached", args)
+			if f.work == 10001 {
+				f.gaps = append(f.gaps, gap)
+			}
+			out, limited = combine(out, value{gaps: []analysis.Gap{gap}}), true
+			continue
+		}
 		argv := value{}
 		for j := uint(0); j < args.NamedChildCount(); j++ {
-			v := f.eval(args.NamedChild(j))
-			if j == 0 {
+			a := args.NamedChild(j)
+			v := f.eval(a)
+			if a.StartByte() == operands[0].StartByte() && a.Kind() == operands[0].Kind() {
 				body = v
 			}
 			argv = combine(argv, v)
@@ -47,17 +66,17 @@ func (f *flow) webResponseConstructor(n *sitter.Node) (value, bool) {
 		out = combine(out, f.transfer(argv, "expression", args))
 	}
 	var init *sitter.Node
-	if args.NamedChildCount() > 1 {
-		init = args.NamedChild(1)
+	if len(operands) > 1 {
+		init = operands[1]
 	}
 	contentType, header := webResponseContentType(init, f.module.src)
-	if contentType == "unknown" || contentType == "text/html" || contentType == "application/xhtml+xml" {
+	if !limited && (contentType == "unknown" || contentType == "text/html" || contentType == "application/xhtml+xml") {
 		evidence := []analysis.Evidence{binding}
 		if header != nil {
 			evidence = append(evidence, f.module.evidence("render_binding", header))
 		}
 		before := len(f.uses)
-		f.recordHTMLResponse(n, args.NamedChild(0), body, contentType, evidence)
+		f.recordHTMLResponse(n, operands[0], body, contentType, evidence)
 		for i := before; i < len(f.uses); i++ {
 			f.uses[i].APIModel = analysispacks.XSSContract("html-output-v1", analysispacks.FetchResponseLibrary)
 		}
@@ -115,43 +134,58 @@ func webResponseContentType(init *sitter.Node, src []byte) (string, *sitter.Node
 	if init.Kind() != "object" {
 		return "unknown", nil
 	}
-	spread := false
+	// A later spread or computed key may replace headers; an earlier one is
+	// overridden by an explicit headers property.
+	contentType, header, have, spread := "", (*sitter.Node)(nil), false, false
+	replaceable := func() {
+		if have {
+			contentType, header = "unknown", nil
+		} else {
+			spread = true
+		}
+	}
 	for i := uint(0); i < init.NamedChildCount(); i++ {
 		child := init.NamedChild(i)
 		switch child.Kind() {
 		case "spread_element":
-			spread = true
+			replaceable()
 		case "shorthand_property_identifier":
 			if child.Utf8Text(src) == "headers" {
-				return "unknown", nil
+				contentType, header, have = "unknown", nil, true
 			}
 		case "pair":
 			key, ok := propertyKey(child.ChildByFieldName("key"), src)
 			if !ok {
-				spread = true
+				replaceable()
 				continue
 			}
 			if key != "headers" {
 				continue
 			}
-			headers := child.ChildByFieldName("value")
-			if headers != nil && headers.Kind() == "new_expression" {
-				ctor, args := headers.ChildByFieldName("constructor"), headers.ChildByFieldName("arguments")
-				if ctor == nil || ctor.Utf8Text(src) != "Headers" || shadowed(headers, "Headers", src) || args == nil || args.NamedChildCount() != 1 {
-					return "unknown", nil
-				}
-				headers = args.NamedChild(0)
-			}
-			if headers == nil || headers.Kind() != "object" {
-				return "unknown", nil
-			}
-			return headerContentType(headers, src)
+			contentType, header, have = initHeaders(child.ChildByFieldName("value"), src)
 		}
 	}
-	if spread {
+	if !have && spread {
 		return "unknown", nil
 	}
-	return "", nil
+	return contentType, header
+}
+
+// initHeaders reads an init.headers value: an object literal or
+// `new Headers({...})`; anything else is unknown.
+func initHeaders(headers *sitter.Node, src []byte) (string, *sitter.Node, bool) {
+	if headers != nil && headers.Kind() == "new_expression" {
+		ctor, args := headers.ChildByFieldName("constructor"), headers.ChildByFieldName("arguments")
+		if ctor == nil || ctor.Utf8Text(src) != "Headers" || shadowed(headers, "Headers", src) || args == nil || args.NamedChildCount() != 1 {
+			return "unknown", nil, true
+		}
+		headers = args.NamedChild(0)
+	}
+	if headers == nil || headers.Kind() != "object" {
+		return "unknown", nil, true
+	}
+	contentType, header := headerContentType(headers, src)
+	return contentType, header, true
 }
 
 func headerContentType(headers *sitter.Node, src []byte) (string, *sitter.Node) {
@@ -159,8 +193,10 @@ func headerContentType(headers *sitter.Node, src []byte) (string, *sitter.Node) 
 	for i := uint(0); i < headers.NamedChildCount(); i++ {
 		child := headers.NamedChild(i)
 		switch child.Kind() {
-		case "spread_element", "shorthand_property_identifier":
-			// A later spread or unknown name may replace an earlier type.
+		case "shorthand_property_identifier":
+			// `{ etag }` names its own header; it cannot be Content-Type.
+		case "spread_element":
+			// A later spread may replace an earlier type.
 			spread = true
 			if found != nil {
 				contentType = "unknown"

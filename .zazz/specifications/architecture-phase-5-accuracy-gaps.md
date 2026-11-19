@@ -344,3 +344,19 @@ nondeterminism: `getServerSideProps` inputs came from Go map iteration. The owne
 issues found during this work, so the fix ships here as its own commit, with
 `TestGSSPInputOrderDeterministic`. §4 and AC4 list the added files and tests. Corpus deltas are four
 OopsSec records, each accounted for in the inventory, and the architecture golden is unchanged.
+
+### 2026-11-19 — Independent verification
+
+A fresh-context verifier passed all six §13 checks:
+- the selected case and its controls;
+- three oracle spot checks: `DEMO-SQL-03`, `JS-XSS-03` and `TB-XSS-01`;
+- the golden;
+- the inventory totals;
+- a code review.
+
+It reported three low-severity defects in the constructor handling, all now fixed with failing-first
+test cases: a skipped work-limit gap, a spread after `headers` in the init being ignored, and comment
+nodes counted as arguments. A shorthand header no longer counts as a type override. It also reported
+that the checker passed controls vacuously. Those 4 passes are now flagged in the inventory. The
+corpus deltas and the golden are unchanged.
+

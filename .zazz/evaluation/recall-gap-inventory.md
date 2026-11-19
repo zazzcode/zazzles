@@ -88,9 +88,16 @@ Fan-out counts source-matching uses and their distinct entries.
 | Assessment-dependent rows with a candidate (`present`) | 17 | 17 |
 | Registration outcomes resolved (VulnPy) | 4 | 4 |
 | Structural controls passing (`bound`, `encoded`, `no_record`, `not_raw`, `not_decisive`, `only_*`) | 30 | 30 |
+| ... of which pass with no matching record (vacuous) | 4 | 30 |
 | Lab controls left to assessment (non-XSS safe controls) | 11 | — |
 | Excluded rows, each with a reason | 13 | — |
 | All rows | 174 | — |
+
+The four vacuous passes are `DEMO-SQL-N01` (the bound insert creates no SQL candidate),
+`OOPS-XSS-N02` and the lab's `XSS-001` and `XSS-002` React-text safe controls. In each, the key
+accepts no record. Each is marked in the per-row notes so that a candidate which disappears cannot
+pass silently. The checker's source-anchor match accepts the key's anchor at any dependency span,
+including transfers, not only at the origin.
 
 By tag, `independent` rows have 87 of 88 positive or review candidates present, and `post_delivery`
 rows have 11 of 11. Python evaluator: ThreatByte exits 1 with 11/18, and every failure is an
@@ -146,6 +153,10 @@ maps to a row of the contract's §11 follow-on table.
   blocked Review. It is not in the key.
 - **Context fan-out.** VulnPy SQL sinks have 26 uses each, one per entry, which separates
   multi-entry reporting from duplicates.
+- **Closed content-type maps.** The new unresolved record at `app/api/uploads/[...path]/route.ts:44`
+  takes its `Content-Type` from a constant map of image types. Resolving closed constant maps would
+  make it silent for raster types. `image/svg+xml` can run script when opened directly, and the body
+  is file content rather than the request value, so it needs its own contract decision.
 
 ## After the closure
 
@@ -193,7 +204,7 @@ published sample. `TestGSSPInputOrderDeterministic` checks 40 consecutive runs.
 | DEMO-SQL-03 | vuln-demo-app | sql_query | `server.js:46` | positive | independent | candidate_with_witness | 1 / 1 |  |
 | DEMO-SQL-04 | vuln-demo-app | sql_query | `server.js:46` | positive | independent | candidate_with_witness | 1 / 1 |  |
 | DEMO-SQL-05 | vuln-demo-app | sql_query | `server.js:291` | positive | independent | candidate_with_witness | 1 / 1 |  |
-| DEMO-SQL-N01 | vuln-demo-app | sql_query | `server.js:208` | bound | independent | control_pass | 0 / 0 |  |
+| DEMO-SQL-N01 | vuln-demo-app | sql_query | `server.js:208` | bound | independent | control_pass | 0 / 0 | no matching record (vacuous) |
 | DEMO-SQL-N02 | vuln-demo-app | sql_query | `server.js` | only_lines | independent | control_pass | 5 / 5 | lines 46,291 |
 | DEMO-SSRF-01 | vuln-demo-app | ssrf | `server.js:232` | positive | independent | candidate_with_witness | 1 / 1 |  |
 | DEMO-IDOR | vuln-demo-app |  | | excluded | independent | excluded |  | out_of_family: IDOR and missing admin authorization |
@@ -261,7 +272,7 @@ published sample. `TestGSSPInputOrderDeterministic` checks 40 consecutive runs.
 | OOPS-XSS-05 | oss-oopssec-store | xss | `app/login/LoginForm.tsx:37` | positive | independent | candidate_with_witness | 4 / 2 |  |
 | OOPS-XSS-R01 | oss-oopssec-store | xss | `app/api/vcs/[[...path]]/route.ts` | review | independent | missing_candidate | 0 / 0 |  |
 | OOPS-XSS-N01 | oss-oopssec-store | xss | `app/admin/documents/page.tsx` | no_record | independent | control_pass | 0 / 0 |  |
-| OOPS-XSS-N02 | oss-oopssec-store | xss | `app/products/search/ProductSearchClient.tsx` | not_raw | independent | control_pass | 0 / 0 |  |
+| OOPS-XSS-N02 | oss-oopssec-store | xss | `app/products/search/ProductSearchClient.tsx` | not_raw | independent | control_pass | 0 / 0 | no matching record (vacuous) |
 | OOPS-XSS-N03 | oss-oopssec-store | xss | `app/vulnerabilities/[slug]/page.tsx:191` | no_record | independent | control_pass | 0 / 0 |  |
 | OOPS-XSS-N04 | oss-oopssec-store | xss | `app/live/page.tsx` | no_record | independent | control_pass | 0 / 0 |  |
 | OOPS-MW-01 | oss-oopssec-store |  | | excluded | independent | excluded |  | Registration-stage row verified by TestNextJSOopsStoreAnswerKey, not by a candidate |
@@ -342,10 +353,10 @@ published sample. `TestGSSPInputOrderDeterministic` checks 40 consecutive runs.
 | SSRF-001 | vuln-nextjs | ssrf | `pages/vulnerable/ssrf.js` | positive | independent | candidate_with_witness | 1 / 1 |  |
 | SSRF-001-safeControl | vuln-nextjs | ssrf | `pages/secure/ssrf.js` | control_assessment | independent | assessment_dependent | 1 / 1 |  |
 | XSS-001 | vuln-nextjs | xss | `pages/xss/unsafe/reflected.js` | positive | independent | candidate_with_witness | 1 / 1 |  |
-| XSS-001-safeControl | vuln-nextjs | xss | `pages/xss/safe/reflected.js` | not_raw | independent | control_pass | 0 / 0 |  |
+| XSS-001-safeControl | vuln-nextjs | xss | `pages/xss/safe/reflected.js` | not_raw | independent | control_pass | 0 / 0 | no matching record (vacuous) |
 | XSS-001-safeControl | vuln-nextjs | xss | `pages/xss/sanitized/reflected.js` | not_raw | independent | control_pass | 1 / 1 |  |
 | XSS-002 | vuln-nextjs | xss | `pages/xss/unsafe/stored.js` | positive | independent | candidate_with_witness | 1 / 1 |  |
-| XSS-002-safeControl | vuln-nextjs | xss | `pages/xss/safe/stored.js` | not_raw | independent | control_pass | 0 / 0 |  |
+| XSS-002-safeControl | vuln-nextjs | xss | `pages/xss/safe/stored.js` | not_raw | independent | control_pass | 0 / 0 | no matching record (vacuous) |
 | XSS-003 | vuln-nextjs | xss | `pages/xss/unsafe/script-context.js` | positive | independent | candidate_with_witness | 1 / 1 |  |
 | XSS-003-safeControl | vuln-nextjs | xss | `pages/xss/safe/script-context.js` | not_raw | independent | control_pass | 1 / 1 |  |
 | XSS-004 | vuln-nextjs | xss | `pages/xss/unsafe/comments.js` | positive | independent | candidate_with_witness | 1 / 1 |  |

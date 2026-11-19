@@ -117,6 +117,10 @@ def classify(row, report):
         res['outcome'] = 'assessment_dependent'
     else:
         raise ValueError(expect)
+    # A control that matches no record passes vacuously; flag it so a vanished
+    # candidate cannot pass silently.
+    if expect in ('bound', 'not_raw', 'not_decisive', 'only_sources') and not uses:
+        res['vacuous'] = True
     return res
 
 
@@ -167,6 +171,8 @@ def markdown(out):
             anchor += f":{o['line']}"
         expect = o['expect'] + (f" ({o['key_expect']})" if o.get('key_expect') else '')
         notes = o.get('reason') or ', '.join(o.get('blockers') or []) or ''
+        if o.get('vacuous'):
+            notes = (notes + '; ' if notes else '') + 'no matching record (vacuous)'
         if o.get('assessment'):
             notes = (notes + '; ' if notes else '') + 'assessment unmeasured offline'
         if 'observed_lines' in o:
@@ -202,6 +208,7 @@ def main():
     for o in out:
         summary.setdefault(o['outcome'], 0)
         summary[o['outcome']] += 1
+    summary['vacuous_control_pass'] = sum(1 for o in out if o.get('vacuous'))
     doc = {'rows': out, 'summary': summary, 'total': len(out)}
     if a.json:
         a.json.write_text(json.dumps(doc, indent=2) + '\n')

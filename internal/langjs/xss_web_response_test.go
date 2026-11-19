@@ -48,6 +48,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ path
   return new Response(`+html+`, { headers: { "Content-Type": "text/plain", ...extra } });`), "unknown"},
 		{"non literal type", "app/api/j/route.ts", route("", `  const type = new URL(request.url).searchParams.get('t') ?? 'text/html';
   return new Response(`+html+`, { headers: { "Content-Type": type } });`), "unknown"},
+		{"xhtml type", "app/api/m/route.ts", route("", `  return new Response(`+html+`, { headers: { "Content-Type": "application/xhtml+xml" } });`), "raw"},
+		{"comment before body", "app/api/n/route.ts", route("", `  return new Response(/* body */ `+html+`, { headers: { "Content-Type": "text/html" } });`), "raw"},
+		{"init spread after headers", "app/api/o/route.ts", route("", `  const init = { headers: { "Content-Type": "text/html" } };
+  return new Response(`+html+`, { headers: { "Content-Type": "text/plain" }, ...init });`), "unknown"},
+		{"init spread before headers", "app/api/p/route.ts", route("", `  const init = { status: 200 };
+  return new Response(`+html+`, { ...init, headers: { "Content-Type": "text/plain" } });`), ""},
+		{"shorthand header without type", "app/api/q/route.ts", route("", `  const etag = '"v1"';
+  return new Response(`+html+`, { headers: { etag } });`), ""},
+		{"shadowed next response", "app/api/r/route.ts", route(next, `  const NextResponse = function (b: string, i: any) { return { b, i }; };
+  return new NextResponse(`+html+`, { headers: { "Content-Type": "text/html" } });`), ""},
 		{"next response not from next server", "app/api/k/route.ts", route(`import { NextResponse } from './response';`, `  return new NextResponse(`+html+`, { headers: { "Content-Type": "text/html" } });`), ""},
 		{"locally bound response", "app/api/l/route.ts", route(`class Response { constructor(public body: string, public init: any) {} }`, `  return new Response(`+html+`, { headers: { "Content-Type": "text/html" } });`), ""},
 	}

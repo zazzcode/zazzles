@@ -102,6 +102,11 @@ type PathFlow struct {
 	// Controls index PathFacts.Guards.
 	Controls []int  `json:"controls,omitempty"`
 	Reason   string `json:"reason,omitempty"`
+	// Selection records that the operand is an element selected from a
+	// collection by comparison with the request value (a selection against a
+	// fixed set), whatever else makes the flow unknown. A model answer cannot
+	// turn such a flow into a raw witness.
+	Selection bool `json:"selection,omitempty"`
 	// Transforms are the path-shaping steps observed in source order within the
 	// operand expression and its value chain (join, resolve, normalize, decode...).
 	Transforms []string `json:"transforms,omitempty"`

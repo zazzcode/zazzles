@@ -2944,8 +2944,8 @@
       {
         "id": "candidate:v1:b864e051c60626a5f561037c60e09d5381f04dc7b3aa9a3f997071f78b996103",
         "kind": "path_traversal_candidate",
-        "request_sha256": "60c8f314f24201cda65cc67bf607d4fa3e15bd52c721f044feb1bf07bc9a847c",
-        "signature_sha256": "46d41410c2d7ed4bbb8eb5bfddb8fb5dbbbdb4e51340359d0e90e8c2fc830b08"
+        "request_sha256": "bac9741157d48994fced34fd1091e5d57d7a5dfdbf3ed7b41dd88ae5ae452f5c",
+        "signature_sha256": "72b86213342b8d1c9c0fd19a5662d603790b4ad85b3745fe7d05165a46cbcc5e"
       },
       {
         "id": "candidate:v1:ef464c7884c0407cebc3f66fd9e5026488ff409007b63a9dc7c8fc8a9b5143f7",
@@ -3092,7 +3092,7 @@
         "signature_sha256": "16fec353995b2bb7bf8550158b5047778af7db4e23f1c47bb7952454eae5e701"
       }
     ],
-    "report_sha256": "aed69fe2575cd4367740dff74ff7227c00ec53b3a77e65a2c376fe16f52b46a1",
+    "report_sha256": "ee60ef75dfc4f38e614aa4e01c8342b99eaa90ef663bc3f9df8129c03fceefaa",
     "sarif_sha256": "5cb3fca2f253207e7ee252a9f80e79648b33696168017d72e3bf2dc619a7a936",
     "entries": 42,
     "registrations": 42,

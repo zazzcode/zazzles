@@ -290,6 +290,7 @@ func FinishPathFlows(u *analysis.CandidateUse, c *analysis.Completeness, guards 
 				unknown = true
 			}
 		}
+		p.Selection = selectsByComprehension(dep)
 		switch {
 		case info.AmbiguousCallers:
 			p.Protection = "unknown"

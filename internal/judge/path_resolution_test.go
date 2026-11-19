@@ -150,3 +150,25 @@ func TestDisagreementNeedsWitness(t *testing.T) {
 		}
 	})
 }
+
+// TestFlowGapSelectionStaysReview: a flow whose operand the scanner records as
+// selected from a collection by comparison never becomes a raw witness from a
+// value_preserved answer or a cited witness (source review of the VulnPy
+// TRIGGER_MAP selection, which the model answered value_preserved).
+func TestFlowGapSelectionStaysReview(t *testing.T) {
+	use := comprehensionPathUse(t)
+	facts := *use.Path
+	facts.Paths = append([]analysis.PathFlow{}, use.Path.Paths...)
+	for i := range facts.Paths {
+		facts.Paths[i].Protection, facts.Paths[i].Selection = "unknown", true
+	}
+	use.Path = &facts
+	vulnerable := map[string]string{"path_traversal": "vulnerable", "containment_control": "none", "protection_coverage": "incomplete"}
+	a := resolutionStub(t, vulnerable, "value_preserved", nil).Assess(context.Background(), use)
+	if a.FindingStatus != "needs_evidence" {
+		t.Fatalf("a selection flow became a finding: %+v reason %q", a.BlockingGaps, a.Reason)
+	}
+	if citedWitness(use, &facts, nil, facts.Paths[0].Dependency) {
+		t.Fatal("a selection flow cannot carry a cited witness")
+	}
+}

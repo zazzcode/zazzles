@@ -177,7 +177,7 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		resolved := *f
 		resolved.Paths = append([]analysis.PathFlow{}, f.Paths...)
 		for i, flow := range resolved.Paths {
-			if flow.Protection != "unknown" || len(flow.Controls) > 0 || flow.Dependency < 0 || flow.Dependency >= len(use.Dependencies) {
+			if flow.Protection != "unknown" || len(flow.Controls) > 0 || flow.Selection || flow.Dependency < 0 || flow.Dependency >= len(use.Dependencies) {
 				continue
 			}
 			d := use.Dependencies[flow.Dependency]
@@ -344,7 +344,7 @@ func citedWitness(use analysis.CandidateUse, f *analysis.PathFacts, open []analy
 		if flow.Dependency != dep {
 			continue
 		}
-		if anyEnforcing(f, flow) || hasTransform(flow, analysis.PathTransformReduce) {
+		if anyEnforcing(f, flow) || hasTransform(flow, analysis.PathTransformReduce) || flow.Selection {
 			return false
 		}
 		if flow.Operand == analysis.PathSlotArchive && (f.Extractor == nil || f.Extractor.Assessment != "vulnerable_version") {

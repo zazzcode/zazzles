@@ -380,7 +380,7 @@ Rerun the scan to finish it.
 
 Set `JUDGE_RPM` and `JUDGE_TPM` just under the account's request and token limits, and keep
 `JUDGE_LIMIT` as a guard against a runaway scan. The local TPM estimate is one token per 3 request
-bytes plus 512, about 6,200 for a typical Juice Shop request that the provider reports as about
+bytes plus 512, about 7,200 for a typical Juice Shop request that the provider reports as about
 4,900 input tokens. The timings above were measured with the earlier bytes-plus-4,096 estimate and
 `JUDGE_TPM=0`.
 

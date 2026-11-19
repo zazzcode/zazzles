@@ -585,3 +585,23 @@ Mac mini M6 with 32 GB RAM. Both samples were clean before and after.
 For each target, N=1 and N=4 had 0 differences in request digests, answers and finding statuses.
 Two earlier Juice Shop N=4 scans each stopped on one OpenAI HTTP 503, at 124 and 148 of 157. With
 no retries, one transient 503 ends the scan. A single retry of 503 responses is a candidate follow-up.
+
+### Judge retry and token-based TPM estimate
+
+The follow-up deliverable ([spec](../specifications/judge-transient-retry-and-token-estimate.md))
+retries HTTP 429, 502, 503 and 504 up to 3 times and a dropped connection once. It also reserves
+`ceil(bytes / 3) + 512` input tokens per request instead of bytes plus 4,096. The estimator was
+checked offline against the 157 live Juice Shop traces of the full N=4 scan above, recorded as
+byte and token pairs in `internal/judge/testdata/tpm_ratio.json`.
+
+| Measure | Bytes + 4,096 | `ceil(bytes / 3) + 512` |
+|---|---|---|
+| Reserved for 157 requests (reported 770,517) | 3,793,778 | 1,130,669 |
+| Reservation ÷ reported tokens, minimum | 4.05× | 1.28× |
+| Reservation ÷ reported tokens, maximum | 5.87× | 1.65× |
+| Reservation ÷ reported tokens, median | — | 1.51× |
+
+Request bytes ran 12,028–57,912 and reported input tokens 2,748–14,749, a median of 4.17 bytes per
+token. The new estimate never underestimates a row. No live scan has been run with the retry or
+the new estimate yet.
+

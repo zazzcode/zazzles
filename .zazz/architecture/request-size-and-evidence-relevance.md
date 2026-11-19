@@ -138,15 +138,16 @@ Status values: `implemented`, `planned`, `proposed`, `rejected`.
   dispatch alternative), split by storage key only when that file alone is over the limit; whole
   groups are packed into one request while it still fits (first fit, key order). Each request is
   lossless for the paths it carries and names the withheld paths in a `path_group_omitted` coverage
-  gap. At most 4 group requests are sent per record, raw groups first; each counts against
+  gap. At most 5 group requests are sent per record, raw groups first; each counts against
   `--judge-limit`, has its own digest and replays alone. Confirmed when any group is Confirmed (scoped
   to that path); Protected only when every group was judged and is Protected; otherwise Review. A
   group still over the limit keeps `evidence_too_large`; groups past the cap are reported
   `path_group_cap`. Records under the limit are unchanged.
-- **Measured (DVWA `a1978a2`):** 8 records over the limit (67,703–83,340 bytes) become 23 group
-  requests of 54–65 KB; one `sqli` record leaves one group past the cap. The page-shell excerpts
-  (~18–20 KB) and fixed sections are repeated in every group, which meets S2's re-open condition;
-  S2 stays unadopted until its paid ablation is authorized.
+- **Measured (DVWA `a1978a2`):** 8 records over the limit (67,703–83,340 bytes) become 24 group
+  requests of 54–65 KB, none past the cap. The page-shell excerpts
+  (~18–20 KB) and fixed sections are repeated in every group, which meets S2's re-open condition.
+  Measured offline, only 3.0–5.0 KB per group request is off the dependency chains (12.6–18.6 KB
+  are on them), so S2 could save at most about 7% and is not adopted.
 - **Tests:** `TestPathGroup*` in `internal/judge/path_groups_test.go`; `TestDVWARequestSizes` with
   `ZAZZLES_DVWA`.
 

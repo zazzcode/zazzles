@@ -31,7 +31,7 @@ in any report (accuracy.py: no `FALSE_POSITIVE` row).
 | GOOF-CMD-01 | guarded path, Review | raw shell path: `(http.*)` classified `admits_any` | W2 (W1 for guards W2 cannot classify) | Confirmed |
 | DVWA-API-CMD-01 | no candidate | witnessed raw command candidate under `api/public/index.php` | W3 | Confirmed |
 | XSSS-001 | 4 records `evidence_too_large` | each planned as 3 path-group requests (51–64 KB) | W4 | Confirmed |
-| DVWA-SIZE | 3 more records over the limit (one more measured: 8 in all) | all grouped; `sqli/index.php` (83 KB) leaves `sqli/source/medium.php` past the 4-group cap | W4 | — |
+| DVWA-SIZE | 3 more records over the limit (one more measured: 8 in all) | all grouped; `sqli/index.php` (83 KB) needs five groups, within the cap of 5 (raised from 4 by the owner) | W4 | — |
 | UPLD-001 | path claim Review (`path_answers_inconsistent`) | `file_upload_candidate`, practice finding offline; path claim unchanged | W5, W7 | Confirmed |
 | PI-SSTI-NAME, PI-SSTI-REMOTE | XSS only | `template_injection_candidate` with both sources, linked to the XSS record | W6 | Confirmed (after the origin-scoping fix) |
 | PI-VAL-NAME | required positive | Review-expected (key corrected) | W7 | — |
@@ -43,8 +43,8 @@ in any report (accuracy.py: no `FALSE_POSITIVE` row).
 8 DVWA records exceed 65,536 bytes (67,703–83,340). After shedding, every request repeats about
 18–20 KB of page-shell `source_excerpts` and ~8 KB of fixed sections, so one source-file group alone
 costs 51–60 KB. Path groups are lossless and fit; whole groups are packed while a request fits, giving
-23 group requests. D-16's re-open condition for S2 is met; S2 is lossy and needs the owner's paid
-ablation, so it was not started.
+24 group requests at the cap of 5. D-16's re-open condition for S2 is met, but the
+offline measurement below shows S2 could remove at most about 5 KB per request, so it is not adopted.
 
 ## New records outside the key (offline)
 
@@ -59,7 +59,8 @@ ablation, so it was not started.
 ## Deviations from the contract
 
 - **W4:** whole structural groups are packed into one request while it fits. Without packing two
-  `sqli` levels fell past the 4-group cap.
+  `sqli` levels fell past the group cap. The cap was later raised from 4 to 5 so that `sqli`'s fifth group
+  (`medium.php`) is judged: 24 group requests offline, none past the cap.
 - **W5 (AC6 partial):** adapters exist for PHP `move_uploaded_file` and Werkzeug `FileStorage.save`.
   Node `express-fileupload`/`multer`, Starlette `UploadFile` and Symfony `UploadedFile::move` have
   registered contracts and no adapter. DVWA's impossible level stores via `rename()` of a re-encoded

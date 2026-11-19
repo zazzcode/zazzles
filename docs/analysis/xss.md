@@ -198,7 +198,7 @@ server producer. GET and POST at the same path cannot exchange origins or protec
 
 A rendering record whose evidence is over the request limit is judged in path groups: one ordinary
 request per group of dependency paths (by source file, packed while a request still fits, at most
-four), each naming the paths it withholds. One Confirmed group makes the record Confirmed for that
+five), each naming the paths it withholds. One Confirmed group makes the record Confirmed for that
 path; Protected needs every group judged and Protected; anything else is Review. Groups past the cap
 or still over the limit are reported, never read as safe.
 

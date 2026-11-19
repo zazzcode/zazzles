@@ -418,7 +418,7 @@ func sectionSizes(payload []byte) string {
 // over the limit.
 
 // maxPathGroups bounds the group requests of one record (D-15).
-const maxPathGroups = 4
+const maxPathGroups = 5
 
 // pathGroupCap is the reason of a group beyond maxPathGroups.
 const pathGroupCap = "path_group_cap"

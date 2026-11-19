@@ -192,7 +192,7 @@ limit, prompt wording changes outside the questions named here, and prototype po
   **Why.** Each request stays lossless for the paths it carries, and the combination rule is the
   existing per-path rule (`A raw witness is scoped to its own source-to-operand path`). S1 slicing
   is lossy and needs a paid ablation.
-- **D-15.** Bounds: at most 4 groups per record, counted against `--judge-limit` and reported.
+- **D-15.** Bounds: at most 5 groups per record, counted against `--judge-limit` and reported.
   Records under the limit are unchanged, so their digests and replays hold. Each group request has
   its own digest, replays alone, and shares a decision only with an equivalent group.
 - **D-16.** Fallback if D-13 shows the shared page-shell excerpts dominate every group: re-open S2
@@ -427,3 +427,20 @@ past the 4-group cap. Node, Starlette and Symfony upload adapters did not fit th
 `move_uploaded_file` and Werkzeug `FileStorage.save`; the other D-19 operations have registered
 contracts only.
 **Verification Impact.** AC6 is met for PHP and Werkzeug only; AC11 is not run.
+
+### 2026-11-19 — Path-group cap raised to 5
+
+**Source.** Owner steering ("raise it to 5 and verify offline").
+
+**Changed Sections.** §5 D-15.
+
+**Rationale.** The cap of 4 is a cost guard, not a technical limit. DVWA's `sqli/index.php` render
+record (83,340 bytes) needs five groups, because each security level adds about 13 KB to a ~51 KB
+shared page shell, so no two levels fit in one request. With a cap of 4, `sqli/source/medium.php` was
+never judged.
+
+**Summary.** `maxPathGroups` is 5.
+
+**Verification Impact.** `TestDVWARequestSizes`: 8 records, 24 group requests (one more), none past
+the cap, the largest 64,805 bytes. Other records and the architecture golden are unchanged. The
+record has not been re-judged live; the next DVWA live run picks it up.

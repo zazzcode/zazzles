@@ -8,7 +8,8 @@
   family. W7 checks no citation: citations start in this contract's W1.
 - **Delivery** One draft PR into `stage`, with one commit per workstream that ships.
 - **Run log** `.zazz/ephemeral/model-assisted-evidence-resolution-run-log.md`
-- **Owner decisions** The questions in §11 are answered before implementation starts.
+- **Owner decisions** The §11 questions were answered by the owner on 2026-11-19; the answers are
+  recorded there and applied below.
 
 ## 1. Capability
 
@@ -55,11 +56,12 @@ whose outcome was fixed are already no longer sent; what remains is below.
 - **Resolution is visible.** A blocker resolved this way stays in the record as resolved, with the
   provider, model, question version and cited spans. Reports show it. Nothing is silently dropped.
 - **Protection needs scanner proof.** A model-resolved fact may move a record from Review to a
-  finding. It may move a record to Protected only when the scanner independently holds the
+  finding, with the same status as a scanner-proven finding and a visible model-resolved mark. It may move a record to Protected only when the scanner independently holds the
   coverage fact that makes protection complete. A wrong finding costs a review; a wrong Protected
   hides a defect.
-- **Bounded requests.** A record gets its assessment request and at most one follow-up. The
-  follow-up is not a retry and adds no stop condition. Transport retry rules are unchanged.
+- **Bounded requests.** A record gets its assessment request and at most one follow-up, and
+  follow-ups are at most 25% of a scan's requests. The follow-up is not a retry and adds no stop
+  condition. Transport retry rules are unchanged.
 - **Labels stay out of the scanner.** Expected labels, sample names and case IDs never enter
   scanner logic or model input.
 - **Changed questions are judged afresh.** A changed question set bumps the protocol version, and
@@ -141,7 +143,9 @@ Out of scope, each a later contract that reuses W1:
   without learning whether the model saw a flow the scanner missed.
 - **D-6. One follow-up, scanner-resolved (W5).** The model may return one `needed_evidence` item by
   kind and symbol. The scanner fetches it only when the snapshot resolves the symbol exactly, then
-  sends one follow-up. An unresolvable request is recorded and the record stays Review.
+  sends one follow-up. An unresolvable request is recorded and the record stays Review. Follow-ups
+  stop at 25% of the scan's assessment requests, in priority order; a record over the cap records
+  `follow_up_cap_reached` and stays Review.
   **Why.** One round covers the common case of a helper body just outside the expansion limit and
   keeps cost predictable. **Rejected.** An open tool loop, which makes request counts unbounded.
 - **D-7. Blocked records are sent only when a question can resolve them (W1).** A record whose
@@ -162,7 +166,10 @@ Out of scope, each a later contract that reuses W1:
 
 Follow the plan's [common rules](architecture-update-plan.md#common-agent-implementation-rules) and
 [AGENTS.md](../../AGENTS.md#credentials-and-live-model-calls). Build W1 against a stub judge
-before any live call. Paid calls are limited to what the owner authorizes in §11 Q4. Halt if the
+before any live call. Paid calls are the owner-authorized W6 runs in §11 Q4, each one judged scan
+on `openai` `gpt-6-luna` with the AGENTS.md pacing: VulnPy `--only-family path`, OopsSec in full and
+DVWA in full. State each run's planned request count from the offline stub planner before it
+starts. No second model and no other run without the owner's word. Halt if the
 recall floor moves, a keyed positive loses its finding, a model-resolved fact yields Protected
 without the scanner's coverage fact, or the source review in AC6 finds a false finding.
 
@@ -192,14 +199,16 @@ without the scanner's coverage fact, or the source review in AC6 finds a false f
    `TestDisagreementNeedsWitness` in `internal/judge`.
 5. **AC5 (W5).** A `needed_evidence` item that the snapshot resolves produces exactly one
    follow-up containing it; an unresolvable item produces none; no record gets a second
-   follow-up. The run reports follow-up counts beside request counts. Verified by
-   `TestSingleEvidenceFollowUp` in `internal/judge`.
+   follow-up. Follow-ups never exceed 25% of the scan's assessment requests, and a record over the
+   cap records `follow_up_cap_reached`. The run reports follow-up counts beside request counts.
+   Verified by `TestSingleEvidenceFollowUp` and `TestFollowUpCap` in `internal/judge`.
 6. **AC6 (W6).** After the authorized live runs, the results record lists, per sample and model
    (the checker's `judged_by`): fixed-outcome requests and substantive answers discarded against
    the §2 baseline, blocked records sent, blockers resolved, citations rejected, follow-ups, and
    records moved from Review to finding or Protected. Every model-resolved finding, up to 40, is source-reviewed, and
    none is a false finding. The phase 5 checker floor holds.
-7. **AC7.** JSON, HTML and SARIF each show model-resolved provenance on the record, the
+7. **AC7.** A model-resolved finding keeps the ordinary finding status; JSON, HTML and SARIF each
+   show its model-resolved provenance mark (provider, model, question version, cited IDs), the
    architecture and user docs state the revised gate, and the contributor gate passes.
 
 ## 8. Test strategy
@@ -234,21 +243,22 @@ Each step is its own commit with its own evidence.
 - [ ] The architecture rule, user docs and analysis guides are updated (AC7).
 - [ ] The recall floor holds.
 
-## 11. Open questions (owner)
+## 11. Owner decisions
 
-1. **Presentation.** Should a model-resolved finding carry the same status as a scanner-proven one
-   with a visible provenance mark (recommended), or a distinct status until calibrated?
-2. **Protected.** Is Protected from a model-resolved fact allowed only with the scanner's coverage
-   fact (recommended, D-4), or never in this delivery?
-3. **Follow-up budget.** Is one follow-up per record right, and should a scan-wide cap apply (for
-   example follow-ups no more than 25% of requests)?
-4. **Paid budget.** W6 needs judged runs beyond the standing live check: VulnPy limited to the
-   path family (at most 260 records, fewer after signature reuse), OopsSec in full (about 30
-   requests after the false-positive contract) and DVWA in full (to be re-estimated with a stub
-   planner before asking). Which are authorized, and should a second model be measured?
-5. **Scope split.** W3a is adapter work in three languages and only 2 of 45 stored-origin records
-   have usable write evidence today. Keep W3a and W3b here after W1, W2 and W4 (recommended), or
-   move them to their own contract so the rest ships first?
+Answered by the owner on 2026-11-19.
+
+1. **Presentation.** A model-resolved finding carries the same status as a scanner-proven one,
+   with a visible model-resolved provenance mark in JSON, HTML and SARIF (AC7). A distinct status
+   was not chosen.
+2. **Protected.** Protected from a model-resolved fact is allowed only when the scanner
+   independently holds the coverage fact, for stored origin every key's `closed_store` being
+   `closed` (D-4, AC3).
+3. **Follow-up budget.** At most one follow-up per record, and follow-ups at most 25% of a scan's
+   assessment requests (D-6, AC5).
+4. **Paid budget.** Authorized on `openai` `gpt-6-luna`: VulnPy `--only-family path`, OopsSec in
+   full and DVWA in full, each one run, with the planned request count stated before it starts.
+   A second model is not authorized (§6).
+5. **Scope split.** W3a and W3b stay in this contract and run after W1, W2 and W4 (§9).
 
 ## 12. Run log protocol
 
@@ -259,8 +269,8 @@ model-resolved finding.
 ## 13. Agent implementation prompt
 
 > Work in the owner-assigned worktree based on `origin/stage` with the false-positive contract
-> integrated. Read AGENTS.md, the orientation contents and this spec. Confirm the owner's §11
-> answers in the run log. Execute §9 in order, building each workstream against a stub judge
+> integrated. Read AGENTS.md, the orientation contents and this spec. Copy the owner's §11
+> decisions into the run log. Execute §9 in order, building each workstream against a stub judge
 > before any live call. Keep samples read-only. Make paid calls only as §11 Q4 authorizes. Deliver
 > a draft PR into `stage`, one commit per workstream, with an independent source review of every
 > model-resolved finding.
@@ -287,3 +297,11 @@ and from measurements of saved judged runs.
 - **D-2** reuses the existing `eN`/`sN`/`gN` request IDs. **D-7** now states what it adds beyond
   the validation gate. **AC6** measures against the checker's judged columns. Q4 budget figures
   updated.
+
+### 2026-11-19 — Owner answers to §11
+
+The owner chose the recommended option on every question and authorized three W6 runs (VulnPy
+path family, OopsSec full, DVWA full) on `openai` `gpt-6-luna`, without a second model. §11 now
+records the decisions; the invariants, D-6, AC5, AC7 and §6 carry the 25% follow-up cap, the
+same-status provenance mark and the authorized runs.
+

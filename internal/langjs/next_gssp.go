@@ -96,7 +96,9 @@ func (s *moduleSet) pagesPageEntries(out *analysis.AnalysisReport, m *sourceModu
 			req = params[0].name
 			inputs = append(inputs, parse.HTTPInput("http.request", req, paramEvidence))
 		case params[0].fields != nil:
-			for key, local := range params[0].fields {
+			// Source order keeps invocation inputs, and so candidate IDs, stable.
+			for _, key := range params[0].keys {
+				local := params[0].fields[key]
 				switch key {
 				case "query":
 					inputs = append(inputs, parse.HTTPInput("http.query", local, paramEvidence))

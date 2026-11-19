@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Unit test for the checker's precision and noise measures (python3 test_check.py)."""
+import importlib.util
+import unittest
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location('check', Path(__file__).parent / 'check.py')
+check = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(check)
+
+
+def span(file, line, start):
+    return {'file': file, 'start_line': line, 'end_line': line, 'start_byte': start, 'end_byte': start + 5}
+
+
+def use(uid, kind, file, line, start=0, entry='e1', deps=(), gaps=(), blockers=(), **extra):
+    u = {'id': uid, 'kind': kind, 'entry_id': entry, 'sink': {'span': span(file, line, start)},
+         'dependencies': [{'source': {'kind': k, 'span': span(file, line - 1, 0)}} for k in deps],
+         'gaps': [{'kind': g} for g in gaps], 'completeness': {'blockers': [{'kind': b} for b in blockers]}}
+    u.update(extra)
+    return u
+
+
+def finding(uid, status='poor_practice'):
+    return {'use_id': uid, 'record_type': 'finding' if status in ('poor_practice', 'confirmed_vulnerability') else 'analysis', 'status': status}
+
+
+class PrecisionTest(unittest.TestCase):
+    def setUp(self):
+        uses = [
+            use('a', 'sql_query_candidate', 'db.php', 10, gaps=['query_text_interpolated']),  # no origin
+            use('b', 'sql_query_candidate', 'db.php', 20, deps=['input_source'], gaps=['query_text_interpolated']),
+            use('c', 'xss_candidate', 'page.php', 5, entry='e1', deps=['input_source']),
+            use('d', 'xss_candidate', 'page.php', 5, entry='e2', deps=['input_source']),
+            use('e', 'xss_candidate', 'page.php', 5, entry='e2', deps=['storage_source']),
+            use('f', 'input_validation_candidate', 'form.py', 3, deps=['input_source']),
+            use('g', 'xss_candidate', 'tests/view.js', 7, deps=['input_source'], xss={'output_context': 'unknown', 'protection': 'raw'}),
+            use('h', 'command_execution_candidate', 'safe.php', 9, deps=['input_source'],
+                assessment={'status': 'completed', 'answers': {'shell_syntax_protection': 'vulnerable'},
+                            'blocking_gaps': [{'kind': 'unknown_transfer'}]}, completeness={'blockers': [{'kind': 'unknown_transfer'}]}),
+        ]
+        self.report = {'uses': uses, 'entries': [], 'findings': [
+            finding('a'), finding('b'), finding('c'), finding('d'), finding('e', 'needs_review'),
+            finding('f', 'needs_review'), finding('g', 'needs_review'), finding('h', 'needs_review')]}
+        keyed = [{'app': 's', 'kind': 'sql_query_candidate', 'file': 'db.php', 'line': 20, 'expect': 'positive'},
+                 {'app': 's', 'kind': 'xss_candidate', 'file': 'page.php', 'line': 5, 'expect': 'no_record'}]
+        controls = [{'app': 's', 'kind': 'command_execution_candidate', 'file': 'safe.php'}]
+        self.prec = check.precision({'s': self.report}, keyed, [], controls)['s']
+
+    def test_keyed_and_unkeyed(self):
+        self.assertEqual(self.prec['sql_query']['keyed_true'], 1)
+        self.assertEqual(self.prec['sql_query']['unkeyed_findings'], 1)
+        self.assertEqual(self.prec['xss']['keyed_false'], 2)  # c and d present as findings at a no_record control
+        self.assertEqual(self.prec['xss']['unkeyed'], 1)  # g
+
+    def test_noise_classes(self):
+        self.assertEqual(self.prec['sql_query']['construction_no_origin'], 1)
+        self.assertEqual(self.prec['sql_query']['construction_no_origin_finding'], 1)
+        self.assertEqual(self.prec['input_validation']['undecidable_validation'], 1)
+        self.assertEqual(self.prec['xss']['shared_sink_fanout'], 3)
+        self.assertEqual(self.prec['xss']['same_entry_sink_extra'], 1)
+        self.assertEqual(self.prec['xss']['unknown_context_raw'], 1)
+        self.assertEqual(self.prec['xss']['test_path'], 1)
+
+    def test_controls_and_fixed_outcome(self):
+        cmd = self.prec['command_execution']
+        self.assertEqual(cmd['control_review'], 1)
+        self.assertEqual(cmd['fixed_outcome_requests'], 1)
+        self.assertEqual(cmd['substantive_discarded'], 1)
+
+    def test_decidable_validation(self):
+        u = use('v', 'input_validation_candidate', 'f.py', 1)
+        u['completeness'] = {'blockers': [], 'required': [], 'evidence': {r: [{}] for r in check.VALIDATION_ROLES}}
+        self.assertTrue(check.validation_decidable(u))
+        u['completeness']['evidence'].pop('field_policy')
+        self.assertFalse(check.validation_decidable(u))
+
+
+if __name__ == '__main__':
+    unittest.main()

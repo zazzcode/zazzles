@@ -9,7 +9,8 @@
     "not_decisive": "No matching candidate, or every matching candidate keeps a blocker or lacks a request origin",
     "only_lines": "Candidates of the kind in the file sit only at the listed lines",
     "bound": "No matching sql candidate carries query_text_interpolated",
-    "excluded": "Outside candidate/registration recall; reason given"
+    "excluded": "Outside candidate/registration recall; reason given",
+    "noise_rows": "Source-reviewed anchors for keyed noise classes; the checker counts matching records that still carry the class condition"
   },
   "pins": {
     "vuln-demo-app": "d27b35bdd2d599f1f79dace71d5272215df04423",
@@ -1098,5 +1099,37 @@
   "tags": {
     "independent": "Row written from source review before the scanner behavior it tests, or no history shows otherwise",
     "post_delivery": "Key history shows the row was written or corrected after the scanner behavior it tests"
-  }
+  },
+  "noise_rows": [
+    {
+      "id": "NOISE-OWNAPI-01",
+      "class": "own_api_request_origin",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "app/vulnerabilities/[slug]/page.tsx",
+      "line": 49,
+      "note": "The slug selects an own-API row; the read file is the row's markdownFile field (OOPS-PATH-N01). Counted while a request-origin dependency remains"
+    },
+    {
+      "id": "NOISE-STORED-01",
+      "class": "stored_literal_writes",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 280,
+      "note": "users is written only by literal seed SQL and read by a static query (DEMO-XSS-N02). Counted while storage_origin_unresolved holds it at Review"
+    },
+    {
+      "id": "NOISE-TYPEMAP-01",
+      "class": "closed_type_map",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/api/uploads/[...path]/route.ts",
+      "line": 44,
+      "note": "Closed constant MIME map with a missing-key rejection; it includes image/svg+xml, so the record stays unresolved Review"
+    }
+  ]
 }

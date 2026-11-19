@@ -172,3 +172,28 @@ func TestFlowGapSelectionStaysReview(t *testing.T) {
 		t.Fatal("a selection flow cannot carry a cited witness")
 	}
 }
+
+func TestOversizedRequestDropsResolutionQuestions(t *testing.T) {
+	// A record that fits only without its resolution questions is still
+	// judged, without them, rather than not sent at all.
+	use := comprehensionPathUse(t)
+	c, _ := New("openai", "fixture-model", "k")
+	full, err := c.payloadForm(use, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bare, err := c.payloadWith(use, true, false)
+	if err != nil || len(bare) >= len(full) {
+		t.Fatalf("bare %d full %d err %v", len(bare), len(full), err)
+	}
+	old := requestLimit
+	defer func() { requestLimit = old }()
+	requestLimit = len(bare)
+	got, omitted, err := c.budgetedPayload(use)
+	if err != nil || len(got) > requestLimit || len(payloadResolutionQuestions(got)) != 0 {
+		t.Fatalf("payload %d over %d or still asks resolutions (err %v)", len(got), requestLimit, err)
+	}
+	if n := len(omitted); n == 0 || omitted[n-1].Kind != "resolution_questions" || omitted[n-1].Bytes <= 0 {
+		t.Fatalf("omission not recorded: %+v", omitted)
+	}
+}

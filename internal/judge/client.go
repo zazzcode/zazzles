@@ -160,10 +160,21 @@ func (c *Client) budgetedPayload(use analysis.CandidateUse) ([]byte, []analysis.
 		p, err := c.payloadForm(u, true)
 		return err == nil && len(p) <= requestLimit
 	})
+	if len(omitted) > 0 {
+		payload, err = c.payloadForm(reduced, true)
+		if err != nil || len(payload) <= requestLimit {
+			return payload, omitted, err
+		}
+	}
+	// Resolution questions and their citation chains go last: a record is
+	// better judged without them than not judged at all.
+	if bare, err := c.payloadWith(reduced, true, false); err == nil && len(bare) <= requestLimit {
+		full, _ := c.payloadForm(reduced, true)
+		return bare, append(omitted, analysis.EvidenceOmission{Kind: "resolution_questions", Bytes: len(full) - len(bare)}), nil
+	}
 	if len(omitted) == 0 {
 		return payload, nil, nil
 	}
-	payload, err = c.payloadForm(reduced, true)
 	return payload, omitted, err
 }
 
@@ -178,6 +189,12 @@ func overLimit(a *analysis.Assessment, use analysis.CandidateUse, payload []byte
 	}
 }
 func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, error) {
+	return c.payloadWith(use, compact, true)
+}
+
+// payloadWith builds the request; resolve false leaves out the resolution
+// questions, the last reduction for a request that does not otherwise fit.
+func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) ([]byte, error) {
 	bundle := wireBundle(use)
 	var asks []resolutionAsk
 	if compact {
@@ -186,7 +203,9 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 			return nil, errors.New("could not compact evidence")
 		}
 		bundle = wire
-		asks = resolutionAsks(use, wire, gapIDs)
+		if resolve {
+			asks = resolutionAsks(use, wire, gapIDs)
+		}
 	}
 	var guidance *guidelines.AnalysisGuidelines
 	var selected *analysispacks.Material

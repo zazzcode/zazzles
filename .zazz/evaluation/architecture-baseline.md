@@ -602,6 +602,11 @@ byte and token pairs in `internal/judge/testdata/tpm_ratio.json`.
 | Reservation ÷ reported tokens, median | — | 1.51× |
 
 Request bytes ran 12,028–57,912 and reported input tokens 2,748–14,749, a median of 4.17 bytes per
-token. The new estimate never underestimates a row. No live scan has been run with the retry or
-the new estimate yet.
+token. The new estimate never underestimates a row.
+
+Owner-authorized live check on 2026-11-18: OpenAI `gpt-6-luna`, Juice Shop `f189f52` (clean before
+and after), N=4, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, `--judge-limit 200`. 157 of 157 assessments
+completed with 0 retries, 770,517 input tokens (identical to the earlier runs), 18.6 s wall clock and
+exit 0. The TPM window no longer throttled the scan; at `JUDGE_TPM=1000000` with the old estimate it
+took 192 s. Artifacts are in `_test-findings/juice-shop/run-reliability-1/`.
 

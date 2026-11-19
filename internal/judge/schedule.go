@@ -33,6 +33,9 @@ type ScheduleOptions struct {
 	Concurrency                   int
 	SkippedFamilies, OnlyFamilies []string
 	SaveTrace                     func(string, DecisionTrace) error
+	// Resume, when set, supplies saved decisions that slotted candidates reuse
+	// instead of sending when Replay accepts them.
+	Resume *SavedDecisions
 }
 
 // planned is one assessable candidate after the offline plan pass.
@@ -47,6 +50,7 @@ type planned struct {
 	spends     bool    // reaches HTTP if dispatched with the limiter open
 	slot       bool    // assigned a request slot by the plan pass
 	offline    *result // pre-dispatch outcome of a candidate that cannot reach HTTP
+	reused     *result // saved decision Replay accepted; applied without dispatch
 }
 
 // result is one assessment attempt. halts records that this attempt stopped the limiter.
@@ -54,6 +58,7 @@ type result struct {
 	assessment analysis.Assessment
 	trace      DecisionTrace
 	halts      bool
+	reusedKey  string // saved-decision key when the result came from opts.Resume
 }
 
 // AssessScheduled assesses stable priority groups, reusing only completed equivalent
@@ -82,7 +87,7 @@ func (c *Client) AssessScheduled(ctx context.Context, report *analysis.AnalysisR
 	})
 	startHalted := c.limiter.haltReason() != ""
 	groups, early := c.plan(ctx, report, order, opts)
-	results := c.waves(ctx, groups, opts.Limit, n)
+	results := c.waves(ctx, groups, opts.Limit, n, opts.Resume)
 	return c.finalize(ctx, report, order, opts, groups, early, results, startHalted)
 }
 
@@ -148,8 +153,25 @@ func (c *Client) plan(ctx context.Context, report *analysis.AnalysisReport, orde
 	sort.Slice(leaders, func(i, j int) bool { return leaders[i].rank < leaders[j].rank })
 	for k := 0; k < len(leaders) && k < opts.Limit; k++ {
 		leaders[k].slot = true
+		c.reuse(leaders[k], opts.Resume)
 	}
 	return groups, early
+}
+
+// reuse is offline: no HTTP, no limiter. A slotted spender whose exact request
+// has a saved decision that Replay accepts keeps that decision instead of
+// sending; any other saved trace is ignored and the candidate is sent normally.
+func (c *Client) reuse(p *planned, saved *SavedDecisions) {
+	if saved == nil || !p.spends || !p.slot {
+		return
+	}
+	t, key, ok := saved.lookup(p.preview.Request)
+	if !ok {
+		return
+	}
+	if a := c.Replay(p.use, t); a.Status == "completed" {
+		p.reused = &result{assessment: a, trace: t, reusedKey: key}
+	}
 }
 
 // nextSpender returns the first member at or after from that reaches HTTP, or -1.
@@ -165,7 +187,7 @@ func nextSpender(group []planned, from int) int {
 // waves dispatches slotted leaders, then promotes the next spending member of
 // each group whose dispatched member did not complete, while unassigned slots
 // remain and the limiter is open. Results are keyed by use index.
-func (c *Client) waves(ctx context.Context, groups [][]planned, limit, n int) map[int]result {
+func (c *Client) waves(ctx context.Context, groups [][]planned, limit, n int, saved *SavedDecisions) map[int]result {
 	results := map[int]result{}
 	free := limit
 	type cursor struct{ group, member int }
@@ -182,9 +204,13 @@ func (c *Client) waves(ctx context.Context, groups [][]planned, limit, n int) ma
 		sort.Slice(wave, func(i, j int) bool {
 			return groups[wave[i].group][wave[i].member].rank < groups[wave[j].group][wave[j].member].rank
 		})
-		leaders := make([]planned, len(wave))
-		for k, at := range wave {
-			leaders[k] = groups[at.group][at.member]
+		var leaders []planned
+		for _, at := range wave {
+			if p := groups[at.group][at.member]; p.reused != nil {
+				results[p.index] = *p.reused // reused decisions never occupy a worker
+			} else {
+				leaders = append(leaders, p)
+			}
 		}
 		for index, r := range c.dispatch(ctx, leaders, n) {
 			results[index] = r
@@ -199,6 +225,7 @@ func (c *Client) waves(ctx context.Context, groups [][]planned, limit, n int) ma
 			}
 			if m := nextSpender(groups[at.group], at.member+1); m >= 0 && free > 0 {
 				groups[at.group][m].slot = true
+				c.reuse(&groups[at.group][m], saved)
 				next = append(next, cursor{at.group, m})
 				free--
 			}
@@ -267,6 +294,7 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 	}
 	completed := map[string]decision{}
 	calls, derived, contexts := 0, 0, 0
+	reused, reusedKeys := 0, map[string]bool{}
 	failed := false
 	for _, i := range order {
 		u := &report.Uses[i]
@@ -299,6 +327,10 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 			if trace.HTTPStatus != 0 || trace.RequestBytes > 0 && trace.RequestBytes <= requestLimit && !strings.HasPrefix(u.Assessment.Reason, "judge limit:") {
 				calls++
 			}
+			if r.reusedKey != "" {
+				reused++
+				reusedKeys[r.reusedKey] = true
+			}
 			if p.shares && u.Assessment.Status == "completed" {
 				completed[p.signature] = decision{u.ID, trace}
 			}
@@ -318,6 +350,9 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 		report.Limitations = append(report.Limitations, "Analyzer family selection: skipped ["+strings.Join(opts.SkippedFamilies, ",")+"], only ["+strings.Join(opts.OnlyFamilies, ",")+"]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.")
 	}
 	report.Limitations = append(report.Limitations, fmt.Sprintf("Judged %d distinct candidate signatures across %d total entry contexts (%d derived across equivalent entry contexts).", len(completed), contexts, derived))
+	if opts.Resume != nil {
+		report.Limitations = append(report.Limitations, fmt.Sprintf("Judge resume: reused %d saved decisions without a request; sent %d candidates this run; %d saved decisions did not match this scan; %d trace files could not be read.", reused, calls-reused, opts.Resume.Completed()-len(reusedKeys), opts.Resume.Unreadable()))
+	}
 	return failed
 }
 

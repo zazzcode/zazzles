@@ -95,8 +95,10 @@ definition) and an answer counts only when its cited evidence chain verifies aga
 A model-resolved fact can move a record to a finding with a visible mark, never to Protected without
 a scanner-held coverage fact; records no answer could change are not sent; follow-ups are capped at
 25% of requests; a protocol bump re-judges only its family. Offline gates and the recall floor hold;
-the W3a write census covers 29 of 45 stored-origin records (AC3 asks 40); the authorized live runs
-and their source review (AC6) are pending. [Contract](../specifications/model-assisted-evidence-resolution.md).
+the W3a write census covers 29 of 45 stored-origin records (AC3 asks 40). The authorized
+`gpt-6-luna` runs (VulnPy path, OopsSec, DVWA) produced one model-resolved finding, source-reviewed
+true, and no false finding. [Contract](../specifications/model-assisted-evidence-resolution.md),
+[results](../evaluation/model-resolution-results.md).
 
 <a id="next-up"></a>
 

@@ -249,12 +249,12 @@ Each step is its own commit with its own evidence.
 
 ## 10. Definition of done
 
-- [ ] The verifier and policy hook pass their stub tests (AC1).
-- [ ] Each shipped workstream meets its AC.
-- [ ] Live results and the source review are recorded with no false finding (AC6).
-- [ ] The architecture rule, user docs and analysis guides are updated (AC7).
-- [ ] The recall floor holds.
-- [ ] The README, implementation plan and `.zazz/` design documents are updated (AC8).
+- [x] The verifier and policy hook pass their stub tests (AC1).
+- [ ] Each shipped workstream meets its AC. W3a is partial: 29 of 45 write sets (AC3 asks 40).
+- [x] Live results and the source review are recorded with no false finding (AC6).
+- [x] The architecture rule, user docs and analysis guides are updated (AC7).
+- [x] The recall floor holds.
+- [x] The README, implementation plan and `.zazz/` design documents are updated (AC8).
 
 ## 11. Owner decisions
 
@@ -361,3 +361,18 @@ documents.
 
 **Verification Impact.** AC1, AC2, AC4, AC5, AC7 and AC8 have offline evidence; AC3 is partial
 (write sets 29/45, judgment tests pass); AC6 awaits the authorized live runs.
+
+### 2026-11-19 — Live runs and source review (W6)
+
+**Source.** Authorized live runs and their source review.
+
+**Changed Sections.** §10 checklist.
+
+**Summary.** VulnPy path (260 requests, 61 follow-ups), OopsSec (27) and DVWA (169 after a rerun)
+on `gpt-6-luna`. The first DVWA run found a defect, a one-choice citation question that the
+provider rejects; such records are now gated (`b6e050d`). Source review found one model-resolved
+finding, true (DVWA FI medium), and one wrong verified flow-gap answer that produced no finding:
+the VulnPy `TRIGGER_MAP` selection. A structured `PathFlow.selection` fact now stops a selection
+flow from becoming a witness (`2f41d5c`). Results: [model-resolution-results](../evaluation/model-resolution-results.md).
+
+**Verification Impact.** AC6 met; AC3 remains partial.

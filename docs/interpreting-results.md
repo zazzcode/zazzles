@@ -37,6 +37,19 @@ A user-confirmed example is an acceptance target for improving analysis, not an 
 An advisory model answer alone is also insufficient to promote a record. Labels remain visible so
 color is never the only way to understand status.
 
+## Model-resolved records
+
+Some records reach their status through a **model-resolved** fact: the scanner could not establish
+a flow, a stored origin or a witness itself, asked the decision model a specific question, and
+verified the evidence chain the model cited against the request. Such a finding has the same
+status as a scanner-proven one and carries a **Model-resolved** badge (JSON `model_resolved`, SARIF
+`scan.modelResolved`) naming the provider, model, question version, cited evidence IDs and spans,
+and the blockers it resolved. Every answer, verified or rejected, stays in
+`assessment.resolutions`.
+
+Treat the mark as a review pointer: read the cited spans before remediating. A model-resolved fact
+does not make a record Protected unless the scanner holds the coverage fact itself.
+
 ## Current presentation statuses
 
 | JSON status | Display | Placement |

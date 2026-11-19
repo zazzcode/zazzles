@@ -59,6 +59,7 @@ all its syntax, APIs, or vulnerable paths are covered.
 | **Equivalent-context reuse** | Scan-local reuse only for conservatively equivalent requests; retain each entry's finding, provenance, policy evaluation, and existing exact-request identity; derived records add no usage | [E1 contract and measured limits](../specifications/analyzer-engine-hardening.md#6-acceptance-criteria-slice-e1) |
 | **Request and rate controls** | Per-run assessment cap and optional shared RPM/TPM pacing; disabled pacing skips clock/window work. Spending is managed in the provider console; local dollar budgets/pricing are removed | [Limits contract](../specifications/decision-model-limits.md) |
 | **Embedded analysis knowledge** | Versioned catalog selection and provenance for SQL, NoSQL, validation, XSS, command, path, logging and outbound observations; fixed query/middleware fact interpretation in `internal/guidelines/facts.md` | [Catalog architecture](../architecture/analysis-packs.md), [path contract](../specifications/path-traversal.md) |
+| **False positives and Review noise** | Validation records that no answer could decide are not sent; own-API response fields take their handler's origin; a closed constant type map resolves the response type; stored-origin records carry their write set; records are grouped by kind, sink span and status; the model judges command guard adequacy with each guard's contract | [Contract](../specifications/accuracy-false-positive-noise.md), [precision baseline](../evaluation/precision-noise-baseline.md) |
 | **Evidence validation and exact replay** | Source-backed completeness/consistency gates, request traces, and exact-match offline replay; confidence cannot supply missing evidence | [Trace architecture](../architecture/trace-judgment.md), [report contract](../architecture/reporting-and-sarif.md) |
 | **Reports and artifacts** | Canonical JSON, standalone HTML, SARIF, entry selection, findings/Review/Protected presentation, saved-report export, and historical schema compatibility; artifacts can be retained in CI | [Running guide](../../docs/running-scans.md), [CI artifacts](../../docs/ci.md) |
 
@@ -86,6 +87,16 @@ partial N6 (model-free practice checks) and a second iteration for the vuln-next
 positive in a supported family is Confirmed on both Next.js samples, no safe control is red, and both
 fresh full paid runs replay exactly (149/149 assessments, including standalone input validation);
 both [sample reports](../../docs/samples/README.md) and detection guides are published in this branch. [Contract](../specifications/nextjs-support.md).
+
+**Model-assisted evidence resolution is implemented on `model-evidence-resolution`, draft PR into
+`stage` pending.** The scanner asks the decision model specific questions about the points it could
+not resolve (flow gaps, stored origin, a missing witness, a command guard bypass, one missing
+definition) and an answer counts only when its cited evidence chain verifies against the request.
+A model-resolved fact can move a record to a finding with a visible mark, never to Protected without
+a scanner-held coverage fact; records no answer could change are not sent; follow-ups are capped at
+25% of requests; a protocol bump re-judges only its family. Offline gates and the recall floor hold;
+the W3a write census covers 29 of 45 stored-origin records (AC3 asks 40); the authorized live runs
+and their source review (AC6) are pending. [Contract](../specifications/model-assisted-evidence-resolution.md).
 
 <a id="next-up"></a>
 

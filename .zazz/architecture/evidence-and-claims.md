@@ -167,6 +167,15 @@ by dependency/context selection, not by a target-specific exception. Tests cover
 | `not_applicable` | The declared protection question does not apply; not a general safety conclusion |
 | Assessment failed / not_run | No completed semantic judgment; never a safe or confirmed finding |
 
+A blocker can also close through a verified model resolution: the record's request asks about the
+unresolved point, the model cites a chain of request evidence IDs, and one verifier checks the
+chain against that request before policy uses it. Resolutions are recorded on the assessment, a
+record whose status rests on one carries `model_resolved`, and protection still needs a
+scanner-held coverage fact. [Trace judgment](trace-judgment.md#model-assisted-evidence-resolution)
+owns the questions and rules. Stored-origin records carry a write census (`stored_origin`) built
+from the scanned snapshot for JS SQL and keyed stores, PHP and Python SQL tables, PHP session keys
+and Prisma models read through an application's own API.
+
 These statuses are advisory source-analysis findings, not runtime-confirmed exploitability, formal
 proof, or completed independent Findings Review. Positive findings need a supported violating case;
 adequate-protection claims need the relevant paths/invariant. Future precision work must verify

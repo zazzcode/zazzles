@@ -92,6 +92,8 @@ and plain **PHP** with mysqli/PDO/SQLite3, command, XSS, path, code and redirect
 **The decision model**
 
 - Judges whether each finding is a real vulnerability and whether existing protection is adequate
+- Answers specific questions about code the scanner could not follow; a cited, verified answer is
+  marked **Model-resolved**
 - OpenAI Luna is the primary model; Google Gemini is optional
 - One model is used for a whole scan, with no automatic fallback
 - A request cap and optional rate limits keep runs predictable
@@ -186,6 +188,42 @@ flowchart LR
 The target application does not need to run. A finding includes the operation and supporting code;
 a protection result applies to the stated claim and analyzed paths. Missing evidence remains a
 review task. The [technical approach](docs/technical-approach.md) explains the analysis and its limits.
+
+### How the decision model judges a result
+
+For each sensitive operation the scanner sends the model one bounded request: the source of the
+entry point, every step the value takes, the guards and transformations on the way, the library
+contract for the operation, the gaps it could not resolve, and a short list of multiple-choice
+questions about that one claim. For a file read the questions ask whether a request value can
+leave the intended directory, which control contains it, and whether that control covers every
+path. For a SQL query they ask whether input can change the query's syntax. The model answers each
+question. It does not write the verdict.
+
+The scanner then decides the status from those answers and its own facts:
+
+- **Vulnerable** needs a consistent answer and a source-to-operation path the scanner can show.
+  "Vulnerable" with no supporting path, or with an unresolved gap on that path, stays in Review.
+- **Protected** needs a control the scanner found on every path the value can take, plus answers
+  that say the control is adequate and covers them all. One protected branch never lends protection
+  to an unresolved sibling.
+- **Contradictions are rejected.** An answer that says "not applicable" when a request value plainly
+  reaches the operation, or "protected" with no control in the source, is kept for audit and changes
+  nothing.
+
+This is where the model earns its place. Rules can say a guard exists; they are weak at saying
+whether it is enough. Whether an allow-list really contains a path, whether a regular expression
+lets a shell metacharacter through, whether a sanitizer suits this output context: those are
+judgments about what the code does, and the model makes them from the evidence in front of it. The
+scanner keeps the model to that evidence, so a confident answer never fills a missing fact.
+
+When the scanner stops at code it cannot follow (a list comprehension, a helper just outside its
+reach, a stored value whose writers it cannot link), it asks the model a specific question about
+that point and offers chains of request evidence to cite. The answer counts only if the cited chain
+checks out against the request. A result reached this way keeps its ordinary status and carries a
+**Model-resolved** mark that names the model, the question version and the cited lines. It can move
+a record from Review to a finding; it moves a record to Protected only when the scanner itself
+holds the fact that makes protection complete. A record that no answer could change is not sent at
+all. See [decision models](docs/decision-models.md#model-resolved-facts).
 
 <a id="setup"></a>
 

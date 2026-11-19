@@ -420,5 +420,5 @@ past the 4-group cap. Node, Starlette and Symfony upload adapters did not fit th
 
 **Summary.** W4 packs whole structural groups into one request while it fits; D-14 now states this. W6 now also recognises `Environment.from_string` (follow-up). W5 ships PHP
 `move_uploaded_file` and Werkzeug `FileStorage.save`; the other D-19 operations have registered
-contracts only. 
+contracts only.
 **Verification Impact.** AC6 is met for PHP and Werkzeug only; AC11 is not run.

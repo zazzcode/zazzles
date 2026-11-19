@@ -131,6 +131,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		if strings.Contains(a.Reason, "analyzer not used for this run") {
 			f.Uncertainty += " " + a.Reason + "."
 		}
+		if strings.HasPrefix(a.Reason, "validation_evidence_missing:") {
+			f.Uncertainty += " No request was sent: the field-policy gate lacks required evidence, so no model answer could change this Review outcome (" + a.Reason + ")."
+		}
 		if strings.HasPrefix(a.Reason, "evidence_too_large:") {
 			f.Uncertainty += " The evidence this claim needs is larger than the request limit, so no request was sent (" + a.Reason + ")."
 		}
@@ -281,6 +284,7 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	return f
 }
+
 // externalOriginEstablished reports a dependency whose origin is outside the
 // program: a request, storage, file, fetched, browser or API-response value.
 // Constant and environment origins do not count.

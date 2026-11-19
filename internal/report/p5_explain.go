@@ -66,7 +66,7 @@ func blockingEvidence(u analysis.CandidateUse, f analysis.Finding) []analysis.Bl
 		s := u.Sink.Span
 		add(externalOriginNotEstablished, "No dependency of this query construction has a request, storage, file, fetched, browser or API-response origin, so external control is not established.", "scanner", &s)
 	}
-	if u.Assessment.Status == "completed" && len(u.Assessment.BlockingGaps) > 0 {
+	if (u.Assessment.Status == "completed" || u.Assessment.Status == "not_run") && len(u.Assessment.BlockingGaps) > 0 {
 		for _, g := range u.Assessment.BlockingGaps {
 			gap(g, "policy")
 		}

@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/judge"
 	"github.com/zazzcode/zazzles/internal/pipeline"
 )
 
@@ -155,6 +156,14 @@ def validation():
 						if v.ID == u.ID {
 							actual = v
 						}
+					}
+					// The fixture's validation field has no policy evidence, so the
+					// decidability gate settles it without a request.
+					if u.Kind == "input_validation_candidate" {
+						if actual.Assessment.Status != "not_run" || !strings.HasPrefix(actual.Assessment.Reason, judge.ValidationUndecidable+":") {
+							t.Fatalf("undecidable validation: %+v", actual.Assessment)
+						}
+						continue
 					}
 					if u.Kind != "outbound_http_candidate" && u.Kind != "xss_data_candidate" {
 						requestIndex++

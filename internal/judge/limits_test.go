@@ -109,7 +109,7 @@ func TestDisabledPacingDoesNotRetainRateWindow(t *testing.T) {
 }
 
 func TestDecisionFailureStopsFollowingRequests(t *testing.T) {
-	for _, code := range []int{http.StatusUnauthorized, http.StatusTooManyRequests, http.StatusInternalServerError} {
+	for _, code := range []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusInternalServerError} { // 429 and 502-504 are retried; see retry_test.go
 		t.Run(fmt.Sprint(code), func(t *testing.T) {
 			calls := 0
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; w.WriteHeader(code) }))

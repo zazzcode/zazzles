@@ -205,7 +205,7 @@ var serialScenarios = []scheduleScenario{
 	{name: "leader_failure_halts", groups: 3, members: 2, limit: 10, limits: &Limits{}, status: failOrdinal(1, http.StatusInternalServerError)},
 	{name: "malformed_response_halts", groups: 3, members: 1, limit: 10, limits: &Limits{}, malformed: func(n int) bool { return n == 2 }},
 	{name: "limit_exhaustion", groups: 5, members: 2, limit: 3, limits: &Limits{}},
-	{name: "halt_with_binding_limit", groups: 6, members: 1, limit: 3, limits: &Limits{}, status: failOrdinal(2, http.StatusTooManyRequests)},
+	{name: "halt_with_binding_limit", groups: 6, members: 1, limit: 3, limits: &Limits{}, status: failOrdinal(2, http.StatusInternalServerError)},
 	{name: "skipped_families", groups: 2, members: 2, claims: true, limit: 10, limits: &Limits{}, skip: []string{"sql"}},
 	{name: "only_families", groups: 2, members: 2, claims: true, limit: 10, limits: &Limits{}, only: []string{"logging"}},
 	{name: "priority_and_observations", groups: 2, members: 1, claims: true, limit: 2, limits: &Limits{}},

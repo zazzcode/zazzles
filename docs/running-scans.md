@@ -160,8 +160,8 @@ Use `--route /rest/user/login` to select an exact path pattern before model requ
 Offline assessment is `not_run`. For provider selection and key instructions, including personal-key
 ownership and Jev configuration, see [decision-model setup](decision-models.md).
 `--judge openai` uses the primary OpenAI Luna Decisions model and transmits bounded evidence;
-`--judge-limit` caps candidates sent for assessment (default 10; a 502/503/504 is retried once
-without using a slot), and `--judge-concurrency`
+`--judge-limit` caps candidates sent for assessment (default 10; a 429/502/503/504 is retried up
+to 3 times without using a slot), and `--judge-concurrency`
 caps how many run at once (default 4; `1` is serial). Manage spending in your API account. A requested judge failure, a record whose required evidence alone is over the request limit (`evidence_too_large`) or an exhausted request cap exits 1
 with its report retained. Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
@@ -372,10 +372,10 @@ For each target, the serial and concurrent scans sent identical requests and rec
 answers, finding statuses and input-token totals: 770,517 for Juice Shop and 483,076 for OopsSec
 Store. Concurrency changes only the wall clock.
 
-A request that gets a transient HTTP 502, 503 or 504 is sent once more after a short wait. Two
-concurrent Juice Shop scans measured before this retry existed each stopped on one 503, at 124 and
-148 of 157 requests. Any other provider failure, or a second consecutive failure, still stops new
-requests. In that case the report keeps every completed answer and marks the rest as stopped.
+A request that gets a transient HTTP 429, 502, 503 or 504 is retried up to 3 times with short
+waits, and a dropped connection is retried once. Two concurrent Juice Shop scans measured before
+retries existed each stopped on one 503, at 124 and 148 of 157 requests. A timeout, any other
+provider failure, or a fourth consecutive transient failure still stops new requests. In that case the report keeps every completed answer and marks the rest as stopped.
 Rerun the scan to finish it.
 
 Set `JUDGE_RPM` and `JUDGE_TPM` just under the account's request and token limits, and keep
@@ -389,8 +389,9 @@ bytes plus 512, about 6,200 for a typical Juice Shop request that the provider r
 `--judge-limit` / `JUDGE_LIMIT` (built-in default 10), `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional
 `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pacing settings apply to one scan.
 Discovery and assessment share the rate window, and flags override the process environment. A
-502, 503 or 504 is retried once, through the same pacing, without using a `--judge-limit` slot. The
-first other failed request, or a failed retry, stops new requests. With concurrency above 1, requests already in flight still
+429, 502, 503 or 504 is retried up to 3 times, through the same pacing, without using a
+`--judge-limit` slot. The first other failed request, or a request whose retries are exhausted,
+stops new requests. With concurrency above 1, requests already in flight still
 finish and are counted. See the [settings and their interaction](decision-models.md#rate-and-spending-configuration).
 Refusals leave incomplete records and a nonzero exit status. Spending is managed in the provider
 account; the scanner has no dollar budget.

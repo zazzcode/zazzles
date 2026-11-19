@@ -60,11 +60,13 @@ provider account.
 Equivalent entry contexts share one request. Zero-call observations do not consume the cap.
 Optional route discovery has its own request allowance.
 
-A request that gets HTTP 502, 503 or 504 is sent once more, after the provider's `Retry-After`
-(when it is at most 10 s) or 2 s. A retry does not use a `--judge-limit` slot, so HTTP requests are
-at most twice the cap. A second consecutive failure stops the scan as before. No other failure is
-retried: not a 429, a timeout, a transport error or an undecodable response. The `Decision-model
-limits` line reports `retries N` when any were sent.
+A request that gets HTTP 429, 502, 503 or 504 is sent again, up to 3 more times. Each retry waits
+for the provider's `Retry-After` when it is at most 60 s, and otherwise 2 s, 4 s, then 8 s. A
+connection dropped before any response is retried once within the same bound. Retries pass through
+RPM and TPM pacing and do not use a `--judge-limit` slot, so HTTP requests are at most four times
+the cap. The last allowed failure stops the scan as before. Timeouts, other 4xx and 5xx statuses,
+and undecodable responses are not retried. The `Decision-model limits` line reports `retries N`
+when any were sent.
 
 Optional `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pace requests against
 provider quotas. Both default to zero (disabled), and flags override environment settings.
@@ -106,8 +108,8 @@ Confirm the target root, entry file, selected route, and allowed source evidence
 For Gemini, set `JUDGE_DECISION_MODEL=gemini-decision-1` in your local environment and replace
 `--judge openai --judge-model gpt-6-luna` with `--judge gemini`.
 
-This sends bounded source evidence to the selected provider. The cap is per run; only a 502, 503 or
-504 is retried, once.
+This sends bounded source evidence to the selected provider. The cap is per run; a 429, 502, 503, 504
+or dropped connection is retried without using a slot.
 Additional uses beyond the cap remain unassessed and cause exit 1. A requested assessment failure,
 oversized payload, or exhausted cap is retained in the report; a setup failure before scanning can
 produce no report. Optional `--checks` files specify business and protection requirements; they are

@@ -60,13 +60,28 @@ provider account.
 Equivalent entry contexts share one request. Zero-call observations do not consume the cap.
 Optional route discovery has its own request allowance.
 
-A request that gets HTTP 429, 502, 503 or 504 is sent again, up to 3 more times. Each retry waits
-for the provider's `Retry-After` when it is at most 60 s, and otherwise 2 s, 4 s, then 8 s. A
-connection dropped before any response is retried once within the same bound. Retries pass through
-RPM and TPM pacing and do not use a `--judge-limit` slot, so HTTP requests are at most four times
-the cap. The last allowed failure stops the scan as before. Timeouts, other 4xx and 5xx statuses,
-and undecodable responses are not retried. The `Decision-model limits` line reports `retries N`
-when any were sent.
+### Judged-scan reliability
+
+A judged scan is meant to run to the end, including in CI. It stops early for only two reasons:
+the decision-model account fails, or the decision model stops responding.
+
+- **Transient failures are retried.** HTTP 408, 429, 500, 502, 503, 504 and 529, timeouts and
+  dropped connections are retried up to 3 times. Each retry waits for the provider's `Retry-After`
+  when it is at most 60 s, otherwise 2 s, 4 s, then 8 s. Retries pass through RPM and TPM pacing and
+  do not use a `--judge-limit` slot, so HTTP requests are at most four times the cap.
+- **Other failures affect one candidate.** A different status (such as 400 or 404), a request whose
+  retries are exhausted, or an undecodable answer marks only that candidate `failed`, with the
+  reason. The scan continues.
+- **Account failure stops the scan.** HTTP 401, 402 or 403, or a 429 that reports exhausted quota or
+  billing, stops new requests at once.
+- **An outage stops the scan.** Five requests in a row that fail after their retries, with no
+  success between them, stop new requests as "decision model not responding".
+
+A stopped scan keeps every completed answer, marks the rest `not_run` with the stop reason, prints
+`scan: judge stopped: <reason>` to stderr and exits 1. A scan that ran to the end exits 0, even when
+some assessments are incomplete; it then prints `scan: warning: some assessments are incomplete`
+and each record gives its reason. The `Decision-model limits` line reports `retries N` when any were
+sent.
 
 Optional `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pace requests against
 provider quotas. Both default to zero (disabled), and flags override environment settings.
@@ -85,9 +100,8 @@ request starts, the scanner assigns the `--judge-limit` slots in priority order,
 candidates are judged whatever the response timing. RPM and TPM pacing still apply to every
 request, so a low RPM limits throughput more than concurrency does.
 
-The first failed request stops new requests, as it does serially. With `N` above 1, up to `N − 1`
-other requests may already be in flight when that failure happens. Those requests still complete,
-and their answers and usage are recorded. A serial run would not have sent them. The
+When the scan stops for an account failure or an outage, up to `N − 1` other requests may already
+be in flight. Those requests still complete, and their answers and usage are recorded. The
 `Decision-model limits` line in the report counts every attempt, including these.
 
 ## Scope a live run
@@ -108,11 +122,11 @@ Confirm the target root, entry file, selected route, and allowed source evidence
 For Gemini, set `JUDGE_DECISION_MODEL=gemini-decision-1` in your local environment and replace
 `--judge openai --judge-model gpt-6-luna` with `--judge gemini`.
 
-This sends bounded source evidence to the selected provider. The cap is per run; a 429, 502, 503, 504
-or dropped connection is retried without using a slot.
-Additional uses beyond the cap remain unassessed and cause exit 1. A requested assessment failure,
-oversized payload, or exhausted cap is retained in the report; a setup failure before scanning can
-produce no report. Optional `--checks` files specify business and protection requirements; they are
+This sends bounded source evidence to the selected provider. The cap is per run; transient failures
+are retried without using a slot. Uses beyond the cap remain unassessed with a reason and a stderr
+warning, and the scan exits 0. A failed assessment, oversized payload or exhausted cap is retained in
+the report; a setup failure before scanning can produce no report. See
+[judged-scan reliability](#judged-scan-reliability) for the exit status. Optional `--checks` files specify business and protection requirements; they are
 not expected model answers.
 
 ## Read outcomes separately
@@ -166,8 +180,8 @@ an explicit reason, no question version or request digest and zero model HTTP ca
 a non-assessable error without a request body. SQL validation/construction questions cannot establish
 destination security. Static `analysis_components` metadata describes observation scope only.
 
-A requested scan with an unassessed outbound observation remains incomplete and exits 1 while saving
-its Review record. Zero-call observations consume no request slots. Use `--skip-family outbound` to exclude
+A requested scan with an unassessed outbound observation remains incomplete, warns on stderr and
+saves its Review record. Zero-call observations consume no request slots. Use `--skip-family outbound` to exclude
 that unimplemented assessment explicitly; excluded records remain Review without making the scan incomplete. Structural-only scans do not request model completion. Saved historical
 generic answers, versions and statuses remain intact on export; they are not rewritten or replayed
 onto new evidence. Full SSRF, exfiltration and browser-security assessment require separate contracts.

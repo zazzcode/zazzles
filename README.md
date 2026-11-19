@@ -291,9 +291,10 @@ The command prints a fresh results folder containing:
 Open the printed `findings.html` path. On macOS, use `open /path/to/run/findings.html`; on other
 systems, open the file through your browser or file manager. Each run gets a new folder.
 
-Reports are retained when an assessment is incomplete. **Exit 0** means the requested operation
-completed, **exit 1** indicates an execution or assessment failure/incompleteness, and **exit 2**
-indicates invalid arguments. Finding counts do not determine the exit code. Read the report's
+Reports are retained when an assessment is incomplete. **Exit 0** means the scan ran to the end,
+even if some assessments are incomplete (stderr then warns). **Exit 1** means a setup or execution
+failure, or the judge stopped because the decision-model account failed or the model stopped
+responding. **Exit 2** indicates invalid arguments. Finding counts do not determine the exit code. Read the report's
 assessment reasons when a request cap, unsupported outbound assessment, or provider error leaves
 work incomplete.
 

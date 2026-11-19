@@ -1,5 +1,9 @@
 # Judge scan resume from saved decisions
 
+**Status:** deferred (2026-11-18). After judged scans stopped halting on per-candidate failures,
+a scan stops early only for an account failure or an unresponsive model, so resume is not needed
+for CI reliability. A scheduler slice was built and reverted; restore it from commit `5c6cc35` if
+stops remain common.
 **Worktree / branch:** `parallel-judge` (owner choice, §11 OQ-1)
 **Depends on:** architecture phase 4, parallel judge requests
 ([spec](architecture-phase-4-parallel-judge.md)), and the transient retry deliverable

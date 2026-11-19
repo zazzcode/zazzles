@@ -157,8 +157,9 @@ Every phase spec's §6 points here and adds only its own halt conditions.
 - **Samples.** Samples are read-only. Verify the pinned HEAD and clean `git status --porcelain --ignored`
   before and after. Write output to the container's `_test-findings/<app>/run-<id>/`.
 - **Paid calls.** None unless the owner states provider, model, and a numeric cap in the session.
-  No fallback. The judge retries only HTTP 429, 502, 503 and 504 (up to 3 times) and a dropped
-  connection (once); no other status, timeout or error is retried.
+  No fallback. The judge retries only transient failures (HTTP 408/429/500/502/503/504/529,
+  timeouts, dropped connections; up to 3 times) and stops a scan only for an account failure or an
+  unresponsive decision model.
 - **Subagents.** Allowed for disjoint files in the same checkout, never with worktree isolation.
   The lead reviews their diffs and runs the gates.
 - **Common halts.** An unresolved OQ; the same test failing 3 iterations in a row; a file outside

@@ -8,6 +8,22 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
+// templateUse records a template_injection_candidate: v is compiled as Twig
+// template source.
+func (f *phpFlow) templateUse(n *sitter.Node, op string, v phpValue, node *sitter.Node) {
+	before := len(f.report.Uses)
+	f.codeUse(n, op, v, node)
+	if len(f.report.Uses) == before {
+		return
+	}
+	u := &f.report.Uses[len(f.report.Uses)-1]
+	u.Kind = analysispacks.TemplateKind
+	u.ID = strings.TrimSuffix(u.ID, ":code_execution_candidate") + ":" + analysispacks.TemplateKind
+	u.Sink.Kind = analysispacks.TemplateKind
+	u.Code.ContractID, u.Code.ExecutionContext = "php-template-source-v1", "template_engine"
+	u.APIModel = analysispacks.CodeContract("php-template-source-v1")
+}
+
 // codeUse records a code_execution_candidate for an interpreter-string operand
 // (eval, string assert, create_function) under php-eval-v1 (D-10).
 func (f *phpFlow) codeUse(n *sitter.Node, op string, v phpValue, node *sitter.Node) {

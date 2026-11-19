@@ -65,6 +65,13 @@ func (f *flow) interpreterCall(call, fn, args *sitter.Node) {
 			binding = append(binding, m.evidence("sink_binding", imp.declaration))
 		}
 	}
+	if contract == "" && f.client == nil {
+		if op, ok := templateEngineCall(m, call, name, root); ok {
+			binding = append(binding, m.evidence("sink_binding", m.imports[root].declaration))
+			f.recordInterpreter(call, args.NamedChild(0), f.eval(args.NamedChild(0)), "template", op, "js-template-source-v1", binding, 0)
+			return
+		}
+	}
 	if contract == "" {
 		if bindings := sandboxInstanceBinding(m, call, fn); len(bindings) > 0 {
 			contract = "js-safe-eval-libs-v1"
@@ -209,6 +216,9 @@ func (f *flow) recordInterpreter(call, arg *sitter.Node, v value, family, op, co
 	if family == "redirect" {
 		kind, slot = "open_redirect_candidate", "destination"
 	}
+	if family == "template" {
+		kind, family = analysispacks.TemplateKind, "code"
+	}
 	deps := append([]analysis.Dependency{}, v.deps...)
 	paths := make([]analysis.CommandPath, 0, len(deps))
 	for i := range deps {
@@ -232,6 +242,9 @@ func (f *flow) recordInterpreter(call, arg *sitter.Node, v value, family, op, co
 		execution := "server"
 		if f.client != nil {
 			execution = "browser"
+		}
+		if kind == analysispacks.TemplateKind {
+			execution = "template_engine"
 		}
 		u.Code = &analysis.CodeFacts{Operation: op, ContractID: contract, ExecutionContext: execution, Shape: codeOperandShape(f.module, arg), Constraint: codeOperandConstraint(f.module, arg, 0), Paths: paths}
 	} else {
@@ -276,10 +289,10 @@ func (f *flow) fixedLiteralPrefixRedirect(n *sitter.Node) bool {
 }
 
 func (s *moduleSet) assembleInterpreterClaims(report *analysis.AnalysisReport) {
-	for _, family := range []string{"code", "redirect"} {
-		kind := "code_execution_candidate"
-		if family == "redirect" {
-			kind = "open_redirect_candidate"
+	for _, kind := range []string{"code_execution_candidate", "open_redirect_candidate", analysispacks.TemplateKind} {
+		family := "code"
+		if kind == "open_redirect_candidate" {
+			family = "redirect"
 		}
 		s.assembleClaims(report, claimHooks{
 			chainGapCovered: func(u *analysis.CandidateUse, g analysis.Gap) bool {
@@ -447,4 +460,31 @@ func mergeInterpreterUse(a, b analysis.CandidateUse) analysis.CandidateUse {
 		a.Redirect = &facts
 	}
 	return a
+}
+
+// jsTemplateEngines maps an engine module to the calls that compile their
+// first argument as template source (close-findings-gaps D-24).
+var jsTemplateEngines = map[string][]string{
+	"ejs": {"render", "compile"}, "handlebars": {"compile"}, "pug": {"render", "compile"},
+	"nunjucks": {"renderString"}, "lodash": {"template"}, "underscore": {"template"}, "lodash.template": {"default"},
+}
+
+// templateEngineCall recognises a verified engine call on an unshadowed
+// import binding: engine.method(source, ...).
+func templateEngineCall(m *sourceModule, call *sitter.Node, name, root string) (string, bool) {
+	imp, ok := m.imports[root]
+	if !ok || shadowed(call, root, m.src) || bindingReassigned(m, root) {
+		return "", false
+	}
+	methods := jsTemplateEngines[imp.module]
+	parts := strings.Split(name, ".")
+	switch {
+	case len(parts) == 2 && (imp.name == "default" || imp.name == "*") && containsString(methods, parts[1]):
+		return imp.module + "." + parts[1], true
+	case len(parts) == 1 && containsString(methods, imp.name):
+		return imp.module + "." + imp.name, true
+	case len(parts) == 1 && imp.module == "lodash.template" && (imp.name == "default" || imp.name == "*"):
+		return "lodash.template", true
+	}
+	return "", false
 }

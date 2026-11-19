@@ -243,6 +243,11 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 	case "is_uploaded_file", "is_file", "file_exists", "is_dir":
 		return phpTransfer(phpProtect(all, "non_content"), f.module.evidence("non_content", n))
+	case "template_from_string", "twig_template_from_string":
+		if f.builtin(qname) && len(values) >= 2 {
+			f.templateUse(n, qname, values[1], nodes[1])
+			return phpValue{unknown: true}
+		}
 	case "eval":
 		// eval parses as a function_call_expression in this grammar.
 		if f.builtin("eval") && len(values) >= 1 {
@@ -465,6 +470,22 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 	}
 
+	// Twig Environment::createTemplate(source) compiles template source
+	// (close-findings-gaps D-24); the class is matched by its qualified name.
+	if method == "createTemplate" && len(values) >= 1 && receiver.class == "Twig\\Environment" {
+		f.templateUse(n, "Twig\\Environment::createTemplate", values[0], nodes[0])
+		// The compiled template renders its own source text.
+		t := phpTransfer(values[0], m.evidence("template_source_construction", n))
+		t.binding, t.literals, t.constant = "twig_template", nil, false
+		return t
+	}
+	if method == "render" && receiver.binding == "twig_template" {
+		// Render variables are data under the environment's autoescape
+		// setting, which is not established here.
+		out := phpCombine(phpTransfer(receiver, m.evidence("template_render", n)), phpProtect(sliceFrom(values, 0), "unknown"))
+		out.binding = ""
+		return out
+	}
 	// Method of a tracked object: its class, used traits and in-repository
 	// parents (D-9).
 	if receiver.classDecl != nil {
@@ -587,7 +608,13 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("object_creation", n)}, gaps: []analysis.Gap{f.classGap("class "+cls+" is not resolved: "+reason, n)}}
 	}
 	f.evalChildren(n)
-	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
+	// An out-of-repository class keeps its qualified name so verified
+	// library contracts can match it.
+	external := ""
+	if clsNode != nil {
+		external = f.set.classIndex().qualify(m, cls, clsNode.StartByte())
+	}
+	return phpValue{unknown: true, class: external, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
 }
 
 // Helper expansion bounds: one level deeper than Python's depth 3 and a

@@ -132,6 +132,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			if family.Name == "upload" {
 				input = "source.php-input-upload-v1"
 			}
+			if use.Kind == TemplateKind {
+				input = "source.php-input-template-v1"
+			}
 		}
 		roots = append(roots, input)
 	}

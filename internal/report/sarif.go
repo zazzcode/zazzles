@@ -226,6 +226,8 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/nosql-input-protection", "CWE-943"
 	case "code", "code_execution_candidate":
 		return "scan/code-injection", "CWE-95"
+	case "template_injection_candidate":
+		return "scan/template-injection", "CWE-1336"
 	case "redirect", "open_redirect_candidate":
 		return "scan/open-redirect", "CWE-601"
 	case "upload", "file_upload_candidate":

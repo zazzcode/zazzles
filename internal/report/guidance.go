@@ -40,6 +40,8 @@ func guidance(use analysis.CandidateUse) Guidance {
 		g = commandGuidance()
 	case "path_traversal_candidate":
 		g = pathGuidance()
+	case "template_injection_candidate":
+		g = Guidance{Title: "Keep request text out of template source", Actions: []string{"Compile a constant template and pass request values as render variables.", "Do not rely on a sandboxed environment alone; keep the template source constant."}}
 	case "code", "code_execution_candidate":
 		g = Guidance{Title: "Keep request text out of code", Actions: []string{"Replace eval/exec with data parsing or a restricted expression grammar.", "Do not rely on vm or a sandbox library as a security boundary; constrain every code operand."}}
 	case "upload", "file_upload_candidate":

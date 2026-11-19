@@ -24,6 +24,12 @@ func (f *pythonFlow) interpreterOperation(n, fn *sitter.Node, nodes []*sitter.No
 		q = name
 	}
 	switch q {
+	case "jinja2.Template", "jinja2.environment.Template", "flask.render_template_string", "mako.template.Template":
+		// Template source compiled by a verified engine (close-findings-gaps D-24).
+		family, contract, keyword = "code", "python-template-source-v1", "source"
+		if q == "mako.template.Template" {
+			keyword = "text"
+		}
 	case "flask.redirect", "django.shortcuts.redirect", "django.http.HttpResponseRedirect", "django.http.HttpResponsePermanentRedirect", "starlette.responses.RedirectResponse", "fastapi.responses.RedirectResponse", "aiohttp.web.HTTPFound", "aiohttp.web.HTTPMovedPermanently", "aiohttp.web.HTTPSeeOther":
 		family, contract, keyword = "redirect", "python-redirect-v1", "url"
 	}
@@ -66,6 +72,10 @@ func (f *pythonFlow) pythonInterpreter(n *sitter.Node, q string, fn *sitter.Node
 	if family == "redirect" {
 		kind, slot = "open_redirect_candidate", "destination"
 	}
+	execution := "server"
+	if contract == "python-template-source-v1" {
+		kind, execution = analysispacks.TemplateKind, "template_engine"
+	}
 	u := f.addUse(kind, n, destination)
 	paths := []analysis.CommandPath{}
 	for i := range u.Dependencies {
@@ -73,7 +83,7 @@ func (f *pythonFlow) pythonInterpreter(n *sitter.Node, q string, fn *sitter.Node
 		paths = append(paths, analysis.CommandPath{Dependency: i, Operand: slot})
 	}
 	if family == "code" {
-		u.Code = &analysis.CodeFacts{Operation: q, ContractID: contract, ExecutionContext: "server", Shape: "whole_program", Paths: paths}
+		u.Code = &analysis.CodeFacts{Operation: q, ContractID: contract, ExecutionContext: execution, Shape: "whole_program", Paths: paths}
 		u.APIModel = analysispacks.CodeContract(contract)
 	} else {
 		u.Redirect = &analysis.RedirectFacts{Operation: q, ContractID: contract, DestinationOrigin: analysis.DestinationRequest, Paths: paths}

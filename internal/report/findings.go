@@ -15,7 +15,7 @@ func Enrich(r *analysis.AnalysisReport) {
 	r.FindingTypes = append([]analysis.FindingType(nil), findingTypes...)
 	for _, t := range interpreterFindingTypes {
 		for _, u := range r.Uses {
-			if u.Code != nil && t.ID == "code-injection" || u.Redirect != nil && t.ID == "open-redirect" || u.Upload != nil && t.ID == "unrestricted-upload" {
+			if u.Code != nil && u.Kind != "template_injection_candidate" && t.ID == "code-injection" || u.Kind == "template_injection_candidate" && t.ID == "template-injection" || u.Redirect != nil && t.ID == "open-redirect" || u.Upload != nil && t.ID == "unrestricted-upload" {
 				r.FindingTypes = append(r.FindingTypes, t)
 				break
 			}

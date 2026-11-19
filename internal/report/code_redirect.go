@@ -10,6 +10,9 @@ func describeInterpreter(u analysis.CandidateUse, f *analysis.Finding) {
 	if u.Redirect != nil {
 		family, protocol, label = "redirect", analysispacks.RedirectProtocol, "Open redirect"
 	}
+	if u.Kind == analysispacks.TemplateKind {
+		family, label = "template source", "Template injection"
+	}
 	f.Title = label + " needs operand review"
 	f.Summary = "Request-derived data reaches a verified " + family + " operand. Review the independent paths and enforcing restrictions."
 	if u.Code != nil {

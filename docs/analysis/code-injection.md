@@ -3,7 +3,8 @@
 [Analysis rules](README.md) · [Open redirect](open-redirect.md) · [Next.js](nextjs.md)
 
 The `code` family asks whether request-derived text reaches the code operand of a verified
-interpreter API. It uses `code_execution_candidate`, protocol `code-components-v1`, and CWE-94/95.
+interpreter API. It uses `code_execution_candidate`, protocol `code-components-v2`, and CWE-94/95.
+Server-side template injection (CWE-1336) is a second kind in the same family, described below.
 Browser eval is a code-injection claim with browser execution context; it does not produce a duplicate
 XSS claim.
 
@@ -42,6 +43,22 @@ Questions separate code position (`whole_program`, `inside_string_literal`, `dat
 Confirmed. Complete enforcing grammar/conversion coverage supports Protected. Blacklists, type
 annotations, exception handlers and sandbox branding do not establish protection. Inconsistent
 answers, unresolved relevant transfers and missing bindings remain Review.
+
+## Server-side template injection
+
+`template_injection_candidate` is request text compiled as template source by a verified engine,
+in a `template_engine` execution context. Verified operations: Python `jinja2.Template(source)`,
+Flask `render_template_string(source)` and Mako `Template(text)` (`python-template-source-v1`);
+PHP Twig `Environment::createTemplate(source)` and `template_from_string(env, source)`
+(`php-template-source-v1`, the environment matched by its qualified class name); Node `ejs.render`/
+`compile`, `Handlebars.compile`, `pug.render`/`compile`, `nunjucks.renderString` and lodash
+`template` on an unshadowed import (`js-template-source-v1`). Request data passed only as render
+variables creates no template claim; a constant template source is the protected sibling. A
+sandboxed environment is a recorded control and never protection by itself. What happens inside an
+engine (options reaching generated JavaScript) is not modelled here. The template claim and the XSS
+claim of the same construction stay separate findings and are linked (`linked_use_ids`) when one
+sink span contains the other in the same invocation. `Environment.from_string` on a Jinja
+environment object is not yet recognised.
 
 ## Bounds
 

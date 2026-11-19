@@ -20,7 +20,7 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return componentQuestions(analysispacks.CommandQuestions())
 		case "path_traversal_candidate":
 			return componentQuestions(analysispacks.PathQuestions())
-		case "code_execution_candidate":
+		case "code_execution_candidate", "template_injection_candidate":
 			return interpreterComponentQuestions("code")
 		case "open_redirect_candidate":
 			return interpreterComponentQuestions("redirect")

@@ -106,7 +106,33 @@ statement was Confirmed, and citation choices showed empty text. [Contract](../s
 
 <a id="next-up"></a>
 
-### Next up (owner order, 2026-11-16)
+### Next up (owner order, 2026-11-19)
+
+Three proposal contracts come first, then npm library scanning. Each starts on owner assignment.
+
+| Order | Planned functionality | Notes |
+|---|---|---|
+| 1 | **Close findings gaps** (Node.js Goof, DVWA, Python insecure app) | [Contract](../specifications/close-findings-gaps.md), worktree `close-findings-gaps-dvwa`. Closes the three Review rows in the README accuracy table and the misses found by source review: single-path bypass citation, regex capture facts, PHP class and method binding, over-limit path-group requests, unrestricted upload (CWE-434) and template injection (CWE-1336) claims, key corrections. Its PHP class binding is the prerequisite for order 2 |
+| 2 | **PHP Symfony support** | [Contract](../specifications/php-symfony-support.md), supersedes architecture phase 6. Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF, with the `vuln-symfony` answer key at `086f81f`. Its key and routing slices need nothing from order 1 and may start beside it. `gopkg.in/yaml.v3` is approved |
+| 3 | **Unsafe deserialization analyzer (CWE-502)** | [Contract](../specifications/unsafe-deserialization.md), own worktree `unsafe-deserialization`. New `deserialization` family for Python `pickle` and PyYAML, PHP `unserialize`, Node `node-serialize` and js-yaml. Python and JS/TS are independent of orders 1 and 2 and may run beside them; the `vuln-symfony` row needs order 2 |
+| 4 | **npm library RCE scanning** | Container-root npm library RCE proposal, as architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline, no engine change) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on the existing command and code analyzers), then the proposal's compile-to-JS sinks and prototype pollution pack under new contracts. See the analyzer notes below |
+
+Analyzers the npm work needs, checked against the proposal on 2026-11-19:
+
+- **Prototype pollution is the one missing analyzer.** Six of the eleven corpus rows depend on it
+  (`superjson`, `express-fileupload`, `ajv`, `parse-server`, `handlebars`, React2Shell). It is the
+  row at order 2 of the earlier table below and the proposal's phase 3. Build it once for both
+  modes: the application write claim first, verified on Node.js Goof (`routes/index.js:360`, which
+  order 1 makes reachable), then the library access and gadget claims.
+- **No other analyzer is needed.** Command, argument and code injection exist. Compile-to-JS,
+  deserialization-to-code and dynamic `require` are sinks on the code family in library mode. The
+  order 3 family and order 1's template-injection claim cover an application calling a library;
+  they do not replace those library-side sinks and are not prerequisites for them.
+- **A flow limit to measure before phase 8.** Library code is class- and prototype-heavy. The
+  JS/TS adapter's handling of methods reached through `new C()`, `this` and `C.prototype` has not
+  been measured on the corpus. Phase 7's baseline should record it, as order 1 does for PHP.
+
+### Earlier order (2026-11-16), queued after the rows above
 
 | Order | Planned functionality | Notes |
 |---|---|---|
@@ -147,8 +173,11 @@ approved implementation assignments.
 | **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases; no implied DynamoDB or universal NoSQL support |
 | **Code injection and open redirect** | Implemented in the assigned phase-2 worktree; [contract](../specifications/nextjs-phase-2-and-code-redirect.md) and [evaluation](../evaluation/nextjs-phase-2-results.md); review pending |
 | **XXE** | Request-to-XML parser paths with verified parser configuration contracts (deferred by the owner) |
+| **Unsafe deserialization** | Next up, order 3; [contract](../specifications/unsafe-deserialization.md) |
+| **Unrestricted upload and template injection** | Next up, order 1, workstreams W5 and W6 of the [gaps contract](../specifications/close-findings-gaps.md) |
+| **PHP Symfony** | Next up, order 2; [contract](../specifications/php-symfony-support.md). Drupal follows it |
 | **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with appropriate negative controls |
-| **Prototype pollution** | Next up, order 2. JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
+| **Prototype pollution** | The one analyzer npm library scanning still needs; see [next up](#next-up). JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |

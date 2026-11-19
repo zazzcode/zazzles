@@ -73,3 +73,44 @@ func TestOutboundObservationGrouping(t *testing.T) {
 		t.Fatal("SARIF shows folded records")
 	}
 }
+
+func TestConstructionFindingNeedsOrigin(t *testing.T) {
+	dep := func(kind string) analysis.Dependency {
+		return analysis.Dependency{Source: analysis.Evidence{Kind: kind, Text: "v", Span: analysis.Span{File: "db.php", StartLine: 1}}}
+	}
+	built := func(kind string, deps ...analysis.Dependency) analysis.CandidateUse {
+		return analysis.CandidateUse{ID: "u", Kind: kind, Sink: analysis.Evidence{Span: analysis.Span{File: "db.php", StartLine: 9}},
+			Dependencies: deps, Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}}
+	}
+	for _, tc := range []struct {
+		name    string
+		use     analysis.CandidateUse
+		finding bool
+	}{
+		{"sql no dependency", built("sql_query_candidate"), false},
+		{"sql constant only", built("sql_query_candidate", dep("constant")), false},
+		{"nosql no dependency", built("nosql_query_candidate"), false},
+		{"sql request dependency", built("sql_query_candidate", dep("input_source")), true},
+		{"sql storage dependency", built("sql_query_candidate", dep("storage_source")), true},
+	} {
+		r := &analysis.AnalysisReport{Uses: []analysis.CandidateUse{tc.use}}
+		Enrich(r)
+		f := r.Findings[0]
+		if got := f.RecordType == "finding" && f.Status == "poor_practice"; got != tc.finding {
+			t.Fatalf("%s: finding=%v status=%s", tc.name, got, f.Status)
+		}
+		hasReason := false
+		for _, b := range f.BlockingEvidence {
+			hasReason = hasReason || b.Kind == "external_origin_not_established"
+		}
+		if hasReason == tc.finding || (!tc.finding && f.Status != "needs_review") {
+			t.Fatalf("%s: status=%s reasons=%+v", tc.name, f.Status, f.BlockingEvidence)
+		}
+	}
+}
+
+// requestDependency is one request-origin dependency, the external origin a
+// construction finding needs.
+func requestDependency() []analysis.Dependency {
+	return []analysis.Dependency{{Source: analysis.Evidence{Kind: "input_source", Text: "req.query.q", Span: analysis.Span{File: "handler.ts", StartLine: 1}}}}
+}

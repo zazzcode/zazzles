@@ -77,7 +77,7 @@ func TestRowPillsAggregateTypesWithoutUpgradingStatus(t *testing.T) {
 }
 
 func TestHTMLTypePanelsAndDistinctLocations(t *testing.T) {
-	r := &analysis.AnalysisReport{SchemaVersion: 1, Entries: []analysis.EntryPoint{testHTTPEntry(analysis.Route{ID: "r", Method: "POST", PathPattern: "/search", Registration: analysis.Span{File: "server.ts", StartLine: 3}})}, Uses: []analysis.CandidateUse{{ID: "u", EntryID: "r", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "db.query(sql)", Span: analysis.Span{File: "handler.ts", StartLine: 11}}, Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}, {Kind: "input_validation_absent"}}, Assessment: analysis.Assessment{Status: "not_run"}}}}
+	r := &analysis.AnalysisReport{SchemaVersion: 1, Entries: []analysis.EntryPoint{testHTTPEntry(analysis.Route{ID: "r", Method: "POST", PathPattern: "/search", Registration: analysis.Span{File: "server.ts", StartLine: 3}})}, Uses: []analysis.CandidateUse{{ID: "u", EntryID: "r", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "db.query(sql)", Span: analysis.Span{File: "handler.ts", StartLine: 11}}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}, {Kind: "input_validation_absent"}}, Assessment: analysis.Assessment{Status: "not_run"}}}}
 	var b bytes.Buffer
 	if err := HTML(&b, r); err != nil {
 		t.Fatal(err)

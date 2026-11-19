@@ -95,6 +95,7 @@ func TestEntryReportStatusParity(t *testing.T) {
 				u := analysis.CandidateUse{ID: fmt.Sprint(i), EntryID: id, Kind: "sql_query_candidate", Assessment: analysis.Assessment{Status: "completed", FindingStatus: status}}
 				if i == 0 {
 					u.Gaps = []analysis.Gap{{Kind: "query_text_interpolated"}}
+					u.Dependencies = requestDependency()
 				}
 				r.Uses = append(r.Uses, u)
 			}

@@ -20,7 +20,7 @@ func p5Report() *analysis.AnalysisReport {
 			Assessment: analysis.Assessment{Status: "not_run"}},
 		{ID: "xss", EntryID: "e", InvocationContextID: "c", Kind: "xss_candidate", Sink: sink,
 			Assessment: analysis.Assessment{Status: "completed", FindingStatus: "needs_evidence", BlockingGaps: []analysis.Gap{{Kind: "z_policy", Detail: "policy gap", At: p5Span("app/Login.tsx", 100)}, {Kind: "z_policy", Detail: "policy gap", At: p5Span("app/Login.tsx", 100)}}}},
-		{ID: "poor-unjudged", EntryID: "e2", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "q", Span: p5Span("a.js", 1)}, Gaps: []analysis.Gap{{Kind: "query_text_interpolated", Detail: "built"}},
+		{ID: "poor-unjudged", EntryID: "e2", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "q", Span: p5Span("a.js", 1)}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated", Detail: "built"}},
 			Assessment: analysis.Assessment{Status: "not_run"}},
 		{ID: "scanner", EntryID: "e3", Kind: "xss_candidate", Sink: analysis.Evidence{Text: "x", Span: p5Span("b.js", 1)},
 			Completeness: &analysis.Completeness{Required: []string{"render_source", "render_binding"}, Evidence: map[string][]analysis.Evidence{"render_binding": {{Kind: "render_binding"}}},

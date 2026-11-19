@@ -12,7 +12,7 @@ func TestSourceSpecificSQLiteRemediation(t *testing.T) {
 		{"percent value", `cur.execute("select * from accounts where name = '%s'" % name)`, "name = ?", "name,"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			u := analysis.CandidateUse{Kind: "sql_query_candidate", APIModel: &analysis.APIModel{Library: "sqlite3"}, Sink: analysis.Evidence{Text: tt.source, Span: analysis.Span{File: "app.py", StartLine: 18}}, Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}}
+			u := analysis.CandidateUse{Kind: "sql_query_candidate", APIModel: &analysis.APIModel{Library: "sqlite3"}, Sink: analysis.Evidence{Text: tt.source, Span: analysis.Span{File: "app.py", StartLine: 18}}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}}
 			f := describe(u)
 			g := f.Recommendations
 			if !strings.Contains(g.Example, tt.wantSQL) || !strings.Contains(g.Example, tt.wantParams) || strings.Contains(g.Example, "sequelize") {

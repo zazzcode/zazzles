@@ -79,7 +79,7 @@ func TestHumanFindingsPreserveEvidenceAndSeparateUncertainty(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			u := analysis.CandidateUse{ID: "u", EntryID: "r", Kind: tt.kind, Sink: analysis.Evidence{Text: tt.text}, Gaps: []analysis.Gap{{Kind: tt.gap}}, Assessment: analysis.Assessment{Status: "not_run"}}
+			u := analysis.CandidateUse{ID: "u", EntryID: "r", Kind: tt.kind, Sink: analysis.Evidence{Text: tt.text}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: tt.gap}}, Assessment: analysis.Assessment{Status: "not_run"}}
 			before, _ := json.Marshal(u)
 			r := &analysis.AnalysisReport{Uses: []analysis.CandidateUse{u}}
 			Enrich(r)
@@ -115,7 +115,7 @@ func TestStandaloneHTMLGroupsAndEscapesSavedEvidence(t *testing.T) {
 		testHTTPEntry(analysis.Route{ID: "two", Method: "POST", PathPattern: "/same"}),
 		testHTTPEntry(analysis.Route{ID: "empty", Method: "GET", PathPattern: "/empty"}),
 	}, Uses: []analysis.CandidateUse{
-		{ID: "u1", EntryID: "one", Kind: "nosql_query_candidate", Sink: analysis.Evidence{Text: hostile}, Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}},
+		{ID: "u1", EntryID: "one", Kind: "nosql_query_candidate", Sink: analysis.Evidence{Text: hostile}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}},
 		{ID: "u2", EntryID: "two", Kind: "input_validation_candidate"},
 		{ID: "u3", EntryID: "missing", Kind: "outbound_http_candidate"},
 	}}
@@ -156,7 +156,7 @@ func TestPoorPracticeRemainsActionableAcrossModelOutcomes(t *testing.T) {
 	for _, tt := range []struct{ status, finding, protection string }{
 		{"not_run", "", ""}, {"failed", "", ""}, {"completed", "needs_evidence", "uncertain"}, {"completed", "supported_potential", "insufficient"}, {"completed", "protected_for_claim", "sufficient"},
 	} {
-		u := analysis.CandidateUse{ID: "u", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "db.query(`SELECT ${value}`)"}, Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}, Assessment: analysis.Assessment{Status: tt.status, FindingStatus: tt.finding, Protection: tt.protection}}
+		u := analysis.CandidateUse{ID: "u", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "db.query(`SELECT ${value}`)"}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}, Assessment: analysis.Assessment{Status: tt.status, FindingStatus: tt.finding, Protection: tt.protection}}
 		original, _ := json.Marshal(u.Assessment)
 		r := &analysis.AnalysisReport{Uses: []analysis.CandidateUse{u}}
 		Enrich(r)
@@ -182,7 +182,7 @@ func TestHTMLDefaultsToGroupedCountsThenRoutePath(t *testing.T) {
 		testHTTPEntry(analysis.Route{ID: "a-post", Method: "POST", PathPattern: "/a"}),
 		testHTTPEntry(analysis.Route{ID: "a-get", Method: "GET", PathPattern: "/a"}),
 	}, Uses: []analysis.CandidateUse{
-		{ID: "finding", EntryID: "z", Kind: "sql_query_candidate", Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}},
+		{ID: "finding", EntryID: "z", Kind: "sql_query_candidate", Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}}},
 		{ID: "orphan", EntryID: "unresolved", Kind: "outbound_http_candidate"},
 		{ID: "review", EntryID: "a-post", Kind: "outbound_http_candidate"},
 		{ID: "protected", EntryID: "b", Kind: "outbound_http_candidate", Assessment: analysis.Assessment{Status: "completed", FindingStatus: "protected_for_claim"}},
@@ -202,7 +202,7 @@ func TestHTMLDefaultsToGroupedCountsThenRoutePath(t *testing.T) {
 }
 
 func TestConfirmedInjectionKeepsValidationAsReviewCategory(t *testing.T) {
-	u := analysis.CandidateUse{ID: "u", EntryID: "r", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "query text"}, Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}, {Kind: "input_validation_absent"}}, APIModel: &analysis.APIModel{ID: "sequelize-raw-query-v1"}, Completeness: &analysis.Completeness{ClaimKind: "injection"}, Assessment: analysis.Assessment{Status: "completed", FindingStatus: "confirmed_vulnerability", Answers: map[string]string{"injection_protection": "vulnerable"}}}
+	u := analysis.CandidateUse{ID: "u", EntryID: "r", Kind: "sql_query_candidate", Sink: analysis.Evidence{Text: "query text"}, Dependencies: requestDependency(), Gaps: []analysis.Gap{{Kind: "query_text_interpolated"}, {Kind: "input_validation_absent"}}, APIModel: &analysis.APIModel{ID: "sequelize-raw-query-v1"}, Completeness: &analysis.Completeness{ClaimKind: "injection"}, Assessment: analysis.Assessment{Status: "completed", FindingStatus: "confirmed_vulnerability", Answers: map[string]string{"injection_protection": "vulnerable"}}}
 	f := describe(u)
 	if f.Status != "confirmed_vulnerability" || f.RecordType != "finding" {
 		t.Fatalf("finding=%+v", f)

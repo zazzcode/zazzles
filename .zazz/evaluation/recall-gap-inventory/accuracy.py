@@ -4,7 +4,8 @@ Usage: accuracy.py <check.py> <reports.json> <vuln-nextjs checkout> <out.json>
 reports.json maps app name to a findings.json (or .json.gz) path. For each keyed
 positive it reports the final presented status (confirmed, practice_finding,
 protected, review, missed); for each keyed control and protected control it
-reports whether a record presents as a finding (a false positive). A record that
+reports whether a record presents as a finding (a false positive). A positive with
+expect_status confirmed counts a construction-practice finding as review. A record that
 also matches a keyed positive is never counted as a control false positive.
 Findings outside the key are counted, not judged: their truth needs source review.
 """
@@ -45,6 +46,8 @@ for r in rows:
         elif any(ck.is_finding(fs.get(u['id'])) for u in uses): s = 'practice_finding'
         elif any(x == 'protected_for_claim' for x in st): s = 'protected'
         else: s = 'review'
+        # A row that names the status it needs is not satisfied by a weaker finding.
+        if r.get('expect_status') == 'confirmed' and s == 'practice_finding': s = 'review'
         out[r['app']]['positive'] += 1; out[r['app']]['pos_' + s] += 1
         if s != 'confirmed': detail.append((r['app'], r.get('id'), r['kind'], r['file'], r.get('line'), s, sorted({b for u in uses for b in ck.blockers(u)})))
     elif r['expect'] in CONTROL:

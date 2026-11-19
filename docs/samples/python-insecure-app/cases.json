@@ -21,7 +21,32 @@
       "file": "app/main.py",
       "line": 19,
       "kind": "input_validation_candidate",
-      "expect": "candidate"
+      "expect": "review",
+      "previous_expect": "candidate"
+    },
+    {
+      "id": "PI-SSTI-NAME",
+      "file": "app/main.py",
+      "line": 41,
+      "kind": "template_injection_candidate",
+      "expect": "candidate",
+      "source": [
+        "app/main.py",
+        19
+      ],
+      "tag": "post_delivery"
+    },
+    {
+      "id": "PI-SSTI-REMOTE",
+      "file": "app/main.py",
+      "line": 41,
+      "kind": "template_injection_candidate",
+      "expect": "candidate",
+      "source": [
+        "app/main.py",
+        36
+      ],
+      "tag": "post_delivery"
     }
   ]
 }

@@ -71,6 +71,7 @@ Review because `users` has no request write. `err.message` output (`DEMO-XSS-Q01
 | Command injection | `POST /create`, `routes/index.js:174` | Confirmed |
 | NoSQL injection | `POST /login`, `routes/index.js:52` | Confirmed |
 | Zip Slip | `POST /import`, `routes/index.js:270` | Confirmed (verified `adm-zip` contract) |
+| Open redirect (`GOOF-REDIR-01`, keyed 2026-11-19) | `POST /login`, `req.body.redirectPage` (`routes/index.js:54`) → `res.redirect(redirectPage)` (`routes/index.js:74`) | Confirmed before it was keyed; now a counted positive ([close-findings-gaps](../specifications/close-findings-gaps.md) W7) |
 | Escaped outputs (`GOOF-XSS-N01`, `N02`) | `views/edit.ejs:20`, `:23` | Both Review (per-path answer unknown), not findings |
 | Render options (`GOOF-XSS-N03`) | `views/account.hbs` | Review, as expected |
 

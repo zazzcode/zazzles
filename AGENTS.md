@@ -106,7 +106,8 @@ Agents MUST NOT print `.env` contents or credentials, include secrets in tracked
 in command arguments. Agents MUST pass only the selected provider's key to the scanner child process.
 Offline checks need no key. An existing local key is configuration, not authorization for paid calls.
 Agents MUST follow the user's active provider/model restrictions, keep live request counts small and
-explicit, and MUST NOT use automatic provider/model fallback. Funding context is not authorization to
+explicit, and MUST NOT use automatic provider/model fallback. Judge transport retries only HTTP
+502, 503 and 504, once; agents MUST NOT add other retries without an owner-approved spec. Funding context is not authorization to
 exhaust a balance. Alternative adapters MAY be tested with local HTTP stubs.
 
 ## Verification

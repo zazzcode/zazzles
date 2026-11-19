@@ -54,17 +54,24 @@ settings (`SCAN_OPENAI_MODEL`, `SCAN_GEMINI_MODEL`, `SCAN_JEV_MODEL`) must remai
 
 Manage API spending and quotas in the provider account. For ordinary OpenAI Luna scans,
 use `--judge openai` with a request cap; optional RPM/TPM settings handle quota pacing.
-`--judge-limit N` (or `JUDGE_LIMIT`; built-in default 10) caps assessment requests per scan, with
-no retries. `.env.sample` sets `JUDGE_LIMIT=1000` as a runaway guard; spending limits belong in the
+`--judge-limit N` (or `JUDGE_LIMIT`; built-in default 10) caps the candidates sent for assessment
+per scan. `.env.sample` sets `JUDGE_LIMIT=1000` as a runaway guard; spending limits belong in the
 provider account.
 Equivalent entry contexts share one request. Zero-call observations do not consume the cap.
 Optional route discovery has its own request allowance.
 
+A request that gets HTTP 502, 503 or 504 is sent once more, after the provider's `Retry-After`
+(when it is at most 10 s) or 2 s. A retry does not use a `--judge-limit` slot, so HTTP requests are
+at most twice the cap. A second consecutive failure stops the scan as before. No other failure is
+retried: not a 429, a timeout, a transport error or an undecodable response. The `Decision-model
+limits` line reports `retries N` when any were sent.
+
 Optional `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pace requests against
 provider quotas. Both default to zero (disabled), and flags override environment settings.
-Discovery and assessment share one rolling rate window. TPM uses request bytes plus a framing
-allowance as a conservative local estimate and reconciles reported input usage; it is not a provider
-tokenizer. Oversized requests stop explicitly, and waits can be canceled. With pacing disabled,
+Discovery and assessment share one rolling rate window. TPM reserves a conservative local
+estimate of one input token per 3 request bytes plus 512, and raises it to the reported input usage
+when that is larger; it is not a provider tokenizer. Observed requests run about 4 bytes per token,
+so set `JUDGE_TPM` just under the account's TPM limit. Oversized requests stop explicitly, and waits can be canceled. With pacing disabled,
 the scanner skips rate-window bookkeeping. Spending is managed in the provider console; the
 scanner has no dollar budget or token-price configuration.
 
@@ -99,7 +106,8 @@ Confirm the target root, entry file, selected route, and allowed source evidence
 For Gemini, set `JUDGE_DECISION_MODEL=gemini-decision-1` in your local environment and replace
 `--judge openai --judge-model gpt-6-luna` with `--judge gemini`.
 
-This sends bounded source evidence to the selected provider. The cap is per run; there are no retries.
+This sends bounded source evidence to the selected provider. The cap is per run; only a 502, 503 or
+504 is retried, once.
 Additional uses beyond the cap remain unassessed and cause exit 1. A requested assessment failure,
 oversized payload, or exhausted cap is retained in the report; a setup failure before scanning can
 produce no report. Optional `--checks` files specify business and protection requirements; they are

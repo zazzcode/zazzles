@@ -262,3 +262,56 @@ func TestRetryAcquiresThroughLimiter(t *testing.T) {
 		t.Fatalf("reason=%q requests=%d retries=%d attempts=%d", reason, stub.count(), trace.Retries, c.limiter.attempts)
 	}
 }
+
+// TestScheduleRetryKeepsSlots is AC6: at N=4, one 503-then-200 on request #2
+// judges the same candidates, under the same --judge-limit slots, as an
+// all-200 run. Only the LimitSummary line differs.
+func TestScheduleRetryKeepsSlots(t *testing.T) {
+	sc := scheduleScenario{name: "retry", groups: 6, members: 2, limit: 4, limits: &Limits{RPM: 1000}}
+	run := func(status func(int, []byte) int) (scheduleOutcome, *Client) {
+		stub := &scheduleStub{status: status}
+		c, r, opts := prepareScheduleScenario(t, sc, stub, 4)
+		c.limiter.wait = func(ctx context.Context, _ time.Duration) error { return ctx.Err() }
+		return runPrepared(t, c, r, opts, stub), c
+	}
+	clean, _ := run(nil)
+	retried, c := run(failOrdinal(2, http.StatusServiceUnavailable))
+	if clean.Failed != retried.Failed || retried.Requests != clean.Requests+1 || clean.Requests != sc.limit {
+		t.Fatalf("failed=%v/%v requests=%d/%d", clean.Failed, retried.Failed, clean.Requests, retried.Requests)
+	}
+	if !strings.Contains(c.LimitSummary(), "retries 1") {
+		t.Fatal(c.LimitSummary())
+	}
+	normalize := func(o scheduleOutcome) []byte {
+		var r map[string]any
+		if err := json.Unmarshal(o.Report, &r); err != nil {
+			t.Fatal(err)
+		}
+		var keep []any
+		for _, l := range r["limitations"].([]any) {
+			if !strings.HasPrefix(l.(string), "Decision-model limits") {
+				keep = append(keep, l)
+			}
+		}
+		r["limitations"] = keep
+		data, err := json.Marshal(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return data
+	}
+	if !bytes.Equal(normalize(clean), normalize(retried)) {
+		t.Fatal("report differs beyond the LimitSummary line")
+	}
+	retries := 0
+	for id, tr := range retried.Traces {
+		base, ok := clean.Traces[id]
+		if !ok || base.RequestDigest != tr.RequestDigest || tr.HTTPStatus != 200 {
+			t.Fatalf("trace %s: digest or status differs", id)
+		}
+		retries += tr.Retries
+	}
+	if len(retried.Traces) != len(clean.Traces) || retries != 1 {
+		t.Fatalf("traces=%d/%d retries=%d", len(clean.Traces), len(retried.Traces), retries)
+	}
+}

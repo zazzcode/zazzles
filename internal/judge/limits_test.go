@@ -2,10 +2,13 @@ package judge
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -121,5 +124,32 @@ func TestDecisionFailureStopsFollowingRequests(t *testing.T) {
 				t.Fatal(c.LimitSummary())
 			}
 		})
+	}
+}
+
+// TestReservationTokensCoversObservedUsage checks the TPM reservation against
+// byte and reported-token pairs from the phase 4 Juice Shop live traces.
+func TestReservationTokensCoversObservedUsage(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("testdata", "tpm_ratio.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var rows []struct{ Bytes, Tokens int64 }
+	if err := json.Unmarshal(raw, &rows); err != nil || len(rows) == 0 {
+		t.Fatalf("rows=%d err=%v", len(rows), err)
+	}
+	for _, size := range []int{0, 1, 2, 3, 4, 20000} {
+		if got, want := reservationTokens(size), int64((size+2)/3)+512; got != want {
+			t.Fatalf("reservationTokens(%d)=%d want %d", size, got, want)
+		}
+	}
+	for _, r := range rows {
+		got := reservationTokens(int(r.Bytes))
+		if got < r.Tokens {
+			t.Errorf("bytes %d: reservation %d underestimates reported %d", r.Bytes, got, r.Tokens)
+		}
+		if float64(got) > 1.6*float64(r.Tokens) {
+			t.Errorf("bytes %d: reservation %d exceeds 1.6x reported %d", r.Bytes, got, r.Tokens)
+		}
 	}
 }

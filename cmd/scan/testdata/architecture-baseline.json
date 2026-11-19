@@ -1826,10 +1826,10 @@
   "internal/langphp/testdata/sql": {
     "uses": [
       {
-        "id": "candidate:v1:1a2bd6499887a97ed2cb213a2f8196496547af19d723699a7c56b5a38a991844",
+        "id": "candidate:v1:40d90328cf9fc3c96f39a070b109a5c2f9d3fa6cf903974f1fd17488c4043ab4",
         "kind": "sql_query_candidate",
-        "request_sha256": "956b975311f72b261955d4609e54205045bddd27bad77a761d8387235580191a",
-        "signature_sha256": "ca1d1c291401217614ad05eb4b8cba2fcdc63312b62fac49023fd4c39b305dec"
+        "request_sha256": "e31fbecd1166c1aebb45a408eb16c8689b251b0897156947852d6a54f8d0ae4f",
+        "signature_sha256": "4ad8a2e8bf3d7be787da811a16a7ada9671084ed0331db7b1e771a7235e8ba5b"
       },
       {
         "id": "candidate:v1:c6b449fbf1be9767f2de6dd8ab100b8e9e91dfd2cbb52c5befffee0fdcdfd465",
@@ -1862,8 +1862,8 @@
         "signature_sha256": "fc6538856b8432be1cced85a242a5a550723e77f52e78db8c80f015ffd85cd24"
       }
     ],
-    "report_sha256": "1b4b1fb821c1818aeb28491b6f616c9c7a159c1c356d598b77f85a8724c2fc9f",
-    "sarif_sha256": "b9580358b7e95667c83df567eebea9c1427d0fdd6c989c937e977debd2a77927",
+    "report_sha256": "f0533e158377ab98350740854284efb52118343a5fac2371efc60f16b8d4e44d",
+    "sarif_sha256": "606fa52e42036161e07f2a3d2e173e3a9ebf2130a524a047741e8dd2bb561298",
     "entries": 4,
     "registrations": 4,
     "dispatch_bindings": 4,

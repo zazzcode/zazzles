@@ -88,6 +88,9 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			}
 		}
 	}
+	if use.Kind == "sql_query_candidate" && c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" && boundParametersOnly(use) {
+		blockers = append(blockers, analysis.Gap{Kind: "bound_parameters_only", Detail: "A vulnerable answer needs request-derived data in the SQL text; every request-derived value of this statement is a bound parameter and the scanner found no interpolated query text", At: use.Sink.Span})
+	}
 	if c.ClaimKind == "injection" && use.APIModel != nil && use.APIModel.ID == analysispacks.SequelizeFinderContract && (a.Answers["injection_protection"] == "vulnerable" || a.Answers["injection_protection"] == "insufficient") && !finderRawSQL(use.Sink.Text) {
 		blockers = append(blockers, analysis.Gap{Kind: "finder_injection_inconsistent", Detail: "An injection answer for a Sequelize model finder needs raw SQL (Sequelize.literal, sequelize.literal or Op.literal) in the same call; where values, including Op.like operands, are bound. Unescaped % and _ in a LIKE pattern are a wildcard and input-validation concern, not SQL syntax control.", At: use.Sink.Span})
 	}
@@ -210,4 +213,32 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	default:
 		a.FindingStatus = "needs_evidence"
 	}
+}
+
+// boundParametersOnly reports a SQL record whose every dependency reaches the
+// sql_parameters slot and whose text the scanner did not find interpolated:
+// bound values are data and cannot change statement structure, so such a
+// record cannot be Confirmed from an injection answer alone.
+func boundParametersOnly(use analysis.CandidateUse) bool {
+	if len(use.Dependencies) == 0 {
+		return false
+	}
+	for _, d := range use.Dependencies {
+		if d.SinkSlot != "sql_parameters" {
+			return false
+		}
+	}
+	for _, g := range use.Gaps {
+		if g.Kind == "query_text_interpolated" {
+			return false
+		}
+	}
+	if use.Completeness != nil {
+		for _, g := range use.Completeness.Coverage {
+			if g.Kind == "query_text_interpolated" {
+				return false
+			}
+		}
+	}
+	return true
 }

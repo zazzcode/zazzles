@@ -324,6 +324,15 @@ def precision(reports, keyed, noise_rows, controls):
             get(k).update(classes)
         for k, v in fixed_outcome(report).items():
             get(k).update(v)
+        # A judged row names who judged it, so the corpus can be re-measured
+        # when a model or question set changes.
+        for u in report['uses']:
+            a = u.get('assessment') or {}
+            if a.get('status') == 'completed':
+                d = get(family(u['kind']))
+                judged = set(d.get('judged_by', []))
+                judged.add('/'.join([a.get('provider', ''), a.get('model', ''), a.get('question_version', '')]))
+                d['judged_by'] = sorted(judged)
         for c in controls:
             if c['app'] != app:
                 continue
@@ -342,10 +351,10 @@ def precision_markdown(prec):
             'same_entry_sink_extra', 'own_api_request_origin', 'stored_origin_unresolved', 'stored_literal_writes',
             'unknown_context_raw', 'closed_type_map', 'control_false_finding', 'control_protected', 'control_review',
             'fixed_outcome_requests', 'substantive_discarded']
-    lines = ['| App | Family | ' + ' | '.join(cols) + ' |', '|---|---|' + '---|' * len(cols)]
+    lines = ['| App | Family | ' + ' | '.join(cols) + ' | Judged by |', '|---|---|' + '---|' * len(cols) + '---|']
     for app, fams in prec.items():
         for f, d in fams.items():
-            lines.append(f'| {app} | {f} | ' + ' | '.join(str(d.get(c, 0)) for c in cols) + ' |')
+            lines.append(f'| {app} | {f} | ' + ' | '.join(str(d.get(c, 0)) for c in cols) + ' | ' + (', '.join(d.get('judged_by', [])) or 'offline') + ' |')
     return '\n'.join(lines) + '\n'
 
 

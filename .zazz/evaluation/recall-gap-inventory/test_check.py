@@ -36,7 +36,7 @@ class PrecisionTest(unittest.TestCase):
             use('f', 'input_validation_candidate', 'form.py', 3, deps=['input_source']),
             use('g', 'xss_candidate', 'tests/view.js', 7, deps=['input_source'], xss={'output_context': 'unknown', 'protection': 'raw'}),
             use('h', 'command_execution_candidate', 'safe.php', 9, deps=['input_source'],
-                assessment={'status': 'completed', 'answers': {'shell_syntax_protection': 'vulnerable'},
+                assessment={'status': 'completed', 'provider': 'openai', 'model': 'm', 'question_version': 'command-components-v3', 'answers': {'shell_syntax_protection': 'vulnerable'},
                             'blocking_gaps': [{'kind': 'unknown_transfer'}]}, completeness={'blockers': [{'kind': 'unknown_transfer'}]}),
         ]
         self.report = {'uses': uses, 'entries': [], 'findings': [
@@ -67,6 +67,8 @@ class PrecisionTest(unittest.TestCase):
         self.assertEqual(cmd['control_review'], 1)
         self.assertEqual(cmd['fixed_outcome_requests'], 1)
         self.assertEqual(cmd['substantive_discarded'], 1)
+        self.assertEqual(cmd['judged_by'], ['openai/m/command-components-v3'])
+        self.assertNotIn('judged_by', self.prec['sql_query'])
 
     def test_decidable_validation(self):
         u = use('v', 'input_validation_candidate', 'f.py', 1)

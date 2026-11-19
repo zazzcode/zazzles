@@ -38,6 +38,7 @@ The checker prints one `precision <app> <family>` line per family and sample. Me
 | Unknown ctx raw | XSS records with output context `unknown` and protection `raw` |
 | Control as finding / Protected / Review | Outcome of each record matched by the protected-control set |
 | Fixed-outcome requests, substantive discarded | Judged reports only: requests whose outcome a scanner blocker had already fixed, and how many of those discarded a definite model answer |
+| Judged by | Judged reports only: each `provider/model/question_version` that judged records of the family |
 
 A judged precision row must name its provider, model and question version, so the same corpus can
 be re-measured when the model changes. Offline rows have no assessment.

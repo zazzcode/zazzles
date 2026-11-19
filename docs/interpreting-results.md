@@ -42,7 +42,7 @@ color is never the only way to understand status.
 | JSON status | Display | Placement |
 |---|---|---|
 | `confirmed_vulnerability` | Confirmed vulnerability · static analysis | Findings; requires injection-specific judgment and claim evidence |
-| `poor_practice` | Poor practice · remediate | Findings; current rules recognize string-built SQL and executable NoSQL `$where` construction |
+| `poor_practice` | Poor practice · remediate | Findings; current rules recognize string-built SQL and executable NoSQL `$where` construction when at least one built-in value has an external origin |
 | `needs_review` | Analysis needs review | Review; e.g. unmodeled document types, unclear validators, unknown APIs |
 | `needs_evidence` | Inconclusive | Review unless a separate deterministic poor-practice conclusion already holds |
 | `supported_potential` | Potential vulnerability · review | Review; preserve the model's answer without presenting it as an established vulnerability |
@@ -62,8 +62,14 @@ Categories identify related risk families and may overlap. One query-constructio
 SQL Injection and Input Validation labels without proving two independent defects. A category name
 is not a vulnerability verdict. Select a pill for a definition and its coverage.
 
-Current output groups one presentation record per raw use. Findings/Review/Protected count those
-records by classification; category counts count associated records and must not be added together.
+JSON keeps one presentation record per raw use. HTML, text and SARIF show one row per **sink
+group**: records of one kind at one sink span with one presented status. The first record in report
+order represents the group; it lists the others in `grouped_use_ids`, they carry `grouped_into`, and
+its summary names the record count, the entry count and the origins across them. Records with
+different statuses never share a row, so a finding is never hidden behind a Review row. A grouped
+SARIF result carries `partialFingerprints.zazzlesSinkGroup/v1` (kind and sink span), the other
+entries as related locations, and `properties.scan.groupedUseIds`. Findings/Review/Protected count
+the shown rows; category counts count associated records and must not be added together.
 One record may contain multiple field or protection concerns. Distinct claim-level counting is a
 planned improvement: independent established problems should ultimately count separately, with
 shared operation/evidence links. Shared helper records can also repeat for multiple routes.
@@ -82,6 +88,16 @@ open redirect and a DOM XSS on the same navigation, stay separate and list each 
 points to the recorded operation; it can be in another file. Inspect the operation excerpt, inputs,
 transfers, relevant context, guards, and gaps before applying a change. No resolved request dependency
 means external control is unknown, unless there is positive evidence of a constant or trusted source.
+A string-built query whose values have no request, storage, file, fetched, browser or API-response
+origin presents as Review with `external_origin_not_established`, not as a poor-practice finding.
+An XSS record whose output context is `unknown` shows protection `unknown`; per-path protection keeps
+what each path showed.
+
+A record held at Review by `storage_origin_unresolved` carries `stored_origin`: for each storage key
+it reads, every write found in scanned source (with `literal` when the written values are source
+literals), `static_read` when the read query is a literal, and `closed_store` (`closed` when the
+schema and every writer are in scanned source, `open` when the schema is not, otherwise `unknown`).
+These are evidence for review; they never change the status by themselves.
 
 A field's business validation and its destination protection are separate questions. SQL binding,
 NoSQL operator/type constraints, numeric conversion, escaping, and arbitrary string filters have
@@ -116,8 +132,8 @@ the record stays **Inconclusive** with a reason starting `evidence_too_large:` a
 
 Outbound observations carry `outbound.destination_origin` (`request`, `external_data`, `constant`,
 `environment` or `unestablished`) for the destination argument only. Observations of one call reached
-from several entries are shown once; the representative names the entry count and `grouped_use_ids`,
-and the other records carry `grouped_into`. SSRF claims report destination control, restriction and
+from several entries are shown once (the sink grouping above; outbound observations group by call
+site and keep their own summary); request-derived destinations stay separate. SSRF claims report destination control, restriction and
 coverage separately; see [SSRF analysis](analysis/ssrf.md).
 
 ## Completion and compatibility

@@ -30,9 +30,9 @@ a command candidate. Callback output parameters never become command dependencie
 
 ## Facets and outcomes
 
-Each process use is one record. A model decision answers four questions (shell syntax, executable
-control, argument control, protection coverage); evidence validation checks those answers against the
-source facts before classification:
+Each process use is one record. A model decision answers five questions (shell syntax, executable
+control, argument control, guard bypass, protection coverage; protocol `command-components-v3`);
+evidence validation checks those answers against the source facts before classification:
 
 - A shell answer of vulnerable needs a request-derived value in an effective shell-command operand.
   A shell-disabled call with data operands has no shell question, so claiming one is contradictory.
@@ -51,8 +51,17 @@ source facts before classification:
   invalidates the guard. A guard in the single caller of a local helper applies; with several callers
   only guards every caller shares apply. The contents of a module-level allow-list that a guard tests
   are supplied as evidence so the model can judge the guard.
-- A path guarded by a control the scanner cannot judge can still be answered vulnerable; adequacy is
-  the model's recorded decision, and the guard evidence is shown with the record.
+- Guard adequacy is the model's call. For each recognised guard on a guarded path (`is_numeric`,
+  `ctype_digit`, integer casts, anchored and unanchored regular expressions, allow-list membership)
+  the request carries a short source-backed contract of the values the guard accepts, with its edge
+  cases (for example PHP 8 `is_numeric` accepts trailing whitespace; PCRE `$` matches before a final
+  newline). The guard-bypass question asks whether a value passes every guard and still alters the
+  command: `bypass_identified`, `no_bypass`, `guard_semantics_unknown` or `not_applicable`. Policy
+  checks only self-consistency: a vulnerable or unsafe answer on a facet whose every path is guarded
+  stands only with `bypass_identified`; with `no_bypass` it is `command_answers_inconsistent`; with
+  `guard_semantics_unknown`, or a guard that has no contract, it stays Review
+  (`command_guard_semantics_unknown`). A protected answer beside an identified bypass is also
+  inconsistent. A raw path's witness is unaffected.
 - Unknown utility options are Review: no CWE-88 finding is made without established option or
   interpreter semantics (for example a literal `sh -c`).
 - An unsafe witness needs only its own source-to-operand path; unresolved sibling paths remain

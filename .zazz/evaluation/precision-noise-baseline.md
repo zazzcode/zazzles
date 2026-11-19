@@ -96,3 +96,32 @@ dependency. The test-path census is zero, and no keyed control presents as a fin
 These come from the published sample reports under `docs/samples/`, each judged with its own
 question versions. They are the baseline the model-assisted evidence resolution contract measures
 against.
+
+## After the contract (offline, scanner after W7)
+
+The checker floor is unchanged: 91 `candidate_with_witness`, 30 `control_pass`, 4 `resolved`. No
+keyed positive changed status (keyed true findings 156 before and after) and no keyed control
+presents as a finding. "Finding rows" counts presented rows after sink grouping; "Findings" is per
+record.
+
+| Sample | Records | Finding rows before → after | Presented rows before → after |
+|---|---:|---|---|
+| vuln-demo-app | 19 | 10 → 6 | 19 → 15 |
+| vulnerable-typescript-app | 26 | 1 → 1 | 26 → 26 |
+| nodejs-goof | 32 | 2 → 2 | 32 → 32 |
+| juice-shop | 251 | 15 → 14 | 182 → 178 |
+| oss-oopssec-store | 128 | 14 → 11 | 126 → 95 |
+| vuln-nextjs | 54 | 7 → 7 | 54 → 54 |
+| vulnpy | 3350 | 109 → 15 | 3350 → 62 |
+| ThreatByte | 62 | 5 → 5 | 62 → 62 |
+| python-insecure-app | 2 | 1 → 1 | 2 → 2 |
+| vulnerable-flask-app | 30 | 4 → 4 | 30 → 30 |
+| dvwa | 240 | 183 → 40 | 240 → 87 |
+
+Per-record findings go from 351 to 317: 33 DVWA no-origin SQL constructions and Juice Shop
+`routes/chat.ts:149` move to Review (`external_origin_not_established`). The other row reductions are
+grouping only; JSON keeps all 4,194 records. Noise classes after: no-origin construction findings
+34 → 0, unknown-context raw 3 → 0, own-API request origin 1 → 0 (now a storage origin),
+undecidable validation 3,080 (unchanged as records; no longer requested), shared-sink fan-out and
+same-entry extras unchanged as records but presented as grouped rows.
+

@@ -297,10 +297,10 @@ Each step is its own commit with its own before/after evidence.
 
 ## 10. Definition of done
 
-- [ ] Precision baseline and the protected set are recorded (AC1).
-- [ ] Each shipped workstream meets its AC with before/after evidence.
-- [ ] The recall floor holds and the golden deltas are listed (AC8).
-- [ ] Analysis guides, `docs/interpreting-results.md`, the inventory and the AGENTS.md request
+- [x] Precision baseline and the protected set are recorded (AC1).
+- [x] Each shipped workstream meets its AC with before/after evidence.
+- [x] The recall floor holds and the golden deltas are listed (AC8).
+- [x] Analysis guides, `docs/interpreting-results.md`, the inventory and the AGENTS.md request
       count are updated for every changed behavior.
 
 ## 11. Open questions (owner)
@@ -371,3 +371,31 @@ Drafted from the phase 5 inventory observations and fresh offline measurements.
 - **W5.** Added the fixed-outcome request measure that the follow-on uses as its baseline.
 - **Sequence.** This contract ships first. The follow-on depends on its W5 measures, W3 write-set
   evidence and W7 cited-answer pattern.
+
+### 2026-11-19 — Implementation (all seven workstreams)
+
+Owner answers to §11, taken as the recommended defaults under the owner's standing preference and
+recorded here: validation records group by field-read site; SARIF emits one result per group with a
+kind-and-span fingerprint; `image/svg+xml` stays unresolved Review; paid calls are the standing
+Juice Shop check, the DVWA command check and the AC8 OopsSec check.
+
+Deviations found while implementing, each following the contract's own rule:
+
+- **W6.** Juice Shop `routes/chat.ts:149` is a 34th no-origin construction finding (§2 counted 33).
+  DVWA's 33 are 24 at `dvwaPage.inc.php:570`, 8 in `DBMS/MySQL.php` and 1 at `login.php:40`.
+- **W3a.** The rule also applies to three sibling OopsSec records on the same own-API pattern
+  (`vulnerabilities/[slug]/page.tsx:275`, `ProductDetailClient.tsx:173` and `:178`); all stay
+  Review. A row column resolves to a storage read without linking its writers: linking them turned
+  the two product records into false findings from a sanitized upload filename. The four records
+  whose dependencies change get new content-addressed IDs (IDs hash dependencies); every other
+  record keeps its ID.
+- **W3b.** The write set is `stored_origin` on the record, outside the ID key. It is not yet sent to
+  the model; the follow-on contract decides that.
+- **W7.** An unanchored regular-expression contract was added so the weakly guarded nodejs-goof
+  command finding survives with a named bypass. The question set change moves every record's
+  component digest, so pre-W7 judgments no longer replay for any family.
+
+Results: recall floor 91/30/4 unchanged; corpus findings 351 → 317 records; presented rows 4,194 →
+643. Live (openai `gpt-6-luna`): Juice Shop 62 requests (was 157), OopsSec 30, DVWA command 16 with
+the four `CMD-001` impossible-level records no longer Confirmed and all twelve low/medium/high
+records Confirmed. Evidence is in the [precision baseline](../evaluation/precision-noise-baseline.md).

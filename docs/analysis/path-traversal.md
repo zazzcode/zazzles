@@ -35,7 +35,12 @@ A call whose path operand has no request-derived value is not a candidate. Reque
 **content** (the data argument of `writeFile`, `handle.write(text)`, `write_text(text)`) or passed as an
 option (encoding, mode, flags) is shown with the record but is never a path source. A value that comes
 from a database row, a file, an API response or another stored origin is not a request field: second-order
-flows need their own write-side evidence and are not invented here.
+flows need their own write-side evidence and are not invented here. One exception keeps a record
+visible rather than dropping it: a Next.js server helper that fetches a same-origin route of the
+repository and returns its JSON. A path built from a field of that response takes the origin the
+route gives the field (see [XSS stored and browser analysis](xss.md#stored-and-browser-analysis)); a
+stored row column then holds the record at Review with `storage_origin_unresolved`, and a request
+echo stays a request source.
 
 **Request sources.** Express `req.body`, `query`, `params`, `headers` and `cookies`; for path claims only,
 `req.path`, `req.url`, `req.originalUrl`, `req.baseUrl`, `req.file` and `req.files` (a second pass of the

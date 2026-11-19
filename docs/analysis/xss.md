@@ -58,11 +58,33 @@ follow the [replacement rules](#sanitizer-advisories-and-replacements) below. Un
 same-name fake libraries, shadowed imports and custom sanitizer options are not trusted. Every
 modeled path must be protected; protection on one branch does not protect a raw sibling branch.
 
+When the output context is unresolved (`unknown`), the record-level protection is `unknown` too:
+raw, encoded or sanitized are relative to a context. Per-path protection facts keep what each path
+showed.
+
+A response `Content-Type` read from a closed constant map resolves to the map's values. The map is
+closed when it is a module-level `const` object literal with literal keys and string values that is
+only read by subscript (never assigned, exported or passed out), the type is a `const` set from
+`MAP[key]`, and a missing-key branch returns or throws before the response. If every value is a
+non-HTML type (for example raster images) the response cannot render markup and no XSS record is
+made. Any HTML-capable value, including `image/svg+xml` and other XML types, leaves the record at
+Review with a `content_type_map_html_capable` gap naming the values.
+
 ## Stored and browser analysis
 
 Model-field writes/reads are linked for bounded Mongoose and Sequelize shapes. Storage identity,
 field, originating request and rendering evidence are retained; unresolved origins remain Review.
-A read with no write stays visible, but cannot hide a complete unsafe sibling path. A generated Mongoose
+A read with no write stays visible, but cannot hide a complete unsafe sibling path. Such a record
+carries `stored_origin` write-set evidence (every write found for its storage key, whether each is
+literal, whether the read query is static, whether the store is closed); it stays Review, and whether
+a request value can reach the stored data is left to judgment over that evidence.
+
+A Next.js server helper that fetches a same-origin GET route of the repository and returns
+`response.json()` yields that route's response. A field read from it takes the origin the route gives
+the field: a stored row column is a storage read (Review until its writers are judged), a value the
+handler built from the request stays request-derived. The request value that built the URL is
+recorded as `api_selector` context. When no single route (a dynamic route is preferred over static
+siblings the URL template does not name) or field origin is established, the previous flow is kept. A generated Mongoose
 `_id` with no request write is not a claim.
 
 A keyed read of a server-owned in-module store (`this.tokenMap[key]` on a const object literal, or a

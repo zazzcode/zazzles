@@ -74,6 +74,11 @@ all cited keys. Use the following minimum corpus and carry the cited historical 
 | Python | VulnPy, ThreatByte, python-insecure-app and Vulnerable Flask App. Use `docs/samples/<app>/cases.json` with each app's published `metadata.json`; use the [Python results](../evaluation/python-support-results.md#pinned-corpus-and-final-results) for pin cross-checks. |
 | PHP | DVWA, with pin and controls from the [DVWA guide](../evaluation/dvwa-detection-guide.md) and [metadata](../../docs/samples/dvwa/metadata.json). |
 
+Two pins need explicit handling. vuln-demo-app has no `docs/samples/` metadata, and the catalog
+gives only the short pin `d27b35b`, so resolve and record the full SHA from the checkout. vuln-nextjs
+is a living lab. Measure at the catalog pin and read the lab key
+`tests/expected-scanner-findings.json` at that same revision, not at the lab's current head.
+
 Record full target SHA, scanner SHA, command, scope, output path and pre/post status for each run.
 If a checkout is unavailable, off-pin or has changes including ignored files, preserve it and use an
 existing clean pinned copy or an uncontaminated source snapshot if available. Verify snapshot
@@ -101,6 +106,25 @@ an expected row mismatch from a command or parse failure. Use equivalent manual 
 for Markdown keys. Report positive candidate presence, complete witness coverage and registration
 resolution as separate counts with denominators. List unmeasured rows explicitly.
 
+Account for these known evaluator limits in `docs/samples/evaluate-python.py`:
+
+| Expectation | Offline behavior | Inventory treatment |
+|---|---|---|
+| All non-registration rows | `matches` keys only on kind, file and line | Check entry and operand from the saved report when the key distinguishes them |
+| `raw_xss`, `construction` | Tests the protection label or `query_text_interpolated` gap, not a source-to-sink witness | Establish `candidate_with_witness` from the use's value path and entry, not from the evaluator pass |
+| `not_confirmed` (five rows) | Passes whenever a matching candidate exists, because `not_run` is not `confirmed_vulnerability` | Count as candidate presence only. Mark the assessment outcome unmeasured |
+| `validation_enforced` (six ThreatByte rows) | Cannot pass without a judged `protected_for_claim` | Mark assessment-dependent. Expect a nonzero ThreatByte exit and don't count it as a regression |
+| `form_policy`, `validation_defect` | `form_policy` is structural. `validation_defect` needs a judged `poor_practice` | Record `validation_defect` as candidate presence plus an unmeasured assessment |
+
+Two more counts are recorded without ranking them:
+
+- **Control outcomes.** Report the pass count and denominator for the structural `bound`,
+  `encoded` and `absent` controls. This gives later precision and Protected work a baseline from the
+  same runs.
+- **Candidate fan-out.** For each matched positive, record how many uses match it and how many
+  distinct entries they cover. For example, VulnPy's five D5 source cases produced 28 contextual
+  findings. This separates multi-entry reporting from duplicate candidates at the same entry.
+
 **D-3. Diagnose and rank distinct fixes.** Assign one primary cause at the first proven failure per
 miss and link any contributing blockers. Use `registration`, `call_binding`, `value_transfer`,
 `sink_model`, `framework_adapter` or `out_of_family`. Record input/parse or work-limit failures
@@ -114,8 +138,18 @@ distinct expected positive cases recovered (descending), then expected registrat
 satisfied (descending), adapter-local before core, estimated files touched (ascending), then
 lexicographic order of the sorted case-ID list. Count each case once. Record the top five or all
 eligible groups if fewer, and show why higher-impact groups were deferred. A gap-only
-improvement behind an existing candidate goes to
-the evidence follow-on.
+improvement behind an existing candidate goes to the evidence follow-on. For each
+`candidate_evidence_gap` row, record the blocking gap kind so the follow-on can be ranked the same
+way.
+
+A group is eligible only when its proposal lists the existing controls and compatibility rows
+whose resolution path the change touches. Changes to shared call binding or registration resolution
+are the usual case. Those listed rows are the at-risk set checked in AC5. Missing at-risk analysis
+makes the group ineligible, but it doesn't lower the group's rank.
+
+Where a key's history shows a row was written or corrected after the scanner behavior it tests,
+tag the row `post_delivery`, and tag all other rows `independent`. Report recall for both tags
+separately so tuning to the corpus stays visible. Ranking still counts every row.
 
 **D-4. Close one measured miss with three controls.** Lock the patch scope and expected fixture
 deltas at the checkpoint. A recovered positive must carry the source-to-sink witness, or the
@@ -139,8 +173,10 @@ collect disjoint sample outputs read-only, each in its own run folder. Serialize
 
 1. **AC1 — Oracle coverage.** The inventory accounts for every source-key row from the frozen
    corpus. Each checked row records case ID, app and pin, family, anchor, entry/operand discriminator
-   when applicable, expectation, current result, and evidence locator. Every unmeasured row has a
-   reason. Commands, observed denominators and evidence locations are reproducible from the run log.
+   when applicable, expectation, current result, evidence locator, `independent` or `post_delivery`
+   tag, and fan-out for matched positives. Assessment-dependent rows record structural presence
+   separately from the unmeasured assessment, as in the D-2 evaluator table. Every unmeasured row
+   has a reason. Control pass counts are reported with denominators. Commands, observed denominators and evidence locations are reproducible from the run log.
 2. **AC2 — Reconciliation.** The inventory verifies historical delivered claims against current
    evidence and distinguishes delivered, regressed and unmeasured. For `VP-XSS-JINJA`, inspect the
    raw XSS record at `apps/templates/jinja/xss.html:30` and its Flask source path, and update the
@@ -154,7 +190,8 @@ collect disjoint sample outputs read-only, each in its own run folder. Serialize
    fixture rows to this criterion before coding.
 5. **AC5 — Compatibility.** `go test ./cmd/scan -run '^TestArchitectureBaseline$' -count=1`
    passes, with golden changes limited to the named rows. Compare before/after case outcomes for
-   the verified corpus and account for every changed structural row. An inventory-only delivery
+   the verified corpus and account for every changed structural row. Every at-risk control named in
+   the D-3 proposal keeps its before outcome or is listed as an approved delta. An inventory-only delivery
    has no golden change.
 6. **AC6 — Evidence and gate.** Publish the inventory and matched guide changes. For a code
    closure, run the [contributor gate](../../docs/contributing.md#verification). For inventory-only
@@ -173,7 +210,8 @@ unit-test dependencies. Existing evaluator behavior remains independently checka
 1. Record scanner/toolchain and pins. Run the architecture baseline on the assigned branch.
 2. Freeze the case universe from §5. Build once. Run each verified sample with
    `scan --analyze --output-dir <fresh-run-dir> <sample-root>` with provider keys unset, and use
-   `findings.json` as the structural source. Run
+   `findings.json` as the structural source. The bundle writer nests output under
+   `<fresh-run-dir>/<target-name>/run-*/`, so record the resolved path. Run
    `python3 docs/samples/evaluate-python.py <app> <findings.json>` for the four Python samples.
    Verify pins and status before and after.
 3. Commit the inventory and historical reconciliation. Post the D-3 checkpoint. For an eligible
@@ -196,6 +234,28 @@ unit-test dependencies. Existing evaluator behavior remains independently checka
 
 The measured corpus determines the closure. Record exact patch scope and the owner's redirects at
 the checkpoint. A technically out-of-scope closure requires its own contract.
+
+### Follow-on accuracy candidates (not in scope)
+
+The 2026-11-19 review found these improvements in existing evaluation records. They stay out of this
+delivery. Rank them with this inventory's data when they become contracts.
+
+| Goal | Candidate | Source evidence |
+|---|---|---|
+| Detect | Helper argument binding for request/session values (likely a `call_binding` group here) | [ThreatByte guide](../evaluation/threatbyte-detection-guide.md) SQL helper checklist |
+| Detect | Stored and second-order flow (write, then read, then output) | ThreatByte stored-country profile XSS |
+| Detect | Generated or dynamic route registration beyond D5 | VulnPy `VP-COVERAGE-*` rows, [D5 results](../evaluation/common-entry-dispatch-results.md) |
+| Detect | SSTI as its own claim kind, correlated with XSS | [python-insecure-app guide](../evaluation/python-insecure-app-detection-guide.md) |
+| Detect | Framework access-log leakage of query credentials, generalized from `morgan('combined')` | [Juice Shop index](../evaluation/juice-shop/README.md) |
+| Protected | A Review-burden inventory that classifies each `needs_evidence` record by blocking gap kind (Juice Shop 112 of 134 judged) | Juice Shop and ThreatByte `metadata.json` |
+| Protected | Source-backed library contracts for imported validators and schema parsers, so guards aren't blocked offline | [Bearer capabilities](../evaluation/bearer-capabilities.md) custom-validator row |
+| Protected | Narrower stored-origin uncertainty when output encoding is already established | ThreatByte guide, escaped-output checklist |
+| Protected | Framework autoescape defaults as deterministic `encoded` facts | ThreatByte `encoded` and VulnPy Jinja controls |
+| False positive | Constant- or literal-origin suppression for logger-leak, and public versus private key material for secrets | Juice Shop source review rows |
+| False positive | Test, training and fixture scope reported separately from production counts | Juice Shop scope split: 278 test and 64 training findings |
+| False positive | Root-sink grouping, so mounted instances don't inflate defect counts | VulnPy D5 fan-out, and the fan-out count above |
+| False positive | Deterministic numeric and regex guard facts, so a judge can't override a bounded operand | [PHP sample analysis](../evaluation/php-sample-analysis.md) judge false positive |
+| Measurement | A held-out, source-reviewed protected-control corpus for the security families, like `practice-accuracy/protected-controls.json` | [Calibration](../../docs/analysis/calibration.md#evaluation-and-audit) |
 
 ## 12. Run log protocol
 
@@ -229,3 +289,12 @@ Retained the offline inventory and single-closure sequence. Reconciled corpus an
 references, separated registration and candidate outcomes from judgment, defined per-case matching
 and ranking, and made the controls and partial-corpus handling explicit. §7 now requires
 structural witnesses and before/after evidence.
+
+### 2026-11-19 — Pre-implementation review
+
+Verified the Jinja premise: `VP-XSS-JINJA` passes as `confirmed_vulnerability` in the XSS final
+evaluation, while the VulnPy guide checklist and its D5 note still list it as open. Added explicit
+handling for the vuln-demo-app full SHA and the living vuln-nextjs pin, the per-expectation evaluator
+limits, control and fan-out counts, `independent` and `post_delivery` row tags, the at-risk control
+gate for eligibility and AC5, the nested output path, and an out-of-scope follow-on table (§11). The
+single-closure scope is unchanged.

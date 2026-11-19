@@ -190,8 +190,8 @@ func TestOutboundObservationCLI(t *testing.T) {
 		t.Setenv("TYPESAFE_API_KEY", "offline-key")
 		t.Setenv("SCAN_FINDINGS_DIR", "")
 		previous := http.DefaultTransport
-		calls := 0
-		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; w.WriteHeader(400) })) // non-retried
+		var calls atomic.Int64
+		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1); w.WriteHeader(400) })) // non-retried
 		target, _ := url.Parse(stub.URL)
 		http.DefaultTransport = outboundStubTransport{target, previous, t}
 		var out, stderr bytes.Buffer
@@ -201,8 +201,8 @@ func TestOutboundObservationCLI(t *testing.T) {
 		stub.Close()
 		// Observations make no call; the one verified fetch whose destination is a
 		// request value is an SSRF claim and is the only provider request.
-		if code != exitOK || calls != 1 {
-			t.Fatalf("%s code=%d calls=%d stderr=%s", provider, code, calls, stderr.String())
+		if code != exitOK || calls.Load() != 1 {
+			t.Fatalf("%s code=%d calls=%d stderr=%s", provider, code, calls.Load(), stderr.String())
 		}
 		files, err := filepath.Glob(filepath.Join(bundle, "outbound", "run-*", "findings.json"))
 		if err != nil || len(files) != 1 {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -69,13 +70,13 @@ func TestDynamicPythonVulnPyTraces(t *testing.T) {
 	}
 	client.endpoint = server.URL
 	client.http = server.Client()
-	assessed := 0
+	var assessed atomic.Int64
 	for _, u := range r.Uses {
 		if !strings.HasPrefix(paths[u.EntryID], "/vulnpy/") || u.Kind != "sql_query_candidate" && !(u.XSS != nil && strings.Contains(paths[u.EntryID], "/xss/raw")) {
 			continue
 		}
 		got, trace := client.AssessTrace(context.Background(), u)
-		assessed++
+		assessed.Add(1)
 		if got.Status != "completed" || got.FindingStatus != "confirmed_vulnerability" {
 			t.Errorf("%s %s: %+v", paths[u.EntryID], u.Kind, got)
 		}
@@ -95,7 +96,7 @@ func TestDynamicPythonVulnPyTraces(t *testing.T) {
 			t.Fatal("changed constant closure replayed historical answer")
 		}
 	}
-	if assessed != 12 {
-		t.Fatalf("local stub assessed %d required traces", assessed)
+	if assessed.Load() != 12 {
+		t.Fatalf("local stub assessed %d required traces", assessed.Load())
 	}
 }

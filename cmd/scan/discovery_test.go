@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 )
 
@@ -21,9 +22,9 @@ func TestNodeDiscoveryCLI(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "server.js"), []byte(`function handler(req,res){res.send('ok')};exposeHTTP('/one',handler);exposeHTTP('/two',handler);`), 0600); err != nil {
 		t.Fatal(err)
 	}
-	calls := 0
+	var calls atomic.Int64
 	stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls++
+		calls.Add(1)
 		json.NewEncoder(w).Encode(map[string]any{"model": "fixture-model", "answers": []map[string]string{{"name": "route_binding", "type": "choice", "choice": "route"}}})
 	}))
 	defer stub.Close()
@@ -49,13 +50,13 @@ func TestNodeDiscoveryCLI(t *testing.T) {
 			t.Fatalf("invalid report: %v %s", err, errOut.String())
 		}
 		if !enabled {
-			if calls != 0 || len(r.Discovery) != 0 {
+			if calls.Load() != 0 || len(r.Discovery) != 0 {
 				t.Fatal("discovery ran without opt-in")
 			}
 			continue
 		}
-		if code != exitOK || !strings.Contains(errOut.String(), "scan: warning: some assessments are incomplete") || calls != 1 || len(r.Discovery) != 2 || len(r.Entries) != 0 || len(r.Uses) != 0 {
-			t.Fatalf("code=%d calls=%d proposals=%d entries=%d uses=%d", code, calls, len(r.Discovery), len(r.Entries), len(r.Uses))
+		if code != exitOK || !strings.Contains(errOut.String(), "scan: warning: some assessments are incomplete") || calls.Load() != 1 || len(r.Discovery) != 2 || len(r.Entries) != 0 || len(r.Uses) != 0 {
+			t.Fatalf("code=%d calls=%d proposals=%d entries=%d uses=%d", code, calls.Load(), len(r.Discovery), len(r.Entries), len(r.Uses))
 		}
 		for _, p := range r.Discovery {
 			if p.State != "provisional" || p.VerifiedEntryID != "" {

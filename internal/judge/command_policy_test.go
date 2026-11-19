@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -23,11 +24,11 @@ var (
 	optimistic = commandAnswers{"shell_syntax_protection": "not_applicable", "executable_control": "constrained", "argument_control": "constrained", "protection_coverage": "complete"}
 )
 
-func commandStub(t *testing.T, provider string, answers commandAnswers) (*Client, *int) {
+func commandStub(t *testing.T, provider string, answers commandAnswers) (*Client, *atomic.Int64) {
 	t.Helper()
-	calls := 0
+	var calls atomic.Int64 // the scheduler sends requests concurrently
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		calls++
+		calls.Add(1)
 		var body struct {
 			Questions json.RawMessage `json:"questions"`
 		}
@@ -204,8 +205,8 @@ func TestCommandPolicyMatrix(t *testing.T) {
 							t.Fatalf("replay: %+v", replay)
 						}
 					}
-					if *calls != len(uses) {
-						t.Fatalf("calls %d for %d candidates", *calls, len(uses))
+					if int(calls.Load()) != len(uses) {
+						t.Fatalf("calls %d for %d candidates", calls.Load(), len(uses))
 					}
 				})
 			}

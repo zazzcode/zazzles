@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -21,9 +22,9 @@ func TestGeminiScanBundleAndLimit(t *testing.T) {
 	}
 	t.Setenv("JUDGE_DECISION_MODEL", "gemini-decision-1")
 	t.Setenv("GEMINI_API_KEY", "synthetic-google-key")
-	calls := 0
+	var calls atomic.Int64 // the scheduler sends requests concurrently
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls++
+		calls.Add(1)
 		if r.Header.Get("x-goog-api-key") != "synthetic-google-key" {
 			t.Error("wrong selected credential")
 		}
@@ -102,7 +103,7 @@ func TestGeminiScanBundleAndLimit(t *testing.T) {
 			}
 		})
 	}
-	if calls == 0 {
+	if calls.Load() == 0 {
 		t.Fatal("no stub requests")
 	}
 }

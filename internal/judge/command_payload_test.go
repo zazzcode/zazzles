@@ -73,8 +73,8 @@ func TestCommandPayloadAndReplay(t *testing.T) {
 				// Exact replay works; every changed input rejects it.
 				stub, calls := commandStub(t, provider, rawShell)
 				a, tr := stub.AssessTrace(context.Background(), u)
-				if a.FindingStatus != "confirmed_vulnerability" || *calls != 1 {
-					t.Fatalf("assessment %+v calls %d", a, *calls)
+				if a.FindingStatus != "confirmed_vulnerability" || calls.Load() != 1 {
+					t.Fatalf("assessment %+v calls %d", a, calls.Load())
 				}
 				if r := stub.Replay(u, tr); r.Status != "completed" || r.FindingStatus != a.FindingStatus {
 					t.Fatalf("exact replay: %+v", r)
@@ -126,8 +126,8 @@ func TestCommandPreTransportFailuresMakeNoCalls(t *testing.T) {
 			mutate(&m)
 			c, calls := commandStub(t, "openai", rawShell)
 			a := c.Assess(context.Background(), m)
-			if *calls != 0 || a.Status == "completed" || a.FindingStatus == "confirmed_vulnerability" || a.FindingStatus == "protected_for_claim" {
-				t.Fatalf("calls %d assessment %+v", *calls, a)
+			if calls.Load() != 0 || a.Status == "completed" || a.FindingStatus == "confirmed_vulnerability" || a.FindingStatus == "protected_for_claim" {
+				t.Fatalf("calls %d assessment %+v", calls.Load(), a)
 			}
 		})
 	}

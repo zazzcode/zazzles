@@ -91,7 +91,9 @@ type FollowUp struct {
 	Kind   string `json:"kind"`
 	Symbol string `json:"symbol"`
 	// Status is "sent", "unresolved" (the snapshot did not resolve the
-	// symbol exactly), "follow_up_cap_reached" or "failed".
+	// symbol exactly), "answered_by_contract" (a guard contract on the
+	// request already describes the member), "follow_up_cap_reached" or
+	// "failed".
 	Status   string    `json:"status"`
 	Evidence *Evidence `json:"evidence,omitempty"`
 	Reason   string    `json:"reason,omitempty"`

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
 // NeededEvidenceQuestionVersion versions the one-evidence-request question (W5).
@@ -98,6 +99,16 @@ func neededFollowUp(answers map[string]string) *analysis.FollowUp {
 		return nil
 	}
 	return &analysis.FollowUp{Kind: kind, Symbol: symbol, Status: "requested"}
+}
+
+// contractAnswersFollowUp returns the guard whose contract on the record
+// already describes a requested helper body (D-3), or "". A language
+// built-in such as String.prototype.match has no body in any snapshot.
+func contractAnswersFollowUp(u analysis.CandidateUse, kind, symbol string) string {
+	if kind != "helper_body" {
+		return ""
+	}
+	return analysispacks.GuardContractMember(u, symbol)
 }
 
 // snapshot resolves symbols in the scanned files whose bytes match the snapshot.
@@ -240,6 +251,10 @@ func (c *Client) followUps(ctx context.Context, report *analysis.AnalysisReport,
 		}
 		if u.Assessment.DeduplicatedFrom != "" || u.Assessment.Status != "completed" || u.Assessment.FindingStatus != "needs_evidence" {
 			f.Status, f.Reason = "not_sent", "the record is not an assessed Review record"
+			continue
+		}
+		if guard := contractAnswersFollowUp(*u, f.Kind, f.Symbol); guard != "" {
+			f.Status, f.Reason = "answered_by_contract", "the "+guard+" guard contract supplied with the request already describes "+f.Symbol
 			continue
 		}
 		if snap == nil {

@@ -31,7 +31,7 @@ a command candidate. Callback output parameters never become command dependencie
 ## Facets and outcomes
 
 Each process use is one record. A model decision answers five questions (shell syntax, executable
-control, argument control, guard bypass, protection coverage; protocol `command-components-v3`);
+control, argument control, guard bypass, protection coverage; protocol `command-components-v4`);
 evidence validation checks those answers against the source facts before classification:
 
 - A shell answer of vulnerable needs a request-derived value in an effective shell-command operand.
@@ -62,6 +62,14 @@ evidence validation checks those answers against the source facts before classif
   `guard_semantics_unknown`, or a guard that has no contract, it stays Review
   (`command_guard_semantics_unknown`). A protected answer beside an identified bypass is also
   inconsistent. A raw path's witness is unaffected.
+- A bypass must name the chain it bypasses. With two or more guarded paths the model cites one
+  (`bypass-citation-v2`) and the scanner verifies the citation like any other chain. When the record
+  has exactly one guarded path and that chain has no scanner gap, every verified citation would be
+  that chain, so the question is not sent: the scanner binds the bypass answer to it and records
+  `citation: implied_single_path` with `verifier: scanner`. A model citation that failed verification
+  is never overridden. A follow-up request for a member that a supplied guard contract already
+  describes (for example `item.match` under the regular-expression contract) has no body to fetch
+  and is recorded as `answered_by_contract`.
 - Unknown utility options are Review: no CWE-88 finding is made without established option or
   interpreter semantics (for example a literal `sh -c`).
 - An unsafe witness needs only its own source-to-operand path; unresolved sibling paths remain

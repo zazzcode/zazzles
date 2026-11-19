@@ -90,6 +90,28 @@ func GuardContracts(use analysis.CandidateUse) []GuardContract {
 	return out
 }
 
+// GuardContractMember returns the recognised guard on the record whose
+// contract describes symbol's final member (for example "item.match" under
+// regex_match), or "" when no contract on the record describes it.
+func GuardContractMember(use analysis.CandidateUse, symbol string) string {
+	member := symbol[strings.LastIndex(symbol, ".")+1:]
+	if member == "" {
+		return ""
+	}
+	call := member + "("
+	if strings.Contains(symbol, ".") {
+		call = "." + call
+	}
+	for _, c := range GuardContracts(use) {
+		for _, g := range guardSemantics {
+			if g.name == c.Guard && g.pattern.MatchString(call) {
+				return c.Guard
+			}
+		}
+	}
+	return ""
+}
+
 // GuardedCommandPath reports a request-derived command path whose protection
 // is a control the assessment must judge.
 func GuardedCommandPath(f *analysis.CommandFacts) bool {

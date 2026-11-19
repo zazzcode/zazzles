@@ -28,6 +28,9 @@ type Resolution struct {
 	// Discharged reports that policy treated this resolution as discharging
 	// its blocker or supplying its witness.
 	Discharged bool `json:"discharged,omitempty"`
+	// Verifier names who bound the answer to its chain when that was not a
+	// model citation: "scanner" for a chain the scanner already held complete.
+	Verifier string `json:"verifier,omitempty"`
 	// Provider and Model name who answered.
 	Provider string `json:"provider,omitempty"`
 	Model    string `json:"model,omitempty"`

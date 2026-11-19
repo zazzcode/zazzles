@@ -218,7 +218,11 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 				for _, p := range facet.paths {
 					onFacet = onFacet || p.Dependency == dep && p.Protection == "guarded"
 				}
-				if !onFacet {
+				// D-1: the facet's single guarded path, the record's only
+				// one, carries the bypass; the scanner binds it.
+				if implied, ok := impliedBypassPath(use); r == nil && !rejectedCitation(a, resolvePrefix+"bypass") && ok && len(facet.paths) == 1 && facet.paths[0].Dependency == implied {
+					a.Resolutions = append(a.Resolutions, impliedBypassResolution(use, a, implied))
+				} else if !onFacet {
 					add("command_guard_semantics_unknown", "A bypass was identified without a verified citation of a guarded path of the unsafe facet; its adequacy is not established.")
 				} else {
 					r.Discharged = true

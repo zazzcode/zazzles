@@ -28,10 +28,11 @@ func bypassCitation(u analysis.CandidateUse) []analysis.Resolution {
 	return nil
 }
 
-// TestCommandBypassCitation (AC1, D-8): a bypass_identified answer needs a
-// verified citation of a guarded path of the unsafe facet.
+// TestCommandBypassCitation (AC1, D-8): with two guarded paths a
+// bypass_identified answer needs a verified citation of a guarded path of the
+// unsafe facet. One guarded path binds itself (TestCommandImpliedSinglePath).
 func TestCommandBypassCitation(t *testing.T) {
-	weak := guardedCommandUse(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": weakRegexJS})
+	weak := guardedCommandUse(t, map[string]string{"index.php": twoGuardedPHP})
 	vulnerable := commandAnswers{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "guard_bypass": "bypass_identified", "protection_coverage": "incomplete"}
 	verified := bypassCitation(weak)
 	if verified == nil {

@@ -31,7 +31,7 @@ the rest as Review or Protected.
 | Source | Measurement | Example |
 |---|---|---|
 | Construction finding with no external origin | DVWA has 33 SQL records with zero dependencies that present as `sql-injection` findings: 24 at `dvwa/includes/dvwaPage.inc.php:570`, the rest in `dvwa/includes/DBMS/MySQL.php` | `mysqli_query(…, $drop_db)` in database setup. The finding's own text says no request dependency was resolved |
-| Judge answer overriding a closed-domain guard | DVWA `CMD-001` impossible level, 4 records, Confirmed by the judge | [PHP sample analysis](../evaluation/php-sample-analysis.md#known-disagreements-and-limits): every octet passes `is_numeric`. The command policy's contradiction list (`command_answers_inconsistent`) has no entry for this case, while the path family blocks it (`path_answers_inconsistent`) |
+| Unjustified `vulnerable` answer on a guarded path | DVWA `CMD-001` impossible level, 4 records, Confirmed by the judge | [PHP sample analysis](../evaluation/php-sample-analysis.md#known-disagreements-and-limits): every octet passes `is_numeric`. The request carried no statement of what `is_numeric` accepts, and no question asked the model to name a value that passes the guard |
 
 ### Review volume and paid requests
 
@@ -82,6 +82,11 @@ the rest as Review or Protected.
   dependency has a request, storage, file, fetched, browser or API-response origin.
 - **The judge is not asked a fixed question.** A record is sent only when some model answer could
   change its presented outcome.
+- **The scanner supplies facts; the model judges adequacy.** Where a verdict turns on whether a
+  control is sufficient, the scanner gives the model the control's source and its source-backed
+  semantics and asks a direct question. Policy blocks an answer only when evidence is missing or
+  the model's own answers contradict each other. A coarse scanner fact never overrides a model
+  answer.
 - **Uncertainty stays Review.** Missing evidence never becomes Protected or silent.
 - **Labels stay out of the scanner.** Expected labels, sample names and case IDs never enter scanner
   logic or model input.
@@ -94,11 +99,11 @@ the rest as Review or Protected.
 |---|---|---|
 | W1. Undecidable validation records | `internal/judge` (scheduling), `internal/report` | Skip the judge for a validation record that cannot pass its policy gate. Present such records grouped by field-read site |
 | W2. Sink grouping | `internal/report`, `internal/analysis` (field docs) | Extend the outbound grouping to every family: one presented row per kind, sink span and status, listing entries and paths |
-| W3. Origin precision | `internal/langjs`, `internal/parse` | Own-API response fields take the origin their handler gives them. Literal-only storage gets its own blocker reason. Closed constant `Content-Type` maps resolve |
+| W3. Origin precision | `internal/langjs`, `internal/parse` | Own-API response fields take the origin their handler gives them. Stored-origin records carry their write set as evidence. Closed constant `Content-Type` maps resolve |
 | W4. Presentation consistency | `internal/parse` (`AssembleXSSClaims`) | An unknown output context carries protection `unknown`, not `raw` |
-| W5. Precision measurement | `.zazz/evaluation/` | Finding-precision rows, noise classes, an unkeyed-record census and a protected-control set |
+| W5. Precision measurement | `.zazz/evaluation/` | Finding-precision rows, noise classes, an unkeyed-record census and a protected-control set. Judged rows are keyed by provider and model |
 | W6. Source-less construction findings | `internal/report` (status assignment) | A construction record with no external-origin dependency presents as Review, not as a finding |
-| W7. Closed-domain guard consistency | `internal/judge` (command policy) | A `vulnerable` answer on paths that are all guarded joins the existing contradiction list, so the record is Review, as in the path family |
+| W7. Model-judged guard adequacy (command family) | `internal/analysispacks` (guard contracts, question), `internal/judge` (command policy) | Give the model each recognised guard's semantics and ask whether a value passes it and still alters the command. Policy checks that answer against the verdict |
 
 Files:
 
@@ -110,7 +115,8 @@ Files:
 | `internal/langjs/xss_cross_tier.go`, `xss_client_http.go`, `path_node.go`, `xss_response.go` | Modified | W3a and W3c |
 | `internal/parse/storage_origin.go`, `internal/parse/xss_claims.go` | Modified | W3b and W4 |
 | `internal/report/findings.go` | Modified | W6 |
-| `internal/judge/command.go` | Modified | W7 |
+| `internal/analysispacks/command.go`, `internal/judge/command.go` | Modified | W7 question, protocol version and policy check |
+| `internal/analysispacks/guard_contracts.go` | New | W7 source-backed semantics for recognised guards |
 | `.zazz/evaluation/recall-gap-inventory/check.py`, `cases.json` | Modified | W5 rows |
 | `.zazz/evaluation/recall-gap-inventory/protected-controls.json`, `.zazz/evaluation/precision-noise-baseline.md` | New | W5 set and record |
 | `docs/interpreting-results.md`, `docs/analysis/*.md`, `AGENTS.md` (Juice Shop request count) | Modified | Changed behavior and the new live-check size |
@@ -123,9 +129,12 @@ Out of scope, each with its owner:
 - The `needs_evidence` Review-burden inventory, library validator contracts, framework autoescape
   defaults and stored-origin narrowing. These are the "Protected" rows of
   [phase 5 §11](architecture-phase-5-accuracy-gaps.md#follow-on-accuracy-candidates-not-in-scope)
-  and need their own contract.
+  and need their own contract. The first is
+  [model-assisted evidence resolution](model-assisted-evidence-resolution.md), which starts after
+  this contract's W5, W3 and W7 are on `stage`.
 - A walker rule for test paths. The census shows nothing to remove.
-- Prompt changes and any policy change other than W7.
+- Prompt and policy changes other than W7's guard question, and guard questions for families
+  other than command. Path and SQL follow once W7 is measured.
 - Paid runs beyond §6.
 
 Each workstream may land on its own. W5 lands first so the others are measured.
@@ -134,9 +143,12 @@ Each workstream may land on its own. W5 lands first so the others are measured.
 
 - **D-1. Measure before changing (W5).** The checker gains four measures per family and sample:
   finding precision against keyed rows, record counts per noise class from §2, an unkeyed census
-  (records matching no key row) and the test-path census. Every later workstream reports a
-  before/after delta. **Why.** A smaller report is not a win without a denominator, and unkeyed
-  records are the population whose truth is unknown.
+  (records matching no key row), the test-path census, and, for judged runs, the requests whose
+  outcome a scanner blocker had already fixed and the substantive answers discarded that way. Every later workstream reports a
+  before/after delta. Judged precision rows name the provider, model and question version, so the
+  same corpus can be re-measured when a model changes. **Why.** A smaller report is not a win
+  without a denominator, unkeyed records are the population whose truth is unknown, and the design
+  expects model judgment to improve without scanner changes.
 - **D-2. Group by extending `grouped_into` (W2).** The key is kind, sink span and presented status.
   The first record in report order is the representative and lists the others in
   `grouped_use_ids`; the others carry `grouped_into`. The row shows the entry count, the record
@@ -151,12 +163,15 @@ Each workstream may land on its own. W5 lands first so the others are measured.
   selector context. When the handler or field cannot be resolved, today's behavior stays (request
   origin with `unknown_transfer`). **Why.** A handler can echo request input, so a blanket
   "response means storage" rule would hide a real flow.
-- **D-3b. Literal-only storage is labelled, not removed (W3).** When every write to a storage key
-  in scanned source is a literal and the read query is static, the record keeps Review and its
-  `storage_origin_unresolved` blocker gains the detail `writers_literal_only`. **Why.** One corpus
-  record qualifies, while a second-order write through another service, an unmodeled ORM call or
-  an injectable statement cannot be excluded from source alone. Removal has the higher error cost.
-  **Rejected.** Removal under a closed-store proof; see §11 Q3.
+- **D-3b. Stored-origin records carry their write set; this contract gives no verdict (W3).** For
+  a record blocked by `storage_origin_unresolved`, the scanner attaches every write it found for
+  the storage key, whether each written value is a literal, whether the read query is static, and
+  whether the store's schema and writers are all in scanned source. The record stays Review.
+  **Why.** Whether a request value can reach the stored column is a judgment the decision model
+  makes better than a rule, and it can only make it over the writes it is shown. The judgment
+  belongs to [model-assisted evidence resolution](model-assisted-evidence-resolution.md) W3; this
+  contract supplies its evidence. **Rejected.** A fixed `writers_literal_only` label, and removal
+  under a closed-store rule: both encode in code a call the model should make.
 - **D-3c. A closed type map resolves the response type (W3).** A map is closed when it is a
   module-level `const` object literal with literal values, is never assigned or passed out, and the
   missing-key branch returns before the response. All values non-HTML: no XSS record. Any HTML or
@@ -170,16 +185,30 @@ Each workstream may land on its own. W5 lands first so the others are measured.
   `validation_evidence_missing` and assessment state `not_run`. A record that can pass, one named by
   `--checks`, or any record under `--only-family input-validation` is judged as today.
   **Why.** This is a source-backed rule, not a preference: the outcome is fixed before the request.
-  It keeps ThreatByte's seven decidable rows judged. **Rejected.** Excluding the whole family from
+  It keeps ThreatByte's seven decidable rows judged. Judging validation per handler, with the
+  handler body as evidence, is left to a contract that follows model-assisted evidence resolution. **Rejected.** Excluding the whole family from
   the default scope, which would stop judging those seven.
 - **D-6. No external origin, no finding (W6).** A construction record with zero dependencies, or
   with constant and environment origins only, presents as Review with the reason
   `external_origin_not_established`. **Why.** The finding type is `sql-injection`, and the record's
   own text says external control is not established.
-- **D-7. One inconsistency rule for guarded operands (W7).** When every command path is `guarded`
-  and the model answers `vulnerable`, that is one more contradiction for the existing
-  `command_answers_inconsistent` blocker, and the record is Review. **Why.** Guards can be partial, so the scanner does not claim Protected; but a Confirmed
-  outcome contradicts its own facts. The path family already resolves this the same way.
+- **D-7. The model judges guard adequacy, with the guard's semantics in hand (W7).** For each
+  recognised guard on a command path (`is_numeric`, `ctype_digit`, integer casts, fully anchored
+  regexes, allow-list membership), the request carries a short source-backed contract of the
+  values it accepts, including edge cases such as trailing whitespace. One added question asks
+  whether a value exists that passes the guard and still alters the command: `bypass_identified`,
+  `no_bypass` or `guard_semantics_unknown`. Policy then reads the pair:
+  - `vulnerable` with `bypass_identified` stands as a finding.
+  - `vulnerable` with `no_bypass` is a self-contradiction and becomes Review under the existing
+    `command_answers_inconsistent` blocker.
+  - `guard_semantics_unknown`, or a guard with no contract, stays Review.
+
+  The question set changes, so the command protocol version bumps and command records are judged
+  afresh. **Why.** `guarded` means a control exists; its adequacy is the model's call by design.
+  Deciding it in code would repeat the limits of rule-based analysis and would demote correct
+  answers on weak guards. **Rejected.** A policy rule that treats every `vulnerable` answer on an
+  all-guarded record as inconsistent: it fixes `CMD-001` but also demotes a real injection behind
+  a deny-list.
 
 ## 6. Agent implementation rules
 
@@ -187,14 +216,16 @@ Follow the plan's [common rules](architecture-update-plan.md#common-agent-implem
 [AGENTS.md](../../AGENTS.md#credentials-and-live-model-calls). Each workstream starts with a failing
 fixture, then runs the phase 5 checker and the corpus record diff before and after. Paid calls are
 limited to the owner's standing live check (`openai`, `gpt-6-luna`, default judge limit, one sample)
-when a workstream changes judged records; anything more needs the owner's word. Halt if the recall
+when a workstream changes judged records. W7 also needs one DVWA check limited to
+`--only-family command` (16 records). Anything more needs the owner's word. Halt if the recall
 floor moves, an unlisted golden row changes, a removal lacks a source-backed impossibility, or a
 keyed positive loses its finding status under W6.
 
 ## 7. Acceptance criteria
 
 1. **AC1 (W5).** `check.py` prints, per family and sample: keyed findings true and false, the
-   noise-class counts of §2, the unkeyed count and the test-path count. The protected set holds at
+   noise-class counts of §2, the unkeyed count, the test-path count and, for a judged report, the
+   fixed-outcome request count. The protected set holds at
    least one source-reviewed control per security family with a denominator. The offline baseline
    is recorded in `precision-noise-baseline.md` and reproduces §2. Verified by `python3
    .zazz/evaluation/recall-gap-inventory/check.py` and its unit test.
@@ -207,8 +238,9 @@ keyed positive loses its finding status under W6.
    - A page that reads a file named by an own-API row field has a storage-origin dependency and no
      request-origin one (`OOPS-PATH-N01` shape).
    - The same page against a handler that echoes a request value keeps the request origin.
-   - A static read of a literal-only table carries `writers_literal_only`; the same read with one
-     request write, or through a request-built query, does not.
+   - A stored-origin record lists every write found for its storage key, with the literal,
+     static-read and closed-store facts. A table with one request write lists that write as
+     non-literal, and a read through a request-built query is marked not static.
    - A raster-only closed map produces no XSS record. A map with SVG, a mutated map and a map with
      no missing-key return each stay Review.
 
@@ -225,11 +257,15 @@ keyed positive loses its finding status under W6.
    `external_origin_not_established`, and DVWA offline findings go from 183 to 150. No keyed
    positive changes status. Verified by `TestConstructionFindingNeedsOrigin` in `internal/report`
    and the DVWA golden delta.
-7. **AC7 (W7).** A stub `vulnerable` answer on an all-guarded command record yields Review with
-   `command_answers_inconsistent`; the same answer with one raw path stays Confirmed. Verified by
-   `TestCommandGuardedAnswerInconsistent` in `internal/judge`.
+7. **AC7 (W7).** With a stub judge: `vulnerable` plus `no_bypass` yields Review with
+   `command_answers_inconsistent`; `vulnerable` plus `bypass_identified` stays a finding; a guard
+   with no contract stays Review. The request for a guarded path contains the guard's contract
+   text and the new question. Verified by `TestCommandGuardBypassPolicy` in `internal/judge` and
+   `TestCommandGuardContract` in `internal/analysispacks`. On the live DVWA command check, the
+   four `CMD-001` impossible-level records are no longer Confirmed and no low-, medium- or
+   high-level command record loses its Confirmed outcome.
 8. **AC8.** The contributor gate passes, the phase 5 checker floor holds, and every golden delta is
-   listed in the run log. Where W1, W3 or W7 changes judged records, one owner-authorized live
+   listed in the run log. Where W1 or W3 changes judged records, one owner-authorized live
    check of OopsSec records the judged outcome counts.
 
 ## 8. Test strategy
@@ -240,8 +276,8 @@ keyed positive loses its finding status under W6.
 - **Adapters.** Each W3 rule is a pair: the case it relabels or removes and the vulnerable sibling
   it must leave alone (AC3 lists them).
 - **Policy.** W1, W6 and W7 each pair the changed case with the neighbour that must not change: a
-  decidable validation record, a construction record with one request dependency, and a command
-  record with one raw path.
+  decidable validation record, a construction record with one request dependency, and a weakly
+  guarded command record whose finding must survive.
 - **Measurement.** Recall and precision are checked with the phase 5 checker and the record diff
   across all eleven pinned samples, before and after each workstream.
 - **Omitted.** Python and PHP adapters get no W3 fixtures; no corpus record of those languages
@@ -255,7 +291,7 @@ keyed positive loses its finding status under W6.
 4. W1: decidability gate, which also shrinks every later live check.
 5. W3: origin rules, one at a time, each with its pair.
 6. W2: grouping, after W1 and W6 have settled which status each record presents.
-7. W7, after the owner's answer to §11 Q4.
+7. W7: guard contracts, the question and the policy check, then the DVWA command calibration.
 
 Each step is its own commit with its own before/after evidence.
 
@@ -274,14 +310,10 @@ Each step is its own commit with its own before/after evidence.
 2. **Grouping in SARIF (W2).** One result per group with related locations and a fingerprint built
    from kind and sink span (recommended), or one result per record with a shared
    `partialFingerprints` group? The first changes existing code-scanning alert identities once.
-3. **Literal-only storage (W3).** Keep it labelled Review (recommended, D-3b), or remove the record
-   when the store's schema and every write are in scanned source, the read is static and no
-   request-origin SQL candidate on that store can write?
-4. **Command policy (W7).** Is aligning the command family with the path family's inconsistency
-   blocker in scope here (recommended), or held for a policy contract?
-5. **SVG.** Should `image/svg+xml` count as an HTML-capable response type for the XSS sink, which
+3. **SVG.** Should `image/svg+xml` count as an HTML-capable response type for the XSS sink, which
    turns the uploads route into a stored-XSS claim? Or should it stay unresolved Review?
-6. **Paid budget.** Is the standing live check enough for AC8, or is a per-workstream cap wanted?
+4. **Paid budget.** Is the standing live check, plus the DVWA command check for W7, enough, or is
+   a per-workstream cap wanted?
 
 ## 12. Run log protocol
 
@@ -320,3 +352,22 @@ Drafted from the phase 5 inventory observations and fresh offline measurements.
   not exclude test paths; the zero count is an observation. Outbound fan-out is already grouped.
 - **Hygiene.** Added the file list, a verifying test per criterion, a reason per decision, and an
   owner for each excluded follow-on.
+
+### 2026-11-19 — Owner direction: use the decision model where analysis gets tricky
+
+- **W7 redesigned.** The deterministic "all guarded plus vulnerable" rule is replaced by guard
+  contracts and a bypass question, so the model judges adequacy and policy checks only its
+  self-consistency. This closes the former command-policy question.
+- **New invariant.** The scanner supplies facts and semantics, the model judges adequacy, and a
+  coarse fact never overrides an answer.
+- **W5.** Judged precision rows are keyed by provider, model and question version, so a newer
+  model can be measured on the same corpus.
+
+### 2026-11-19 — Sync with model-assisted evidence resolution
+
+- **D-3b changed again.** Stored-origin records now carry their write set as evidence and get no
+  label or verdict here. The follow-on contract's W3 judges them. This closes the literal-only
+  storage question.
+- **W5.** Added the fixed-outcome request measure that the follow-on uses as its baseline.
+- **Sequence.** This contract ships first. The follow-on depends on its W5 measures, W3 write-set
+  evidence and W7 cited-answer pattern.

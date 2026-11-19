@@ -122,3 +122,36 @@ func TestStoredOriginJudgment(t *testing.T) {
 		})
 	}
 }
+
+// TestStoredOriginLiteralOnlyIsGated: a census of literal writes in a store
+// that is not closed leaves no answer that could change the record, so it is
+// not asked and the send gate keeps it back. Every question sent has at least
+// two choices (the provider rejects fewer).
+func TestStoredOriginLiteralOnlyIsGated(t *testing.T) {
+	use := storedOriginUse(t)
+	so := *use.StoredOrigin
+	so.Stores = append([]analysis.StoredWriteSet{}, use.StoredOrigin.Stores...)
+	so.Stores[0].Writes = []analysis.StoredWrite{{Evidence: use.StoredOrigin.Stores[0].Writes[0].Evidence, Literal: true}}
+	so.Stores[0].ClosedStore = "unknown"
+	use.StoredOrigin = &so
+	if storedOriginAskable(use) {
+		t.Fatal("literal-only writes in an open store are not askable")
+	}
+	if _, fixed := resolutionGate(use); !fixed {
+		t.Fatal("the record must be gated")
+	}
+	so.Stores[0].ClosedStore = "closed"
+	if !storedOriginAskable(use) {
+		t.Fatal("a closed store stays askable: no request write would support protection")
+	}
+	c, _ := New("openai", "fixture-model", "k")
+	payload, err := c.payload(use)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range payloadResolutionQuestions(payload) {
+		if len(q.choices) < 2 {
+			t.Fatalf("question %s has %d choices", q.name, len(q.choices))
+		}
+	}
+}

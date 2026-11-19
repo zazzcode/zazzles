@@ -128,22 +128,27 @@ func resolvable(u analysis.CandidateUse, g analysis.Gap) bool {
 	return false
 }
 
-// storedOriginAskable reports a record whose stored origin can be judged over
-// a stated write set (W3b, D-4): a family that reads the answer and at least
-// one write found for a read key.
+// storedOriginAskable reports a record whose stored origin an answer could
+// change (W3b, D-4): a family that reads the answer, and either a listed
+// non-literal write the model could cite or every store closed, so that no
+// request write would support protection. A census of literal writes only in
+// a store that is not closed leaves nothing to decide, and the record is
+// gated (D-7).
 func storedOriginAskable(u analysis.CandidateUse) bool {
 	if f := familyOf(u); f != "xss" && f != "sql" {
 		return false
 	}
-	if u.StoredOrigin == nil {
+	if u.StoredOrigin == nil || len(u.StoredOrigin.Stores) == 0 {
 		return false
 	}
 	for _, s := range u.StoredOrigin.Stores {
-		if len(s.Writes) > 0 {
-			return true
+		for _, w := range s.Writes {
+			if !w.Literal {
+				return true
+			}
 		}
 	}
-	return false
+	return allStoresClosed(u)
 }
 
 // fixingBlockers returns the scanner blockers that fix the record's outcome
@@ -353,7 +358,9 @@ func resolutionQuestions(asks []resolutionAsk) []question {
 		if a.answer != nil {
 			out = append(out, *a.answer)
 		}
-		if a.cite.name != "" {
+		// A choice question needs two options; a citation with only none
+		// offers nothing to cite.
+		if a.cite.name != "" && len(a.cite.choices) >= 2 {
 			out = append(out, a.cite)
 		}
 	}

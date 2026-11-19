@@ -1,6 +1,6 @@
 # Close findings gaps — Node.js Goof, DVWA and Python insecure app
 
-- **Status** Implemented offline 2026-11-19 (W1–W8, W5 partial); AC11 live check awaits the owner's word. Results: [close-findings-gaps-results](../evaluation/close-findings-gaps-results.md).
+- **Status** Implemented 2026-11-19 (W1–W8; W5 partial: PHP and Werkzeug upload writes). AC11 live check run and met. Results: [close-findings-gaps-results](../evaluation/close-findings-gaps-results.md).
 - **Worktree and branch** `close-findings-gaps-dvwa`
 - **Baseline** `stage` at `58e94e7` (PR #30, model-assisted evidence resolution)
 - **Delivery** One draft PR into `stage`, one commit per workstream (§9). W5 and W6 may split into

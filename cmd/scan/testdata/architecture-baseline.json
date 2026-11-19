@@ -51,10 +51,10 @@
   "internal/langjs/testdata/javascript/command-injection": {
     "uses": [
       {
-        "id": "candidate:v1:5eaa1c392fff610fee4b2e3ecfabc2e4e3a1783adaf7d916904fc06d76fa3b3d",
+        "id": "candidate:v1:ef11d3209b2769fa8931c86016a9d1f8dd2c468366ec14b9598a99bac120030a",
         "kind": "command_execution_candidate",
-        "request_sha256": "2e2d883a5adf4734093e1edc369ae0f98060a0bac233206416995292f3a1e645",
-        "signature_sha256": "68328efc9a4e4e93ae55238f609d73c1741e608ed8ae2d84e7da669a801e9f90"
+        "request_sha256": "2833fa9377c65c7fd921e93f40dffba575a7bde226293bcbd5ace538c6c28e66",
+        "signature_sha256": "0edeb5c8c90cc6c5427dc0ead533638784d41cd37d972cd4e11739a0bb74a705"
       },
       {
         "id": "candidate:v1:68cf39ebb155f700e60fac631e4c5826846bf479e8acbb8774c54ace018fb6cb",
@@ -93,8 +93,8 @@
         "signature_sha256": "1fb69e8c8cd9d96cfcad80939de69510b34b703f1e26e3d5e2e9142be24cbe17"
       }
     ],
-    "report_sha256": "3371016b47888adb870cd3b619520f2ca68d61cb7bbc852ad3653409310dbef7",
-    "sarif_sha256": "4e402d43e1f437ba7ecb3254c0798204d1966dc1d5e3fd224e0483cb3d4d3dab",
+    "report_sha256": "125c211fb37cc077fcd6daf066900b126091e4de5416c469017b0ad26498ca62",
+    "sarif_sha256": "4ca22f01a4545350682acc45aed3c7da22712ee579e17f698de0cd7660cf5f7e",
     "entries": 4,
     "registrations": 4,
     "dispatch_bindings": 4,
@@ -490,6 +490,55 @@
     "dispatch_bindings": 6,
     "callables": 6,
     "invocation_contexts": 6,
+    "uses_count": 6,
+    "gaps": 0
+  },
+  "internal/langjs/testdata/javascript/regex-capture": {
+    "uses": [
+      {
+        "id": "candidate:v1:4db5cb6971240854ad9b6335b4a147327b2a56961df24b41be2d784d7728038c",
+        "kind": "command_execution_candidate",
+        "request_sha256": "9ba4bf02f0b6af7536e9ec03c274e6ae240f4fe94e0a3022c73e06d0f96a6180",
+        "signature_sha256": "ceaa8239ffbdfa4f87e3cff7282ba1d7d0cf0a9b939e2afc0c080da14e9922c4"
+      },
+      {
+        "id": "candidate:v1:c2d7080dbadc130b9758d6a9f70e68b12dabe3058ba5b2749acccd73960eaa19",
+        "kind": "input_validation_candidate",
+        "request_sha256": "d05d25999509429cda4968142e9b1c753e25134fc8d05c2f77f329029f456a59",
+        "signature_sha256": "d5b578f7771c3141ffa76b59517bdf406f198466820cd5f79a6b9a740be88b13"
+      },
+      {
+        "id": "candidate:v1:381dc3fe32abe293b10b3cb40d1d2dbb20c52143f64fd9c8a810e22b7f7d432c",
+        "kind": "command_execution_candidate",
+        "request_sha256": "0db828ee644105bc4287ef0400fc4a35a9645f1405540aa117554fe65b8c3514",
+        "signature_sha256": "fd827105195f2bbc0b9dd3656deb406fffa3e5b0b3b384a477fcf8087648d09a"
+      },
+      {
+        "id": "candidate:v1:821dca034cacf0334544ccf505acaaf027e459a6df1170fcffdb84a48bcfc847",
+        "kind": "input_validation_candidate",
+        "request_sha256": "dead9d321d54ba82ebd2ed7ece02242afb6ead8902d7571d3506b53203588f71",
+        "signature_sha256": "9c8c315fb3f65951d23944530bb7336b48154f60b6123ca3a7ad50520e04b784"
+      },
+      {
+        "id": "candidate:v1:a4dfb74453e9e06f6207c46e959f820ebcf32247741a359b84ffb2aaaefacece",
+        "kind": "command_execution_candidate",
+        "request_sha256": "39a804d9235e6798c39ef0e79857401a1bcd4f508f8126a2dc6898fe87f35ae8",
+        "signature_sha256": "f5bb9220fd3938bb9c7abe2403e8ae7e7c02fd57c353be63629b3236bf641e7f"
+      },
+      {
+        "id": "candidate:v1:cc9a8bc4428fe71be013eaddd355131b3ef9b006961177c80998978476565846",
+        "kind": "input_validation_candidate",
+        "request_sha256": "728ed29b5664cfa97d89eeed645f02878153aa2c3190e100fc9a8eb4c6177533",
+        "signature_sha256": "eb84ec375e49947650992a9212757c0d130d02665ae8a30fb521c0544c268266"
+      }
+    ],
+    "report_sha256": "b634d8b1e329d2199a3793b51b32d67db2b766adfe187863ef22de8d6230bb11",
+    "sarif_sha256": "5b3f37107317d4a966abe3e1df5f460b17aa11d9ba3abe7482b07027ea479e61",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
     "uses_count": 6,
     "gaps": 0
   },
@@ -1798,6 +1847,37 @@
     "uses_count": 6,
     "gaps": 0
   },
+  "internal/langphp/testdata/regex-capture": {
+    "uses": [
+      {
+        "id": "candidate:v1:f843a28f9cdba93ac539655367ddc7ce02097ff710188363e2d7f3db1011234a",
+        "kind": "command_execution_candidate",
+        "request_sha256": "f51f37ff173ca08926df299bfe7b0bebe2f6fb35d90ced49c51febb2d0a49d24",
+        "signature_sha256": "7d0296a4a6556527366cef0edb1fb9aaa0041b4ac5f8001812f19fac0e16d695"
+      },
+      {
+        "id": "candidate:v1:698fbe3750e2a1fd304ee9d9cd0a2075a14787a8091e5581f3442e33523c27c8",
+        "kind": "command_execution_candidate",
+        "request_sha256": "aba6092124face932bf70ab3c7fff654a1199cab6b77030fad33336f2a67b3c9",
+        "signature_sha256": "034637e0ea8f2dd971fb3c55701ed9907a4c53814f83008f01c956add06a647e"
+      },
+      {
+        "id": "candidate:v1:ef3e4b3aec054c811e2eded2e1d1e2ce217163f79a676d39fa226f08f69c0532",
+        "kind": "command_execution_candidate",
+        "request_sha256": "d4bcfa5ffdb63705e1301b035d498cfd56d99df6295c69d8d89aa81e22875cff",
+        "signature_sha256": "94e115185166c7326cd5a8661cb13dcc7bf8c10d82cf8e300aceae779e2edd86"
+      }
+    ],
+    "report_sha256": "11489942fcbc2638ed7750d344656b657583d645e45c984a148baa060fabf6c6",
+    "sarif_sha256": "440b79980f51a4abc50f27efd915a609bf0f31ac90f8266ead4f1c6b91f6fba1",
+    "entries": 1,
+    "registrations": 1,
+    "dispatch_bindings": 1,
+    "callables": 1,
+    "invocation_contexts": 1,
+    "uses_count": 3,
+    "gaps": 0
+  },
   "internal/langphp/testdata/routes": {
     "uses": [
       {
@@ -3100,6 +3180,55 @@
     "callables": 42,
     "invocation_contexts": 42,
     "uses_count": 112,
+    "gaps": 0
+  },
+  "internal/langpy/testdata/regex-capture": {
+    "uses": [
+      {
+        "id": "candidate:v1:c30c65bc2d76cd2b83be8798ab4f16ff065aa0c72efdb0fc6e6bb85bcc91ac7b",
+        "kind": "command_execution_candidate",
+        "request_sha256": "569850d1cdf6af7521e95aa6efc9e1e7044efe89cd0b5f45cba247a7a6535b46",
+        "signature_sha256": "31fef86a9dfae51c8f195447d287301e3d81ddab5394ada50cd672408cb33b36"
+      },
+      {
+        "id": "candidate:v1:1eca487e7184514b7e604a3f10668c7d0e6b6ebd1ebcb1e8ef8f45e2ba626338",
+        "kind": "input_validation_candidate",
+        "request_sha256": "ae4492f9757bead209800231cc316a1753f5043f0202d429401ec6f356494278",
+        "signature_sha256": "b72dc80afacfc4403d8eeec671182b44e0797d1c5c78fc873306bf4d3d31bd52"
+      },
+      {
+        "id": "candidate:v1:e5c3f1c83f14dfaa3ea6f7f32c2b2176b05dd7f672395f0b9f7adba4979383f8",
+        "kind": "command_execution_candidate",
+        "request_sha256": "69ab689ccd164bd16bff28107f27ddfc8f083ea2945e8b91244c4b168494b61b",
+        "signature_sha256": "95d1256f9163ac20e5c36e1f12ad1c0cf8f9927da47830ffcea786522176ee35"
+      },
+      {
+        "id": "candidate:v1:21170475a379170b47f11a7b914a6bfcb467bc17d2a7c9b27b32dab2a7d487e6",
+        "kind": "input_validation_candidate",
+        "request_sha256": "82ed95ba42a87b4421a8ae4c340cf7a785d8946d1e06856ff0f70e845881c95a",
+        "signature_sha256": "2f9d381b90b863a207b3760b54c22ef5da828a9f8840d8e4fbecfb135c027039"
+      },
+      {
+        "id": "candidate:v1:5a1aef7d10149ab169131adb31d65f82f97be375c21586d3e2e4ba24b3857cf5",
+        "kind": "command_execution_candidate",
+        "request_sha256": "9daed59c1ca618e9e754c9c73f6ce5f3dc988e2bbdeb25608546087f4f89cff9",
+        "signature_sha256": "698d2d042fb4a4a01217e4ada73c8359f2e178c4743b490c7e7cb96c7d4da152"
+      },
+      {
+        "id": "candidate:v1:437f84e7210053f53c00741d559024905b3adce261ec05cfee0b0423aac842b7",
+        "kind": "input_validation_candidate",
+        "request_sha256": "4195d202fd8bf5fa1c3577aebda355caa7f0bb17303496c6d0eeb223848fb22d",
+        "signature_sha256": "318ec2c1e7b88471a2999ad68f456e6d24af630192592f137c87e87fc538fa8b"
+      }
+    ],
+    "report_sha256": "408c1497c473bd09a8274fce2a1cddb3aa277d03abfa3301988faa3ba61d2846",
+    "sarif_sha256": "effd931f4ed722bca65e08c098ca8aae750d2aa3cd7e4385f08bdf468e9e0717",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 6,
     "gaps": 0
   },
   "internal/langpy/testdata/routes": {

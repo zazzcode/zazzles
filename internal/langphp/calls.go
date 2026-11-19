@@ -185,7 +185,12 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			v.literals, v.constant = nil, false
 			return v
 		}
-	case "preg_replace", "preg_match", "stristr", "stripos", "strpos", "strstr", "substr":
+	case "preg_match":
+		if f.builtin(qname) {
+			f.bindRegexMatches(n, nodes, values)
+			return phpTransfer(phpProtect(all, "unknown"), f.module.evidence("string_transform", n))
+		}
+	case "preg_replace", "stristr", "stripos", "strpos", "strstr", "substr":
 		if f.builtin(qname) {
 			// Replacement/removal transforms keep content with unknown effect.
 			v := phpTransfer(phpProtect(all, "unknown"), f.module.evidence("string_transform", n))
@@ -290,6 +295,56 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return v
 	}
 	return all
+}
+
+// bindRegexMatches binds the matches array of preg_match($re, $subject, $m)
+// for a literal $re: $m holds substrings of the subject, so its elements keep
+// the subject's paths with a regex_match transfer.
+func (f *phpFlow) bindRegexMatches(n *sitter.Node, nodes []*sitter.Node, values []phpValue) {
+	m := f.module
+	if len(nodes) < 3 || len(values) < 2 {
+		return
+	}
+	name := phpVarName(m, nodes[2])
+	if name == "" {
+		return
+	}
+	if _, ok := phpStringLiteral(m, nodes[0]); !ok {
+		return
+	}
+	pattern, flags, ok := analysispacks.PHPRegexLiteral(phpText(m, nodes[0]))
+	if !ok {
+		return
+	}
+	v := phpTransfer(values[1], m.evidence("regex_match", n))
+	v.literals, v.constant, v.fields = nil, false, nil
+	v.regex = &phpRegex{pattern: pattern, flags: flags, text: phpText(m, nodes[0]), call: m.evidence("guard", n)}
+	f.markDirty(name)
+	f.env[name] = v
+}
+
+// regexCapture reads group n of a literal preg_match's matches array and
+// records the capture as a transform on each path (close-findings-gaps D-4).
+func (f *phpFlow) regexCapture(v phpValue, group int, n *sitter.Node) phpValue {
+	re := v.regex
+	sub, ok := analysispacks.CaptureSubPattern(re.pattern, group)
+	out := phpTransfer(v, f.module.evidence("regex_capture", n))
+	out.regex = nil
+	out.deps = append([]phpDep{}, out.deps...)
+	for i := range out.deps {
+		d := &out.deps[i]
+		if !ok {
+			d.protection = "unknown"
+			continue
+		}
+		class := analysispacks.ClassifyCapture(sub, analysispacks.FlavorPCRE, re.flags)
+		d.dep.Transforms = append(append([]analysis.ValueTransform{}, d.dep.Transforms...), analysis.ValueTransform{Kind: "regex_capture", At: parse.Span(f.module.file, n),
+			Flavor: analysispacks.FlavorPCRE, Pattern: re.pattern, Flags: re.flags, Group: group, SubPattern: sub, Class: class.Class, Alphabet: class.Alphabet, Regex: re.text, Tests: []string{re.call.Text}})
+		if d.protection == "raw" || d.protection == "" {
+			d.protection, d.regexGuard = phpRegexCapture, re.call
+		}
+	}
+	return out
 }
 
 func (f *phpFlow) helperFunction(name string) *sitter.Node {

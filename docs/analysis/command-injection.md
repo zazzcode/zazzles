@@ -62,6 +62,20 @@ evidence validation checks those answers against the source facts before classif
   `guard_semantics_unknown`, or a guard that has no contract, it stays Review
   (`command_guard_semantics_unknown`). A protected answer beside an identified bypass is also
   inconsistent. A raw path's witness is unaffected.
+- A capture group of a literal regular expression is an exactly stated transform. When the operand
+  is `s.match(re)[n]` or `re.exec(s)[n]` (JavaScript), `$m[n]` after `preg_match(re, $s, $m)` (PHP)
+  or `m.group(n)` after `re.match`/`fullmatch`/`search` (Python), the dependency records a
+  `regex_capture` transform with the pattern, flags, group and the group's own sub-pattern, classified
+  as `admits_any` (the sub-pattern contains `.`, `\S`, `\W`, `\D`, or a negated class that excludes
+  none of `;`, `|`, `&`, `$`, backtick, `(`, `)`, `<` and `>`), `explicit_alphabet` (only literals and positive classes; the accepted
+  characters are listed, with Python's Unicode `\d`/`\w`/`\s` noted) or `unknown` (backreferences,
+  lookaround, inline or verbose flags, other unsupported syntax). One deterministic rule applies, to
+  the shell facet only: a path whose only controls are the match test of that expression (beside
+  presence and runtime-type tests) and whose capture is `admits_any` is raw, with the capture kept as
+  a transform, because the guard provably passes shell syntax. Any other control keeps the path
+  guarded; `explicit_alphabet` and `unknown` captures stay guarded, and the guard contract states the
+  classification so the model judges adequacy against the listed alphabet. Executable and argument
+  facets, and the path and SQL families, do not apply the rule yet.
 - A bypass must name the chain it bypasses. With two or more guarded paths the model cites one
   (`bypass-citation-v2`) and the scanner verifies the citation like any other chain. When the record
   has exactly one guarded path and that chain has no scanner gap, every verified citation would be

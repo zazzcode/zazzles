@@ -38,6 +38,15 @@ type pythonValue struct {
 	methods map[string]*pythonBoundCallable
 	// thread is a threading.Thread whose target runs on start().
 	thread *pythonThread
+	// regex is set on the match object of a literal re.match/fullmatch/search.
+	regex *pythonRegex
+}
+
+// pythonRegex is the literal expression of a re match whose object a value
+// holds (close-findings-gaps D-4).
+type pythonRegex struct {
+	pattern, flags, text string
+	call                 analysis.Evidence
 }
 type pythonThread struct {
 	callable *pythonBoundCallable

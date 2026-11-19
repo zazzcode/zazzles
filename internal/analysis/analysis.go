@@ -24,6 +24,30 @@ type Dependency struct {
 	// browser value was read from. Neither is serialized or sent to a model.
 	OutputContext string `json:"-"`
 	ResponseField string `json:"-"`
+	// Transforms are source-backed transforms on this chain that the scanner
+	// states exactly, such as a regular-expression capture.
+	Transforms []ValueTransform `json:"transforms,omitempty"`
+}
+
+// ValueTransform is one exactly stated transform on a dependency chain. For
+// kind regex_capture the value is group Group of a literal regular
+// expression: Pattern and Flags are the expression, SubPattern the group's
+// own pattern, and Class/Alphabet what that sub-pattern accepts.
+type ValueTransform struct {
+	Kind       string `json:"kind"`
+	At         Span   `json:"at"`
+	Flavor     string `json:"flavor,omitempty"`
+	Pattern    string `json:"pattern"`
+	Flags      string `json:"flags,omitempty"`
+	Group      int    `json:"group"`
+	SubPattern string `json:"sub_pattern"`
+	Class      string `json:"class"`
+	Alphabet   string `json:"alphabet,omitempty"`
+	// Regex is the source text naming the expression (a literal or the name
+	// bound to it); Tests are the source texts of match tests of the same
+	// expression on the same value. Both are extraction-only.
+	Regex string   `json:"-"`
+	Tests []string `json:"-"`
 }
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.

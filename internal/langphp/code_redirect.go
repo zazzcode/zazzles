@@ -49,7 +49,7 @@ func phpCodeProtection(deps []phpDep, i int) string {
 		switch deps[i].protection {
 		case "numeric", "non_content":
 			return "guarded"
-		case "unknown", phpUnwritten, phpShellDenylist:
+		case "unknown", phpUnwritten, phpShellDenylist, phpRegexCapture:
 			return "unknown"
 		}
 	}

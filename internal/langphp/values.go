@@ -10,6 +10,21 @@ import (
 type phpDep struct {
 	dep                               analysis.Dependency
 	protection, container, key, entry string
+	// regexGuard is the preg_match call whose capture this path reads, when
+	// protection is phpRegexCapture.
+	regexGuard analysis.Evidence
+}
+
+// phpRegexCapture labels a path that is a capture group of a literal
+// preg_match expression (close-findings-gaps D-4). Only command sinks read it
+// (D-6); every other family treats it as unknown.
+const phpRegexCapture = "regex_capture"
+
+// phpRegex is the literal expression of a preg_match whose matches array a
+// variable holds.
+type phpRegex struct {
+	pattern, flags, text string
+	call                 analysis.Evidence
 }
 
 // phpLiteral is one finite literal candidate. More than one candidate means a
@@ -30,6 +45,8 @@ type phpValue struct {
 	driver  string
 	// class names the user class of a `new C` object (binding php_class).
 	class string
+	// regex is set on the matches array of a literal preg_match.
+	regex *phpRegex
 	// table/columns carry SQL read provenance for storage linking.
 	table   string
 	columns []string

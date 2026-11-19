@@ -66,8 +66,21 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 				// The deny-list leaves a shell metacharacter usable.
 				protection = "raw"
 			}
+			control := o.Context[0]
+			if d.protection == phpRegexCapture {
+				// D-6: a capture that admits any character is raw for the
+				// shell; any other capture is guarded by its preg_match.
+				x, _ := phpSoleCapture(d.dep)
+				if x.Class == analysispacks.CaptureAdmitsAny {
+					protection, reason = "raw", "the only control is preg_match of "+x.Regex+", whose captured group ("+x.SubPattern+") admits any character, including shell syntax; the capture is kept as a transform"
+				} else {
+					protection, reason = "guarded", "a preg_match capture limits the operand to its group's sub-pattern; its adequacy is not established by the scanner"
+					control = len(context)
+					context = append(context, d.regexGuard)
+				}
+			}
 			if protection == "guarded" {
-				guardOperand[len(facts.Paths)] = o.Context[0]
+				guardOperand[len(facts.Paths)] = control
 			}
 			facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: len(deps), Operand: slot, Protection: protection, Reason: reason})
 			deps = append(deps, d)
@@ -114,6 +127,16 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
 }
 
+// phpSoleCapture returns the regex capture a path reads.
+func phpSoleCapture(d analysis.Dependency) (analysis.ValueTransform, bool) {
+	for i := len(d.Transforms) - 1; i >= 0; i-- {
+		if d.Transforms[i].Kind == "regex_capture" {
+			return d.Transforms[i], true
+		}
+	}
+	return analysis.ValueTransform{}, false
+}
+
 // phpShellDenylist labels a value passed through a finite literal str_replace
 // deny-list that leaves at least one shell metacharacter intact. Only command
 // sinks read it as raw; every other family treats it as unknown.
@@ -152,7 +175,7 @@ func phpDenylistProtect(v phpValue, protection string) phpValue {
 // phpNonShellProtection maps the command-only deny-list label to unknown for
 // every non-command family.
 func phpNonShellProtection(p string) string {
-	if p == phpShellDenylist {
+	if p == phpShellDenylist || p == phpRegexCapture {
 		return "unknown"
 	}
 	return p

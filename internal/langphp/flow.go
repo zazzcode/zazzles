@@ -420,6 +420,11 @@ func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 
 // projectValue projects a field of a tracked value (arrays, DB rows).
 func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue {
+	if v.regex != nil {
+		if group, err := strconv.Atoi(key); err == nil && group >= 1 {
+			return f.regexCapture(v, group, n)
+		}
+	}
 	if field, ok := v.fields[key]; ok {
 		return phpTransfer(field, f.module.evidence("field_projection", n))
 	}

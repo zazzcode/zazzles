@@ -104,7 +104,7 @@ func TestCommandImpliedSinglePath(t *testing.T) {
 // TestFollowUpAnsweredByContract (D-3): a follow-up naming a member the guard
 // contract table already describes is not sent.
 func TestFollowUpAnsweredByContract(t *testing.T) {
-	weak := guardedCommandUse(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": weakRegexJS})
+	weak := guardedCommandUse(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": lookaheadRegexJS})
 	if got := contractAnswersFollowUp(weak, "helper_body", "item.match"); got == "" {
 		t.Fatal("item.match is described by the regex_match contract")
 	}

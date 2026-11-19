@@ -40,6 +40,41 @@ app.post('/create', function (req, res) {
 });
 `
 
+// lookaheadRegexJS guards the same shape with a capture the classifier cannot
+// list (a lookahead): the path stays guarded and its adequacy model-judged.
+const lookaheadRegexJS = `var express = require('express');
+var exec = require('child_process').exec;
+var app = express();
+app.post('/create', function (req, res) {
+  var item = req.body.content;
+  var imgRegex = /\!\[alt text\]\(((?!file:)http[^\s]*)\s\".*/;
+  if (typeof (item) == 'string' && item.match(imgRegex)) {
+    var url = item.match(imgRegex)[1];
+    exec('identify ' + url, function (err, stdout, stderr) {});
+  }
+  res.send('ok');
+});
+`
+
+// TestCommandWeakRegexCaptureIsRaw (close-findings-gaps D-6): a capture that
+// admits any character, guarded only by its own match test, is a raw shell
+// path, so a vulnerable answer needs no bypass.
+func TestCommandWeakRegexCaptureIsRaw(t *testing.T) {
+	r, err := pipeline.Analyze(writeFixture(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": weakRegexJS}), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	uses := commandUsesOf(r)
+	if len(uses) != 1 || len(uses[0].Command.Paths) != 1 || uses[0].Command.Paths[0].Protection != "raw" {
+		t.Fatalf("want one raw command path, got %+v", uses)
+	}
+	a := analysis.Assessment{Status: "completed", QuestionVersion: analysispacks.CommandProtocol, Answers: commandAnswers{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "guard_bypass": "not_applicable", "protection_coverage": "incomplete"}}
+	applyCommandPolicy(uses[0], &a)
+	if a.FindingStatus != "confirmed_vulnerability" {
+		t.Fatalf("status %s blockers %+v", a.FindingStatus, a.BlockingGaps)
+	}
+}
+
 func guardedCommandUse(t *testing.T, files map[string]string) analysis.CandidateUse {
 	t.Helper()
 	r, err := pipeline.Analyze(writeFixture(t, files), "")
@@ -64,7 +99,7 @@ func hasGapKind(gaps []analysis.Gap, kind string) bool {
 
 func TestCommandGuardBypassPolicy(t *testing.T) {
 	numeric := guardedCommandUse(t, map[string]string{"index.php": numericGuardPHP})
-	weak := guardedCommandUse(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": weakRegexJS})
+	weak := guardedCommandUse(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": lookaheadRegexJS})
 	// The same guarded path with its guard text replaced by an unrecognised
 	// call: no contract is available.
 	opaque := numeric

@@ -2,7 +2,18 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
-## Current report (rebuilt 2026-11-15)
+## Current report (rebuilt 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
+
+- 24 entries, 62 analysis records: **5 Confirmed, 22 Review, 34 Protected, 1 practice**.
+- 58 requests plus 1 follow-up, 58 completed assessments, 298,903 input tokens. No provider failures. 1 records are not sent because their scanner blocker has no question the model could answer.
+- **Answer key:** 5 of 5 expected positives found; no keyed control is a finding.
+- Every keyed positive is found (the dashboard XSS as a construction-practice finding) and no protected control is red.
+
+## Previous report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 

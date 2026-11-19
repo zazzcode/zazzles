@@ -1,97 +1,45 @@
 {
-  "date": "2026-11-15",
+  "date": "2026-11-19",
   "target_revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
-  "scanner_revision": "python-input-refactor (shared Python acquisition; see owning PR and verification contract)",
-  "scanner_binary_sha256": "a652e80aa162790fe67dd8caee053e7f5cef0ebabed380070dfa9be95340b183",
-  "exporter_binary_sha256": "e402b0dfc97169da91d9b71b2abd8e1b84ce95c77def5854dd761514fe472317",
-  "evaluation_mode": "fresh all-family gpt-6-luna scan, including standalone input validation",
+  "source_run": "run-445025256",
+  "source_json_sha256": "6fcebf2ff23d5d67cbca02e39ad773f18a50d66590993169c44bf66f403020ad",
+  "scanner_revision": "model-evidence-resolution 50d4a8f",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
+  "provider_requests": 11,
+  "assessment_requests": 11,
+  "follow_ups_sent": 0,
+  "completed_assessments": 11,
+  "derived_assessments": 0,
+  "input_tokens": 45750,
   "entries": 19,
-  "positions": 30,
-  "provider_requests": 30,
-  "input_tokens": 98624,
   "published_records": 30,
-  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD unchanged at pin)",
-  "runtime_confirmation": "none; static source judgments only",
+  "records_not_sent_blocker_unresolvable": 2,
   "outcomes": {
     "confirmed_vulnerability": 8,
-    "needs_evidence": 22
+    "needs_evidence": 5
   },
-  "published_outcomes": {
-    "confirmed_vulnerability": 8,
-    "needs_evidence": 22
-  },
-  "families": {
-    "sql_query_candidate": 1,
-    "log_sink_candidate": 2,
-    "input_validation_candidate": 17,
-    "xss_candidate": 5,
-    "command_execution_candidate": 2,
-    "path_traversal_candidate": 3
-  },
-  "not_run": 0,
+  "not_run": 19,
   "failed": 0,
-  "exact_replays": 30,
-  "replay_mismatches": 0,
-  "missing_traces": 0,
-  "future_routine_scope": "--skip-family input-validation (user preference; this complete run includes it)",
-  "artifact_bytes": {
-    "findings.html": 319693,
-    "findings.json": 755233,
-    "findings.sarif": 941208
+  "answer_key": {
+    "expected": 4,
+    "found": 4,
+    "review": 0,
+    "control_false_positives": 0
   },
-  "artifact_sha256": {
-    "findings.html": "f4560233f44db480975a1a0c269a0d6da99b4297b2f47ef6b4e0569b388ec443",
-    "findings.json": "21c0505a5a9d60736c9aa5a422842dab08512baaec9b0836b660326866be502a",
-    "findings.sarif": "ecbf263e9c9b0b7d744261d76d5ffee5193187a247ef3214aac990979e2060e6"
-  },
+  "runtime_confirmation": "none; static source judgments only",
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "results": "../../../.zazz/evaluation/model-resolution-results.md",
   "previous": {
     "date": "2026-11-15",
-    "target_revision": "a67cbe590698dc4a0422f28e2495a40af559e257",
-    "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
-    "evaluation_mode": "fresh gpt-6-luna scan: security sink families; standalone input validation excluded",
-    "provider": "openai",
-    "model": "gpt-6-luna",
-    "positions": 30,
-    "provider_requests": 13,
-    "input_tokens": 49487,
+    "scanner_revision": "python-input-refactor (shared Python acquisition; see owning PR and verification contract)",
+    "provider_requests": 30,
+    "input_tokens": 98624,
     "published_records": 30,
-    "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-    "runtime_confirmation": "none; static source judgments only",
     "outcomes": {
       "confirmed_vulnerability": 8,
-      "needs_evidence": 5
-    },
-    "not_run": 17,
-    "failed": 0,
-    "previous": {
-      "date": "2026-11-14",
-      "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
-      "provider_requests": 30,
-      "input_tokens": 138679
-    }
-  },
-  "family_outcomes": {
-    "sql_query_candidate": {
-      "confirmed_vulnerability": 1
-    },
-    "log_sink_candidate": {
-      "needs_evidence": 2
-    },
-    "input_validation_candidate": {
-      "needs_evidence": 17
-    },
-    "xss_candidate": {
-      "confirmed_vulnerability": 3,
-      "needs_evidence": 2
-    },
-    "command_execution_candidate": {
-      "confirmed_vulnerability": 2
-    },
-    "path_traversal_candidate": {
-      "confirmed_vulnerability": 2,
-      "needs_evidence": 1
+      "needs_evidence": 22
     }
   }
 }

@@ -4,18 +4,16 @@
 [SARIF](findings.sarif) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/oss-oopssec-store-detection-guide.md)
 
-## Current report (published 2026-11-19)
+## Current report (rebuilt 2026-11-19)
 
 Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
-scanner ([results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean.
+scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
 
 - 131 entries, 128 analysis records: **23 Confirmed, 105 Review, 0 Protected**.
-- 27 requests, 29 completed assessments (2 shared by equivalent entry contexts), 184,225 input
-  tokens. Requests whose outcome a scanner fact already fixed fell from 5 to 2; 3 such records are
-  not sent at all. No provider failures. Model-resolved records: 0.
-- Every required positive in the supported answer key stays Confirmed. Additional Confirmed
-  records from the open-redirect, SSRF, SQL and client-XSS analyzers are outside the key and
-  were not source-reviewed for this report.
+- 27 requests, 29 completed assessments (2 shared by equivalent entry contexts), 184,464 input tokens. No provider failures. 3 records are not sent because their scanner blocker has no question the model could answer.
+- **Answer key:** 13 of 13 expected positives found; no keyed control is a finding.
+- Additional Confirmed records from the open-redirect, SSRF, SQL and client-XSS analyzers are outside the key and were not source-reviewed for this report.
 
 ## Previous report (published 2026-11-16)
 

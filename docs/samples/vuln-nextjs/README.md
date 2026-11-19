@@ -4,7 +4,18 @@
 [SARIF](findings.sarif) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/vuln-nextjs-detection-guide.md)
 
-## Current report (published 2026-11-16)
+## Current report (rebuilt 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
+
+- 37 entries, 54 analysis records: **12 Confirmed, 35 Review, 7 Protected**.
+- 27 requests, 27 completed assessments, 132,645 input tokens. No provider failures.
+- **Answer key:** 13 of 13 expected positives found; no keyed control is a finding.
+- All 13 lab positives are found, including the code-execution and open-redirect rows the previous report could not score; no safe control is red.
+
+## Previous report (published 2026-11-16)
 
 Fresh full static analysis of the owner-maintained [zazzcode/vuln-nextjs](https://github.com/zazzcode/vuln-nextjs)
 lab at revision `ea10efb` (full pin in metadata), using Next.js 13 Pages Router, PGlite, zod

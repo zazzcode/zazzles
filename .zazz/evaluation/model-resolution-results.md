@@ -102,30 +102,74 @@ evidence is right. Model-resolved findings: 1 of 1 true, 0 false (AC6). Model-re
   the same item and were not sent because they were not Review.
 - One model, one run per sample: these are bounded calibration counts, not accuracy rates.
 
+## Refresh runs and two fixes
+
+After the four runs above, the owner asked for paid runs of the TypeScript app and the vuln-nextjs
+lab and for every sample's results to be brought up to date. Each run used `openai` `gpt-6-luna`,
+the default judge limit and only the OpenAI key; every pin was clean before and after.
+
+Two defects came out of scoring and source review, and both are fixed:
+
+1. **Bound-only PDO statement Confirmed** (`df540c3`). DVWA `brute/source/impossible.php:90`, a
+   PDO `execute()` whose only request value is bound with `bindParam`, was Confirmed SQL injection
+   in both runs on `sql-components-v4`. The record carried the bindings but not the prepared SQL
+   text, and the model answered vulnerable with probability 0.5. `execute()` now carries its
+   statement's prepared text. A SQL record whose every dependency is a bound parameter, and whose
+   text is not interpolated, gets a `bound_parameters_only` blocker on a vulnerable answer. In the
+   rerun, line 90 is Protected, and line 96, answered vulnerable again, stays Review on that
+   blocker.
+2. **Empty citation labels** (`50d4a8f`). Deduplicated evidence carries its text through
+   `text_ref`, and the citation index read only the inline text. Every chain choice therefore
+   reached the model as `e40 "" routes/index.js:168 -> …`. This explains why nearly every citation
+   above chose `none`. Labels now show the cited code, and the citation questions moved to v2. In
+   the rerun, 12 citations were offered and verified, against none before.
+
+A wording change that told the model to choose a fitting listed chain was tried on Goof and
+reverted: its score for the correct bypass chain fell from 0.44 to 0.06, and to 0.28 with the guard
+named.
+
+| Sample | Run | Scanner | Requests | Follow-ups | Not sent (D-7) | Model-resolved |
+|---|---|---|---:|---:|---:|---|
+| Juice Shop | `run-3093352752` | `50d4a8f` | 28 | 0 | 34 | 0 |
+| OopsSec Store | `run-796729664` | `50d4a8f` | 27 | 0 | 3 | 0 |
+| DVWA | `run-1794714987` | `50d4a8f` | 169 (7 over the wire limit) | 0 | 61 | 1 finding, `fi/index.php:36`, true |
+| vuln-nextjs | `run-3943326285` | `50d4a8f` | 27 | 0 | 0 | 0 |
+| Node.js Goof | `run-1380275680` | `50d4a8f` | 11 | 0 | 8 | 0 |
+| ThreatByte | `run-1522805296` | `50d4a8f` | 58 | 1 | 1 | 0 |
+| Vulnerable Flask App | `run-445025256` | `50d4a8f` | 11 | 0 | 2 | 0 |
+| Vulnerable TypeScript app | `run-3223900652` | `df540c3` | 7 | 0 | 1 | 0 |
+| Python insecure app | `run-415226149` | `df540c3` | 1 | 0 | 0 | 0 |
+| vuln-demo-app | `run-2873229226` | `df540c3` | 13 | 0 | 0 | 0 (2 stored-origin answers, Review) |
+
+The TypeScript app, Python insecure app and vuln-demo-app sent no citation question, so the label
+fix does not change their requests. These runs are the published samples, except vuln-demo-app,
+which has none. VulnPy keeps its 2026-11-15 all-family sample: a full rerun is planned at 520
+requests plus up to 130 follow-ups and waits for the owner. Requests charged in this refresh:
+301 (first pass, `df540c3`) + 337 (reruns, `50d4a8f`) + 22 (Goof wording trials) = 660.
+
+The recall floor over the published reports holds: 91 `candidate_with_witness`, 30 `control_pass`,
+4 `resolved`.
+
 ## Accuracy against the answer keys
 
 Scored on 2026-11-19 with [`accuracy.py`](recall-gap-inventory/accuracy.py) over the published
-sample reports, plus vuln-demo-app's offline report (it has no published sample). The
-[README accuracy table](../../README.md) shows counts for each sample. Across
-11 samples: 91 keyed positives, 83 found (71 Confirmed, 12 practice findings where the key expects
-construction practice), 3 Review and 5 missed. None of the 55 keyed and protected controls
-shows as a finding.
+sample reports, plus vuln-demo-app's run above. Counts for each sample are in the
+[README accuracy table](../../README.md). Across 11 samples there are 91 keyed positives: 88 found
+(85 Confirmed and 3 practice findings where the key expects construction practice), 3 Review and
+0 missed. None of the 55 keyed and protected controls shows as a finding.
 
 | Row | Sample | Status | Assessment |
 |---|---|---|---|
-| `TS-CODE-01`, `TS-REDIRECT-01` | Vulnerable TypeScript app | Missed | The 2026-11-15 sample predates the JavaScript code and redirect analyzers; the current scanner has candidates |
-| `JS-001`, `JS-002`, `REDIR-001` | vuln-nextjs | Missed | Same; the 2026-11-16 sample predates those analyzers |
-| `UPLD-001` | DVWA | Review | `low.php` applies `basename()` to the name, so the key row is not a path traversal; the model answered protected. The flaw is unrestricted file type, outside our analyzers. The key row should move |
-| `DEMO-SSRF-01` | vuln-demo-app | Review | Offline report; SSRF needs a judged run |
-| `PI-VAL-NAME` | Python insecure app | Review | Field-validation defect left inconclusive by the judge |
+| `GOOF-CMD-01` | Node.js Goof | Review | The model answered `bypass_identified` for the `/\!\[alt text\]\((http.*)\s\".*/` guard but cited `none` for the one offered chain (0.56 against 0.44), so D-8 keeps the guarded path in Review. The published 2026-11-15 report, on `command-components-v2` without a bypass question, had it Confirmed |
+| `UPLD-001` | DVWA | Review | `low.php` applies `basename()` to the name, so the key row is not a path traversal, and the model answered protected. The flaw is unrestricted file type, outside our analyzers. The key row should move |
+| `PI-VAL-NAME` | Python insecure app | Review | A field-validation defect; undecidable validation records are not sent |
 
-**Confirmed false positive.** DVWA `vulnerabilities/brute/source/impossible.php:90`
-(`$data->execute()` after `prepare(... (:user) ...)` and `bindParam`) is Confirmed SQL injection
-in both live runs on `sql-components-v4`. On v3 it was Review with `unknown`. Neither request
-carries the prepared SQL text: the PHP adapter does not link `execute()` to its `prepare`. Seeing
-`bindParam` with no statement, the model answered vulnerable with probability 0.5. The scanner
-should hold a blocker when a PDO statement's text is unresolved. This record is published in the
-DVWA sample.
+The five rows that the earlier sample reports could not score now pass: the TypeScript app's
+`eval` and open redirect, and vuln-nextjs `JS-001`, `JS-002` and `REDIR-001`.
 
-**Findings outside the key** (397 in all) are counted, not judged. Every DVWA Confirmed record
-whose sources are all impossible-level was checked; only the record above was red.
+**False positives.** None among keyed controls. The one that source review found outside the key
+(DVWA `brute/source/impossible.php:90`) is fixed, as described above. After the fix, no DVWA
+Confirmed record comes only from impossible-level code.
+
+**Findings outside the key** (396 in all) are counted, not judged. Juice Shop's eight match known
+challenge routes; the rest are unreviewed.

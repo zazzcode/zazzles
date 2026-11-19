@@ -98,8 +98,10 @@ a scanner-held coverage fact; records no answer could change are not sent; follo
 the W3a write census covers 29 of 45 stored-origin records (AC3 asks 40). The authorized
 `gpt-6-luna` runs (VulnPy path, OopsSec, DVWA) produced one model-resolved finding, source-reviewed
 true, and no false finding. A later Juice Shop check sent 28 requests with no fixed-outcome
-request (34 of 62 before). The Juice Shop, OopsSec and DVWA sample reports are republished from
-these runs. [Contract](../specifications/model-assisted-evidence-resolution.md),
+request (34 of 62 before). Every sample except VulnPy is republished from a
+rescan on this scanner. Against the answer keys, 88 of 91 expected positives are found, none is
+missed, and no keyed safe case is red. Two defects found by scoring are fixed: a bound-only PDO
+statement was Confirmed, and citation choices showed empty text. [Contract](../specifications/model-assisted-evidence-resolution.md),
 [results](../evaluation/model-resolution-results.md).
 
 <a id="next-up"></a>

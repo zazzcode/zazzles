@@ -4,26 +4,14 @@
 
 ## Current report (rebuilt 2026-11-19)
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json) ·
-[Results](../../../.zazz/evaluation/model-resolution-results.md)
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
 
-All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna` on the
-model-assisted evidence resolution scanner. The target remained clean. These are static source
-judgments.
-
-- **Records:** 251 across 175 entries. **Judged:** 28 records in 28 requests (211,886 input
-  tokens), down from 153. Undecidable validation records (previous accuracy contract) and records
-  whose outcome a scanner fact already fixes (this contract) are no longer sent.
-- **Outcomes:** 23 Confirmed, 1 poor practice, 0 Protected; the other 227 records are Review.
-- **Not sent:** 34 records whose scanner blocker has no question the model could answer, so no
-  answer could change their Review outcome (`blocker_unresolvable`); 95 undecidable validation
-  records, 70 outbound observations and 24 API-data records with no rendering claim. Provider failures: 0.
-- **Keyed positives:** every source-reviewed XSS, SQL, NoSQL and logging positive stays Confirmed.
-  New Confirmed records outside the key are known challenge routes (`$where` NoSQL in
-  `trackOrder.ts` and `showProductReviews.ts`, review update/like routes, the `redirect.ts`
-  allowlist, the `dataErasure.ts` layout).
-- **Model-resolved records:** 0. One path record (`vulnCodeFixes.ts:83`) cited a verified witness,
-  but its answers contradicted scanner facts, so it stays Review.
+- 175 entries, 251 analysis records: **23 Confirmed, 227 Review, 0 Protected, 1 practice**.
+- 28 requests, 28 completed assessments, 211,937 input tokens. No provider failures. 34 records are not sent because their scanner blocker has no question the model could answer.
+- **Answer key:** 15 of 15 expected positives found; no keyed control is a finding.
+- New Confirmed records outside the key match known challenge routes (`$where` NoSQL in `trackOrder.ts` and `showProductReviews.ts`, review update/like routes, the `redirect.ts` allowlist, the `dataErasure.ts` layout). They are not source-reviewed here.
 
 ## Previous report (rebuilt 2026-11-15)
 

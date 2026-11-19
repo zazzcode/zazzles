@@ -3,30 +3,36 @@
   "target_revision": "a1978a2fed195acd093010af6395f86a281537ca",
   "upstream": "https://github.com/digininja/DVWA",
   "detection_guide": "../../.zazz/evaluation/dvwa-detection-guide.md",
-  "source_run": "run-4092654772",
-  "source_json_sha256": "aea13fa8624ee3431ed09fd5d127d688679e26a028598b5307fb9a3f201d4c01",
-  "scanner_revision": "model-evidence-resolution b6e050d",
-  "evaluation_mode": "fresh full-tree gpt-6-luna scan of the plain-PHP adapter, default judge limit",
+  "source_run": "run-1794714987",
+  "source_json_sha256": "528a3d5209f3a1882a6bdc0d9a6fe5e24aca3a78e0f03b39265cbdefee6229c8",
+  "scanner_revision": "model-evidence-resolution 50d4a8f",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
+  "provider": "openai",
+  "model": "gpt-6-luna",
   "provider_requests": 169,
+  "assessment_requests": 169,
   "follow_ups_sent": 0,
   "completed_assessments": 172,
   "derived_assessments": 3,
-  "input_tokens": 1749749,
+  "input_tokens": 1751729,
   "entries": 174,
   "published_records": 240,
   "records_not_sent_blocker_unresolvable": 61,
-  "model_resolved_records": 1,
   "outcomes": {
-    "confirmed_vulnerability": 121,
-    "needs_evidence": 36,
-    "protected_for_claim": 12,
+    "confirmed_vulnerability": 120,
+    "protected_for_claim": 15,
     "poor_practice": 2,
-    "not_applicable": 1
+    "not_applicable": 1,
+    "needs_evidence": 36
   },
   "not_run": 68,
   "failed": 0,
-  "provider": "openai",
-  "model": "gpt-6-luna",
+  "answer_key": {
+    "expected": 10,
+    "found": 9,
+    "review": 1,
+    "control_false_positives": 0
+  },
   "runtime_confirmation": "none; static source judgments only",
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
   "results": "../../../.zazz/evaluation/model-resolution-results.md",
@@ -44,5 +50,6 @@
       "poor_practice": 150,
       "protected_for_claim": 9
     }
-  }
+  },
+  "not_sent_over_wire_limit": 7
 }

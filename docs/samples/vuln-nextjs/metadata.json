@@ -1,46 +1,50 @@
 {
-  "date": "2026-11-16",
+  "date": "2026-11-19",
   "target_revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
   "upstream": "https://github.com/zazzcode/vuln-nextjs",
-  "source_run": "run-2372184294",
-  "source_json_sha256": "e30a1717653b0e22cf7d57784b0d53f11b0da6186c38d020cbbf222f6625f30a",
-  "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
-  "scanner_note": "e1e254e executable; this closeout changes documentation and sample artifacts only.",
-  "evaluation_mode": "Fresh full scan: all implemented analyzers, including standalone input validation",
+  "source_run": "run-3943326285",
+  "source_json_sha256": "068d6e1d8afb3ad025f05406d134b3b77a955aabe6de649455fa992ce9d65d01",
+  "scanner_revision": "model-evidence-resolution 50d4a8f",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "paid_request_cap_both_apps": 180,
-  "provider_requests": 42,
-  "completed_assessments": 42,
+  "provider_requests": 27,
+  "assessment_requests": 27,
+  "follow_ups_sent": 0,
+  "completed_assessments": 27,
   "derived_assessments": 0,
-  "input_tokens": 177900,
-  "entries": 36,
-  "published_records": 50,
+  "input_tokens": 132645,
+  "entries": 37,
+  "published_records": 54,
+  "records_not_sent_blocker_unresolvable": 0,
   "outcomes": {
-    "needs_review": 8,
-    "needs_evidence": 25,
+    "confirmed_vulnerability": 12,
     "protected_for_claim": 7,
-    "confirmed_vulnerability": 10
+    "needs_evidence": 8
   },
-  "displayed_outcomes": {
-    "needs_review": 8,
-    "needs_evidence": 25,
-    "protected_for_claim": 7,
-    "confirmed_vulnerability": 10
-  },
-  "grouped_records": 0,
-  "not_run": 8,
-  "not_run_reasons": {
-    "API data has no linked rendering claim to assess.": 8
-  },
+  "not_run": 27,
   "failed": 0,
-  "practice_observations": 5,
-  "exact_replay": {
-    "replayed": 42,
-    "mismatched": 0,
-    "trace_absent": 0
+  "answer_key": {
+    "expected": 13,
+    "found": 13,
+    "review": 0,
+    "control_false_positives": 0
   },
-  "target_status_before_and_after": "No tracked changes; pre-existing ignored .next, node_modules, targets/react2shell build/dependency directories and test-results preserved.",
   "runtime_confirmation": "none; static source judgments only",
-  "publication_note": "Only root is replaced with the public label; evidence and fresh assessments are preserved."
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "results": "../../../.zazz/evaluation/model-resolution-results.md",
+  "previous": {
+    "date": "2026-11-16",
+    "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
+    "source_run": "run-2372184294",
+    "provider_requests": 42,
+    "input_tokens": 177900,
+    "published_records": 50,
+    "outcomes": {
+      "needs_review": 8,
+      "needs_evidence": 25,
+      "protected_for_claim": 7,
+      "confirmed_vulnerability": 10
+    }
+  }
 }

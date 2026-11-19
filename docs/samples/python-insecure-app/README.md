@@ -2,7 +2,18 @@
 
 [Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
-## Current report (rebuilt 2026-11-15)
+## Current report (rebuilt 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`df540c3`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
+
+- 1 entries, 2 analysis records: **1 Confirmed, 1 Review, 0 Protected**.
+- 1 requests, 1 completed assessments, 4,520 input tokens. No provider failures.
+- **Answer key:** 1 of 2 expected positives found, 1 Review; no keyed control is a finding.
+- The HTML construction is Confirmed. The name-field validation defect is not sent: undecidable validation records stay Review.
+
+## Previous report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 

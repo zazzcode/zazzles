@@ -249156,7 +249156,7 @@
         }
       ],
       "assessment": {
-        "request_digest": "440d90cdeac13ac0d37f5e2f732f00084c47d158d2c5dd87240aeab4c26fc496",
+        "request_digest": "c2fb3776e6c0c3f5b10f3e95e042f99669fdd76a81606e0ef57d73fd06f573fb",
         "answer_details": {
           "containment_control": {
             "choice": "none",
@@ -249245,7 +249245,7 @@
           "protection_coverage": "incomplete"
         },
         "usage": {
-          "input_tokens": 10325,
+          "input_tokens": 10376,
           "output_tokens": 0
         },
         "status": "completed",
@@ -249257,7 +249257,7 @@
         "resolutions": [
           {
             "question": "resolve_witness",
-            "question_version": "witness-citation-v1",
+            "question_version": "witness-citation-v2",
             "answer": "vulnerable",
             "citation": [
               "e77",
@@ -300517,7 +300517,7 @@
     "95 validation records were not sent to the judge: their field-policy gate lacks required evidence, so no answer could change their Review outcome (validation_evidence_missing).",
     "34 records were not sent to the judge: a scanner blocker fixes their Review outcome and has no resolution question, so no answer could change it (blocker_unresolvable).",
     "Judged 28 distinct candidate signatures across 28 total entry contexts (0 derived across equivalent entry contexts).",
-    "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 28; reported input tokens 211886; unknown-usage attempts 0. "
+    "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 28; reported input tokens 211937; unknown-usage attempts 0. "
   ],
   "analysis_guidelines": [
     {

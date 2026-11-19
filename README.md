@@ -143,55 +143,54 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
-**Accuracy against the answer keys** (published sample reports, scored 2026-11-19). *Expected*
-counts the source-reviewed positives keyed for our implemented analyzers. *Found* means the record
-is Confirmed, or is a construction-practice finding where the key expects one. *Controls* are
-keyed safe cases. A control false positive is a keyed safe case that shows as a finding.
+**Accuracy against the answer keys** (sample reports rescanned 2026-11-19 on this scanner; VulnPy
+from its 2026-11-15 report). *Expected* counts the source-reviewed positives keyed for our
+implemented analyzers. *Found* means the record is Confirmed, or is a construction-practice finding
+where the key expects one. *Controls* are keyed safe cases. A control false positive is a keyed safe
+case that shows as a finding.
 
-| Sample | Report | Expected | Found | Review | Missed | Controls | Control false positives | Findings outside the key |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| Juice Shop | judged 2026-11-19 | 15 | 15 | 0 | 0 | 3 | 0 | 8 |
-| OSS OopsSec Store | judged 2026-11-19 | 13 | 13 | 0 | 0 | 5 | 0 | 8 |
-| DVWA | judged 2026-11-19 | 10 | 9 | 1 | 0 | 1 | 0 | 99 (1 false) |
-| Node.js Goof | judged 2026-11-15 | 6 | 6 | 0 | 0 | 5 | 0 | 0 |
-| Vulnerable TypeScript app | judged 2026-11-15 | 6 | 4 | 0 | 2 | 2 | 0 | 1 |
-| vuln-nextjs lab | judged 2026-11-16 | 13 | 10 | 0 | 3 | 23 | 0 | 0 |
-| vuln-demo-app | offline only | 11 | 10 | 1 | 0 | 7 | 0 | 0 |
-| ThreatByte | judged 2026-11-15 | 5 | 5 | 0 | 0 | 6 | 0 | 2 |
-| Vulnerable Flask App | judged 2026-11-15 | 4 | 4 | 0 | 0 | 2 | 0 | 4 |
-| Python insecure app | judged 2026-11-15 | 2 | 1 | 1 | 0 | 1 | 0 | 0 |
-| VulnPy | judged 2026-11-15 | 6 | 6 | 0 | 0 | 0 | 0 | 275 |
-| **Total** | | **91** | **83** | **3** | **5** | **55** | **0** | **397** |
+| Sample | Expected | Found | Review | Missed | Controls | Control false positives | Findings outside the key |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Juice Shop | 15 | 15 | 0 | 0 | 3 | 0 | 8 |
+| OSS OopsSec Store | 13 | 13 | 0 | 0 | 5 | 0 | 8 |
+| DVWA | 10 | 9 | 1 | 0 | 1 | 0 | 98 |
+| Node.js Goof | 6 | 5 | 1 | 0 | 5 | 0 | 1 |
+| Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 2 | 0 | 1 |
+| vuln-nextjs lab | 13 | 13 | 0 | 0 | 23 | 0 | 0 |
+| vuln-demo-app | 11 | 11 | 0 | 0 | 7 | 0 | 0 |
+| ThreatByte | 5 | 5 | 0 | 0 | 6 | 0 | 1 |
+| Vulnerable Flask App | 4 | 4 | 0 | 0 | 2 | 0 | 4 |
+| Python insecure app | 2 | 1 | 1 | 0 | 1 | 0 | 0 |
+| VulnPy | 6 | 6 | 0 | 0 | 0 | 0 | 275 |
+| **Total** | **91** | **88** | **3** | **0** | **55** | **0** | **396** |
 
-- **Missed (5):** the code-execution and open-redirect positives in the TypeScript app and the
-  vuln-nextjs lab. Those reports predate the JavaScript code-execution and redirect analyzers. The
-  current scanner records a candidate for all five, but they stay unscored until those samples are
-  judged again.
-- **Review (3):** DVWA's upload page applies `basename()`, so there is no path traversal; its real
-  flaw (any file type is accepted) is outside our analyzers. vuln-demo-app's SSRF needs the decision
-  model and that sample was only scanned offline. Python insecure app's name-field validation
-  defect stays inconclusive.
-- **Confirmed false positives (1):** DVWA `brute/source/impossible.php:90`, a PDO
-  `prepare`/`bindParam`/`execute` that is safe. The PHP adapter does not link `execute()` to its
-  prepared SQL text, and the model answered vulnerable without it. This is a known open defect.
+- **Review (3):** Goof's command injection (`routes/index.js:174`) needs a cited guard bypass. The
+  model identified the bypass but did not cite the one chain offered, so it stays Review. DVWA's
+  upload page applies `basename()`, so it has no path traversal; its real flaw (any file type is
+  accepted) is outside our analyzers. The Python insecure app's name-field validation defect is
+  undecidable and is not sent.
+- **False positives:** none among the keyed controls. Source review found one outside the key: DVWA
+  `brute/source/impossible.php:90`, a bound PDO `execute()`. It is fixed; the record now carries
+  its prepared SQL text and is Protected. No DVWA Confirmed record now comes only from
+  impossible-level code.
 - **Findings outside the key** are not counted as true or false until they are source-reviewed.
-  Juice Shop's eight match known challenge routes. DVWA's impossible-level findings were checked
-  and only the one above is red. The other samples' extra findings are unreviewed.
+  Juice Shop's eight match known challenge routes; the other samples' extras are unreviewed.
 
 Scored with
 [`accuracy.py`](.zazz/evaluation/recall-gap-inventory/accuracy.py); details are in the
 [evidence-resolution results](.zazz/evaluation/model-resolution-results.md#accuracy-against-the-answer-keys).
 
-On the current Node sample rebuild (Juice Shop, Node.js Goof, Vulnerable TypeScript app, and
-vuln-demo-app), that in-scope catch is complete for the families above: the cataloged XSS, SQL,
-NoSQL, command, path/Zip Slip, logging, and SSRF required positives are confirmed. Cases the answer
-keys mark as Review stay Review (for example Juice Shop subtitle XSS). Defects outside those
-analyzers—authentication, IDOR, `eval`/code injection, open redirect, secrets, cookie flags, and
-most Juice Shop challenge categories—are **not covered** yet; a clean row there is not a pass.
+On the current Node samples (Juice Shop, Node.js Goof, Vulnerable TypeScript app and
+vuln-demo-app), the cataloged XSS, SQL, NoSQL, command, path/Zip Slip, logging, SSRF,
+`eval`/code-injection and open-redirect positives are found. The exception is Goof's command
+injection, which stays Review, as the table shows. Cases the answer keys mark as Review stay
+Review (for example Juice Shop subtitle XSS). Defects outside those analyzers (authentication,
+IDOR, secrets, cookie flags and most Juice Shop challenge categories) are **not covered** yet; a
+clean row there is not a pass.
 
 On the two Next.js samples (OSS OopsSec Store and the vuln-nextjs lab), every required positive in
-those families is confirmed and no safe control is red; `eval`/code injection, open redirect and the
-dependency row are not covered yet.
+those families is found, including the lab's code-execution and open-redirect rows, and no safe
+control is red; the dependency row is not covered yet.
 
 Details and per-app expected-vs-actual tables live in
 [vulnerable sample applications](.zazz/project/vulnerable-sample-apps.md). Sample HTML reports are

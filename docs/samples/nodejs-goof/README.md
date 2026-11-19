@@ -4,7 +4,18 @@
 [Capability inventory](../../../.zazz/evaluation/nodejs-goof-capabilities.md) ·
 [Independent XSS answer key](xss-answer-key.md)
 
-## Current report (rebuilt 2026-11-15)
+## Current report (rebuilt 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
+
+- 19 entries, 32 analysis records: **5 Confirmed, 23 Review, 4 Protected**.
+- 11 requests, 11 completed assessments, 65,120 input tokens. No provider failures. 8 records are not sent because their scanner blocker has no question the model could answer.
+- **Answer key:** 5 of 6 expected positives found, 1 Review; no keyed control is a finding.
+- The command injection at `routes/index.js:174` is Review: the model found the bypass of the `/\!\[alt text\]\((http.*)\s\".*/` guard but did not cite the offered chain, and a guarded path needs a cited bypass (D-8).
+
+## Previous report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 

@@ -278,6 +278,34 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 		asks = append(asks, resolutionAsk{name: name, version: FlowGapQuestionVersion, gap: id, blocker: &blocker, answer: &answer,
 			cite: question{name: name + citeSuffix, choices: choices, instructions: fmt.Sprintf("Cite the ordered evidence chain, from request source through %s to the sink, that carries the value you assessed in %s. Each choice lists eN evidence rows and the gap in order. Choose none when you answered cannot_tell or no offered chain carries that value.", id, name)}})
 	}
+	if storedOriginAskable(u) && u.Completeness != nil {
+		so, _ := wire["stored_origin"].(map[string]any)
+		stores, _ := so["stores"].([]any)
+		for _, g := range u.Completeness.Blockers {
+			id := gapIDs[gapKey(g)]
+			if g.Kind != "storage_origin_unresolved" || id == "" {
+				continue
+			}
+			blocker := g
+			choices := []map[string]string{}
+			for _, st := range stores {
+				store, _ := st.(map[string]any)
+				writes, _ := store["writes"].([]any)
+				for _, w := range writes {
+					write, _ := w.(map[string]any)
+					eid, _ := write["evidence"].(string)
+					if literal, _ := write["literal"].(bool); !literal && eid != "" && len(choices) < maxCiteChoices && !hasChoice(choices, eid) {
+						choices = append(choices, chainChoice(x, []string{eid}))
+					}
+				}
+			}
+			choices = append(choices, noneChoice("You did not answer request_write_cited."))
+			name := resolvePrefix + "stored_" + id
+			answer := question{name: name, choices: StoredOriginChoices(), instructions: fmt.Sprintf("Gap %s: the scanner could not establish where the stored value this record reads comes from. use.stored_origin lists, for each storage key read, every write the scanner found (literal marks writes whose values are all source literals), whether the read query is static, whether the store is closed and its schema, plus the read queries. Judge only whether a request-controlled value can be written into the stored column this record reads, from the listed writes alone. Do not assume writes that are not listed.", id)}
+			asks = append(asks, resolutionAsk{name: name, version: StoredOriginQuestionVersion, gap: id, blocker: &blocker, answer: &answer,
+				cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered request_write_cited, cite the one listed write that stores a request-controlled value into the column read. Choose none otherwise."}})
+		}
+	}
 	switch familyOf(u) {
 	case "path":
 		if f := u.Path; f != nil && !pathHasWitness(u) {
@@ -574,4 +602,67 @@ func splitResolutionAnswers(a *analysis.Assessment) {
 			delete(a.AnswerDetails, name)
 		}
 	}
+}
+
+func hasChoice(choices []map[string]string, value string) bool {
+	for _, c := range choices {
+		if c["value"] == value {
+			return true
+		}
+	}
+	return false
+}
+
+// dischargeStoredOrigin applies a stored-origin resolution (W3b, D-4). A
+// verified cited request write removes the storage_origin_unresolved
+// blockers: the record is a stored-flow finding candidate. An answer of
+// no_request_write_in_evidence counts only when the scanner holds the
+// coverage fact, every key's store closed; it then supports protection.
+func dischargeStoredOrigin(use analysis.CandidateUse, a *analysis.Assessment, blockers []analysis.Gap) (remaining []analysis.Gap, cited, closedNoWrite bool) {
+	var r *analysis.Resolution
+	for i := range a.Resolutions {
+		if a.Resolutions[i].QuestionVersion == StoredOriginQuestionVersion {
+			r = &a.Resolutions[i]
+		}
+	}
+	if r == nil {
+		return blockers, false, false
+	}
+	switch {
+	case r.Answer == "request_write_cited" && r.Verified:
+		cited = true
+	case r.Answer == "no_request_write_in_evidence" && allStoresClosed(use):
+		closedNoWrite = true
+	default:
+		return blockers, false, false
+	}
+	r.Discharged = true
+	for _, g := range blockers {
+		if g.Kind != "storage_origin_unresolved" {
+			remaining = append(remaining, g)
+		}
+	}
+	return remaining, cited, closedNoWrite
+}
+
+func allStoresClosed(u analysis.CandidateUse) bool {
+	if u.StoredOrigin == nil || len(u.StoredOrigin.Stores) == 0 {
+		return false
+	}
+	for _, s := range u.StoredOrigin.Stores {
+		if s.ClosedStore != "closed" {
+			return false
+		}
+	}
+	return true
+}
+
+// storedResolution returns the record's stored-origin resolution, or nil.
+func storedResolution(a *analysis.Assessment) *analysis.Resolution {
+	for i := range a.Resolutions {
+		if a.Resolutions[i].QuestionVersion == StoredOriginQuestionVersion {
+			return &a.Resolutions[i]
+		}
+	}
+	return nil
 }

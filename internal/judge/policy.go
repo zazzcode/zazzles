@@ -76,6 +76,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	// A flow gap discharged by a verified model resolution (W1, W2) leaves the
 	// blockers; the resolution stays on the record as provenance.
 	blockers, discharged := dischargeFlowGaps(a, c.Blockers)
+	blockers, cited, closedNoWrite := dischargeStoredOrigin(use, a, blockers)
+	if cited {
+		discharged = append(discharged, analysis.Gap{Kind: "storage_origin_unresolved"})
+	}
 	blockers = append([]analysis.Gap{}, blockers...)
 	if c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" {
 		for _, role := range []string{"sql_all_inputs_hex", "selector_type_guard", "selector_path_string"} {
@@ -145,6 +149,11 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.Protection = "uncertain"
 		a.FindingStatus = "needs_evidence"
 		a.Reason = "claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained"
+		return
+	}
+	if closedNoWrite && c.ClaimKind == "injection" {
+		a.FindingStatus, a.Protection = "protected_for_claim", "sufficient"
+		a.Reason = "Model-resolved with scanner coverage: no listed write stores a request-controlled value into the column read and every store is closed, so the stored query operand is not attacker-controlled for this claim."
 		return
 	}
 	if c.ClaimKind == "injection" {

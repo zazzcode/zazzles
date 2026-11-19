@@ -75,6 +75,7 @@ func wireBundle(use analysis.CandidateUse) any {
 		required = append(required, role)
 	}
 	sort.Strings(required)
+	storedOrigin := wireStoredOrigin(use, ref)
 	augmentRoles(use, roles, ref)
 	invocation := wireInvocation(use, ref)
 	inputFacts := wireInputFacts(use, ref)
@@ -108,7 +109,8 @@ func wireBundle(use analysis.CandidateUse) any {
 		Outbound        any                 `json:"outbound,omitempty"`
 		Code            any                 `json:"code,omitempty"`
 		Redirect        any                 `json:"redirect,omitempty"`
-	}{invocation, 7, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false)}
+		StoredOrigin    any                 `json:"stored_origin,omitempty"`
+	}{invocation, 7, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {
@@ -147,4 +149,44 @@ func wireRedirect(u analysis.CandidateUse) *analysis.RedirectFacts {
 	copy := *u.Redirect
 	copy.RelatedUse = ""
 	return &copy
+}
+
+// wireStoredOrigin sends a record's write census and read queries (W3b,
+// D-4) only when the stored-origin question applies, so no other request
+// changes. Writes and the schema are evidence rows (eN).
+func wireStoredOrigin(use analysis.CandidateUse, ref func(analysis.Evidence) string) any {
+	if !storedOriginAskable(use) {
+		return nil
+	}
+	type write struct {
+		Evidence string `json:"evidence"`
+		Literal  bool   `json:"literal"`
+	}
+	type store struct {
+		Key         string  `json:"key"`
+		Writes      []write `json:"writes"`
+		StaticRead  bool    `json:"static_read"`
+		ClosedStore string  `json:"closed_store"`
+		Schema      string  `json:"schema,omitempty"`
+	}
+	stores := []store{}
+	for _, s := range use.StoredOrigin.Stores {
+		w := store{Key: s.Key, Writes: []write{}, StaticRead: s.StaticRead, ClosedStore: s.ClosedStore}
+		for _, x := range s.Writes {
+			w.Writes = append(w.Writes, write{ref(x.Evidence), x.Literal})
+		}
+		if s.Schema != nil {
+			w.Schema = ref(*s.Schema)
+		}
+		stores = append(stores, w)
+	}
+	reads := []string{}
+	for _, d := range use.Dependencies {
+		for _, e := range append([]analysis.Evidence{d.Source}, d.Transfers...) {
+			if e.Kind == "storage_query" || e.Kind == "storage_read" {
+				reads = append(reads, ref(e))
+			}
+		}
+	}
+	return map[string]any{"stores": stores, "read_queries": reads}
 }

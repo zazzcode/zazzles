@@ -40,13 +40,13 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			// blocking_evidence; constant-destination outbound summaries gain one
 			// sentence. Parser output for these fixtures is otherwise unchanged.
 			// Evidence resolution: component references are family-scoped (D-9) and
-			// path/SQL/command protocols are bumped, so component digests move once.
+			// path/SQL/command/XSS protocols are bumped, so component digests move once.
 			// Phase 3B: fixtures moved to internal/langpy and internal/langjs; only the embedded root changed.
 			want := map[string]string{
 				"javascript/outbound":  "08caf8cce772ba1666f7b5c136ec2b12d2d5b00c5e5ed484f768797cc3bde603",
 				"typescript/outbound":  "207a27a6541c26b9d83f66060fccc99327905f8eacbfb1e079311e814405b676",
 				"python/outbound":      "0d8c122e6cd35ff8127b23e8456757ed4449e74dac94309b828008714b6bc88e",
-				"javascript/xss-fetch": "11ce89a89d5ab52771ba8a09d952a27b3fb4a8208fc9d4259ad05bb09db2754d",
+				"javascript/xss-fetch": "7622136d40b67d718846ebd3797ef4870704b7a1e1290dbf0e8f31b9ba8a44e6",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)

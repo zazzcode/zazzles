@@ -14,7 +14,7 @@ const (
 	SQLProtocol        = "sql-components-v4"
 	NoSQLProtocol      = "nosql-components-v2"
 	ValidationProtocol = "validation-components-v2"
-	XSSProtocol        = "xss-components-v2"
+	XSSProtocol        = "xss-components-v3"
 	// CommandProtocol and PathProtocol are declared in command.go and path.go.
 )
 

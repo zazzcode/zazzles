@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 2,
-  "report_sha256": "7aa1e12af7b7e66153e8b85bc7a2715a81931eea1de0739dcfb71f74817a8d6a",
+  "report_sha256": "2338545824d5e7a1143e5bc7daf5b00afb31b6b5cf0a99af4dfe2d4d6e78eb0d",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -57,7 +57,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "xss-components-v2",
+        "question_version": "xss-components-v3",
         "protection": "insufficient",
         "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
       }
@@ -112,7 +112,7 @@
       "request_bytes": 9103
     },
     "xss-claim": {
-      "sha256": "65d17a36dd4a5b49527c8be3cb4a53e9d937a632f92ca0675f2c7e4d48336bcb",
+      "sha256": "f7a4675cdb019da836aa036ad32ad30eb45b1b22ee4933b0e40fbf9c3328eac6",
       "request_digest": "162464843e9d8923f37e96ebac029290d7804e11dbc1078821c15b0c8af33ebc",
       "http_status": 200,
       "request_bytes": 12206

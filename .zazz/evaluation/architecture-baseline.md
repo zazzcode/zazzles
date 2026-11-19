@@ -579,8 +579,8 @@ Mac mini M6 with 32 GB RAM. Both samples were clean before and after.
 |---|---|---|---|---|---|
 | Juice Shop `f189f52` | 1 | 157 | 157 | 770,517 | 43.0 s |
 | Juice Shop `f189f52` | 4 | 157 | 157 | 770,517 | 19.0 s |
-| OopsSec Store `2d530ef` | 1 | 114 | 116 | 483,076 | 28.2 s |
-| OopsSec Store `2d530ef` | 4 | 114 | 116 | 483,076 | 7.2 s |
+| OopsSec Store `2d530ef` | 1 | 114 | 116 (2 reused) | 483,076 | 28.2 s |
+| OopsSec Store `2d530ef` | 4 | 114 | 116 (2 reused) | 483,076 | 7.2 s |
 
 For each target, N=1 and N=4 had 0 differences in request digests, answers and finding statuses.
 Two earlier Juice Shop N=4 scans each stopped on one OpenAI HTTP 503, at 124 and 148 of 157. With

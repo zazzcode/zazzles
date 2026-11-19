@@ -83,6 +83,10 @@ evidence is right. Model-resolved findings: 1 of 1 true, 0 false (AC6). Model-re
 - Write-set coverage is 29 of 45 stored-origin records offline (AC3 asks 40): the Juice Shop
   configuration-endpoint records and file reads have no storage read to census. DVWA session
   writes made through a returned reference are not visible to the text census.
-- Follow-ups were sent only on VulnPy (61). On DVWA every named item (16) was a value or helper
-  without a single exact definition in the snapshot, so none was sent.
+- Follow-ups were sent only on VulnPy (61). On DVWA all 16 Review records asked for the same item,
+  the definition of the `$_DVWA` configuration array. Its only definition is in
+  `config/config.inc.php.dist`, a template the installer copies to `config.inc.php`; the scanned
+  snapshot has no `.php` definition, so none was sent. The template's values are install-time
+  settings, so they would not settle these records either. A further 37 confirmed records asked for
+  the same item and were not sent because they were not Review.
 - One model, one run per sample: these are bounded calibration counts, not accuracy rates.

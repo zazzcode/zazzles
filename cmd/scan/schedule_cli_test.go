@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -62,9 +63,9 @@ app.get('/scan',(req,res)=>{fs.readFileSync(req.query.file);cp.exec(req.query.cm
 			if tc.env != "" {
 				t.Setenv(tc.env, "path,command")
 			}
-			calls := 0
+			var calls atomic.Int64 // the scheduler sends requests concurrently
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				calls++
+				calls.Add(1)
 				var body struct {
 					Questions []struct {
 						Name    string
@@ -115,8 +116,8 @@ app.get('/scan',(req,res)=>{fs.readFileSync(req.query.file);cp.exec(req.query.cm
 					t.Fatal(u.Assessment)
 				}
 			}
-			if completed == 0 || calls != completed {
-				t.Fatalf("calls=%d completed=%d", calls, completed)
+			if completed == 0 || calls.Load() != int64(completed) {
+				t.Fatalf("calls=%d completed=%d", calls.Load(), completed)
 			}
 			b, _ := json.Marshal(reportpkg.SARIF(&report))
 			var html bytes.Buffer

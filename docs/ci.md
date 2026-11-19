@@ -5,9 +5,11 @@
 ## CI/CD artifacts
 
 Set `SCAN_FINDINGS_DIR` to a runner-local output root or pass `--output-dir`. Run offline unless model
-assessment is deliberately configured with the CI platform's secret store. A requested model failure
-still writes the available report bundle and exits 1; an earlier setup/parse failure may produce no
-bundle. Upload artifacts even after a failed scan. This example assumes the scanner binary has been
+assessment is deliberately configured with the CI platform's secret store. A judged scan retries
+transient provider failures and exits 0 when it runs to the end, even if some assessments are
+incomplete. It exits 1 only when the decision-model account fails or the model stops responding,
+after writing the available bundle; an earlier setup/parse failure may produce no bundle. See
+[judged-scan reliability](decision-models.md#judged-scan-reliability). Upload artifacts even after a failed scan. This example assumes the scanner binary has been
 built and the target is checked out at `target/` with its entry file at `server.ts`:
 
 ```yaml

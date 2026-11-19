@@ -237,8 +237,9 @@ The scanner reads process environment variables; it does not load `.env` automat
 it on every `cd` into the checkout instead, install [direnv](https://direnv.net) and run
 `direnv allow` once — the tracked `.envrc` only says `dotenv` (see
 [getting started](docs/getting-started.md#local-environment-file)). OpenAI Luna
-is the primary model used for development and calibration. Manage spending in your API account;
-no local pricing or rate configuration is needed.
+is the primary model used for development and calibration. Manage spending in your API account.
+Every candidate is judged by default. Optional `.env` settings pace requests (`JUDGE_RPM`,
+`JUDGE_TPM`) or cap one scan (`JUDGE_LIMIT`); see [`.env.sample`](.env.sample).
 
 #### Optional: use Google Gemini Decisions instead
 
@@ -290,9 +291,10 @@ The command prints a fresh results folder containing:
 Open the printed `findings.html` path. On macOS, use `open /path/to/run/findings.html`; on other
 systems, open the file through your browser or file manager. Each run gets a new folder.
 
-Reports are retained when an assessment is incomplete. **Exit 0** means the requested operation
-completed, **exit 1** indicates an execution or assessment failure/incompleteness, and **exit 2**
-indicates invalid arguments. Finding counts do not determine the exit code. Read the report's
+Reports are retained when an assessment is incomplete. **Exit 0** means the scan ran to the end,
+even if some assessments are incomplete (stderr then warns). **Exit 1** means a setup or execution
+failure, or the judge stopped because the decision-model account failed or the model stopped
+responding. **Exit 2** indicates invalid arguments. Finding counts do not determine the exit code. Read the report's
 assessment reasons when a request cap, unsupported outbound assessment, or provider error leaves
 work incomplete.
 
@@ -304,6 +306,20 @@ For evidence inspection without model calls:
 
 This leaves model assessments unrun. Saved HTML/SARIF exports also work offline. The
 [running guide](docs/running-scans.md) covers entry selection, filters, exports, and CI usage.
+
+### How fast is a scan?
+
+Full scans on a Mac mini (Apple M6, 32 GB RAM) on 2026-11-18, judging every candidate with OpenAI
+`gpt-6-luna`:
+
+| Target | Offline analysis | Full judged scan, 1 request at a time | Full judged scan, 4 at a time (default) |
+|---|---|---|---|
+| OWASP Juice Shop `f189f52` (157 requests) | 9.5 s | 43.0 s | **19.0 s** |
+| OSS OopsSec Store `2d530ef` (114 requests) | 1.3 s | 28.2 s | **7.2 s** |
+
+Concurrent judging (`--judge-concurrency`, default 4) gave the same answers and token use as the
+serial runs. See [scan speed](docs/running-scans.md#scan-speed) for the details and how to size the
+rate settings.
 
 ## Interpret results
 

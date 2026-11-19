@@ -3,6 +3,7 @@ package judge
 import (
 	"context"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -23,7 +24,7 @@ var (
 	unknownAnswers      = pathAnswers{"path_traversal": "unknown", "containment_control": "unknown", "protection_coverage": "unknown"}
 )
 
-func pathStub(t *testing.T, provider string, answers pathAnswers) (*Client, *int) {
+func pathStub(t *testing.T, provider string, answers pathAnswers) (*Client, *atomic.Int64) {
 	return commandStub(t, provider, commandAnswers(answers))
 }
 

@@ -1,0 +1,130 @@
+{
+  "failed": true,
+  "requests": 2,
+  "report_sha256": "e0e64d7e72ab703f92cb61c6d710b55e75957108775ae79db33013c945d18420",
+  "assessments": [
+    {
+      "id": "candidate:v1:d8162060a6116488b55e138acb8901263ca69afe897738e236ebb1718cf1cd4e",
+      "assessment": {
+        "request_digest": "48916a0f8f20a0c0d87ba1f287bda7f6a662e99a75e4aae7a0816abfbbb3d70e",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:2e5e205d96694621a0889b65082fc50336dc4d1effc9f3fb815d15a4e914860e",
+      "assessment": {
+        "request_digest": "dabd84c929f056d44c1541755d4a2f5cb0dbb5eea196781dcf68afdd160cb2c6",
+        "status": "failed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "reason": "judge HTTP 401"
+      }
+    },
+    {
+      "id": "candidate:v1:f78d08d14db6acb2ea573d0f0026656afef934c002bcab0ce04269e6dc9039b2",
+      "assessment": {
+        "request_digest": "1dcc30a58d71f669eb95770d99c89ee6a436cf6e85ee5c69be76f5c37df02f82",
+        "status": "not_run",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
+      }
+    },
+    {
+      "id": "candidate:v1:ee9880539056b21d266dcf05054e864233e1457a0c8c0ef55046cf8d39df88c7",
+      "assessment": {
+        "request_digest": "b44c7ef51a7fbded8b8823448c037e5c1f41704a7071c192b2c15d0a000f2225",
+        "status": "not_run",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
+      }
+    },
+    {
+      "id": "candidate:v1:84d2c26caa2e85437f2bd592d546c4ed656e3301d17e60a9beddeb0cf93ce675",
+      "assessment": {
+        "request_digest": "dd8aec5d815cd65eebe971ba58e41547ed1c92d5aa011e16c87ea414b8b1a459",
+        "status": "not_run",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
+      }
+    },
+    {
+      "id": "candidate:v1:945bfa96b57ee2d7bbc21753022afe77c5e77374f7c068733f586f2a9a627808",
+      "assessment": {
+        "request_digest": "0e191ce93952f3cffc9b859f22b402153bc0661fd8dd158b4f6e18819e1f8781",
+        "status": "not_run",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
+      }
+    }
+  ],
+  "limitations": [
+    "ESM relative imports, literal CommonJS requires and direct exported handlers are resolved; dynamic imports, re-exports and mutated module bindings remain uncertain",
+    "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
+    "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
+    "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
+    "Judged 1 distinct candidate signatures across 6 total entry contexts (0 derived across equivalent entry contexts).",
+    "Decision-model limits (one scan; discovery and assessment share state): RPM 0, estimated input TPM 0; requests remain sequential. Attempts 2; reported input tokens 11; unknown-usage attempts 1. decision model account or credentials rejected (judge HTTP 401)"
+  ],
+  "traces": {
+    "candidate:v1:2e5e205d96694621a0889b65082fc50336dc4d1effc9f3fb815d15a4e914860e": {
+      "sha256": "e1b2e437668df76c1f0aef5f2e6dd39a64b237ccd331d9bd281e1b5787b42ed1",
+      "request_digest": "dabd84c929f056d44c1541755d4a2f5cb0dbb5eea196781dcf68afdd160cb2c6",
+      "http_status": 401,
+      "request_bytes": 18104
+    },
+    "candidate:v1:84d2c26caa2e85437f2bd592d546c4ed656e3301d17e60a9beddeb0cf93ce675": {
+      "sha256": "4eae2040665a6c4cd4bc60b51a1c94d78f29e54576c49159f06ed950d292468f",
+      "request_digest": "dd8aec5d815cd65eebe971ba58e41547ed1c92d5aa011e16c87ea414b8b1a459",
+      "http_status": 0,
+      "request_bytes": 18104
+    },
+    "candidate:v1:945bfa96b57ee2d7bbc21753022afe77c5e77374f7c068733f586f2a9a627808": {
+      "sha256": "fd3c810909faff9216837a970cd2899968406f1e2ab3dbae922745174d7aa2db",
+      "request_digest": "0e191ce93952f3cffc9b859f22b402153bc0661fd8dd158b4f6e18819e1f8781",
+      "http_status": 0,
+      "request_bytes": 18104
+    },
+    "candidate:v1:d8162060a6116488b55e138acb8901263ca69afe897738e236ebb1718cf1cd4e": {
+      "sha256": "6c4ee254f03bacca361086ff95d4052e019d2d914c08e055a3cf3f6aef38f4a4",
+      "request_digest": "48916a0f8f20a0c0d87ba1f287bda7f6a662e99a75e4aae7a0816abfbbb3d70e",
+      "http_status": 200,
+      "request_bytes": 18104
+    },
+    "candidate:v1:ee9880539056b21d266dcf05054e864233e1457a0c8c0ef55046cf8d39df88c7": {
+      "sha256": "71cc2ed806a3ca32bdfa31467efc3d2af8f7f0afd1e13325b5f3985617b8aae3",
+      "request_digest": "b44c7ef51a7fbded8b8823448c037e5c1f41704a7071c192b2c15d0a000f2225",
+      "http_status": 0,
+      "request_bytes": 18104
+    },
+    "candidate:v1:f78d08d14db6acb2ea573d0f0026656afef934c002bcab0ce04269e6dc9039b2": {
+      "sha256": "b2b70af9e026427cec68fa99d5bf63089e1ae0496a26b7a74ecca4a03eceb514",
+      "request_digest": "1dcc30a58d71f669eb95770d99c89ee6a436cf6e85ee5c69be76f5c37df02f82",
+      "http_status": 0,
+      "request_bytes": 18104
+    }
+  }
+}

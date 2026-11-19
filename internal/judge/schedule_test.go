@@ -59,11 +59,11 @@ app.get('/one',shared);app.get('/two',shared);app.get('/three',shared);app.get('
 	}
 	traces := map[string]DecisionTrace{}
 	failed := c.AssessScheduled(context.Background(), r, ScheduleOptions{Limit: 1, SaveTrace: func(id string, trace DecisionTrace) error { traces[id] = trace; return nil }})
-	if failed || *calls != 1 {
+	if failed || calls.Load() != 1 {
 		for _, u := range r.Uses {
 			t.Logf("%s: %+v", u.ID, u.Assessment)
 		}
-		t.Fatalf("failed=%v calls=%d", failed, *calls)
+		t.Fatalf("failed=%v calls=%d", failed, calls.Load())
 	}
 	if c.limiter.attempts != 1 || c.limiter.input != 11 {
 		t.Fatalf("single-counted usage: %+v", c.limiter)
@@ -251,8 +251,8 @@ func TestSchedulePriorityAndObservationSlots(t *testing.T) {
 	if !c.AssessScheduled(context.Background(), r, ScheduleOptions{Limit: 2}) {
 		t.Fatal("unassessed observations must retain incomplete status")
 	}
-	if *calls != 2 {
-		t.Fatalf("calls=%d", *calls)
+	if calls.Load() != 2 {
+		t.Fatalf("calls=%d", calls.Load())
 	}
 	for _, u := range r.Uses {
 		switch u.ID {

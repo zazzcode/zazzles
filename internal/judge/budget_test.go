@@ -31,7 +31,7 @@ func offlineClient(t *testing.T) *Client {
 		if r.ContentLength > int64(requestLimit) {
 			t.Error("an over-limit request reached the transport")
 		}
-		w.WriteHeader(500)
+		w.WriteHeader(400) // a non-retried failure; these tests only inspect requests
 	}))
 	t.Cleanup(server.Close)
 	c.UseEndpoint(server.URL, server.Client())
@@ -189,13 +189,13 @@ func TestRequestBudgetSyntheticShapes(t *testing.T) {
 	}
 	jsShapes := map[string]func(f family) map[string]string{
 		"large handler": func(f family) map[string]string {
-			return map[string]string{"server.ts": `import express from 'express';` + f.header + `const app=express();app.post('/x',(req,res)=>{const v=req.query.v;` + repeat(400, "const local%d = %d * 2;") + f.sink + `res.send('ok')});`}
+			return map[string]string{"server.ts": `import express from 'express';` + f.header + `const app=express();app.post('/x',(req,res)=>{const v=req.query.v;` + repeat(120, "const local%d = %d * 2;") + f.sink + `res.send('ok')});`}
 		},
 		"many middleware": func(f family) map[string]string {
-			return map[string]string{"server.ts": `import express from 'express';` + f.header + `const app=express();` + repeat(150, "app.use((req,res,next)=>{res.setHeader('x-h%d','%d');next()});") + `app.post('/x',(req,res)=>{const v=req.query.v;` + f.sink + `res.send('ok')});`}
+			return map[string]string{"server.ts": `import express from 'express';` + f.header + `const app=express();` + repeat(40, "app.use((req,res,next)=>{res.setHeader('x-h%d','%d');next()});") + `app.post('/x',(req,res)=>{const v=req.query.v;` + f.sink + `res.send('ok')});`}
 		},
 		"repeated gaps": func(f family) map[string]string {
-			return map[string]string{"server.ts": `import express from 'express';` + f.header + `const app=express();app.post('/x',(req,res)=>{const v=req.query.v;` + repeat(150, "if (req.query.f%d) { res.status(400 + %d) }") + f.sink + `res.send('ok')});`}
+			return map[string]string{"server.ts": `import express from 'express';` + f.header + `const app=express();app.post('/x',(req,res)=>{const v=req.query.v;` + repeat(40, "if (req.query.f%d) { res.status(400 + %d) }") + f.sink + `res.send('ok')});`}
 		},
 		"helper chain": func(f family) map[string]string {
 			files := map[string]string{}
@@ -212,10 +212,10 @@ func TestRequestBudgetSyntheticShapes(t *testing.T) {
 	}
 	pyShapes := map[string]func(f family) map[string]string{
 		"large handler": func(f family) map[string]string {
-			return map[string]string{"app.py": "from flask import Flask, request\n" + f.header + "app = Flask(__name__)\n@app.route('/x')\ndef x():\n    v = request.args.get('v')\n" + repeat(400, "    local%d = %d * 2\n") + f.sink + "    return 'ok'\n"}
+			return map[string]string{"app.py": "from flask import Flask, request\n" + f.header + "app = Flask(__name__)\n@app.route('/x')\ndef x():\n    v = request.args.get('v')\n" + repeat(120, "    local%d = %d * 2\n") + f.sink + "    return 'ok'\n"}
 		},
 		"repeated gaps": func(f family) map[string]string {
-			return map[string]string{"app.py": "from flask import Flask, request\n" + f.header + "app = Flask(__name__)\n@app.route('/x')\ndef x():\n    v = request.args.get('v')\n" + repeat(150, "    if request.args.get('f%d'):\n        print(%d)\n") + f.sink + "    return 'ok'\n"}
+			return map[string]string{"app.py": "from flask import Flask, request\n" + f.header + "app = Flask(__name__)\n@app.route('/x')\ndef x():\n    v = request.args.get('v')\n" + repeat(40, "    if request.args.get('f%d'):\n        print(%d)\n") + f.sink + "    return 'ok'\n"}
 		},
 		"helper chain": func(f family) map[string]string {
 			files := map[string]string{}

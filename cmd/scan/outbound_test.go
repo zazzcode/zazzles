@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -76,9 +77,9 @@ def validation():
 	for _, provider := range []string{"openai", "jev"} {
 		for _, limit := range []int{1, 3, 100} {
 			t.Run(fmt.Sprintf("%s/cap%d", provider, limit), func(t *testing.T) {
-				calls := 0
+				var calls atomic.Int64 // the scheduler sends requests concurrently
 				stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-					calls++
+					calls.Add(1)
 					raw, _ := io.ReadAll(req.Body)
 					var p map[string]json.RawMessage
 					if err := json.Unmarshal(raw, &p); err != nil {
@@ -139,7 +140,7 @@ def validation():
 				t.Setenv("SCAN_FINDINGS_DIR", "")
 				var out, stderr bytes.Buffer
 				code := run([]string{"--analyze", "--json", "--judge", provider, "--judge-model", "fixture-model", "--judge-limit", fmt.Sprint(limit), root}, &out, &stderr)
-				if code != exitError {
+				if code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") {
 					t.Fatalf("incomplete requested scan exit=%d stderr=%s", code, stderr.String())
 				}
 				var got analysis.AnalysisReport
@@ -175,8 +176,8 @@ def validation():
 						}
 					}
 				}
-				if calls != expected || calls > limit {
-					t.Fatalf("calls=%d expected=%d cap=%d", calls, expected, limit)
+				if got := int(calls.Load()); got != expected || got > limit {
+					t.Fatalf("calls=%d expected=%d cap=%d", got, expected, limit)
 				}
 			})
 		}
@@ -189,8 +190,8 @@ func TestOutboundObservationCLI(t *testing.T) {
 		t.Setenv("TYPESAFE_API_KEY", "offline-key")
 		t.Setenv("SCAN_FINDINGS_DIR", "")
 		previous := http.DefaultTransport
-		calls := 0
-		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; w.WriteHeader(500) }))
+		var calls atomic.Int64
+		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1); w.WriteHeader(400) })) // non-retried
 		target, _ := url.Parse(stub.URL)
 		http.DefaultTransport = outboundStubTransport{target, previous, t}
 		var out, stderr bytes.Buffer
@@ -200,8 +201,8 @@ func TestOutboundObservationCLI(t *testing.T) {
 		stub.Close()
 		// Observations make no call; the one verified fetch whose destination is a
 		// request value is an SSRF claim and is the only provider request.
-		if code != exitError || calls != 1 {
-			t.Fatalf("%s code=%d calls=%d stderr=%s", provider, code, calls, stderr.String())
+		if code != exitOK || calls.Load() != 1 {
+			t.Fatalf("%s code=%d calls=%d stderr=%s", provider, code, calls.Load(), stderr.String())
 		}
 		files, err := filepath.Glob(filepath.Join(bundle, "outbound", "run-*", "findings.json"))
 		if err != nil || len(files) != 1 {

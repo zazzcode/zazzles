@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -18,10 +19,10 @@ const commandCLIApp = `const express=require('express');const {exec}=require('ch
 app.get('/ping',(req,res)=>{exec('ping -c 1 '+req.query.host,()=>{});res.end()});
 app.post('/signup',(req,res)=>{const e=req.body.email;res.end()});`
 
-func commandStubClient(t *testing.T, requests *int) func(string, string, string) (*judge.Client, error) {
+func commandStubClient(t *testing.T, requests *atomic.Int64) func(string, string, string) (*judge.Client, error) {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		*requests++
+		requests.Add(1)
 		var body struct {
 			Questions []struct {
 				Name string `json:"name"`
@@ -74,7 +75,7 @@ func TestCommandCLI(t *testing.T) {
 		}
 	})
 	t.Run("full judged scan with the input-validation analyzer skipped", func(t *testing.T) {
-		requests := 0
+		var requests atomic.Int64
 		old := newJudgeClient
 		newJudgeClient = commandStubClient(t, &requests)
 		t.Cleanup(func() { newJudgeClient = old })
@@ -121,11 +122,11 @@ func TestCommandCLI(t *testing.T) {
 		if confirmed != 1 || skipped == 0 {
 			t.Fatalf("confirmed %d skipped %d", confirmed, skipped)
 		}
-		if requests != len(r.Uses)-skipped {
-			t.Fatalf("requests %d for %d judged uses", requests, len(r.Uses)-skipped)
+		if int(requests.Load()) != len(r.Uses)-skipped {
+			t.Fatalf("requests %d for %d judged uses", requests.Load(), len(r.Uses)-skipped)
 		}
-		if files, _ := filepath.Glob(filepath.Join(traces, "*.json")); len(files) != requests {
-			t.Fatalf("saved traces %d for %d requests", len(files), requests)
+		if files, _ := filepath.Glob(filepath.Join(traces, "*.json")); len(files) != int(requests.Load()) {
+			t.Fatalf("saved traces %d for %d requests", len(files), requests.Load())
 		}
 		limited := false
 		for _, l := range r.Limitations {

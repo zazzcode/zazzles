@@ -74,7 +74,7 @@ func TestInvalidResponses(t *testing.T) {
 		{"refusal", `{"model":"m","answers":[{"name":"protection","type":"refusal"},{"name":"validation","type":"choice","choice":"sufficient"}]}`, 200},
 		{"unknown choice", `{"model":"m","answers":[{"name":"protection","type":"choice","choice":"safe"},{"name":"validation","type":"choice","choice":"sufficient"}]}`, 200},
 		{"malformed", "{", 200},
-		{"quota", "secret server error text", 429},
+		{"error body", "secret server error text", 400}, // non-retried; must not leak the body
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

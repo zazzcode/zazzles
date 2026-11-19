@@ -1,0 +1,44 @@
+{
+  "failed": false,
+  "requests": 1,
+  "report_sha256": "a8412ba976c0074075071ff687aa9db55eb3799136fca8b4a9795d8dd89b64d4",
+  "assessments": [
+    {
+      "id": "candidate:v1:35e197194d6a68dcdf5c1e5ed191fab836a319742e84bc2e6015adff693827c4",
+      "assessment": {
+        "request_digest": "3d048bb9e524672a1bfd16b2c24f98c54ba11d45f4007ecf10274b95ffd97c82",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    }
+  ],
+  "limitations": [
+    "ESM relative imports, literal CommonJS requires and direct exported handlers are resolved; dynamic imports, re-exports and mutated module bindings remain uncertain",
+    "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
+    "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
+    "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
+    "Judged 1 distinct candidate signatures across 1 total entry contexts (0 derived across equivalent entry contexts)."
+  ],
+  "traces": {
+    "candidate:v1:35e197194d6a68dcdf5c1e5ed191fab836a319742e84bc2e6015adff693827c4": {
+      "sha256": "c4afa31f467af7470f8f9827af245b8403b7126834c593dcf810acdf90498491",
+      "request_digest": "3d048bb9e524672a1bfd16b2c24f98c54ba11d45f4007ecf10274b95ffd97c82",
+      "http_status": 200,
+      "request_bytes": 18104
+    }
+  }
+}

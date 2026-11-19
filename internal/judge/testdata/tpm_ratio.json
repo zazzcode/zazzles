@@ -1,0 +1,630 @@
+[
+  {
+    "bytes": 12028,
+    "tokens": 2754
+  },
+  {
+    "bytes": 12040,
+    "tokens": 2748
+  },
+  {
+    "bytes": 12233,
+    "tokens": 2788
+  },
+  {
+    "bytes": 12426,
+    "tokens": 2859
+  },
+  {
+    "bytes": 12430,
+    "tokens": 2861
+  },
+  {
+    "bytes": 12436,
+    "tokens": 2857
+  },
+  {
+    "bytes": 12633,
+    "tokens": 2934
+  },
+  {
+    "bytes": 12761,
+    "tokens": 2987
+  },
+  {
+    "bytes": 12786,
+    "tokens": 2969
+  },
+  {
+    "bytes": 12942,
+    "tokens": 3023
+  },
+  {
+    "bytes": 12963,
+    "tokens": 3007
+  },
+  {
+    "bytes": 13107,
+    "tokens": 3074
+  },
+  {
+    "bytes": 13138,
+    "tokens": 3079
+  },
+  {
+    "bytes": 13162,
+    "tokens": 3109
+  },
+  {
+    "bytes": 13174,
+    "tokens": 3111
+  },
+  {
+    "bytes": 13183,
+    "tokens": 3113
+  },
+  {
+    "bytes": 13187,
+    "tokens": 3107
+  },
+  {
+    "bytes": 13196,
+    "tokens": 3126
+  },
+  {
+    "bytes": 13198,
+    "tokens": 3124
+  },
+  {
+    "bytes": 13209,
+    "tokens": 3111
+  },
+  {
+    "bytes": 13210,
+    "tokens": 3099
+  },
+  {
+    "bytes": 13215,
+    "tokens": 3116
+  },
+  {
+    "bytes": 13222,
+    "tokens": 3051
+  },
+  {
+    "bytes": 13261,
+    "tokens": 3098
+  },
+  {
+    "bytes": 13273,
+    "tokens": 3130
+  },
+  {
+    "bytes": 13303,
+    "tokens": 3139
+  },
+  {
+    "bytes": 13314,
+    "tokens": 3143
+  },
+  {
+    "bytes": 13321,
+    "tokens": 3138
+  },
+  {
+    "bytes": 13324,
+    "tokens": 3143
+  },
+  {
+    "bytes": 13325,
+    "tokens": 3146
+  },
+  {
+    "bytes": 13336,
+    "tokens": 3143
+  },
+  {
+    "bytes": 13483,
+    "tokens": 3127
+  },
+  {
+    "bytes": 13537,
+    "tokens": 3240
+  },
+  {
+    "bytes": 13565,
+    "tokens": 3202
+  },
+  {
+    "bytes": 13753,
+    "tokens": 3244
+  },
+  {
+    "bytes": 13773,
+    "tokens": 3281
+  },
+  {
+    "bytes": 13796,
+    "tokens": 3295
+  },
+  {
+    "bytes": 13813,
+    "tokens": 3285
+  },
+  {
+    "bytes": 13947,
+    "tokens": 3272
+  },
+  {
+    "bytes": 13995,
+    "tokens": 3323
+  },
+  {
+    "bytes": 13999,
+    "tokens": 3223
+  },
+  {
+    "bytes": 14016,
+    "tokens": 3231
+  },
+  {
+    "bytes": 14017,
+    "tokens": 3235
+  },
+  {
+    "bytes": 14077,
+    "tokens": 3298
+  },
+  {
+    "bytes": 14095,
+    "tokens": 3341
+  },
+  {
+    "bytes": 14099,
+    "tokens": 3332
+  },
+  {
+    "bytes": 14111,
+    "tokens": 3434
+  },
+  {
+    "bytes": 14129,
+    "tokens": 3376
+  },
+  {
+    "bytes": 14135,
+    "tokens": 3379
+  },
+  {
+    "bytes": 14162,
+    "tokens": 3387
+  },
+  {
+    "bytes": 14247,
+    "tokens": 3410
+  },
+  {
+    "bytes": 14260,
+    "tokens": 3318
+  },
+  {
+    "bytes": 14266,
+    "tokens": 3410
+  },
+  {
+    "bytes": 14277,
+    "tokens": 3323
+  },
+  {
+    "bytes": 14278,
+    "tokens": 3320
+  },
+  {
+    "bytes": 14303,
+    "tokens": 3388
+  },
+  {
+    "bytes": 14426,
+    "tokens": 3454
+  },
+  {
+    "bytes": 14430,
+    "tokens": 3454
+  },
+  {
+    "bytes": 14631,
+    "tokens": 3466
+  },
+  {
+    "bytes": 14716,
+    "tokens": 3536
+  },
+  {
+    "bytes": 14716,
+    "tokens": 3545
+  },
+  {
+    "bytes": 14717,
+    "tokens": 3596
+  },
+  {
+    "bytes": 14754,
+    "tokens": 3544
+  },
+  {
+    "bytes": 15101,
+    "tokens": 3648
+  },
+  {
+    "bytes": 15101,
+    "tokens": 3657
+  },
+  {
+    "bytes": 15127,
+    "tokens": 3691
+  },
+  {
+    "bytes": 15132,
+    "tokens": 3688
+  },
+  {
+    "bytes": 15143,
+    "tokens": 3734
+  },
+  {
+    "bytes": 15170,
+    "tokens": 3694
+  },
+  {
+    "bytes": 15773,
+    "tokens": 3793
+  },
+  {
+    "bytes": 15773,
+    "tokens": 3851
+  },
+  {
+    "bytes": 15778,
+    "tokens": 3762
+  },
+  {
+    "bytes": 15783,
+    "tokens": 3796
+  },
+  {
+    "bytes": 15960,
+    "tokens": 3890
+  },
+  {
+    "bytes": 15999,
+    "tokens": 3898
+  },
+  {
+    "bytes": 16019,
+    "tokens": 3974
+  },
+  {
+    "bytes": 16606,
+    "tokens": 4019
+  },
+  {
+    "bytes": 16609,
+    "tokens": 4019
+  },
+  {
+    "bytes": 16610,
+    "tokens": 4019
+  },
+  {
+    "bytes": 16626,
+    "tokens": 4023
+  },
+  {
+    "bytes": 16787,
+    "tokens": 4206
+  },
+  {
+    "bytes": 17068,
+    "tokens": 4236
+  },
+  {
+    "bytes": 17070,
+    "tokens": 4247
+  },
+  {
+    "bytes": 17526,
+    "tokens": 4082
+  },
+  {
+    "bytes": 17560,
+    "tokens": 4216
+  },
+  {
+    "bytes": 17574,
+    "tokens": 4218
+  },
+  {
+    "bytes": 17943,
+    "tokens": 4197
+  },
+  {
+    "bytes": 18135,
+    "tokens": 4478
+  },
+  {
+    "bytes": 18137,
+    "tokens": 4472
+  },
+  {
+    "bytes": 18138,
+    "tokens": 4479
+  },
+  {
+    "bytes": 18146,
+    "tokens": 4480
+  },
+  {
+    "bytes": 18354,
+    "tokens": 4612
+  },
+  {
+    "bytes": 18356,
+    "tokens": 4614
+  },
+  {
+    "bytes": 18387,
+    "tokens": 4620
+  },
+  {
+    "bytes": 18548,
+    "tokens": 4601
+  },
+  {
+    "bytes": 18713,
+    "tokens": 4480
+  },
+  {
+    "bytes": 18728,
+    "tokens": 4478
+  },
+  {
+    "bytes": 18738,
+    "tokens": 4479
+  },
+  {
+    "bytes": 18821,
+    "tokens": 4514
+  },
+  {
+    "bytes": 18821,
+    "tokens": 4520
+  },
+  {
+    "bytes": 18821,
+    "tokens": 4528
+  },
+  {
+    "bytes": 18826,
+    "tokens": 4518
+  },
+  {
+    "bytes": 18826,
+    "tokens": 4530
+  },
+  {
+    "bytes": 18947,
+    "tokens": 4503
+  },
+  {
+    "bytes": 18963,
+    "tokens": 4508
+  },
+  {
+    "bytes": 18975,
+    "tokens": 4811
+  },
+  {
+    "bytes": 19056,
+    "tokens": 4716
+  },
+  {
+    "bytes": 19622,
+    "tokens": 4810
+  },
+  {
+    "bytes": 19904,
+    "tokens": 4976
+  },
+  {
+    "bytes": 20259,
+    "tokens": 5030
+  },
+  {
+    "bytes": 20409,
+    "tokens": 5041
+  },
+  {
+    "bytes": 20413,
+    "tokens": 5040
+  },
+  {
+    "bytes": 20478,
+    "tokens": 4879
+  },
+  {
+    "bytes": 20513,
+    "tokens": 4877
+  },
+  {
+    "bytes": 20518,
+    "tokens": 4902
+  },
+  {
+    "bytes": 20524,
+    "tokens": 4882
+  },
+  {
+    "bytes": 21531,
+    "tokens": 5132
+  },
+  {
+    "bytes": 21533,
+    "tokens": 5120
+  },
+  {
+    "bytes": 21606,
+    "tokens": 5155
+  },
+  {
+    "bytes": 22088,
+    "tokens": 5331
+  },
+  {
+    "bytes": 22907,
+    "tokens": 5887
+  },
+  {
+    "bytes": 22909,
+    "tokens": 5577
+  },
+  {
+    "bytes": 22993,
+    "tokens": 5822
+  },
+  {
+    "bytes": 23247,
+    "tokens": 5864
+  },
+  {
+    "bytes": 24044,
+    "tokens": 5844
+  },
+  {
+    "bytes": 24666,
+    "tokens": 5729
+  },
+  {
+    "bytes": 24835,
+    "tokens": 5906
+  },
+  {
+    "bytes": 25479,
+    "tokens": 5908
+  },
+  {
+    "bytes": 25612,
+    "tokens": 6119
+  },
+  {
+    "bytes": 25989,
+    "tokens": 6767
+  },
+  {
+    "bytes": 27006,
+    "tokens": 7148
+  },
+  {
+    "bytes": 27499,
+    "tokens": 6741
+  },
+  {
+    "bytes": 27595,
+    "tokens": 6952
+  },
+  {
+    "bytes": 29757,
+    "tokens": 7472
+  },
+  {
+    "bytes": 32028,
+    "tokens": 8031
+  },
+  {
+    "bytes": 32137,
+    "tokens": 8553
+  },
+  {
+    "bytes": 32148,
+    "tokens": 7963
+  },
+  {
+    "bytes": 33055,
+    "tokens": 8402
+  },
+  {
+    "bytes": 33238,
+    "tokens": 8422
+  },
+  {
+    "bytes": 35066,
+    "tokens": 8721
+  },
+  {
+    "bytes": 35073,
+    "tokens": 8740
+  },
+  {
+    "bytes": 37702,
+    "tokens": 9356
+  },
+  {
+    "bytes": 38207,
+    "tokens": 9426
+  },
+  {
+    "bytes": 38723,
+    "tokens": 9998
+  },
+  {
+    "bytes": 38895,
+    "tokens": 9640
+  },
+  {
+    "bytes": 40680,
+    "tokens": 10272
+  },
+  {
+    "bytes": 40845,
+    "tokens": 10331
+  },
+  {
+    "bytes": 41090,
+    "tokens": 10410
+  },
+  {
+    "bytes": 41304,
+    "tokens": 10475
+  },
+  {
+    "bytes": 41367,
+    "tokens": 10334
+  },
+  {
+    "bytes": 41817,
+    "tokens": 11330
+  },
+  {
+    "bytes": 42230,
+    "tokens": 10471
+  },
+  {
+    "bytes": 42243,
+    "tokens": 10650
+  },
+  {
+    "bytes": 42554,
+    "tokens": 11189
+  },
+  {
+    "bytes": 43638,
+    "tokens": 11443
+  },
+  {
+    "bytes": 47685,
+    "tokens": 11845
+  },
+  {
+    "bytes": 57912,
+    "tokens": 14749
+  }
+]

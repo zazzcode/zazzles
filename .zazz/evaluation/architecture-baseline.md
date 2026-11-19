@@ -533,3 +533,80 @@ earlier phases. vulnpy and DVWA run two or three runners at once, which can rais
 Artifacts: `_test-findings/<app>/run-arch-2/` holds `run-{1,2,3}/` (first default batch),
 `ab/{old,new,seq}-{1,2,3}/`, `walk-count/{old,new}/` and `pins.log`. The Juice Shop directory also
 holds `measurements.json`, `bench-pipeline-mixed.txt` and the gate logs.
+
+## Phase 4 — parallel judge requests (2026-11-18)
+
+Stub timing for AC9: `BenchmarkScheduleLatency` (`internal/judge/schedule_parallel_test.go`) runs 40
+distinct signatures, each with a local `httptest` stub that waits a fixed 200 ms. The run uses
+`--judge-limit` 40 and no RPM/TPM pacing, on an Apple M6 with go1.27.3 and `-benchtime 1x`.
+
+| N | Wall clock | Speed-up over N=1 | Requests | Max in flight |
+|---|---|---|---|---|
+| 1 | 8.15 s | 1.00× | 40 | 1 |
+| 2 | 4.11 s | 1.98× | 40 | ≤2 |
+| 4 | 2.09 s | 3.91× | 40 | ≤4 |
+| 8 | 1.08 s | 7.56× | 40 | ≤8 |
+
+Wall clock scales with `N` when stub latency dominates and pacing does not bind. Request bytes and
+token usage are the same at every `N`. Live provider latency and quota behavior are unverified. No
+paid calls were made.
+
+AC1 serial outputs are pinned in `internal/judge/testdata/schedule_serial/`. There are twelve
+scenarios, captured from the pre-change scheduler in `15d0f92`. Each file pins the report and
+saved traces by SHA-256 and keeps the assessments and limitations readable.
+
+### Live owner-capped check (2026-11-18)
+
+Owner-approved OpenAI `gpt-6-luna` requests against Juice Shop `f189f52`, which was clean before and
+after. Offline analysis took 9.5 s in two runs. Judging time is wall clock minus that.
+
+| Run | Requests | Completed | Input tokens | Wall clock | Judging |
+|---|---|---|---|---|---|
+| Full scan, N=4, RPM 450, TPM 1M | 157 | 157 | 770,517 | 192.1 s | ~183 s (TPM-paced) |
+| A/B, N=1, RPM 450, TPM 0 | 40 | 40 | 329,255 | 21.0 s | ~11.5 s |
+| A/B, N=4, RPM 450, TPM 0 | 40 | 40 | 329,255 | 12.1 s | ~2.6 s (≈4.4×) |
+
+The same A/B with TPM 1M took 73.8 s at N=1 and 70.6 s at N=4. In both runs the local TPM window was
+the bottleneck. The reservation is request bytes plus 4,096, about 24k per Juice Shop request, while
+the provider reports about 4.9k input tokens per request. The first 40 reservations total 1.48M, so
+request 27 waits for the rolling window at any concurrency. A token-based estimate is a follow-up
+outside this phase. Results and every attempt count are in `_test-findings/juice-shop/run-arch-4*`.
+
+Full judged scans followed, with `JUDGE_RPM=4500`, `JUDGE_TPM=0`, a cap of 200 per run, and the
+Mac mini M6 with 32 GB RAM. Both samples were clean before and after.
+
+| Target | N | Requests | Completed | Input tokens | Wall clock |
+|---|---|---|---|---|---|
+| Juice Shop `f189f52` | 1 | 157 | 157 | 770,517 | 43.0 s |
+| Juice Shop `f189f52` | 4 | 157 | 157 | 770,517 | 19.0 s |
+| OopsSec Store `2d530ef` | 1 | 114 | 116 (2 reused) | 483,076 | 28.2 s |
+| OopsSec Store `2d530ef` | 4 | 114 | 116 (2 reused) | 483,076 | 7.2 s |
+
+For each target, N=1 and N=4 had 0 differences in request digests, answers and finding statuses.
+Two earlier Juice Shop N=4 scans each stopped on one OpenAI HTTP 503, at 124 and 148 of 157. With
+no retries, one transient 503 ends the scan. A single retry of 503 responses is a candidate follow-up.
+
+### Judge retry and token-based TPM estimate
+
+The follow-up deliverable ([spec](../specifications/judge-transient-retry-and-token-estimate.md))
+retries HTTP 429, 502, 503 and 504 up to 3 times and a dropped connection once. It also reserves
+`ceil(bytes / 3) + 512` input tokens per request instead of bytes plus 4,096. The estimator was
+checked offline against the 157 live Juice Shop traces of the full N=4 scan above, recorded as
+byte and token pairs in `internal/judge/testdata/tpm_ratio.json`.
+
+| Measure | Bytes + 4,096 | `ceil(bytes / 3) + 512` |
+|---|---|---|
+| Reserved for 157 requests (reported 770,517) | 3,793,778 | 1,130,669 |
+| Reservation ÷ reported tokens, minimum | 4.05× | 1.28× |
+| Reservation ÷ reported tokens, maximum | 5.87× | 1.65× |
+| Reservation ÷ reported tokens, median | — | 1.51× |
+
+Request bytes ran 12,028–57,912 and reported input tokens 2,748–14,749, a median of 4.17 bytes per
+token. The new estimate never underestimates a row.
+
+Owner-authorized live check on 2026-11-18: OpenAI `gpt-6-luna`, Juice Shop `f189f52` (clean before
+and after), N=4, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, `--judge-limit 200`. 157 of 157 assessments
+completed with 0 retries, 770,517 input tokens (identical to the earlier runs), 18.6 s wall clock and
+exit 0. The TPM window no longer throttled the scan; at `JUDGE_TPM=1000000` with the old estimate it
+took 192 s. Artifacts are in `_test-findings/juice-shop/run-reliability-1/`.
+

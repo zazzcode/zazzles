@@ -123,8 +123,10 @@ coverage separately; see [SSRF analysis](analysis/ssrf.md).
 ## Completion and compatibility
 
 `not_run`, `failed`, and `completed` describe semantic-assessment execution, independently of whether
-static analysis establishes poor practice. Exit 0 means the requested operation completed. Exit 1
-indicates execution/requested-assessment failure; a retained report may still contain useful findings.
+static analysis establishes poor practice. Exit 0 means the scan ran to the end; incomplete assessments
+are warned about on stderr and explained per record. Exit 1 indicates a setup or execution failure,
+or a judge stopped by an account failure or an unresponsive decision model; a retained report may
+still contain useful findings.
 Exit 2 means invalid CLI usage. There is currently no finding-severity CI gate.
 
 Presentation version 3 introduces this distinction. Older schema-v1 evidence remains exportable:

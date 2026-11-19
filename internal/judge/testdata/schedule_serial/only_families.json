@@ -1,0 +1,95 @@
+{
+  "failed": false,
+  "requests": 1,
+  "report_sha256": "8551db56cd0b516ceceb74a44b65badbd97fe7c8225eea9ca77addf0194cc40f",
+  "assessments": [
+    {
+      "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
+      "assessment": {
+        "status": "not_run",
+        "reason": "sql analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "candidate:v1:c3fb15045e5b823281e4fb965018267034100841491b73d031638a3362f563cb",
+      "assessment": {
+        "status": "not_run",
+        "reason": "sql analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "candidate:v1:a3b904c8cd9d758720bf5661b488dfa38de6cc5b8eafea43058f56b2dc99009f",
+      "assessment": {
+        "status": "not_run",
+        "reason": "sql analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "candidate:v1:7eacb0e66dc7f98fc5e96ae72b687cbf4d694149623cb56139c6eb731278762a",
+      "assessment": {
+        "status": "not_run",
+        "reason": "sql analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "outbound-observation",
+      "assessment": {
+        "status": "not_run",
+        "reason": "outbound analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "xss-claim",
+      "assessment": {
+        "status": "not_run",
+        "reason": "xss analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "api-data",
+      "assessment": {
+        "status": "not_run",
+        "reason": "xss analyzer not used for this run (--only-family logging)"
+      }
+    },
+    {
+      "id": "logging-claim",
+      "assessment": {
+        "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "content_exposure": "yes",
+          "data_class": "credential",
+          "log_exposure": "vulnerable",
+          "redaction": "no"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "log-components-v2",
+        "protection": "insufficient",
+        "reason": "Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
+      }
+    }
+  ],
+  "limitations": [
+    "ESM relative imports, literal CommonJS requires and direct exported handlers are resolved; dynamic imports, re-exports and mutated module bindings remain uncertain",
+    "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
+    "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
+    "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
+    "Analyzer family selection: skipped [], only [logging]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.",
+    "Judged 1 distinct candidate signatures across 1 total entry contexts (0 derived across equivalent entry contexts)."
+  ],
+  "traces": {
+    "logging-claim": {
+      "sha256": "9f20187eaf22ec25564b704786215ad0069ea18a29d482a3941bc0aa046bb62f",
+      "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
+      "http_status": 200,
+      "request_bytes": 9103
+    }
+  }
+}

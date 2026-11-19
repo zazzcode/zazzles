@@ -105,8 +105,15 @@ gitignored `.zazz/ephemeral/` and MUST NOT be committed. Zazz Board is not used.
 Agents MUST NOT print `.env` contents or credentials, include secrets in tracked files, or pass keys
 in command arguments. Agents MUST pass only the selected provider's key to the scanner child process.
 Offline checks need no key. An existing local key is configuration, not authorization for paid calls.
+The owner's typical live check is standing-authorized: when the owner asks for a live check of a
+sample, run one judged scan with `--judge openai --judge-model gpt-6-luna`, the default judge limit
+(every candidate; about 157 requests for Juice Shop), `JUDGE_RPM=4500` and `JUDGE_TPM=1800000`,
+without asking for a cap. Anything larger or another provider/model still needs the owner's word.
 Agents MUST follow the user's active provider/model restrictions, keep live request counts small and
-explicit, and MUST NOT use automatic provider/model fallback. Funding context is not authorization to
+explicit, and MUST NOT use automatic provider/model fallback. Judge transport retries only
+transient failures (HTTP 408/429/500/502/503/504/529, timeouts, dropped connections; up to 3 times)
+and stops a scan only for an account failure or an unresponsive model; agents MUST NOT add other
+retries or stop conditions without an owner-approved spec. Funding context is not authorization to
 exhaust a balance. Alternative adapters MAY be tested with local HTTP stubs.
 
 ## Verification

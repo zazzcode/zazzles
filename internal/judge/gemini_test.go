@@ -117,12 +117,12 @@ func TestGeminiConfigurationAndHTTPFailure(t *testing.T) {
 	calls := 0
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
-		w.WriteHeader(429)
+		w.WriteHeader(401) // transient statuses are retried; see retry_test.go
 		w.Write([]byte("private error"))
 	}))
 	defer s.Close()
 	c.UseEndpoint(s.URL, s.Client())
-	if a := c.Assess(context.Background(), analysis.CandidateUse{}); a.Status != "failed" || a.Reason != "judge HTTP 429" {
+	if a := c.Assess(context.Background(), analysis.CandidateUse{}); a.Status != "failed" || a.Reason != "judge HTTP 401" {
 		t.Fatalf("assessment=%+v", a)
 	}
 	if calls != 1 {

@@ -134,6 +134,19 @@ retained locally during calibration. Replay requires byte-equivalent compact JSO
 matching protocol; changed source, roles, questions or trace evidence needs a new judgment.
 Expected labels stay in independent evaluation files and never enter model bundles.
 
+Assessment scheduling (`internal/judge/schedule.go`) has three passes. The plan pass is offline and
+sequential. It groups candidates by equivalence signature, runs `Preview` and the size and TPM
+preflight, and assigns `--judge-limit` slots to group leaders in priority order. Dispatch sends
+leaders through at most `--judge-concurrency` workers, in waves. After a wave, a group whose leader
+did not complete promotes its next member into an unassigned slot. Finalization walks priority
+order alone: it replays equivalent members and applies cap and halt outcomes, then calls
+`SaveTrace` and writes limitations. Output therefore never depends on completion order. With
+concurrency 1 this matches the serial scheduler. One edge case differs: a leader fails without
+halting while the cap binds. A serial run gave the next member the freed slot; the plan gives
+that slot to the next leader in priority order. The limiter reserves a window entry under its lock
+and holds no lock across HTTP. Its `complete` reconciles that same entry, and the first failure
+halts new acquisitions.
+
 ## Verification and limits
 
 Regression pairs cover raw/bound SQL, real/shadowed drivers, escaped/raw/unknown dictionary

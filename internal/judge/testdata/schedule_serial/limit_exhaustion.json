@@ -1,0 +1,203 @@
+{
+  "failed": true,
+  "requests": 3,
+  "report_sha256": "ad7f6707ca2c682bdfa68dbad206a28cfc8bf046aef947bb6bfc517d435db424",
+  "assessments": [
+    {
+      "id": "candidate:v1:9fa57a5087a9e6a57882cffe7565cf9336f3a8d98ea53ad6f0b42292a44874b3",
+      "assessment": {
+        "request_digest": "0f74f02d9a1bff596391ff4750d4667f234d9950b2db0aee5a2d5445aadc44d2",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:cd9cc39c18db6de98d2b3c4bc851e0784a9ffc5d5802a3d1a4b6cb69cb0b45e5",
+      "assessment": {
+        "deduplicated_from": "candidate:v1:9fa57a5087a9e6a57882cffe7565cf9336f3a8d98ea53ad6f0b42292a44874b3",
+        "request_digest": "c8249ee2d642c13abddd29e2926da3ebdabe6a55d50cc73eebe21876c7599118",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:8dad91f1008bf1d4ea1de83a190641cb85dbee88240a8dec22630fb25d3a20b9",
+      "assessment": {
+        "request_digest": "6f665faad5c05b6ee081dab7789b76ac9b9d3cc6fe097eb4c52c1141772aee56",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:b69d05394a12ee0beb3f16787c785091233b093859ea16d6c6272fa6b75dcf7e",
+      "assessment": {
+        "deduplicated_from": "candidate:v1:8dad91f1008bf1d4ea1de83a190641cb85dbee88240a8dec22630fb25d3a20b9",
+        "request_digest": "f259df32a91bf32889a61f97df982fa08a9f35c95c3c490474c59dc837073d20",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:d0dfa984a9e1991e397f3d6800b6d92f4a0b0a1a7cad20c160abf05fe9056451",
+      "assessment": {
+        "request_digest": "9f940e69ba98a8e714c1054b098b5b32a18fc5f0dd1567ec266ffcfbac97c1cf",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:49162aa540ca896ad746bf2efd7410ae1c3dae1d1da4100fcc06d19345f5a5dd",
+      "assessment": {
+        "deduplicated_from": "candidate:v1:d0dfa984a9e1991e397f3d6800b6d92f4a0b0a1a7cad20c160abf05fe9056451",
+        "request_digest": "deb63c8264abe8f077944e75b82e2d02ab4c16f5a445e2eea27cf4d34ea5154f",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "fixture-model",
+        "question_version": "sql-components-v3",
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+      }
+    },
+    {
+      "id": "candidate:v1:c7480fa2b9b8dc11e7ae8409b219fc9015aa9b0f071c106ed11dd611973e4355",
+      "assessment": {
+        "status": "not_run",
+        "reason": "judge request limit reached"
+      }
+    },
+    {
+      "id": "candidate:v1:419edb709353a126c47d2b273c75bb2fcc3c9fafa2aa428d994b754ecf2daefc",
+      "assessment": {
+        "status": "not_run",
+        "reason": "judge request limit reached"
+      }
+    },
+    {
+      "id": "candidate:v1:fe07dbc47348c38f06c581427c704315d7b0af6c308f40b8696e317bcaa63a04",
+      "assessment": {
+        "status": "not_run",
+        "reason": "judge request limit reached"
+      }
+    },
+    {
+      "id": "candidate:v1:879c6ba5757866b8a77604cddab2d537288031cad1020a9c3d07fcfc0f190a33",
+      "assessment": {
+        "status": "not_run",
+        "reason": "judge request limit reached"
+      }
+    }
+  ],
+  "limitations": [
+    "ESM relative imports, literal CommonJS requires and direct exported handlers are resolved; dynamic imports, re-exports and mutated module bindings remain uncertain",
+    "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
+    "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
+    "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
+    "Judged 3 distinct candidate signatures across 10 total entry contexts (3 derived across equivalent entry contexts)."
+  ],
+  "traces": {
+    "candidate:v1:49162aa540ca896ad746bf2efd7410ae1c3dae1d1da4100fcc06d19345f5a5dd": {
+      "sha256": "c0d5cd93d7034cc33687f63089751cec29ee323be1627c1dc604c87b7318e15d",
+      "request_digest": "deb63c8264abe8f077944e75b82e2d02ab4c16f5a445e2eea27cf4d34ea5154f",
+      "http_status": 200,
+      "request_bytes": 18104
+    },
+    "candidate:v1:8dad91f1008bf1d4ea1de83a190641cb85dbee88240a8dec22630fb25d3a20b9": {
+      "sha256": "f0816bb90fe4de89e2061279b2b5b86352294184d80c54c40c5cd8ce9c20966b",
+      "request_digest": "6f665faad5c05b6ee081dab7789b76ac9b9d3cc6fe097eb4c52c1141772aee56",
+      "http_status": 200,
+      "request_bytes": 18104
+    },
+    "candidate:v1:9fa57a5087a9e6a57882cffe7565cf9336f3a8d98ea53ad6f0b42292a44874b3": {
+      "sha256": "6c81420f8e25dd12a4d2946eb568eade578f07c78d229c86a898c5c376a48167",
+      "request_digest": "0f74f02d9a1bff596391ff4750d4667f234d9950b2db0aee5a2d5445aadc44d2",
+      "http_status": 200,
+      "request_bytes": 18104
+    },
+    "candidate:v1:b69d05394a12ee0beb3f16787c785091233b093859ea16d6c6272fa6b75dcf7e": {
+      "sha256": "3f7e38a10dd47cf01149195c30e8ecda5bb208b2ac1aa3f55b9f65337aefda21",
+      "request_digest": "f259df32a91bf32889a61f97df982fa08a9f35c95c3c490474c59dc837073d20",
+      "http_status": 200,
+      "request_bytes": 18104
+    },
+    "candidate:v1:cd9cc39c18db6de98d2b3c4bc851e0784a9ffc5d5802a3d1a4b6cb69cb0b45e5": {
+      "sha256": "1e0ffb6912a5cd2bee92e3bcb23166ebd160bfa4da4940371059e06b4df64e97",
+      "request_digest": "c8249ee2d642c13abddd29e2926da3ebdabe6a55d50cc73eebe21876c7599118",
+      "http_status": 200,
+      "request_bytes": 18104
+    },
+    "candidate:v1:d0dfa984a9e1991e397f3d6800b6d92f4a0b0a1a7cad20c160abf05fe9056451": {
+      "sha256": "9930cf69ad2817fa19e0452de1ea27e21fd8eed7c3112a35cad86237dca8e8cf",
+      "request_digest": "9f940e69ba98a8e714c1054b098b5b32a18fc5f0dd1567ec266ffcfbac97c1cf",
+      "http_status": 200,
+      "request_bytes": 18104
+    }
+  }
+}

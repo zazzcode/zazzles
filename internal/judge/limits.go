@@ -18,20 +18,28 @@ type Limits struct {
 }
 
 type requestWindowEntry struct {
+	id     uint64
 	at     time.Time
 	tokens int64
 }
+
+// requestLimiter is shared by concurrent requests. Every field after mu is
+// guarded by mu; settings is fixed at construction. acquire reserves a window
+// entry and complete reconciles that same entry, so no lock is held across HTTP.
 type requestLimiter struct {
-	series   sync.Mutex
-	mu       sync.Mutex
-	settings Limits
-	attempts int
-	input    int64
-	unknown  int
-	halted   string
-	window   []requestWindowEntry
-	now      func() time.Time
-	wait     func(context.Context, time.Duration) error
+	mu          sync.Mutex
+	settings    Limits
+	attempts    int
+	input       int64
+	unknown     int
+	retries     int
+	consecutive int // final failures since the last success, for the outage breaker
+	halted      string
+	concurrency int
+	reserved    uint64
+	window      []requestWindowEntry
+	now         func() time.Time
+	wait        func(context.Context, time.Duration) error
 }
 
 func newRequestLimiter(cfg Limits) (*requestLimiter, error) {
@@ -62,23 +70,54 @@ func (c *Client) SetLimits(cfg Limits) error {
 	return err
 }
 
-func (l *requestLimiter) acquire(ctx context.Context, size int) error {
+// reservationTokens is a conservative input-token estimate: observed request
+// JSON runs 3.7–4.4 bytes per token, so bytes/3 over-reserves; complete()
+// still raises the entry to reported usage when that is larger.
+func reservationTokens(size int) int64 { return int64((size+2)/3) + 512 }
+
+// oversized reports a request whose reservation can never fit the TPM window.
+// A nil limiter refuses nothing.
+func (l *requestLimiter) oversized(size int) bool {
+	return l != nil && l.settings.TPM > 0 && reservationTokens(size) > l.settings.TPM
+}
+
+// haltReason returns the failure that stopped the scan, or "". A nil limiter never halts.
+func (l *requestLimiter) haltReason() string {
+	if l == nil {
+		return ""
+	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	estimate := int64(size) + 4096 // UTF-8 request bytes plus framing allowance, not an authoritative tokenizer
+	return l.halted
+}
+
+// useConcurrency records the largest assessment concurrency for LimitSummary.
+func (l *requestLimiter) useConcurrency(n int) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.concurrency = max(l.concurrency, n)
+}
+
+// acquire admits one request and returns its window reservation (0 when pacing
+// is off). It re-checks the halt after every pacing wait, and it releases mu
+// while waiting so that completions and halts are recorded meanwhile.
+func (l *requestLimiter) acquire(ctx context.Context, size int) (uint64, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	reserve := reservationTokens(size)
 	for {
 		if err := ctx.Err(); err != nil {
-			return fmt.Errorf("judge limit: pacing canceled: %w", err)
+			return 0, fmt.Errorf("judge limit: pacing canceled: %w", err)
 		}
 		if l.halted != "" {
-			return fmt.Errorf("judge limit: stopped after %s", l.halted)
+			return 0, fmt.Errorf("judge limit: stopped after %s", l.halted)
 		}
-		if l.settings.TPM > 0 && estimate > l.settings.TPM {
-			return errors.New("judge limit: request token reservation exceeds the configured TPM window")
+		if l.oversized(size) {
+			return 0, errors.New("judge limit: request token reservation exceeds the configured TPM window")
 		}
 		if l.settings.RPM == 0 && l.settings.TPM == 0 {
 			l.attempts++
-			return nil
+			return 0, nil
 		}
 		now := l.now()
 		var tokens int64
@@ -91,19 +130,22 @@ func (l *requestLimiter) acquire(ctx context.Context, size int) error {
 		}
 		l.window = keep
 		fullRequests := l.settings.RPM > 0 && len(keep) >= l.settings.RPM
-		fullTokens := l.settings.TPM > 0 && tokens > l.settings.TPM-estimate
+		fullTokens := l.settings.TPM > 0 && tokens > l.settings.TPM-reserve
 		if !fullRequests && !fullTokens {
-			break
+			l.attempts++
+			l.reserved++
+			l.window = append(l.window, requestWindowEntry{l.reserved, now, reserve})
+			return l.reserved, nil
 		}
 		// The oldest retained request expires first; recheck both windows afterward.
 		delay := time.Minute - now.Sub(keep[0].at)
-		if err := l.wait(ctx, delay); err != nil {
-			return fmt.Errorf("judge limit: pacing canceled: %w", err)
+		l.mu.Unlock()
+		err := l.wait(ctx, delay)
+		l.mu.Lock()
+		if err != nil {
+			return 0, fmt.Errorf("judge limit: pacing canceled: %w", err)
 		}
 	}
-	l.attempts++
-	l.window = append(l.window, requestWindowEntry{l.now(), estimate})
-	return nil
 }
 
 func responseInputUsage(data []byte) (int64, bool) {
@@ -126,12 +168,25 @@ func responseInputUsage(data []byte) (int64, bool) {
 	return *n, true
 }
 
-func (l *requestLimiter) complete(data []byte, reason string) {
+// outageThreshold is how many consecutive requests may fail, each after its
+// retries and with no success between, before the scan stops as an outage.
+const outageThreshold = 5
+
+// complete records one admitted request's final outcome. A non-empty stop is
+// an account failure and halts new acquisitions; any other failure reason
+// counts toward the outage breaker, and a success resets it. Reported usage
+// raises that request's own window reservation.
+func (l *requestLimiter) complete(id uint64, data []byte, reason, stop string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	tokens, ok := responseInputUsage(data)
-	if reason != "" {
-		l.halted = reason
+	switch {
+	case stop != "":
+		l.stop(stop)
+	case reason != "":
+		l.countFailure(reason)
+	default:
+		l.consecutive = 0
 	}
 	if !ok {
 		l.unknown++
@@ -139,21 +194,76 @@ func (l *requestLimiter) complete(data []byte, reason string) {
 	}
 	if tokens > math.MaxInt64-l.input {
 		l.unknown++
-		l.halted = "provider usage accounting overflow"
+		l.stop("provider usage accounting overflow")
 		return
 	}
 	l.input += tokens
-	if len(l.window) > 0 && tokens > l.window[len(l.window)-1].tokens {
-		l.window[len(l.window)-1].tokens = tokens
+	for k := range l.window {
+		if l.window[k].id == id && id != 0 && tokens > l.window[k].tokens {
+			l.window[k].tokens = tokens
+		}
 	}
 }
 
-func (c *Client) stopLimitedScan(reason string) {
-	if c.limiter != nil {
-		c.limiter.mu.Lock()
-		c.limiter.halted = reason
-		c.limiter.mu.Unlock()
+// stop halts new acquisitions with the first stop reason. Caller holds mu.
+func (l *requestLimiter) stop(reason string) {
+	if l.halted == "" {
+		l.halted = reason
 	}
+}
+
+// countFailure counts a final request failure and stops the scan once
+// outageThreshold failures arrive in a row. Caller holds mu.
+func (l *requestLimiter) countFailure(reason string) {
+	l.consecutive++
+	if l.consecutive >= outageThreshold {
+		l.stop(fmt.Sprintf("decision model not responding: %d consecutive requests failed after retries (last: %s)", l.consecutive, reason))
+	}
+}
+
+// failed counts a failure found after transport succeeded, such as an
+// undecodable answer. A nil limiter counts nothing.
+func (l *requestLimiter) failed(reason string) {
+	if l == nil {
+		return
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.countFailure(reason)
+}
+
+// abandon records a retried attempt: window entry kept, usage unknown, no halt.
+// The provider saw the request, so its reservation still counts against RPM/TPM.
+func (l *requestLimiter) abandon(id uint64) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.unknown++
+}
+
+// waitRetry waits before a transient-failure retry without holding mu. A nil
+// limiter uses a plain timer; both honor cancellation.
+func (l *requestLimiter) waitRetry(ctx context.Context, d time.Duration) error {
+	if l == nil {
+		return waitDecisionWindow(ctx, d)
+	}
+	return l.wait(ctx, d)
+}
+
+// noteRetry counts an admitted retry for LimitSummary. A nil limiter counts nothing.
+func (l *requestLimiter) noteRetry() {
+	if l == nil {
+		return
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.retries++
+}
+
+// StopReason returns why the scan stopped sending decision requests: an
+// account failure or a decision-model outage. It is "" when the scan ran to
+// the end, even if individual assessments failed.
+func (c *Client) StopReason() string {
+	return c.limiter.haltReason()
 }
 
 // LimitSummary describes configured scan-local controls and conservative accounting.
@@ -165,8 +275,16 @@ func (c *Client) LimitSummary() string {
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	if l.settings.RPM == 0 && l.settings.TPM == 0 && l.halted == "" {
+	if l.settings.RPM == 0 && l.settings.TPM == 0 && l.halted == "" && l.retries == 0 {
 		return ""
 	}
-	return fmt.Sprintf("Decision-model limits (one scan; discovery and assessment share state): RPM %d, estimated input TPM %d; requests remain sequential. Attempts %d; reported input tokens %d; unknown-usage attempts %d. %s", l.settings.RPM, l.settings.TPM, l.attempts, l.input, l.unknown, strings.TrimSpace(l.halted))
+	mode := "requests remain sequential"
+	if l.concurrency > 1 {
+		mode = fmt.Sprintf("up to %d assessment requests in flight", l.concurrency)
+	}
+	retries := ""
+	if l.retries > 0 {
+		retries = fmt.Sprintf("; retries %d", l.retries)
+	}
+	return fmt.Sprintf("Decision-model limits (one scan; discovery and assessment share state): RPM %d, estimated input TPM %d; %s. Attempts %d; reported input tokens %d; unknown-usage attempts %d%s. %s", l.settings.RPM, l.settings.TPM, mode, l.attempts, l.input, l.unknown, retries, strings.TrimSpace(l.halted))
 }

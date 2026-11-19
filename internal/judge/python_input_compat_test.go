@@ -18,6 +18,7 @@ func TestPythonInputRequestCompatibility(t *testing.T) {
 	}
 	for _, fixture := range []string{"routes", "dynamic-vulnpy", "command-injection", "path-traversal", "outbound"} {
 		t.Run(fixture, func(t *testing.T) {
+			t.Parallel()
 			r, err := pipeline.Analyze("../langpy/testdata/"+fixture, "")
 			if err != nil {
 				t.Fatal(err)

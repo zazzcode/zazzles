@@ -333,3 +333,31 @@ documents.
 **Summary.** Added W7 with its files, AC8 and an execution step after W6.
 
 **Verification Impact.** `doc-check` on the changed documents; no code or test change.
+
+### 2026-11-19 — Implementation (W1–W5, W7; W6 runs pending)
+
+**Source.** Implementation-discovered constraints.
+
+**Changed Sections.** None of the contract's requirements; deviations within adaptive guidance.
+
+**Summary.**
+
+- **Choice-encoded citations (D-2).** The decision APIs accept only choice questions, so each
+  resolution question has a `_cite` companion whose choices are ordered `eN`/`gN` chains built from
+  the request, plus `none`. The one verifier still checks every cited ID against the request sent
+  and every hop against scanner edges or the asked gap. Resolution answers are optional in the
+  response; an off-list answer is kept raw so the verifier records why it fails.
+- **W5 choices.** The model names a missing item by choosing among symbols the scanner names in the
+  record's own gap details; the snapshot must hold exactly one definition. The question is asked
+  only by path, SQL, command and XSS, whose protocols this contract bumps.
+- **W3a placement.** One shared census in `internal/parse/stored_census.go` (snapshot files checked
+  by hash) covers PHP and Python SQL tables, PHP session keys and Prisma own-API reads instead of
+  per-adapter code. Offline it covers 29 of the 45 records, short of AC3's 40: the 13 Juice Shop
+  `/application-configuration` records and 3 file reads have no storage read to census.
+- **Commits.** The SQL flow-gap discharge landed with W1 because AC1 exercises it; W2 (path) and W4
+  share one commit because both edit `applyPathPolicy`.
+- **Protocols.** `sql-components-v4`, `command-components-v4`, `path-components-v3`,
+  `xss-components-v3`.
+
+**Verification Impact.** AC1, AC2, AC4, AC5, AC7 and AC8 have offline evidence; AC3 is partial
+(write sets 29/45, judgment tests pass); AC6 awaits the authorized live runs.

@@ -150,8 +150,15 @@ func (c *Client) plan(ctx context.Context, report *analysis.AnalysisReport, orde
 		}
 	}
 	sort.Slice(leaders, func(i, j int) bool { return leaders[i].rank < leaders[j].rank })
-	for k := 0; k < len(leaders) && k < opts.Limit; k++ {
+	// A path-group record costs one slot per group request (D-15).
+	used := 0
+	for k := 0; k < len(leaders); k++ {
+		cost := groupCost(leaders[k].preview)
+		if used+cost > opts.Limit {
+			continue
+		}
 		leaders[k].slot = true
+		used += cost
 	}
 	return groups, early
 }
@@ -178,7 +185,7 @@ func (c *Client) waves(ctx context.Context, groups [][]planned, limit, n int) ma
 		for m := range groups[g] {
 			if groups[g][m].slot {
 				wave = append(wave, cursor{g, m})
-				free--
+				free -= groupCost(groups[g][m].preview)
 			}
 		}
 	}
@@ -201,10 +208,10 @@ func (c *Client) waves(ctx context.Context, groups [][]planned, limit, n int) ma
 			if results[groups[at.group][at.member].index].assessment.Status == "completed" {
 				continue
 			}
-			if m := nextSpender(groups[at.group], at.member+1); m >= 0 && free > 0 {
+			if m := nextSpender(groups[at.group], at.member+1); m >= 0 && free >= groupCost(groups[at.group][m].preview) {
 				groups[at.group][m].slot = true
 				next = append(next, cursor{at.group, m})
-				free--
+				free -= groupCost(groups[at.group][m].preview)
 			}
 		}
 		wave = next
@@ -295,6 +302,14 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 			trace = p.preview
 			if p.previewErr == nil {
 				trace.Response, trace.ResponseBytes, trace.HTTPStatus = previous.trace.Response, previous.trace.ResponseBytes, previous.trace.HTTPStatus
+				// An equivalent path-group record shares each group's decision
+				// with its equivalent group only.
+				trace.Groups = append([]DecisionTrace{}, trace.Groups...)
+				for g := range trace.Groups {
+					if g < len(previous.trace.Groups) {
+						trace.Groups[g].Response, trace.Groups[g].ResponseBytes, trace.Groups[g].HTTPStatus = previous.trace.Groups[g].Response, previous.trace.Groups[g].ResponseBytes, previous.trace.Groups[g].HTTPStatus
+					}
+				}
 				u.Assessment = c.Replay(*u, trace)
 				if u.Assessment.Status == "completed" {
 					u.Assessment.DeduplicatedFrom = previous.id
@@ -302,12 +317,18 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 					derived++
 				}
 			}
-		} else if calls >= opts.Limit {
+		} else if calls+groupCost(p.preview) > opts.Limit {
 			u.Assessment = analysis.Assessment{Status: "not_run", Reason: "judge request limit reached"}
 		} else {
 			r := attempt(p)
 			u.Assessment, trace = r.assessment, r.trace
-			if trace.HTTPStatus != 0 || trace.RequestBytes > 0 && trace.RequestBytes <= requestLimit && !strings.HasPrefix(u.Assessment.Reason, "judge limit:") {
+			if len(trace.Groups) > 0 {
+				for _, g := range trace.Groups {
+					if g.HTTPStatus != 0 || g.RequestBytes > 0 && g.RequestBytes <= requestLimit && !strings.HasPrefix(u.Assessment.Reason, "judge limit:") {
+						calls++
+					}
+				}
+			} else if trace.HTTPStatus != 0 || trace.RequestBytes > 0 && trace.RequestBytes <= requestLimit && !strings.HasPrefix(u.Assessment.Reason, "judge limit:") {
 				calls++
 			}
 			if p.shares && u.Assessment.Status == "completed" {

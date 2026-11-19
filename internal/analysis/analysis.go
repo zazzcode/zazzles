@@ -107,6 +107,24 @@ type Assessment struct {
 	// FollowUp records the one evidence follow-up request, when one was
 	// asked for.
 	FollowUp *FollowUp `json:"follow_up,omitempty"`
+	// PathGroups records the per-group requests of a record whose evidence
+	// exceeded the request limit and was judged in path groups.
+	PathGroups []PathGroupResult `json:"path_groups,omitempty"`
+}
+
+// PathGroupResult is one path-group request of an over-limit record: the
+// record dependencies it carried, those it withheld, and its own outcome.
+type PathGroupResult struct {
+	Group         int    `json:"group"`
+	Key           string `json:"key"`
+	Dependencies  []int  `json:"dependencies"`
+	Omitted       []int  `json:"omitted,omitempty"`
+	Status        string `json:"status"`
+	FindingStatus string `json:"finding_status,omitempty"`
+	Protection    string `json:"protection,omitempty"`
+	RequestDigest string `json:"request_digest,omitempty"`
+	RequestBytes  int    `json:"request_bytes,omitempty"`
+	Reason        string `json:"reason,omitempty"`
 }
 
 // FollowUp is the single evidence follow-up of a record: the item the model

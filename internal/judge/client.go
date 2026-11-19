@@ -106,6 +106,16 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 		trace.EvidenceOmissions = omitted
 	}
 	if len(payload) > requestLimit {
+		if groups, ok := c.planPathGroups(use); ok {
+			out, traces := c.groupAssessment(use, groups, func(_ int, sub analysis.CandidateUse) (analysis.Assessment, DecisionTrace) {
+				var t DecisionTrace
+				return c.assess(ctx, sub, &t), t
+			})
+			if trace != nil {
+				*trace = previewOf(trace, out, traces)
+			}
+			return out
+		}
 		overLimit(&a, use, payload, omitted)
 		return a
 	}
@@ -457,4 +467,111 @@ func questionInstructions(q question, use analysis.CandidateUse) string {
 		constraint = use.Check.Validation
 	}
 	return q.instructions + " Declared requirement: " + constraint + ". Fields: " + strings.Join(use.Check.Fields, ", ") + ". Assess this precise requirement independently; do not infer safety or the expected answer from benchmark labels."
+}
+
+// groupAssessment judges a path-group record one group at a time through
+// judge (a live request or a replay) and combines the outcomes (D-14). The
+// combined assessment keeps the answers of the decisive group, with its
+// dependency indices mapped back to the record.
+func (c *Client) groupAssessment(use analysis.CandidateUse, groups []pathGroup, judge func(int, analysis.CandidateUse) (analysis.Assessment, DecisionTrace)) (analysis.Assessment, []DecisionTrace) {
+	a := analysis.Assessment{Status: "failed", Provider: c.provider, Model: c.model, QuestionVersion: protocolVersion(use), FindingStatus: "needs_evidence", Protection: "uncertain"}
+	var traces []DecisionTrace
+	var digests []string
+	var decisive *analysis.Assessment
+	var decisiveGroup pathGroup
+	for i, g := range groups {
+		inGroup := map[int]bool{}
+		for _, d := range g.deps {
+			inGroup[d] = true
+		}
+		r := analysis.PathGroupResult{Group: i, Key: g.key, Dependencies: append([]int{}, g.deps...)}
+		for d := range use.Dependencies {
+			if !inGroup[d] {
+				r.Omitted = append(r.Omitted, d)
+			}
+		}
+		if i >= maxPathGroups {
+			r.Status, r.Reason = "not_run", fmt.Sprintf("%s: a record is judged in at most %d path groups; this group's paths were not judged", pathGroupCap, maxPathGroups)
+			a.PathGroups = append(a.PathGroups, r)
+			continue
+		}
+		ga, t := judge(i, groupUse(use, g, groups))
+		traces = append(traces, t)
+		digests = append(digests, ga.RequestDigest)
+		r.Status, r.FindingStatus, r.Protection, r.RequestDigest, r.Reason = ga.Status, ga.FindingStatus, ga.Protection, ga.RequestDigest, ga.Reason
+		r.RequestBytes = t.RequestBytes
+		a.PathGroups = append(a.PathGroups, r)
+		for k, v := range ga.Usage {
+			if a.Usage == nil {
+				a.Usage = map[string]int64{}
+			}
+			a.Usage[k] += v
+		}
+		if ga.Status == "completed" {
+			a.Status = "completed"
+			if ga.Model != "" {
+				a.Model = ga.Model
+			}
+			if decisive == nil || ga.FindingStatus == "confirmed_vulnerability" && decisive.FindingStatus != "confirmed_vulnerability" {
+				copy := ga
+				decisive, decisiveGroup = &copy, g
+			}
+		}
+	}
+	a.RequestDigest = groupDigest(digests)
+	status, reason := combinePathGroups(a.PathGroups)
+	a.FindingStatus, a.Reason = status, reason
+	if decisive != nil {
+		a.Answers, a.AnswerDetails = decisive.Answers, decisive.AnswerDetails
+		for _, r := range decisive.Resolutions {
+			if r.Dependency != nil && *r.Dependency >= 0 && *r.Dependency < len(decisiveGroup.deps) {
+				d := decisiveGroup.deps[*r.Dependency]
+				r.Dependency = &d
+			}
+			a.Resolutions = append(a.Resolutions, r)
+		}
+		if status == decisive.FindingStatus {
+			a.Protection, a.BlockingGaps = decisive.Protection, decisive.BlockingGaps
+		}
+	}
+	switch status {
+	case "confirmed_vulnerability":
+		a.Protection = "insufficient"
+	case "protected_for_claim":
+		a.Protection = "sufficient"
+	default:
+		a.Protection = "uncertain"
+	}
+	if a.Status != "completed" {
+		a.Reason = "No path group of this over-limit record was judged. " + a.Reason
+		if allOverLimit(a.PathGroups) {
+			a.Status = "not_run"
+			a.Reason = evidenceTooLarge + ": every path group request is still over the " + fmt.Sprint(requestLimit) + "-byte limit. " + a.Reason
+		}
+	}
+	return a, traces
+}
+
+func allOverLimit(groups []analysis.PathGroupResult) bool {
+	for _, g := range groups {
+		if !strings.HasPrefix(g.Reason, evidenceTooLarge) {
+			return false
+		}
+	}
+	return len(groups) > 0
+}
+
+// previewOf is the record-level trace of a path-group assessment: the group
+// traces and the smallest group request size.
+func previewOf(prior *DecisionTrace, a analysis.Assessment, groups []DecisionTrace) DecisionTrace {
+	out := DecisionTrace{RequestDigest: a.RequestDigest, Components: prior.Components, QuestionVersion: prior.QuestionVersion, Groups: groups}
+	for _, g := range groups {
+		if out.RequestBytes == 0 || g.RequestBytes < out.RequestBytes {
+			out.RequestBytes = g.RequestBytes
+		}
+		if g.HTTPStatus != 0 {
+			out.HTTPStatus = g.HTTPStatus
+		}
+	}
+	return out
 }

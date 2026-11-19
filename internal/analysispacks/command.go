@@ -3,7 +3,7 @@ package analysispacks
 import "github.com/zazzcode/zazzles/internal/analysis"
 
 // CommandProtocol is the command-execution question/envelope protocol.
-const CommandProtocol = "command-components-v3"
+const CommandProtocol = "command-components-v4"
 
 // Operation-contract identifiers. Each is selected only after the parser
 // verified the actual import/require binding of the called process API.

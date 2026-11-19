@@ -3,7 +3,7 @@ package analysispacks
 import "github.com/zazzcode/zazzles/internal/analysis"
 
 // PathProtocol is the path-traversal question/envelope protocol.
-const PathProtocol = "path-components-v2"
+const PathProtocol = "path-components-v3"
 
 // Operation-contract identifiers. Each is selected only after the parser
 // verified the actual import or builtin binding of the called filesystem API.

@@ -136,7 +136,8 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	if err != nil {
 		return nil, err
 	}
-	s := &analysis.ComponentSelection{Pack: c.refs[family.Pack], Components: []analysis.ComponentRef{}, Required: []string{}, Limits: []string{}}
+	protocol := familyProtocol(family.Name)
+	s := &analysis.ComponentSelection{Pack: c.familyRef(family.Pack, protocol), Components: []analysis.ComponentRef{}, Required: []string{}, Limits: []string{}}
 	roles := map[string]bool{}
 	if use.Completeness != nil {
 		for _, role := range use.Completeness.Required {
@@ -166,7 +167,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if !applicable {
 			return nil, fmt.Errorf("component applicability conflict: %s", id)
 		}
-		s.Components = append(s.Components, c.refs[id])
+		s.Components = append(s.Components, c.familyRef(id, protocol))
 		for _, role := range v.Required {
 			roles[role] = true
 		}

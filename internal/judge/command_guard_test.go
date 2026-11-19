@@ -91,7 +91,7 @@ func TestCommandGuardBypassPolicy(t *testing.T) {
 		{"protected with a named bypass contradicts itself", numeric, commandAnswers{"shell_syntax_protection": "protected", "executable_control": "not_applicable", "argument_control": "not_applicable", "guard_bypass": "bypass_identified", "protection_coverage": "complete"}, "needs_evidence", "command_answers_inconsistent"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			a := analysis.Assessment{Status: "completed", QuestionVersion: analysispacks.CommandProtocol, Answers: tt.answers}
+			a := analysis.Assessment{Status: "completed", QuestionVersion: analysispacks.CommandProtocol, Answers: tt.answers, Resolutions: bypassCitation(tt.use)}
 			applyCommandPolicy(tt.use, &a)
 			if a.FindingStatus != tt.status || tt.blocker != "" && !hasGapKind(a.BlockingGaps, tt.blocker) {
 				t.Fatalf("status %s blockers %+v reason %q", a.FindingStatus, a.BlockingGaps, a.Reason)

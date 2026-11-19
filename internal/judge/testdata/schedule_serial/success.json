@@ -1,7 +1,7 @@
 {
   "failed": false,
   "requests": 1,
-  "report_sha256": "5dbcadf5094e305b869f78ec80c8f90d11b2bbce5b0f42288c7dfa0ea15a9e1b",
+  "report_sha256": "ab8f8e1acd5f1048cc1a15fae693b8887a605431166412b808ce1860f5652b48",
   "assessments": [
     {
       "id": "candidate:v1:35e197194d6a68dcdf5c1e5ed191fab836a319742e84bc2e6015adff693827c4",
@@ -20,7 +20,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -35,7 +35,7 @@
   ],
   "traces": {
     "candidate:v1:35e197194d6a68dcdf5c1e5ed191fab836a319742e84bc2e6015adff693827c4": {
-      "sha256": "cb82ac123b0f881992ee8ba33f227b0b5f788bd24f932c47778d2096b1039592",
+      "sha256": "95733947b2a9251a44a7e40efafdf0c94d5edfda1b4d01a5221e13a1703f567a",
       "request_digest": "3d048bb9e524672a1bfd16b2c24f98c54ba11d45f4007ecf10274b95ffd97c82",
       "http_status": 200,
       "request_bytes": 18104

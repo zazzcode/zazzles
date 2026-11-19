@@ -49,17 +49,20 @@ func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis
 		a.Reason = "Saved component provenance does not match current request"
 		return a
 	}
-	answers, model, usage, err := c.decodeQuestions(trace.Response, questionsFor(use))
+	expected := requestQuestions(use, payload)
+	answers, model, usage, err := c.decodeQuestions(trace.Response, expected)
 	if err != nil {
 		a.Reason = err.Error()
 		return a
 	}
-	details, err := c.answerDetails(trace.Response, answers, questionsFor(use))
+	details, err := c.answerDetails(trace.Response, answers, expected)
 	if err != nil {
 		a.Reason = err.Error()
 		return a
 	}
 	a.Status, a.Answers, a.Model, a.Usage, a.AnswerDetails = "completed", answers, model, usage, details
+	a.Resolutions = resolveAnswers(use, payload, answers, c.provider, model)
+	splitResolutionAnswers(&a)
 	applyPolicy(use, &a)
 	return a
 }

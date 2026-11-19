@@ -73,7 +73,7 @@ func (c *catalog) material(family *Family, s *analysis.ComponentSelection) (*Mat
 	var rendering []string
 	for _, ref := range s.Components {
 		v, ok := c.components[ref.ID]
-		if !ok || ref != c.refs[ref.ID] {
+		if !ok || ref != c.familyRef(ref.ID, familyProtocol(family.Name)) {
 			return nil, fmt.Errorf("%s component incompatible: %s", family.Label, ref.ID)
 		}
 		size += len(v.Material)

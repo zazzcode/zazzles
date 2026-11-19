@@ -10,13 +10,20 @@ import (
 // Snapshot hashes and byte coordinates stay in local provenance; excerpt columns
 // distinguish nodes sharing a line in the model-facing projection.
 func compactBundle(bundle any) (any, error) {
+	out, _, err := compactBundleIDs(bundle)
+	return out, err
+}
+
+// compactBundleIDs compacts the bundle and also returns each gap's request ID
+// (gN) keyed by gapKey, so resolution questions can name the gap they ask about.
+func compactBundleIDs(bundle any) (map[string]any, map[string]string, error) {
 	raw, err := json.Marshal(bundle)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var out map[string]any
 	if err := json.Unmarshal(raw, &out); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	sources := []any{}
 	sourceIDs := map[string]int{}
@@ -67,8 +74,7 @@ func compactBundle(bundle any) (any, error) {
 			return v
 		case map[string]any:
 			if len(v) == 3 && v["kind"] != nil && v["detail"] != nil && v["at"] != nil {
-				raw, _ := json.Marshal(v)
-				key := string(raw)
+				key := gapKey(v)
 				if id, ok := gapIDs[key]; ok {
 					return id
 				}
@@ -114,5 +120,15 @@ func compactBundle(bundle any) (any, error) {
 		"gap_columns":      []string{"kind", "detail_index", "source_index", "start_line", "end_line"},
 		"source_columns":   []string{"file"},
 	}
-	return out, nil
+	return out, gapIDs, nil
+}
+
+// gapKey is the compaction key of a gap: its generic JSON form, which is the
+// form the compactor sees.
+func gapKey(g any) string {
+	raw, _ := json.Marshal(g)
+	var v any
+	_ = json.Unmarshal(raw, &v)
+	key, _ := json.Marshal(v)
+	return string(key)
 }

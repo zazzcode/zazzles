@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 3,
-  "report_sha256": "21fcd85a55bb39230c0e9bd7149e5c58498672f327ece72c3d6de018530bbe92",
+  "report_sha256": "82ad8494d9b1275ae65058a99f08f8348ebb61a9447e17ec4f4f5788794d53f9",
   "assessments": [
     {
       "id": "candidate:v1:d4ff32c8528fa610bc91ac417286231a57b41acc6309d92df3321f0bd571bd39",
@@ -20,7 +20,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -32,7 +32,7 @@
         "status": "failed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "invalid OpenAI answers"
       }
     },
@@ -53,7 +53,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -68,19 +68,19 @@
   ],
   "traces": {
     "candidate:v1:ad5542af133cb75f3137c1e0be3e05e3ea308163ddfd5a0b0ae19aa46bd93405": {
-      "sha256": "6a857f1b0742865439c5a0ad11abf890fbcf6aa8a83932f7b21bc1884f894017",
+      "sha256": "136e582b319aabe3740a5caaaa04d9444f7d1bef6bdd8881358b76f749dfb9d9",
       "request_digest": "8353e973dc2c70b357fdd1cbc0cc22778f938fc229eb51ec5721bad937fc822d",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:d4ff32c8528fa610bc91ac417286231a57b41acc6309d92df3321f0bd571bd39": {
-      "sha256": "cb1b407c00eb33f62d51e380b4b7cbfba38f3d8e54733f2266654f1f1bf60322",
+      "sha256": "da2def47d71069821d71d02d56551cf47a343552a1310a39c83f69441148ea91",
       "request_digest": "3add35c8c2319d9f200747f225d238eac1012a5e712b324a2a30e09ec65c69d0",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:d9ca55d05005103f5365052782422958409cca7a0b72a2ed7870f2f87299c06c": {
-      "sha256": "c09db52ac673f98249109ea0884b9bf17c0f470c3ec6449a21ceaf1d08f5b457",
+      "sha256": "1fd3f0e2830f3c5ba307d81d7ee99f7f383b859fdf5c980c838abcf632f2346b",
       "request_digest": "5bb51cc2a727608d366fe014ad1fc4c934f99d4e60fa763fcff2bde15dbd62e8",
       "http_status": 200,
       "request_bytes": 18104

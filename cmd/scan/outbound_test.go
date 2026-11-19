@@ -165,6 +165,14 @@ def validation():
 						}
 						continue
 					}
+					// A record whose outcome a question-less scanner blocker fixes
+					// is settled by the resolution gate without a request (D-7).
+					if strings.HasPrefix(actual.Assessment.Reason, judge.BlockerUnresolvable+":") {
+						if actual.Assessment.Status != "not_run" || len(actual.Assessment.BlockingGaps) == 0 {
+							t.Fatalf("gated record: %+v", actual.Assessment)
+						}
+						continue
+					}
 					if u.Kind != "outbound_http_candidate" && u.Kind != "xss_data_candidate" {
 						requestIndex++
 					}

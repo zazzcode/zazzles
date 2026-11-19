@@ -101,7 +101,9 @@ func (failingReportTransport) RoundTrip(*http.Request) (*http.Response, error) {
 }
 
 func TestFailedJudgeRetainsOutputBundle(t *testing.T) {
-	target, err := filepath.Abs("../../internal/langjs/testdata/string-flow")
+	// A fixture whose first record is sent: the string-flow record is now
+	// settled by the resolution gate without a request.
+	target, err := filepath.Abs("../../internal/langjs/testdata/javascript/path-traversal")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,10 +114,10 @@ func TestFailedJudgeRetainsOutputBundle(t *testing.T) {
 	http.DefaultTransport = failingReportTransport{}
 	t.Cleanup(func() { http.DefaultTransport = previous })
 	var out, stderr bytes.Buffer
-	if code := run([]string{"--analyze", "--entry", "server.ts", "--judge", "openai", "--judge-limit", "1", target}, &out, &stderr); code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") {
+	if code := run([]string{"--analyze", "--entry", "server.js", "--judge", "openai", "--judge-limit", "1", target}, &out, &stderr); code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") {
 		t.Fatalf("code=%d stderr=%s", code, stderr.String())
 	}
-	files, err := filepath.Glob(filepath.Join(base, "string-flow", "run-*", "findings.json"))
+	files, err := filepath.Glob(filepath.Join(base, "path-traversal", "run-*", "findings.json"))
 	if err != nil || len(files) != 1 {
 		t.Fatalf("files=%v err=%v", files, err)
 	}
@@ -124,7 +126,14 @@ func TestFailedJudgeRetainsOutputBundle(t *testing.T) {
 		t.Fatal(err)
 	}
 	var report analysis.AnalysisReport
-	if err := json.Unmarshal(data, &report); err != nil || report.Uses[0].Assessment.Status != "failed" {
+	if err := json.Unmarshal(data, &report); err != nil {
+		t.Fatal(err)
+	}
+	failed := false
+	for _, u := range report.Uses {
+		failed = failed || u.Assessment.Status == "failed"
+	}
+	if !failed {
 		t.Fatal("failure lost")
 	}
 	if _, err := os.Stat(filepath.Join(filepath.Dir(files[0]), "findings.html")); err != nil {

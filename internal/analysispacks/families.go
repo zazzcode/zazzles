@@ -11,7 +11,7 @@ import (
 // takes a new protocol identifier; historical answers under an older protocol
 // are retained but cannot replay onto changed requests.
 const (
-	SQLProtocol        = "sql-components-v3"
+	SQLProtocol        = "sql-components-v4"
 	NoSQLProtocol      = "nosql-components-v2"
 	ValidationProtocol = "validation-components-v2"
 	XSSProtocol        = "xss-components-v2"

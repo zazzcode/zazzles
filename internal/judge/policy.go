@@ -73,7 +73,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			a.Protection = "uncertain"
 		}
 	}
-	blockers := append([]analysis.Gap{}, c.Blockers...)
+	// A flow gap discharged by a verified model resolution (W1, W2) leaves the
+	// blockers; the resolution stays on the record as provenance.
+	blockers, discharged := dischargeFlowGaps(a, c.Blockers)
+	blockers = append([]analysis.Gap{}, blockers...)
 	if c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" {
 		for _, role := range []string{"sql_all_inputs_hex", "selector_type_guard", "selector_path_string"} {
 			if len(c.Evidence[role]) > 0 {
@@ -155,7 +158,16 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			}
 			a.FindingStatus = "confirmed_vulnerability"
 			a.Reason = "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+			if len(discharged) > 0 {
+				a.Reason += " " + modelResolvedNote(discharged)
+			}
 		case "protected":
+			if len(discharged) > 0 {
+				a.FindingStatus = "needs_evidence"
+				a.Protection = "uncertain"
+				a.Reason = "Protection would rest on a model-resolved flow fact; protection needs scanner proof, so the record stays Review."
+				return
+			}
 			if use.Kind == "nosql_query_candidate" && a.Answers["all_paths_protected"] != "yes" {
 				a.FindingStatus = "needs_evidence"
 				a.Protection = "uncertain"
@@ -177,6 +189,11 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.FindingStatus = "supported_potential"
 		a.Reason = "source-backed claim has no declared blocking gaps; this is not runtime confirmation"
 	case "sufficient":
+		if len(discharged) > 0 {
+			a.FindingStatus, a.Protection = "needs_evidence", "uncertain"
+			a.Reason = "Protection would rest on a model-resolved flow fact; protection needs scanner proof."
+			return
+		}
 		a.FindingStatus = "protected_for_claim"
 		a.Reason = "assessment applies only to the stated constraint and supplied analysis scope"
 	case "not_applicable":

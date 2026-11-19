@@ -48,8 +48,11 @@ func wireComponents(m *analysispacks.Material) any {
 
 func interpreterComponentQuestions(family string) []question {
 	items := analysispacks.CodeQuestions()
-	if family == "redirect" {
+	switch family {
+	case "redirect":
 		items = analysispacks.RedirectQuestions()
+	case "upload":
+		items = analysispacks.UploadQuestions()
 	}
 	out := componentQuestions(items)
 	for i := range out {

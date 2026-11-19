@@ -238,6 +238,7 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	case "move_uploaded_file":
 		if f.builtin(qname) && len(values) >= 2 {
 			f.pathUse(n, qname, nodes, values, "php-upload-move-v1", "write")
+			f.uploadUse(n, nodes, values)
 			return phpValue{unknown: true}
 		}
 	case "is_uploaded_file", "is_file", "file_exists", "is_dir":

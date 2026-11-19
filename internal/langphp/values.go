@@ -55,6 +55,8 @@ type phpValue struct {
 	propsUnknown bool
 	// objectID identifies one created object so aliases see its writes.
 	objectID int
+	// prefix is the literal text a concatenated string starts with.
+	prefix string
 	// table/columns carry SQL read provenance for storage linking.
 	table   string
 	columns []string
@@ -269,4 +271,16 @@ func phpDedupeEvidence(list []analysis.Evidence) []analysis.Evidence { return ph
 
 func inertPHP(v phpValue) bool {
 	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.class == "" && v.driver == "" && v.table == "" && v.columns == nil && v.sqlText == nil && v.sqlParams == nil && v.sqlWrites == nil && v.escapes == nil && v.bindingControls == nil && !v.unknown && !v.built
+}
+
+// phpPrefixOf returns the literal text a value starts with.
+func phpPrefixOf(v phpValue) string {
+	if v.constant && len(v.literals) == 1 && len(v.deps) == 0 {
+		return v.literals[0].text
+	}
+	return v.prefix
+}
+
+func phpConstantText(v phpValue) bool {
+	return v.constant && len(v.literals) == 1 && len(v.deps) == 0
 }

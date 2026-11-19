@@ -64,6 +64,7 @@ var findingTypes = []analysis.FindingType{
 
 var interpreterFindingTypes = []analysis.FindingType{
 	{ID: "code-injection", Label: "Code Injection", Coverage: "bounded interpreter operand analysis", Description: "Request text reaches an interpreter code operand.", Interpretation: "A verified code operand path is judged separately from data passed to fixed code.", Remediation: "Use a data parser or a restricted grammar instead of evaluating request text."},
+	{ID: "unrestricted-upload", Label: "Unrestricted File Upload", Coverage: "bounded upload write analysis", Description: "A client upload is stored with a client-chosen type where it can be served.", Interpretation: "The stored name, server-side type controls and destination are source facts; path containment is a separate claim.", Remediation: "Generate the stored name, derive or allow-list the extension on the server, check or re-encode content, and store uploads outside the served tree."},
 	{ID: "open-redirect", Label: "Open Redirect", Coverage: "bounded redirect destination analysis", Description: "Request text chooses an off-site navigation destination.", Interpretation: "Destination control and enforcing same-origin restrictions are assessed independently.", Remediation: "Select a destination from trusted constants or enforce parsed same-origin and host restrictions."},
 }
 
@@ -102,6 +103,8 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		return []string{"code-injection"}
 	case "redirect", "open_redirect_candidate":
 		return []string{"open-redirect"}
+	case "upload", "file_upload_candidate":
+		return []string{"unrestricted-upload"}
 	case "ssrf_candidate":
 		return append(ids, "server-side-request-forgery")
 	case "log_sink", "log_sink_candidate":

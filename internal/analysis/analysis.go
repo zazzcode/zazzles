@@ -59,6 +59,7 @@ type CandidateUse struct {
 	Path       *PathFacts          `json:"path,omitempty"`
 	Code       *CodeFacts          `json:"code,omitempty"`
 	Redirect   *RedirectFacts      `json:"redirect,omitempty"`
+	Upload     *UploadFacts        `json:"upload,omitempty"`
 	Outbound   *OutboundFacts      `json:"outbound,omitempty"`
 	// StoredOrigin is write-set evidence for a record whose stored origin is
 	// unresolved (blocked by storage_origin_unresolved). It is evidence, not a

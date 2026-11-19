@@ -42,6 +42,8 @@ func guidance(use analysis.CandidateUse) Guidance {
 		g = pathGuidance()
 	case "code", "code_execution_candidate":
 		g = Guidance{Title: "Keep request text out of code", Actions: []string{"Replace eval/exec with data parsing or a restricted expression grammar.", "Do not rely on vm or a sandbox library as a security boundary; constrain every code operand."}}
+	case "upload", "file_upload_candidate":
+		g = Guidance{Title: "Restrict what an upload can become", Actions: []string{"Generate the stored file name and choose its extension on the server from an allow-list or the verified content type.", "Check the content (magic bytes, image decoding) or re-encode it, and store uploads outside the served document root."}}
 	case "redirect", "open_redirect_candidate":
 		g = Guidance{Title: "Constrain navigation destinations", Actions: []string{"Prefer an identifier mapped to fixed trusted destinations.", "Otherwise parse the URL and enforce same-origin or a finite host allowlist on every path; reject protocol-relative and backslash-relative destinations."}}
 	case "ssrf_candidate":

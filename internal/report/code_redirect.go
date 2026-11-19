@@ -36,3 +36,33 @@ func describeInterpreter(u analysis.CandidateUse, f *analysis.Finding) {
 	}
 	f.Protection = a.Reason
 }
+
+// describeUpload presents an upload claim. A client-chosen extension with no
+// server-side type control is a practice finding without a model, like SQL
+// construction (close-findings-gaps D-21); a consistent assessment can raise
+// it to Confirmed or support protection.
+func describeUpload(u analysis.CandidateUse, f *analysis.Finding) {
+	x := u.Upload
+	f.Title = "File upload needs type review"
+	f.Summary = "A client upload is stored by " + x.Operation + ". Stored name: " + x.StoredName + "; extension: " + x.ExtensionOrigin + "; destination served: " + x.DestinationServed + "."
+	blocked := u.Completeness == nil || len(u.Completeness.Blockers) > 0
+	if x.ExtensionOrigin == "client" && !x.ServerTypeControl() && !blocked {
+		f.RecordType, f.Status = "finding", "poor_practice"
+		f.Title = "Uploaded file keeps its client-chosen type"
+		f.Summary += " No server-side type control precedes the write. Generate the name and allow-list or verify the type on the server; this practice finding stands even before exploitability is judged."
+	}
+	a := u.Assessment
+	if a.Status != "completed" || a.QuestionVersion != analysispacks.UploadProtocol || len(a.BlockingGaps) > 0 {
+		return
+	}
+	switch a.FindingStatus {
+	case "confirmed_vulnerability":
+		f.RecordType, f.Status = "finding", "confirmed_vulnerability"
+		f.Title = "Unrestricted file upload supported by source analysis"
+	case "protected_for_claim":
+		if f.Status != "poor_practice" {
+			f.Title = "Upload type is constrained"
+		}
+	}
+	f.Protection = "Upload assessment: type restriction " + displayLabel(a.Answers["type_restriction"]) + ", exposure " + displayLabel(a.Answers["execution_exposure"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
+}

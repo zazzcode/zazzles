@@ -38,6 +38,7 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	// Recording a filesystem candidate is additive and precedes framework call
 	// models, which can consume a call such as send_from_directory whole.
 	f.pathCall(n, fn, receiver, object, method)
+	f.uploadCall(n, fn, object, receiver, method, nodes, values)
 	if v, ok := f.frameworkCall(n, q, nodes, values, all); ok {
 		return v
 	}

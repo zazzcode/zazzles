@@ -47,6 +47,9 @@ func redirectQuestionNames() []string {
 }
 
 func interpreterQuestions(name string) []Question {
+	if name == "upload" {
+		return uploadQuestions()
+	}
 	if name == "code" {
 		return []Question{
 			{"code_control", "Classify request text in the interpreter's code operand: whole_program, inside_string_literal, data_only (fixed code, request data only in context), none, unknown. Parameter declarations of Function are code."},
@@ -65,6 +68,8 @@ func interpreterQuestions(name string) []Question {
 func InterpreterChoices(name, question string) []map[string]string {
 	var choices []string
 	switch question {
+	case "type_restriction", "execution_exposure":
+		choices = uploadChoices(question)
 	case "code_control":
 		choices = []string{"whole_program", "inside_string_literal", "data_only", "none", "unknown"}
 	case "code_restriction":
@@ -104,6 +109,9 @@ func interpreterDescriptors(name string) []Component {
 	flow.CompiledOwner = "internal/parse/code_redirect.go"
 	out := []Component{pack, claim, evidence, flow}
 	for _, language := range []lang.Language{lang.JavaScript, lang.Python, lang.PHP} {
+		if !f.supports(language) {
+			continue
+		}
 		langs := []string{string(language)}
 		if language == lang.JavaScript {
 			langs = append(langs, string(lang.TypeScript))
@@ -129,6 +137,13 @@ func interpreterDescriptors(name string) []Component {
 	python.Applicability = f.Kinds
 	python.Compatibility = []string{protocol}
 	out = append(out, python)
+	if name == "upload" {
+		php := phpInputComponent()
+		php.ID = "source.php-input-upload-v1"
+		php.Applicability = f.Kinds
+		php.Compatibility = []string{protocol}
+		return append(out, php) // an upload is an HTTP request capability only
+	}
 	// Browser is a capability of these families, not a widening of existing entry
 	// descriptors (which would invalidate prior replay).
 	entry := base("entry."+name+".browser", "compiled_capability", "", []string{"browser"})

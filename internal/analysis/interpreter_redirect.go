@@ -30,6 +30,9 @@ func (u CandidateUse) CodePaths() []CommandPath {
 	if u.Redirect != nil {
 		return u.Redirect.Paths
 	}
+	if u.Upload != nil {
+		return u.Upload.Paths
+	}
 	return nil
 }
 

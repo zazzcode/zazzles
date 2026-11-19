@@ -299,6 +299,10 @@ func (f *phpFlow) binaryValues(n *sitter.Node, op string, a, b phpValue) phpValu
 	case ".":
 		v := phpCombine(a, b)
 		v.built = true
+		v.prefix = phpPrefixOf(a)
+		if phpConstantText(a) {
+			v.prefix += phpPrefixOf(b)
+		}
 		if a.template != "" && b.template != "" {
 			v.template = a.template + b.template
 		}
@@ -315,8 +319,13 @@ func (f *phpFlow) assign(n *sitter.Node) phpValue {
 	left, right := phpField(n, "left"), phpField(n, "right")
 	v := f.eval(right)
 	if n.Kind() == "augmented_assignment_expression" {
-		v = phpCombine(f.eval(left), v)
-		v.built = true
+		base := f.eval(left)
+		prefix := phpPrefixOf(base)
+		if phpConstantText(base) {
+			prefix += phpPrefixOf(v)
+		}
+		v = phpCombine(base, v)
+		v.built, v.prefix = true, prefix
 	}
 	return f.assignValue(n, left, v)
 }

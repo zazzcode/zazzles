@@ -42,7 +42,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if contract == nil || !reflect.DeepEqual(contract, use.APIModel) {
 			return nil, fmt.Errorf("unsupported or conflicting verified %s API contract", family.Label)
 		}
-		if (family.Name == "code" || family.Name == "redirect") && (language == lang.Python) != strings.HasPrefix(contract.ID, "python-") {
+		if operandFamily(family.Name) && (language == lang.Python) != strings.HasPrefix(contract.ID, "python-") {
 			return nil, fmt.Errorf("language and interpreter/redirect API conflict")
 		}
 		if family.RequiresAPI && language == lang.PHP && !strings.HasPrefix(contract.ID, "php-") {
@@ -76,7 +76,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	}
 	roots := []string{family.Pack, languageID(family, language)}
 	if entry != "" {
-		if entry == "browser" && (family.Name == "code" || family.Name == "redirect") {
+		if entry == "browser" && operandFamily(family.Name) {
 			roots = append(roots, "entry."+family.Name+".browser")
 		} else {
 			roots = append(roots, "entry."+entry)
@@ -108,7 +108,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		}
 		input := "source.node-input-v2"
 		switch family.Name {
-		case "code", "redirect":
+		case "code", "redirect", "upload":
 			input = "source.node-input-" + family.Name + "-v1"
 		case "path":
 			input = "source.node-input-path-v2"
@@ -120,7 +120,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 				return nil, fmt.Errorf("invalid Python HTTP input binding")
 			}
 			input = "source.python-input-v1"
-			if family.Name == "code" || family.Name == "redirect" {
+			if operandFamily(family.Name) {
 				input = "source.python-input-" + family.Name + "-v1"
 			}
 		}
@@ -129,6 +129,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}
 			input = "source.php-input-v1"
+			if family.Name == "upload" {
+				input = "source.php-input-upload-v1"
+			}
 		}
 		roots = append(roots, input)
 	}

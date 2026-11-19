@@ -228,6 +228,8 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/code-injection", "CWE-95"
 	case "redirect", "open_redirect_candidate":
 		return "scan/open-redirect", "CWE-601"
+	case "upload", "file_upload_candidate":
+		return "scan/unrestricted-upload", "CWE-434"
 	case "ssrf_candidate":
 		return "scan/ssrf", "CWE-918"
 	case "path_traversal_candidate":

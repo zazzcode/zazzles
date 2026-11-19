@@ -143,6 +143,45 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
+**Accuracy against the answer keys** (published sample reports, scored 2026-11-19). *Expected*
+counts the source-reviewed positives keyed for our implemented analyzers. *Found* means the record
+is Confirmed, or is a construction-practice finding where the key expects one. *Controls* are
+keyed safe cases. A control false positive is a keyed safe case that shows as a finding.
+
+| Sample | Report | Expected | Found | Review | Missed | Controls | Control false positives | Findings outside the key |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Juice Shop | judged 2026-11-19 | 15 | 15 | 0 | 0 | 3 | 0 | 8 |
+| OSS OopsSec Store | judged 2026-11-19 | 13 | 13 | 0 | 0 | 5 | 0 | 8 |
+| DVWA | judged 2026-11-19 | 10 | 9 | 1 | 0 | 1 | 0 | 99 (1 false) |
+| Node.js Goof | judged 2026-11-15 | 6 | 6 | 0 | 0 | 5 | 0 | 0 |
+| Vulnerable TypeScript app | judged 2026-11-15 | 6 | 4 | 0 | 2 | 2 | 0 | 1 |
+| vuln-nextjs lab | judged 2026-11-16 | 13 | 10 | 0 | 3 | 23 | 0 | 0 |
+| vuln-demo-app | offline only | 11 | 10 | 1 | 0 | 7 | 0 | 0 |
+| ThreatByte | judged 2026-11-15 | 5 | 5 | 0 | 0 | 6 | 0 | 2 |
+| Vulnerable Flask App | judged 2026-11-15 | 4 | 4 | 0 | 0 | 2 | 0 | 4 |
+| Python insecure app | judged 2026-11-15 | 2 | 1 | 1 | 0 | 1 | 0 | 0 |
+| VulnPy | judged 2026-11-15 | 6 | 6 | 0 | 0 | 0 | 0 | 275 |
+| **Total** | | **91** | **83** | **3** | **5** | **55** | **0** | **397** |
+
+- **Missed (5):** the code-execution and open-redirect positives in the TypeScript app and the
+  vuln-nextjs lab. Those reports predate the JavaScript code-execution and redirect analyzers. The
+  current scanner records a candidate for all five, but they stay unscored until those samples are
+  judged again.
+- **Review (3):** DVWA's upload page applies `basename()`, so there is no path traversal; its real
+  flaw (any file type is accepted) is outside our analyzers. vuln-demo-app's SSRF needs the decision
+  model and that sample was only scanned offline. Python insecure app's name-field validation
+  defect stays inconclusive.
+- **Confirmed false positives (1):** DVWA `brute/source/impossible.php:90`, a PDO
+  `prepare`/`bindParam`/`execute` that is safe. The PHP adapter does not link `execute()` to its
+  prepared SQL text, and the model answered vulnerable without it. This is a known open defect.
+- **Findings outside the key** are not counted as true or false until they are source-reviewed.
+  Juice Shop's eight match known challenge routes. DVWA's impossible-level findings were checked
+  and only the one above is red. The other samples' extra findings are unreviewed.
+
+Scored with
+[`accuracy.py`](.zazz/evaluation/recall-gap-inventory/accuracy.py); details are in the
+[evidence-resolution results](.zazz/evaluation/model-resolution-results.md#accuracy-against-the-answer-keys).
+
 On the current Node sample rebuild (Juice Shop, Node.js Goof, Vulnerable TypeScript app, and
 vuln-demo-app), that in-scope catch is complete for the families above: the cataloged XSS, SQL,
 NoSQL, command, path/Zip Slip, logging, and SSRF required positives are confirmed. Cases the answer

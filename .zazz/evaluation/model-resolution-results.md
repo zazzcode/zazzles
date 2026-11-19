@@ -101,3 +101,31 @@ evidence is right. Model-resolved findings: 1 of 1 true, 0 false (AC6). Model-re
   settings, so they would not settle these records either. A further 37 confirmed records asked for
   the same item and were not sent because they were not Review.
 - One model, one run per sample: these are bounded calibration counts, not accuracy rates.
+
+## Accuracy against the answer keys
+
+Scored on 2026-11-19 with [`accuracy.py`](recall-gap-inventory/accuracy.py) over the published
+sample reports, plus vuln-demo-app's offline report (it has no published sample). The
+[README accuracy table](../../README.md) shows counts for each sample. Across
+11 samples: 91 keyed positives, 83 found (71 Confirmed, 12 practice findings where the key expects
+construction practice), 3 Review and 5 missed. None of the 55 keyed and protected controls
+shows as a finding.
+
+| Row | Sample | Status | Assessment |
+|---|---|---|---|
+| `TS-CODE-01`, `TS-REDIRECT-01` | Vulnerable TypeScript app | Missed | The 2026-11-15 sample predates the JavaScript code and redirect analyzers; the current scanner has candidates |
+| `JS-001`, `JS-002`, `REDIR-001` | vuln-nextjs | Missed | Same; the 2026-11-16 sample predates those analyzers |
+| `UPLD-001` | DVWA | Review | `low.php` applies `basename()` to the name, so the key row is not a path traversal; the model answered protected. The flaw is unrestricted file type, outside our analyzers. The key row should move |
+| `DEMO-SSRF-01` | vuln-demo-app | Review | Offline report; SSRF needs a judged run |
+| `PI-VAL-NAME` | Python insecure app | Review | Field-validation defect left inconclusive by the judge |
+
+**Confirmed false positive.** DVWA `vulnerabilities/brute/source/impossible.php:90`
+(`$data->execute()` after `prepare(... (:user) ...)` and `bindParam`) is Confirmed SQL injection
+in both live runs on `sql-components-v4`. On v3 it was Review with `unknown`. Neither request
+carries the prepared SQL text: the PHP adapter does not link `execute()` to its `prepare`. Seeing
+`bindParam` with no statement, the model answered vulnerable with probability 0.5. The scanner
+should hold a blocker when a PDO statement's text is unresolved. This record is published in the
+DVWA sample.
+
+**Findings outside the key** (397 in all) are counted, not judged. Every DVWA Confirmed record
+whose sources are all impossible-level was checked; only the record above was red.

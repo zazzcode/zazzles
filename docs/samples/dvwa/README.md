@@ -18,7 +18,10 @@ resolution scanner ([results](../../../.zazz/evaluation/model-resolution-results
 - **One model-resolved finding:** the medium-level file inclusion `vulnerabilities/fi/index.php:36`.
   The model cited the chain `$_GET['page']` → two `str_replace` calls → `include`, which the
   scanner verified. Source review confirms it: `....//` becomes `../`, and absolute paths pass.
-- Every keyed positive of the detection guide stays Confirmed, and no keyed control is a finding.
+- Every keyed positive of the detection guide stays found, and no keyed control is a finding.
+- **One known false positive:** `vulnerabilities/brute/source/impossible.php:90`, a safe PDO
+  `prepare`/`bindParam`/`execute`, is shown as Confirmed. The request lacked the prepared SQL text
+  ([results](../../../.zazz/evaluation/model-resolution-results.md#accuracy-against-the-answer-keys)).
 
 ## Previous report (published 2026-11-17)
 

@@ -15,6 +15,9 @@ type phpBoundCallable struct {
 	fn     *sitter.Node
 	// object receives a verified class receiver for method calls.
 	object *phpValue
+	// class is the declaring class of a method, for self::, parent:: and
+	// static:: calls inside it.
+	class *phpClassDecl
 }
 
 type phpFlow struct {
@@ -45,6 +48,8 @@ type phpFlow struct {
 	// dirty records the variables this flow wrote since its clone origin, so
 	// branch merges join only changed values instead of the whole environment.
 	dirty map[string]bool
+	// class is the class whose method this flow expands, if any.
+	class *phpClassDecl
 }
 
 func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -234,7 +239,12 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
 	case "include_expression", "include_once_expression", "require_expression", "require_once_expression":
 		return f.includeExpression(n)
-	case "member_access_expression", "scoped_property_access_expression":
+	case "member_access_expression", "nullsafe_member_access_expression":
+		if v, ok := f.propertyRead(n); ok {
+			return v
+		}
+		return f.evalChildren(n)
+	case "scoped_property_access_expression":
 		return f.evalChildren(n)
 	default:
 		return f.evalChildren(n)
@@ -324,6 +334,8 @@ func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
 		return v
 	}
 	switch left.Kind() {
+	case "member_access_expression":
+		f.propertyWrite(left, v)
 	case "variable_name":
 		f.markDirty(phpVarName(m, left))
 		f.env[phpVarName(m, left)] = v

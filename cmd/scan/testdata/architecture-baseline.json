@@ -1681,6 +1681,43 @@
     "uses_count": 29,
     "gaps": 0
   },
+  "internal/langphp/testdata/classes": {
+    "uses": [
+      {
+        "id": "candidate:v1:43cae5942185e5ed98de321b9e6e6ffe298bb7b4b3ced89e24cd98e1959fc5eb",
+        "kind": "command_execution_candidate",
+        "request_sha256": "606bf8834dedf10f1099911c7111d5371143d6941aa1eb856ad872627f4186ad",
+        "signature_sha256": "b416a0ea674a95171342b0ad013ac8b3880822cf632a1966a801c6554fc57255"
+      },
+      {
+        "id": "candidate:v1:3d68cab14a5151885c70ad195ed1ec581dba88e6eb182dac5db4a5f554bad2a3",
+        "kind": "command_execution_candidate",
+        "request_sha256": "c14890925dd6523bd42cf127561dd79f0deca52f27bbe61f735554362dc28e2f",
+        "signature_sha256": "ff11aa3ad2488c7dab06d69309ec1fc6eabdf7803eb79dbacbcbd4a8771af9fe"
+      },
+      {
+        "id": "candidate:v1:96fec25ffaf4c927a4e7c418058c46937fb994692de2dbee7b93ca1dade85cf2",
+        "kind": "command_execution_candidate",
+        "request_sha256": "96c15fd992a042667970f48be925662774c096a3127e197f79d6aeaab1ad8fd5",
+        "signature_sha256": "e76c35c693ded6af3af8eeb7791970043a3d96670379e6e3ae6e1de7c4e4f927"
+      },
+      {
+        "id": "candidate:v1:c606f7292f7584c1ef036c63fa9e03be14b04eb9c4334ee52f9bc8c41d0f7143",
+        "kind": "command_execution_candidate",
+        "request_sha256": "ac1db972f7e3da419e999c10347bd099877f301ecb620afeab644c4c97086f06",
+        "signature_sha256": "433f4c504ad8aa6920b6671e2a2a5e3e1fc401f089ce8995339621ea299d7c3b"
+      }
+    ],
+    "report_sha256": "ade943685a2214a0c8d48887f8e0587ee5086feb63bc620f0faeba109741acd2",
+    "sarif_sha256": "d13898f37ecda8ccee887a2a296a34c2bd4698e273fd8fd3714ea4d95bf45159",
+    "entries": 12,
+    "registrations": 12,
+    "dispatch_bindings": 12,
+    "callables": 12,
+    "invocation_contexts": 12,
+    "uses_count": 4,
+    "gaps": 2
+  },
   "internal/langphp/testdata/code": {
     "uses": [
       {

@@ -47,6 +47,14 @@ type phpValue struct {
 	class string
 	// regex is set on the matches array of a literal preg_match.
 	regex *phpRegex
+	// classDecl is the declaration of a `new C` object; props is its
+	// property map (D-10). propsUnknown marks a write through a dynamic
+	// property name: no property read is then established.
+	classDecl    *phpClassDecl
+	props        map[string]phpValue
+	propsUnknown bool
+	// objectID identifies one created object so aliases see its writes.
+	objectID int
 	// table/columns carry SQL read provenance for storage linking.
 	table   string
 	columns []string
@@ -122,7 +130,35 @@ func phpCombine(a, b phpValue) phpValue {
 	if a.fields == nil {
 		a.fields = b.fields
 	}
+	if a.classDecl != nil || b.classDecl != nil {
+		// Object values join property by property; different classes are
+		// no longer one object.
+		if a.classDecl != b.classDecl {
+			a.classDecl, a.props = nil, nil
+		} else {
+			a.props = phpJoinProps(a.props, b.props)
+		}
+		a.propsUnknown = a.propsUnknown || b.propsUnknown
+	}
 	return a
+}
+
+func phpJoinProps(a, b map[string]phpValue) map[string]phpValue {
+	if a == nil && b == nil {
+		return nil
+	}
+	out := map[string]phpValue{}
+	for k, v := range a {
+		out[k] = v
+	}
+	for k, v := range b {
+		if prior, ok := out[k]; ok {
+			out[k] = phpJoin(prior, v)
+		} else {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 // phpJoin merges branch values: distinct protections on the same source stay

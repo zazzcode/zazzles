@@ -185,6 +185,15 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			v.literals, v.constant = nil, false
 			return v
 		}
+	case "json_decode":
+		// Decoding the raw request body is how plain PHP reads a JSON
+		// request: the decoded fields are request values (acquisition, not a
+		// transform). Any other argument keeps the content-effect contract.
+		if f.builtin(qname) && f.phpBuiltinEffectName(qname) && len(values) >= 1 && len(values) <= 4 && phpRequestBody(values[0]) {
+			v := phpTransfer(values[0], f.module.evidence("json_body_decode", n))
+			v.literals, v.constant, v.fields = nil, false, nil
+			return v
+		}
 	case "preg_match":
 		if f.builtin(qname) {
 			f.bindRegexMatches(n, nodes, values)
@@ -295,6 +304,20 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return v
 	}
 	return all
+}
+
+// phpRequestBody reports a value that is exactly the raw request body read
+// (php://input) with no transform.
+func phpRequestBody(v phpValue) bool {
+	if len(v.deps) == 0 {
+		return false
+	}
+	for _, d := range v.deps {
+		if d.container != "INPUT" || d.protection != "raw" || d.key != "" {
+			return false
+		}
+	}
+	return true
 }
 
 // bindRegexMatches binds the matches array of preg_match($re, $subject, $m)
@@ -441,11 +464,12 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 	}
 
-	// Method on a class defined in this module: bounded helper expansion.
-	if cls := f.classOf(name); cls != nil {
-		if method := findClassMethod(m, cls, method); method != nil {
-			self := receiver
-			return f.boundHelper(n, &phpBoundCallable{module: f.module, fn: method, object: &self}, values)
+	// Method of a tracked object: its class, used traits and in-repository
+	// parents (D-9).
+	if receiver.classDecl != nil {
+		self := receiver
+		if v, ok := f.classMethodCall(n, receiver.classDecl, method, &self, values); ok {
+			return v
 		}
 	}
 	// mysqli procedural-style object kept in a global (DVWA stores the
@@ -470,10 +494,32 @@ func (f *phpFlow) staticCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return sliceFrom(values, 0)
 	}
 	method := phpText(m, fn)
-	clsName := phpText(m, phpField(n, "class"))
-	if cls := m.classes[strings.TrimPrefix(clsName, "\\")]; cls != nil {
-		if methodNode := findClassMethod(m, cls, method); methodNode != nil {
-			return f.boundHelper(n, &phpBoundCallable{module: f.module, fn: methodNode}, values)
+	scope := phpField(n, "scope")
+	clsName := phpText(m, scope)
+	idx := f.set.classIndex()
+	var decl *phpClassDecl
+	relative := false
+	switch strings.ToLower(clsName) {
+	case "self", "static":
+		decl, relative = f.class, true
+	case "parent":
+		relative = true
+		if f.class != nil {
+			decl, _ = idx.parentOf(f.class)
+		}
+	default:
+		if scope != nil {
+			decl, _ = idx.resolve(m, clsName, scope.StartByte())
+		}
+	}
+	if decl != nil {
+		var object *phpValue
+		if this, ok := f.env["this"]; ok && relative {
+			self := this
+			object = &self
+		}
+		if v, ok := f.classMethodCall(n, decl, method, object, values); ok {
+			return v
 		}
 	}
 	return sliceFrom(values, 0)
@@ -533,8 +579,11 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	case "mysqli_stmt":
 		return phpValue{binding: "db_statement", driver: "mysqli", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	}
-	if m.classes[cls] != nil {
-		return phpValue{binding: "php_class", class: cls, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
+	if v, ok, reason := f.newObject(n, clsNode, cls); ok {
+		return v
+	} else if reason != "" && strings.Contains(reason, "more than once") {
+		f.evalChildren(n)
+		return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("object_creation", n)}, gaps: []analysis.Gap{f.classGap("class "+cls+" is not resolved: "+reason, n)}}
 	}
 	f.evalChildren(n)
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
@@ -555,6 +604,10 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	m, fn := callable.module, callable.fn
 	key := fmt.Sprintf("%s:%d", m.file, fn.StartByte())
 	if f.depth >= phpHelperDepthLimit || *f.work >= phpHelperWorkLimit || f.stack[key] {
+		if callable.object != nil {
+			// An unexpanded method may write any property.
+			callable.object.propsUnknown = true
+		}
 		if f.closedSummaryCall(call, callable, values) {
 			return phpValue{}
 		}
@@ -579,6 +632,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	h.depth++
 	h.env = map[string]phpValue{}
 	h.globals = map[string]phpValue{}
+	h.class = callable.class
 	if callable.object != nil {
 		h.env["this"] = *callable.object
 	}
@@ -586,6 +640,28 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	pos := 0
 	for i := uint(0); params != nil && i < params.NamedChildCount(); i++ {
 		p := params.NamedChild(i)
+		if p.Kind() == "property_promotion_parameter" && callable.object != nil {
+			// A promoted constructor parameter binds like a simple parameter
+			// and writes the property of the same name (D-11).
+			v := phpValue{}
+			if pos < len(values) {
+				v = phpTransfer(values[pos], m.evidence("argument_to_parameter", p))
+			} else if def := phpField(p, "default_value"); def != nil {
+				v = h.eval(def)
+			}
+			name := phpVarName(m, phpField(p, "name"))
+			h.env[name] = v
+			this := h.env["this"]
+			props := map[string]phpValue{}
+			for k, e := range this.props {
+				props[k] = e
+			}
+			props[name] = phpTransfer(v, m.evidence("property_write", p))
+			this.props = props
+			h.env["this"] = this
+			pos++
+			continue
+		}
 		if p.Kind() != "simple_parameter" {
 			h.gaps = append(h.gaps, analysis.Gap{Kind: "php_parameter_unresolved", Detail: "unsupported helper parameter", At: parse.Span(m.file, p)})
 			pos++
@@ -619,6 +695,11 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 		}
 	}
 	terminated := h.block(phpField(fn, "body"))
+	if callable.object != nil {
+		if this, ok := h.env["this"]; ok {
+			*callable.object = this
+		}
+	}
 	f.adoptConstants(h.constants)
 	f.gaps = phpMergeGaps(f.gaps, h.gaps)
 	f.context = phpMergeEvidence(f.context, h.context)
@@ -681,7 +762,7 @@ func (f *phpFlow) phpBuiltinEffectName(name string) bool {
 		return false
 	}
 	f.set.indexBuiltinEffects()
-	return !f.set.builtinEffects["module:"+f.module.file] && !f.set.builtinEffects[strings.ToLower(name)]
+	return !f.set.builtinEffects["functions:"+f.module.file] && !f.set.builtinEffects[strings.ToLower(name)]
 }
 func (s *phpSet) indexBuiltinEffects() {
 	if s.builtinEffects != nil {
@@ -697,8 +778,16 @@ func (s *phpSet) indexBuiltinEffects() {
 			if n.Kind() == "function_definition" {
 				s.builtinEffects[strings.ToLower(phpText(m, phpField(n, "name")))] = true
 			}
+			// Summary witnesses refuse namespaced modules ("module:"). An
+			// unqualified call in a namespace falls back to the global
+			// function unless a function of that name is declared (any
+			// declaration excludes the name above) or imported here
+			// ("functions:").
 			if n.Kind() == "namespace_definition" || n.Kind() == "namespace_use_declaration" {
 				s.builtinEffects["module:"+file] = true
+			}
+			if n.Kind() == "namespace_use_declaration" && strings.HasPrefix(strings.TrimSpace(phpText(m, n)), "use function") {
+				s.builtinEffects["functions:"+file] = true
 			}
 		})
 	}

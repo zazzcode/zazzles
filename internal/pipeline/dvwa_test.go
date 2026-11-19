@@ -76,6 +76,35 @@ func TestDVWASourceKey(t *testing.T) {
 		}
 	}
 	dvwaStoredLink(t, r.Uses)
+	dvwaAPICommand(t, r)
+}
+
+// dvwaAPICommand asserts DVWA-API-CMD-01: the health controller's exec is a
+// witnessed command candidate under the API front controller, reached through
+// new HealthController(...)->processRequest() (close-findings-gaps AC4).
+func dvwaAPICommand(t *testing.T, r *analysis.AnalysisReport) {
+	t.Helper()
+	entries := map[string]string{}
+	for _, e := range r.Entries {
+		entries[e.ID] = e.Location.Span.File
+	}
+	for _, u := range r.Uses {
+		if u.Kind != "command_execution_candidate" || u.Sink.Span.File != "vulnerabilities/api/src/HealthController.php" || u.Sink.Span.StartLine != 88 {
+			continue
+		}
+		if entries[u.EntryID] != "vulnerabilities/api/public/index.php" {
+			continue
+		}
+		witnessed := false
+		for _, d := range u.Dependencies {
+			witnessed = witnessed || d.Source.Kind == "input_source" && strings.Contains(d.Source.Text, "php://input")
+		}
+		if !witnessed || u.Completeness == nil || len(u.Completeness.Blockers) > 0 {
+			t.Errorf("DVWA-API-CMD-01: candidate lacks a witnessed body source or keeps blockers: %+v", u.Completeness)
+		}
+		return
+	}
+	t.Error("DVWA-API-CMD-01: no command candidate at vulnerabilities/api/src/HealthController.php:88 under vulnerabilities/api/public/index.php")
 }
 
 // dvwaHasCandidate reports a use of the kind whose sink or any dependency's

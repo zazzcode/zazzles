@@ -66,3 +66,49 @@ func TestTemplateInjectionPairs(t *testing.T) {
 		})
 	}
 }
+
+// TestTemplateOriginScoping: a template-source witness rests on its own
+// request path; a sibling path from a remote response stays recorded and
+// blocks only when no path has a request origin.
+func TestTemplateOriginScoping(t *testing.T) {
+	r, err := pipeline.Analyze(filepath.Join("..", "langpy", "testdata", "templates"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var base analysis.CandidateUse
+	for _, u := range r.Uses {
+		if u.Kind == analysispacks.TemplateKind {
+			base = u
+		}
+	}
+	if base.Code == nil || len(base.Dependencies) != 1 {
+		t.Fatalf("fixture wants one request path: %+v", base.Dependencies)
+	}
+	remote := base.Dependencies[0]
+	remote.Source.Kind = "external_response_source"
+	remote.Source.Span.StartLine, remote.Source.Span.StartByte = 3, 3
+	both := base
+	both.Dependencies = append(append([]analysis.Dependency{}, base.Dependencies...), remote)
+	code := *base.Code
+	code.Paths = append(append([]analysis.CommandPath{}, base.Code.Paths...), analysis.CommandPath{Dependency: 1, Operand: "code", Protection: "raw"})
+	both.Code = &code
+	only := base
+	only.Dependencies = []analysis.Dependency{remote}
+	answers := map[string]string{"code_control": "whole_program", "code_restriction": "none", "protection_coverage": "incomplete"}
+	for _, tt := range []struct {
+		name   string
+		use    analysis.CandidateUse
+		status string
+	}{
+		{"request path beside a remote path is Confirmed", both, "confirmed_vulnerability"},
+		{"a remote path alone stays blocked", only, "needs_evidence"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			a := analysis.Assessment{Status: "completed", QuestionVersion: analysispacks.CodeProtocol, Answers: answers}
+			applyPolicy(tt.use, &a)
+			if a.FindingStatus != tt.status {
+				t.Fatalf("status %s blockers %+v", a.FindingStatus, a.BlockingGaps)
+			}
+		})
+	}
+}

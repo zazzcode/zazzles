@@ -39,6 +39,9 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	// models, which can consume a call such as send_from_directory whole.
 	f.pathCall(n, fn, receiver, object, method)
 	f.uploadCall(n, fn, object, receiver, method, nodes, values)
+	if receiver.binding == "jinja_environment" && method == "from_string" && len(values) > 0 && len(values[0].deps) > 0 {
+		f.pythonInterpreter(n, "jinja2.Environment.from_string", fn, values[0], "code", "python-template-source-v1")
+	}
 	if v, ok := f.frameworkCall(n, q, nodes, values, all); ok {
 		return v
 	}

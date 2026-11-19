@@ -185,7 +185,7 @@ limit, prompt wording changes outside the questions named here, and prototype po
   the limit is sent as several ordinary requests for the same claim. Each carries the dependency
   paths of one group and lists the withheld sibling paths as an explicit omission. The group key is
   structural: the dispatch alternative of the dependency's source (for DVWA, the security-level
-  file), then the storage key. Policy combines the groups: Confirmed when any group holds a
+  file), then the storage key, used only when a file group alone is over the limit. Whole groups are packed into one request while it still fits (first fit, key order); a packed request carries every path of the groups it holds, so it stays lossless. Policy combines the groups: Confirmed when any group holds a
   complete raw witness with consistent answers, scoped to that path as today; Protected only when
   every group is Protected; otherwise Review. A group still over the limit keeps
   `evidence_too_large`.
@@ -418,8 +418,7 @@ the judge and PHP adapter code at `58e94e7`. An offline scan of DVWA's API modul
 **Rationale.** Measured DVWA path groups each cost 51–60 KB, so without packing two `sqli` levels fell
 past the 4-group cap. Node, Starlette and Symfony upload adapters did not fit this delivery.
 
-**Summary.** W4 packs whole structural groups into one request while it fits. W5 ships PHP
+**Summary.** W4 packs whole structural groups into one request while it fits; D-14 now states this. W6 now also recognises `Environment.from_string` (follow-up). W5 ships PHP
 `move_uploaded_file` and Werkzeug `FileStorage.save`; the other D-19 operations have registered
-contracts only. W6 does not recognise Jinja `Environment.from_string`.
-
+contracts only. 
 **Verification Impact.** AC6 is met for PHP and Werkzeug only; AC11 is not run.

@@ -41,12 +41,33 @@ func applyInterpreterPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			add("facts_invalid", err.Error())
 		}
 	}
-	for _, d := range use.Dependencies {
+	requestOrigin := func(d analysis.Dependency) bool {
 		switch d.Source.Kind {
 		case "input_source", "browser_source", "browser_event_source", "event_input_binding":
-		default:
-			add("origin_unresolved", "The operand origin is not established as request/browser-controlled")
+			return true
 		}
+		return false
+	}
+	// A template-source witness is scoped to its own path (close-findings-gaps
+	// D-14 rule): a sibling path from another origin (a remote response) stays
+	// recorded and blocks only when no path has a request origin.
+	scopedOrigin := use.Kind == analysispacks.TemplateKind
+	anyRequest := false
+	for _, d := range use.Dependencies {
+		anyRequest = anyRequest || requestOrigin(d)
+	}
+	var originGaps []analysis.Gap
+	for _, d := range use.Dependencies {
+		if requestOrigin(d) {
+			continue
+		}
+		g := analysis.Gap{Kind: family + "_origin_unresolved", Detail: "The operand origin is not established as request/browser-controlled", At: use.Sink.Span}
+		if scopedOrigin && anyRequest {
+			g.At = d.Source.Span
+			originGaps = append(originGaps, g)
+			continue
+		}
+		add("origin_unresolved", "The operand origin is not established as request/browser-controlled")
 	}
 	roles := append([]string{"input_source", "sink_binding", "invoked_callable", "control_flow", family + "_operand"}, c.Required...)
 	if use.Components != nil {
@@ -157,6 +178,16 @@ func applyInterpreterPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		}
 	}
 
+	if scopedOrigin {
+		// Only a raw path with a request origin carries the witness.
+		raw = false
+		for _, p := range paths {
+			if p.Protection == "raw" && p.Dependency >= 0 && p.Dependency < len(use.Dependencies) && requestOrigin(use.Dependencies[p.Dependency]) {
+				raw = true
+			}
+		}
+		pathBlockers = append(pathBlockers, originGaps...)
+	}
 	controlled := control == "whole_program" || control == "inside_string_literal"
 	if family == "redirect" {
 		controlled = control == "full_url" || control == "host" || control == "path_only"

@@ -5,7 +5,7 @@ import "github.com/zazzcode/zazzles/internal/analysis"
 // UploadProtocol versions the unrestricted-upload claim (close-findings-gaps
 // W5). Path containment and file-type restriction are separate questions:
 // the upload family asks only the second.
-const UploadProtocol = "upload-components-v1"
+const UploadProtocol = "upload-components-v2"
 
 // Upload contracts: verified operations that store a client upload (D-19).
 const (
@@ -46,8 +46,8 @@ func uploadQuestionNames() []string {
 
 func uploadQuestions() []Question {
 	return []Question{
-		{"type_restriction", "Classify the server-side restriction on the stored file's type: none, client_declared_only (only a client-supplied MIME type or name is checked), extension_allow_list, content_check (magic bytes, getimagesize, finfo), re_encoded (the content is re-encoded and the name generated), unknown. A check of the client-declared type constrains nothing the client cannot choose."},
-		{"execution_exposure", "Classify whether the stored file can be requested and executed: served_executable (a served directory where a client-chosen extension such as .php can run), served_static (served, but no client-chosen executable extension can reach it), not_served, unknown."},
+		{"type_restriction", "Classify the server-side restriction on the stored file's type: none, client_declared_only (only a client-supplied MIME type or name is checked), extension_allow_list, content_check (magic bytes, getimagesize, finfo), re_encoded (the content is re-encoded and the name generated), unknown. A check of the client-declared type constrains nothing the client cannot choose. use.upload.type_controls lists each dominating control the scanner recorded, by kind."},
+		{"execution_exposure", "Classify whether the stored file can be requested and executed: served_executable (a served directory where a client-chosen extension such as .php can run), served_static (served, but no client-chosen executable extension can reach it), not_served, unknown. use.upload states stored_name, extension_origin and destination_served (yes when the destination resolves inside the scan root, which plain PHP serves); do not answer unknown when those facts settle it."},
 		{"protection_coverage", "Is the type restriction enforced before the write on every relevant path? complete, incomplete, unknown. Missing flow is unknown."},
 	}
 }

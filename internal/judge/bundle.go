@@ -120,7 +120,8 @@ func wireBundle(use analysis.CandidateUse) any {
 		Code            any                 `json:"code,omitempty"`
 		Redirect        any                 `json:"redirect,omitempty"`
 		StoredOrigin    any                 `json:"stored_origin,omitempty"`
-	}{invocation, 7, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin}
+		Upload          any                 `json:"upload,omitempty"`
+	}{invocation, 7, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin, wireUpload(use, context)}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {
@@ -199,4 +200,13 @@ func wireStoredOrigin(use analysis.CandidateUse, ref func(analysis.Evidence) str
 		}
 	}
 	return map[string]any{"stores": stores, "read_queries": reads}
+}
+
+// wireUpload sends the upload facts with their control indices as context
+// IDs; records without upload facts keep their request bytes.
+func wireUpload(use analysis.CandidateUse, context []string) any {
+	if use.Upload == nil {
+		return nil
+	}
+	return wireContextFacts(use.Upload, context, false)
 }

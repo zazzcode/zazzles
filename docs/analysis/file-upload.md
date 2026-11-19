@@ -52,5 +52,5 @@ path; request-derived parts of the destination are its `stored_name` paths.
 - **Review:** everything else, including an unknown destination and an extension allow-list beside a
   client-chosen name. Answers that contradict the facts are `upload_answers_inconsistent`.
 
-The protocol is `upload-components-v1`: `type_restriction`, `execution_exposure`,
+The protocol is `upload-components-v2`: `type_restriction`, `execution_exposure`,
 `protection_coverage`.

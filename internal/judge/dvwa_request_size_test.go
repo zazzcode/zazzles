@@ -1,6 +1,7 @@
 package judge
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -61,7 +62,8 @@ func TestDVWARequestSizes(t *testing.T) {
 					t.Errorf("%s group %d does not name its withheld paths", head, i)
 				}
 			}
-			lines = append(lines, fmt.Sprintf("    group %d %s: deps=%d bytes=%d fits=%v", i, groups[i].key, len(groups[i].deps), g.RequestBytes, fit))
+			onChain, offChain := excerptRelevance(g.Request)
+			lines = append(lines, fmt.Sprintf("    group %d %s: deps=%d bytes=%d fits=%v excerpt_bytes on_chain=%d off_chain=%d", i, groups[i].key, len(groups[i].deps), g.RequestBytes, fit, onChain, offChain))
 		}
 		for i := maxPathGroups; i < len(groups); i++ {
 			lines = append(lines, fmt.Sprintf("    group %d %s: deps=%d not judged (%s)", i, groups[i].key, len(groups[i].deps), pathGroupCap))
@@ -76,4 +78,57 @@ func TestDVWARequestSizes(t *testing.T) {
 	if remaining > 0 {
 		t.Errorf("%d DVWA records remain evidence_too_large", remaining)
 	}
+}
+
+// excerptRelevance splits a request's source-excerpt bytes into excerpts that
+// some dependency-chain or sink evidence row references and excerpts that only
+// context rows reference: the bytes an S2 relevance filter could consider.
+func excerptRelevance(request []byte) (onChain, offChain int) {
+	var envelope struct{ Input string }
+	if json.Unmarshal(request, &envelope) != nil {
+		return 0, 0
+	}
+	var inner struct {
+		Use struct {
+			Sink         string           `json:"sink_evidence"`
+			Evidence     [][]any          `json:"evidence"`
+			Excerpts     [][]any          `json:"source_excerpts"`
+			Dependencies []map[string]any `json:"dependencies"`
+		} `json:"use"`
+	}
+	if json.Unmarshal([]byte(envelope.Input), &inner) != nil {
+		return 0, 0
+	}
+	chain := map[string]bool{inner.Use.Sink: true}
+	for _, d := range inner.Use.Dependencies {
+		if src, ok := d["source"].(string); ok {
+			chain[src] = true
+		}
+		if ts, ok := d["transfers"].([]any); ok {
+			for _, t := range ts {
+				if id, ok := t.(string); ok {
+					chain[id] = true
+				}
+			}
+		}
+	}
+	used := map[int]bool{}
+	for i, row := range inner.Use.Evidence {
+		if len(row) > 5 && chain[fmt.Sprintf("e%d", i)] {
+			if ref, ok := row[5].(string); ok && strings.HasPrefix(ref, "s") {
+				var n int
+				fmt.Sscanf(ref, "s%d", &n)
+				used[n] = true
+			}
+		}
+	}
+	for i, ex := range inner.Use.Excerpts {
+		b, _ := json.Marshal(ex)
+		if used[i] {
+			onChain += len(b)
+		} else {
+			offChain += len(b)
+		}
+	}
+	return onChain, offChain
 }

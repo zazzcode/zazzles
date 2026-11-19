@@ -116,6 +116,8 @@ func (f *pythonFlow) evalNative(n *sitter.Node) pythonValue {
 		if global := m.vars[pyText(m, n)]; global != nil && global.Kind() == "call" {
 			if q := f.qualified(pyText(m, global.ChildByFieldName("function"))); q == "logging.getLogger" {
 				return pythonValue{binding: "logger", evidence: []analysis.Evidence{m.evidence("logger_binding", global)}}
+			} else if q == "jinja2.Environment" || q == "jinja2.environment.Environment" || q == "jinja2.sandbox.SandboxedEnvironment" {
+				return pythonValue{binding: "jinja_environment", evidence: []analysis.Evidence{m.evidence("sink_binding", global)}}
 			}
 		}
 		if global := m.vars[pyText(m, n)]; global != nil && global.Kind() == "call" && pyPathObjectNames[f.qualified(pyText(m, global.ChildByFieldName("function")))] {

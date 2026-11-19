@@ -117,3 +117,35 @@ func reportHasGap(r *analysis.AnalysisReport, kind, detail string) bool {
 	}
 	return false
 }
+
+// TestPHPMethodBoundKeepsUnresolvedResult: a method call the expansion bound
+// stops (here a recursive method) keeps the unresolved-method result instead
+// of attaching work_limit blockers to every record its output reaches.
+func TestPHPMethodBoundKeepsUnresolvedResult(t *testing.T) {
+	root := phpFixture(t, map[string]string{"index.php": `<?php
+class Markdown {
+	public function text($s) { return $this->lines($s); }
+	private function lines($s) { return $this->block($s) . $this->lines($s); }
+	private function block($s) { return "<p>" . $s . "</p>"; }
+}
+$md = new Markdown();
+$page = $md->text(file_get_contents('README.md'));
+echo "<div>" . $_COOKIE['theme'] . "</div>" . $page;
+`})
+	r := phpAnalyze(t, root, "")
+	found := false
+	for _, u := range phpUsesOfKind(r, "xss_candidate") {
+		if !hasSource(u, "index.php", "theme") {
+			continue
+		}
+		found = true
+		for _, g := range u.Completeness.Blockers {
+			if g.Kind == "work_limit" {
+				t.Fatalf("the bound added a blocker: %+v", g)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("no rendering claim for the cookie value")
+	}
+}

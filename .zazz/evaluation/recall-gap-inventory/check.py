@@ -280,6 +280,44 @@ def fixed_outcome(report):
     return out
 
 
+def resolution(report):
+    """Evidence-resolution measures per family for a judged report: blocked
+    records sent, blockers resolved, citations rejected, follow-ups and
+    model-resolved outcomes, and records the send gate kept back."""
+    out = {}
+    fs = presented(report)
+    for u in report['uses']:
+        a = u.get('assessment') or {}
+        d = out.setdefault(family(u['kind']), {})
+        def inc(k, n=1):
+            d[k] = d.get(k, 0) + n
+        if (a.get('reason') or '').startswith('blocker_unresolvable'):
+            inc('gated_unresolvable')
+        if a.get('status') != 'completed' or a.get('deduplicated_from'):
+            continue
+        if (u.get('completeness') or {}).get('blockers'):
+            inc('blocked_sent')
+        for r in a.get('resolutions') or []:
+            if r.get('discharged') and r.get('blocker'):
+                inc('blockers_resolved')
+            if r.get('citation') and not r.get('verified'):
+                inc('citations_rejected')
+        f = a.get('follow_up') or {}
+        if f.get('status') == 'sent':
+            inc('follow_ups_sent')
+        elif f.get('status') in ('unresolved', 'follow_up_cap_reached'):
+            inc('follow_ups_' + f['status'])
+        if any(r.get('discharged') for r in a.get('resolutions') or []):
+            st = (fs.get(u['id']) or {}).get('status', a.get('finding_status'))
+            inc('model_resolved_protected' if st == 'protected_for_claim' else 'model_resolved_finding' if is_finding(fs.get(u['id'])) else 'model_resolved_review')
+    return {k: v for k, v in out.items() if v}
+
+
+RESOLUTION_COLS = ['gated_unresolvable', 'blocked_sent', 'blockers_resolved', 'citations_rejected', 'follow_ups_sent',
+                   'follow_ups_unresolved', 'follow_ups_follow_up_cap_reached', 'model_resolved_finding',
+                   'model_resolved_protected', 'model_resolved_review']
+
+
 def precision(reports, keyed, noise_rows, controls):
     """Per sample and family: keyed true/false findings, unkeyed and test-path
     census, noise classes, protected-control outcomes and fixed-outcome requests.
@@ -324,6 +362,8 @@ def precision(reports, keyed, noise_rows, controls):
             get(k).update(classes)
         for k, v in fixed_outcome(report).items():
             get(k).update(v)
+        for k, v in resolution(report).items():
+            get(k).update(v)
         # A judged row names who judged it, so the corpus can be re-measured
         # when a model or question set changes.
         for u in report['uses']:
@@ -350,7 +390,7 @@ def precision_markdown(prec):
             'construction_no_origin', 'construction_no_origin_finding', 'undecidable_validation', 'shared_sink_fanout',
             'same_entry_sink_extra', 'own_api_request_origin', 'stored_origin_unresolved', 'stored_literal_writes',
             'unknown_context_raw', 'closed_type_map', 'control_false_finding', 'control_protected', 'control_review',
-            'fixed_outcome_requests', 'substantive_discarded']
+            'fixed_outcome_requests', 'substantive_discarded'] + RESOLUTION_COLS
     lines = ['| App | Family | ' + ' | '.join(cols) + ' | Judged by |', '|---|---|' + '---|' * len(cols) + '---|']
     for app, fams in prec.items():
         for f, d in fams.items():

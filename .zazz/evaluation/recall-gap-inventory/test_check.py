@@ -70,6 +70,21 @@ class PrecisionTest(unittest.TestCase):
         self.assertEqual(cmd['judged_by'], ['openai/m/command-components-v3'])
         self.assertNotIn('judged_by', self.prec['sql_query'])
 
+    def test_resolution_measures(self):
+        resolved = use('r', 'path_traversal_candidate', 'app.py', 4, deps=['input_source'], blockers=['python_comprehension_unresolved'],
+                       assessment={'status': 'completed', 'finding_status': 'confirmed_vulnerability',
+                                   'resolutions': [{'blocker': {'kind': 'python_comprehension_unresolved'}, 'citation': ['e0', 'g0', 'e1'], 'verified': True, 'discharged': True}],
+                                   'follow_up': {'status': 'sent'}})
+        rejected = use('s', 'path_traversal_candidate', 'app.py', 9, deps=['input_source'], blockers=['unknown_transfer'],
+                       assessment={'status': 'completed', 'resolutions': [{'blocker': {'kind': 'unknown_transfer'}, 'citation': ['e9'], 'verified': False}],
+                                   'follow_up': {'status': 'follow_up_cap_reached'}})
+        gated = use('t', 'xss_candidate', 'v.html', 1, assessment={'status': 'not_run', 'reason': 'blocker_unresolvable: render_protection_unresolved fixes ...'})
+        report = {'uses': [resolved, rejected, gated], 'findings': [finding('r', 'confirmed_vulnerability'), finding('s', 'needs_review'), finding('t', 'needs_review')]}
+        r = check.resolution(report)
+        self.assertEqual(r['path_traversal'], {'blocked_sent': 2, 'blockers_resolved': 1, 'citations_rejected': 1, 'follow_ups_sent': 1,
+                                               'follow_ups_follow_up_cap_reached': 1, 'model_resolved_finding': 1})
+        self.assertEqual(r['xss'], {'gated_unresolvable': 1})
+
     def test_decidable_validation(self):
         u = use('v', 'input_validation_candidate', 'f.py', 1)
         u['completeness'] = {'blockers': [], 'required': [], 'evidence': {r: [{}] for r in check.VALIDATION_ROLES}}

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/judge"
 )
 
 func TestAnalysisModeCompatibility(t *testing.T) {
@@ -264,5 +265,19 @@ func TestGRPCPipeline(t *testing.T) {
 				t.Fatal("HTTP-only selector matched gRPC")
 			}
 		})
+	}
+}
+
+// Records the resolution gate kept from the judge are unassessed by design
+// and do not count as incomplete assessments.
+func TestJudgedExitIgnoresGatedRecords(t *testing.T) {
+	report := &analysis.AnalysisReport{Uses: []analysis.CandidateUse{
+		{Kind: "sql_query_candidate", Assessment: analysis.Assessment{Status: "completed"}},
+		{Kind: "xss_candidate", Assessment: analysis.Assessment{Status: "not_run", Reason: judge.BlockerUnresolvable + ": render_protection_unresolved fixes this record's outcome"}},
+	}}
+	var stderr bytes.Buffer
+	c, _ := judge.New("openai", "", "offline-key")
+	if code := judgedExit(c, report, false, &stderr); code != exitOK || stderr.Len() != 0 {
+		t.Fatalf("code %d stderr %q", code, stderr.String())
 	}
 }

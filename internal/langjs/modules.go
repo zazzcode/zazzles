@@ -252,15 +252,15 @@ func (s *moduleSet) resolve(m *sourceModule, name string) (*sourceModule, *sitte
 		if imp, ok := m.imports[parts[0]]; ok && imp.name == "*" {
 			if target := s.importModule(m, imp.module); target != nil && exportedName(target, parts[1]) {
 				obj := topVariable(target, parts[1])
-				if obj != nil && obj.Kind() == "object" {
-					if method := property(obj, parts[2], target.src); method != nil && isFunction(method) {
+				if obj != nil && obj.Kind() == "object" && !exportMemberAssigned(target, parts[1], parts[2]) {
+					if method := objectMethod(obj, parts[2], target.src); method != nil {
 						return target, method
 					}
 				}
 			}
 			if target := s.importModule(m, imp.module); target != nil {
-				if obj := target.exports[parts[1]]; obj != nil && obj.Kind() == "object" {
-					if method := property(obj, parts[2], target.src); method != nil && isFunction(method) {
+				if obj := target.exports[parts[1]]; obj != nil && obj.Kind() == "object" && !exportMemberAssigned(target, parts[1], parts[2]) {
+					if method := objectMethod(obj, parts[2], target.src); method != nil {
 						return target, method
 					}
 				}
@@ -331,4 +331,83 @@ func (s *moduleSet) importModule(m *sourceModule, path string) *sourceModule {
 		}
 	}
 	return nil
+}
+
+// objectMethod returns the callable an object literal holds under key
+// (close-findings-gaps D-29): a shorthand method, or a function or arrow
+// function value. A spread (which may replace any property), a duplicate
+// key, a computed key or an accessor never names a handler statically.
+func objectMethod(obj *sitter.Node, key string, src []byte) *sitter.Node {
+	var found *sitter.Node
+	for i := uint(0); i < obj.NamedChildCount(); i++ {
+		p := obj.NamedChild(i)
+		var name, value *sitter.Node
+		switch p.Kind() {
+		case "spread_element":
+			return nil
+		case "pair":
+			name, value = p.ChildByFieldName("key"), p.ChildByFieldName("value")
+			if value != nil && !isFunction(value) {
+				value = nil
+			}
+		case "method_definition":
+			name, value = p.ChildByFieldName("name"), p
+			for j := uint(0); j < p.ChildCount(); j++ {
+				if c := p.Child(j); c != nil && !c.IsNamed() && (c.Kind() == "get" || c.Kind() == "set" || c.Kind() == "*") {
+					value = nil // accessors and generators are not request handlers
+				}
+			}
+		case "shorthand_property_identifier":
+			if p.Utf8Text(src) == key {
+				return nil // a reference to another binding, not resolved here
+			}
+			continue
+		default:
+			continue
+		}
+		if name == nil || name.Kind() == "computed_property_name" || strings.Trim(name.Utf8Text(src), `"'`) != key {
+			continue
+		}
+		if found != nil {
+			return nil
+		}
+		found = value
+		if found == nil {
+			return nil
+		}
+	}
+	return found
+}
+
+// exportMemberAssigned reports an assignment anywhere in the module to the
+// exported object's member (exports.obj.key = ...) or a second assignment of
+// the export itself: the literal no longer names the handler.
+func exportMemberAssigned(m *sourceModule, obj, key string) bool {
+	member := map[string]bool{"exports." + obj + "." + key: true, "module.exports." + obj + "." + key: true}
+	whole := map[string]bool{"exports." + obj: true, "module.exports." + obj: true}
+	wholeWrites := 0
+	assigned := false
+	var visit func(*sitter.Node)
+	visit = func(n *sitter.Node) {
+		if assigned {
+			return
+		}
+		if n.Kind() == "assignment_expression" || n.Kind() == "augmented_assignment_expression" {
+			if left := n.ChildByFieldName("left"); left != nil {
+				text := strings.Join(strings.Fields(left.Utf8Text(m.src)), "")
+				if member[text] {
+					assigned = true
+					return
+				}
+				if whole[text] {
+					wholeWrites++
+				}
+			}
+		}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			visit(n.NamedChild(i))
+		}
+	}
+	visit(m.tree.RootNode())
+	return assigned || wholeWrites > 1
 }

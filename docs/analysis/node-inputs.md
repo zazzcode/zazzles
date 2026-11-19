@@ -20,6 +20,10 @@ as an `unsupported_binding` gap.
 ## Supported HTTP boundary
 
 - Express retains its existing bounded direct/mounted/finite-registration analysis and middleware context.
+  A handler reference `ns.obj.method` resolves when `obj` is an exported object literal and `method`
+  is a shorthand method, a function-valued property or an arrow function of it. A computed key, a
+  spread in the literal, a duplicate key, an accessor, or any later assignment of the export or of
+  that member stays an `unresolved_handler` gap.
 - Fastify recognizes immutable direct imported/required factories, direct shorthand registrations and
   literal full `route` objects with a direct or statically resolved handler.
 - Hapi recognizes direct imported `server()` factories and literal `route` objects; `request.payload`

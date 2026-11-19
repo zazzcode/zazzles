@@ -250,6 +250,43 @@
     "uses_count": 7,
     "gaps": 0
   },
+  "internal/langjs/testdata/javascript/object-handlers": {
+    "uses": [
+      {
+        "id": "candidate:v1:5c8bc937e22071f2e08806f749d6ba8afde0701a818565b3423fd1a18eea7d73",
+        "kind": "xss_candidate",
+        "request_sha256": "1c07f1657ec8fd33383a9f21217ee3bc4f59569b84848bba928bd39b0784fe53",
+        "signature_sha256": "ea7df2c78d3206a7a7ca61b9a6f0a088ff4ff33c937421fd1915a3ed732531c1"
+      },
+      {
+        "id": "candidate:v1:d8b4e9c326cc51c9153e819f9e850546fdaff87ef7ba883e7a608d110492f189",
+        "kind": "input_validation_candidate",
+        "request_sha256": "75971901d37a30b52b9c647b54a0bbc2208c8c3c7440001362d5044c9c047bb8",
+        "signature_sha256": "e4c38a8d707b67a94405dfb92162e23e480f00b4d63ffbaee2b5de41949b1d61"
+      },
+      {
+        "id": "candidate:v1:c07980cd7f210bd54bd91ada749033d3e8fc1d6ce3fdce0438973fad29d4117c",
+        "kind": "xss_candidate",
+        "request_sha256": "6457ef49f9623f1177ec6cdc458158637221dea60387702864b11e86601b750c",
+        "signature_sha256": "9cf56738c68daa60a45ca30b7278ceac5e673ac8219792bda9d17491d1927e6d"
+      },
+      {
+        "id": "candidate:v1:aa8330c0b66e68c07dc6548606484f9b1c6e2e867160a2a5d8332d0fcaa1bb82",
+        "kind": "input_validation_candidate",
+        "request_sha256": "ab0c35b156679424991146603b49d476619ea4da97b38aa2900bdd6f14f9f1c5",
+        "signature_sha256": "cac06a2459b9db648985c3a06291c653dd1bc3a305711c5bf9c7308be92a1349"
+      }
+    ],
+    "report_sha256": "e254f43e17a1c9d3d0a3756a8a3c38ab747392d93ff38c6e0dd00eb261cf99eb",
+    "sarif_sha256": "8c0496812d56669bf40ebda418098326c31341235159749cc2f7b93381baa492",
+    "entries": 6,
+    "registrations": 6,
+    "dispatch_bindings": 6,
+    "callables": 3,
+    "invocation_contexts": 6,
+    "uses_count": 4,
+    "gaps": 0
+  },
   "internal/langjs/testdata/javascript/outbound": {
     "uses": [
       {

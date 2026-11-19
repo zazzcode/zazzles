@@ -135,6 +135,7 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 	a.Model = model
 	a.Usage = usage
 	a.Resolutions = resolveAnswers(use, payload, answers, c.provider, model)
+	a.FollowUp = neededFollowUp(answers)
 	splitResolutionAnswers(&a)
 	applyPolicy(use, &a)
 	return a

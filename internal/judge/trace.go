@@ -62,6 +62,7 @@ func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis
 	}
 	a.Status, a.Answers, a.Model, a.Usage, a.AnswerDetails = "completed", answers, model, usage, details
 	a.Resolutions = resolveAnswers(use, payload, answers, c.provider, model)
+	a.FollowUp = neededFollowUp(answers)
 	splitResolutionAnswers(&a)
 	applyPolicy(use, &a)
 	return a

@@ -62,7 +62,7 @@ func TestFlowGapQuestionPath(t *testing.T) {
 		t.Fatal(err)
 	}
 	asked := payloadResolutionQuestions(payload)
-	if len(asked) != 2 || !strings.HasPrefix(asked[0].name, resolvePrefix+"flow_g") || asked[1].name != asked[0].name+citeSuffix {
+	if len(asked) < 2 || !strings.HasPrefix(asked[0].name, resolvePrefix+"flow_g") || asked[1].name != asked[0].name+citeSuffix {
 		t.Fatalf("flow-gap question pair missing: %+v", asked)
 	}
 	if !strings.Contains(asked[0].instructions, "python_comprehension_unresolved") {

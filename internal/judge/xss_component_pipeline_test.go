@@ -115,13 +115,25 @@ func xssPipeline(t *testing.T, cases []xssCase) {
 					}
 					var body map[string]any
 					json.Unmarshal(preview.Request, &body)
+					// The five XSS questions, plus any resolution questions (resolve_*).
+					family := 0
 					switch qs := body["questions"].(type) {
 					case []any:
-						if len(qs) != 5 {
+						for _, q := range qs {
+							if name, _ := q.(map[string]any)["name"].(string); !strings.HasPrefix(name, resolvePrefix) {
+								family++
+							}
+						}
+						if family != 5 {
 							t.Fatal("wrong questions")
 						}
 					case map[string]any:
-						if len(qs) != 5 {
+						for name := range qs {
+							if !strings.HasPrefix(name, resolvePrefix) {
+								family++
+							}
+						}
+						if family != 5 {
 							t.Fatal("wrong questions")
 						}
 					default:

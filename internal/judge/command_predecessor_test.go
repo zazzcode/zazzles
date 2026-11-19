@@ -15,8 +15,9 @@ import (
 // guarded resolvers lose the generic control-flow gaps. Candidate counts
 // stay fixed; observation-only records still have no request. Evidence
 // resolution re-recorded the GraphQL and gRPC fixtures: their SQL records with
-// an unknown_transfer flow gap gain a flow-gap question (W2); no other
-// family's request changed.
+// an unknown_transfer flow gap gain a flow-gap question (W2), and path, SQL
+// and XSS records whose gaps name an unresolved symbol gain the
+// one-evidence-request question (W5); no other family's request changed.
 func TestCommandPredecessorRequests(t *testing.T) {
 	type baseline struct {
 		count  int
@@ -24,14 +25,14 @@ func TestCommandPredecessorRequests(t *testing.T) {
 	}
 	want := map[string]baseline{
 		"string-flow":                 {1, "6f9b69d1d97fc527823f4fbc55e28b09f1c46ae489bc6fcd34eebd06329758b6"},
-		"javascript/grpc":             {7, "e55614184d97a48072283a380da73814aff20b44f8336e78af21195918390e67"},
-		"typescript/grpc":             {7, "d3dcb90b00d7303a328537cf161e9dbaffbbc1c961ad6941229ec7d9e0c54374"},
-		"javascript/graphql":          {7, "0f7aebc5b7fbf28d9bbb15f151afc3bcea09925c9399c1757ca18fd7f02d6015"},
-		"typescript/graphql":          {7, "d6ba084abbfb83d088d92fd869953739cd1d1883a34f7c4b79c7acb5b86e0121"},
-		"javascript/dynamic-dispatch": {4, "d38d7e7d24b6eb0393ff8b8ecd3cf554d4001fbe24344e36ed2585e0ac2d0dbc"},
-		"typescript/dynamic-dispatch": {4, "f2b4f8d1d09947b7ce06283a7edfb7cab0a4164a64fd54450ad81da09e56e9f1"},
+		"javascript/grpc":             {7, "bc435d37f6a2374e501c14e7b29a14dfee7abf3a6881898ee4aa440f59f3b108"},
+		"typescript/grpc":             {7, "512696c5dd17b9b7ec5b440d836b23eb0c7bdce4e4d2566d2cce1a789e09204d"},
+		"javascript/graphql":          {7, "d4a695d871ec5e44cd1e3f760930a0ddd79681c598ddbfbe36c5f9667680971b"},
+		"typescript/graphql":          {7, "a932ff110ab2b1c87adec509a7e3576c05b5640b2edc691695f482864423acbf"},
+		"javascript/dynamic-dispatch": {4, "8c9274aff93dd8fbe2b4c3de1fccd90916d270df060983505c73705d093934b3"},
+		"typescript/dynamic-dispatch": {4, "e8f515e38a9504b4a8970c969f6178d7ffdea0c09aeb7a61943eeba002018719"},
 		"python/routes":               {5, "2ce7531c60f7d221060704bbe570cdd3f07cac5a245916fe547846bfe9099e58"},
-		"python/dynamic-vulnpy":       {31, "d9cbf34138ecfa3b558df97719b5c38b79669ac4c623e92f5eef255ba033fb20"},
+		"python/dynamic-vulnpy":       {31, "d9d3c4965996054bf1fe667ed2c4a7f990a1f64ed32cf7248938caa661370412"},
 		"javascript/xss-fetch":        {5, "f88b981603f5431ae1dbc62aa89840fdea7b2aaaa27b3d1f8a6da0a7bdfbe2b2"},
 		"javascript/outbound":         {4, "7616f13e1350e438c8ff872759a2b58a948bf45f08379401a1f0a6c5c341718b"},
 	}

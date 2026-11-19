@@ -338,6 +338,11 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 			}
 		}
 	}
+	if f := familyOf(u); f == "path" || f == "sql" || f == "command" || f == "xss" {
+		if ask := neededAsk(u); ask != nil {
+			asks = append(asks, *ask)
+		}
+	}
 	return asks
 }
 
@@ -348,7 +353,9 @@ func resolutionQuestions(asks []resolutionAsk) []question {
 		if a.answer != nil {
 			out = append(out, *a.answer)
 		}
-		out = append(out, a.cite)
+		if a.cite.name != "" {
+			out = append(out, a.cite)
+		}
 	}
 	return out
 }
@@ -428,7 +435,7 @@ func resolveAnswers(use analysis.CandidateUse, payload []byte, answers map[strin
 	}
 	var out []analysis.Resolution
 	for _, q := range payloadResolutionQuestions(payload) {
-		if strings.HasSuffix(q.name, citeSuffix) {
+		if strings.HasSuffix(q.name, citeSuffix) || q.name == neededQuestion {
 			continue
 		}
 		out = append(out, resolveOne(use, x, q.name, answers, provider, model))

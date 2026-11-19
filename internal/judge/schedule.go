@@ -325,6 +325,9 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 			}
 		}
 	}
+	if sent, unresolved, capped := c.followUps(ctx, report, order, opts, calls); sent+unresolved+capped > 0 {
+		report.Limitations = append(report.Limitations, fmt.Sprintf("Evidence follow-ups: %d sent beside %d assessment requests (cap %d%%, %d); %d named items the snapshot did not resolve exactly; %d over the cap (follow_up_cap_reached).", sent, calls, FollowUpShare, calls*FollowUpShare/100, unresolved, capped))
+	}
 	if len(opts.SkippedFamilies) > 0 || len(opts.OnlyFamilies) > 0 {
 		report.Limitations = append(report.Limitations, "Analyzer family selection: skipped ["+strings.Join(opts.SkippedFamilies, ",")+"], only ["+strings.Join(opts.OnlyFamilies, ",")+"]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.")
 	}

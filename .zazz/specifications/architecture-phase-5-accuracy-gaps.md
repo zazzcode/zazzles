@@ -55,6 +55,8 @@ sentence, documenting any current regression separately if one is observed.
 | `.zazz/evaluation/vulnpy-detection-guide.md` | Modified | Reconcile the historical Jinja note with delivery and current evidence |
 | This spec | Modified | Record the selected scope, fixtures and expected deltas before code |
 | One of `internal/langjs/`, `internal/langpy/`, `internal/langphp/`, or `internal/parse/` and the selected fixture owner | Conditional | One localized closure and its regression controls. Selected: `internal/langjs/xss_web_response.go` (new), `internal/langjs/xss_response.go` (shared HTML-response tail), `internal/langjs/flow.go` (constructor hook and shorthand destructuring default) and `internal/langjs/xss_web_response_test.go` (new) |
+| `internal/langjs/xss_template_flow.go`, `internal/langjs/xss_file_origin_test.go` | Modified | Named `fs` imports share the `file_read` content origin of `fs.readFile`, which corrects the new uploads-route record |
+| `cmd/scan/testdata/architecture-baseline.json` (path-traversal fixture rows only) | Modified | `server.js:16` XSS origin, and four GraphQL resolver IDs, plus the report and SARIF hashes |
 | `internal/langjs/next_gssp.go`, `internal/langjs/next_handlers.go`, `internal/langjs/next_gssp_order_test.go` | Modified | Determinism defect found by the AC5 comparison: `getServerSideProps` context inputs follow pattern source order |
 | `docs/analysis/xss.md`, `docs/analysis/node-inputs.md`, `docs/nextjs-support.md` | Modified | Document the web `Response` HTML sink and shorthand destructuring defaults |
 | `internal/analysispacks/xss.go`, `internal/analysispacks/xss_test.go` | Conditional | Selected: the `html-output-v1` contract for library `fetch-response`, so selection accepts the new records. Existing Express records and descriptor material are unchanged |
@@ -359,4 +361,15 @@ test cases: a skipped work-limit gap, a spread after `headers` in the init being
 nodes counted as arguments. A shorthand header no longer counts as a type override. It also reported
 that the checker passed controls vacuously. Those 4 passes are now flagged in the inventory. The
 corpus deltas and the golden are unchanged.
+
+### 2026-11-19 — Follow-up accuracy items in this PR
+
+The owner asked for the in-branch follow-ups.
+- **Output stability.** Repeat offline scans of all eleven samples, 266 runs in total, are
+  byte-identical, so no further unstable IDs were found.
+- **File-content origin.** The uploads-route record carried the request path as its content origin.
+  A named `fs` import now shares the `file_read` model of `fs.readFile`, checked by
+  `TestNamedReadFileContentOrigin`. The golden changes only in the path-traversal fixture rows
+  listed in §4. The corpus deltas are the two origin corrections in the inventory.
+- **Checker.** A source anchor must now match a dependency's origin. No rows flipped.
 

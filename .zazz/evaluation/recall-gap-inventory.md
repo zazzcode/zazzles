@@ -96,8 +96,8 @@ Fan-out counts source-matching uses and their distinct entries.
 The four vacuous passes are `DEMO-SQL-N01` (the bound insert creates no SQL candidate),
 `OOPS-XSS-N02` and the lab's `XSS-001` and `XSS-002` React-text safe controls. In each, the key
 accepts no record. Each is marked in the per-row notes so that a candidate which disappears cannot
-pass silently. The checker's source-anchor match accepts the key's anchor at any dependency span,
-including transfers, not only at the origin.
+pass silently. A source anchor must match a dependency's origin, not a transfer step. Tightening this rule
+flipped no rows.
 
 By tag, `independent` rows have 87 of 88 positive or review candidates present, and `post_delivery`
 rows have 11 of 11. Python evaluator: ThreatByte exits 1 with 11/18, and every failure is an
@@ -171,10 +171,25 @@ Record-level comparison of every use, before and after:
 
 | App | Added | Changed | Removed | Accounted for |
 |---|---:|---:|---:|---|
-| oss-oopssec-store | 3 | 2 | 0 | `vcs/[[...path]]/route.ts:101` recovered (raw). `:63` is the route parameter's new `input_validation_candidate`, now bound through the default. `:94` and `:96` lose their `unsupported_binding` gap. `uploads/[...path]/route.ts:44` is a new `unknown` XSS record blocked by `render_protection_unresolved`: its `Content-Type` comes from an extension map that includes `image/svg+xml`, so it stays Review |
-| The other ten samples | 0 | 0 | 0 | No change |
+| oss-oopssec-store | 3 | 2 | 0 | `vcs/[[...path]]/route.ts:101` recovered (raw). `:63` is the route parameter's new `input_validation_candidate`, now bound through the default. `:94` and `:96` lose their `unsupported_binding` gap. `uploads/[...path]/route.ts:44` is a new XSS record. Its `Content-Type` comes from an extension map that includes `image/svg+xml`, and its body is file content with a `file_read` origin at `:42`. It is blocked by `render_protection_unresolved` and `storage_origin_unresolved`, so it stays Review |
+| vuln-nextjs | 0 | 1 | 0 | `pages/api/secure/file-read.js:16` (`xss_data_candidate`, JSON data) now separates the request path at `:11` from the read file content at `:15`. Before, both dependencies were the request path |
+| The other nine samples | 0 | 0 | 0 | No change |
 
-The architecture golden is unchanged.
+The architecture golden changes only in the `internal/langjs/testdata/javascript/path-traversal`
+fixture. `server.js:16` sends the result of a named `readFileSync` import, and its XSS record now has
+the same `file_read` origin as the member-form read at `:24`. The four GraphQL resolver records in
+`graphql/resolvers.js` get new invocation and candidate IDs. The resolver's `readFileSync` result is
+no longer treated as request-derived, so a misleading `input_helper_unresolved` gap is gone. The
+report and SARIF hashes change with these records. Record counts are unchanged.
+
+**File-content origin.** Before, `fs.readFile(...)` gave file content a `file_read` origin, but a
+named import (`import { readFile } from "fs/promises"`, `const { readFileSync } = require("fs")`)
+passed the request path's dependency through as the content's origin. Both forms now share one
+model. The path stays a path-traversal operand; that analyzer runs first and is unaffected.
+
+**Output stability.** After the determinism fix, repeat offline scans are byte-identical: 6 runs of
+each of the 11 samples, then 25 more of each of the 8 JS, Python and PHP samples that scan fastest.
+No other unstable ID was found.
 
 **Determinism defect found by the comparison.** The first after-scan also changed the
 vuln-nextjs SSRF safe control's candidate ID (`pages/secure/ssrf.js:26`). The base scanner alone

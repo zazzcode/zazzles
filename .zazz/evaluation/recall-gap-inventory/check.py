@@ -67,7 +67,9 @@ def witnessed(u, row):
     if not any(d.get('source', {}).get('kind') in WITNESS for d in deps):
         return False
     if 'source' in row:
-        return tuple(row['source']) in {(f, l) for f, l in spans(deps)}
+        # The key's source anchor must be a dependency's origin, not a transfer step.
+        origins = {(d['source']['span']['file'], d['source']['span']['start_line']) for d in deps if d.get('source', {}).get('span')}
+        return tuple(row['source']) in origins
     return True
 
 

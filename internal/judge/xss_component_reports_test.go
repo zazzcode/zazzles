@@ -56,7 +56,12 @@ func TestXSSComponentReportParity(t *testing.T) {
 		}
 		sarif := report.SARIF(r)
 		run := sarif["runs"].([]any)[0].(map[string]any)
-		if len(run["results"].([]any)) != 4 {
+		represented := 0
+		for _, item := range run["results"].([]any) {
+			f := item.(map[string]any)["properties"].(map[string]any)["scan.finding"].(analysis.Finding)
+			represented += 1 + len(f.GroupedUseIDs)
+		}
+		if represented != 4 {
 			t.Fatal("SARIF use count drift")
 		}
 		invocation := run["invocations"].([]any)[0].(map[string]any)
@@ -85,7 +90,14 @@ func TestXSSComponentReportParity(t *testing.T) {
 				t.Fatal("HTML lost coverage location")
 			}
 		}
-		for i, raw := range run["results"].([]any) {
+		var shown []int
+		for i, f := range r.Findings {
+			if f.GroupedInto == "" {
+				shown = append(shown, i)
+			}
+		}
+		for k, raw := range run["results"].([]any) {
+			i := shown[k]
 			p := raw.(map[string]any)["properties"].(map[string]any)
 			f := p["scan.finding"].(analysis.Finding)
 			if f.Status != r.Findings[i].Status || p["scan.useId"] != r.Uses[i].ID {

@@ -1,7 +1,6 @@
 package report
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -70,39 +69,4 @@ func destinationOriginText(o *analysis.OutboundFacts) string {
 		return " The destination operand is read from the process environment, not from the request."
 	}
 	return " No request value was established in the destination operand; this is not proof that none can reach it."
-}
-
-// groupObservations folds outbound observations that describe one call site and
-// whose destination is not request-derived into one representative finding that
-// names every entry reaching it. Findings stay parallel to uses: a folded record
-// keeps its finding, marked grouped_into, and renderers skip it. Request-derived
-// destinations and distinct calls stay separate.
-func groupObservations(r *analysis.AnalysisReport) {
-	type site struct {
-		file       string
-		start, end int
-	}
-	first := map[site]int{}
-	for i := range r.Findings {
-		if i >= len(r.Uses) {
-			break
-		}
-		u := r.Uses[i]
-		if u.Kind != "outbound_http_candidate" || u.Outbound == nil || u.Outbound.DestinationOrigin == analysis.DestinationRequest {
-			continue
-		}
-		k := site{u.Sink.Span.File, u.Sink.Span.StartByte, u.Sink.Span.EndByte}
-		j, seen := first[k]
-		if !seen {
-			first[k] = i
-			continue
-		}
-		r.Findings[i].GroupedInto = r.Findings[j].ID
-		r.Findings[j].GroupedUseIDs = append(r.Findings[j].GroupedUseIDs, u.ID)
-	}
-	for _, j := range first {
-		if n := len(r.Findings[j].GroupedUseIDs); n > 0 {
-			r.Findings[j].Summary += fmt.Sprintf(" %d entries reach this one call; they are reported as one observation (grouped_use_ids lists the other %d records).", n+1, n)
-		}
-	}
 }

@@ -97,7 +97,13 @@ func TestPathPipelineParity(t *testing.T) {
 			if err := json.Unmarshal(sarifRaw, &sarif); err != nil {
 				t.Fatal(err)
 			}
-			count, failures, passes := 0, 0, 0
+			grouped := 0
+			for _, f := range findings {
+				if f.GroupedInto != "" {
+					grouped++
+				}
+			}
+			count, failures, passes := grouped, 0, 0
 			for _, res := range sarif.Runs[0].Results {
 				if id, _ := res["ruleId"].(string); strings.HasPrefix(id, "scan/path-traversal") {
 					count++
@@ -131,6 +137,14 @@ func TestPathPipelineParity(t *testing.T) {
 				}
 				if f.RecordType == "protection" && f.Status == "protected_for_claim" {
 					wantPass++
+				}
+				if f.GroupedInto != "" {
+					// One SARIF result stands for its group (grouped_use_ids).
+					if f.RecordType == "finding" {
+						failures++
+					} else if f.RecordType == "protection" {
+						passes++
+					}
 				}
 			}
 			if count != len(findings) || failures != wantFail || passes != wantPass || wantFail != confirmed+poor || wantPass != protected {

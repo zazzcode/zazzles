@@ -64,7 +64,7 @@ func TestEntryProtectionCoverage(t *testing.T) {
 				t.Fatal(err)
 			}
 			saved, html, run := dynamicBundle(t, r)
-			if len(saved.Uses) != originalUses || len(saved.Findings) != originalUses || len(run["results"].([]any)) != originalUses {
+			if len(saved.Uses) != originalUses || len(saved.Findings) != originalUses || sarifRecords(run["results"].([]any)) != originalUses {
 				t.Fatal("alternatives/transports duplicated uses")
 			}
 			if !strings.Contains(html, "acceptance_unknown_alternative") || !strings.Contains(html, "Runtime target remains unknown") || !strings.Contains(html, "unknown remainder") {

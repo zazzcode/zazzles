@@ -75,8 +75,17 @@ app.get('/one',shared);app.get('/two',shared);app.get('/three',shared);app.get('
 	var html bytes.Buffer
 	reportpkg.HTML(&html, r)
 	sarif, _ := json.Marshal(reportpkg.SARIF(r))
-	if strings.Count(html.String(), "Assessment derived from equivalent entry context") < 4 || !strings.Contains(string(sarif), "Assessment derived from equivalent entry context") {
-		t.Fatal("missing exported provenance")
+	// Derived records at one sink with one status fold into the leader's row;
+	// each keeps its provenance in JSON and is listed by grouped_use_ids.
+	derivedJSON := 0
+	for _, f := range r.Findings {
+		if strings.Contains(f.Uncertainty, "Assessment derived from equivalent entry context") {
+			derivedJSON++
+		}
+	}
+	shownDerived := strings.Count(html.String(), "Assessment derived from equivalent entry context")
+	if derivedJSON < 4 || shownDerived+strings.Count(string(sarif), `"grouped_use_ids"`) == 0 {
+		t.Fatalf("missing exported provenance: json=%d html=%d", derivedJSON, shownDerived)
 	}
 
 	for i, u := range r.Uses {

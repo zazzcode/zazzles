@@ -25,7 +25,7 @@ func Enrich(r *analysis.AnalysisReport) {
 	for _, u := range r.Uses {
 		r.Findings = append(r.Findings, describe(u))
 	}
-	groupObservations(r)
+	groupSinks(r)
 	explainOutcomes(r)
 }
 

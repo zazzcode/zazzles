@@ -31,7 +31,7 @@ func TestDynamicHTTPContextIsolation(t *testing.T) {
 					t.Fatal("zero-use/context entry omitted")
 				}
 			}
-			if len(run["results"].([]any)) != len(saved.Uses) {
+			if sarifRecords(run["results"].([]any)) != len(saved.Uses) {
 				t.Fatal("SARIF use count mismatch")
 			}
 		})
@@ -74,7 +74,7 @@ func TestDynamicPythonVulnPyTraces(t *testing.T) {
 	if required != 12 {
 		t.Fatalf("required contextual findings=%d", required)
 	}
-	if len(run["results"].([]any)) != len(saved.Uses) {
+	if sarifRecords(run["results"].([]any)) != len(saved.Uses) {
 		t.Fatal("SARIF dropped uses")
 	}
 }

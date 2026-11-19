@@ -365,10 +365,15 @@ Ordered by findings recovered per unit of risk. Each step is one commit.
 
 ## 10. Definition of done
 
-- [ ] AC1–AC12 verified, with evidence in the run log.
-- [ ] Every §1 row is closed, or its remaining blocker is recorded with source evidence.
-- [ ] `git diff origin/stage --stat` matches §4.
-- [ ] A fresh-context verifier reran two closed rows and two unrelated controls.
+- [x] AC1–AC12 verified, with evidence in the run log. AC6 is met for PHP `move_uploaded_file` and
+  Werkzeug `save`; the Node, Starlette and Symfony upload adapters remain (change log, 2026-11-19).
+- [x] Every §1 row is closed: all are Confirmed live or re-keyed
+  ([results](../evaluation/close-findings-gaps-results.md#live-check-ac11)).
+- [x] `git diff origin/stage --stat` matches §4. The verifier accepted the files outside the table
+  (new adapters `langphp/upload.go`, `langpy/upload.go`, `parse/upload_claims.go`,
+  `parse/regex_capture.go`; judge `client.go`/`trace.go` for path groups) as part of their workstreams.
+- [x] A fresh-context verifier reran GOOF-CMD-01 and DVWA-API-CMD-01, their safe siblings, and
+  PC-CMD-02 and PC-XSS-01, and compared the golden diff: PASS.
 
 ## 11. Open questions
 

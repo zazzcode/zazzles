@@ -1,6 +1,6 @@
 # Close findings gaps — Node.js Goof, DVWA and Python insecure app
 
-- **Status** Proposal, drafted 2026-11-19. No code is written. Implementation starts on owner assignment.
+- **Status** Implemented offline 2026-11-19 (W1–W8, W5 partial); AC11 live check awaits the owner's word. Results: [close-findings-gaps-results](../evaluation/close-findings-gaps-results.md).
 - **Worktree and branch** `close-findings-gaps-dvwa`
 - **Baseline** `stage` at `58e94e7` (PR #30, model-assisted evidence resolution)
 - **Delivery** One draft PR into `stage`, one commit per workstream (§9). W5 and W6 may split into
@@ -408,3 +408,18 @@ run identifiers and request counts.
 Written from the published sample reports, a source review of the three samples at their pins, and
 the judge and PHP adapter code at `58e94e7`. An offline scan of DVWA's API module confirmed that
 `HealthController.php:88` has no candidate. No code changed.
+
+### 2026-11-19 — Implementation deviations (pending owner sign-off)
+
+**Source.** Implementation-discovered, recorded by the implementing agent.
+
+**Changed Sections.** §5 W4 (D-14), W5 (D-19), W6 (D-24); §7 AC6.
+
+**Rationale.** Measured DVWA path groups each cost 51–60 KB, so without packing two `sqli` levels fell
+past the 4-group cap. Node, Starlette and Symfony upload adapters did not fit this delivery.
+
+**Summary.** W4 packs whole structural groups into one request while it fits. W5 ships PHP
+`move_uploaded_file` and Werkzeug `FileStorage.save`; the other D-19 operations have registered
+contracts only. W6 does not recognise Jinja `Environment.from_string`.
+
+**Verification Impact.** AC6 is met for PHP and Werkzeug only; AC11 is not run.

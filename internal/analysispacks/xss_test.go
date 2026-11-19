@@ -100,3 +100,21 @@ func TestXSSMaterialMeasurements(t *testing.T) {
 		t.Logf("%s components=%d selected_material_bytes=%d", v.kind, len(s.Components), size)
 	}
 }
+
+// TestXSSFetchResponseContract keeps the Express html-output-v1 contract and its
+// descriptor material unchanged while a web Response binding selects the same
+// rendering component with its own library and reference.
+func TestXSSFetchResponseContract(t *testing.T) {
+	express, fetch := XSSContract("html-output-v1", "express"), XSSContract("html-output-v1", FetchResponseLibrary)
+	if express.Library != "express" || XSSContract("html-output-v1", "").Library != "express" {
+		t.Fatalf("express contract changed: %+v", express)
+	}
+	if fetch.ID != "html-output-v1" || fetch.Library != FetchResponseLibrary || !strings.Contains(fetch.Reference, "Response") {
+		t.Fatalf("fetch response contract: %+v", fetch)
+	}
+	u := analysis.CandidateUse{Kind: "xss_candidate", EntryKind: "http", Sink: analysis.Evidence{Kind: "html_response", Span: analysis.Span{File: "app/api/x/route.ts"}}, XSS: &analysis.XSSFacts{Type: "reflected", EntryKind: "server", OutputContext: "html_text"}, APIModel: fetch}
+	Attach(&u)
+	if u.Components == nil || u.Components.Failure != "" {
+		t.Fatalf("fetch response selection: %+v", u.Components)
+	}
+}

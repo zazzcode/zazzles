@@ -114,37 +114,48 @@ func (f *flow) responseCall(call, fn, args *sitter.Node, values []value) bool {
 	if contentType != "" && contentType != "unknown" && contentType != "html" && contentType != "text/html" && contentType != "application/xhtml+xml" {
 		return true
 	}
+	var body *sitter.Node
+	if args != nil && args.NamedChildCount() > 0 {
+		body = args.NamedChild(0)
+	}
+	f.recordHTMLResponse(call, body, values[0], contentType, nil)
+	return true
+}
+
+// recordHTMLResponse records an HTML response body at call. contentType is an
+// HTML media type, or "" / "unknown" when the response type is not
+// established; binding is extra rendering evidence for the response API.
+func (f *flow) recordHTMLResponse(call, body *sitter.Node, v value, contentType string, binding []analysis.Evidence) {
 	context := "html_text"
 	if contentType == "" || contentType == "unknown" {
 		context = "unknown"
 	}
-	if args != nil && args.NamedChildCount() > 0 {
-		context = responseOutputContext(args.NamedChild(0), f.module, context)
+	if body != nil {
+		context = responseOutputContext(body, f.module, context)
 	}
-	if values[0].outputContext != "" {
-		context = values[0].outputContext
+	if v.outputContext != "" {
+		context = v.outputContext
 	}
 	if contentType == "" || contentType == "unknown" {
 		context = "unknown"
 	}
 	sink := f.module.evidence("html_response", call)
 	if contentType == "" || contentType == "unknown" {
-		f.recordXSS(sink, values[0], context, contentType, false, nil)
-		return true
+		f.recordXSS(sink, v, context, contentType, false, binding)
+		return
 	}
-	groups := outputGroups(values[0], context)
+	groups := outputGroups(v, context)
 	for _, g := range groups {
 		before := len(f.uses)
-		var markup []analysis.Evidence
+		markup := binding
 		if len(groups) > 1 {
-			markup = f.outputMarkup(g.value)
+			markup = append(append([]analysis.Evidence{}, binding...), f.outputMarkup(g.value)...)
 		}
 		f.recordXSS(sink, g.value, g.context, contentType, false, markup)
 		if len(groups) > 1 && len(f.uses) > before {
 			f.uses[len(f.uses)-1].ID += ":" + g.context
 		}
 	}
-	return true
 }
 
 func stringOutput(n *sitter.Node, m *sourceModule, depth int) bool {

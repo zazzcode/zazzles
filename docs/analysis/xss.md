@@ -15,6 +15,16 @@ content type, produce rendering claims. `res.json` and explicit non-HTML content
 An unresolved content type stays Review. Response parameter names are taken from the handler,
 rather than assumed to be `res`. `res.send` with an object literal is JSON, not HTML.
 
+In a Next.js route handler or page server stage, a web-standard `new Response(body, init)`, or
+`new NextResponse(body, init)` imported from `next/server`, is an HTML response only when
+`init.headers` sets a literal `text/html` or `application/xhtml+xml` `Content-Type`. The headers
+can be an object literal or `new Headers({...})`. The Fetch constructor sends a string body as
+`text/plain` when no type is set, so an omitted or non-HTML type produces no record. A headers
+variable, a non-literal type, or a spread that can replace the type stays Review. A locally bound
+`Response` or a `NextResponse` from another module is not trusted. The claim uses the
+`html-output-v1` contract with library `fetch-response`, following the
+[Response constructor](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response).
+
 A template literal gives each substitution an output context from the markup before it. That context
 follows the value through local wrappers such as `layout(title, body)`, and a helper that returns markup
 establishes an HTML response. One response with raw values in two contexts produces one claim per

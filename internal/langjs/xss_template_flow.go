@@ -70,6 +70,28 @@ func libraryObject(m *sourceModule, node *sitter.Node) string {
 	return ""
 }
 
+// readFileValue models an fs readFile/readFileSync result: a template file for
+// a literal template path, otherwise file content with a file_read origin.
+func (f *flow) readFileValue(call, args *sitter.Node) value {
+	path, known := stringLiteral(args.NamedChild(0), f.module.src)
+	v := value{}
+	if known && (filepath.Ext(path) == ".pug" || filepath.Ext(path) == ".ejs" || filepath.Ext(path) == ".hbs" || filepath.Ext(path) == ".handlebars") {
+		v.templateFile = path
+		f.set.readText(path)
+	} else {
+		key := "file:" + path
+		if !known {
+			key = "file:unresolved:" + f.module.file
+		}
+		v.deps = []analysis.Dependency{{StorageKey: key, Source: f.module.evidence("file_read", call), Transfers: []analysis.Evidence{}}}
+	}
+	last := args.NamedChild(args.NamedChildCount() - 1)
+	if isFunction(last) {
+		f.modelCallback(last, v, "readFile")
+	}
+	return v
+}
+
 func (f *flow) templateCall(call, fn, args *sitter.Node) (value, bool) {
 	if fn == nil || args == nil {
 		return value{}, false
@@ -82,6 +104,12 @@ func (f *flow) templateCall(call, fn, args *sitter.Node) (value, bool) {
 		return value{}, false
 	}
 	if fn.Kind() == "identifier" {
+		// A named fs import (`import { readFile } from "fs/promises"`) reads the
+		// same file contents as fs.readFile; its result is file content, not
+		// the request-derived path.
+		if b, ok := f.nodeFSBinding(call, fn); ok && (b.op == "readFile" || b.op == "readFileSync") && args.NamedChildCount() > 0 {
+			return f.readFileValue(call, args), true
+		}
 		name := fn.Utf8Text(f.module.src)
 		if name == "String" && !moduleBinds(f.module, name) && args.NamedChildCount() == 1 {
 			return f.transfer(f.eval(args.NamedChild(0)), "string_conversion", call), true
@@ -102,23 +130,7 @@ func (f *flow) templateCall(call, fn, args *sitter.Node) (value, bool) {
 	library := libraryObject(f.module, obj)
 	if library == "fs" || library == "node:fs" || library == "fs/promises" || library == "node:fs/promises" {
 		if (method == "readFile" || method == "readFileSync") && args.NamedChildCount() > 0 {
-			path, known := stringLiteral(args.NamedChild(0), f.module.src)
-			v := value{}
-			if known && (filepath.Ext(path) == ".pug" || filepath.Ext(path) == ".ejs" || filepath.Ext(path) == ".hbs" || filepath.Ext(path) == ".handlebars") {
-				v.templateFile = path
-				f.set.readText(path)
-			} else {
-				key := "file:" + path
-				if !known {
-					key = "file:unresolved:" + f.module.file
-				}
-				v.deps = []analysis.Dependency{{StorageKey: key, Source: f.module.evidence("file_read", call), Transfers: []analysis.Evidence{}}}
-			}
-			last := args.NamedChild(args.NamedChildCount() - 1)
-			if isFunction(last) {
-				f.modelCallback(last, v, "readFile")
-			}
-			return v, true
+			return f.readFileValue(call, args), true
 		}
 	}
 	if (library == "pug" || library == "ejs" || library == "handlebars") && (method == "compile" || method == "render") && args.NamedChildCount() > 0 {

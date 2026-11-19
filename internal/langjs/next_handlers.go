@@ -260,6 +260,7 @@ func writesName(n *sitter.Node, name string, src []byte) bool {
 type nextParam struct {
 	name   string
 	fields map[string]string // object pattern: property -> local name
+	keys   []string          // fields' properties in source order
 	node   *sitter.Node
 }
 
@@ -290,10 +291,12 @@ func nextParams(fn *sitter.Node, src []byte) []nextParam {
 				switch b.Kind() {
 				case "shorthand_property_identifier_pattern":
 					p.fields[b.Utf8Text(src)] = b.Utf8Text(src)
+					p.keys = append(p.keys, b.Utf8Text(src))
 				case "pair_pattern":
 					k, v := b.ChildByFieldName("key"), b.ChildByFieldName("value")
 					if k != nil && v != nil && v.Kind() == "identifier" {
 						p.fields[k.Utf8Text(src)] = v.Utf8Text(src)
+						p.keys = append(p.keys, k.Utf8Text(src))
 					}
 				}
 			}

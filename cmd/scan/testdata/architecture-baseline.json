@@ -296,28 +296,28 @@
   "internal/langjs/testdata/javascript/path-traversal": {
     "uses": [
       {
-        "id": "candidate:v1:58a55428ae1f6eaa99e4a330e2f0419815ef625d51192c1205f8c444bc2019e1",
+        "id": "candidate:v1:778acc20519eeb6141ca276bc24b54322920bd073353011514890e81e1714318",
         "kind": "path_traversal_candidate",
-        "request_sha256": "d0a7d707fadff680a75de1b2c70ff5cc6cdeaa7299f8d9966c5991b0119f0f91",
-        "signature_sha256": "3b40b0d58713549b076c37b3c0d1d756d1294b249db0735dc1323b23f0bed277"
+        "request_sha256": "5695333e4f8cab8f64bfc8e854e83b2df337491301f764aa44fd6088ee30d34b",
+        "signature_sha256": "304c9262ccb6563f1e1520c12249c8ff714618594b596363c7403f879220923d"
       },
       {
-        "id": "candidate:v1:5b8427cf28255fe0ba84828049ec4d2bf58293d7d9c44c9e0fcdd56c957d2b97",
+        "id": "candidate:v1:2d3c3e954091fa1c9fb55423e5cbae79561ebdbd29351e06ae09836dca6c6d01",
         "kind": "input_validation_candidate",
-        "request_sha256": "b63a0457df8c11bc81755ff1ed069222b68d2e5f801ad67f9ae9ebd37562fdb8",
-        "signature_sha256": "284401465ec5f7bad6d9fc6e7186629564e7438059cd4077883c031288041f5c"
+        "request_sha256": "43b27554c2371d0c9850a0660ea40736a9ab1b43c47e086ddae7393ec02ad81a",
+        "signature_sha256": "15be9743078035f7388527dab6bbc498ff1133afc2e5a66a883541062aa212a7"
       },
       {
-        "id": "candidate:v1:5f56e92779eef9ae7d3395dc6bebbc342e753c53a8e1022fd2ffd6f4e21e7960",
+        "id": "candidate:v1:a2184d386ffc60b3fc0775415f147bbb334bea6587c10b3401af5e0e00f96a32",
         "kind": "path_traversal_candidate",
-        "request_sha256": "c75a755d84db0dc0d47186eeae62ad580466dcf9b2c65dd9c418df4d855b6225",
-        "signature_sha256": "d1eba5edc7dca15b5aa3485fbdb812cc34d1463f338e047ee22823dd522ecc39"
+        "request_sha256": "86ce407c3406eff33bc8bbfae0b7e9882fbdbe973878ff298f1535201258941d",
+        "signature_sha256": "193d49bffba4748f78e6d702e13421850d1b6f9d1f833732fd897dc26b578cbc"
       },
       {
-        "id": "candidate:v1:915702281bd1b5757b704cb7dd9277e3790233817d2a82590e9b02f14a76de9e",
+        "id": "candidate:v1:b78d80c614b8893880158f76b9a4b34eea11a18bff6fcbcd6ca496afd3876da0",
         "kind": "input_validation_candidate",
-        "request_sha256": "04630b798a4fd9dc0a7da02c614886cec3bef7f725abc36eea1f833f7f9bf087",
-        "signature_sha256": "eb6586b3293a9ca77f0d01d97bd07ab11eccf37ca44bf318700a7f43f0365696"
+        "request_sha256": "2712dcc2f063cc6013f1b86d1d84222a8ee5a2dd561256e5e3d82e19c56b711b",
+        "signature_sha256": "8f734e40da02b6bc767047ae25e1a9892e336e3bdc25e1afe5e885ce729205f3"
       },
       {
         "id": "candidate:v1:401986d2989e022f3b73e2e98ca7342a804897582abbd7ce3e87f893a0b7ebd8",
@@ -344,10 +344,10 @@
         "signature_sha256": "5893e8612377c7724dc5c495611d50ff6f6c7f12357f7060b9a86d125c98f1e9"
       },
       {
-        "id": "candidate:v1:342b45944f85b114433825548071dfeaaecc8f09dab4f4d42bbec3e45262854f",
+        "id": "candidate:v1:d05c2edf7c3538acacccd7245b797f2b8d08616f965b18080fb2235fac5a0f56",
         "kind": "xss_candidate",
-        "request_sha256": "b099f4cd90664905d0c9371c4961d7abc528ea42c50283dfdeeaa62f8f02e4d5",
-        "signature_sha256": "bcfb9915d38f57b6a851fd42bcb6d42b9bf1cdbc0c75c0da22d98706501a0bb0"
+        "request_sha256": "e208b6ba76b85c114a0fe0a8b0d1ed8b2772c390b979350da7212657c053e79c",
+        "signature_sha256": "e04d868e95457737cedf78572a2946dfa741e78ffc0e43e3a0273b00408b7d5a"
       },
       {
         "id": "candidate:v1:2f566a5ad596a8e22c3216d07bf305b72b08bfa5817b30bb70b07ceb4b0d768f",
@@ -434,8 +434,8 @@
         "signature_sha256": "6481fc85aec894d564c83a3fb4ca31b1cdbc3b9db5d5d208f8efbae3537c7e22"
       }
     ],
-    "report_sha256": "69ecfa14363e576028d8dacc91676e484d5bd41dff134e6724de87afaa6cd4ff",
-    "sarif_sha256": "fb3035b080232ab37155cc7c1cb59cd06c877f580687d58132af72274d6a66e4",
+    "report_sha256": "1be5f511081f9386d92ad1056a233438c487923bf95747929921b6766df9293a",
+    "sarif_sha256": "0c46e7e11d16a1c15557289fe14e5990a6ad995148d519e9c92caeb61d0db680",
     "entries": 10,
     "registrations": 10,
     "dispatch_bindings": 10,

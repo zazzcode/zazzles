@@ -47,14 +47,18 @@ Review is unresolved evidence, not proof of protection; preserve exact source/li
 
 ## Coverage boundaries and acceptance
 
-`JS-001`, `JS-002` and their control (CWE-95), `REDIR-001` and its control (CWE-601), and `SCA-001`
-(CWE-502 dependency scenario) have no analyzer family in this branch. They remain **not covered**,
-not successful negative detections. The nested `targets/react2shell` App Router project is separate.
+`SCA-001` (CWE-502 dependency scenario) has no analyzer family and remains **not covered**, not a
+successful negative detection. `JS-001`, `JS-002` and their control (CWE-95), and `REDIR-001` and its
+control (CWE-601), were added to `TestNextJSVulnLab` after the code-execution and open-redirect
+analyzers landed. That test now checks 29 supported rows. Offline they produce witnessed candidates,
+as recorded in the [recall inventory](recall-gap-inventory.md#reconciliation-of-historical-claims).
+They have not been judged since. The nested `targets/react2shell` App Router project is separate.
 `DEMO-001/002` have no required security finding. Try/catch bodies, child props and some other entry
 forms remain bounded by the Next.js support guide.
 
-`ZAZZLES_VULN_NEXTJS=<checkout> go test ./internal/parse -run TestNextJSVulnLab` reads the lab's
-expectations directly and checks 24 supported rows: 10 positives and 14 scoped controls. The original
+`ZAZZLES_VULN_NEXTJS=<checkout> go test ./internal/langjs -run TestNextJSVulnLab` reads the lab's
+expectations directly. At the original acceptance it checked 24 supported rows: 10 positives and 14
+scoped controls. The original
 saved run `run-1392915960` replayed 23/23 exactly: every required positive Confirmed; 6 control rows
 Protected, 6 Review, 2 no record, none red. Its extra Protected SQL record is the parameterized write
 in `pages/api/xss/comments.js:19`. The fresh full run at `ea10efb` (`run-2372184294`) adds standalone input validation: 42 paid

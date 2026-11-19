@@ -58,7 +58,8 @@ Review because `users` has no request write. `err.message` output (`DEMO-XSS-Q01
 | Command injection (`TS-CMDI-01`) | `GET /api/ping`, `:90` | Confirmed |
 | Credential logging (`TS-LOG-01`) | `POST /api/login`, `:74` | Review (model answered data class unknown, 0.46); confirmed in the core v7 run |
 | SSRF (`TS-SSRF-01`) | `GET /api/proxy`, `:125` | Confirmed (verified `axios` call with a request-derived destination) |
-| Path traversal, code injection, open redirect, cookie configuration, hardcoded secrets | [guide](../evaluation/vulnerable-typescript-app-detection-guide.md) | Not covered |
+| Path traversal (`TS-PATH-01`), code injection (`TS-CODE-01`), open redirect (`TS-REDIRECT-01`) | `src/server.ts:104`, `:137`, `:239` | Witnessed candidates offline ([recall inventory](../evaluation/recall-gap-inventory.md)); not yet judged |
+| Cookie configuration, hardcoded secrets | [guide](../evaluation/vulnerable-typescript-app-detection-guide.md) | Not covered |
 | Authentication, authorization, IDOR, mass assignment, disclosure | [guide](../evaluation/vulnerable-typescript-app-detection-guide.md) | Not covered |
 
 ### nodejs-goof
@@ -125,7 +126,8 @@ Next project).
 | Stored guestbook XSS (`XSS-004`) | `pages/xss/unsafe/comments.js`, rows from a PGlite `SELECT` written by `POST /api/xss/comments` | Confirmed |
 | XSS safe controls | React text (`safe/reflected`, `safe/stored`) | No record |
 | XSS library controls | DOMPurify (`sanitized/reflected`, `sanitized/comments`), `\u003c`-escaped JSON (`safe/script-context`) | Review (classified sanitized offline; not red) |
-| `JS-001`, `JS-002` (CWE-95 eval), `REDIR-001` (CWE-601), `SCA-001` | lab | Not covered (no analyzer family) |
+| `JS-001`, `JS-002` (CWE-95 eval), `REDIR-001` (CWE-601) | lab | Witnessed candidates offline; checked by `TestNextJSVulnLab`; not yet judged |
+| `SCA-001` | lab | Not covered (no analyzer family) |
 | `DEMO-001`, `DEMO-002` (no finding expected) | `pages/vulnerable/{header-injection,dynamic-import}.js` | No record |
 
 Judged with OpenAI `gpt-6-luna` (23 records, run `run-1392915960`, replayed 23/23 exactly at

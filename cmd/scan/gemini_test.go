@@ -66,7 +66,7 @@ func TestGeminiScanBundleAndLimit(t *testing.T) {
 	for _, limit := range []string{"20", "1"} {
 		t.Run(limit, func(t *testing.T) {
 			root := t.TempDir()
-			source := `import express from 'express';import {exec} from 'node:child_process';const app=express();app.get('/ping',(req,res)=>{exec('ping '+req.query.host);res.send('done')});`
+			source := `import express from 'express';import {exec} from 'node:child_process';const app=express();app.get('/ping',(req,res)=>{exec('ping '+req.query.host);res.send('done')});app.get('/lookup',(req,res)=>{exec('nslookup '+req.query.name);res.send('done')});`
 			if err := os.WriteFile(filepath.Join(root, "server.ts"), []byte(source), 0600); err != nil {
 				t.Fatal(err)
 			}

@@ -68,9 +68,10 @@ func (c *Client) SetLimits(cfg Limits) error {
 	return err
 }
 
-// reservationTokens is the token reservation for a request body: UTF-8 bytes plus a
-// framing allowance, not an authoritative tokenizer.
-func reservationTokens(size int) int64 { return int64(size) + 4096 }
+// reservationTokens is a conservative input-token estimate: observed request
+// JSON runs 3.7–4.4 bytes per token, so bytes/3 over-reserves; complete()
+// still raises the entry to reported usage when that is larger.
+func reservationTokens(size int) int64 { return int64((size+2)/3) + 512 }
 
 // oversized reports a request whose reservation can never fit the TPM window.
 // A nil limiter refuses nothing.

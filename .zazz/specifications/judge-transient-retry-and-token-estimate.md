@@ -116,7 +116,7 @@ Review shape: one PR.
 - **D-5 Estimate tokens as `ceil(bytes / 3) + 512`.**
   - **Evidence:** across the 157 phase 4 Juice Shop traces, bytes per reported token ranged from
     3.69 to 4.39 (median 4.17). Dividing by 3 overestimates every trace by at least 23%, and 512
-    covers the framing.
+    covers the framing. The largest overestimate is 1.647×, on the smallest requests (about 12 KB).
   - **Why:** the estimate is simple and deterministic, the same at every concurrency, and the
     existing reconcile in `complete` covers content that tokenizes more densely.
   - **Rejected alternative:** an adaptive ratio learned from reported usage. It would make admission
@@ -186,7 +186,7 @@ Review shape: one PR.
      `TestScheduleRetryKeepsSlots`.
 7. **AC7 Estimator.**
    - **Behaviour:** `reservationTokens` returns `ceil(bytes/3)+512`, is at least the reported
-     tokens for every row of `testdata/tpm_ratio.json`, and is at most 1.6× the reported tokens on
+     tokens for every row of `testdata/tpm_ratio.json`, and is at most 1.65× the reported tokens on
      every row.
    - **Test:** `TestReservationTokensCoversObservedUsage`.
 8. **AC8 TPM paces near its setting.**
@@ -224,7 +224,7 @@ Review shape: one PR.
 ## 9. TDD entry point and execution sequence
 
 1. Add `testdata/tpm_ratio.json` and `TestReservationTokensCoversObservedUsage`. **Red:** the
-   current estimate fails the 1.6× upper bound.
+   current estimate fails the 1.65× upper bound.
 2. Change the estimator:
 
    ```go
@@ -292,4 +292,10 @@ lookup, the `tpm_ratio.json` generator command, the red and green per step, and 
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+- **2026-11-18, AC7 upper bound (§7 AC7, §9 step 1, §5 D-5 evidence).**
+  - **Source:** implementation finding; the owner chose the resolution in session.
+  - **Rationale:** with D-5's `ceil(bytes/3)+512`, 14 of the 157 rows in `testdata/tpm_ratio.json`
+    exceed 1.6× the reported tokens, up to 1.647× at 12,040 bytes and 2,748 tokens. The framing
+    allowance dominates on the smallest requests.
+  - **Summary:** the AC7 upper bound is 1.65×. The estimator and the AC8 numbers do not change.
+  - **Verification impact:** `TestReservationTokensCoversObservedUsage` asserts 1.65×.

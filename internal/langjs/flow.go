@@ -166,7 +166,10 @@ func (f *flow) statement(n *sitter.Node) bool {
 								}
 							}
 						}
-						if binding.Kind() == "shorthand_property_identifier_pattern" {
+						if binding.Kind() == "rest_pattern" && binding.NamedChildCount() == 1 && binding.NamedChild(0).Kind() == "identifier" && v.model != "" {
+							// The rest of a model row is that row's remaining columns.
+							f.env[binding.NamedChild(0).Utf8Text(f.module.src)] = f.transfer(v, "field_projection", binding)
+						} else if binding.Kind() == "shorthand_property_identifier_pattern" {
 							projected := v
 							if field, ok := v.fields[binding.Utf8Text(f.module.src)]; ok && v.model == "" && len(v.deps) == 0 {
 								projected = field // a modeled result object such as a query's { rows }
@@ -1154,6 +1157,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		return value{} // a verified database client; its setup is not request flow
 	}
 	ret, entered, precise := f.enterHelper(n, name, values)
+	if v, ok := f.ownAPIHelperCall(n, values, ret, entered && precise); ok {
+		return v
+	}
 	if entered && precise {
 		return ret
 	}
@@ -1422,8 +1428,9 @@ func patternBinding(b *sitter.Node, src []byte) (local, prop string, key *sitter
 // awaited applies await semantics to the value of an awaited expression n (an
 // await_expression, or a generic call whose await keyword was blanked).
 func (f *flow) awaited(n *sitter.Node, v value) value {
-	if f.client != nil && v.apiPath != "" {
-		// A verified client HTTP call resolves to its response data.
+	if f.client != nil && v.apiPath != "" || f.client == nil && v.apiPath != "" && f.set != nil && f.set.ownAPIValue(v) {
+		// A verified client HTTP call, or a server helper returning its own
+		// API's JSON body, resolves to its response data.
 		return f.transfer(v, "await_response", n)
 	}
 	inner := n

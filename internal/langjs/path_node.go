@@ -225,7 +225,7 @@ func (b *jsPathBuilder) operand(slot, kind string, n *sitter.Node, v value) {
 	b.context = append(b.context, b.f.module.evidence(kind, n))
 	pathSlot := slot == analysis.PathSlotFile || slot == analysis.PathSlotArchive || slot == analysis.PathSlotDestination
 	for _, d := range v.deps {
-		if pathSlot && !parse.RequestOrigin(d) {
+		if pathSlot && !parse.RequestOrigin(d) && !b.f.set.ownAPIPending(d) {
 			// A stored, file, API or browser value is not a request field: second-order
 			// flows need their own write-side evidence and are never invented here.
 			continue

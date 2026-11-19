@@ -18,10 +18,10 @@ func TestCommandComponentSelection(t *testing.T) {
 		t.Fatal(err)
 	}
 	f := FamFamily("command_execution_candidate")
-	if f == nil || !f.RequiresAPI || ProtocolFor("command_execution_candidate") != "command-components-v2" || !f.PythonHTTPOnly {
+	if f == nil || !f.RequiresAPI || ProtocolFor("command_execution_candidate") != "command-components-v3" || !f.PythonHTTPOnly {
 		t.Fatalf("family registration: %+v", f)
 	}
-	if want := []string{"shell_syntax_protection", "executable_control", "argument_control", "protection_coverage"}; !reflect.DeepEqual(f.QuestionNames, want) {
+	if want := []string{"shell_syntax_protection", "executable_control", "argument_control", "guard_bypass", "protection_coverage"}; !reflect.DeepEqual(f.QuestionNames, want) {
 		t.Fatalf("question protocol %v", f.QuestionNames)
 	}
 	for _, tt := range []struct{ file, id, language string }{
@@ -59,7 +59,7 @@ func TestCommandComponentSelection(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(m.Questions) != 4 || m.Contract == nil || m.Contract.ID != tt.id || !strings.HasPrefix(m.Guidelines.ID, "zazzles.command.") {
+		if len(m.Questions) != 5 || m.Contract == nil || m.Contract.ID != tt.id || !strings.HasPrefix(m.Guidelines.ID, "zazzles.command.") {
 			t.Fatalf("material: %+v", m)
 		}
 		if len(m.Choices["executable_control"]) != 4 || len(m.Choices["protection_coverage"]) != 3 {

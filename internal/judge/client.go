@@ -378,6 +378,11 @@ func (c *Client) decodeQuestions(data []byte, expected []question) (map[string]s
 }
 
 func questionInstructions(q question, use analysis.CandidateUse) string {
+	if q.name == "guard_bypass" && use.Kind == "command_execution_candidate" {
+		// The scanner supplies each recognised guard's accepted values; the
+		// model judges whether one of them still alters the command.
+		return q.instructions + analysispacks.GuardContractText(use)
+	}
 	if use.Check == nil {
 		return q.instructions
 	}

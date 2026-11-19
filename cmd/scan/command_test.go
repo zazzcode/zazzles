@@ -31,7 +31,7 @@ func commandStubClient(t *testing.T, requests *atomic.Int64) func(string, string
 		_ = json.NewDecoder(r.Body).Decode(&body)
 		answers := []map[string]string{}
 		for _, q := range body.Questions {
-			choice := map[string]string{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "protection_coverage": "incomplete", "field_requirement": "unknown", "validation": "uncertain", "enforcement_coverage": "incomplete"}[q.Name]
+			choice := map[string]string{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "protection_coverage": "incomplete", "guard_bypass": "not_applicable", "field_requirement": "unknown", "validation": "uncertain", "enforcement_coverage": "incomplete"}[q.Name]
 			answers = append(answers, map[string]string{"name": q.Name, "type": "choice", "choice": choice})
 		}
 		_ = json.NewEncoder(w).Encode(map[string]any{"model": "fixture-model", "answers": answers})

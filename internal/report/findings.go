@@ -151,7 +151,7 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		if u.Kind == "input_validation_candidate" && u.Completeness != nil && u.Completeness.ClaimKind == "validation" {
 			f.Protection = "Field-policy enforcement: " + displayLabel(a.Protection) + ". " + a.Reason
 		} else if u.Kind == "command_execution_candidate" {
-			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
+			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", guard bypass " + displayLabel(a.Answers["guard_bypass"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "ssrf_candidate" {
 			f.Protection = "SSRF assessment: destination control " + displayLabel(a.Answers["destination_control"]) + ", restriction " + displayLabel(a.Answers["destination_restriction"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "path_traversal_candidate" {

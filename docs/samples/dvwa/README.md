@@ -5,7 +5,22 @@
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
 [Results](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (published 2026-11-17)
+## Current report (published 2026-11-19)
+
+Fresh full-tree scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence
+resolution scanner ([results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean.
+
+- 174 entries, 240 analysis records: **121 Confirmed, 104 Review, 12 Protected, 2 practice,
+  1 not applicable** (the previous report, on an earlier scanner, had 296 records).
+- 169 requests, 172 completed assessments (3 shared), 1,749,749 input tokens. 61 records are not
+  sent because their scanner blocker has no question the model could answer (55 SQL, 6 XSS). No
+  provider failures.
+- **One model-resolved finding:** the medium-level file inclusion `vulnerabilities/fi/index.php:36`.
+  The model cited the chain `$_GET['page']` → two `str_replace` calls → `include`, which the
+  scanner verified. Source review confirms it: `....//` becomes `../`, and absolute paths pass.
+- Every keyed positive of the detection guide stays Confirmed, and no keyed control is a finding.
+
+## Previous report (published 2026-11-17)
 
 Fresh full-tree static analysis of [DVWA](https://github.com/digininja/DVWA) at revision
 `a1978a2` (full pin in metadata) with the plain-PHP adapter: server-mapped file entries,

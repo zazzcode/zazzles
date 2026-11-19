@@ -6,13 +6,14 @@
 ## Method
 
 Scanner `model-evidence-resolution` at `064c492` for the VulnPy and OopsSec runs and `b6e050d` for
-the DVWA run (after the stored-origin fix below), 2026-11-19. Each sample was at its
+the DVWA run (after the stored-origin fix below), and `db3d4f7` for Juice Shop, 2026-11-19. Each sample was at its
 [pin](recall-gap-inventory.md#corpus-and-pins) with an empty `git status --porcelain --ignored`
 before and after the run. Judge `openai` `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`,
 `JUDGE_TPM=1800000`, only the OpenAI key passed to the scanner. Runs are the three the owner
-authorized: VulnPy `--only-family path`, OopsSec in full and DVWA in full. Planned request counts
+authorized for this contract (VulnPy `--only-family path`, OopsSec in full, DVWA in full), plus the
+owner's standard Juice Shop live check, requested afterwards in chat. Planned request counts
 came from an offline stub planner before any call. Measures come from the checker's precision and
-resolution columns; the other eight samples use the offline W3a reports, so the recall rows cover
+resolution columns; the other seven samples use the offline W3a reports, so the recall rows cover
 the whole corpus.
 
 ## Requests
@@ -22,6 +23,9 @@ the whole corpus.
 | VulnPy path | 260 + ≤65 | 260 | 61 | 2 | 0 | 0 |
 | OopsSec | 27 + ≤6 | 27 | 0 | 1 | 3 | 0 |
 | DVWA | 183 + ≤45 | 169 | 0 | 16 | 61 | 0 |
+| Juice Shop | 28 + ≤7 | 28 | 0 | 0 | 34 | 0 |
+
+Juice Shop named one follow-up item on two records, both already Confirmed, so neither was sent.
 
 The first DVWA run (`064c492`, 183 requests) had 14 `HTTP 400` failures: a stored-origin record
 whose census listed only literal writes sent a citation question with one choice, below the
@@ -35,8 +39,11 @@ gated instead of asked (`b6e050d`), and DVWA was rerun. The planner's 183 counte
 | VulnPy · path | 64 | 10 | 0 | 0 / 0 / 8 |
 | OopsSec · XSS | 2 | 0 | 0 | 0 / 0 / 0 |
 | DVWA · path | 0 | 0 | 0 | 1 / 0 / 0 |
+| Juice Shop · path | 0 | 0 | 0 | 0 / 0 / 0 |
 
-Every unverified answer chose `none` for its citation: 177 VulnPy flow-gap and 64 witness answers,
+On Juice Shop one path witness (`routes/vulnCodeFixes.ts:83`) offered a chain that verified, but
+the record's answers contradicted the scanner's path facts, so nothing was discharged and it stays
+Review. Every unverified answer chose `none` for its citation: 177 VulnPy flow-gap and 64 witness answers,
 2 OopsSec stored-origin answers, and 6 witness and 3 bypass answers on DVWA. No offered chain
 failed verification. Flow-gap answers on VulnPy: 126 `cannot_tell`, 90 `value_constrained`, 39
 `value_preserved` (10 with a verified chain), 1 `value_replaced`.
@@ -52,8 +59,12 @@ failed verification. Flow-gap answers on VulnPy: 126 `cannot_tell`, 90 `value_co
 | VulnPy path fixed-outcome requests | not measured | 64: records with a flow-gap question, sent by D-7, that stay Review |
 
 DVWA keyed true findings hold in every family; its other families were offline in the previous
-live run, so their judged counts have no earlier same-scanner comparison. Juice Shop was not part
-of the authorized runs, so its §2 row (34 of 62) is not re-measured here.
+live run, so their judged counts have no earlier same-scanner comparison.
+
+**Juice Shop** (added after the three runs; the owner asked for its standard live check, scanner
+`db3d4f7`): fixed-outcome requests went from 34 of 62 (§2) to 0 of 28. The 34 records whose
+blocker has no question are not sent (19 XSS, 9 path, 3 NoSQL, 1 each redirect, SQL and SSRF).
+Keyed true findings match the published sample in every family (XSS 9, NoSQL 3, SQL 2, log 1).
 
 Recall floor: 91 `candidate_with_witness`, 30 `control_pass`, 4 `resolved`, unchanged. No keyed
 positive lost its finding. No control record became a finding.

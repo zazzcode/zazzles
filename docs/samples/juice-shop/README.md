@@ -2,7 +2,30 @@
 
 
 
-## Current report (rebuilt 2026-11-15)
+## Current report (rebuilt 2026-11-19)
+
+[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json) ·
+[Results](../../../.zazz/evaluation/model-resolution-results.md)
+
+All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna` on the
+model-assisted evidence resolution scanner. The target remained clean. These are static source
+judgments.
+
+- **Records:** 251 across 175 entries. **Judged:** 28 records in 28 requests (211,886 input
+  tokens), down from 153. Undecidable validation records (previous accuracy contract) and records
+  whose outcome a scanner fact already fixes (this contract) are no longer sent.
+- **Outcomes:** 23 Confirmed, 1 poor practice, 0 Protected; the other 227 records are Review.
+- **Not sent:** 34 records whose scanner blocker has no question the model could answer, so no
+  answer could change their Review outcome (`blocker_unresolvable`); 95 undecidable validation
+  records, 70 outbound observations and 24 API-data records with no rendering claim. Provider failures: 0.
+- **Keyed positives:** every source-reviewed XSS, SQL, NoSQL and logging positive stays Confirmed.
+  New Confirmed records outside the key are known challenge routes (`$where` NoSQL in
+  `trackOrder.ts` and `showProductReviews.ts`, review update/like routes, the `redirect.ts`
+  allowlist, the `dataErasure.ts` layout).
+- **Model-resolved records:** 0. One path record (`vulnCodeFixes.ts:83`) cited a verified witness,
+  but its answers contradicted scanner facts, so it stays Review.
+
+## Previous report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 

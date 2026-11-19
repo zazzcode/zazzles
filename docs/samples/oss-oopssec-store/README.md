@@ -4,7 +4,20 @@
 [SARIF](findings.sarif) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/oss-oopssec-store-detection-guide.md)
 
-## Current report (published 2026-11-16)
+## Current report (published 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner ([results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean.
+
+- 131 entries, 128 analysis records: **23 Confirmed, 105 Review, 0 Protected**.
+- 27 requests, 29 completed assessments (2 shared by equivalent entry contexts), 184,225 input
+  tokens. Requests whose outcome a scanner fact already fixed fell from 5 to 2; 3 such records are
+  not sent at all. No provider failures. Model-resolved records: 0.
+- Every required positive in the supported answer key stays Confirmed. Additional Confirmed
+  records from the open-redirect, SSRF, SQL and client-XSS analyzers are outside the key and
+  were not source-reviewed for this report.
+
+## Previous report (published 2026-11-16)
 
 Fresh full static analysis of [kOaDT/oss-oopssec-store](https://github.com/kOaDT/oss-oopssec-store)
 at `2d530ef3c0e668022c93fd2c03b52eef4691a6c3` (v2.25.0), a Next.js 15 App Router app

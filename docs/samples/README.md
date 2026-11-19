@@ -18,6 +18,14 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
 | [vuln-nextjs (Pages Router lab)](vuln-nextjs/README.md) | [findings.html](vuln-nextjs/findings.html) | [findings.json](vuln-nextjs/findings.json) | [findings.sarif](vuln-nextjs/findings.sarif) |
 
+Juice Shop, OopsSec Store and DVWA were rescanned on 2026-11-19 with model-assisted evidence
+resolution ([results](../../.zazz/evaluation/model-resolution-results.md)): 224 requests in all,
+zero failures. Undecidable validation records and records whose outcome a scanner fact already
+fixes are no longer sent (Juice Shop went from 153 requests to 28 across this and the previous
+accuracy contract), every keyed positive stays Confirmed, and DVWA has one
+model-resolved finding, source-reviewed as true. Each sample's **Current report** section has
+its counts; paragraphs below describe the earlier rebuilds.
+
 The Next.js samples published on 2026-11-16 use fresh full `gpt-6-luna` scans, including
 standalone input validation: 149 paid assessments and exact replays, zero failures or mismatches.
 OopsSec Store displays 15 Confirmed, 99 Review and 0 Protected (two grouped observations remain in JSON);

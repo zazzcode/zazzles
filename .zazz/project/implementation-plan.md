@@ -88,8 +88,8 @@ positive in a supported family is Confirmed on both Next.js samples, no safe con
 fresh full paid runs replay exactly (149/149 assessments, including standalone input validation);
 both [sample reports](../../docs/samples/README.md) and detection guides are published in this branch. [Contract](../specifications/nextjs-support.md).
 
-**Model-assisted evidence resolution is implemented on `model-evidence-resolution`, draft PR into
-`stage` pending.** The scanner asks the decision model specific questions about the points it could
+**Model-assisted evidence resolution is implemented on `model-evidence-resolution`, PR into
+`stage` open.** The scanner asks the decision model specific questions about the points it could
 not resolve (flow gaps, stored origin, a missing witness, a command guard bypass, one missing
 definition) and an answer counts only when its cited evidence chain verifies against the request.
 A model-resolved fact can move a record to a finding with a visible mark, never to Protected without
@@ -97,7 +97,9 @@ a scanner-held coverage fact; records no answer could change are not sent; follo
 25% of requests; a protocol bump re-judges only its family. Offline gates and the recall floor hold;
 the W3a write census covers 29 of 45 stored-origin records (AC3 asks 40). The authorized
 `gpt-6-luna` runs (VulnPy path, OopsSec, DVWA) produced one model-resolved finding, source-reviewed
-true, and no false finding. [Contract](../specifications/model-assisted-evidence-resolution.md),
+true, and no false finding. A later Juice Shop check sent 28 requests with no fixed-outcome
+request (34 of 62 before). The Juice Shop, OopsSec and DVWA sample reports are republished from
+these runs. [Contract](../specifications/model-assisted-evidence-resolution.md),
 [results](../evaluation/model-resolution-results.md).
 
 <a id="next-up"></a>

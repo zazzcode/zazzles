@@ -1,19 +1,18 @@
 {
   "date": "2026-11-19",
   "target_revision": "b81885e58283a3449b578d20c20557aff637e5ea",
-  "source_run": "run-1329700200",
-  "source_json_sha256": "7fba84ea1be3ed231ffaecadf466eaa5d434863864308cee0281babcc6f4fa6f",
-  "scanner_revision": "model-evidence-resolution 614e435",
+  "source_run": "run-1549598806",
+  "source_json_sha256": "7b4848caa5dc80a2275f158e54efd2f810ab2ecdb3d66df835ec997607fa98e4",
+  "scanner_revision": "model-evidence-resolution 57c29dc",
   "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "provider_requests": 456,
-  "assessment_requests": 456,
+  "provider_requests": 520,
+  "assessment_requests": 520,
   "follow_ups_sent": 0,
-  "completed_assessments": 456,
+  "completed_assessments": 520,
   "derived_assessments": 0,
-  "not_sent_over_wire_limit": 64,
-  "input_tokens": 2920785,
+  "input_tokens": 3439151,
   "entries": 2214,
   "published_records": 3350,
   "records_not_sent_blocker_unresolvable": 0,
@@ -21,7 +20,7 @@
     "confirmed_vulnerability": 455,
     "needs_evidence": 65
   },
-  "not_run": 2894,
+  "not_run": 2830,
   "failed": 0,
   "answer_key": {
     "expected": 6,
@@ -42,5 +41,6 @@
       "needs_evidence": 2914,
       "confirmed_vulnerability": 346
     }
-  }
+  },
+  "resolution_questions_dropped_to_fit": 64
 }

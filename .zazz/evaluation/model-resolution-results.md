@@ -143,13 +143,14 @@ named.
 
 The TypeScript app, Python insecure app and vuln-demo-app sent no citation question, so the label
 fix does not change their requests. These runs are the published samples, except vuln-demo-app,
-which has none. VulnPy was then rescanned in full at the owner's word (`run-1329700200`, scanner
-`614e435`): 456 requests, no failures, all 6 keyed positives found, 455 Confirmed records. 64
-path records with flow-gap questions exceeded the 64KB limit once their citation labels carried
-text, so they stayed Review without a request. `7e333aa` now sends such a record without its
-resolution questions. Requests charged in this refresh:
-301 (first pass, `df540c3`) + 337 (reruns, `50d4a8f`) + 22 (Goof wording trials) + 456 (VulnPy)
-= 1,116.
+which has none. VulnPy was then rescanned in full at the owner's word. The first rescan
+(`run-1329700200`, scanner `614e435`, 456 requests) left 64 path records with flow-gap questions
+unsent: once their citation labels carried text, they exceeded the 64KB limit. `7e333aa` sends
+such a record without its resolution questions. The published rerun (`run-1549598806`, `57c29dc`)
+sent all 520 with no failures, found all 6 keyed positives and has 455 Confirmed records; the 64
+stay Review, as before. Requests charged in this refresh:
+301 (first pass, `df540c3`) + 337 (reruns, `50d4a8f`) + 22 (Goof wording trials) + 456 + 520 (VulnPy)
+= 1,636.
 
 The recall floor over the published reports holds: 91 `candidate_with_witness`, 30 `control_pass`,
 4 `resolved`.

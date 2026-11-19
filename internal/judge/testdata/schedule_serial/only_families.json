@@ -1,7 +1,7 @@
 {
   "failed": false,
   "requests": 1,
-  "report_sha256": "1f02095010088d1d2718e3ea434406e4119e370805f0f3d5808d82dacd9e570b",
+  "report_sha256": "b241a131e8d1817d73c7dc983aa33988827e89efacc5552f87b5d589eb430f35",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -86,7 +86,7 @@
   ],
   "traces": {
     "logging-claim": {
-      "sha256": "9f20187eaf22ec25564b704786215ad0069ea18a29d482a3941bc0aa046bb62f",
+      "sha256": "f5e56a4dd325203027470f84742d81a51a32a842a28fda1b647461c020325dc3",
       "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
       "http_status": 200,
       "request_bytes": 9103

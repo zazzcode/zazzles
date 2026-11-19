@@ -124,12 +124,12 @@ func judgedExit(client *judge.Client, report *analysis.AnalysisReport, incomplet
 			return exitError
 		}
 	}
-	// Observation-only, family-excluded and undecidable validation records are
-	// unassessed by design and are not counted; the warning names only
-	// assessments that did not finish.
+	// Observation-only, family-excluded, undecidable validation and
+	// blocker-unresolvable records are unassessed by design and are not
+	// counted; the warning names only assessments that did not finish.
 	total, unfinished := 0, 0
 	for _, u := range report.Uses {
-		if !judge.AssessableUse(u) || strings.Contains(u.Assessment.Reason, "analyzer not used for this run") || strings.HasPrefix(u.Assessment.Reason, judge.ValidationUndecidable+":") {
+		if !judge.AssessableUse(u) || strings.Contains(u.Assessment.Reason, "analyzer not used for this run") || strings.HasPrefix(u.Assessment.Reason, judge.ValidationUndecidable+":") || strings.HasPrefix(u.Assessment.Reason, judge.BlockerUnresolvable+":") {
 			continue
 		}
 		total++

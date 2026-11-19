@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 3,
-  "report_sha256": "b1a5e8768c071c10649e9ac1d8f3b29e66d92c04ead877e96122a7f05f8e165a",
+  "report_sha256": "ec0a65490112136d83710ba3fb2612035803f5589654ba12f2fcc23a3fa2170e",
   "assessments": [
     {
       "id": "candidate:v1:af8d41289700cf5e040128da1d53f40299a41962831a96fff29816c3d0d22e09",
@@ -10,7 +10,7 @@
         "status": "failed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "judge HTTP 400"
       }
     },
@@ -31,7 +31,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -50,7 +50,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -72,7 +72,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -91,7 +91,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -110,7 +110,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -125,37 +125,37 @@
   ],
   "traces": {
     "candidate:v1:1bf2251c91f7d55473e56bfd7e08788560ab1268f59ef44abc72866e5c6e452e": {
-      "sha256": "459b4bb6b986a918de8cde10e6d8349262ff5090cb17604df6022a9418ba6a7d",
+      "sha256": "977b51a86127bc04b44273b1e69498ed66d5d457cc34c19218fd78d6ac92039f",
       "request_digest": "0f8c3a1ac94f3e7e53a67f3863f65a5c1e4b8592727077006f426e1ddba53a2a",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:5c9ff978bf01866156fb49129a1b3a281a056aec8c415a9263e811e2c5016ce3": {
-      "sha256": "e8fd9bc71753b327fac9d9c62fe57e3a046068825050b87de200ae028067c746",
+      "sha256": "1526d824f6ea2ecde4d527701ad5cd3917445c2582a59b3db662caf642b85b19",
       "request_digest": "5dad9a1def8740c689c2260dcda5e237bc937e0f05880bc9e3829532bb336f17",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:7930228b8ae6007c2c8dd30cbe60462a7fc5e2bb6ef40358e65781ecbbf49d9d": {
-      "sha256": "0c1e729df3d2a38cde37843b955e96d3a7c250d694e2d3fb2414fafe6b4161ce",
+      "sha256": "38a34cb49ed85af14df59f81e1d1e7b0159ab52d169badc7ff8a466de12d22bc",
       "request_digest": "73fa847712da0d7a1d4140d89fab9924d433a46a24c67fe2a091e8a21af8c3b8",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:815ddb0183e6991dbd861e42400c7d482e9f6dbad545e6e40d6458d0c0dd5a57": {
-      "sha256": "b631f4b40ea936ecc9e540859f77a3687f08f9989932042508e8dfd1bb8ce50f",
+      "sha256": "75a41eb4a0e5aa2347aa2df4394aef7ee10b1defdfbfe4e67f8f53181f21c4b2",
       "request_digest": "8a3ce7302f4d8c7d37cf54c44516df8058d735cd9874e7a7bde6c9b727d8c329",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:a3cef7d80999d1ffc42fe1067122782a6c06257dcb30f0ca50c272644205083c": {
-      "sha256": "d36791c046ad50cbcb199f6a1f9fcb663dcbc22a9e5cce4b573cced2f78db4de",
+      "sha256": "37770b0593c69d11886875e53f4ab6c26344c8c21a6dc66ff1048f65e961dcf2",
       "request_digest": "3e930fad72b9edf707fd07a0575d756aef165656ec56d1d5a03eaa2638cbd49a",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:af8d41289700cf5e040128da1d53f40299a41962831a96fff29816c3d0d22e09": {
-      "sha256": "6248052148f418eb9724b160440ccfbd1a34c1b7f7f1adfeabb9c94da4b6cb95",
+      "sha256": "d20888e8011e3af240f69a593df376d4981ea7291abb2c0bb41c02bc86b572d6",
       "request_digest": "e5de080226b4f98637f74b88d5bee3f035160851b4192c8ccd68a04f51277d18",
       "http_status": 400,
       "request_bytes": 18104

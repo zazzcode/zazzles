@@ -2,7 +2,18 @@
 
 
 
-## Current report (rebuilt 2026-11-15)
+## Current report (rebuilt 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`df540c3`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
+
+- 19 entries, 26 analysis records: **7 Confirmed, 19 Review, 0 Protected**.
+- 7 requests, 7 completed assessments, 29,898 input tokens. No provider failures. 1 records are not sent because their scanner blocker has no question the model could answer.
+- **Answer key:** 6 of 6 expected positives found; no keyed control is a finding.
+- All six keyed positives are Confirmed, including `eval` at `src/server.ts:137` and the open redirect at `src/server.ts:239`, which the previous report could not score.
+
+## Previous report (rebuilt 2026-11-15)
 
 [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 

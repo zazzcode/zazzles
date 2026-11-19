@@ -45,14 +45,14 @@ func (f *phpFlow) sql(n *sitter.Node, nodes []*sitter.Node, values []phpValue, c
 	if op == "pdo" && len(values) > 1 {
 		params = values[1:]
 	}
-	return f.sqlClaim(n, queryNode, params, text, driver, op, connection.evidence, nil)
+	return f.sqlClaim(n, queryNode, params, text, driver, op, connection.evidence, nil, nil)
 }
 
 // sqlClaim records the sql_query_candidate and returns the result value. The
 // returned statement/result value carries the SQL text (sqlText) so a later
 // execute() re-records construction-time taint, and the SELECT table/columns
 // for storage linking when the text is constant.
-func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpValue, text phpValue, driver, op string, connectionEvidence, bindingControls []analysis.Evidence) phpValue {
+func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpValue, text phpValue, driver, op string, connectionEvidence, bindingControls, preparedText []analysis.Evidence) phpValue {
 	m := f.module
 	all := phpSlot(text, "sql_text")
 	for _, v := range params {
@@ -60,6 +60,9 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 	}
 	textCopy := text
 	result := phpValue{binding: "db_result", driver: driver, evidence: append([]analysis.Evidence{}, connectionEvidence...), sqlText: &textCopy, bindingControls: bindingControls}
+	if queryNode != nil && op != "execute" {
+		result.sqlTextEvidence = []analysis.Evidence{m.evidence("query_text", queryNode)}
+	}
 
 	if constant, ok := phpSQLText(text); ok {
 		if match := phpSelectRe.FindStringSubmatch(constant); len(match) > 0 {
@@ -104,6 +107,11 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 	}
 	if queryNode != nil {
 		c.Evidence["query_text"] = []analysis.Evidence{m.evidence("query_text", queryNode)}
+	}
+	if op == "execute" && len(preparedText) > 0 {
+		// execute() runs the prepared statement: its text is the query text.
+		c.Evidence["query_text"] = append([]analysis.Evidence{}, preparedText...)
+		u.Context = append(u.Context, preparedText...)
 	}
 	for _, g := range append(append([]analysis.Gap{}, f.gaps...), append(text.gaps, all.gaps...)...) {
 		switch g.Kind {
@@ -158,7 +166,7 @@ func (f *phpFlow) sqlPrepare(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if len(nodes) > 1 && connection.binding == "db_connection" && driver == "mysqli" {
 		queryNode = nodes[1]
 	}
-	stmt := f.sqlClaim(n, queryNode, nil, text, driver, "prepare", connection.evidence, nil)
+	stmt := f.sqlClaim(n, queryNode, nil, text, driver, "prepare", connection.evidence, nil, nil)
 	stmt.binding = "db_statement"
 	return stmt
 }
@@ -179,8 +187,9 @@ func (f *phpFlow) sqlExecPrepared(n *sitter.Node, stmt phpValue) phpValue {
 	if !requestDerived {
 		return stmt
 	}
-	out := f.sqlClaim(n, n, stmt.sqlParams, text, stmt.driver, "execute", stmt.evidence, stmt.bindingControls)
+	out := f.sqlClaim(n, n, stmt.sqlParams, text, stmt.driver, "execute", stmt.evidence, stmt.bindingControls, stmt.sqlTextEvidence)
 	out.binding = "db_statement"
+	out.sqlTextEvidence = stmt.sqlTextEvidence
 	return out
 }
 
@@ -193,6 +202,7 @@ func (f *phpFlow) sqlFetch(n *sitter.Node, result phpValue) phpValue {
 	v.literals = nil
 	v.constant = false
 	v.sqlText = nil
+	v.sqlTextEvidence = nil
 	v.fields = nil
 	return v
 }

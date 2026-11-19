@@ -92,6 +92,8 @@ and plain **PHP** with mysqli/PDO/SQLite3, command, XSS, path, code and redirect
 **The decision model**
 
 - Judges whether each finding is a real vulnerability and whether existing protection is adequate
+- Answers specific questions about code the scanner could not follow; a cited, verified answer is
+  marked **Model-resolved**
 - OpenAI Luna is the primary model; Google Gemini is optional
 - One model is used for a whole scan, with no automatic fallback
 - A request cap and optional rate limits keep runs predictable
@@ -141,16 +143,44 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
-On the current Node sample rebuild (Juice Shop, Node.js Goof, Vulnerable TypeScript app, and
-vuln-demo-app), that in-scope catch is complete for the families above: the cataloged XSS, SQL,
-NoSQL, command, path/Zip Slip, logging, and SSRF required positives are confirmed. Cases the answer
-keys mark as Review stay Review (for example Juice Shop subtitle XSS). Defects outside those
-analyzers—authentication, IDOR, `eval`/code injection, open redirect, secrets, cookie flags, and
-most Juice Shop challenge categories—are **not covered** yet; a clean row there is not a pass.
+**Accuracy against the answer keys** (every sample report rescanned 2026-11-19 on this scanner). *Expected* counts the source-reviewed vulnerable cases keyed for our
+implemented analyzers. *Found* means Zazzles reports the case as a finding: Confirmed, or a
+construction-practice finding where the key expects one. *False positives* counts the known-safe
+cases (keyed controls) that Zazzles reports as a finding, plus any finding source review showed
+to be false.
+
+| Sample | Expected | Zazzles found | Review (not found) | Missed | False positives | Notes |
+|---|---:|---:|---:|---:|---:|---|
+| Juice Shop | 15 | 15 | 0 | 0 | 0 | 3 safe cases checked. 8 findings outside the key match known challenge routes |
+| OSS OopsSec Store | 13 | 13 | 0 | 0 | 0 | 5 safe cases checked. 8 findings outside the key, unreviewed |
+| DVWA | 10 | 9 | 1 | 0 | 0 | Upload stays Review: `basename()` blocks traversal, and the real flaw (any file type) is outside our analyzers. One bound-PDO false positive (`brute/impossible.php:90`) found by review and fixed. 98 findings outside the key, none from impossible-level code only |
+| Node.js Goof | 6 | 5 | 1 | 0 | 0 | Command injection (`routes/index.js:174`) stays Review: the model found the guard bypass but did not cite the offered chain |
+| Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 0 | Includes `eval` and open redirect |
+| vuln-nextjs lab | 13 | 13 | 0 | 0 | 0 | 23 safe cases checked, none red. Includes code execution and open redirect |
+| vuln-demo-app | 11 | 11 | 0 | 0 | 0 | 7 safe cases checked. No published sample report |
+| ThreatByte | 5 | 5 | 0 | 0 | 0 | 6 safe cases checked. Dashboard XSS found as a construction-practice finding |
+| Vulnerable Flask App | 4 | 4 | 0 | 0 | 0 | 4 findings outside the key, unreviewed |
+| Python insecure app | 2 | 1 | 1 | 0 | 0 | The name-field validation defect is undecidable and is not sent |
+| VulnPy | 6 | 6 | 0 | 0 | 0 | No keyed safe cases. 369 findings outside the key, unreviewed (repeated contexts share sinks) |
+| **Total** | **91** | **88** | **3** | **0** | **0** | 55 known-safe cases checked; 490 findings outside the key |
+
+Findings outside the key are not counted as true or false until someone reviews their source.
+
+Scored with
+[`accuracy.py`](.zazz/evaluation/recall-gap-inventory/accuracy.py); details are in the
+[evidence-resolution results](.zazz/evaluation/model-resolution-results.md#accuracy-against-the-answer-keys).
+
+On the current Node samples (Juice Shop, Node.js Goof, Vulnerable TypeScript app and
+vuln-demo-app), the cataloged XSS, SQL, NoSQL, command, path/Zip Slip, logging, SSRF,
+`eval`/code-injection and open-redirect positives are found. The exception is Goof's command
+injection, which stays Review, as the table shows. Cases the answer keys mark as Review stay
+Review (for example Juice Shop subtitle XSS). Defects outside those analyzers (authentication,
+IDOR, secrets, cookie flags and most Juice Shop challenge categories) are **not covered** yet; a
+clean row there is not a pass.
 
 On the two Next.js samples (OSS OopsSec Store and the vuln-nextjs lab), every required positive in
-those families is confirmed and no safe control is red; `eval`/code injection, open redirect and the
-dependency row are not covered yet.
+those families is found, including the lab's code-execution and open-redirect rows, and no safe
+control is red; the dependency row is not covered yet.
 
 Details and per-app expected-vs-actual tables live in
 [vulnerable sample applications](.zazz/project/vulnerable-sample-apps.md). Sample HTML reports are
@@ -186,6 +216,42 @@ flowchart LR
 The target application does not need to run. A finding includes the operation and supporting code;
 a protection result applies to the stated claim and analyzed paths. Missing evidence remains a
 review task. The [technical approach](docs/technical-approach.md) explains the analysis and its limits.
+
+### How the decision model judges a result
+
+For each sensitive operation the scanner sends the model one bounded request: the source of the
+entry point, every step the value takes, the guards and transformations on the way, the library
+contract for the operation, the gaps it could not resolve, and a short list of multiple-choice
+questions about that one claim. For a file read the questions ask whether a request value can
+leave the intended directory, which control contains it, and whether that control covers every
+path. For a SQL query they ask whether input can change the query's syntax. The model answers each
+question. It does not write the verdict.
+
+The scanner then decides the status from those answers and its own facts:
+
+- **Vulnerable** needs a consistent answer and a source-to-operation path the scanner can show.
+  "Vulnerable" with no supporting path, or with an unresolved gap on that path, stays in Review.
+- **Protected** needs a control the scanner found on every path the value can take, plus answers
+  that say the control is adequate and covers them all. One protected branch never lends protection
+  to an unresolved sibling.
+- **Contradictions are rejected.** An answer that says "not applicable" when a request value plainly
+  reaches the operation, or "protected" with no control in the source, is kept for audit and changes
+  nothing.
+
+This is where the model earns its place. Rules can say a guard exists; they are weak at saying
+whether it is enough. Whether an allow-list really contains a path, whether a regular expression
+lets a shell metacharacter through, whether a sanitizer suits this output context: those are
+judgments about what the code does, and the model makes them from the evidence in front of it. The
+scanner keeps the model to that evidence, so a confident answer never fills a missing fact.
+
+When the scanner stops at code it cannot follow (a list comprehension, a helper just outside its
+reach, a stored value whose writers it cannot link), it asks the model a specific question about
+that point and offers chains of request evidence to cite. The answer counts only if the cited chain
+checks out against the request. A result reached this way keeps its ordinary status and carries a
+**Model-resolved** mark that names the model, the question version and the cited lines. It can move
+a record from Review to a finding; it moves a record to Protected only when the scanner itself
+holds the fact that makes protection complete. A record that no answer could change is not sent at
+all. See [decision models](docs/decision-models.md#model-resolved-facts).
 
 <a id="setup"></a>
 
@@ -351,7 +417,7 @@ Explore existing reports without installing Zazzles or making API calls:
 | OWASP Juice Shop | Browser/server XSS and database operations | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [Sample notes](docs/samples/juice-shop/README.md) |
 | Node.js Goof | Command injection, XSS, and database review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [Sample notes](docs/samples/nodejs-goof/README.md) |
 | Vulnerable TypeScript app | Command injection at `/api/ping`, reflected XSS, and logging | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [Sample notes](docs/samples/vulnerable-typescript-app/README.md) |
-| VulnPy | Full all-family Python scan: 3,260 assessed contexts across the supported adapters | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes and full JSON/SARIF downloads](docs/samples/vulnpy/README.md) |
+| VulnPy | Full all-family Python scan: 3,350 records across the supported adapters, 520 judged | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes and full JSON/SARIF downloads](docs/samples/vulnpy/README.md) |
 | ThreatByte (Python) | Flask/RESTX SQL, reflected/stored XSS, SSRF and protected controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/ThreatByte/findings.html) · [Sample notes](docs/samples/ThreatByte/README.md) |
 | Python insecure app | FastAPI HTML/template construction | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/python-insecure-app/findings.html) · [Sample notes](docs/samples/python-insecure-app/README.md) |
 | Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |

@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 2,
-  "report_sha256": "aba0315dc95b00bd5d00ddad44c3bed4fcaa9192b8b3ae9276e87aa815e4c90c",
+  "report_sha256": "8a95c3392cd3fc811061502ef1baf45f37a830caa00fb52dded80a9091655975",
   "assessments": [
     {
       "id": "candidate:v1:d8162060a6116488b55e138acb8901263ca69afe897738e236ebb1718cf1cd4e",
@@ -20,7 +20,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "protection": "insufficient",
         "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
@@ -32,7 +32,7 @@
         "status": "failed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "judge HTTP 401"
       }
     },
@@ -43,7 +43,7 @@
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
@@ -54,7 +54,7 @@
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
@@ -65,7 +65,7 @@
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
@@ -76,7 +76,7 @@
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "sql-components-v3",
+        "question_version": "sql-components-v4",
         "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     }
@@ -91,37 +91,37 @@
   ],
   "traces": {
     "candidate:v1:2e5e205d96694621a0889b65082fc50336dc4d1effc9f3fb815d15a4e914860e": {
-      "sha256": "9c5c5bc33b69a7c9ea0f2b43a7eb292c2f91298154e50947964058ebe605d316",
+      "sha256": "714bf533b12612686c7871959b9974ec381b688f93d710c32bb2df10a3f43654",
       "request_digest": "dabd84c929f056d44c1541755d4a2f5cb0dbb5eea196781dcf68afdd160cb2c6",
       "http_status": 401,
       "request_bytes": 18104
     },
     "candidate:v1:84d2c26caa2e85437f2bd592d546c4ed656e3301d17e60a9beddeb0cf93ce675": {
-      "sha256": "93bba1c11ae9c2525d1dcbdd17579169854771a81676dbbaf3156bfa56509087",
+      "sha256": "e0e52557c631d1cb42479541671944370dc3fdc4157e321af46c54cc350bb22d",
       "request_digest": "dd8aec5d815cd65eebe971ba58e41547ed1c92d5aa011e16c87ea414b8b1a459",
       "http_status": 0,
       "request_bytes": 18104
     },
     "candidate:v1:945bfa96b57ee2d7bbc21753022afe77c5e77374f7c068733f586f2a9a627808": {
-      "sha256": "1cc0bdf562623601383979fe229a62c0808afd9d59584a0dd1df76e9d59ae2b7",
+      "sha256": "194b7f454fa78bff8d5ae630c0d406cb755408bbe9aeb9f45cd4f4583a82e647",
       "request_digest": "0e191ce93952f3cffc9b859f22b402153bc0661fd8dd158b4f6e18819e1f8781",
       "http_status": 0,
       "request_bytes": 18104
     },
     "candidate:v1:d8162060a6116488b55e138acb8901263ca69afe897738e236ebb1718cf1cd4e": {
-      "sha256": "d0c9bb0f99f233c15c2f1e94436ced2f05d2a19fd9a33aa790d1d9884867a3e6",
+      "sha256": "5e78b65f9e58f02e96ebfa3bd6f0ad82feb516e02f5dc00008108c91ae70bbea",
       "request_digest": "48916a0f8f20a0c0d87ba1f287bda7f6a662e99a75e4aae7a0816abfbbb3d70e",
       "http_status": 200,
       "request_bytes": 18104
     },
     "candidate:v1:ee9880539056b21d266dcf05054e864233e1457a0c8c0ef55046cf8d39df88c7": {
-      "sha256": "fd9e27f4783f707a9d7c8a2060280749f588691352b52f1831f5d823067e0d38",
+      "sha256": "aa2f0aa15bd9c531b56c17311e811b1cd71e9732ed139e1f8b0ba61bac97de39",
       "request_digest": "b44c7ef51a7fbded8b8823448c037e5c1f41704a7071c192b2c15d0a000f2225",
       "http_status": 0,
       "request_bytes": 18104
     },
     "candidate:v1:f78d08d14db6acb2ea573d0f0026656afef934c002bcab0ce04269e6dc9039b2": {
-      "sha256": "e0257ee98b96777d75b98f6c36be1d8e5e9afc3993fd84037554674c0f8e6823",
+      "sha256": "aebc0f010b6da8b6e898f5fd25b2c1c0bdcaf62c565f30eb7daf80f5c6a8b5d5",
       "request_digest": "1dcc30a58d71f669eb95770d99c89ee6a436cf6e85ee5c69be76f5c37df02f82",
       "http_status": 0,
       "request_bytes": 18104

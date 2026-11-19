@@ -209,6 +209,20 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 				add("command_guard_semantics_unknown", "Every path of the unsafe facet is guarded by a control with no recognised contract; its adequacy is not established.")
 			case ans["guard_bypass"] != "bypass_identified":
 				add("command_guard_semantics_unknown", "Every path of the unsafe facet is guarded and the assessment did not identify a bypass ("+displayAnswer(ans["guard_bypass"])+").")
+			default:
+				// D-8: the named bypass must cite the chain that carries the
+				// value to the operand, verified like any other chain.
+				r := verifiedResolution(a, resolvePrefix+"bypass", "")
+				dep := citedDependency(r)
+				onFacet := false
+				for _, p := range facet.paths {
+					onFacet = onFacet || p.Dependency == dep && p.Protection == "guarded"
+				}
+				if !onFacet {
+					add("command_guard_semantics_unknown", "A bypass was identified without a verified citation of a guarded path of the unsafe facet; its adequacy is not established.")
+				} else {
+					r.Discharged = true
+				}
 			}
 		}
 	}

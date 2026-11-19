@@ -18,7 +18,7 @@ func TestPathComponentSelection(t *testing.T) {
 		t.Fatal(err)
 	}
 	f := FamFamily("path_traversal_candidate")
-	if f == nil || !f.RequiresAPI || ProtocolFor("path_traversal_candidate") != "path-components-v2" || !f.PythonHTTPOnly {
+	if f == nil || !f.RequiresAPI || ProtocolFor("path_traversal_candidate") != "path-components-v3" || !f.PythonHTTPOnly {
 		t.Fatalf("family registration: %+v", f)
 	}
 	if want := []string{"path_traversal", "containment_control", "protection_coverage"}; !reflect.DeepEqual(f.QuestionNames, want) {

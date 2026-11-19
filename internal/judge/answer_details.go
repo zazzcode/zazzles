@@ -3,6 +3,7 @@ package judge
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
@@ -41,6 +42,9 @@ func answerDetails(data []byte, selected map[string]string, expected []question)
 	}
 	out := map[string]analysis.AnswerDetail{}
 	for _, answer := range list {
+		if strings.HasPrefix(answer.Name, resolvePrefix) {
+			continue // resolution answers are recorded as Resolutions
+		}
 		if answer.Confidence == nil && len(answer.Probabilities) == 0 {
 			continue
 		}

@@ -47,32 +47,50 @@ func commandStub(t *testing.T, provider string, answers commandAnswers) (*Client
 			return
 		}
 		var names []string
+		cites := map[string]string{}
 		if provider == "openai" {
 			var list []struct {
-				Name string `json:"name"`
+				Name    string              `json:"name"`
+				Choices []map[string]string `json:"choices"`
 			}
 			_ = json.Unmarshal(body.Questions, &list)
 			for _, q := range list {
 				names = append(names, q.Name)
+				if strings.HasSuffix(q.Name, citeSuffix) && len(q.Choices) > 0 {
+					cites[q.Name] = q.Choices[0]["value"] // cite the first offered chain
+				}
 			}
 		} else {
-			var m map[string]json.RawMessage
-			_ = json.Unmarshal(body.Questions, &m)
-			for name := range m {
-				names = append(names, name)
+			var m map[string]struct {
+				Criteria map[string]string `json:"criteria"`
 			}
+			_ = json.Unmarshal(body.Questions, &m)
+			for name, q := range m {
+				names = append(names, name)
+				for v := range q.Criteria {
+					if strings.HasSuffix(name, citeSuffix) && v != citeNone && (cites[name] == "" || v < cites[name]) {
+						cites[name] = v
+					}
+				}
+			}
+		}
+		choice := func(name string) string {
+			if v, ok := cites[name]; ok {
+				return v
+			}
+			return answers.choice(name)
 		}
 		if provider == "openai" {
 			list := []map[string]string{}
 			for _, name := range names {
-				list = append(list, map[string]string{"name": name, "type": "choice", "choice": answers.choice(name)})
+				list = append(list, map[string]string{"name": name, "type": "choice", "choice": choice(name)})
 			}
 			json.NewEncoder(w).Encode(map[string]any{"model": "fixture-model", "answers": list, "usage": map[string]int{"input_tokens": 11, "output_tokens": 3}})
 			return
 		}
 		out := map[string]map[string]string{}
 		for _, name := range names {
-			out[name] = map[string]string{"type": "choice", "choice": answers.choice(name)}
+			out[name] = map[string]string{"type": "choice", "choice": choice(name)}
 		}
 		json.NewEncoder(w).Encode(map[string]any{"model": "fixture-model", "answers": out, "usage": map[string]int{"input_tokens": 11, "output_tokens": 3}})
 	}))

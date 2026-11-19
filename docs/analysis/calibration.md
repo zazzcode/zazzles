@@ -31,6 +31,12 @@ A candidate's original discovery warnings remain auditable. Claim assembly may r
 only with stronger evidence; it must not hide missing relevant helper, middleware, or path facts.
 Distinguish resolved discovery warnings, remaining coverage limits, and actual claim blockers.
 
+Model-resolved facts are measured per provider and model: blocked records sent, blockers resolved,
+citations rejected, follow-ups and outcome moves (the checker's resolution columns). Every
+model-resolved finding in a calibration run is source-reviewed before the run is accepted, and a
+false model-resolved finding halts the change. A citation that verifies shows the model followed
+supplied evidence; it does not prove the answer about that evidence is right.
+
 Before declaring a rule ready, verify positive, protected, and inconclusive controls, inspect novel
 cases, and check JSON/HTML/SARIF agreement. Model answer consistency is necessary for a definitive
 judgment but does not by itself establish accuracy. Independent review and broader held-out

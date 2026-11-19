@@ -1,111 +1,49 @@
 {
-  "date": "2026-11-15",
+  "date": "2026-11-19",
   "target_revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
-  "scanner_revision": "python-input-refactor (shared Python acquisition; see owning PR and verification contract)",
-  "scanner_binary_sha256": "a652e80aa162790fe67dd8caee053e7f5cef0ebabed380070dfa9be95340b183",
-  "exporter_binary_sha256": "e402b0dfc97169da91d9b71b2abd8e1b84ce95c77def5854dd761514fe472317",
-  "evaluation_mode": "fresh all-family gpt-6-luna scan, including standalone input validation",
+  "source_run": "run-1522805296",
+  "source_json_sha256": "db653f1899e966485d75b75ae62d2146e70bc4db75f066368219a9aa37708d78",
+  "scanner_revision": "model-evidence-resolution 50d4a8f",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
+  "provider_requests": 59,
+  "assessment_requests": 58,
+  "follow_ups_sent": 1,
+  "completed_assessments": 58,
+  "derived_assessments": 0,
+  "input_tokens": 298903,
   "entries": 24,
-  "positions": 62,
-  "provider_requests": 62,
-  "input_tokens": 302537,
   "published_records": 62,
-  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD unchanged at pin)",
-  "runtime_confirmation": "none; static source judgments only",
+  "records_not_sent_blocker_unresolvable": 1,
   "outcomes": {
-    "protected_for_claim": 33,
-    "needs_evidence": 22,
-    "confirmed_vulnerability": 6,
-    "poor_practice": 1
+    "confirmed_vulnerability": 5,
+    "poor_practice": 1,
+    "protected_for_claim": 34,
+    "needs_evidence": 19
   },
-  "published_outcomes": {
-    "protected_for_claim": 33,
-    "needs_evidence": 20,
-    "poor_practice": 3,
-    "confirmed_vulnerability": 6
-  },
-  "families": {
-    "sql_query_candidate": 29,
-    "log_sink_candidate": 1,
-    "ssrf_candidate": 1,
-    "input_validation_candidate": 10,
-    "xss_candidate": 16,
-    "path_traversal_candidate": 5
-  },
-  "not_run": 0,
+  "not_run": 4,
   "failed": 0,
-  "exact_replays": 62,
-  "replay_mismatches": 0,
-  "missing_traces": 0,
-  "future_routine_scope": "--skip-family input-validation (user preference; this complete run includes it)",
-  "artifact_bytes": {
-    "findings.html": 1068290,
-    "findings.json": 3784559,
-    "findings.sarif": 3392642
+  "answer_key": {
+    "expected": 5,
+    "found": 5,
+    "review": 0,
+    "control_false_positives": 0
   },
-  "artifact_sha256": {
-    "findings.html": "2bcc81295ebc7807e69de99ba77424bf14027c2c82dbf38837008c9ae715f66d",
-    "findings.json": "d9ea456445245e0d7372b8e7db8bc4ad900d825c9e579ff0bb0a9712f64f5e51",
-    "findings.sarif": "253fa471cd7db337cc2d27d2f8734147e9d17049e429667fa792a6626cb145b5"
-  },
+  "runtime_confirmation": "none; static source judgments only",
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "results": "../../../.zazz/evaluation/model-resolution-results.md",
   "previous": {
     "date": "2026-11-15",
-    "target_revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
-    "scanner_revision": "analyzer-assessment-coverage (evidence wire v7; see wire-bundle-v7 contract and verification record)",
-    "evaluation_mode": "fresh gpt-6-luna scan: security sink families; standalone input validation excluded",
-    "provider": "openai",
-    "model": "gpt-6-luna",
-    "positions": 62,
-    "provider_requests": 52,
-    "input_tokens": 252519,
+    "scanner_revision": "python-input-refactor (shared Python acquisition; see owning PR and verification contract)",
+    "provider_requests": 62,
+    "input_tokens": 302537,
     "published_records": 62,
-    "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-    "runtime_confirmation": "none; static source judgments only",
     "outcomes": {
-      "protected_for_claim": 27,
-      "needs_evidence": 18,
-      "poor_practice": 2,
-      "confirmed_vulnerability": 5
-    },
-    "not_run": 10,
-    "failed": 0,
-    "previous": {
-      "date": "2026-11-14",
-      "scanner_revision": "analyzer-engine-hardening (E1 + E2; see the pull request)",
-      "provider_requests": 61,
-      "input_tokens": 464233
-    }
-  },
-  "family_outcomes": {
-    "sql_query_candidate": {
-      "protected_for_claim": 24,
-      "poor_practice": 1,
-      "needs_evidence": 2,
-      "confirmed_vulnerability": 2
-    },
-    "log_sink_candidate": {
-      "needs_evidence": 1
-    },
-    "ssrf_candidate": {
-      "confirmed_vulnerability": 1
-    },
-    "input_validation_candidate": {
-      "protected_for_claim": 6,
-      "poor_practice": 1,
-      "needs_evidence": 3
-    },
-    "xss_candidate": {
-      "confirmed_vulnerability": 2,
-      "needs_evidence": 11,
-      "protected_for_claim": 2,
+      "protected_for_claim": 33,
+      "needs_evidence": 22,
+      "confirmed_vulnerability": 6,
       "poor_practice": 1
-    },
-    "path_traversal_candidate": {
-      "confirmed_vulnerability": 1,
-      "needs_evidence": 3,
-      "protected_for_claim": 1
     }
   }
 }

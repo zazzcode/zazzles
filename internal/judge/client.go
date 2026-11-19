@@ -118,7 +118,8 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 		}
 		return a
 	}
-	answers, model, usage, err := c.decodeQuestions(data, questionsFor(use))
+	expected := requestQuestions(use, payload)
+	answers, model, usage, err := c.decodeQuestions(data, expected)
 	if err != nil {
 		a.Reason = err.Error()
 		c.limiter.failed(a.Reason)
@@ -126,13 +127,16 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 	}
 	a.Status = "completed"
 	a.Answers = answers
-	a.AnswerDetails, err = c.answerDetails(data, answers, questionsFor(use))
+	a.AnswerDetails, err = c.answerDetails(data, answers, expected)
 	if err != nil {
 		a.Status, a.Reason = "failed", err.Error()
 		return a
 	}
 	a.Model = model
 	a.Usage = usage
+	a.Resolutions = resolveAnswers(use, payload, answers, c.provider, model)
+	a.FollowUp = neededFollowUp(answers)
+	splitResolutionAnswers(&a)
 	applyPolicy(use, &a)
 	return a
 }
@@ -156,10 +160,21 @@ func (c *Client) budgetedPayload(use analysis.CandidateUse) ([]byte, []analysis.
 		p, err := c.payloadForm(u, true)
 		return err == nil && len(p) <= requestLimit
 	})
+	if len(omitted) > 0 {
+		payload, err = c.payloadForm(reduced, true)
+		if err != nil || len(payload) <= requestLimit {
+			return payload, omitted, err
+		}
+	}
+	// Resolution questions and their citation chains go last: a record is
+	// better judged without them than not judged at all.
+	if bare, err := c.payloadWith(reduced, true, false); err == nil && len(bare) <= requestLimit {
+		full, _ := c.payloadForm(reduced, true)
+		return bare, append(omitted, analysis.EvidenceOmission{Kind: "resolution_questions", Bytes: len(full) - len(bare)}), nil
+	}
 	if len(omitted) == 0 {
 		return payload, nil, nil
 	}
-	payload, err = c.payloadForm(reduced, true)
 	return payload, omitted, err
 }
 
@@ -174,12 +189,22 @@ func overLimit(a *analysis.Assessment, use analysis.CandidateUse, payload []byte
 	}
 }
 func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, error) {
+	return c.payloadWith(use, compact, true)
+}
+
+// payloadWith builds the request; resolve false leaves out the resolution
+// questions, the last reduction for a request that does not otherwise fit.
+func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) ([]byte, error) {
 	bundle := wireBundle(use)
+	var asks []resolutionAsk
 	if compact {
-		var err error
-		bundle, err = compactBundle(bundle)
+		wire, gapIDs, err := compactBundleIDs(bundle)
 		if err != nil {
 			return nil, errors.New("could not compact evidence")
+		}
+		bundle = wire
+		if resolve {
+			asks = resolutionAsks(use, wire, gapIDs)
 		}
 	}
 	var guidance *guidelines.AnalysisGuidelines
@@ -247,6 +272,9 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the selected outbound client contract and the three SSRF questions to this request-to-destination claim. Destination control, destination restriction and protection coverage are separate facets: assess each from the dependencies tagged sink_slot destination and the paths in the outbound facts. Only the destination operand is the claim; request data sent as a body, header, query parameter or option to a fixed destination is not destination control. Supplied evidence is present, not necessarily complete or protective; a control protects only the value, branch and invocation it dominates and only when it rejects before the call. A string prefix, substring or pattern test on unparsed text, a URL parse without a decision, a type check, try/except or try/catch, a response status or content-type check and an error after the request are not restrictions. Redirect-following can leave a permitted host. Do not infer network reachability, DNS answers, proxies or deployment policy and do not claim runtime exploitation. No model confidence may invent missing bindings, operands, controls or coverage."
 	}
+	if len(asks) > 0 {
+		instruction += " Questions named resolve_* ask about one point the scanner could not resolve; answer each from the supplied source alone. Their _cite companions offer ordered eN/gN evidence chains: cite only the chain you relied on, and none when no chain fits. The scanner checks each cited chain against this request before an answer counts."
+	}
 	evidence, err := json.Marshal(struct {
 		Components         any                            `json:"analysis_components,omitempty"`
 		Instruction        string                         `json:"instruction"`
@@ -262,10 +290,14 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 		expectedQuestions = componentQuestions(selected.Questions)
 		choicesFor = func(q question) []map[string]string { return selected.Choices[q.name] }
 	}
+	extra := resolutionQuestions(asks)
 	if c.provider == "openai" {
 		qs := []map[string]any{}
 		for _, q := range expectedQuestions {
 			qs = append(qs, map[string]any{"type": "choice", "name": q.name, "instructions": questionInstructions(q, use), "choices": choicesFor(q)})
+		}
+		for _, q := range extra {
+			qs = append(qs, map[string]any{"type": "choice", "name": q.name, "instructions": q.instructions, "choices": q.choices})
 		}
 		return json.Marshal(map[string]any{"model": c.model, "input": string(evidence), "questions": qs})
 	}
@@ -276,6 +308,13 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 			criteria[v["value"]] = v["description"]
 		}
 		qs[q.name] = map[string]any{"type": "choice", "instructions": questionInstructions(q, use), "criteria": criteria}
+	}
+	for _, q := range extra {
+		criteria := map[string]string{}
+		for _, v := range q.choices {
+			criteria[v["value"]] = v["description"]
+		}
+		qs[q.name] = map[string]any{"type": "choice", "instructions": q.instructions, "criteria": criteria}
 	}
 	field := "state"
 	if c.provider == "gemini" {
@@ -349,7 +388,15 @@ func (c *Client) decodeQuestions(data []byte, expected []question) (map[string]s
 		}
 
 	}
-	if len(list) != len(expected) {
+	// Resolution questions are optional: a missing or invalid resolution
+	// answer is no resolution and changes nothing. Family answers are strict.
+	required := 0
+	for _, q := range expected {
+		if !strings.HasPrefix(q.name, resolvePrefix) {
+			required++
+		}
+	}
+	if len(list) < required || len(list) > len(expected) {
 		return nil, "", nil, errors.New("missing or unexpected answers")
 	}
 	out := map[string]string{}
@@ -359,10 +406,13 @@ func (c *Client) decodeQuestions(data []byte, expected []question) (map[string]s
 		names[q.name] = true
 		allowed[q.name] = questionChoices(q)
 	}
+	seen := map[string]bool{}
 	for _, a := range list {
-		if !names[a.Name] || a.Type != "choice" || out[a.Name] != "" {
+		optional := strings.HasPrefix(a.Name, resolvePrefix)
+		if !names[a.Name] || seen[a.Name] || a.Type != "choice" && !optional {
 			return nil, "", nil, errors.New("refused, duplicate or unexpected answer")
 		}
+		seen[a.Name] = true
 		valid := false
 		for _, v := range allowed[a.Name] {
 			if a.Choice == v["value"] {
@@ -370,9 +420,22 @@ func (c *Client) decodeQuestions(data []byte, expected []question) (map[string]s
 			}
 		}
 		if !valid {
+			if optional {
+				// Kept raw: the citation verifier records why it fails, and an
+				// off-list answer never matches a discharging choice.
+				if a.Choice != "" {
+					out[a.Name] = a.Choice
+				}
+				continue
+			}
 			return nil, "", nil, errors.New("invalid answer choice")
 		}
 		out[a.Name] = a.Choice
+	}
+	for _, q := range expected {
+		if !strings.HasPrefix(q.name, resolvePrefix) && out[q.name] == "" {
+			return nil, "", nil, errors.New("missing or unexpected answers")
+		}
 	}
 	return out, raw.Model, map[string]int64{"input_tokens": usage.Usage.Input, "output_tokens": usage.Usage.Output}, nil
 }

@@ -111,8 +111,42 @@ limits, loops and unresolved applicable calls retain uncertainty instead of losi
 
 Rules and API models capture recommended protective techniques and their preconditions.
 They do not encode app names, challenge answers or arbitrary business restrictions. Luna
-judges the supplied implementation; its confidence cannot close static blockers. Complete
-source availability alone is not complete dispatch, heap, runtime or library knowledge.
+judges the supplied implementation; its confidence cannot close static blockers. A blocker
+closes only through a verified model resolution (below). Complete source availability alone
+is not complete dispatch, heap, runtime or library knowledge.
+
+## Model-assisted evidence resolution
+
+The scanner asks the model specific questions about the points it could not resolve, and an
+answer counts only when the evidence the model cites verifies against the request it received.
+The [contract](../specifications/model-assisted-evidence-resolution.md) owns the detail.
+
+| Question | Asked when | Answer that can change the outcome |
+|---|---|---|
+| Flow gap (`flow-gap-v2`) | A path or SQL flow blocker (comprehension, unresolved call or dispatch, PHP value or loop, transfer limit, unknown transfer) overlaps a dependency | `value_preserved` with a verified chain through the gap discharges the blocker |
+| Stored origin (`stored-origin-v2`) | A `storage_origin_unresolved` XSS or SQL record has a write census with at least one write | A verified cited request write discharges the blocker; `no_request_write_in_evidence` supports Protected only when every key's store is `closed` |
+| Witness (`witness-citation-v2`) | A path record whose facts hold no unsafe witness | A vulnerable verdict whose only contradiction is the missing witness stands with a verified chain along a flow with no containing control and no open gap |
+| Bypass (`bypass-citation-v2`) | A command record with a guarded path | `bypass_identified` needs a verified chain on a guarded path of the unsafe facet |
+| Needed evidence (`needed-evidence-v1`) | A path, SQL, command or XSS record whose gaps name an unresolved symbol | One follow-up carrying the symbol's single exact definition from the snapshot |
+
+The rules that bound it:
+
+- **Citations are checked, not trusted.** The decision APIs accept choice questions only, so each
+  resolution question has a `_cite` companion whose choices are ordered `eN`/`gN` chains built
+  from the request. One verifier (`internal/judge/citation.go`) checks that every cited ID was in
+  the request, the chain runs from a dependency source to the sink, and each hop is a scanner
+  edge or a bridge through the asked gap within a dependency that gap overlaps. A rejected,
+  missing or off-list citation changes nothing and is recorded.
+- **Protection needs scanner proof.** A model-resolved fact may move a record from Review to a
+  finding with the ordinary status. It moves a record to Protected only when the scanner holds
+  the coverage fact itself (for stored origin, every key closed).
+- **No request without a question.** A record whose outcome a scanner blocker fixes, and whose
+  blocker has no resolution question, is not sent (`blocker_unresolvable`).
+- **Bounded requests.** One assessment request and at most one follow-up per record; follow-ups
+  stop at 25% of the scan's assessment requests. Transport retries are unchanged.
+- **Resolution is visible.** Each answer is an `assessment.resolutions` record (question,
+  version, blocker, answer, cited chain and spans, verification, whether policy used it), and a
+  record whose status rests on one carries `model_resolved` in JSON, HTML and SARIF.
 
 ## Reporting and reproducibility
 

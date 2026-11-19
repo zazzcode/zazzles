@@ -1,44 +1,48 @@
 {
-  "date": "2026-11-16",
+  "date": "2026-11-19",
   "target_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
   "upstream": "https://github.com/kOaDT/oss-oopssec-store",
-  "source_run": "run-2413679240",
-  "source_json_sha256": "d830c7b7b12f2462127f16376c3b55e0cf8ab39012aab8646df06aa6bbecff0e",
-  "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
-  "scanner_note": "e1e254e executable; this closeout changes documentation and sample artifacts only.",
-  "evaluation_mode": "Fresh full scan: all implemented analyzers, including standalone input validation",
+  "source_run": "run-796729664",
+  "source_json_sha256": "5e1afa60db127e79489931e8b482ab922f358a54d4261f51f01979ce6fb7508b",
+  "scanner_revision": "model-evidence-resolution 50d4a8f",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "paid_request_cap_both_apps": 180,
-  "provider_requests": 107,
-  "completed_assessments": 107,
-  "derived_assessments": 0,
-  "input_tokens": 466404,
-  "entries": 129,
-  "published_records": 116,
+  "provider_requests": 27,
+  "assessment_requests": 27,
+  "follow_ups_sent": 0,
+  "completed_assessments": 29,
+  "derived_assessments": 2,
+  "input_tokens": 184464,
+  "entries": 131,
+  "published_records": 128,
+  "records_not_sent_blocker_unresolvable": 3,
   "outcomes": {
-    "needs_evidence": 92,
-    "confirmed_vulnerability": 15,
-    "needs_review": 9
+    "confirmed_vulnerability": 23,
+    "needs_evidence": 6
   },
-  "displayed_outcomes": {
-    "needs_evidence": 92,
-    "confirmed_vulnerability": 15,
-    "needs_review": 7
-  },
-  "grouped_records": 2,
-  "not_run": 9,
-  "not_run_reasons": {
-    "Outbound security assessment is not implemented; this is an observation only.": 9
-  },
+  "not_run": 99,
   "failed": 0,
-  "practice_observations": 29,
-  "exact_replay": {
-    "replayed": 107,
-    "mismatched": 0,
-    "trace_absent": 0
+  "answer_key": {
+    "expected": 13,
+    "found": 13,
+    "review": 0,
+    "control_false_positives": 0
   },
-  "target_status_before_and_after": "No tracked changes; no ignored files.",
   "runtime_confirmation": "none; static source judgments only",
-  "publication_note": "Only root is replaced with the public label; evidence and fresh assessments are preserved."
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "results": "../../../.zazz/evaluation/model-resolution-results.md",
+  "previous": {
+    "date": "2026-11-16",
+    "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
+    "source_run": "run-2413679240",
+    "provider_requests": 107,
+    "input_tokens": 466404,
+    "published_records": 116,
+    "outcomes": {
+      "needs_evidence": 92,
+      "confirmed_vulnerability": 15,
+      "needs_review": 9
+    }
+  }
 }

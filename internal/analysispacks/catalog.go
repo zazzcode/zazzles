@@ -60,11 +60,35 @@ func Validate() error { return embeddedErr }
 
 func digest(v any) string { b, _ := json.Marshal(v); return fmt.Sprintf("%x", sha256.Sum256(b)) }
 
+// familyRef is a component's reference as one family selects it: the digest
+// covers the descriptor with Compatibility narrowed to that family's protocol,
+// so another family's protocol bump on a shared component (an input or flow
+// capability) does not change this family's selection or request (D-9).
+func (c *catalog) familyRef(id, protocol string) analysis.ComponentRef {
+	v := c.components[id]
+	scoped := v
+	scoped.Compatibility = nil
+	for _, p := range v.Compatibility {
+		if p == protocol {
+			scoped.Compatibility = []string{p}
+		}
+	}
+	if scoped.Compatibility == nil {
+		return c.refs[id]
+	}
+	return analysis.ComponentRef{ID: v.ID, Version: v.Version, Digest: digest(scoped)}
+}
+
 func newCatalog(items []Component) (*catalog, error) {
 	protocols := map[string]bool{}
 	for _, f := range Families() {
 		protocols[familyProtocol(f.Name)] = true
 	}
+	return newCatalogKnown(items, protocols)
+}
+
+// newCatalogKnown builds a catalog that accepts the given family protocols.
+func newCatalogKnown(items []Component, protocols map[string]bool) (*catalog, error) {
 	c := &catalog{map[string]Component{}, map[string]analysis.ComponentRef{}}
 	for _, v := range items {
 		if v.ID == "" || v.Version == "" || v.Kind == "" || v.Owner == "" || len(v.Domains) == 0 || len(v.Applicability) == 0 || len(v.Tests) == 0 || len(v.Compatibility) == 0 {

@@ -8,7 +8,9 @@ Decision-model assessment is required and core to Zazzles' security-assessment w
 builds source-backed traces and operation/guard evidence for the model to judge.
 OpenAI Luna Decisions (`gpt-6-luna`, `--judge openai`) is the primary model used for
 development and calibration. Google Gemini Decisions is an optional shared adapter; Jev has local
-stub coverage. Model answers cannot replace missing source facts or override claim blockers.
+stub coverage. Model answers cannot replace missing source facts or override claim blockers on
+confidence alone. A blocker closes only when the model answers a specific scanner question and
+the evidence it cites verifies against the request; see [model-resolved facts](#model-resolved-facts).
 
 Inventory, evidence extraction, deterministic practice checks, saved-report rendering and local tests
 can run without an API key. Those are useful inspection/development modes; they do not complete the
@@ -158,12 +160,14 @@ raw historical responses remain intact.
 
 ## Component provenance
 
-SQL, NoSQL, standalone-validation and XSS requests compose scanner-owned interpretation material selected
-by the static analyzer from verified source facts. Fresh schema-4 JSON reports identify the selected
-pack/components, versions and digests; a selection alone does not mean a model assessment ran. SQL
-uses `sql-components-v2`, NoSQL `nosql-components-v1` and standalone validation
-`validation-components-v1`; XSS uses `xss-components-v1`. Unmigrated families retain their existing protocols. Mandatory evidence
-and consistency gates remain in Go.
+Registered families compose scanner-owned interpretation material selected by the static analyzer
+from verified source facts. Fresh schema-4 JSON reports identify the selected pack/components,
+versions and digests; a selection alone does not mean a model assessment ran. Current protocols
+are `sql-components-v4`, `nosql-components-v2`, `validation-components-v2`, `xss-components-v3`,
+`command-components-v4`, `path-components-v3`, `ssrf-components-v2`, `code-components-v1`,
+`redirect-components-v1` and `log-components-v2`. A component shared by several families is
+referenced per family, so a protocol change re-judges only its own family. Mandatory evidence and
+consistency gates remain in Go.
 
 Missing required material, conflicting selection or size limits prevent a model request and retain
 an explicit unresolved assessment. No generic guidance fallback supplies missing protection.
@@ -172,6 +176,28 @@ Changed requests need fresh assessment; exporting an older report preserves its 
 and does not assign it new component identities. See the
 [technical approach](technical-approach.md#analysis-knowledge-and-components).
 
+
+## Model-resolved facts
+
+Path, SQL, command and XSS requests can carry `resolve_*` questions about one point the scanner
+could not resolve: whether a value passes through an unresolved span, whether a listed stored
+write carries request data, which flow witnesses a traversal verdict, which path a command guard
+bypass uses, and which one missing helper, value or middleware definition would help. Each
+citation companion offers evidence chains built from the request; the scanner verifies the chosen
+chain before the answer counts.
+
+- A verified answer can move a record from Review to a finding. The finding keeps the ordinary
+  status and shows a **Model-resolved** mark with provider, model, question version and cited IDs.
+- A model-resolved fact never makes a record Protected unless the scanner already holds the
+  coverage fact (a stored-origin key whose store is closed).
+- A record whose blocker has no such question is not sent: no answer could change it. The run
+  summary counts these records (`blocker_unresolvable`).
+- At most one follow-up per record, only when the scanned snapshot holds exactly one definition of
+  the named symbol, and at most 25% of the scan's assessment requests. The run summary reports
+  follow-ups beside assessment requests; a record over the cap records `follow_up_cap_reached`.
+
+Resolution answers are optional in the provider response: a missing or off-list answer is no
+resolution and leaves the record as the family answers alone determine.
 
 ## Outbound observations
 

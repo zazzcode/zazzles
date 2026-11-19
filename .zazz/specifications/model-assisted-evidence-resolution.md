@@ -82,6 +82,7 @@ whose outcome was fixed are already no longer sent; what remains is below.
 | W4. Cited witness on disagreement | `internal/judge` (path) | When the model's verdict contradicts the scanner's facts, a verified cited flow stands as a finding; otherwise the existing inconsistency blocker applies |
 | W5. One evidence request | `internal/judge` (scheduling), adapters' source index | The model may name one missing item (a helper body, a template, a middleware). When the snapshot resolves it, one follow-up request carries it |
 | W6. Measurement | `.zazz/evaluation/` | Per provider and model: blockers resolved, citations rejected, follow-ups sent, outcome moves, and a source review of model-resolved findings |
+| W7. Project and design documentation | `README.md`, `.zazz/project/`, `.zazz/architecture/` | The README explains in more detail how the decision model is used and why it is useful for judging a record as a vulnerability or as protected; the implementation plan lists this contract and the false-positive contract; the `.zazz/` design and architecture documents describe the resolution protocol |
 
 Files:
 
@@ -97,6 +98,9 @@ Files:
 | `internal/report` (JSON, HTML, SARIF) | Modified | Present model-resolved provenance |
 | `.zazz/architecture/trace-judgment.md`, `docs/decision-models.md`, `docs/interpreting-results.md`, `docs/analysis/calibration.md` | Modified | The revised gate rule and how to read a model-resolved record |
 | `.zazz/evaluation/model-resolution-results.md`, `.zazz/evaluation/recall-gap-inventory/check.py` | New, modified | W6 record and its resolution columns |
+| `README.md` | Modified | W7 decision-model explanation |
+| `.zazz/project/implementation-plan.md` | Modified | W7 plan entries for the false-positive and evidence-resolution contracts |
+| `.zazz/architecture/evidence-and-claims.md`, `analysis-packs.md`, `README.md` and other affected `.zazz/` design documents | Modified | W7 resolution record, citation verifier, per-family digest and follow-up design |
 
 The diff stays inside these paths plus their tests and fixtures.
 
@@ -210,6 +214,13 @@ without the scanner's coverage fact, or the source review in AC6 finds a false f
 7. **AC7.** A model-resolved finding keeps the ordinary finding status; JSON, HTML and SARIF each
    show its model-resolved provenance mark (provider, model, question version, cited IDs), the
    architecture and user docs state the revised gate, and the contributor gate passes.
+8. **AC8 (W7).** The project README describes how the decision model is used (the scanner builds
+   the case and asks specific questions, the model answers, the scanner checks the answers and
+   citations against its facts) and why that makes it useful for judging a record as a
+   vulnerability or as protected, including what model confidence cannot do. The implementation
+   plan lists the false-positive contract and this contract with their status, and the `.zazz/`
+   design and architecture documents that own the affected topics describe the resolution
+   protocol. Verified by `doc-check` on the changed documents.
 
 ## 8. Test strategy
 
@@ -232,16 +243,18 @@ without the scanner's coverage fact, or the source review in AC6 finds a false f
 4. W3a write census (offline only, no status change), then W3b.
 5. W5.
 6. W6 live runs and source review.
+7. W7 project README, implementation plan and `.zazz/` design documents.
 
 Each step is its own commit with its own evidence.
 
 ## 10. Definition of done
 
-- [ ] The verifier and policy hook pass their stub tests (AC1).
-- [ ] Each shipped workstream meets its AC.
-- [ ] Live results and the source review are recorded with no false finding (AC6).
-- [ ] The architecture rule, user docs and analysis guides are updated (AC7).
-- [ ] The recall floor holds.
+- [x] The verifier and policy hook pass their stub tests (AC1).
+- [ ] Each shipped workstream meets its AC. W3a is partial: 29 of 45 write sets (AC3 asks 40).
+- [x] Live results and the source review are recorded with no false finding (AC6).
+- [x] The architecture rule, user docs and analysis guides are updated (AC7).
+- [x] The recall floor holds.
+- [x] The README, implementation plan and `.zazz/` design documents are updated (AC8).
 
 ## 11. Owner decisions
 
@@ -305,3 +318,61 @@ path family, OopsSec full, DVWA full) on `openai` `gpt-6-luna`, without a second
 records the decisions; the invariants, D-6, AC5, AC7 and §6 carry the 25% follow-up cap, the
 same-status provenance mark and the authorized runs.
 
+
+### 2026-11-19 — Owner adds project and design documentation (W7)
+
+**Source.** Owner steering during implementation.
+
+**Changed Sections.** §4 (W7 row and files), §7 AC8, §9 step 7, §10.
+
+**Rationale.** The owner asked for a fuller README explanation of how the decision model is used
+and why it helps judge vulnerable or protected, an implementation plan that lists the
+false-positive and evidence-resolution contracts, and updated `.zazz/` design and architecture
+documents.
+
+**Summary.** Added W7 with its files, AC8 and an execution step after W6.
+
+**Verification Impact.** `doc-check` on the changed documents; no code or test change.
+
+### 2026-11-19 — Implementation (W1–W5, W7; W6 runs pending)
+
+**Source.** Implementation-discovered constraints.
+
+**Changed Sections.** None of the contract's requirements; deviations within adaptive guidance.
+
+**Summary.**
+
+- **Choice-encoded citations (D-2).** The decision APIs accept only choice questions, so each
+  resolution question has a `_cite` companion whose choices are ordered `eN`/`gN` chains built from
+  the request, plus `none`. The one verifier still checks every cited ID against the request sent
+  and every hop against scanner edges or the asked gap. Resolution answers are optional in the
+  response; an off-list answer is kept raw so the verifier records why it fails.
+- **W5 choices.** The model names a missing item by choosing among symbols the scanner names in the
+  record's own gap details; the snapshot must hold exactly one definition. The question is asked
+  only by path, SQL, command and XSS, whose protocols this contract bumps.
+- **W3a placement.** One shared census in `internal/parse/stored_census.go` (snapshot files checked
+  by hash) covers PHP and Python SQL tables, PHP session keys and Prisma own-API reads instead of
+  per-adapter code. Offline it covers 29 of the 45 records, short of AC3's 40: the 13 Juice Shop
+  `/application-configuration` records and 3 file reads have no storage read to census.
+- **Commits.** The SQL flow-gap discharge landed with W1 because AC1 exercises it; W2 (path) and W4
+  share one commit because both edit `applyPathPolicy`.
+- **Protocols.** `sql-components-v4`, `command-components-v4`, `path-components-v3`,
+  `xss-components-v3`.
+
+**Verification Impact.** AC1, AC2, AC4, AC5, AC7 and AC8 have offline evidence; AC3 is partial
+(write sets 29/45, judgment tests pass); AC6 awaits the authorized live runs.
+
+### 2026-11-19 — Live runs and source review (W6)
+
+**Source.** Authorized live runs and their source review.
+
+**Changed Sections.** §10 checklist.
+
+**Summary.** VulnPy path (260 requests, 61 follow-ups), OopsSec (27) and DVWA (169 after a rerun)
+on `gpt-6-luna`. The first DVWA run found a defect, a one-choice citation question that the
+provider rejects; such records are now gated (`b6e050d`). Source review found one model-resolved
+finding, true (DVWA FI medium), and one wrong verified flow-gap answer that produced no finding:
+the VulnPy `TRIGGER_MAP` selection. A structured `PathFlow.selection` fact now stops a selection
+flow from becoming a witness (`2f41d5c`). Results: [model-resolution-results](../evaluation/model-resolution-results.md).
+
+**Verification Impact.** AC6 met; AC3 remains partial.

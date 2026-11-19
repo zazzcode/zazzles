@@ -73,13 +73,23 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			a.Protection = "uncertain"
 		}
 	}
-	blockers := append([]analysis.Gap{}, c.Blockers...)
+	// A flow gap discharged by a verified model resolution (W1, W2) leaves the
+	// blockers; the resolution stays on the record as provenance.
+	blockers, discharged := dischargeFlowGaps(a, c.Blockers)
+	blockers, cited, closedNoWrite := dischargeStoredOrigin(use, a, blockers)
+	if cited {
+		discharged = append(discharged, analysis.Gap{Kind: "storage_origin_unresolved"})
+	}
+	blockers = append([]analysis.Gap{}, blockers...)
 	if c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" {
 		for _, role := range []string{"sql_all_inputs_hex", "selector_type_guard", "selector_path_string"} {
 			if len(c.Evidence[role]) > 0 {
 				blockers = append(blockers, analysis.Gap{Kind: "injection_constraint_review", Detail: "Vulnerable answer requires independent review against supplied " + role + " evidence; no constraint bypass is established by this bounded policy", At: use.Sink.Span})
 			}
 		}
+	}
+	if use.Kind == "sql_query_candidate" && c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" && boundParametersOnly(use) {
+		blockers = append(blockers, analysis.Gap{Kind: "bound_parameters_only", Detail: "A vulnerable answer needs request-derived data in the SQL text; every request-derived value of this statement is a bound parameter and the scanner found no interpolated query text", At: use.Sink.Span})
 	}
 	if c.ClaimKind == "injection" && use.APIModel != nil && use.APIModel.ID == analysispacks.SequelizeFinderContract && (a.Answers["injection_protection"] == "vulnerable" || a.Answers["injection_protection"] == "insufficient") && !finderRawSQL(use.Sink.Text) {
 		blockers = append(blockers, analysis.Gap{Kind: "finder_injection_inconsistent", Detail: "An injection answer for a Sequelize model finder needs raw SQL (Sequelize.literal, sequelize.literal or Op.literal) in the same call; where values, including Op.like operands, are bound. Unescaped % and _ in a LIKE pattern are a wildcard and input-validation concern, not SQL syntax control.", At: use.Sink.Span})
@@ -144,6 +154,11 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.Reason = "claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained"
 		return
 	}
+	if closedNoWrite && c.ClaimKind == "injection" {
+		a.FindingStatus, a.Protection = "protected_for_claim", "sufficient"
+		a.Reason = "Model-resolved with scanner coverage: no listed write stores a request-controlled value into the column read and every store is closed, so the stored query operand is not attacker-controlled for this claim."
+		return
+	}
 	if c.ClaimKind == "injection" {
 		switch a.Answers["injection_protection"] {
 		case "vulnerable":
@@ -155,7 +170,16 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			}
 			a.FindingStatus = "confirmed_vulnerability"
 			a.Reason = "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
+			if len(discharged) > 0 {
+				a.Reason += " " + modelResolvedNote(discharged)
+			}
 		case "protected":
+			if len(discharged) > 0 {
+				a.FindingStatus = "needs_evidence"
+				a.Protection = "uncertain"
+				a.Reason = "Protection would rest on a model-resolved flow fact; protection needs scanner proof, so the record stays Review."
+				return
+			}
 			if use.Kind == "nosql_query_candidate" && a.Answers["all_paths_protected"] != "yes" {
 				a.FindingStatus = "needs_evidence"
 				a.Protection = "uncertain"
@@ -177,6 +201,11 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.FindingStatus = "supported_potential"
 		a.Reason = "source-backed claim has no declared blocking gaps; this is not runtime confirmation"
 	case "sufficient":
+		if len(discharged) > 0 {
+			a.FindingStatus, a.Protection = "needs_evidence", "uncertain"
+			a.Reason = "Protection would rest on a model-resolved flow fact; protection needs scanner proof."
+			return
+		}
 		a.FindingStatus = "protected_for_claim"
 		a.Reason = "assessment applies only to the stated constraint and supplied analysis scope"
 	case "not_applicable":
@@ -184,4 +213,32 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	default:
 		a.FindingStatus = "needs_evidence"
 	}
+}
+
+// boundParametersOnly reports a SQL record whose every dependency reaches the
+// sql_parameters slot and whose text the scanner did not find interpolated:
+// bound values are data and cannot change statement structure, so such a
+// record cannot be Confirmed from an injection answer alone.
+func boundParametersOnly(use analysis.CandidateUse) bool {
+	if len(use.Dependencies) == 0 {
+		return false
+	}
+	for _, d := range use.Dependencies {
+		if d.SinkSlot != "sql_parameters" {
+			return false
+		}
+	}
+	for _, g := range use.Gaps {
+		if g.Kind == "query_text_interpolated" {
+			return false
+		}
+	}
+	if use.Completeness != nil {
+		for _, g := range use.Completeness.Coverage {
+			if g.Kind == "query_text_interpolated" {
+				return false
+			}
+		}
+	}
+	return true
 }

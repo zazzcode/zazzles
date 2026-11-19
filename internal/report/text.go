@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
@@ -43,6 +44,9 @@ func Text(w io.Writer, r *analysis.AnalysisReport) {
 		}
 		fmt.Fprintf(w, "%s: %s [%s]\n%s\nentry=%s context=%s %s %s:%d sources=%d gaps=%d judge=%s\n", f.RecordType, f.Title, f.Status, f.Summary, u.EntryID, u.InvocationContextID, u.Kind, u.Sink.Span.File, u.Sink.Span.StartLine, len(u.Dependencies), len(u.Gaps), u.Assessment.Status)
 		fmt.Fprintf(w, "assessment=%s (%s) blocking=%d linked=%d\n", f.AssessmentState, assessmentLabel(f.AssessmentState), len(f.BlockingEvidence), len(f.LinkedUseIDs))
+		if m := f.ModelResolved; m != nil {
+			fmt.Fprintf(w, "model-resolved=%s/%s versions=%s cited=%s\n", m.Provider, m.Model, strings.Join(m.QuestionVersions, ","), strings.Join(m.CitedIDs, "; "))
+		}
 		if u.Check != nil {
 			fmt.Fprintf(w, "check=%s finding=%s protection=%s blockers=%d\n", u.Check.ID, u.Assessment.FindingStatus, u.Assessment.Protection, len(u.Assessment.BlockingGaps))
 		}

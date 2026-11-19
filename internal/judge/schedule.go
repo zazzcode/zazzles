@@ -113,7 +113,7 @@ func (c *Client) plan(ctx context.Context, report *analysis.AnalysisReport, orde
 			early[i] = a
 			continue
 		}
-		if a, fixed := validationGate(u, opts); fixed {
+		if a, fixed := sendGate(u, opts); fixed {
 			early[i] = a
 			continue
 		}
@@ -270,16 +270,18 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 		trace DecisionTrace
 	}
 	completed := map[string]decision{}
-	calls, derived, contexts, undecidable := 0, 0, 0, 0
+	calls, derived, contexts, undecidable, unresolvable := 0, 0, 0, 0, 0
 	failed := false
 	for _, i := range order {
 		u := &report.Uses[i]
 		if a, ok := early[i]; ok {
 			u.Assessment = a
 			_, excluded := familyExclusion(*u, opts)
-			_, fixed := validationGate(*u, opts)
-			if fixed {
+			_, fixed := sendGate(*u, opts)
+			if _, v := validationGate(*u, opts); v {
 				undecidable++
+			} else if fixed {
+				unresolvable++
 			}
 			if !excluded && !fixed {
 				failed = true
@@ -323,14 +325,29 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 			}
 		}
 	}
+	if sent, unresolved, capped := c.followUps(ctx, report, order, opts, calls); sent+unresolved+capped > 0 {
+		report.Limitations = append(report.Limitations, fmt.Sprintf("Evidence follow-ups: %d sent beside %d assessment requests (cap %d%%, %d); %d named items the snapshot did not resolve exactly; %d over the cap (follow_up_cap_reached).", sent, calls, FollowUpShare, calls*FollowUpShare/100, unresolved, capped))
+	}
 	if len(opts.SkippedFamilies) > 0 || len(opts.OnlyFamilies) > 0 {
 		report.Limitations = append(report.Limitations, "Analyzer family selection: skipped ["+strings.Join(opts.SkippedFamilies, ",")+"], only ["+strings.Join(opts.OnlyFamilies, ",")+"]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.")
 	}
 	if undecidable > 0 {
 		report.Limitations = append(report.Limitations, fmt.Sprintf("%d validation records were not sent to the judge: their field-policy gate lacks required evidence, so no answer could change their Review outcome (%s).", undecidable, ValidationUndecidable))
 	}
+	if unresolvable > 0 {
+		report.Limitations = append(report.Limitations, fmt.Sprintf("%d records were not sent to the judge: a scanner blocker fixes their Review outcome and has no resolution question, so no answer could change it (%s).", unresolvable, BlockerUnresolvable))
+	}
 	report.Limitations = append(report.Limitations, fmt.Sprintf("Judged %d distinct candidate signatures across %d total entry contexts (%d derived across equivalent entry contexts).", len(completed), contexts, derived))
 	return failed
+}
+
+// sendGate settles a record no answer could change before any request: the
+// validation decidability gate, then the resolution gate (D-7).
+func sendGate(u analysis.CandidateUse, opts ScheduleOptions) (analysis.Assessment, bool) {
+	if a, fixed := validationGate(u, opts); fixed {
+		return a, true
+	}
+	return resolutionGate(u)
 }
 
 func containsFamily(names []string, family string) bool {

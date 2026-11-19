@@ -169,6 +169,32 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	python := strings.HasSuffix(use.Sink.Span.File, ".py")
 	ans := a.Answers
 
+	// W2: a flow gap discharged by a verified value_preserved chain leaves the
+	// blockers, and an unknown, uncontrolled flow whose only gaps were
+	// discharged carries the request value raw (a model-resolved fact).
+	scanner, discharged := dischargeFlowGaps(a, c.Blockers)
+	if len(discharged) > 0 {
+		resolved := *f
+		resolved.Paths = append([]analysis.PathFlow{}, f.Paths...)
+		for i, flow := range resolved.Paths {
+			if flow.Protection != "unknown" || len(flow.Controls) > 0 || flow.Selection || flow.Dependency < 0 || flow.Dependency >= len(use.Dependencies) {
+				continue
+			}
+			d := use.Dependencies[flow.Dependency]
+			hit, open := false, false
+			for _, g := range discharged {
+				hit = hit || overlapsDependency(g, d, use.Sink)
+			}
+			for _, g := range scanner {
+				open = open || overlapsDependency(g, d, use.Sink)
+			}
+			if hit && !open {
+				resolved.Paths[i].Protection = "raw"
+			}
+		}
+		f = &resolved
+	}
+
 	// Consistency gates: answers must agree with the established facts.
 	var contradictions []string
 	contradict := func(format string, args ...any) {
@@ -185,9 +211,11 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	if len(f.Paths) == 0 {
 		contradict("no request-derived path flow is recorded")
 	}
+	noWitness := false
 	switch ans["path_traversal"] {
 	case "vulnerable":
 		if !witness && !weakControlsOnly(f) {
+			noWitness = len(contradictions) == 0
 			contradict("traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)")
 		}
 	case "protected":
@@ -238,7 +266,7 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	// A raw witness is scoped to its own source-to-operand path; unresolved
 	// siblings stay visible as path-scoped blockers without voiding it.
 	global := []analysis.Gap{}
-	for _, g := range c.Blockers {
+	for _, g := range scanner {
 		touches := false
 		for _, d := range use.Dependencies {
 			if gapTouchesCommandDependency(g, d) {
@@ -250,14 +278,30 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		}
 	}
 	scoped := append(append([]analysis.Gap{}, blockers...), global...)
+	// W4 (D-5): when the verdict's only contradiction is the missing witness,
+	// the same request's cited chain decides it. A verified chain along a flow
+	// with no containing control and no open gap stands as a finding.
+	if noWitness && len(contradictions) == 1 && ans["containment_control"] == "none" && len(scoped) == 0 {
+		if r := verifiedResolution(a, resolvePrefix+"witness", ""); r != nil && citedWitness(use, f, scanner, citedDependency(r)) {
+			r.Discharged = true
+			a.BlockingGaps = nil
+			a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
+			a.Reason = "Model-resolved: the scanner did not establish an unsafe witness, and the decision model's traversal answer cites a verified source-to-operand chain along a flow with no containing control and no unresolved gap (" + f.Operation + " under the declared " + f.Platform + " assumption). The cited chain is recorded on the assessment. This is a static judgment, not runtime exploitation."
+			return
+		}
+	}
 	if len(contradictions) > 0 {
-		a.BlockingGaps = append(append(blockers, c.Blockers...), analysis.Gap{Kind: "path_answers_inconsistent", Detail: strings.Join(contradictions, "; "), At: use.Sink.Span})
+		a.BlockingGaps = append(append(blockers, scanner...), analysis.Gap{Kind: "path_answers_inconsistent", Detail: strings.Join(contradictions, "; "), At: use.Sink.Span})
 		a.Reason = "Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
 		return
 	}
 	if ans["path_traversal"] == "vulnerable" && ans["containment_control"] == "none" && witness && len(scoped) == 0 {
 		a.BlockingGaps = nil
 		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
+		if len(discharged) > 0 {
+			a.Reason = modelResolvedNote(discharged) + " With the gap resolved, a consistent traversal answer is supported by a source-to-operand path with a verified " + f.Operation + " binding under the declared " + f.Platform + " assumption and no enforced containment. This is a static judgment, not runtime exploitation."
+			return
+		}
 		a.Reason = "A consistent traversal answer is supported by an independent source-to-operand path with a verified " + f.Operation + " binding under the declared " + f.Platform + " assumption; no enforced containment is established. Unresolved sibling paths remain visible. This is a static judgment, not runtime exploitation, symbolic-link or filesystem-state analysis, or independent Findings Review."
 		return
 	}
@@ -267,18 +311,51 @@ func applyPathPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.Reason = "Every request-derived path is guarded only by a recognized weak control (a prefix comparison without a separator boundary, a '..' text test or a separator-only test) that does not establish containment, and the assessment finds no enforced containment. This is a construction-practice finding, not a confirmed exploit: whether a sibling path or a decoded value can pass the control depends on the filesystem layout and inputs, which are not inferred."
 		return
 	}
-	a.BlockingGaps = append(append([]analysis.Gap{}, blockers...), c.Blockers...)
+	a.BlockingGaps = append(append([]analysis.Gap{}, blockers...), scanner...)
 	if len(a.BlockingGaps) > 0 {
 		a.Reason = "Claim-relevant path evidence is incomplete; raw answers and unrelated coverage gaps are retained."
 		return
 	}
 	switch ans["containment_control"] {
 	case "finite_allowlist", "lexical_boundary", "resolved_boundary":
-		if ans["path_traversal"] == "protected" && ans["protection_coverage"] == "complete" && guardedAll && !rawAny && !unknownAny {
+		if ans["path_traversal"] == "protected" && ans["protection_coverage"] == "complete" && guardedAll && !rawAny && !unknownAny && len(discharged) == 0 {
 			a.FindingStatus, a.Protection = "protected_for_claim", "sufficient"
 			a.Reason = "Every request-derived path is covered by a source-backed enforcing control on the same value with complete coverage under the declared " + f.Platform + " assumption; this applies only to the stated claim and does not address symbolic links created after the check unless a resolved boundary was established."
 			return
 		}
 	}
 	a.Reason = "The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding."
+}
+
+// citedWitness reports that dependency dep's flow can carry a cited witness:
+// it exists, no control on it can establish containment, it is not reduced,
+// an archive entry needs a known-vulnerable extractor, and no open scanner
+// gap lies on its chain.
+func citedWitness(use analysis.CandidateUse, f *analysis.PathFacts, open []analysis.Gap, dep int) bool {
+	if dep < 0 || dep >= len(use.Dependencies) {
+		return false
+	}
+	for _, g := range open {
+		if overlapsDependency(g, use.Dependencies[dep], use.Sink) {
+			return false
+		}
+	}
+	for _, flow := range f.Paths {
+		if flow.Dependency != dep {
+			continue
+		}
+		if anyEnforcing(f, flow) || hasTransform(flow, analysis.PathTransformReduce) || flow.Selection {
+			return false
+		}
+		if flow.Operand == analysis.PathSlotArchive && (f.Extractor == nil || f.Extractor.Assessment != "vulnerable_version") {
+			return false
+		}
+		for _, k := range guardKindsOf(f, flow) {
+			if !analysis.KnownNonEnforcingPathGuard(k) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }

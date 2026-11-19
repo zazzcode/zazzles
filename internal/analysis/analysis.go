@@ -77,6 +77,24 @@ type Assessment struct {
 	QuestionVersion   string                  `json:"question_version,omitempty"`
 	Protection        string                  `json:"protection,omitempty"`
 	Reason            string                  `json:"reason,omitempty"`
+	// Resolutions are the record's model-resolved facts and their citation
+	// verification; see Resolution.
+	Resolutions []Resolution `json:"resolutions,omitempty"`
+	// FollowUp records the one evidence follow-up request, when one was
+	// asked for.
+	FollowUp *FollowUp `json:"follow_up,omitempty"`
+}
+
+// FollowUp is the single evidence follow-up of a record: the item the model
+// named, whether the snapshot resolved it, and whether a request was sent.
+type FollowUp struct {
+	Kind   string `json:"kind"`
+	Symbol string `json:"symbol"`
+	// Status is "sent", "unresolved" (the snapshot did not resolve the
+	// symbol exactly), "follow_up_cap_reached" or "failed".
+	Status   string    `json:"status"`
+	Evidence *Evidence `json:"evidence,omitempty"`
+	Reason   string    `json:"reason,omitempty"`
 }
 
 // EvidenceOmission identifies one supplied evidence item that a size-bounded

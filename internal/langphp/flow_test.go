@@ -854,3 +854,38 @@ mysqli_query($conn, "INSERT INTO hits (ip, host) VALUES ('{$_SERVER['REMOTE_ADDR
 		t.Fatalf("SERVER_NAME follows the Host header and stays a source: %#v", r.Uses)
 	}
 }
+
+func TestPHPExecuteCarriesPreparedText(t *testing.T) {
+	// DVWA brute impossible shape: execute() runs a prepared statement whose
+	// only request value is bound; the record must carry the prepared text.
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php
+$db = new PDO('sqlite::memory:');
+$user = $_POST['username'];
+$data = $db->prepare('UPDATE users SET failed_login = (failed_login + 1) WHERE user = (:user) LIMIT 1;');
+$data->bindParam(':user', $user, PDO::PARAM_STR);
+$data->execute();
+`}), "")
+	for _, u := range phpUsesOfKind(r, "sql_query_candidate") {
+		if !strings.Contains(u.Sink.Text, "execute") {
+			continue
+		}
+		text := u.Completeness.Evidence["query_text"]
+		if len(text) != 1 || !strings.Contains(text[0].Text, "(:user)") {
+			t.Fatalf("execute query_text: %#v", text)
+		}
+		sent := false
+		for _, e := range u.Context {
+			sent = sent || e.Kind == "query_text" && strings.Contains(e.Text, "(:user)")
+		}
+		if !sent {
+			t.Fatalf("prepared text is not in the record's context: %#v", u.Context)
+		}
+		for _, d := range u.Dependencies {
+			if d.SinkSlot != "sql_parameters" {
+				t.Fatalf("bound value slot: %#v", d)
+			}
+		}
+		return
+	}
+	t.Fatalf("missing execute record: %#v", r.Uses)
+}

@@ -5,7 +5,21 @@
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
 [Results](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (published 2026-11-17)
+## Current report (rebuilt 2026-11-19)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
+scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
+source judgments, not runtime exploit confirmation.
+
+- 174 entries, 240 analysis records: **120 Confirmed, 102 Review, 15 Protected, 2 practice, 1 not applicable**.
+- 169 requests, 172 completed assessments (3 shared by equivalent entry contexts), 1,751,729 input tokens. No provider failures. 61 records are not sent because their scanner blocker has no question the model could answer.
+- **Answer key:** 9 of 10 expected positives found, 1 Review; no keyed control is a finding.
+- **One model-resolved finding:** the medium-level file inclusion `vulnerabilities/fi/index.php:36`. The model cited the chain `$_GET['page']` → two `str_replace` calls → `include`, which the scanner verified. Source review confirms it: `....//` becomes `../`, and absolute paths pass.
+- The upload page (`upload/source/low.php`) stays Review: `basename()` blocks path traversal, and its real flaw (any file type) is outside our analyzers.
+- No Confirmed record comes only from impossible-level code. The earlier false positive `brute/source/impossible.php:90` (a bound PDO `execute()`) is now Protected: the record carries its prepared SQL text.
+- 7 shared-render stored-XSS records exceed the 64KB request limit and stay Review without a request.
+
+## Previous report (published 2026-11-17)
 
 Fresh full-tree static analysis of [DVWA](https://github.com/digininja/DVWA) at revision
 `a1978a2` (full pin in metadata) with the plain-PHP adapter: server-mapped file entries,

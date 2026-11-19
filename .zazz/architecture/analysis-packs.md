@@ -233,11 +233,19 @@ lossless compaction. Excess material or a still-oversize body remains unresolved
 required content is never truncated. Measurements are recorded under verification below.
 
 Fresh analysis JSON uses schema 4 and model-facing evidence version 7. Protocols are
-`sql-components-v3`, `nosql-components-v2`, `validation-components-v2`,
-`xss-components-v2`, `command-components-v2`, `path-components-v2`,
-`ssrf-components-v2`, `log-components-v2`, and generic `candidate-use-v11`.
+`sql-components-v4`, `nosql-components-v2`, `validation-components-v2`,
+`xss-components-v3`, `command-components-v4`, `path-components-v3`,
+`ssrf-components-v2`, `code-components-v1`, `redirect-components-v1`,
+`log-components-v2`, and generic `candidate-use-v11`. Resolution questions carry their own
+versions (`flow-gap-v2`, `stored-origin-v2`, `witness-citation-v2`, `bypass-citation-v2`,
+`needed-evidence-v1`); a change to one bumps its family protocol.
 Historical reports keep their original answers and protocols but cannot replay onto
 changed requests. Route-inventory schema 1 is independent.
+
+A selection's component references are family-scoped: a shared component (an input or flow
+capability) is digested with its compatibility list narrowed to the selecting family's
+protocol, so one family's protocol bump moves only that family's selections and requests
+(`TestFamilyDigestIsolation`).
 
 Every request uses compact evidence rows, one evidence coverage ledger and the
 original dependency/control-edge witnesses. Model-facing components list IDs;

@@ -36,6 +36,9 @@ type phpValue struct {
 	// sqlText keeps the SQL text value on statements/results so a later
 	// execute() re-records construction-time taint.
 	sqlText *phpValue
+	// sqlTextEvidence is the prepared SQL text operand of a statement, so
+	// execute() supplies the statement it runs, not only its bindings.
+	sqlTextEvidence []analysis.Evidence
 	// sqlParams collects values bound through bindParam/bindValue so execute()
 	// records the parameter operands with their binding controls.
 	sqlParams []phpValue

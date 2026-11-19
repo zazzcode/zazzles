@@ -16,9 +16,11 @@ func Assemble(entry string, js, py, php *analysis.AnalysisReport) (*analysis.Ana
 			return nil, fmt.Errorf("assemble: a report without JS/TS needs exactly one Python or PHP entry report")
 		}
 		if py != nil {
+			CensusStoredWrites(py)
 			KeepStoredOriginFacts(py)
 			return py, nil
 		}
+		CensusStoredWrites(php)
 		KeepStoredOriginFacts(php)
 		return php, nil
 	}
@@ -40,6 +42,7 @@ func Assemble(entry string, js, py, php *analysis.AnalysisReport) (*analysis.Ana
 		return nil, err
 	}
 	blockUnlinkedStoredOrigins(out)
+	CensusStoredWrites(out)
 	KeepStoredOriginFacts(out)
 	linkNavigationClaims(out)
 	return out, nil

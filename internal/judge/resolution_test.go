@@ -267,3 +267,18 @@ func TestResolutionGate(t *testing.T) {
 		t.Fatalf("gate: fixed %v %+v", fixed, a)
 	}
 }
+
+func TestCitationLabelResolvesTextRef(t *testing.T) {
+	// Deduplicated evidence names its text through text_ref; the citation
+	// label must show that code, not an empty string.
+	excerpts := []any{[]any{0, 10, 12, "  var url = m[1];\n  exec('identify ' + url, cb);\n}"}}
+	if got := excerptText(excerpts, "s0", 11, 11, 3, 30); got != "exec('identify ' + url, cb)" {
+		t.Fatalf("one line: %q", got)
+	}
+	if got := excerptText(excerpts, "s0", 10, 11, 7, 19); got != "url = m[1];\n  exec('identify '" {
+		t.Fatalf("two lines: %q", got)
+	}
+	if excerptText(excerpts, "s9", 10, 10, 1, 2) != "" || excerptText(excerpts, "s0", 20, 20, 1, 2) != "" {
+		t.Fatal("an unknown reference or line must give no text")
+	}
+}

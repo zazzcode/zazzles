@@ -237,7 +237,7 @@ Fresh analysis JSON uses schema 4 and model-facing evidence version 7. Protocols
 `xss-components-v3`, `command-components-v4`, `path-components-v3`,
 `ssrf-components-v2`, `code-components-v1`, `redirect-components-v1`,
 `log-components-v2`, and generic `candidate-use-v11`. Resolution questions carry their own
-versions (`flow-gap-v1`, `stored-origin-v1`, `witness-citation-v1`, `bypass-citation-v1`,
+versions (`flow-gap-v2`, `stored-origin-v2`, `witness-citation-v2`, `bypass-citation-v2`,
 `needed-evidence-v1`); a change to one bumps its family protocol.
 Historical reports keep their original answers and protocols but cannot replay onto
 changed requests. Route-inventory schema 1 is independent.

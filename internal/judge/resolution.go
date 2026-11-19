@@ -13,10 +13,10 @@ import (
 // Resolution question versions. A changed wording or choice set takes a new
 // version, and the owning family protocol is bumped with it.
 const (
-	FlowGapQuestionVersion      = "flow-gap-v1"
-	WitnessQuestionVersion      = "witness-citation-v1"
-	BypassQuestionVersion       = "bypass-citation-v1"
-	StoredOriginQuestionVersion = "stored-origin-v1"
+	FlowGapQuestionVersion      = "flow-gap-v2"
+	WitnessQuestionVersion      = "witness-citation-v2"
+	BypassQuestionVersion       = "bypass-citation-v2"
+	StoredOriginQuestionVersion = "stored-origin-v2"
 )
 
 // resolvePrefix marks a request question that asks about one point the

@@ -123,10 +123,10 @@ The [contract](../specifications/model-assisted-evidence-resolution.md) owns the
 
 | Question | Asked when | Answer that can change the outcome |
 |---|---|---|
-| Flow gap (`flow-gap-v1`) | A path or SQL flow blocker (comprehension, unresolved call or dispatch, PHP value or loop, transfer limit, unknown transfer) overlaps a dependency | `value_preserved` with a verified chain through the gap discharges the blocker |
-| Stored origin (`stored-origin-v1`) | A `storage_origin_unresolved` XSS or SQL record has a write census with at least one write | A verified cited request write discharges the blocker; `no_request_write_in_evidence` supports Protected only when every key's store is `closed` |
-| Witness (`witness-citation-v1`) | A path record whose facts hold no unsafe witness | A vulnerable verdict whose only contradiction is the missing witness stands with a verified chain along a flow with no containing control and no open gap |
-| Bypass (`bypass-citation-v1`) | A command record with a guarded path | `bypass_identified` needs a verified chain on a guarded path of the unsafe facet |
+| Flow gap (`flow-gap-v2`) | A path or SQL flow blocker (comprehension, unresolved call or dispatch, PHP value or loop, transfer limit, unknown transfer) overlaps a dependency | `value_preserved` with a verified chain through the gap discharges the blocker |
+| Stored origin (`stored-origin-v2`) | A `storage_origin_unresolved` XSS or SQL record has a write census with at least one write | A verified cited request write discharges the blocker; `no_request_write_in_evidence` supports Protected only when every key's store is `closed` |
+| Witness (`witness-citation-v2`) | A path record whose facts hold no unsafe witness | A vulnerable verdict whose only contradiction is the missing witness stands with a verified chain along a flow with no containing control and no open gap |
+| Bypass (`bypass-citation-v2`) | A command record with a guarded path | `bypass_identified` needs a verified chain on a guarded path of the unsafe facet |
 | Needed evidence (`needed-evidence-v1`) | A path, SQL, command or XSS record whose gaps name an unresolved symbol | One follow-up carrying the symbol's single exact definition from the snapshot |
 
 The rules that bound it:

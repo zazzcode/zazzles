@@ -61,6 +61,7 @@ func indexWire(use map[string]any) (*wireIndex, error) {
 		}
 		return ""
 	}
+	excerpts, _ := use["source_excerpts"].([]any)
 	rows, _ := use["evidence"].([]any)
 	for i, r := range rows {
 		row, _ := r.([]any)
@@ -69,6 +70,12 @@ func indexWire(use map[string]any) (*wireIndex, error) {
 		}
 		kind, _ := row[0].(string)
 		text, _ := row[4].(string)
+		if text == "" && len(row) > 7 {
+			// Deduplicated evidence carries its text as a reference into
+			// source_excerpts; a citation label must show the same code.
+			ref, _ := row[5].(string)
+			text = excerptText(excerpts, ref, intOf(row[2]), intOf(row[3]), intOf(row[6]), intOf(row[7]))
+		}
 		x.evidence[fmt.Sprintf("e%d", i)] = wireItem{kind: kind, file: file(row[1]), start: intOf(row[2]), end: intOf(row[3]), text: text}
 	}
 	gaps, _ := cw["gaps"].([]any)
@@ -301,3 +308,38 @@ func parseCitation(value string) []string {
 }
 
 const citeNone = "none"
+
+// excerptText cuts an evidence item's text out of the source excerpt its
+// text_ref names: lines start..end of the excerpt, the first from column sc
+// and the last to column ec (one-based, exclusive end; first-line columns are
+// relative to the excerpt's text start).
+func excerptText(excerpts []any, ref string, start, end, sc, ec int) string {
+	var n int
+	if _, err := fmt.Sscanf(ref, "s%d", &n); err != nil || n < 0 || n >= len(excerpts) {
+		return ""
+	}
+	row, _ := excerpts[n].([]any)
+	if len(row) < 4 {
+		return ""
+	}
+	first := intOf(row[1])
+	body, _ := row[3].(string)
+	lines := strings.Split(body, "\n")
+	from, to := start-first, end-first
+	if from < 0 || to >= len(lines) || from > to {
+		return ""
+	}
+	out := make([]string, 0, to-from+1)
+	for i := from; i <= to; i++ {
+		line := []rune(lines[i])
+		lo, hi := 0, len(line)
+		if i == from && sc > 0 {
+			lo = min(sc-1, len(line))
+		}
+		if i == to && ec > 0 {
+			hi = min(max(ec-1, lo), len(line))
+		}
+		out = append(out, string(line[lo:hi]))
+	}
+	return strings.Join(out, "\n")
+}

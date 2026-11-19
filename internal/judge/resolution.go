@@ -13,10 +13,10 @@ import (
 // Resolution question versions. A changed wording or choice set takes a new
 // version, and the owning family protocol is bumped with it.
 const (
-	FlowGapQuestionVersion      = "flow-gap-v3"
-	WitnessQuestionVersion      = "witness-citation-v3"
-	BypassQuestionVersion       = "bypass-citation-v3"
-	StoredOriginQuestionVersion = "stored-origin-v3"
+	FlowGapQuestionVersion      = "flow-gap-v2"
+	WitnessQuestionVersion      = "witness-citation-v2"
+	BypassQuestionVersion       = "bypass-citation-v2"
+	StoredOriginQuestionVersion = "stored-origin-v2"
 )
 
 // resolvePrefix marks a request question that asks about one point the
@@ -281,7 +281,7 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 		name := resolvePrefix + "flow_" + id
 		answer := question{name: name, choices: FlowGapChoices(), instructions: fmt.Sprintf("The scanner could not follow the request value through the span of gap %s (%s: %s). Using only the supplied source excerpts, say what that span does to the request value on its way to the sink operand. Judge only this span; other gaps, guards and the final verdict are separate questions. Choose value_preserved only when the source shows the value continuing request-controlled; choose value_constrained for a check, filter, conversion or selection against a fixed set; choose cannot_tell when the source does not show it.", id, g.Kind, g.Detail)}
 		asks = append(asks, resolutionAsk{name: name, version: FlowGapQuestionVersion, gap: id, blocker: &blocker, answer: &answer,
-			cite: question{name: name + citeSuffix, choices: choices, instructions: fmt.Sprintf("Cite the ordered evidence chain, from request source through %s to the sink, that carries the value you assessed in %s. Each choice lists eN evidence rows and the gap in order. When a listed chain carries the value you assessed, choose it. Choose none only when you answered cannot_tell or no listed chain carries that value.", id, name)}})
+			cite: question{name: name + citeSuffix, choices: choices, instructions: fmt.Sprintf("Cite the ordered evidence chain, from request source through %s to the sink, that carries the value you assessed in %s. Each choice lists eN evidence rows and the gap in order. Choose none when you answered cannot_tell or no offered chain carries that value.", id, name)}})
 	}
 	if storedOriginAskable(u) && u.Completeness != nil {
 		so, _ := wire["stored_origin"].(map[string]any)
@@ -304,11 +304,11 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 					}
 				}
 			}
-			choices = append(choices, noneChoice("You did not answer request_write_cited, or none of the listed writes is the one you identified."))
+			choices = append(choices, noneChoice("You did not answer request_write_cited."))
 			name := resolvePrefix + "stored_" + id
 			answer := question{name: name, choices: StoredOriginChoices(), instructions: fmt.Sprintf("Gap %s: the scanner could not establish where the stored value this record reads comes from. use.stored_origin lists, for each storage key read, every write the scanner found (literal marks writes whose values are all source literals), whether the read query is static, whether the store is closed and its schema, plus the read queries. Judge only whether a request-controlled value can be written into the stored column this record reads, from the listed writes alone. Do not assume writes that are not listed.", id)}
 			asks = append(asks, resolutionAsk{name: name, version: StoredOriginQuestionVersion, gap: id, blocker: &blocker, answer: &answer,
-				cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered request_write_cited, choose the listed write that stores a request-controlled value into the column read; a listed write you identified is the citation. Choose none only when you gave another answer or no listed write is the one you identified."}})
+				cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered request_write_cited, cite the one listed write that stores a request-controlled value into the column read. Choose none otherwise."}})
 		}
 	}
 	switch familyOf(u) {
@@ -324,7 +324,7 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 				choices = append(choices, noneChoice("You did not answer vulnerable, or no offered chain carries a request value to the path operand without a containing control."))
 				name := resolvePrefix + "witness"
 				asks = append(asks, resolutionAsk{name: name, version: WitnessQuestionVersion,
-					cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered path_traversal vulnerable, cite the ordered evidence chain from the request source to the file operation along which the request value reaches the path operand with no control that contains it. The scanner did not establish such a path itself, so it checks the chain you cite. When a listed chain is the path you found, choose it. Choose none only when you gave another answer or no listed chain is that path."}})
+					cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered path_traversal vulnerable, cite the ordered evidence chain from the request source to the file operation along which the request value reaches the path operand with no control that contains it. The scanner did not establish such a path itself, so it checks the chain you cite. Choose none otherwise."}})
 			}
 		}
 	case "command":
@@ -336,10 +336,10 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 				}
 			}
 			if len(choices) > 0 {
-				choices = append(choices, noneChoice("You did not answer bypass_identified, or no listed chain carries the bypassing value."))
+				choices = append(choices, noneChoice("You did not answer bypass_identified."))
 				name := resolvePrefix + "bypass"
 				asks = append(asks, resolutionAsk{name: name, version: BypassQuestionVersion,
-					cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered guard_bypass bypass_identified, cite the ordered evidence chain that carries the bypassing request value through the guard to the command operand. When a listed chain carries the value you named, choose it. Choose none only when you gave another answer or no listed chain carries that value."}})
+					cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered guard_bypass bypass_identified, cite the ordered evidence chain that carries the bypassing request value through the guard to the command operand. Choose none otherwise."}})
 			}
 		}
 	}

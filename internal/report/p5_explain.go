@@ -29,6 +29,10 @@ func assessmentLabel(state string) string {
 	return "Not judged"
 }
 
+// externalOriginNotEstablished is the Review reason for a construction record
+// with no external-origin dependency.
+const externalOriginNotEstablished = "external_origin_not_established"
+
 // blockingEvidence names the claim-relevant evidence that keeps a Review record
 // from a final outcome. Judged records report the policy's blocking gaps;
 // otherwise the candidate's own blockers, missing required roles and gaps are
@@ -58,7 +62,11 @@ func blockingEvidence(u analysis.CandidateUse, f analysis.Finding) []analysis.Bl
 		}
 		add(g.Kind, g.Detail, source, at)
 	}
-	if u.Assessment.Status == "completed" && len(u.Assessment.BlockingGaps) > 0 {
+	if constructionWithoutOrigin(u) {
+		s := u.Sink.Span
+		add(externalOriginNotEstablished, "No dependency of this query construction has a request, storage, file, fetched, browser or API-response origin, so external control is not established.", "scanner", &s)
+	}
+	if (u.Assessment.Status == "completed" || u.Assessment.Status == "not_run") && len(u.Assessment.BlockingGaps) > 0 {
 		for _, g := range u.Assessment.BlockingGaps {
 			gap(g, "policy")
 		}

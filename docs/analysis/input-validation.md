@@ -46,6 +46,13 @@ requests carry only selected field-policy guidance and questions. Do not add ove
 pills as independent defects. Complete required evidence and consistent policy/enforcement/coverage
 answers gate a definite field result.
 
+A standalone validation record whose completeness evidence cannot satisfy that gate is not sent to the
+decision model: no answer could change its outcome. It stays Review with assessment state `not_run`,
+a reason starting `validation_evidence_missing:` and the missing roles as blocking evidence; the run's
+limitations count these records. A record named by `--checks`, and every validation record under
+`--only-family input-validation`, is judged as before. Undecidable records at one field read present as
+one row (the sink grouping in [interpreting results](../interpreting-results.md#counts-and-categories)).
+
 The [Python adapter](../python-support.md) includes relevant handler/helper code, branch preconditions
 and source-backed input constraints from a form posting to the same handler. Client constraints
 establish declared policy; they do not prove server enforcement. Standalone fields remain Review

@@ -113,6 +113,10 @@ func (c *Client) plan(ctx context.Context, report *analysis.AnalysisReport, orde
 			early[i] = a
 			continue
 		}
+		if a, fixed := validationGate(u, opts); fixed {
+			early[i] = a
+			continue
+		}
 		if !AssessableUse(u) {
 			early[i] = c.Assess(ctx, u) // observation records return before any request
 			continue
@@ -266,13 +270,18 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 		trace DecisionTrace
 	}
 	completed := map[string]decision{}
-	calls, derived, contexts := 0, 0, 0
+	calls, derived, contexts, undecidable := 0, 0, 0, 0
 	failed := false
 	for _, i := range order {
 		u := &report.Uses[i]
 		if a, ok := early[i]; ok {
 			u.Assessment = a
-			if _, excluded := familyExclusion(*u, opts); !excluded {
+			_, excluded := familyExclusion(*u, opts)
+			_, fixed := validationGate(*u, opts)
+			if fixed {
+				undecidable++
+			}
+			if !excluded && !fixed {
 				failed = true
 			}
 			continue
@@ -316,6 +325,9 @@ func (c *Client) finalize(ctx context.Context, report *analysis.AnalysisReport, 
 	}
 	if len(opts.SkippedFamilies) > 0 || len(opts.OnlyFamilies) > 0 {
 		report.Limitations = append(report.Limitations, "Analyzer family selection: skipped ["+strings.Join(opts.SkippedFamilies, ",")+"], only ["+strings.Join(opts.OnlyFamilies, ",")+"]. Excluded records remain unassessed; existing deterministic findings are retained. This scope choice is not an assessment.")
+	}
+	if undecidable > 0 {
+		report.Limitations = append(report.Limitations, fmt.Sprintf("%d validation records were not sent to the judge: their field-policy gate lacks required evidence, so no answer could change their Review outcome (%s).", undecidable, ValidationUndecidable))
 	}
 	report.Limitations = append(report.Limitations, fmt.Sprintf("Judged %d distinct candidate signatures across %d total entry contexts (%d derived across equivalent entry contexts).", len(completed), contexts, derived))
 	return failed

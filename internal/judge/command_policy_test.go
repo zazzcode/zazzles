@@ -17,11 +17,20 @@ import (
 // commandAnswers is a deliberately stubbed model answer set.
 type commandAnswers map[string]string
 
+// choice answers one question; a fixture written before the guard-bypass
+// question answers it not_applicable (no guarded path is relied on).
+func (a commandAnswers) choice(name string) string {
+	if v, ok := a[name]; ok || name != "guard_bypass" {
+		return v
+	}
+	return "not_applicable"
+}
+
 var (
 	// rawShell is an honest answer for request text in a shell command.
-	rawShell = commandAnswers{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "protection_coverage": "incomplete"}
+	rawShell = commandAnswers{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "guard_bypass": "bypass_identified", "protection_coverage": "incomplete"}
 	// optimistic claims everything is constrained, whatever the source shows.
-	optimistic = commandAnswers{"shell_syntax_protection": "not_applicable", "executable_control": "constrained", "argument_control": "constrained", "protection_coverage": "complete"}
+	optimistic = commandAnswers{"shell_syntax_protection": "not_applicable", "executable_control": "constrained", "argument_control": "constrained", "guard_bypass": "no_bypass", "protection_coverage": "complete"}
 )
 
 func commandStub(t *testing.T, provider string, answers commandAnswers) (*Client, *atomic.Int64) {
@@ -56,14 +65,14 @@ func commandStub(t *testing.T, provider string, answers commandAnswers) (*Client
 		if provider == "openai" {
 			list := []map[string]string{}
 			for _, name := range names {
-				list = append(list, map[string]string{"name": name, "type": "choice", "choice": answers[name]})
+				list = append(list, map[string]string{"name": name, "type": "choice", "choice": answers.choice(name)})
 			}
 			json.NewEncoder(w).Encode(map[string]any{"model": "fixture-model", "answers": list, "usage": map[string]int{"input_tokens": 11, "output_tokens": 3}})
 			return
 		}
 		out := map[string]map[string]string{}
 		for _, name := range names {
-			out[name] = map[string]string{"type": "choice", "choice": answers[name]}
+			out[name] = map[string]string{"type": "choice", "choice": answers.choice(name)}
 		}
 		json.NewEncoder(w).Encode(map[string]any{"model": "fixture-model", "answers": out, "usage": map[string]int{"input_tokens": 11, "output_tokens": 3}})
 	}))
@@ -198,7 +207,7 @@ func TestCommandPolicyMatrix(t *testing.T) {
 								t.Fatalf("protection %s", a.Protection)
 							}
 						}
-						if len(a.Answers) != 4 || a.RequestDigest == "" {
+						if len(a.Answers) != len(analysispacks.CommandQuestions()) || a.RequestDigest == "" {
 							t.Fatalf("raw answers or digest missing: %+v", a)
 						}
 						if replay := c.Replay(u, trace); replay.Status != "completed" || replay.FindingStatus != a.FindingStatus {

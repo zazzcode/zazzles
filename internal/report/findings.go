@@ -25,7 +25,7 @@ func Enrich(r *analysis.AnalysisReport) {
 	for _, u := range r.Uses {
 		r.Findings = append(r.Findings, describe(u))
 	}
-	groupObservations(r)
+	groupSinks(r)
 	explainOutcomes(r)
 }
 
@@ -62,7 +62,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	case "sql_query_candidate":
 		f.Title = "SQL database call needs binding review"
 		f.Summary = "Scan identified a database-call pattern. Verify the driver and how it separates query structure from values."
-		if hasGap(u, "query_text_interpolated") {
+		if constructionWithoutOrigin(u) {
+			describeOriginless(&f, "SQL query text")
+		} else if hasGap(u, "query_text_interpolated") {
 			f.RecordType = "finding"
 			f.Status = "poor_practice"
 			f.Title = "A value is built into SQL query text"
@@ -76,7 +78,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		}
 	case "nosql_query_candidate":
 		f.Title = "NoSQL database operation needs review"
-		if hasGap(u, "query_text_interpolated") {
+		if constructionWithoutOrigin(u) {
+			describeOriginless(&f, "a NoSQL $where expression")
+		} else if hasGap(u, "query_text_interpolated") {
 			f.RecordType = "finding"
 			f.Status = "poor_practice"
 			f.Title = "A value is built into a NoSQL $where expression"
@@ -127,6 +131,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		if strings.Contains(a.Reason, "analyzer not used for this run") {
 			f.Uncertainty += " " + a.Reason + "."
 		}
+		if strings.HasPrefix(a.Reason, "validation_evidence_missing:") {
+			f.Uncertainty += " No request was sent: the field-policy gate lacks required evidence, so no model answer could change this Review outcome (" + a.Reason + ")."
+		}
 		if strings.HasPrefix(a.Reason, "evidence_too_large:") {
 			f.Uncertainty += " The evidence this claim needs is larger than the request limit, so no request was sent (" + a.Reason + ")."
 		}
@@ -144,7 +151,7 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		if u.Kind == "input_validation_candidate" && u.Completeness != nil && u.Completeness.ClaimKind == "validation" {
 			f.Protection = "Field-policy enforcement: " + displayLabel(a.Protection) + ". " + a.Reason
 		} else if u.Kind == "command_execution_candidate" {
-			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
+			f.Protection = "Command assessment: shell syntax " + displayLabel(a.Answers["shell_syntax_protection"]) + ", executable " + displayLabel(a.Answers["executable_control"]) + ", arguments " + displayLabel(a.Answers["argument_control"]) + ", guard bypass " + displayLabel(a.Answers["guard_bypass"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "ssrf_candidate" {
 			f.Protection = "SSRF assessment: destination control " + displayLabel(a.Answers["destination_control"]) + ", restriction " + displayLabel(a.Answers["destination_restriction"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 		} else if u.Kind == "path_traversal_candidate" {
@@ -277,6 +284,33 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	return f
 }
+
+// externalOriginEstablished reports a dependency whose origin is outside the
+// program: a request, storage, file, fetched, browser or API-response value.
+// Constant and environment origins do not count.
+func externalOriginEstablished(u analysis.CandidateUse) bool {
+	for _, d := range u.Dependencies {
+		switch d.Source.Kind {
+		case "", "constant", "environment", "environment_source", "literal_sensitive_source":
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+// constructionWithoutOrigin is a query built from values none of which has an
+// established external origin. It presents as Review, not as a finding.
+func constructionWithoutOrigin(u analysis.CandidateUse) bool {
+	return (u.Kind == "sql_query_candidate" || u.Kind == "nosql_query_candidate") && hasGap(u, "query_text_interpolated") && !externalOriginEstablished(u)
+}
+
+func describeOriginless(f *analysis.Finding, target string) {
+	f.RecordType, f.Status = "analysis", "needs_review"
+	f.Title = "A value is built into " + target + " with no established external origin"
+	f.Summary = "A value is inserted into " + target + ", but no request, storage, file or other external origin was resolved for it. Without an external origin this is not reported as a finding. Review where the value comes from; binding it is still the better construction."
+}
+
 func hasGap(u analysis.CandidateUse, kind string) bool {
 	for _, g := range u.Gaps {
 		if g.Kind == kind {

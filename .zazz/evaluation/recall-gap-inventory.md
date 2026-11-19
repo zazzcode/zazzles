@@ -67,6 +67,10 @@ ZAZZLES_DVWA=<DEV_ROOT>/zazzcode/DVWA go test ./internal/pipeline -run TestDVWAS
 
 All three pass on the base scanner. The lab test checks 29 supported rows.
 
+The checker also prints precision and noise measures per family and sample. Their definitions,
+the protected-control set and the offline baseline live in the
+[precision and noise baseline](precision-noise-baseline.md).
+
 ## How rows are judged
 
 `cases.json` restates the rows of keys that have no machine-readable form. Python rows come from

@@ -68,16 +68,19 @@ type moduleSet struct {
 	signedTokens    []signedToken
 	angularUnits    []*angularUnit
 	producers       []jsonProducer
-	modelEvidence   map[string][]analysis.Evidence
-	mountedOrigins  map[string]bool
-	text            *parse.TextSources
-	packageFiles    map[string]*packageFile
-	contextLimits   []analysis.Gap
-	contextFields   []string
-	root            string
-	parsers         *parsers
-	modules         map[string]*sourceModule
-	allowed         map[string]bool
+	// ownAPI holds server-side helper calls that return the JSON body of a
+	// fetch to a route of this repository, keyed by the call's span.
+	ownAPI         map[string]ownAPICall
+	modelEvidence  map[string][]analysis.Evidence
+	mountedOrigins map[string]bool
+	text           *parse.TextSources
+	packageFiles   map[string]*packageFile
+	contextLimits  []analysis.Gap
+	contextFields  []string
+	root           string
+	parsers        *parsers
+	modules        map[string]*sourceModule
+	allowed        map[string]bool
 	// summaries caches L4 callable summaries by callable key; see callable_summary.go.
 	summaries map[string]*callableSummary
 	// summaryNoLoad is set while summaries are built: a summary never loads a

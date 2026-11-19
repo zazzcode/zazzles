@@ -125,9 +125,12 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	}
 	s.registerRESTResources()
 	s.linkStoredXSS(out)
+	// After stored links, so an own-API stored row is not read as linked.
+	s.linkOwnAPIOrigins(out)
 	s.linkCrossTierXSS(out)
 	s.linkTokenClaims(out)
 	parse.AssembleXSSClaims(out)
+	s.attachStoredWriteSets(out)
 	s.assembleCommandClaims(out)
 	s.assemblePathClaims(out)
 	s.assembleSSRFClaims(out)

@@ -46,6 +46,13 @@ func AssembleXSSClaims(report *analysis.AnalysisReport) {
 		if u.Kind != "xss_candidate" || u.XSS == nil {
 			continue
 		}
+		if u.XSS.OutputContext == "unknown" && u.XSS.Protection != "unknown" {
+			// Protection is relative to an output context: with the context
+			// unknown, no raw, encoded or sanitized label is established.
+			// Per-path protection facts keep what each path showed.
+			u.XSS.Protection = "unknown"
+			u.XSS.ProtectionReason = "The output context is not established, so whether the value needs or receives context-appropriate encoding is unknown."
+		}
 		c := &analysis.Completeness{ClaimKind: "xss", Required: []string{"render_source", "render_binding", "render_context"},
 			Evidence: map[string][]analysis.Evidence{}, Scope: "Bounded source-to-rendering flow; output context and protections are scoped to this sink.",
 			Coverage: append([]analysis.Gap{}, u.Gaps...), Blockers: []analysis.Gap{}}

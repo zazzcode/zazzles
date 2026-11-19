@@ -295,13 +295,22 @@ func assertComponentReportParity(t *testing.T, r *analysis.AnalysisReport) {
 	}
 	run := report.SARIF(r)["runs"].([]any)[0].(map[string]any)
 	results := run["results"].([]any)
-	if len(results) != len(r.Uses) || strings.Count(html.String(), `<article class="finding"`) != len(r.Uses) {
+	// Records grouped into a representative row stay in JSON; the views show
+	// one row per group.
+	var shown []int
+	for i, f := range r.Findings {
+		if f.GroupedInto == "" {
+			shown = append(shown, i)
+		}
+	}
+	if len(results) != len(shown) || strings.Count(html.String(), `<article class="finding"`) != len(shown) {
 		t.Fatal("JSON/HTML/SARIF record counts differ")
 	}
 	statuses := map[string]int{}
-	for i, f := range r.Findings {
+	for k, i := range shown {
+		f := r.Findings[i]
 		statuses[f.Status]++
-		props := results[i].(map[string]any)["properties"].(map[string]any)
+		props := results[k].(map[string]any)["properties"].(map[string]any)
 		if !reflect.DeepEqual(props["scan.finding"], f) || !reflect.DeepEqual(props["scan.assessment"], r.Uses[i].Assessment) {
 			t.Fatal("SARIF changed canonical finding or raw assessment")
 		}

@@ -190,6 +190,33 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	case ans["argument_control"] == "unsafe" && argument.reachable() && f.Interpreter != "":
 		unsafeFacet = "option/interpreter control (CWE-88)"
 	}
+	// Guard adequacy is the model's call; policy reads only whether its own
+	// answers agree. A vulnerable or unsafe facet whose every path is guarded
+	// stands only with a named bypass.
+	if unsafeFacet != "" {
+		facet := shell
+		switch unsafeFacet {
+		case "executable selection":
+			facet = executable
+		case "option/interpreter control (CWE-88)":
+			facet = argument
+		}
+		if len(facet.paths) > 0 && facet.all("guarded") {
+			switch {
+			case ans["guard_bypass"] == "no_bypass":
+				contradict("an unsafe %s answer on a fully guarded facet contradicts no_bypass", unsafeFacet)
+			case len(analysispacks.GuardContracts(use)) == 0:
+				add("command_guard_semantics_unknown", "Every path of the unsafe facet is guarded by a control with no recognised contract; its adequacy is not established.")
+			case ans["guard_bypass"] != "bypass_identified":
+				add("command_guard_semantics_unknown", "Every path of the unsafe facet is guarded and the assessment did not identify a bypass ("+displayAnswer(ans["guard_bypass"])+").")
+			}
+		}
+	}
+	for _, facet := range []string{"shell_syntax_protection", "executable_control", "argument_control"} {
+		if (ans[facet] == "protected" || ans[facet] == "constrained") && ans["guard_bypass"] == "bypass_identified" {
+			contradict("%s answered %s while a guard bypass was identified", facet, ans[facet])
+		}
+	}
 	scoped := append(append([]analysis.Gap{}, blockers...), global...)
 	if len(contradictions) > 0 {
 		a.BlockingGaps = append(append(blockers, c.Blockers...), analysis.Gap{Kind: "command_answers_inconsistent", Detail: strings.Join(contradictions, "; "), At: use.Sink.Span})
@@ -250,4 +277,11 @@ func gapTouchesCommandDependency(g analysis.Gap, d analysis.Dependency) bool {
 		}
 	}
 	return false
+}
+
+func displayAnswer(v string) string {
+	if v == "" {
+		return "no answer"
+	}
+	return v
 }

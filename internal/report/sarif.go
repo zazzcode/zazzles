@@ -127,6 +127,27 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 			}
 		}
 		related := relatedLocations(relatedUse)
+		if len(finding.GroupedUseIDs) > 0 && use.Kind != "outbound_http_candidate" {
+			// One result stands for the group: its identity is kind and sink
+			// span, and each other member's entry is a related location.
+			result["partialFingerprints"] = map[string]string{"zazzlesSinkGroup/v1": sinkGroupFingerprint(use)}
+			props["scan.groupedUseIds"] = finding.GroupedUseIDs
+			entries := map[string]bool{use.EntryID: true}
+			for _, m := range groupMembers(report, finding.GroupedUseIDs) {
+				member := report.Uses[m]
+				if entries[member.EntryID] {
+					continue
+				}
+				entries[member.EntryID] = true
+				for _, e := range report.Entries {
+					if e.ID == member.EntryID && e.Location.Span.File != "" {
+						loc := location(e.Location.Span, "grouped entry "+EntryLabel(e))
+						loc["id"] = len(related)
+						related = append(related, loc)
+					}
+				}
+			}
+		}
 		if len(related) > 0 {
 			result["relatedLocations"] = related
 		}

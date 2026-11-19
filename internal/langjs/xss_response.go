@@ -265,3 +265,179 @@ func (f *flow) recordXSS(sink analysis.Evidence, v value, context, contentType s
 		last.APIModel = analysispacks.XSSContract("browser-output-v1", f.client.entry.Browser.Framework)
 	}
 }
+
+// closedTypeMap resolves a Content-Type operand read from a closed constant
+// map. The map is a module-level const object literal with literal keys and
+// literal string values that is only ever read by subscript (never assigned,
+// exported or passed out), the operand is a never-reassigned const set from
+// MAP[key], and a missing-key branch returns before the response at. It
+// returns every value the map can give; ok is false when any rule fails.
+func closedTypeMap(m *sourceModule, at, operand *sitter.Node) (types []string, ok bool) {
+	if operand == nil {
+		return nil, false
+	}
+	operand = unwrapTS(operand)
+	if operand.Kind() != "identifier" {
+		return nil, false
+	}
+	name := operand.Utf8Text(m.src)
+	if bindingReassigned(m, name) {
+		return nil, false
+	}
+	init := localInitializer(m, at, name)
+	if init == nil {
+		return nil, false
+	}
+	init = unwrapTS(init)
+	if init.Kind() != "subscript_expression" {
+		return nil, false
+	}
+	object := init.ChildByFieldName("object")
+	if object == nil || object.Kind() != "identifier" {
+		return nil, false
+	}
+	table := object.Utf8Text(m.src)
+	literal := topConstObject(m, table)
+	if literal == nil || exportedName(m, table) || bindingReassigned(m, table) || !subscriptReadsOnly(m, table) || !missingKeyReturns(m, at, name) {
+		return nil, false
+	}
+	for i := uint(0); i < literal.NamedChildCount(); i++ {
+		pair := literal.NamedChild(i)
+		if pair.Kind() == "comment" {
+			continue
+		}
+		if pair.Kind() != "pair" {
+			return nil, false
+		}
+		if _, ok := propertyKey(pair.ChildByFieldName("key"), m.src); !ok {
+			return nil, false
+		}
+		text, ok := stringLiteral(pair.ChildByFieldName("value"), m.src)
+		if !ok {
+			return nil, false
+		}
+		types = append(types, strings.ToLower(strings.TrimSpace(strings.Split(text, ";")[0])))
+	}
+	return types, len(types) > 0
+}
+
+// htmlCapableType reports a media type a browser can render as markup with
+// script: HTML, XHTML, SVG and other XML types.
+func htmlCapableType(t string) bool {
+	return t == "text/html" || strings.Contains(t, "xml") || strings.HasSuffix(t, "+xml")
+}
+
+// topConstObject returns the object literal of a module-level const binding.
+func topConstObject(m *sourceModule, name string) *sitter.Node {
+	root := m.tree.RootNode()
+	for i := uint(0); i < root.NamedChildCount(); i++ {
+		n := root.NamedChild(i)
+		if n.Kind() != "lexical_declaration" || !strings.HasPrefix(n.Utf8Text(m.src), "const") {
+			continue
+		}
+		for j := uint(0); j < n.NamedChildCount(); j++ {
+			d := n.NamedChild(j)
+			id, value := d.ChildByFieldName("name"), d.ChildByFieldName("value")
+			if id != nil && id.Utf8Text(m.src) == name && value != nil {
+				value = unwrapTS(value)
+				if value.Kind() == "object" {
+					return value
+				}
+				return nil
+			}
+		}
+	}
+	return nil
+}
+
+// subscriptReadsOnly reports that every reference to name in the module is
+// its declaration or the object of a read subscript: never written through,
+// deleted, passed, returned or aliased.
+func subscriptReadsOnly(m *sourceModule, name string) bool {
+	ok := true
+	var walk func(n *sitter.Node)
+	walk = func(n *sitter.Node) {
+		if n == nil || !ok {
+			return
+		}
+		if n.Kind() == "identifier" && n.Utf8Text(m.src) == name {
+			p := n.Parent()
+			switch {
+			case p != nil && p.Kind() == "variable_declarator" && p.ChildByFieldName("name") != nil && p.ChildByFieldName("name").StartByte() == n.StartByte():
+			case p != nil && p.Kind() == "subscript_expression" && p.ChildByFieldName("object") != nil && p.ChildByFieldName("object").StartByte() == n.StartByte():
+				if g := p.Parent(); g != nil {
+					switch g.Kind() {
+					case "assignment_expression", "augmented_assignment_expression":
+						if left := g.ChildByFieldName("left"); left != nil && left.StartByte() == p.StartByte() {
+							ok = false
+						}
+					case "update_expression", "unary_expression":
+						if strings.HasPrefix(g.Utf8Text(m.src), "delete") || g.Kind() == "update_expression" {
+							ok = false
+						}
+					}
+				}
+			default:
+				ok = false
+			}
+		}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			walk(n.NamedChild(i))
+		}
+	}
+	walk(m.tree.RootNode())
+	return ok
+}
+
+// missingKeyReturns reports that a statement before at, in an enclosing block
+// of the same function, is `if (!name) return ...` (or a block ending in
+// return or throw), or `if (name === undefined)` / `== null`.
+func missingKeyReturns(m *sourceModule, at *sitter.Node, name string) bool {
+	child := at
+	for p := at.Parent(); p != nil && !isFunction(p); child, p = p, p.Parent() {
+		if p.Kind() != "statement_block" && p.Kind() != "program" {
+			continue
+		}
+		for i := uint(0); i < p.NamedChildCount(); i++ {
+			s := p.NamedChild(i)
+			if s.StartByte() >= child.StartByte() {
+				break
+			}
+			if s.Kind() == "if_statement" && missingKeyTest(m, s.ChildByFieldName("condition"), name) && exits(s.ChildByFieldName("consequence")) && s.ChildByFieldName("alternative") == nil {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func missingKeyTest(m *sourceModule, cond *sitter.Node, name string) bool {
+	if cond == nil {
+		return false
+	}
+	text := strings.Join(strings.Fields(strings.Trim(strings.TrimSpace(cond.Utf8Text(m.src)), "()")), " ")
+	switch text {
+	case "!" + name, name + " === undefined", name + " == undefined", name + " == null", name + " === null", "undefined === " + name, "null == " + name:
+		return true
+	}
+	return false
+}
+
+func exits(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	switch n.Kind() {
+	case "return_statement", "throw_statement":
+		return true
+	case "statement_block":
+		for i := int(n.NamedChildCount()) - 1; i >= 0; i-- {
+			last := n.NamedChild(uint(i))
+			if last.Kind() == "comment" {
+				continue
+			}
+			return last.Kind() == "return_statement" || last.Kind() == "throw_statement"
+		}
+	}
+	return false
+}

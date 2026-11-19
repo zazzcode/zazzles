@@ -137,7 +137,13 @@ func TestMixedEntryPipeline(t *testing.T) {
 			if err := json.Unmarshal(out.Bytes(), &sarif); err != nil {
 				t.Fatal(err)
 			}
-			if len(sarif.Runs) != 1 || len(sarif.Runs[0].Results) != len(r.Findings) {
+			represented := 0
+			for _, result := range sarif.Runs[0].Results {
+				var grouped []string
+				json.Unmarshal(result.Properties["scan.groupedUseIds"], &grouped)
+				represented += 1 + len(grouped)
+			}
+			if len(sarif.Runs) != 1 || represented != len(r.Findings) {
 				t.Fatal("SARIF count drift")
 			}
 			seen := map[string]bool{}

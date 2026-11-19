@@ -1,0 +1,24 @@
+{
+  "scope": "Source-reviewed safe controls, at least one per security family with a keyed denominator. A control record must not present as a finding; offline it is expected at Review or Protected, and a judged run measures how many reach Protected. Rows restate the cited key; expectations never enter scanner or model input.",
+  "outcomes": {
+    "control_false_finding": "The control record presents as a finding (a false positive)",
+    "control_protected": "The control record presents as protected_for_claim",
+    "control_review": "The control record presents as Review (needs_review, needs_evidence, supported_potential or not_applicable)"
+  },
+  "controls": [
+    {"id": "PC-SQL-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) SQL-001-safeControl", "kind": "sql_query_candidate", "file": "pages/api/sql/safe/login.js"},
+    {"id": "PC-SQL-02", "app": "ThreatByte", "key": "docs/samples/ThreatByte/cases.json TB-SQL-BOUND", "kind": "sql_query_candidate", "file": "server/routes.py", "line": 99},
+    {"id": "PC-NOSQL-01", "app": "nodejs-goof", "key": "docs/samples/nodejs-goof/xss-answer-key.md (findById ObjectId cast)", "kind": "nosql_query_candidate", "file": "routes/index.js", "line": 204},
+    {"id": "PC-XSS-01", "app": "nodejs-goof", "key": "docs/samples/nodejs-goof/xss-answer-key.md (escaped edit form)", "kind": "xss_candidate", "file": "views/edit.ejs", "line": 20},
+    {"id": "PC-XSS-02", "app": "ThreatByte", "key": "docs/samples/ThreatByte/cases.json TB-XSS-ESCAPED", "kind": "xss_candidate", "file": "client/templates/profile.html", "line": 39},
+    {"id": "PC-XSS-03", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) XSS-001-safeControl", "kind": "xss_candidate", "file": "pages/xss/safe/reflected.js"},
+    {"id": "PC-CMD-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) OS-001-safeControl", "kind": "command_execution_candidate", "file": "pages/api/secure/command.js"},
+    {"id": "PC-CMD-02", "app": "dvwa", "key": ".zazz/evaluation/dvwa-detection-guide.md (exec impossible level; every octet passes is_numeric)", "kind": "command_execution_candidate", "file": "vulnerabilities/exec/source/impossible.php"},
+    {"id": "PC-PATH-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) FS-001-safeControl", "kind": "path_traversal_candidate", "file": "pages/api/secure/file-read.js"},
+    {"id": "PC-SSRF-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) SSRF-001-safeControl", "kind": "ssrf_candidate", "file": "pages/secure/ssrf.js"},
+    {"id": "PC-VAL-01", "app": "ThreatByte", "key": "docs/samples/ThreatByte/cases.json TB-VALIDATION-SIGNUP-USER", "kind": "input_validation_candidate", "file": "server/routes.py", "line": 81},
+    {"id": "PC-VAL-02", "app": "ThreatByte", "key": "docs/samples/ThreatByte/cases.json TB-VALIDATION-LOGIN-USER", "kind": "input_validation_candidate", "file": "server/routes.py", "line": 37},
+    {"id": "PC-CODE-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) JS-002-safeControl", "kind": "code_execution_candidate", "file": "pages/api/protected-example.js"},
+    {"id": "PC-REDIR-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) REDIR-001-safeControl", "kind": "open_redirect_candidate", "file": "pages/secure/redirect.js"}
+  ]
+}

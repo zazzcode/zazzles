@@ -1,6 +1,7 @@
 package langjs
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -169,4 +170,183 @@ func (s *moduleSet) clientURL(m *sourceModule, n *sitter.Node, fields map[string
 		return out.String()
 	}
 	return ""
+}
+
+// ownAPICall is a server-side helper call whose result is the JSON body of a
+// GET fetch to a path of this repository. Its value is resolved after every
+// route has run (linkOwnAPIOrigins); fallback is the flow the call had before.
+type ownAPICall struct {
+	path     string
+	fallback value
+	precise  bool // fallback is the helper's own modeled result
+}
+
+func ownAPIKey(e analysis.Evidence) string {
+	return fmt.Sprintf("%s:%d:%d", e.Span.File, e.Span.StartByte, e.Span.EndByte)
+}
+
+// ownAPIPending reports an own-API response dependency that linkOwnAPIOrigins
+// has yet to resolve. A path operand admits it so the resolved origin, not a
+// guess at flow time, decides the claim.
+func (s *moduleSet) ownAPIPending(d analysis.Dependency) bool {
+	if s == nil || d.Source.Kind != "api_response" {
+		return false
+	}
+	_, ok := s.ownAPI[ownAPIKey(d.Source)]
+	return ok
+}
+
+// ownAPIValue reports a value whose response dependency is an own-API call.
+func (s *moduleSet) ownAPIValue(v value) bool {
+	for _, d := range v.deps {
+		if _, ok := s.ownAPI[ownAPIKey(d.Source)]; ok && d.Source.Kind == "api_response" {
+			return true
+		}
+	}
+	return false
+}
+
+// ownAPIHelperCall recognises, on the server, a call to an in-repository helper
+// whose only fetch is a GET of a same-origin path and whose non-null returns are
+// that response's json(). The call yields the response body; the arguments
+// that built the URL are recorded as selector context, not as the value. The
+// helper body has already run, so records inside it are kept; ret is its
+// result, which stays the fallback when no route resolves the field.
+func (f *flow) ownAPIHelperCall(n *sitter.Node, values []value, ret value, precise bool) (value, bool) {
+	if f.client != nil || f.set == nil {
+		return value{}, false
+	}
+	hm, helper := f.set.resolveCall(f.module, n)
+	if helper == nil {
+		return value{}, false
+	}
+	body := helper.ChildByFieldName("body")
+	if body == nil || body.Kind() != "statement_block" {
+		return value{}, false
+	}
+	var fetches []*sitter.Node
+	walkCalls(body, func(c *sitter.Node) {
+		if fn := c.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" && fn.Utf8Text(hm.src) == "fetch" && !shadowed(c, "fetch", hm.src) {
+			fetches = append(fetches, c)
+		}
+	})
+	if len(fetches) != 1 {
+		return value{}, false
+	}
+	call := fetches[0]
+	args := call.ChildByFieldName("arguments")
+	if args == nil || args.NamedChildCount() == 0 || fetchMethod(hm, args) != "GET" {
+		return value{}, false
+	}
+	binding := call.Parent()
+	if binding != nil && binding.Kind() == "await_expression" {
+		binding = binding.Parent()
+	}
+	if binding == nil || binding.Kind() != "variable_declarator" {
+		return value{}, false
+	}
+	name := binding.ChildByFieldName("name")
+	if name == nil || name.Kind() != "identifier" || bindingReassigned(hm, name.Utf8Text(hm.src)) || !jsonReturns(hm, body, name.Utf8Text(hm.src)) {
+		return value{}, false
+	}
+	path := f.set.clientURL(hm, args.NamedChild(0), nil, 0)
+	// A leading substitution followed by a slash is the origin (a base URL).
+	path = strings.TrimPrefix(path, ":value")
+	if parsed, err := url.Parse(path); err == nil && (parsed.Hostname() == "localhost" || parsed.Hostname() == "127.0.0.1") {
+		path = parsed.Path
+	}
+	path = strings.Split(path, "?")[0]
+	if !strings.HasPrefix(path, "/") || strings.Contains(path, "<") {
+		return value{}, false
+	}
+	fallback := ret
+	if !precise {
+		fallback = value{}
+		for _, a := range values {
+			fallback = combine(fallback, a)
+		}
+	}
+	response := f.module.evidence("api_response", n)
+	if f.set.ownAPI == nil {
+		f.set.ownAPI = map[string]ownAPICall{}
+	}
+	f.set.ownAPI[ownAPIKey(response)] = ownAPICall{path: path, fallback: fallback, precise: precise}
+	f.context = append(f.context, hm.evidence("helper_definition", helper), hm.evidence("http_consumer", call))
+	for _, d := range fallback.deps {
+		selector := d.Source
+		selector.Kind = "api_selector"
+		f.context = append(f.context, selector)
+	}
+	return value{apiPath: path, apiMethod: "GET", deps: []analysis.Dependency{{Source: response, Transfers: []analysis.Evidence{}}}}, true
+}
+
+// fetchMethod is the literal method option of a fetch call, GET by default; ""
+// when the option is not a literal.
+func fetchMethod(m *sourceModule, args *sitter.Node) string {
+	if args.NamedChildCount() < 2 {
+		return "GET"
+	}
+	options := args.NamedChild(1)
+	if options.Kind() != "object" {
+		return ""
+	}
+	for i := uint(0); i < options.NamedChildCount(); i++ {
+		pair := options.NamedChild(i)
+		if pair.Kind() != "pair" {
+			if pair.Kind() == "spread_element" {
+				return ""
+			}
+			continue
+		}
+		key := pair.ChildByFieldName("key")
+		if key == nil || strings.Trim(key.Utf8Text(m.src), `"'`) != "method" {
+			continue
+		}
+		method, ok := stringLiteral(pair.ChildByFieldName("value"), m.src)
+		if !ok {
+			return ""
+		}
+		return strings.ToUpper(method)
+	}
+	return "GET"
+}
+
+// jsonReturns reports that every return of body (outside nested functions)
+// returns null, nothing, or response.json() of the named binding, and that at
+// least one returns the JSON body.
+func jsonReturns(m *sourceModule, body *sitter.Node, response string) bool {
+	found, other := false, false
+	var walk func(*sitter.Node)
+	walk = func(n *sitter.Node) {
+		if n == nil || n != body && isFunction(n) {
+			return
+		}
+		if n.Kind() == "return_statement" {
+			if n.NamedChildCount() == 0 {
+				return
+			}
+			e := unwrapTS(n.NamedChild(0))
+			if e.Kind() == "await_expression" && e.NamedChildCount() == 1 {
+				e = unwrapTS(e.NamedChild(0))
+			}
+			if e.Kind() == "null" || e.Kind() == "undefined" {
+				return
+			}
+			fn, args := e.ChildByFieldName("function"), e.ChildByFieldName("arguments")
+			if e.Kind() == "call_expression" && fn != nil && fn.Kind() == "member_expression" && args != nil && args.NamedChildCount() == 0 {
+				obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+				if obj != nil && prop != nil && obj.Utf8Text(m.src) == response && prop.Utf8Text(m.src) == "json" {
+					found = true
+					return
+				}
+			}
+			other = true
+			return
+		}
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			walk(n.NamedChild(i))
+		}
+	}
+	walk(body)
+	return found && !other
 }

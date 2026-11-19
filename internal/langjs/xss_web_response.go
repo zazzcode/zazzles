@@ -70,6 +70,25 @@ func (f *flow) webResponseConstructor(n *sitter.Node) (value, bool) {
 		init = operands[1]
 	}
 	contentType, header := webResponseContentType(init, f.module.src)
+	var mapGap *analysis.Gap
+	if contentType == "unknown" && header != nil {
+		// A closed constant type map gives a finite set of types: all
+		// non-HTML cannot render markup; an HTML-capable member stays Review.
+		if types, ok := closedTypeMap(f.module, n, header.ChildByFieldName("value")); ok {
+			capable := []string{}
+			for _, t := range types {
+				if htmlCapableType(t) {
+					capable = append(capable, t)
+				}
+			}
+			if len(capable) == 0 {
+				contentType = "closed_map_non_html"
+			} else {
+				g := f.gap("content_type_map_html_capable", "Content-Type comes from a closed constant map with a missing-key rejection; its values include HTML-capable "+strings.Join(capable, ", ")+" beside "+strings.Join(types, ", ")+".", header)
+				mapGap = &g
+			}
+		}
+	}
 	if !limited && (contentType == "unknown" || contentType == "text/html" || contentType == "application/xhtml+xml") {
 		evidence := []analysis.Evidence{binding}
 		if header != nil {
@@ -79,6 +98,9 @@ func (f *flow) webResponseConstructor(n *sitter.Node) (value, bool) {
 		f.recordHTMLResponse(n, operands[0], body, contentType, evidence)
 		for i := before; i < len(f.uses); i++ {
 			f.uses[i].APIModel = analysispacks.XSSContract("html-output-v1", analysispacks.FetchResponseLibrary)
+			if mapGap != nil {
+				f.uses[i].Gaps = append(f.uses[i].Gaps, *mapGap)
+			}
 		}
 	}
 	return f.transfer(out, "expression", n), true

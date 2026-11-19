@@ -4,10 +4,16 @@
 Usage: check.py <reports.json> [--lab <vuln-nextjs checkout>] [--json out.json]
 reports.json maps app name to its findings.json path. Python rows come from
 docs/samples/<app>/cases.json; vuln-nextjs rows from the lab key at the pin.
+
+Besides the recall rows it prints precision and noise measures per family and
+sample (see precision()): keyed findings true and false, the noise classes of
+the false-positive contract, the unkeyed and test-path censuses, the
+protected-control set, and, for judged reports, fixed-outcome requests.
 """
 import argparse
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -164,6 +170,194 @@ def lab_rows(lab, report):
         yield row, classify(row, report)
 
 
+# Precision measures (false-positive contract W5). Expected labels stay here;
+# none of this reaches scanner or model input.
+EXTERNAL = WITNESS | {'api_response_source', 'browser_storage'}
+CONTROL_EXPECT = {'no_record', 'not_raw', 'not_decisive', 'only_lines', 'only_sources', 'bound', 'encoded', 'control_assessment'}
+VALIDATION_ROLES = ('input_source', 'field_policy', 'invoked_callable', 'control_flow')
+TEST_PATH = re.compile(r'(^|/)(tests?|__tests__|spec|specs|fixtures?|cypress|e2e)(/|$)|\.(test|spec)\.[a-z]+$', re.I)
+UNDECIDED = {'', 'uncertain', 'unknown', 'not_applicable', 'guard_semantics_unknown'}
+VERDICT_KEYS = ('validation', 'injection_protection', 'xss_exposure', 'path_traversal', 'destination_control',
+                'log_exposure', 'shell_syntax_protection', 'argument_control', 'code_exposure', 'redirect_exposure')
+
+
+def family(kind):
+    return (kind or '').replace('_candidate', '')
+
+
+def presented(report):
+    """Finding record per use ID; a report without findings presents nothing."""
+    return {f['use_id']: f for f in report.get('findings', [])}
+
+
+def is_finding(f):
+    return bool(f) and f.get('record_type') == 'finding'
+
+
+def span_key(u):
+    s = u['sink']['span']
+    return (u['kind'], s['file'], s.get('start_byte'), s.get('end_byte'))
+
+
+def external_origin(u):
+    return any(d.get('source', {}).get('kind') in EXTERNAL for d in u.get('dependencies', []))
+
+
+def validation_decidable(u):
+    """Mirror of the judge's validation policy gate: every required role has evidence."""
+    c = u.get('completeness') or {}
+    if not c or c.get('blockers'):
+        return False
+    roles = list(c.get('required') or []) + list(VALIDATION_ROLES) + list((u.get('analysis_components') or {}).get('required') or [])
+    ev = c.get('evidence') or {}
+    return all(ev.get(r) for r in roles)
+
+
+def construction(u):
+    return u['kind'] in ('sql_query_candidate', 'nosql_query_candidate') and any(g['kind'] == 'query_text_interpolated' for g in u.get('gaps', []))
+
+
+def noise_classes(report, rows):
+    """Count records per noise class. Generic classes read the record; keyed
+    classes (own-API origin, literal-only storage, closed type map) count the
+    source-reviewed anchors in cases.json noise_rows."""
+    uses, fs = report['uses'], presented(report)
+    entries = {e['id']: e for e in report.get('entries', [])}
+    out = {}
+    def inc(fam, cls, n=1):
+        out.setdefault(fam, {}).setdefault(cls, 0)
+        out[fam][cls] += n
+    by_site, by_entry_site = {}, {}
+    for u in uses:
+        fam = family(u['kind'])
+        if construction(u) and not external_origin(u):
+            inc(fam, 'construction_no_origin')
+            if is_finding(fs.get(u['id'])):
+                inc(fam, 'construction_no_origin_finding')
+        if u['kind'] == 'input_validation_candidate' and u.get('check') is None and not validation_decidable(u):
+            inc(fam, 'undecidable_validation')
+        x = u.get('xss') or {}
+        if x.get('output_context') == 'unknown' and x.get('protection') == 'raw':
+            inc(fam, 'unknown_context_raw')
+        if any(g['kind'] == 'storage_origin_unresolved' for g in (u.get('completeness') or {}).get('blockers') or []):
+            inc(fam, 'stored_origin_unresolved')
+        if u['kind'] != 'outbound_http_candidate':
+            by_site.setdefault(span_key(u), []).append(u)
+            by_entry_site.setdefault((u.get('entry_id'),) + span_key(u), []).append(u)
+    for k, group in by_site.items():
+        if len({u.get('entry_id') for u in group}) > 1:
+            inc(family(k[0]), 'shared_sink_fanout', len(group))
+    for k, group in by_entry_site.items():
+        if len(group) > 1:
+            inc(family(k[1]), 'same_entry_sink_extra', len(group) - 1)
+    for row in rows:
+        for u in select(row, report, entries):
+            cond = row['class']
+            ok = (cond == 'own_api_request_origin' and any(d.get('source', {}).get('kind') == 'input_source' for d in u.get('dependencies', []))) or \
+                 (cond == 'stored_literal_writes' and any(g['kind'] == 'storage_origin_unresolved' for g in (u.get('completeness') or {}).get('blockers') or [])) or \
+                 cond == 'closed_type_map'
+            if ok:
+                inc(family(u['kind']), cond)
+    return out
+
+
+def fixed_outcome(report):
+    """Judged requests whose outcome a scanner blocker had already fixed, and
+    how many of them discarded a substantive model answer."""
+    out = {}
+    for u in report['uses']:
+        a = u.get('assessment') or {}
+        if a.get('status') != 'completed' or a.get('deduplicated_from'):
+            continue
+        scanner = {g['kind'] for g in (u.get('completeness') or {}).get('blockers') or []} | {'validation_evidence_missing'}
+        if not any(g.get('kind') in scanner for g in a.get('blocking_gaps') or []):
+            continue
+        d = out.setdefault(family(u['kind']), {'fixed_outcome_requests': 0, 'substantive_discarded': 0})
+        d['fixed_outcome_requests'] += 1
+        answers = a.get('answers') or {}
+        if any(answers.get(k, '') not in UNDECIDED for k in VERDICT_KEYS if k in answers):
+            d['substantive_discarded'] += 1
+    return out
+
+
+def precision(reports, keyed, noise_rows, controls):
+    """Per sample and family: keyed true/false findings, unkeyed and test-path
+    census, noise classes, protected-control outcomes and fixed-outcome requests.
+    keyed is a list of (row, app) whose rows can select records."""
+    result = {}
+    for app, report in reports.items():
+        fs = presented(report)
+        entries = {e['id']: e for e in report.get('entries', [])}
+        role = {}
+        for row in keyed:
+            if row.get('app') != app or 'kind' not in row or 'file' not in row:
+                continue
+            pol = 'positive' if row['expect'] == 'positive' else 'control' if row['expect'] in CONTROL_EXPECT else 'assessment'
+            sel = dict(row)
+            if row['expect'] == 'only_lines':
+                sel.pop('lines', None)
+            for u in select(sel, report, entries):
+                if row['expect'] == 'only_lines' and u['sink']['span']['start_line'] in row['lines']:
+                    pol_u = 'assessment'
+                else:
+                    pol_u = pol
+                role.setdefault(u['id'], set()).add(pol_u)
+        fam = {}
+        def get(k):
+            return fam.setdefault(k, {'records': 0, 'findings': 0, 'keyed_true': 0, 'keyed_false': 0, 'unkeyed': 0, 'unkeyed_findings': 0, 'test_path': 0})
+        for u in report['uses']:
+            d = get(family(u['kind']))
+            d['records'] += 1
+            finding = is_finding(fs.get(u['id']))
+            d['findings'] += finding
+            r = role.get(u['id'])
+            if r is None:
+                d['unkeyed'] += 1
+                d['unkeyed_findings'] += finding
+            elif finding and 'positive' in r:
+                d['keyed_true'] += 1
+            elif finding and r == {'control'}:
+                d['keyed_false'] += 1
+            if TEST_PATH.search(u['sink']['span']['file'] or ''):
+                d['test_path'] += 1
+        for k, classes in noise_classes(report, [n for n in noise_rows if n['app'] == app]).items():
+            get(k).update(classes)
+        for k, v in fixed_outcome(report).items():
+            get(k).update(v)
+        # A judged row names who judged it, so the corpus can be re-measured
+        # when a model or question set changes.
+        for u in report['uses']:
+            a = u.get('assessment') or {}
+            if a.get('status') == 'completed':
+                d = get(family(u['kind']))
+                judged = set(d.get('judged_by', []))
+                judged.add('/'.join([a.get('provider', ''), a.get('model', ''), a.get('question_version', '')]))
+                d['judged_by'] = sorted(judged)
+        for c in controls:
+            if c['app'] != app:
+                continue
+            d = get(family(c['kind']))
+            for u in select(c, report, entries):
+                st = (fs.get(u['id']) or {}).get('status', 'needs_review')
+                key = 'control_false_finding' if is_finding(fs.get(u['id'])) else 'control_protected' if st == 'protected_for_claim' else 'control_review'
+                d[key] = d.get(key, 0) + 1
+        result[app] = dict(sorted(fam.items()))
+    return result
+
+
+def precision_markdown(prec):
+    cols = ['records', 'findings', 'keyed_true', 'keyed_false', 'unkeyed', 'unkeyed_findings', 'test_path',
+            'construction_no_origin', 'construction_no_origin_finding', 'undecidable_validation', 'shared_sink_fanout',
+            'same_entry_sink_extra', 'own_api_request_origin', 'stored_origin_unresolved', 'stored_literal_writes',
+            'unknown_context_raw', 'closed_type_map', 'control_false_finding', 'control_protected', 'control_review',
+            'fixed_outcome_requests', 'substantive_discarded']
+    lines = ['| App | Family | ' + ' | '.join(cols) + ' | Judged by |', '|---|---|' + '---|' * len(cols) + '---|']
+    for app, fams in prec.items():
+        for f, d in fams.items():
+            lines.append(f'| {app} | {f} | ' + ' | '.join(str(d.get(c, 0)) for c in cols) + ' | ' + (', '.join(d.get('judged_by', [])) or 'offline') + ' |')
+    return '\n'.join(lines) + '\n'
+
+
 def markdown(out):
     lines = ['| Case | App | Kind | Anchor | Expectation | Tag | Result | Uses / entries | Notes |',
              '|---|---|---|---|---|---|---|---|---|']
@@ -192,6 +386,7 @@ def main():
     p.add_argument('--lab')
     p.add_argument('--json', type=Path)
     p.add_argument('--markdown', type=Path, help='write the per-row Markdown table')
+    p.add_argument('--precision-markdown', type=Path, help='write the per-family precision and noise table')
     a = p.parse_args()
     reports = {k: json.loads(Path(v).read_text()) for k, v in json.loads(a.reports.read_text()).items()}
     frozen = json.loads((Path(__file__).parent / 'cases.json').read_text())
@@ -211,14 +406,22 @@ def main():
         summary.setdefault(o['outcome'], 0)
         summary[o['outcome']] += 1
     summary['vacuous_control_pass'] = sum(1 for o in out if o.get('vacuous'))
-    doc = {'rows': out, 'summary': summary, 'total': len(out)}
+    keyed = [r for r, _ in rows if r.get('expect') not in ('excluded', 'registration')]
+    controls = json.loads((Path(__file__).parent / 'protected-controls.json').read_text())['controls']
+    prec = precision(reports, keyed, frozen.get('noise_rows', []), controls)
+    doc = {'rows': out, 'summary': summary, 'total': len(out), 'precision': prec}
     if a.json:
         a.json.write_text(json.dumps(doc, indent=2) + '\n')
     if a.markdown:
         a.markdown.write_text(markdown(out))
+    if a.precision_markdown:
+        a.precision_markdown.write_text(precision_markdown(prec))
     for o in out:
         if o['outcome'] in ('missing_candidate', 'candidate_evidence_gap', 'control_fail', 'missing_registration'):
             print(o['app'], o['id'], o['outcome'], o.get('blockers', ''), o.get('observed_lines', ''))
+    for app, fams in prec.items():
+        for f, d in fams.items():
+            print('precision', app, f, json.dumps(d, sort_keys=True))
     print(json.dumps(summary, sort_keys=True), 'total', len(out))
 
 

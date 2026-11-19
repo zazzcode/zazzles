@@ -93,10 +93,17 @@ func TestBrowserEventPipeline(t *testing.T) {
 			}
 			run := SARIF(&saved)["runs"].([]any)[0].(map[string]any)
 			results := run["results"].([]any)
-			if len(results) != 4 {
+			if sarifRecords(results) != 4 {
 				t.Fatal("zero-use entry became a finding or use was lost")
 			}
-			for i, item := range results {
+			shown := []int{}
+			for i, f := range saved.Findings {
+				if f.GroupedInto == "" {
+					shown = append(shown, i)
+				}
+			}
+			for k, item := range results {
+				i := shown[k]
 				result := item.(map[string]any)
 				props := result["properties"].(map[string]any)
 				f := props["scan.finding"].(analysis.Finding)

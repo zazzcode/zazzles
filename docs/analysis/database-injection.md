@@ -158,7 +158,10 @@ scalar-guarded NoSQL, so model agreement alone is not an accuracy pass.
 
 - **Finding / soft red:** an injection-specific vulnerable judgment, required evidence and API
   contract, no claim blockers, and consistent path/coverage answers support a static vulnerability.
-- **Finding / soft orange:** established executable-string construction practice to remediate.
+- **Finding / soft orange:** established executable-string construction practice to remediate. At
+  least one built-in value must have an external origin (request, storage, file, fetched, browser or
+  API response); a construction from constants, environment values or no resolved dependency is
+  Review with `external_origin_not_established`.
 - **Review / soft blue:** the problem or sufficient protection is Inconclusive.
 - **Protected / soft green:** protection supported for the named injection claim.
 

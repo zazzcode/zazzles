@@ -107,7 +107,7 @@ in command arguments. Agents MUST pass only the selected provider's key to the s
 Offline checks need no key. An existing local key is configuration, not authorization for paid calls.
 The owner's typical live check is standing-authorized: when the owner asks for a live check of a
 sample, run one judged scan with `--judge openai --judge-model gpt-6-luna`, the default judge limit
-(every candidate; about 157 requests for Juice Shop), `JUDGE_RPM=4500` and `JUDGE_TPM=1800000`,
+(every candidate; about 62 requests for Juice Shop, whose undecidable validation records are not sent), `JUDGE_RPM=4500` and `JUDGE_TPM=1800000`,
 without asking for a cap. Anything larger or another provider/model still needs the owner's word.
 Agents MUST follow the user's active provider/model restrictions, keep live request counts small and
 explicit, and MUST NOT use automatic provider/model fallback. Judge transport retries only

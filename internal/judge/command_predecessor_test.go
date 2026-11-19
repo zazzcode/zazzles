@@ -19,7 +19,7 @@ import (
 // and XSS records whose gaps name an unresolved symbol gain the
 // one-evidence-request question (W5); no other family's request changed.
 // Their flow-gap citation labels later gained the referenced evidence text
-// (flow-gap-v2).
+// (flow-gap-v3).
 func TestCommandPredecessorRequests(t *testing.T) {
 	type baseline struct {
 		count  int
@@ -27,10 +27,10 @@ func TestCommandPredecessorRequests(t *testing.T) {
 	}
 	want := map[string]baseline{
 		"string-flow":                 {1, "6f9b69d1d97fc527823f4fbc55e28b09f1c46ae489bc6fcd34eebd06329758b6"},
-		"javascript/grpc":             {7, "e1d52c0d9f093e55489bed11b751c3fdd44a122c7158a9831ed5a58540dd0d28"},
-		"typescript/grpc":             {7, "6f91be19e5680169710eb5bd45981da1288763c2515f830857ed807a4f08f80c"},
-		"javascript/graphql":          {7, "3ac164030f1e80f31f278c9b7b9ed534abb6dcd904a744c697a4117d70f926ee"},
-		"typescript/graphql":          {7, "1caa30da0cf53348cf2261195f452cbcca1ec63b56eb7eaf3605103184a98891"},
+		"javascript/grpc":             {7, "19007ac595799ca89ff9565cdbc43c82250cf9b7e1027f6dc8a826845c8fec5f"},
+		"typescript/grpc":             {7, "498d42868c5034d801bd39a452d96070ace22bac11bd916cd9b27002d48f015a"},
+		"javascript/graphql":          {7, "3c36a7536822801506008fa5330c493d0fd8c2dac58a595cc063c195e557e999"},
+		"typescript/graphql":          {7, "352f3b23426a8f556fa662d0e93c30ad9fc7097fd49eab484d8f8bfd86846c05"},
 		"javascript/dynamic-dispatch": {4, "8c9274aff93dd8fbe2b4c3de1fccd90916d270df060983505c73705d093934b3"},
 		"typescript/dynamic-dispatch": {4, "e8f515e38a9504b4a8970c969f6178d7ffdea0c09aeb7a61943eeba002018719"},
 		"python/routes":               {5, "2ce7531c60f7d221060704bbe570cdd3f07cac5a245916fe547846bfe9099e58"},

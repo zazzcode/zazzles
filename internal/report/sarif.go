@@ -59,6 +59,10 @@ func SARIF(report *analysis.AnalysisReport) map[string]any {
 		if len(finding.LinkedUseIDs) > 0 {
 			props["scan.linkedUseIds"] = finding.LinkedUseIDs
 		}
+		if finding.ModelResolved != nil {
+			props["scan.modelResolved"] = finding.ModelResolved
+			message += " [model-resolved: " + finding.ModelResolved.Provider + "/" + finding.ModelResolved.Model + " " + strings.Join(finding.ModelResolved.QuestionVersions, ",") + "; cited " + strings.Join(finding.ModelResolved.CitedIDs, "; ") + "]"
+		}
 		props["scan.entryKind"] = "unknown"
 		props["scan.entryId"] = use.EntryID
 		props["scan.invocationContextId"] = use.InvocationContextID

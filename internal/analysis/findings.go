@@ -29,6 +29,21 @@ type Finding struct {
 	// the finding that represents it; renderers show only the representative.
 	GroupedUseIDs []string `json:"grouped_use_ids,omitempty"`
 	GroupedInto   string   `json:"grouped_into,omitempty"`
+	// ModelResolved marks a record whose status rests on a verified model
+	// resolution. The status is the ordinary one; this is its provenance.
+	ModelResolved *ModelResolvedMark `json:"model_resolved,omitempty"`
+}
+
+// ModelResolvedMark is the visible provenance of a model-resolved record:
+// who answered, under which question versions, and the cited evidence.
+type ModelResolvedMark struct {
+	Provider         string   `json:"provider"`
+	Model            string   `json:"model"`
+	QuestionVersions []string `json:"question_versions"`
+	Questions        []string `json:"questions"`
+	CitedIDs         []string `json:"cited_ids,omitempty"`
+	CitedSpans       []Span   `json:"cited_spans,omitempty"`
+	Resolved         []string `json:"resolved,omitempty"`
 }
 
 // BlockingReason is one machine-readable reason a record stays in Review.

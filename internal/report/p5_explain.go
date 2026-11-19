@@ -3,6 +3,7 @@ package report
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
@@ -168,6 +169,33 @@ func explainOutcomes(r *analysis.AnalysisReport) {
 		}
 		r.Findings[i].AssessmentState = assessmentState(r.Uses[i])
 		r.Findings[i].BlockingEvidence = blockingEvidence(r.Uses[i], r.Findings[i])
+		r.Findings[i].ModelResolved = modelResolvedMark(r.Uses[i].Assessment)
 	}
 	linkIndependentClaims(r)
+}
+
+// modelResolvedMark summarizes the verified resolutions a record's status
+// rests on, or nil when none was used.
+func modelResolvedMark(a analysis.Assessment) *analysis.ModelResolvedMark {
+	if !a.ModelResolved() {
+		return nil
+	}
+	m := &analysis.ModelResolvedMark{Provider: a.Provider, Model: a.Model, QuestionVersions: []string{}, Questions: []string{}}
+	versions := map[string]bool{}
+	for _, r := range a.Resolutions {
+		if !r.Discharged {
+			continue
+		}
+		if !versions[r.QuestionVersion] {
+			versions[r.QuestionVersion] = true
+			m.QuestionVersions = append(m.QuestionVersions, r.QuestionVersion)
+		}
+		m.Questions = append(m.Questions, r.Question)
+		m.CitedIDs = append(m.CitedIDs, strings.Join(r.Citation, ">"))
+		m.CitedSpans = append(m.CitedSpans, r.CitedSpans...)
+		if r.Blocker != nil {
+			m.Resolved = append(m.Resolved, r.Blocker.Kind)
+		}
+	}
+	return m
 }

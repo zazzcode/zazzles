@@ -50,9 +50,12 @@ sentence, documenting any current regression separately if one is observed.
 | Path | Change | Purpose |
 |---|---|---|
 | `.zazz/evaluation/recall-gap-inventory.md` | New | Pinned expected-case matrix, verification commands, exclusions, ranking and results |
+| `.zazz/evaluation/recall-gap-inventory/cases.json`, `check.py` | New | Frozen rows for keys without machine-readable cases, and the structural checker that reproduces the matrix |
+| `.zazz/project/vulnerable-sample-apps.md`, `.zazz/evaluation/{vuln-nextjs,oss-oopssec-store,dvwa}-detection-guide.md` | Modified | Correct stale coverage claims and gate commands found by reconciliation |
 | `.zazz/evaluation/vulnpy-detection-guide.md` | Modified | Reconcile the historical Jinja note with delivery and current evidence |
 | This spec | Modified | Record the selected scope, fixtures and expected deltas before code |
-| One of `internal/langjs/`, `internal/langpy/`, `internal/langphp/`, or `internal/parse/` and the selected fixture owner | Conditional | One localized closure and its regression controls. Name exact files and owners before code. |
+| One of `internal/langjs/`, `internal/langpy/`, `internal/langphp/`, or `internal/parse/` and the selected fixture owner | Conditional | One localized closure and its regression controls. Selected: `internal/langjs/xss_web_response.go` (new), `internal/langjs/xss_response.go` (shared HTML-response tail), `internal/langjs/flow.go` (constructor hook) and `internal/langjs/xss_web_response_test.go` (new) |
+| `internal/analysispacks/xss.go`, `internal/analysispacks/xss_test.go` | Conditional | Selected: the `html-output-v1` contract for library `fetch-response`, so selection accepts the new records. Existing Express records and descriptor material are unchanged |
 | `cmd/scan/testdata/architecture-baseline.json` | Conditional | Add the new fixture rows and update individually listed affected rows |
 | Selected analysis and detection guides | Conditional | Document the recovered subset and remaining limits |
 
@@ -186,8 +189,24 @@ collect disjoint sample outputs read-only, each in its own run folder. Serialize
    or the inventory-only outcome and reason.
 4. **AC4 — Closure, when selected.** The targeted adapter test fails on baseline, then proves the
    recovered witness plus the safe and unresolved controls. A fresh offline scan at the same sample
-   pin verifies the recovered expectation. Add exact commands, test name, anchors and changed
-   fixture rows to this criterion before coding.
+   pin verifies the recovered expectation. Selected closure: `OOPS-XSS-R01`, a web-standard
+   `Response`/`NextResponse` constructor with an HTML `Content-Type` as an HTML response sink.
+   `go test ./internal/langjs -run '^TestWebResponseHTMLSink$' -count=1` covers these cases:
+   - **Recovered.** A Next.js route reads a query value into a template, and either returns
+     `new NextResponse(html, { headers: { "Content-Type": "text/html" } })` or passes the value
+     through a local helper as the VCS route does. Each yields an `xss_candidate` with protection
+     `raw`, sink kind `html_response`, the request source in its dependencies, no completeness
+     blockers, and an API model that passes `analysispacks.Select`.
+   - **Safe controls.** `application/json`, `text/plain`, a `new Headers` non-HTML type, and an
+     omitted init all yield no `xss_candidate`. The Fetch default for a string body is `text/plain`.
+   - **Unresolved controls.** A headers variable, a spread after the type, and a non-literal type
+     each yield an `xss_candidate` with protection `unknown` and a `render_protection_unresolved`
+     blocker.
+   - **Binding controls.** A shadowed or non-`next/server` `NextResponse`, and a locally bound
+     `Response`, yield no candidate.
+
+   Recheck `OOPS-XSS-R01` with `check.py` against a fresh scan of `oss-oopssec-store` at
+   `2d530ef`. Its sink is `app/api/vcs/[[...path]]/route.ts:101`.
 5. **AC5 — Compatibility.** `go test ./cmd/scan -run '^TestArchitectureBaseline$' -count=1`
    passes, with golden changes limited to the named rows. Compare before/after case outcomes for
    the verified corpus and account for every changed structural row. Every at-risk control named in
@@ -298,3 +317,13 @@ handling for the vuln-demo-app full SHA and the living vuln-nextjs pin, the per-
 limits, control and fan-out counts, `independent` and `post_delivery` row tags, the at-risk control
 gate for eligibility and AC5, the nested output path, and an out-of-scope follow-on table (§11). The
 single-closure scope is unchanged.
+
+### 2026-11-19 — Inventory checkpoint and selection
+
+Measured all eleven samples offline. All 91 required positives have witnessed candidates, and all 30
+structural controls pass. The one miss is the Review-expected `OOPS-XSS-R01`, caused by `sink_model`.
+§4 now adds the frozen case file and checker, the stale-claim corrections, and the selected closure
+files, including the analysispacks contract seam. AC4 names the test, controls and anchor. The
+golden delta is limited to new records from fixtures that construct a web `Response` with an HTML
+type; none is expected. The owner asked for implementation in this session, so rank 1 proceeds
+without waiting for a redirect, as §6 allows.

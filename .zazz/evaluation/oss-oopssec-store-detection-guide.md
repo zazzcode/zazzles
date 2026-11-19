@@ -69,7 +69,7 @@ unlinked server HTML record at `app/vulnerabilities/[slug]/page.tsx:275` remain 
 not a passed detection claim. `SQL-Q01` is an expectation about unsafe construction, not a detected
 injection or a dedicated practice check. `SSR-05` exposure checking is deferred (`NX-BP-18`).
 
-Offline gate: `ZAZZLES_NEXTJS_SAMPLE=<checkout> go test ./internal/parse -run TestNextJSOopsStoreAnswerKey`.
+Offline gate: `ZAZZLES_NEXTJS_SAMPLE=<checkout> go test ./internal/langjs -run TestNextJSOopsStoreAnswerKey`.
 The fresh run replays 107/107 exactly with `TestReplaySavedRun`, with zero mismatches or missing traces.
 Preserve the pinned checkout and write routine outputs outside it. Expected labels must never enter
 scanner/model evidence or target-name exceptions. See the [reference policy](../../docs/samples/reference-policy.md).

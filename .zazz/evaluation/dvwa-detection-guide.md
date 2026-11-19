@@ -57,7 +57,7 @@ pin — each still yields its unresolved-origin finding:
   module attribution rides input-fact source spans, so sink-file-only grouping undercounts a
   module. `csp` module produces one reflected candidate from its JSONP endpoint.
 
-`ZAZZLES_DVWA=<checkout> go test ./internal/parse -run TestDVWASourceKey` verifies the required
+`ZAZZLES_DVWA=<checkout> go test ./internal/pipeline -run TestDVWASourceKey` verifies the required
 positives against a clean checkout at the pinned revision. Expected labels live only in test code
 and never enter model inputs. Paid judgment (AC14) is a separate, explicitly budgeted step; its
 results belong in `php-support-results.md` and the published sample, not in this guide.

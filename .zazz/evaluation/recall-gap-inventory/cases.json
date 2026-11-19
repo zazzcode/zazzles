@@ -1,0 +1,1102 @@
+{
+  "scope": "Phase 5 frozen structural case universe for source-reviewed keys that have no machine-readable cases.json. Python rows are read from docs/samples/<app>/cases.json and vuln-nextjs rows from the lab's tests/expected-scanner-findings.json at the pin; neither is copied here. Rows restate the cited key; expectations never enter scanner or model input.",
+  "expectations": {
+    "positive": "Candidate of the kind at the anchor with a witnessed source (source anchor when given) and no completeness blockers",
+    "review": "Candidate required; the key expects Review, so blockers are allowed and the decisive assessment is out of scope",
+    "present": "Candidate required; the key's expectation is assessment-dependent (judge decides)",
+    "no_record": "No candidate of the kind at the anchor",
+    "not_raw": "Every matching xss candidate is classified other than raw (or there is none)",
+    "not_decisive": "No matching candidate, or every matching candidate keeps a blocker or lacks a request origin",
+    "only_lines": "Candidates of the kind in the file sit only at the listed lines",
+    "bound": "No matching sql candidate carries query_text_interpolated",
+    "excluded": "Outside candidate/registration recall; reason given"
+  },
+  "pins": {
+    "vuln-demo-app": "d27b35bdd2d599f1f79dace71d5272215df04423",
+    "vulnerable-typescript-app": "7f8b240a2f02beba099da3632d1ba679ff8bc32f",
+    "nodejs-goof": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+    "juice-shop": "f189f521266f42c6bd05884468292000cee852ed",
+    "oss-oopssec-store": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
+    "vuln-nextjs": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+    "vulnpy": "b81885e58283a3449b578d20c20557aff637e5ea",
+    "ThreatByte": "ede28f27e7e5061866a67b19b6088df4dd11c569",
+    "python-insecure-app": "b188493768ca2c1ef003e08148fb2e4577219c36",
+    "vulnerable-flask-app": "a67cbe590698dc4a0422f28e2495a40af559e257",
+    "dvwa": "a1978a2fed195acd093010af6395f86a281537ca"
+  },
+  "cases": [
+    {
+      "id": "DEMO-XSS-01",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 180,
+      "source": [
+        "server.js",
+        178
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-XSS-02",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 190,
+      "source": [
+        "server.js",
+        206
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-XSS-03",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 166,
+      "source": [
+        "server.js",
+        206
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-XSS-04",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 166,
+      "source": [
+        "server.js",
+        150
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-XSS-05",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 236,
+      "source": [
+        "server.js",
+        226
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-XSS-Q01",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "expect": "excluded",
+      "reason": "Qualified: Review or no record is acceptable (engine error text)"
+    },
+    {
+      "id": "DEMO-XSS-Q02",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "expect": "excluded",
+      "reason": "Qualified: Review or no record is acceptable (network error text)"
+    },
+    {
+      "id": "DEMO-XSS-Q03",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 131,
+      "expect": "not_decisive"
+    },
+    {
+      "id": "DEMO-XSS-N01",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 236,
+      "only_sources": [
+        [
+          "server.js",
+          226
+        ]
+      ],
+      "expect": "only_sources"
+    },
+    {
+      "id": "DEMO-XSS-N02",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "line": 280,
+      "expect": "not_decisive"
+    },
+    {
+      "id": "DEMO-XSS-N03",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "lines": [
+        256,
+        266,
+        292
+      ],
+      "expect": "no_record"
+    },
+    {
+      "id": "DEMO-XSS-N04",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "server.js",
+      "lines": [
+        131,
+        166,
+        180,
+        190,
+        236,
+        280
+      ],
+      "expect": "only_lines"
+    },
+    {
+      "id": "DEMO-SQL-01",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "line": 46,
+      "source": [
+        "server.js",
+        123
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-SQL-02",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "line": 46,
+      "source": [
+        "server.js",
+        150
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-SQL-03",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "line": 46,
+      "source": [
+        "server.js",
+        254
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-SQL-04",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "line": 46,
+      "source": [
+        "server.js",
+        264
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-SQL-05",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "line": 291,
+      "source": [
+        "server.js",
+        291
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-SQL-N01",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "line": 208,
+      "expect": "bound"
+    },
+    {
+      "id": "DEMO-SQL-N02",
+      "app": "vuln-demo-app",
+      "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "server.js",
+      "lines": [
+        46,
+        291
+      ],
+      "expect": "only_lines"
+    },
+    {
+      "id": "DEMO-SSRF-01",
+      "app": "vuln-demo-app",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "ssrf_candidate",
+      "file": "server.js",
+      "line": 232,
+      "source": [
+        "server.js",
+        226
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "DEMO-IDOR",
+      "app": "vuln-demo-app",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "expect": "excluded",
+      "reason": "out_of_family: IDOR and missing admin authorization"
+    },
+    {
+      "id": "TS-XSS-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "src/server.ts",
+      "line": 117,
+      "source": [
+        "src/server.ts",
+        115
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "TS-CMDI-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "command_execution_candidate",
+      "file": "src/server.ts",
+      "line": 90,
+      "source": [
+        "src/server.ts",
+        88
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "TS-LOG-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "log_sink_candidate",
+      "file": "src/server.ts",
+      "line": 74,
+      "expect": "present",
+      "note": "Sensitivity needs a stated contract; judged outcome is assessment-dependent"
+    },
+    {
+      "id": "TS-PATH-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "src/server.ts",
+      "line": 104,
+      "source": [
+        "src/server.ts",
+        101
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "TS-SSRF-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "file": "src/server.ts",
+      "line": 125,
+      "source": [
+        "src/server.ts",
+        122
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "TS-CODE-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "code_execution_candidate",
+      "file": "src/server.ts",
+      "line": 137,
+      "source": [
+        "src/server.ts",
+        134
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "TS-REDIRECT-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "open_redirect_candidate",
+      "file": "src/server.ts",
+      "line": 239,
+      "source": [
+        "src/server.ts",
+        237
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "TS-SQL-N01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "src/server.ts",
+      "lines": [],
+      "expect": "only_lines"
+    },
+    {
+      "id": "TS-XSS-N01",
+      "app": "vulnerable-typescript-app",
+      "key": "docs/samples/vulnerable-typescript-app/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "src/server.ts",
+      "lines": [
+        108,
+        117
+      ],
+      "expect": "only_lines",
+      "note": "108 is file content from TS-PATH-01 sent as HTML; blocked Review, not a JSON sink"
+    },
+    {
+      "id": "TS-OTHER",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "expect": "excluded",
+      "reason": "out_of_family: AUTH, AUTHZ, IDOR, MASS, SECRET, DISCLOSE, SESSION, ERROR and the nine qualified Review leads (XXE, YAML, PROTOTYPE, REDOS, RANDOM, CORS, ENV, UPLOAD, CLIENT)"
+    },
+    {
+      "id": "GOOF-XSS-01",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "views/admin.ejs",
+      "line": 17,
+      "source": [
+        "routes/index.js",
+        84
+      ],
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-XSS-02",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "views/index.ejs",
+      "line": 20,
+      "source": [
+        "routes/index.js",
+        168
+      ],
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-XSS-03",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "views/index.ejs",
+      "line": 20,
+      "source": [
+        "routes/index.js",
+        234
+      ],
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-XSS-N01",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "views/edit.ejs",
+      "line": 23,
+      "expect": "not_raw",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-XSS-N02",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "views/edit.ejs",
+      "line": 20,
+      "expect": "not_raw",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-XSS-N03",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "views/account.hbs",
+      "expect": "review",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-XSS-N04",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "public/js/ga.js",
+      "expect": "no_record",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-CMD-01",
+      "app": "nodejs-goof",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "command_execution_candidate",
+      "file": "routes/index.js",
+      "line": 174,
+      "source": [
+        "routes/index.js",
+        168
+      ],
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-NOSQL-01",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "nosql_query_candidate",
+      "file": "routes/index.js",
+      "line": 52,
+      "source": [
+        "routes/index.js",
+        52
+      ],
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-NOSQL-N01",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "nosql_query_candidate",
+      "file": "routes/index.js",
+      "lines": [
+        204,
+        232
+      ],
+      "expect": "present",
+      "note": "findById casts scalar route IDs; not automatically an operator-injection positive; judge decides",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-PATH-01",
+      "app": "nodejs-goof",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "path_traversal_candidate",
+      "file": "routes/index.js",
+      "line": 270,
+      "source": [
+        "routes/index.js",
+        260
+      ],
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-LOG-N01",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "kind": "log_sink_candidate",
+      "file": "routes/index.js",
+      "line": 312,
+      "expect": "present",
+      "note": "Whole-query logging established; sensitivity unproven, so not a confirmed leak; judge decides",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "GOOF-OTHER",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/xss-answer-key.md",
+      "expect": "excluded",
+      "reason": "Dust template code-execution demonstration and TypeORM field validation: out_of_family or no source positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "JS-XSS-01",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/search-result/search-result.component.html",
+      "line": 11,
+      "source": [
+        "frontend/src/app/search-result/search-result.component.ts",
+        139
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-02",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/track-result/track-result.component.html",
+      "line": 9,
+      "source": [
+        "routes/trackOrder.ts",
+        15
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-03",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/last-login-ip/last-login-ip.component.html",
+      "line": 10,
+      "source": [
+        "routes/saveLoginIp.ts",
+        18
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-04a",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/administration/administration.component.html",
+      "line": 26,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-04b",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/administration/administration.component.html",
+      "line": 113,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-05a",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/administration/administration.component.html",
+      "line": 60,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-05b",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/about/about.component.html",
+      "line": 51,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-06",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/product-details/product-details.component.html",
+      "line": 18,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-07",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "routes/userProfile.ts",
+      "line": 101,
+      "source": [
+        "routes/updateUserProfile.ts",
+        38
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "JS-XSS-08",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "routes/videoHandler.ts",
+      "line": 72,
+      "expect": "review"
+    },
+    {
+      "id": "JS-XSS-N01",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/product-details/product-details.component.html",
+      "lines": [
+        17,
+        58
+      ],
+      "expect": "no_record"
+    },
+    {
+      "id": "JS-XSS-N02",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "expect": "excluded",
+      "reason": "General Angular contract with no single anchor; covered by the per-sink rows"
+    },
+    {
+      "id": "JS-XSS-N03",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/track-result/track-result.component.html",
+      "line": 80,
+      "expect": "no_record"
+    },
+    {
+      "id": "JS-XSS-N04",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/xss-answer-key.md",
+      "kind": "xss_candidate",
+      "file": "frontend/src/app/data-export/data-export.component.html",
+      "line": 29,
+      "expect": "not_decisive"
+    },
+    {
+      "id": "JS-SQL-01",
+      "app": "juice-shop",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "sql_query_candidate",
+      "file": "routes/login.ts",
+      "line": 34,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-SQL-02",
+      "app": "juice-shop",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "sql_query_candidate",
+      "file": "routes/search.ts",
+      "line": 23,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-NOSQL-01",
+      "app": "juice-shop",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "nosql_query_candidate",
+      "file": "routes/showProductReviews.ts",
+      "line": 36,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-NOSQL-02",
+      "app": "juice-shop",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "nosql_query_candidate",
+      "file": "routes/trackOrder.ts",
+      "line": 18,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-NOSQL-03",
+      "app": "juice-shop",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "nosql_query_candidate",
+      "file": "routes/updateProductReviews.ts",
+      "line": 17,
+      "expect": "positive"
+    },
+    {
+      "id": "JS-LOG-01",
+      "app": "juice-shop",
+      "key": "docs/samples/juice-shop/README.md",
+      "kind": "log_sink_candidate",
+      "file": "server.ts",
+      "line": 366,
+      "source": [
+        "routes/changePassword.ts",
+        14
+      ],
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-SQL-01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "app/api/products/search/route.ts",
+      "line": 55,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-SQL-02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "app/api/orders/search/route.ts",
+      "line": 58,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-SQL-03",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "app/api/tracking/route.ts",
+      "line": 54,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-SQL-04",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "app/api/admin/reviews/route.ts",
+      "line": 79,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-SQL-Q01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "expect": "excluded",
+      "reason": "Unsafe construction practice with a random UUID; no injection candidate is expected"
+    },
+    {
+      "id": "OOPS-PATH-01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "app/api/files/route.ts",
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-PATH-02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "app/api/files/route.ts",
+      "min_uses": 3,
+      "expect": "positive",
+      "note": "readFile plus readdir/stat; three operations"
+    },
+    {
+      "id": "OOPS-PATH-R01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "app/api/uploads/[...path]/route.ts",
+      "expect": "review"
+    },
+    {
+      "id": "OOPS-PATH-R02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "app/api/admin/products/[id]/image/route.ts",
+      "expect": "review"
+    },
+    {
+      "id": "OOPS-PATH-N01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "app/vulnerabilities/[slug]/page.tsx",
+      "expect": "not_decisive"
+    },
+    {
+      "id": "OOPS-SSRF-01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "file": "app/api/support/route.ts",
+      "line": 16,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-SSRF-02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "file": "app/api/ai-assistant/route.ts",
+      "line": 69,
+      "expect": "review"
+    },
+    {
+      "id": "OOPS-LOG-01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "log_sink_candidate",
+      "file": "app/api/auth/login/route.ts",
+      "line": 16,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-LOG-02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "log_sink_candidate",
+      "file": "app/api/gift-cards/route.ts",
+      "line": 74,
+      "expect": "positive",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "OOPS-XSS-01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/products/[id]/ProductDetailClient.tsx",
+      "line": 55,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-XSS-02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/profile/ProfileClient.tsx",
+      "line": 411,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-XSS-03",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/admin/analytics/AnalyticsClient.tsx",
+      "line": 334,
+      "expect": "review"
+    },
+    {
+      "id": "OOPS-XSS-04",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/support/SupportForm.tsx",
+      "line": 103,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-XSS-05",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/login/LoginForm.tsx",
+      "line": 37,
+      "expect": "positive"
+    },
+    {
+      "id": "OOPS-XSS-R01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/api/vcs/[[...path]]/route.ts",
+      "expect": "review",
+      "note": "Directory listing reflected into a text/html NextResponse; reachability depends on repository lookup"
+    },
+    {
+      "id": "OOPS-XSS-N01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/admin/documents/page.tsx",
+      "expect": "no_record"
+    },
+    {
+      "id": "OOPS-XSS-N02",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/products/search/ProductSearchClient.tsx",
+      "expect": "not_raw"
+    },
+    {
+      "id": "OOPS-XSS-N03",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/vulnerabilities/[slug]/page.tsx",
+      "line": 191,
+      "expect": "no_record"
+    },
+    {
+      "id": "OOPS-XSS-N04",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "app/live/page.tsx",
+      "expect": "no_record"
+    },
+    {
+      "id": "OOPS-MW-01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "expect": "excluded",
+      "reason": "Registration-stage row verified by TestNextJSOopsStoreAnswerKey, not by a candidate"
+    },
+    {
+      "id": "OOPS-PRACTICE",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/evaluation/oss-oopssec-store-detection-guide.md",
+      "expect": "excluded",
+      "reason": "SSR-01..05, CL-01..04, VAL-*: model-free observations owned by practice accuracy, not candidate recall"
+    },
+    {
+      "id": "SQLI-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "vulnerabilities/sqli/source/low.php",
+      "source": [
+        "vulnerabilities/sqli/source/low.php",
+        5
+      ],
+      "expect": "positive",
+      "note": "Key anchors construction at :10; the query call is :11"
+    },
+    {
+      "id": "SQLI-002",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "vulnerabilities/sqli_blind/source/low.php",
+      "expect": "positive"
+    },
+    {
+      "id": "AUTH-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "vulnerabilities/brute/source/low.php",
+      "expect": "positive"
+    },
+    {
+      "id": "AUTH-002",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "vulnerabilities/captcha/source/low.php",
+      "line": 61,
+      "expect": "review",
+      "note": "Candidate-only; no raw request-to-SQL path",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "CSRF-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "file": "vulnerabilities/csrf/source/low.php",
+      "source": [
+        "vulnerabilities/csrf/source/low.php",
+        5
+      ],
+      "expect": "present",
+      "note": "Session-sourced user operand keeps a blocker; the request password operand is witnessed"
+    },
+    {
+      "id": "CMD-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "command_execution_candidate",
+      "file": "vulnerabilities/exec/source/low.php",
+      "expect": "positive"
+    },
+    {
+      "id": "XSSR-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "dvwa/includes/dvwaPage.inc.php",
+      "line": 388,
+      "entry_file": "vulnerabilities/xss_r/index.php",
+      "dep_file": "vulnerabilities/xss_r/source/low.php",
+      "expect": "positive"
+    },
+    {
+      "id": "XSSS-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "xss_candidate",
+      "file": "dvwa/includes/dvwaPage.inc.php",
+      "entry_file": "vulnerabilities/xss_s/index.php",
+      "dep_file": "vulnerabilities/xss_s/source/low.php",
+      "expect": "positive",
+      "note": "Stored link to the writing entry is asserted by TestDVWASourceKey",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "UPLD-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "vulnerabilities/upload/source/low.php",
+      "line": 9,
+      "expect": "positive"
+    },
+    {
+      "id": "FI-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "file": "vulnerabilities/fi/index.php",
+      "line": 36,
+      "expect": "positive"
+    },
+    {
+      "id": "REDIR-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "open_redirect_candidate",
+      "file": "vulnerabilities/open_redirect/source/low.php",
+      "line": 4,
+      "expect": "positive"
+    },
+    {
+      "id": "CODE-001",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "code_execution_candidate",
+      "file": "vulnerabilities/view_help.php",
+      "expect": "positive"
+    },
+    {
+      "id": "DVWA-IMPOSSIBLE",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "expect": "excluded",
+      "reason": "Impossible-level controls share each module's candidate and are decided by assessment; not offline-measurable"
+    }
+  ],
+  "tags": {
+    "independent": "Row written from source review before the scanner behavior it tests, or no history shows otherwise",
+    "post_delivery": "Key history shows the row was written or corrected after the scanner behavior it tests"
+  }
+}

@@ -75,7 +75,7 @@ that output, but their ordinary marker is not itself a browser exploit test.
 
 - [x] Follow the actual HTML response/renderer rather than inventing a sink in do_raw.
 - [x] Resolve factory parameters name/trigger before declaring a raw branch feasible.
-- [ ] Model the Environment/get_template/render binding and the concrete template trust bypass.
+- [x] Model the Environment/get_template/render binding and the concrete template trust bypass.
 - [x] Keep raw versus escaped text counterparts and unknown custom configuration controls.
 - [ ] Extend the same review to other framework adapters as their extraction support is implemented.
 
@@ -220,7 +220,7 @@ nonzero. The original three-app 29-case checks remain separate. A framework/mode
 coverage work within existing families, not evidence the app is safe.
 
 - [ ] Add bounded, source-backed factory/registration/dispatch/callback support in future hardening.
-- [ ] Upgrade the Jinja Environment/template binding so the candidate becomes a supported raw claim.
+- [x] Upgrade the Jinja Environment/template binding so the candidate becomes a supported raw claim.
 - [ ] Recalibrate only once necessary static evidence exists; model confidence cannot fill these gaps.
 - [ ] Record tool disagreements per source case; 8 versus 21 is not an accuracy ranking.
 
@@ -248,5 +248,11 @@ Upstream supplies deliberately vulnerable functions and behavioral tests, rather
 expected-findings manifest. The SQLite tests establish concrete input/row behavior and framework
 XSS tests establish input inclusion; source review supplies the security reasoning. Evaluation labels
 remain outside scanner/model inputs. Historical saved findings, raw answers, hashes and case labels
-are unchanged. `VP-XSS-JINJA`, other framework adapters and additional families remain separate work.
+are unchanged. Other framework adapters and additional families remain separate work.
+
+`VP-XSS-JINJA` was delivered after D5 by XSS hardening, and its
+[final evaluation](xss-hardening/final-evaluation.json) records it as confirmed. The phase 5
+[recall inventory](recall-gap-inventory.md#reconciliation-of-historical-claims) reproduces it offline.
+The raw candidate sits at `apps/templates/jinja/xss.html:30` for `GET /template-xss/jinja`, with its
+`request.args` source at `apps/flask_app.py:20` and no blockers.
 Use the [D5 results](common-entry-dispatch-results.md) for checks, artifacts and supported-subset limits.

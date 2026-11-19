@@ -70,7 +70,7 @@ func TestJudgeTPMProducesIncompleteThreeFormatBundle(t *testing.T) {
 	}
 	var out, stderr bytes.Buffer
 	code := run([]string{"--analyze", "--json", "--judge", "openai", "--judge-tpm=1", "--output-dir", outDir, root}, &out, &stderr)
-	if code != exitError || !strings.Contains(out.String(), "judge limit: request token reservation") {
+	if code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") || !strings.Contains(out.String(), "judge limit: request token reservation") {
 		t.Fatalf("code=%d out=%s stderr=%s", code, out.String(), stderr.String())
 	}
 	for _, ext := range []string{"json", "html", "sarif"} {

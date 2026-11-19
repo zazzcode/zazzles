@@ -197,15 +197,17 @@ type scheduleScenario struct {
 }
 
 // serialScenarios are the AC1 scenarios. Their N=1 outputs are pinned in
-// testdata/schedule_serial and were captured from the pre-change serial scheduler.
+// testdata/schedule_serial; they were captured from the pre-change serial
+// scheduler and regenerated when only account failures and outages halt.
+// A 400 fails one candidate; a 401 stops the scan.
 var serialScenarios = []scheduleScenario{
 	{name: "success", groups: 1, members: 1, limit: 10, limits: &Limits{}},
 	{name: "equivalent_reuse", groups: 1, members: 5, limit: 1, limits: &Limits{}},
-	{name: "leader_failure_member_fallback", groups: 2, members: 3, limit: 10, status: failOrdinal(1, http.StatusInternalServerError)},
-	{name: "leader_failure_halts", groups: 3, members: 2, limit: 10, limits: &Limits{}, status: failOrdinal(1, http.StatusInternalServerError)},
-	{name: "malformed_response_halts", groups: 3, members: 1, limit: 10, limits: &Limits{}, malformed: func(n int) bool { return n == 2 }},
+	{name: "leader_failure_member_fallback", groups: 2, members: 3, limit: 10, status: failOrdinal(1, http.StatusBadRequest)},
+	{name: "leader_failure_halts", groups: 3, members: 2, limit: 10, limits: &Limits{}, status: failOrdinal(1, http.StatusUnauthorized)},
+	{name: "malformed_response_continues", groups: 3, members: 1, limit: 10, limits: &Limits{}, malformed: func(n int) bool { return n == 2 }},
 	{name: "limit_exhaustion", groups: 5, members: 2, limit: 3, limits: &Limits{}},
-	{name: "halt_with_binding_limit", groups: 6, members: 1, limit: 3, limits: &Limits{}, status: failOrdinal(2, http.StatusInternalServerError)},
+	{name: "halt_with_binding_limit", groups: 6, members: 1, limit: 3, limits: &Limits{}, status: failOrdinal(2, http.StatusUnauthorized)},
 	{name: "skipped_families", groups: 2, members: 2, claims: true, limit: 10, limits: &Limits{}, skip: []string{"sql"}},
 	{name: "only_families", groups: 2, members: 2, claims: true, limit: 10, limits: &Limits{}, only: []string{"logging"}},
 	{name: "priority_and_observations", groups: 2, members: 1, claims: true, limit: 2, limits: &Limits{}},
@@ -522,7 +524,7 @@ func TestScheduleCapUsesPriorityLeaders(t *testing.T) {
 func TestScheduleHaltStopsAcquisition(t *testing.T) {
 	for _, n := range []int{1, 4} {
 		t.Run(fmt.Sprintf("N=%d", n), func(t *testing.T) {
-			stub := &scheduleStub{status: failOrdinal(2, http.StatusInternalServerError)}
+			stub := &scheduleStub{status: failOrdinal(2, http.StatusUnauthorized)}
 			sc := scheduleScenario{name: "halt", groups: 10, members: 2, limit: 10, limits: &Limits{}}
 			c, r, opts := prepareScheduleScenario(t, sc, stub, n)
 			if n > 1 {
@@ -543,9 +545,9 @@ func TestScheduleHaltStopsAcquisition(t *testing.T) {
 			for _, u := range r.Uses {
 				switch {
 				case u.Assessment.Status == "completed":
-				case u.Assessment.Reason == "judge HTTP 500":
+				case u.Assessment.Reason == "judge HTTP 401":
 					failures++
-				case u.Assessment.Reason != "judge limit: stopped after judge HTTP 500":
+				case u.Assessment.Reason != "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)":
 					t.Fatalf("%s: %+v", u.ID, u.Assessment)
 				}
 			}

@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 1,
-  "report_sha256": "28310ac13d873be9cb6996bf382f65198a2161f8cb6d376ca6995910a76a73d0",
+  "report_sha256": "7e061c0a2106607bcac5dc3995d4ef920d87d916aaa9787dcb5a389e485681be",
   "assessments": [
     {
       "id": "candidate:v1:c6a6ad74cd389bc37adad9d8461ebb45dfa2afba5ab88a5678c32f074809026a",
@@ -11,7 +11,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge HTTP 500"
+        "reason": "judge HTTP 401"
       }
     },
     {
@@ -22,7 +22,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge limit: stopped after judge HTTP 500"
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
     {
@@ -33,7 +33,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge limit: stopped after judge HTTP 500"
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
     {
@@ -44,7 +44,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge limit: stopped after judge HTTP 500"
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
     {
@@ -55,7 +55,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge limit: stopped after judge HTTP 500"
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     },
     {
@@ -66,7 +66,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge limit: stopped after judge HTTP 500"
+        "reason": "judge limit: stopped after decision model account or credentials rejected (judge HTTP 401)"
       }
     }
   ],
@@ -76,7 +76,7 @@
     "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
     "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
     "Judged 0 distinct candidate signatures across 6 total entry contexts (0 derived across equivalent entry contexts).",
-    "Decision-model limits (one scan; discovery and assessment share state): RPM 0, estimated input TPM 0; requests remain sequential. Attempts 1; reported input tokens 0; unknown-usage attempts 1. judge HTTP 500"
+    "Decision-model limits (one scan; discovery and assessment share state): RPM 0, estimated input TPM 0; requests remain sequential. Attempts 1; reported input tokens 0; unknown-usage attempts 1. decision model account or credentials rejected (judge HTTP 401)"
   ],
   "traces": {
     "candidate:v1:276430da0b440b01e9c8d3798063124f3f27602059b14db10f91e9a666651c5e": {
@@ -110,9 +110,9 @@
       "request_bytes": 18104
     },
     "candidate:v1:c6a6ad74cd389bc37adad9d8461ebb45dfa2afba5ab88a5678c32f074809026a": {
-      "sha256": "4fdffc51c62cccaa4247eecbd3cad38ef94ee87f585ba15ea7e88f692b78f938",
+      "sha256": "7057df91801883201ac5feb26fb705aaf716a943a4614ec2ad706bec376f82d8",
       "request_digest": "6837cff12485898e80b4b4c1826f3acecdd7c4573f3a52dfeed3c47982f095ab",
-      "http_status": 500,
+      "http_status": 401,
       "request_bytes": 18104
     }
   }

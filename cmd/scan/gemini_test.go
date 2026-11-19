@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
@@ -74,8 +75,8 @@ func TestGeminiScanBundleAndLimit(t *testing.T) {
 			if limit == "20" && code != exitOK {
 				t.Fatalf("code=%d error=%s", code, stderr.String())
 			}
-			if limit == "1" && code != exitError {
-				t.Fatalf("limit did not leave scan incomplete: code=%d", code)
+			if limit == "1" && (code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete")) {
+				t.Fatalf("a reached limit must warn and exit 0: code=%d", code)
 			}
 			var report analysis.AnalysisReport
 			if err := json.Unmarshal(out.Bytes(), &report); err != nil {

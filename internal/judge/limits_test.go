@@ -40,7 +40,7 @@ func TestDecisionRateWindowAndCancellation(t *testing.T) {
 		if _, err := l.acquire(context.Background(), 100); err != nil {
 			t.Fatal(err)
 		}
-		l.complete(0, nil, "")
+		l.complete(0, nil, "", "")
 	}
 	if len(waits) != 1 || waits[0] < time.Minute {
 		t.Fatalf("rolling window waits %v", waits)
@@ -101,7 +101,7 @@ func TestDisabledPacingDoesNotRetainRateWindow(t *testing.T) {
 		if _, err := l.acquire(context.Background(), 100); err != nil {
 			t.Fatal(err)
 		}
-		l.complete(0, []byte(`{"usage":{"input_tokens":100}}`), "")
+		l.complete(0, []byte(`{"usage":{"input_tokens":100}}`), "", "")
 	}
 	if len(l.window) != 0 || l.attempts != 10 || l.input != 1000 {
 		t.Fatalf("window=%d attempts=%d input=%d", len(l.window), l.attempts, l.input)
@@ -109,7 +109,7 @@ func TestDisabledPacingDoesNotRetainRateWindow(t *testing.T) {
 }
 
 func TestDecisionFailureStopsFollowingRequests(t *testing.T) {
-	for _, code := range []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusInternalServerError} { // 429 and 502-504 are retried; see retry_test.go
+	for _, code := range []int{http.StatusUnauthorized, http.StatusPaymentRequired, http.StatusForbidden} { // account failures stop the scan; see retry_test.go
 		t.Run(fmt.Sprint(code), func(t *testing.T) {
 			calls := 0
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; w.WriteHeader(code) }))
@@ -198,7 +198,7 @@ func TestTokenEstimatePacing(t *testing.T) {
 					t.Error(err)
 					return
 				}
-				l.complete(id, []byte(`{"usage":{"input_tokens":4900}}`), "")
+				l.complete(id, []byte(`{"usage":{"input_tokens":4900}}`), "", "")
 			}
 		}()
 	}

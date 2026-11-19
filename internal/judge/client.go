@@ -121,7 +121,7 @@ func (c *Client) assess(ctx context.Context, use analysis.CandidateUse, trace *D
 	answers, model, usage, err := c.decodeQuestions(data, questionsFor(use))
 	if err != nil {
 		a.Reason = err.Error()
-		c.stopLimitedScan(a.Reason)
+		c.limiter.failed(a.Reason)
 		return a
 	}
 	a.Status = "completed"

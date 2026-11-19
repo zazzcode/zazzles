@@ -33,6 +33,7 @@ type requestLimiter struct {
 	input       int64
 	unknown     int
 	retries     int
+	consecutive int // final failures since the last success, for the outage breaker
 	halted      string
 	concurrency int
 	reserved    uint64
@@ -167,14 +168,25 @@ func responseInputUsage(data []byte) (int64, bool) {
 	return *n, true
 }
 
-// complete records one admitted request's outcome. Any failure reason halts new
-// acquisitions; reported usage raises that request's own window reservation.
-func (l *requestLimiter) complete(id uint64, data []byte, reason string) {
+// outageThreshold is how many consecutive requests may fail, each after its
+// retries and with no success between, before the scan stops as an outage.
+const outageThreshold = 5
+
+// complete records one admitted request's final outcome. A non-empty stop is
+// an account failure and halts new acquisitions; any other failure reason
+// counts toward the outage breaker, and a success resets it. Reported usage
+// raises that request's own window reservation.
+func (l *requestLimiter) complete(id uint64, data []byte, reason, stop string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	tokens, ok := responseInputUsage(data)
-	if reason != "" {
-		l.halted = reason
+	switch {
+	case stop != "":
+		l.stop(stop)
+	case reason != "":
+		l.countFailure(reason)
+	default:
+		l.consecutive = 0
 	}
 	if !ok {
 		l.unknown++
@@ -182,7 +194,7 @@ func (l *requestLimiter) complete(id uint64, data []byte, reason string) {
 	}
 	if tokens > math.MaxInt64-l.input {
 		l.unknown++
-		l.halted = "provider usage accounting overflow"
+		l.stop("provider usage accounting overflow")
 		return
 	}
 	l.input += tokens
@@ -191,6 +203,33 @@ func (l *requestLimiter) complete(id uint64, data []byte, reason string) {
 			l.window[k].tokens = tokens
 		}
 	}
+}
+
+// stop halts new acquisitions with the first stop reason. Caller holds mu.
+func (l *requestLimiter) stop(reason string) {
+	if l.halted == "" {
+		l.halted = reason
+	}
+}
+
+// countFailure counts a final request failure and stops the scan once
+// outageThreshold failures arrive in a row. Caller holds mu.
+func (l *requestLimiter) countFailure(reason string) {
+	l.consecutive++
+	if l.consecutive >= outageThreshold {
+		l.stop(fmt.Sprintf("decision model not responding: %d consecutive requests failed after retries (last: %s)", l.consecutive, reason))
+	}
+}
+
+// failed counts a failure found after transport succeeded, such as an
+// undecodable answer. A nil limiter counts nothing.
+func (l *requestLimiter) failed(reason string) {
+	if l == nil {
+		return
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.countFailure(reason)
 }
 
 // abandon records a retried attempt: window entry kept, usage unknown, no halt.
@@ -220,12 +259,11 @@ func (l *requestLimiter) noteRetry() {
 	l.retries++
 }
 
-func (c *Client) stopLimitedScan(reason string) {
-	if c.limiter != nil {
-		c.limiter.mu.Lock()
-		c.limiter.halted = reason
-		c.limiter.mu.Unlock()
-	}
+// StopReason returns why the scan stopped sending decision requests: an
+// account failure or a decision-model outage. It is "" when the scan ran to
+// the end, even if individual assessments failed.
+func (c *Client) StopReason() string {
+	return c.limiter.haltReason()
 }
 
 // LimitSummary describes configured scan-local controls and conservative accounting.

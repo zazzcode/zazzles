@@ -1,7 +1,7 @@
 {
   "failed": true,
-  "requests": 2,
-  "report_sha256": "52ff79dfd478e5f5b82c1f8abac406a99b6fa7453248470c93ace25cf892bd99",
+  "requests": 3,
+  "report_sha256": "72bc0df1cd0eb6fcd4e9200c83973e784d7e25424c1032f04a1dd4cbce238a52",
   "assessments": [
     {
       "id": "candidate:v1:d4ff32c8528fa610bc91ac417286231a57b41acc6309d92df3321f0bd571bd39",
@@ -40,11 +40,22 @@
       "id": "candidate:v1:d9ca55d05005103f5365052782422958409cca7a0b72a2ed7870f2f87299c06c",
       "assessment": {
         "request_digest": "5bb51cc2a727608d366fe014ad1fc4c934f99d4e60fa763fcff2bde15dbd62e8",
-        "status": "not_run",
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "injection_protection": "vulnerable",
+          "protection": "insufficient",
+          "validation": "uncertain"
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 3
+        },
+        "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge limit: stopped after invalid OpenAI answers"
+        "protection": "insufficient",
+        "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
       }
     }
   ],
@@ -53,8 +64,7 @@
     "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
     "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
     "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
-    "Judged 1 distinct candidate signatures across 3 total entry contexts (0 derived across equivalent entry contexts).",
-    "Decision-model limits (one scan; discovery and assessment share state): RPM 0, estimated input TPM 0; requests remain sequential. Attempts 2; reported input tokens 11; unknown-usage attempts 1. invalid OpenAI answers"
+    "Judged 2 distinct candidate signatures across 3 total entry contexts (0 derived across equivalent entry contexts)."
   ],
   "traces": {
     "candidate:v1:ad5542af133cb75f3137c1e0be3e05e3ea308163ddfd5a0b0ae19aa46bd93405": {
@@ -70,9 +80,9 @@
       "request_bytes": 18104
     },
     "candidate:v1:d9ca55d05005103f5365052782422958409cca7a0b72a2ed7870f2f87299c06c": {
-      "sha256": "ab9ef790ce29375fbc6262c85b3350d3123ac9e44392fa8d86ff58de76d74553",
+      "sha256": "7c2050eff30198c843571ad7c712d12d0dfd789509a6edc3e3f5e6d56a0a6b0d",
       "request_digest": "5bb51cc2a727608d366fe014ad1fc4c934f99d4e60fa763fcff2bde15dbd62e8",
-      "http_status": 0,
+      "http_status": 200,
       "request_bytes": 18104
     }
   }

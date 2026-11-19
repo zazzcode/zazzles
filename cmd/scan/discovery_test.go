@@ -54,7 +54,7 @@ func TestNodeDiscoveryCLI(t *testing.T) {
 			}
 			continue
 		}
-		if code != exitError || calls != 1 || len(r.Discovery) != 2 || len(r.Entries) != 0 || len(r.Uses) != 0 {
+		if code != exitOK || !strings.Contains(errOut.String(), "scan: warning: some assessments are incomplete") || calls != 1 || len(r.Discovery) != 2 || len(r.Entries) != 0 || len(r.Uses) != 0 {
 			t.Fatalf("code=%d calls=%d proposals=%d entries=%d uses=%d", code, calls, len(r.Discovery), len(r.Entries), len(r.Uses))
 		}
 		for _, p := range r.Discovery {

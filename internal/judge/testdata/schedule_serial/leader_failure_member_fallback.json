@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 3,
-  "report_sha256": "0cc42ab3b3833578f0c944b8c25360927e56ba09f27fe3dc5170bf7325fb6f52",
+  "report_sha256": "85265c5e3193b36de02c0d9ed3c32728ceacf990f635c5033ebb9140ff7f65b4",
   "assessments": [
     {
       "id": "candidate:v1:af8d41289700cf5e040128da1d53f40299a41962831a96fff29816c3d0d22e09",
@@ -11,7 +11,7 @@
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v3",
-        "reason": "judge HTTP 500"
+        "reason": "judge HTTP 400"
       }
     },
     {
@@ -155,9 +155,9 @@
       "request_bytes": 18104
     },
     "candidate:v1:af8d41289700cf5e040128da1d53f40299a41962831a96fff29816c3d0d22e09": {
-      "sha256": "6db273188122e233b46f6597664d581f81b1ba13d41121dc045c373cc27a3b69",
+      "sha256": "36dd7a961986fd7850c45fdc41680f3a4f8b2868cec267a324e9da8702fed06b",
       "request_digest": "e5de080226b4f98637f74b88d5bee3f035160851b4192c8ccd68a04f51277d18",
-      "http_status": 500,
+      "http_status": 400,
       "request_bytes": 18104
     }
   }

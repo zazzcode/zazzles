@@ -31,7 +31,7 @@ func offlineClient(t *testing.T) *Client {
 		if r.ContentLength > int64(requestLimit) {
 			t.Error("an over-limit request reached the transport")
 		}
-		w.WriteHeader(500)
+		w.WriteHeader(400) // a non-retried failure; these tests only inspect requests
 	}))
 	t.Cleanup(server.Close)
 	c.UseEndpoint(server.URL, server.Client())

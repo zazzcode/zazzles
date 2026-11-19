@@ -106,7 +106,7 @@ func (c *Client) DiscoverTrace(ctx context.Context, p analysis.DiscoveryProposal
 	}
 	p = c.decodeDiscovery(p, data)
 	if p.ModelStatus != "completed" {
-		c.stopLimitedScan(p.Reason)
+		c.limiter.failed(p.Reason)
 	}
 	return p, tr
 }

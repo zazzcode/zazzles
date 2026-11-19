@@ -140,7 +140,7 @@ def validation():
 				t.Setenv("SCAN_FINDINGS_DIR", "")
 				var out, stderr bytes.Buffer
 				code := run([]string{"--analyze", "--json", "--judge", provider, "--judge-model", "fixture-model", "--judge-limit", fmt.Sprint(limit), root}, &out, &stderr)
-				if code != exitError {
+				if code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") {
 					t.Fatalf("incomplete requested scan exit=%d stderr=%s", code, stderr.String())
 				}
 				var got analysis.AnalysisReport
@@ -191,7 +191,7 @@ func TestOutboundObservationCLI(t *testing.T) {
 		t.Setenv("SCAN_FINDINGS_DIR", "")
 		previous := http.DefaultTransport
 		calls := 0
-		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; w.WriteHeader(500) }))
+		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; w.WriteHeader(400) })) // non-retried
 		target, _ := url.Parse(stub.URL)
 		http.DefaultTransport = outboundStubTransport{target, previous, t}
 		var out, stderr bytes.Buffer
@@ -201,7 +201,7 @@ func TestOutboundObservationCLI(t *testing.T) {
 		stub.Close()
 		// Observations make no call; the one verified fetch whose destination is a
 		// request value is an SSRF claim and is the only provider request.
-		if code != exitError || calls != 1 {
+		if code != exitOK || calls != 1 {
 			t.Fatalf("%s code=%d calls=%d stderr=%s", provider, code, calls, stderr.String())
 		}
 		files, err := filepath.Glob(filepath.Join(bundle, "outbound", "run-*", "findings.json"))

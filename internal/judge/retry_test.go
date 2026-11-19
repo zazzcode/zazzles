@@ -23,11 +23,13 @@ type retryStep struct {
 	hijack     bool          // close the connection without a response
 	broken     bool          // 200 with an undecodable body
 	delay      time.Duration // answer 200 only after this delay
+	body       string        // failure body; default {"error":"stub"}
 }
 
 type retryStub struct {
 	mu       sync.Mutex
 	steps    []retryStep
+	after    retryStep // answers every ordinal past steps
 	requests int
 }
 
@@ -52,6 +54,8 @@ func (s *retryStub) client(t *testing.T, limits *Limits) (*Client, *[]time.Durat
 		var step retryStep
 		if s.requests <= len(s.steps) {
 			step = s.steps[s.requests-1]
+		} else {
+			step = s.after
 		}
 		s.mu.Unlock()
 		if step.delay > 0 {
@@ -75,7 +79,11 @@ func (s *retryStub) client(t *testing.T, limits *Limits) (*Client, *[]time.Durat
 				w.Header().Set("Retry-After", step.retryAfter)
 			}
 			w.WriteHeader(step.status)
-			_, _ = w.Write([]byte(`{"error":"stub"}`))
+			body := step.body
+			if body == "" {
+				body = `{"error":"stub"}`
+			}
+			_, _ = w.Write([]byte(body))
 			return
 		case step.broken:
 			_, _ = w.Write([]byte(`{"model":"fixture-model","answers":"not-a-list"}`))
@@ -124,11 +132,11 @@ func retryUse(t *testing.T) analysis.CandidateUse {
 	return r.Uses[0]
 }
 
-// TestRetryRecoversOnce is AC1: one 429, 502, 503 or 504 is retried and the
+// TestRetryRecoversOnce is AC1: one transient status is retried and the
 // candidate completes from the second response.
 func TestRetryRecoversOnce(t *testing.T) {
 	use := retryUse(t)
-	for _, code := range []int{http.StatusTooManyRequests, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout} {
+	for _, code := range []int{408, 429, 500, 502, 503, 504, 529} {
 		t.Run(fmt.Sprint(code), func(t *testing.T) {
 			stub := &retryStub{steps: []retryStep{{status: code}}}
 			c, waits := stub.client(t, &Limits{})
@@ -172,9 +180,9 @@ func TestRetryRecoversOnce(t *testing.T) {
 	})
 }
 
-// TestRetryExhaustedHalts is AC2: a fourth consecutive transient failure
-// halts with today's reason after exactly four requests.
-func TestRetryExhaustedHalts(t *testing.T) {
+// TestRetryExhaustedFailsOnlyThatCandidate is AC2: a fourth consecutive
+// transient failure fails that candidate after four requests; the scan goes on.
+func TestRetryExhaustedFailsOnlyThatCandidate(t *testing.T) {
 	use := retryUse(t)
 	stub := &retryStub{steps: []retryStep{{status: 503}, {status: 503}, {status: 503}, {status: 503}}}
 	c, _ := stub.client(t, &Limits{})
@@ -183,14 +191,14 @@ func TestRetryExhaustedHalts(t *testing.T) {
 	if first.Status != "failed" || first.Reason != "judge HTTP 503" || trace.Retries != 3 || trace.HTTPStatus != 503 {
 		t.Fatalf("first=%s %q retries=%d", first.Status, first.Reason, trace.Retries)
 	}
-	if second.Status != "not_run" || second.Reason != "judge limit: stopped after judge HTTP 503" || stub.count() != 4 {
-		t.Fatalf("second=%s %q requests=%d", second.Status, second.Reason, stub.count())
+	if second.Status != "completed" || stub.count() != 5 || c.StopReason() != "" {
+		t.Fatalf("second=%s %q requests=%d stop=%q", second.Status, second.Reason, stub.count(), c.StopReason())
 	}
 }
 
-// TestRetryDroppedConnection is AC3a: a connection closed before any response
-// is retried once; a second drop halts.
-func TestRetryDroppedConnection(t *testing.T) {
+// TestRetryTransportFailures is AC3a: timeouts and dropped connections are
+// retried within the same budget and never stop the scan on their own.
+func TestRetryTransportFailures(t *testing.T) {
 	use := retryUse(t)
 	for name, tc := range map[string]struct {
 		steps    []retryStep
@@ -198,16 +206,17 @@ func TestRetryDroppedConnection(t *testing.T) {
 		status   string
 	}{
 		"drop then success":     {[]retryStep{{hijack: true}}, 2, "completed"},
-		"drop twice":            {[]retryStep{{hijack: true}, {hijack: true}}, 2, "failed"},
-		"503 then drop twice":   {[]retryStep{{status: 503}, {hijack: true}, {hijack: true}}, 3, "failed"},
+		"timeout then success":  {[]retryStep{{delay: time.Second}}, 2, "completed"},
 		"drop then 503 then ok": {[]retryStep{{hijack: true}, {status: 503}}, 3, "completed"},
+		"four drops":            {[]retryStep{{hijack: true}, {hijack: true}, {hijack: true}, {hijack: true}}, 4, "failed"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			stub := &retryStub{steps: tc.steps}
 			c, _ := stub.client(t, &Limits{})
+			c.http = &http.Client{Timeout: 100 * time.Millisecond}
 			a, _ := c.AssessTrace(context.Background(), use)
-			if a.Status != tc.status || stub.count() != tc.requests {
-				t.Fatalf("status=%s %q requests=%d", a.Status, a.Reason, stub.count())
+			if a.Status != tc.status || stub.count() != tc.requests || c.StopReason() != "" {
+				t.Fatalf("status=%s %q requests=%d stop=%q", a.Status, a.Reason, stub.count(), c.StopReason())
 			}
 			if tc.status == "failed" && a.Reason != "judge transport failed or deadline exceeded" {
 				t.Fatalf("reason %q", a.Reason)
@@ -216,35 +225,95 @@ func TestRetryDroppedConnection(t *testing.T) {
 	}
 }
 
-// TestNoRetryForOtherFailures is AC3: every other failure reaches the stub
-// once and halts.
+// TestNoRetryForOtherFailures is AC3: other failures reach the stub once and
+// fail only their own candidate.
 func TestNoRetryForOtherFailures(t *testing.T) {
 	use := retryUse(t)
 	for name, step := range map[string]retryStep{
-		"400": {status: 400}, "401": {status: 401}, "403": {status: 403}, "500": {status: 500, retryAfter: "1"},
-		"timeout": {delay: time.Second}, "undecodable 200": {broken: true},
+		"400": {status: 400}, "404": {status: 404}, "422": {status: 422, retryAfter: "1"}, "undecodable 200": {broken: true},
 	} {
 		t.Run(name, func(t *testing.T) {
 			stub := &retryStub{steps: []retryStep{step}}
 			c, waits := stub.client(t, &Limits{})
-			if step.delay > 0 {
-				c.http = &http.Client{Timeout: 50 * time.Millisecond}
-			}
 			first, trace := c.AssessTrace(context.Background(), use)
 			second := c.Assess(context.Background(), use)
 			if first.Status != "failed" || trace.Retries != 0 || len(*waits) != 0 {
 				t.Fatalf("first=%s %q retries=%d waits=%v", first.Status, first.Reason, trace.Retries, *waits)
 			}
-			if second.Status != "not_run" || stub.count() != 1 || c.limiter.attempts != 1 {
-				t.Fatalf("second=%s requests=%d attempts=%d", second.Status, stub.count(), c.limiter.attempts)
+			if second.Status != "completed" || stub.count() != 2 || c.StopReason() != "" {
+				t.Fatalf("second=%s requests=%d stop=%q", second.Status, stub.count(), c.StopReason())
 			}
 			if step.status != 0 && first.Reason != fmt.Sprintf("judge HTTP %d", step.status) {
 				t.Fatalf("reason %q", first.Reason)
 			}
-			if step.delay > 0 && first.Reason != "judge transport failed or deadline exceeded" {
-				t.Fatalf("reason %q", first.Reason)
+		})
+	}
+}
+
+// TestAccountFailureStopsScan is AC3b: rejected credentials or an exhausted
+// quota stop the scan at once, unretried, with a clear stop reason.
+func TestAccountFailureStopsScan(t *testing.T) {
+	use := retryUse(t)
+	for name, tc := range map[string]struct {
+		step retryStep
+		stop string
+	}{
+		"401":         {retryStep{status: 401}, "decision model account or credentials rejected (judge HTTP 401)"},
+		"402":         {retryStep{status: 402}, "decision model account or credentials rejected (judge HTTP 402)"},
+		"403":         {retryStep{status: 403}, "decision model account or credentials rejected (judge HTTP 403)"},
+		"quota 429":   {retryStep{status: 429, body: `{"error":{"code":"insufficient_quota","message":"You exceeded your current quota"}}`}, "decision model account quota or billing exhausted (judge HTTP 429)"},
+		"billing 429": {retryStep{status: 429, body: `{"error":{"message":"Your credit balance is too low"}}`}, "decision model account quota or billing exhausted (judge HTTP 429)"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			stub := &retryStub{steps: []retryStep{tc.step}}
+			c, waits := stub.client(t, &Limits{})
+			first := c.Assess(context.Background(), use)
+			second := c.Assess(context.Background(), use)
+			if first.Status != "failed" || stub.count() != 1 || len(*waits) != 0 || c.StopReason() != tc.stop {
+				t.Fatalf("first=%s requests=%d waits=%v stop=%q", first.Status, stub.count(), *waits, c.StopReason())
+			}
+			if second.Status != "not_run" || second.Reason != "judge limit: stopped after "+tc.stop {
+				t.Fatalf("second=%s %q", second.Status, second.Reason)
 			}
 		})
+	}
+}
+
+// TestOutageStopsScan is AC3c: five candidates in a row failing after their
+// retries stop the scan as a decision-model outage; a success resets the count.
+func TestOutageStopsScan(t *testing.T) {
+	use := retryUse(t)
+	stub := &retryStub{after: retryStep{status: 503}}
+	c, _ := stub.client(t, &Limits{})
+	for k := 0; k < outageThreshold; k++ {
+		if a := c.Assess(context.Background(), use); a.Status != "failed" {
+			t.Fatalf("candidate %d: %s %q", k, a.Status, a.Reason)
+		}
+	}
+	want := "decision model not responding: 5 consecutive requests failed after retries (last: judge HTTP 503)"
+	next := c.Assess(context.Background(), use)
+	if c.StopReason() != want || next.Status != "not_run" || stub.count() != outageThreshold*(maxRetries+1) {
+		t.Fatalf("stop=%q next=%s %q requests=%d", c.StopReason(), next.Status, next.Reason, stub.count())
+	}
+	if !strings.Contains(c.LimitSummary(), want) {
+		t.Fatalf("summary %q", c.LimitSummary())
+	}
+
+	var steps []retryStep
+	for k := 0; k < outageThreshold-1; k++ {
+		steps = append(steps, retryStep{status: 400})
+	}
+	steps = append(steps, retryStep{})
+	for k := 0; k < outageThreshold-1; k++ {
+		steps = append(steps, retryStep{status: 400})
+	}
+	stub = &retryStub{steps: steps}
+	c, _ = stub.client(t, &Limits{})
+	for range steps {
+		c.Assess(context.Background(), use)
+	}
+	if c.StopReason() != "" {
+		t.Fatalf("a success must reset the outage count: %q", c.StopReason())
 	}
 }
 
@@ -305,11 +374,11 @@ func TestRetryAcquiresThroughLimiter(t *testing.T) {
 	c, _ = stub.client(t, &Limits{RPM: 1})
 	c.limiter.now = func() time.Time { return time.Unix(0, 0) }
 	c.limiter.wait = func(ctx context.Context, d time.Duration) error {
-		c.limiter.complete(0, nil, "judge HTTP 500") // another request fails meanwhile
+		c.limiter.complete(0, nil, "judge HTTP 401", "account rejected") // another request stops the scan meanwhile
 		return ctx.Err()
 	}
 	trace = DecisionTrace{}
-	if _, reason := c.exchange(context.Background(), []byte(`{}`), &trace); reason != "judge limit: stopped after judge HTTP 500" || stub.count() != 1 || trace.Retries != 0 || c.limiter.attempts != 1 {
+	if _, reason := c.exchange(context.Background(), []byte(`{}`), &trace); reason != "judge limit: stopped after account rejected" || stub.count() != 1 || trace.Retries != 0 || c.limiter.attempts != 1 {
 		t.Fatalf("reason=%q requests=%d retries=%d attempts=%d", reason, stub.count(), trace.Retries, c.limiter.attempts)
 	}
 }

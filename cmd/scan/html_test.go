@@ -112,7 +112,7 @@ func TestFailedJudgeRetainsOutputBundle(t *testing.T) {
 	http.DefaultTransport = failingReportTransport{}
 	t.Cleanup(func() { http.DefaultTransport = previous })
 	var out, stderr bytes.Buffer
-	if code := run([]string{"--analyze", "--entry", "server.ts", "--judge", "openai", "--judge-limit", "1", target}, &out, &stderr); code != 1 {
+	if code := run([]string{"--analyze", "--entry", "server.ts", "--judge", "openai", "--judge-limit", "1", target}, &out, &stderr); code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") {
 		t.Fatalf("code=%d stderr=%s", code, stderr.String())
 	}
 	files, err := filepath.Glob(filepath.Join(base, "string-flow", "run-*", "findings.json"))

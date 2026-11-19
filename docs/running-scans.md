@@ -351,6 +351,39 @@ and in Review, makes no model calls for them, saves the incomplete report and ex
 candidate-position request cap remains conservative. Structural-only scanning completes normally;
 exporting a saved report preserves its historical answers. See [decision-model scope](decision-models.md#outbound-observations).
 
+## Scan speed
+
+These figures were measured on a Mac mini with an Apple M6 (12 cores) and 32 GB of RAM, running macOS 27.0.1 and go1.27.3, on
+2026-11-18. The decision model was OpenAI `gpt-6-luna` on an account allowing 5,000 RPM and
+2,000,000 TPM, with `JUDGE_RPM=4500` and `JUDGE_TPM=0`. Each judged scan assessed every candidate.
+Judging time is the wall clock minus offline analysis.
+
+| Target | Run | Requests | Wall clock | Judging time |
+|---|---|---|---|---|
+| OWASP Juice Shop `f189f52` | Offline only (`--analyze`, no `--judge`) | 0 | 9.5 s | — |
+| OWASP Juice Shop `f189f52` | Full scan, `--judge-concurrency 1` | 157 | 43.0 s | ~33.5 s |
+| OWASP Juice Shop `f189f52` | Full scan, `--judge-concurrency 4` (default) | 157 | 19.0 s | ~9.5 s (≈3.5×) |
+| OSS OopsSec Store `2d530ef` | Offline only | 0 | 1.3 s | — |
+| OSS OopsSec Store `2d530ef` | Full scan, `--judge-concurrency 1` | 114 | 28.2 s | ~26.9 s |
+| OSS OopsSec Store `2d530ef` | Full scan, `--judge-concurrency 4` (default) | 114 | 7.2 s | ~5.9 s (≈4.6×) |
+
+For each target, the serial and concurrent scans sent identical requests and received identical
+answers, finding statuses and input-token totals: 770,517 for Juice Shop and 483,076 for OopsSec
+Store. Concurrency changes only the wall clock.
+
+The scanner sends each request once. Any provider failure stops new requests, and that includes a
+transient HTTP 503. Two earlier concurrent Juice Shop scans stopped this way, at 124 and 148 of 157
+requests. In that case the report keeps every completed answer and marks the rest as stopped.
+Rerun the scan to finish it.
+
+**Do not set `JUDGE_TPM` to your account limit.** The local TPM estimate counts request bytes plus
+a framing allowance. That is about 24,000 per Juice Shop request, while the provider reports about
+4,900 input tokens. A `JUDGE_TPM` setting therefore limits throughput about five times more than its
+number suggests. At `JUDGE_TPM=1000000`, a full concurrent Juice Shop scan spent most of its time
+waiting for the TPM window: 192 s instead of 19 s. Leave `JUDGE_TPM=0` unless the provider returns rate-limit errors. Set
+`JUDGE_RPM` just under the account's request limit, and keep `JUDGE_LIMIT` as a guard against a
+runaway scan.
+
 ## Judge rate and spending controls
 
 `--judge-limit` / `JUDGE_LIMIT` (built-in default 10), `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional

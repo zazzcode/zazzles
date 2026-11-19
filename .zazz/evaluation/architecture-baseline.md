@@ -571,3 +571,17 @@ the bottleneck. The reservation is request bytes plus 4,096, about 24k per Juice
 the provider reports about 4.9k input tokens per request. The first 40 reservations total 1.48M, so
 request 27 waits for the rolling window at any concurrency. A token-based estimate is a follow-up
 outside this phase. Results and every attempt count are in `_test-findings/juice-shop/run-arch-4*`.
+
+Full judged scans followed, with `JUDGE_RPM=4500`, `JUDGE_TPM=0`, a cap of 200 per run, and the
+Mac mini M6 with 32 GB RAM. Both samples were clean before and after.
+
+| Target | N | Requests | Completed | Input tokens | Wall clock |
+|---|---|---|---|---|---|
+| Juice Shop `f189f52` | 1 | 157 | 157 | 770,517 | 43.0 s |
+| Juice Shop `f189f52` | 4 | 157 | 157 | 770,517 | 19.0 s |
+| OopsSec Store `2d530ef` | 1 | 114 | 116 | 483,076 | 28.2 s |
+| OopsSec Store `2d530ef` | 4 | 114 | 116 | 483,076 | 7.2 s |
+
+For each target, N=1 and N=4 had 0 differences in request digests, answers and finding statuses.
+Two earlier Juice Shop N=4 scans each stopped on one OpenAI HTTP 503, at 124 and 148 of 157. With
+no retries, one transient 503 ends the scan. A single retry of 503 responses is a candidate follow-up.

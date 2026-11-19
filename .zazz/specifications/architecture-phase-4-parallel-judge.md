@@ -209,3 +209,7 @@ Use the plan's common rules. Record the captured AC1 baselines and the timing ta
   order (D-1, no refunds), and the member reports `judge request limit reached`.
 - `LimitSummary` says "up to N assessment requests in flight" instead of "requests remain
   sequential" when N > 1. With N = 1 the text is unchanged.
+- 2026-11-18 — Owner decision: PR 27 also carries the follow-up
+  [judge transient retry and token estimate](judge-transient-retry-and-token-estimate.md) spec. Its
+  implementation lands on this branch in a separate session. Two live findings motivated it: transient
+  503 halts at N=4, and a byte-based TPM estimate about five times too conservative.

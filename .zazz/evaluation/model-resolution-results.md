@@ -143,9 +143,13 @@ named.
 
 The TypeScript app, Python insecure app and vuln-demo-app sent no citation question, so the label
 fix does not change their requests. These runs are the published samples, except vuln-demo-app,
-which has none. VulnPy keeps its 2026-11-15 all-family sample: a full rerun is planned at 520
-requests plus up to 130 follow-ups and waits for the owner. Requests charged in this refresh:
-301 (first pass, `df540c3`) + 337 (reruns, `50d4a8f`) + 22 (Goof wording trials) = 660.
+which has none. VulnPy was then rescanned in full at the owner's word (`run-1329700200`, scanner
+`614e435`): 456 requests, no failures, all 6 keyed positives found, 455 Confirmed records. 64
+path records with flow-gap questions exceeded the 64KB limit once their citation labels carried
+text, so they stayed Review without a request. `7e333aa` now sends such a record without its
+resolution questions. Requests charged in this refresh:
+301 (first pass, `df540c3`) + 337 (reruns, `50d4a8f`) + 22 (Goof wording trials) + 456 (VulnPy)
+= 1,116.
 
 The recall floor over the published reports holds: 91 `candidate_with_witness`, 30 `control_pass`,
 4 `resolved`.
@@ -171,5 +175,5 @@ The five rows that the earlier sample reports could not score now pass: the Type
 (DVWA `brute/source/impossible.php:90`) is fixed, as described above. After the fix, no DVWA
 Confirmed record comes only from impossible-level code.
 
-**Findings outside the key** (396 in all) are counted, not judged. Juice Shop's eight match known
+**Findings outside the key** (490 in all) are counted, not judged. Juice Shop's eight match known
 challenge routes; the rest are unreviewed.

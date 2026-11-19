@@ -143,38 +143,28 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
-**Accuracy against the answer keys** (sample reports rescanned 2026-11-19 on this scanner; VulnPy
-from its 2026-11-15 report). *Expected* counts the source-reviewed positives keyed for our
-implemented analyzers. *Found* means the record is Confirmed, or is a construction-practice finding
-where the key expects one. *Controls* are keyed safe cases. A control false positive is a keyed safe
-case that shows as a finding.
+**Accuracy against the answer keys** (every sample report rescanned 2026-11-19 on this scanner). *Expected* counts the source-reviewed vulnerable cases keyed for our
+implemented analyzers. *Found* means Zazzles reports the case as a finding: Confirmed, or a
+construction-practice finding where the key expects one. *False positives* counts the known-safe
+cases (keyed controls) that Zazzles reports as a finding, plus any finding source review showed
+to be false.
 
-| Sample | Expected | Found | Review | Missed | Controls | Control false positives | Findings outside the key |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Juice Shop | 15 | 15 | 0 | 0 | 3 | 0 | 8 |
-| OSS OopsSec Store | 13 | 13 | 0 | 0 | 5 | 0 | 8 |
-| DVWA | 10 | 9 | 1 | 0 | 1 | 0 | 98 |
-| Node.js Goof | 6 | 5 | 1 | 0 | 5 | 0 | 1 |
-| Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 2 | 0 | 1 |
-| vuln-nextjs lab | 13 | 13 | 0 | 0 | 23 | 0 | 0 |
-| vuln-demo-app | 11 | 11 | 0 | 0 | 7 | 0 | 0 |
-| ThreatByte | 5 | 5 | 0 | 0 | 6 | 0 | 1 |
-| Vulnerable Flask App | 4 | 4 | 0 | 0 | 2 | 0 | 4 |
-| Python insecure app | 2 | 1 | 1 | 0 | 1 | 0 | 0 |
-| VulnPy | 6 | 6 | 0 | 0 | 0 | 0 | 275 |
-| **Total** | **91** | **88** | **3** | **0** | **55** | **0** | **396** |
+| Sample | Expected | Zazzles found | Review (not found) | Missed | False positives | Notes |
+|---|---:|---:|---:|---:|---:|---|
+| Juice Shop | 15 | 15 | 0 | 0 | 0 | 3 safe cases checked. 8 findings outside the key match known challenge routes |
+| OSS OopsSec Store | 13 | 13 | 0 | 0 | 0 | 5 safe cases checked. 8 findings outside the key, unreviewed |
+| DVWA | 10 | 9 | 1 | 0 | 0 | Upload stays Review: `basename()` blocks traversal, and the real flaw (any file type) is outside our analyzers. One bound-PDO false positive (`brute/impossible.php:90`) found by review and fixed. 98 findings outside the key, none from impossible-level code only |
+| Node.js Goof | 6 | 5 | 1 | 0 | 0 | Command injection (`routes/index.js:174`) stays Review: the model found the guard bypass but did not cite the offered chain |
+| Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 0 | Includes `eval` and open redirect |
+| vuln-nextjs lab | 13 | 13 | 0 | 0 | 0 | 23 safe cases checked, none red. Includes code execution and open redirect |
+| vuln-demo-app | 11 | 11 | 0 | 0 | 0 | 7 safe cases checked. No published sample report |
+| ThreatByte | 5 | 5 | 0 | 0 | 0 | 6 safe cases checked. Dashboard XSS found as a construction-practice finding |
+| Vulnerable Flask App | 4 | 4 | 0 | 0 | 0 | 4 findings outside the key, unreviewed |
+| Python insecure app | 2 | 1 | 1 | 0 | 0 | The name-field validation defect is undecidable and is not sent |
+| VulnPy | 6 | 6 | 0 | 0 | 0 | No keyed safe cases. 369 findings outside the key, unreviewed (repeated contexts share sinks) |
+| **Total** | **91** | **88** | **3** | **0** | **0** | 55 known-safe cases checked; 490 findings outside the key |
 
-- **Review (3):** Goof's command injection (`routes/index.js:174`) needs a cited guard bypass. The
-  model identified the bypass but did not cite the one chain offered, so it stays Review. DVWA's
-  upload page applies `basename()`, so it has no path traversal; its real flaw (any file type is
-  accepted) is outside our analyzers. The Python insecure app's name-field validation defect is
-  undecidable and is not sent.
-- **False positives:** none among the keyed controls. Source review found one outside the key: DVWA
-  `brute/source/impossible.php:90`, a bound PDO `execute()`. It is fixed; the record now carries
-  its prepared SQL text and is Protected. No DVWA Confirmed record now comes only from
-  impossible-level code.
-- **Findings outside the key** are not counted as true or false until they are source-reviewed.
-  Juice Shop's eight match known challenge routes; the other samples' extras are unreviewed.
+Findings outside the key are not counted as true or false until someone reviews their source.
 
 Scored with
 [`accuracy.py`](.zazz/evaluation/recall-gap-inventory/accuracy.py); details are in the
@@ -427,7 +417,7 @@ Explore existing reports without installing Zazzles or making API calls:
 | OWASP Juice Shop | Browser/server XSS and database operations | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [Sample notes](docs/samples/juice-shop/README.md) |
 | Node.js Goof | Command injection, XSS, and database review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [Sample notes](docs/samples/nodejs-goof/README.md) |
 | Vulnerable TypeScript app | Command injection at `/api/ping`, reflected XSS, and logging | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [Sample notes](docs/samples/vulnerable-typescript-app/README.md) |
-| VulnPy | Full all-family Python scan: 3,260 assessed contexts across the supported adapters | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes and full JSON/SARIF downloads](docs/samples/vulnpy/README.md) |
+| VulnPy | Full all-family Python scan: 3,350 records across the supported adapters, 456 judged | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes and full JSON/SARIF downloads](docs/samples/vulnpy/README.md) |
 | ThreatByte (Python) | Flask/RESTX SQL, reflected/stored XSS, SSRF and protected controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/ThreatByte/findings.html) · [Sample notes](docs/samples/ThreatByte/README.md) |
 | Python insecure app | FastAPI HTML/template construction | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/python-insecure-app/findings.html) · [Sample notes](docs/samples/python-insecure-app/README.md) |
 | Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |

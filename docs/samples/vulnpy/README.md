@@ -2,7 +2,23 @@
 
 [Samples](../README.md) · [Full HTML](findings.html) · [JSON, gzip](findings.json.gz) · [SARIF, gzip](findings.sarif.gz) · [Provenance](metadata.json)
 
-## Current report (rebuilt 2026-11-15)
+## Current report (rebuilt 2026-11-19)
+
+Fresh all-family scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence
+resolution scanner (`614e435`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are
+static source judgments, not executed exploits.
+
+- 2,214 entries, 3,350 analysis records: **455 Confirmed, 2,895 Review, 0 Protected**.
+- 456 requests, 2,920,785 input tokens (16,014,526 before), no provider failures. The 2,830
+  input-validation records are undecidable and are no longer sent.
+- Confirmed by family: 195 path, 90 code execution, 78 SQL, 61 command and 31 XSS.
+- **Answer key:** all 6 source-reviewed positives are found. The 369 Confirmed records outside the
+  key are unreviewed; repeated contexts share sinks across adapters and are not distinct defects.
+- 64 path records with flow-gap questions exceeded the 64KB request limit and stayed Review
+  without a request. A later fix (`7e333aa`) sends such records without their resolution
+  questions.
+
+## Previous report (rebuilt 2026-11-15)
 
 Fresh all-family OpenAI `gpt-6-luna` assessment after the shared Python input refactor,
 at pinned revision `b81885e58283a3449b578d20c20557aff637e5ea`. Every discovered supported context was assessed,

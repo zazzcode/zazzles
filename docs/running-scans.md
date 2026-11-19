@@ -160,7 +160,7 @@ Use `--route /rest/user/login` to select an exact path pattern before model requ
 Offline assessment is `not_run`. For provider selection and key instructions, including personal-key
 ownership and Jev configuration, see [decision-model setup](decision-models.md).
 `--judge openai` uses the primary OpenAI Luna Decisions model and transmits bounded evidence;
-`--judge-limit` caps candidates sent for assessment (default 10; transient failures are retried up
+`--judge-limit` optionally caps candidates sent for assessment (default: no cap; transient failures are retried up
 to 3 times without using a slot), and `--judge-concurrency`
 caps how many run at once (default 4; `1` is serial). Manage spending in your API account. A failed assessment, a record whose required evidence alone is over the request limit (`evidence_too_large`) or an exhausted request cap is kept in the
 report with its reason and a stderr warning, and the scan exits 0. Only a stopped judge (account failure or unresponsive model) exits 1; see [judged-scan reliability](decision-models.md#judged-scan-reliability). Neither a successful judge call nor offline exit 0 certifies the target.
@@ -377,15 +377,15 @@ concurrent Juice Shop scans measured before this existed each stopped on one 503
 157 requests. Now a scan stops early only when the account fails or the decision model stops
 responding; see [judged-scan reliability](decision-models.md#judged-scan-reliability).
 
-Set `JUDGE_RPM` and `JUDGE_TPM` just under the account's request and token limits, and keep
-`JUDGE_LIMIT` as a guard against a runaway scan. The local TPM estimate is one token per 3 request
+Set `JUDGE_RPM` and `JUDGE_TPM` just under the account's request and token limits. `JUDGE_LIMIT` is
+optional; without it every candidate is judged. The local TPM estimate is one token per 3 request
 bytes plus 512, about 7,200 for a typical Juice Shop request that the provider reports as about
 4,900 input tokens. The timings above were measured with the earlier bytes-plus-4,096 estimate and
 `JUDGE_TPM=0`.
 
 ## Judge rate and spending controls
 
-`--judge-limit` / `JUDGE_LIMIT` (built-in default 10), `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional
+`--judge-limit` / `JUDGE_LIMIT` (optional; default no cap), `--judge-concurrency` / `JUDGE_CONCURRENCY`, and the optional
 `--judge-rpm` / `JUDGE_RPM` and `--judge-tpm` / `JUDGE_TPM` pacing settings apply to one scan.
 Discovery and assessment share the rate window, and flags override the process environment. Transient
 failures are retried up to 3 times, through the same pacing, without using a `--judge-limit` slot.

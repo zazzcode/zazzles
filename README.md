@@ -238,8 +238,8 @@ it on every `cd` into the checkout instead, install [direnv](https://direnv.net)
 `direnv allow` once — the tracked `.envrc` only says `dotenv` (see
 [getting started](docs/getting-started.md#local-environment-file)). OpenAI Luna
 is the primary model used for development and calibration. Manage spending in your API account.
-Optional `.env` settings pace requests (`JUDGE_RPM`, `JUDGE_TPM`) and cap one scan (`JUDGE_LIMIT`);
-see [`.env.sample`](.env.sample).
+Every candidate is judged by default. Optional `.env` settings pace requests (`JUDGE_RPM`,
+`JUDGE_TPM`) or cap one scan (`JUDGE_LIMIT`); see [`.env.sample`](.env.sample).
 
 #### Optional: use Google Gemini Decisions instead
 

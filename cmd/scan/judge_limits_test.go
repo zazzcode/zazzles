@@ -27,9 +27,9 @@ func TestJudgeLimitConfiguration(t *testing.T) {
 		{"negative", nil, map[string]string{"JUDGE_TPM": "-1"}, true, 0, 0, 0, 0},
 		{"overflow", nil, map[string]string{"JUDGE_RPM": "9999999999999999999999"}, true, 0, 0, 0, 0},
 		{"bad limit", nil, map[string]string{"JUDGE_LIMIT": "no"}, true, 0, 0, 0, 0},
-		{"removed cost environment ignored", nil, map[string]string{"JUDGE_BUDGET_USD": "invalid", "JUDGE_INPUT_USD_PER_MILLION": "invalid"}, false, 0, 0, 10, 4},
-		{"concurrency default", nil, nil, false, 0, 0, 10, 4},
-		{"concurrency serial", []string{"--judge-concurrency=1"}, nil, false, 0, 0, 10, 1},
+		{"removed cost environment ignored", nil, map[string]string{"JUDGE_BUDGET_USD": "invalid", "JUDGE_INPUT_USD_PER_MILLION": "invalid"}, false, 0, 0, noJudgeLimit, 4},
+		{"concurrency default", nil, nil, false, 0, 0, noJudgeLimit, 4},
+		{"concurrency serial", []string{"--judge-concurrency=1"}, nil, false, 0, 0, noJudgeLimit, 1},
 		{"concurrency zero", []string{"--judge-concurrency=0"}, nil, true, 0, 0, 0, 0},
 		{"concurrency negative", []string{"--judge-concurrency=-2"}, nil, true, 0, 0, 0, 0},
 		{"concurrency non-integer", []string{"--judge-concurrency=2.5"}, nil, true, 0, 0, 0, 0},
@@ -40,7 +40,7 @@ func TestJudgeLimitConfiguration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fs := flag.NewFlagSet("test", flag.ContinueOnError)
 			fs.SetOutput(io.Discard)
-			fs.Int("judge-limit", 10, "")
+			fs.Int("judge-limit", 0, "")
 			f := addJudgeLimitFlags(fs)
 			if err := fs.Parse(tt.args); err != nil {
 				t.Fatal(err)

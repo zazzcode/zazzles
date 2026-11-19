@@ -53,10 +53,10 @@ settings (`SCAN_OPENAI_MODEL`, `SCAN_GEMINI_MODEL`, `SCAN_JEV_MODEL`) must remai
 ## Rate and spending configuration
 
 Manage API spending and quotas in the provider account. For ordinary OpenAI Luna scans,
-use `--judge openai` with a request cap; optional RPM/TPM settings handle quota pacing.
-`--judge-limit N` (or `JUDGE_LIMIT`; built-in default 10) caps the candidates sent for assessment
-per scan. `.env.sample` sets `JUDGE_LIMIT=1000` as a runaway guard; spending limits belong in the
-provider account.
+use `--judge openai`; optional RPM/TPM settings handle quota pacing. Every candidate is judged by
+default. The optional `--judge-limit N` (or `JUDGE_LIMIT`) caps the candidates sent for assessment
+per scan, for users who want a local spending guard; spending limits belong in the provider
+account.
 Equivalent entry contexts share one request. Zero-call observations do not consume the cap.
 Optional route discovery has its own request allowance.
 

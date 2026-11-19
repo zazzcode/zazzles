@@ -110,21 +110,36 @@ func runAnalysisConfigured(root, entry, checksFile, provider, model string, limi
 	} else {
 		reportpkg.Text(stdout, report)
 	}
-	return judgedExit(client, failed, stderr)
+	return judgedExit(client, report, failed, stderr)
 }
 
 // judgedExit maps a finished scan to its exit status. Only a stopped judge —
 // rejected credentials, an exhausted quota or an unresponsive decision model —
 // fails the run; incomplete individual assessments are reported, warned
 // about, and exit 0 so CI pipelines keep running.
-func judgedExit(client *judge.Client, incomplete bool, stderr io.Writer) int {
+func judgedExit(client *judge.Client, report *analysis.AnalysisReport, incomplete bool, stderr io.Writer) int {
 	if client != nil {
 		if stop := client.StopReason(); stop != "" {
 			fmt.Fprintf(stderr, "scan: judge stopped: %s; completed assessments are kept in the report\n", stop)
 			return exitError
 		}
 	}
-	if incomplete {
+	// Observation-only and family-excluded records are unassessed by design and
+	// are not counted; the warning names only assessments that did not finish.
+	total, unfinished := 0, 0
+	for _, u := range report.Uses {
+		if !judge.AssessableUse(u) || strings.Contains(u.Assessment.Reason, "analyzer not used for this run") {
+			continue
+		}
+		total++
+		if u.Assessment.Status != "completed" {
+			unfinished++
+		}
+	}
+	switch {
+	case client != nil && unfinished > 0:
+		fmt.Fprintf(stderr, "scan: warning: some assessments are incomplete (%d of %d); each record gives the reason\n", unfinished, total)
+	case incomplete:
 		fmt.Fprintln(stderr, "scan: warning: some assessments are incomplete; each record and the report limitations give the reason")
 	}
 	return exitOK

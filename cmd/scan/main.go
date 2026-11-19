@@ -52,7 +52,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		judgeModel     = flags.String("judge-model", "", "judge model; defaults to JUDGE_DECISION_MODEL, gpt-6-luna for openai or gemini-decision-1 for gemini; required for jev")
 		discoverRoutes = flags.Bool("discover-routes", false, "opt-in model-assisted Node route proposals; unverified bindings remain provisional")
 		discoveryLimit = flags.Int("discovery-limit", 3, "maximum additional model discovery requests with --discover-routes; transient failures are retried up to 3 times")
-		judgeLimit     = flags.Int("judge-limit", 10, "maximum candidates sent to the judge per run; transient failures are retried up to 3 times")
+		judgeLimit     = flags.Int("judge-limit", 0, "optional cap on candidates sent to the judge per run (default: no cap, every candidate is judged); transient failures are retried up to 3 times")
 		asSARIF        = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
 		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families to exclude: sql,nosql,xss,command,path,ssrf,code,redirect,logging,input-validation,outbound")
 		onlyFamily     = flags.String("only-family", "", "comma-separated analyzer families to judge exclusively")
@@ -74,7 +74,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	explicitOutputDir := false
-	explicitDiscoveryLimit := false
+	explicitDiscoveryLimit, explicitJudgeLimit := false, false
 	explicitSkipFamily, explicitOnlyFamily := false, false
 	flags.Visit(func(f *flag.Flag) {
 		if f.Name == "skip-family" {
@@ -85,6 +85,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		if f.Name == "discovery-limit" {
 			explicitDiscoveryLimit = true
+		}
+		if f.Name == "judge-limit" {
+			explicitJudgeLimit = true
 		}
 		if f.Name == "output-dir" {
 			explicitOutputDir = true
@@ -110,7 +113,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 			modes++
 		}
 	}
-	if (*asSARIF && (*asJSON || !*analyzeMode)) || modes != 1 || flags.NArg() != 1 || *judgeLimit < 1 || (!*analyzeMode && (*checksFile != "" || *entry != "" || *routeFilter != "" || *entryKind != "" || *entryID != "" || *judgeProvider != "" || *judgeModel != "")) || (*judgeProvider == "" && *judgeModel != "") {
+	if (*asSARIF && (*asJSON || !*analyzeMode)) || modes != 1 || flags.NArg() != 1 || explicitJudgeLimit && *judgeLimit < 1 || (!*analyzeMode && (*checksFile != "" || *entry != "" || *routeFilter != "" || *entryKind != "" || *entryID != "" || *judgeProvider != "" || *judgeModel != "")) || (*judgeProvider == "" && *judgeModel != "") {
 		flags.Usage()
 		return exitUsage
 	}

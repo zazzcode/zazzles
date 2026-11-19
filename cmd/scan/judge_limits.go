@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,10 @@ type judgeLimitFlags struct{ rpm, tpm, concurrency *string }
 // defaultJudgeConcurrency caps in-flight assessment requests when neither the
 // flag nor JUDGE_CONCURRENCY is set. RPM and TPM pacing still bound throughput.
 const defaultJudgeConcurrency = 4
+
+// noJudgeLimit is the default cap: every candidate is judged unless the user
+// sets --judge-limit or JUDGE_LIMIT. Spending limits belong in the provider account.
+const noJudgeLimit = math.MaxInt32
 
 // judgeRuntime is the resolved scan-local judge pacing and concurrency.
 type judgeRuntime struct {
@@ -65,7 +70,7 @@ func (f judgeLimitFlags) resolve(fs *flag.FlagSet, getenv func(string) string) (
 		}
 		concurrency = v
 	}
-	limit := 10
+	limit := noJudgeLimit
 	if raw := getenv("JUDGE_LIMIT"); !explicit["judge-limit"] && raw != "" {
 		v, e := strconv.Atoi(strings.TrimSpace(raw))
 		if e != nil || v < 1 {

@@ -32,6 +32,7 @@ type requestLimiter struct {
 	attempts    int
 	input       int64
 	unknown     int
+	retries     int
 	halted      string
 	concurrency int
 	reserved    uint64
@@ -192,6 +193,33 @@ func (l *requestLimiter) complete(id uint64, data []byte, reason string) {
 	}
 }
 
+// abandon records a retried attempt: window entry kept, usage unknown, no halt.
+// The provider saw the request, so its reservation still counts against RPM/TPM.
+func (l *requestLimiter) abandon(id uint64) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.unknown++
+}
+
+// waitRetry waits before a transient-failure retry without holding mu. A nil
+// limiter uses a plain timer; both honor cancellation.
+func (l *requestLimiter) waitRetry(ctx context.Context, d time.Duration) error {
+	if l == nil {
+		return waitDecisionWindow(ctx, d)
+	}
+	return l.wait(ctx, d)
+}
+
+// noteRetry counts an admitted retry for LimitSummary. A nil limiter counts nothing.
+func (l *requestLimiter) noteRetry() {
+	if l == nil {
+		return
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.retries++
+}
+
 func (c *Client) stopLimitedScan(reason string) {
 	if c.limiter != nil {
 		c.limiter.mu.Lock()
@@ -209,12 +237,16 @@ func (c *Client) LimitSummary() string {
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	if l.settings.RPM == 0 && l.settings.TPM == 0 && l.halted == "" {
+	if l.settings.RPM == 0 && l.settings.TPM == 0 && l.halted == "" && l.retries == 0 {
 		return ""
 	}
 	mode := "requests remain sequential"
 	if l.concurrency > 1 {
 		mode = fmt.Sprintf("up to %d assessment requests in flight", l.concurrency)
 	}
-	return fmt.Sprintf("Decision-model limits (one scan; discovery and assessment share state): RPM %d, estimated input TPM %d; %s. Attempts %d; reported input tokens %d; unknown-usage attempts %d. %s", l.settings.RPM, l.settings.TPM, mode, l.attempts, l.input, l.unknown, strings.TrimSpace(l.halted))
+	retries := ""
+	if l.retries > 0 {
+		retries = fmt.Sprintf("; retries %d", l.retries)
+	}
+	return fmt.Sprintf("Decision-model limits (one scan; discovery and assessment share state): RPM %d, estimated input TPM %d; %s. Attempts %d; reported input tokens %d; unknown-usage attempts %d%s. %s", l.settings.RPM, l.settings.TPM, mode, l.attempts, l.input, l.unknown, retries, strings.TrimSpace(l.halted))
 }

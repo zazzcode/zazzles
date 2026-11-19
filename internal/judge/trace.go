@@ -20,6 +20,9 @@ type DecisionTrace struct {
 	HTTPStatus      int                          `json:"http_status"`
 	RequestBytes    int                          `json:"request_bytes"`
 	ResponseBytes   int                          `json:"response_bytes"`
+	// Retries counts transient 502/503/504 retries sent; Response and HTTPStatus
+	// describe the last attempt.
+	Retries int `json:"retries,omitempty"`
 	// EvidenceOmissions lists context evidence an over-limit request left out;
 	// the budget is deterministic, so a replay rebuilds the same request.
 	EvidenceOmissions []analysis.EvidenceOmission `json:"evidence_omissions,omitempty"`
@@ -72,7 +75,7 @@ func (c *Client) Preview(use analysis.CandidateUse) (DecisionTrace, error) {
 }
 
 // AssessTrace evaluates one use and returns its request/response evidence for
-// bounded calibration. It has the same limits and no-retry behavior as Assess.
+// bounded calibration. It has the same limits and single transient retry as Assess.
 func (c *Client) AssessTrace(ctx context.Context, use analysis.CandidateUse) (analysis.Assessment, DecisionTrace) {
 	var trace DecisionTrace
 	assessment := c.assess(ctx, use, &trace)

@@ -101,7 +101,7 @@ exit 0 (3/3, 8/8, 10/10).
 
 | Case | Outcome | First failing stage | Cause | Evidence |
 |---|---|---|---|---|
-| `OOPS-XSS-R01` | `missing_candidate` | Sink. The entry `GET /api/vcs/:path*?` and the awaited `params` source resolve | `sink_model` | `app/api/vcs/[[...path]]/route.ts:101` returns `new NextResponse(renderListing(directory, …), { headers: { "Content-Type": "text/html" } })`. A one-line fixture (query → template → `new NextResponse(html, text/html)`) also yields no XSS candidate. The JS adapter models only Express `res.send/write/end` as HTML responses |
+| `OOPS-XSS-R01` | `missing_candidate` | Source binding. `const { path = [] } = await params` (`route.ts:63`) records `unsupported_binding` and leaves `path` unbound, while plain `{ path }` binds the route parameter | `value_transfer`, with `sink_model` contributing | The sink at `app/api/vcs/[[...path]]/route.ts:101` is `new NextResponse(renderListing(directory, …), { headers: { "Content-Type": "text/html" } })`. A one-line fixture (query → template → `new NextResponse(html, text/html)`) also yields no XSS candidate, because the JS adapter models only Express `res.send/write/end` as HTML responses. Both stages must change to recover the row |
 
 No required positive is missing or blocked. No evidence-gap row needs the evidence follow-on.
 
@@ -109,9 +109,12 @@ No required positive is missing or blocked. No evidence-gap row needs the eviden
 
 | Rank | Group | Cases recovered | Registrations | Scope | Files (est.) |
 |---|---|---:|---:|---|---:|
-| 1 | Web-standard `Response`/`NextResponse` constructor with an HTML `Content-Type` as an HTML response sink | 1 (`OOPS-XSS-R01`) | 0 | `internal/langjs` plus the XSS rendering-contract seam in `internal/analysispacks/xss.go` | 4 |
+| 1 | Shorthand destructuring defaults keep their projected source, and a web-standard `Response`/`NextResponse` constructor with an HTML `Content-Type` is an HTML response sink | 1 (`OOPS-XSS-R01`) | 0 | `internal/langjs` plus the XSS rendering-contract seam in `internal/analysispacks/xss.go` | 5 |
 
-There are no other eligible groups, because no other row misses. The at-risk set is every JS/TS
+There are no other eligible groups, because no other row misses. The checkpoint first named
+`sink_model` alone. Implementing it showed the destructuring-default hop failing earlier, so the
+group now covers both stages. The 6 base records that carry a destructuring-default gap bound the
+added blast radius. The at-risk set is every JS/TS
 `xss_candidate` and `xss_data_candidate` row, plus the OopsSec `NextResponse` bodies with JSON, CSV,
 PDF and plain-text content types: `mcp-config`, `user/export`, `files`, `hub` and `uploads`. Those
 must stay silent.
@@ -143,6 +146,31 @@ maps to a row of the contract's §11 follow-on table.
   blocked Review. It is not in the key.
 - **Context fan-out.** VulnPy SQL sinks have 26 uses each, one per entry, which separates
   multi-entry reporting from duplicates.
+
+## After the closure
+
+A fresh offline scan of all eleven samples with the closure scanner (`internal/langjs` and
+`internal/analysispacks` changes, plus the determinism fix below) keeps every pin and clean status.
+The checker reports 174 rows. `OOPS-XSS-R01` becomes `candidate_present`, a raw candidate at
+`app/api/vcs/[[...path]]/route.ts:101` with route-parameter sources at `:63` and no blockers. The
+key's Review expectation is left to assessment. Every other row keeps its outcome. Structural
+controls stay 30/30, and required positives stay 91/91 with a witness.
+
+Record-level comparison of every use, before and after:
+
+| App | Added | Changed | Removed | Accounted for |
+|---|---:|---:|---:|---|
+| oss-oopssec-store | 3 | 2 | 0 | `vcs/[[...path]]/route.ts:101` recovered (raw). `:63` is the route parameter's new `input_validation_candidate`, now bound through the default. `:94` and `:96` lose their `unsupported_binding` gap. `uploads/[...path]/route.ts:44` is a new `unknown` XSS record blocked by `render_protection_unresolved`: its `Content-Type` comes from an extension map that includes `image/svg+xml`, so it stays Review |
+| The other ten samples | 0 | 0 | 0 | No change |
+
+The architecture golden is unchanged.
+
+**Determinism defect found by the comparison.** The first after-scan also changed the
+vuln-nextjs SSRF safe control's candidate ID (`pages/secure/ssrf.js:26`). The base scanner alone
+reproduces this: `getServerSideProps({ req, query })` built its invocation inputs by Go map
+iteration, so roughly one run in six swapped `req` and `query`. That changed the invocation ID and
+the candidate ID. Inputs now follow pattern source order (`req`, `query`), which matches the
+published sample. `TestGSSPInputOrderDeterministic` checks 40 consecutive runs.
 
 ## Per-row results (base scanner)
 

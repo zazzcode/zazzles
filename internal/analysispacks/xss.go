@@ -45,11 +45,18 @@ func xssQuestionNames() []string {
 	return names
 }
 
+// FetchResponseLibrary names the web-standard Response constructor binding of
+// html-output-v1 (`new Response` or Next.js `new NextResponse` with an HTML type).
+const FetchResponseLibrary = "fetch-response"
+
 // XSSContract returns the primary verified rendering contract. Library is supplied
 // by the compiled adapter; it is evidence metadata, never name-based selection.
 func XSSContract(id, library string) *analysis.APIModel {
 	switch id {
 	case "html-output-v1":
+		if library == FetchResponseLibrary {
+			return &analysis.APIModel{ID: id, Library: library, Semantics: "A Fetch API Response or Next.js NextResponse sends its body with the Content-Type of its init headers. An explicit text/html type makes request values in the body HTML output in the recorded context; a string body without one is sent as text/plain.", Reference: "https://developer.mozilla.org/en-US/docs/Web/API/Response/Response"}
+		}
 		return &analysis.APIModel{ID: id, Library: "express", Semantics: "Request values reach an HTML rendering operation in the recorded output context.", Reference: "https://expressjs.com/en/api.html#res.send"}
 	case "browser-output-v1":
 		return &analysis.APIModel{ID: id, Library: library, Semantics: "Verified browser/framework rendering binding and source flow in the stated context.", Reference: "https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML"}

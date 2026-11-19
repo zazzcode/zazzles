@@ -65,8 +65,10 @@ Every required positive (`SQL-01..04`, `PATH-01/02`, `SSRF-01`, `LOG-01/02`, `XS
 all prefixed `OOPS-`) is Confirmed. SQL-04 has two operations and PATH-01 has two file reads, so
 13 case IDs produce 15 Confirmed records. `SSRF-02`, `XSS-03`, `PATH-R01/R02`, `PATH-N01` and an
 unlinked server HTML record at `app/vulnerabilities/[slug]/page.tsx:275` remain Review.
-`XSS-N01..N04` produce no XSS record. The proposed `XSS-R01` VCS flow has no XSS record; it is
-not a passed detection claim. `SQL-Q01` is an expectation about unsafe construction, not a detected
+`XSS-N01..N04` produce no XSS record. In that saved run the proposed `XSS-R01` VCS flow had no XSS record, so it was
+not a passed detection claim. Phase 5 added the web `Response` HTML sink, and an offline scan now records
+it at `app/api/vcs/[[...path]]/route.ts:101` (see the [recall inventory](recall-gap-inventory.md)); it has not
+been judged. `SQL-Q01` is an expectation about unsafe construction, not a detected
 injection or a dedicated practice check. `SSR-05` exposure checking is deferred (`NX-BP-18`).
 
 Offline gate: `ZAZZLES_NEXTJS_SAMPLE=<checkout> go test ./internal/langjs -run TestNextJSOopsStoreAnswerKey`.

@@ -98,6 +98,13 @@ These contracts are framework-neutral: any Node.js entry that uses the library b
 | zod | Schema definitions and `safeParse`/`parse` helpers as validation evidence | `zod_schema_supplied` fact |
 | Node `fs` | `readdir`, `stat` and `lstat` (sync and promise forms) were added to the file contract | `node-fs-file-v1` |
 
+## Route handler HTML responses
+
+`new Response(body, init)` and `new NextResponse(body, init)` are HTML sinks only when the init
+headers set a literal HTML `Content-Type`. Without one, a string body is `text/plain`, so JSON, CSV,
+PDF, plain-text and untyped responses produce no XSS record. An unresolved type stays Review. The
+[XSS analysis guide](analysis/xss.md#implemented-reflected-server-output) owns the full contract.
+
 ## Server-rendered pages
 
 React encodes JSX text and attribute values, so `<h1>{searchParams.q}</h1>` produces **no record**.

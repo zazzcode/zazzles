@@ -54,7 +54,9 @@ sentence, documenting any current regression separately if one is observed.
 | `.zazz/project/vulnerable-sample-apps.md`, `.zazz/evaluation/{vuln-nextjs,oss-oopssec-store,dvwa}-detection-guide.md` | Modified | Correct stale coverage claims and gate commands found by reconciliation |
 | `.zazz/evaluation/vulnpy-detection-guide.md` | Modified | Reconcile the historical Jinja note with delivery and current evidence |
 | This spec | Modified | Record the selected scope, fixtures and expected deltas before code |
-| One of `internal/langjs/`, `internal/langpy/`, `internal/langphp/`, or `internal/parse/` and the selected fixture owner | Conditional | One localized closure and its regression controls. Selected: `internal/langjs/xss_web_response.go` (new), `internal/langjs/xss_response.go` (shared HTML-response tail), `internal/langjs/flow.go` (constructor hook) and `internal/langjs/xss_web_response_test.go` (new) |
+| One of `internal/langjs/`, `internal/langpy/`, `internal/langphp/`, or `internal/parse/` and the selected fixture owner | Conditional | One localized closure and its regression controls. Selected: `internal/langjs/xss_web_response.go` (new), `internal/langjs/xss_response.go` (shared HTML-response tail), `internal/langjs/flow.go` (constructor hook and shorthand destructuring default) and `internal/langjs/xss_web_response_test.go` (new) |
+| `internal/langjs/next_gssp.go`, `internal/langjs/next_handlers.go`, `internal/langjs/next_gssp_order_test.go` | Modified | Determinism defect found by the AC5 comparison: `getServerSideProps` context inputs follow pattern source order |
+| `docs/analysis/xss.md`, `docs/analysis/node-inputs.md`, `docs/nextjs-support.md` | Modified | Document the web `Response` HTML sink and shorthand destructuring defaults |
 | `internal/analysispacks/xss.go`, `internal/analysispacks/xss_test.go` | Conditional | Selected: the `html-output-v1` contract for library `fetch-response`, so selection accepts the new records. Existing Express records and descriptor material are unchanged |
 | `cmd/scan/testdata/architecture-baseline.json` | Conditional | Add the new fixture rows and update individually listed affected rows |
 | Selected analysis and detection guides | Conditional | Document the recovered subset and remaining limits |
@@ -204,6 +206,10 @@ collect disjoint sample outputs read-only, each in its own run folder. Serialize
      blocker.
    - **Binding controls.** A shadowed or non-`next/server` `NextResponse`, and a locally bound
      `Response`, yield no candidate.
+   - **Destructuring default.** `go test ./internal/langjs -run '^TestDestructuringDefaultProjection$' -count=1`
+     checks that `{ name = 'guest' } = req.query` and a fallback that reads the request both reach a
+     raw response with their request source. A constant object default records nothing, and an
+     aliased default keeps its `unsupported_binding` gap.
 
    Recheck `OOPS-XSS-R01` with `check.py` against a fresh scan of `oss-oopssec-store` at
    `2d530ef`. Its sink is `app/api/vcs/[[...path]]/route.ts:101`.
@@ -327,3 +333,14 @@ files, including the analysispacks contract seam. AC4 names the test, controls a
 golden delta is limited to new records from fixtures that construct a web `Response` with an HTML
 type; none is expected. The owner asked for implementation in this session, so rank 1 proceeds
 without waiting for a redirect, as §6 allows.
+
+### 2026-11-19 — Closure, diagnosis correction and determinism fix
+
+Implementing rank 1 showed an earlier failing stage. `const { path = [] } = await params` at
+`route.ts:63` dropped the route parameter (`value_transfer`), and the HTML sink (`sink_model`) also
+had to change. The group now covers both, adapter-local in `flow.go`. Six base records carried that
+gap, which bounds the blast radius. The AC5 comparison then surfaced a pre-existing
+nondeterminism: `getServerSideProps` inputs came from Go map iteration. The owner asked to loop on
+issues found during this work, so the fix ships here as its own commit, with
+`TestGSSPInputOrderDeterministic`. §4 and AC4 list the added files and tests. Corpus deltas are four
+OopsSec records, each accounted for in the inventory, and the architecture golden is unchanged.

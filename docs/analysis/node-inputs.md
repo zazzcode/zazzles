@@ -12,6 +12,11 @@ keeps its existing behavior; migration to the shared input-fact model remains de
 Next.js App Router, Server Action and page entries use the same facts through a separate adapter;
 see the [Next.js addendum](nextjs.md).
 
+Destructuring binds shorthand properties, including a shorthand default (`const { page = 1 } =
+req.query`, `const { path = [] } = await params`). The local keeps the dependencies of both the
+projected property and the fallback. An aliased default such as `{ page: p = 1 }` is still reported
+as an `unsupported_binding` gap.
+
 ## Supported HTTP boundary
 
 - Express retains its existing bounded direct/mounted/finite-registration analysis and middleware context.

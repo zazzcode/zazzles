@@ -155,6 +155,9 @@ func (f *flow) statement(n *sitter.Node) bool {
 				if name.Kind() == "object_pattern" {
 					for k := uint(0); k < name.NamedChildCount(); k++ {
 						binding := name.NamedChild(k)
+						if f.defaultProjection(binding, v) {
+							continue
+						}
 						if f.web != nil && v.web != "" {
 							if local, prop, key := patternBinding(binding, f.module.src); local != "" {
 								if wv, ok := f.webProjection(v, prop, key); ok {
@@ -694,6 +697,9 @@ func (f *flow) eval(n *sitter.Node) value {
 			}
 		}
 		if v, ok := f.xssConstructor(n); ok {
+			return v
+		}
+		if v, ok := f.webResponseConstructor(n); ok {
 			return v
 		}
 		return f.transfer(f.children(n), "expression", n)
@@ -1369,6 +1375,33 @@ func (f *flow) enterContinuation(fn *sitter.Node) {
 		}
 	}
 	f.work = child.work
+}
+
+// defaultProjection binds a shorthand destructuring default, `{ name = fallback }`.
+// The local is the projected property when present and the fallback otherwise,
+// so it keeps both values' dependencies. Aliased defaults stay unsupported.
+func (f *flow) defaultProjection(binding *sitter.Node, v value) bool {
+	if binding.Kind() != "object_assignment_pattern" {
+		return false
+	}
+	left, right := binding.ChildByFieldName("left"), binding.ChildByFieldName("right")
+	if left == nil || left.Kind() != "shorthand_property_identifier_pattern" {
+		return false
+	}
+	name := left.Utf8Text(f.module.src)
+	fallback := f.eval(right)
+	if f.web != nil && v.web != "" {
+		if wv, ok := f.webProjection(v, name, left); ok {
+			f.env[name] = combine(wv, f.transfer(fallback, "assignment", right))
+			return true
+		}
+	}
+	projected := v
+	if field, ok := v.fields[name]; ok && v.model == "" && len(v.deps) == 0 {
+		projected = field
+	}
+	f.env[name] = combine(f.transfer(projected, "field_projection", left), f.transfer(fallback, "assignment", right))
+	return true
 }
 
 // patternBinding returns the local name, property and key node of one object

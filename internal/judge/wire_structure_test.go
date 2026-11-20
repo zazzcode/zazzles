@@ -188,3 +188,40 @@ func TestWireStructureCitationsReadExpandedChains(t *testing.T) {
 		t.Fatalf("citation index differs:\n%v\n%v", x.chains, want.chains)
 	}
 }
+
+// TestWireV8RejectsVersion7Trace: a request carries evidence_version 8, and a
+// saved trace whose request states version 7 does not replay as exact.
+func TestWireV8RejectsVersion7Trace(t *testing.T) {
+	c, _ := New("openai", "fixture-model", "offline")
+	u := selectedSQLUse(t)
+	trace, err := c.Preview(u)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(trace.Request), `\"evidence_version\":8`) {
+		t.Fatal("request does not carry evidence_version 8")
+	}
+	var envelope struct {
+		Questions []struct {
+			Name    string              `json:"name"`
+			Choices []map[string]string `json:"choices"`
+		} `json:"questions"`
+	}
+	if err := json.Unmarshal(trace.Request, &envelope); err != nil {
+		t.Fatal(err)
+	}
+	answers := []map[string]any{}
+	for _, q := range envelope.Questions {
+		answers = append(answers, map[string]any{"name": q.Name, "type": "choice", "choice": q.Choices[0]["value"]})
+	}
+	trace.HTTPStatus = 200
+	trace.Response, _ = json.Marshal(map[string]any{"model": "fixture-model", "answers": answers})
+	if got := c.Replay(u, trace); got.Status != "completed" {
+		t.Fatalf("current trace does not replay: %s", got.Reason)
+	}
+	old := trace
+	old.Request = []byte(strings.Replace(string(trace.Request), `\"evidence_version\":8`, `\"evidence_version\":7`, 1))
+	if got := c.Replay(u, old); got.Status != "failed" {
+		t.Fatalf("version 7 trace replayed: %+v", got)
+	}
+}

@@ -227,11 +227,68 @@ are sensitive to request wording, not to missing content.
 The 22 XSS changes are at DVWA's shared page renderers, which are outside the answer key. They go
 both ways: 15 became Confirmed and 7 dropped to a practice finding.
 
+## Attribution runs (owner-authorized, 2026-11-20 UTC)
+
+The owner authorized attribution runs after the investigation. Two intermediate scanners were
+built from this branch: A only (`89bba85`) and A+B (`1e780dc`). Each judged DVWA
+(`--judge-limit 200`) and Juice Shop (`--judge-limit 40`) on the AC8 terms, for 427 requests in
+all. The runs are `a-dvwa` `run-3829170039`, `ab-dvwa` `run-1591442415`, `a-juice-shop`
+`run-2585986664` and `ab-juice-shop` `run-402673210`. C adds nothing to a single request beyond
+D, so the step from A+B to C isolates the XSS labels. `attribute.py` → `attribution.txt`.
+
+| Step | DVWA status changes (of 186) | Juice Shop (of 28) | DVWA input tokens after the step |
+|---|---|---|---:|
+| B1 → A (identity) | 30 (16.1%): 24 xss, 2 sql, 2 command, 1 path, 1 upload | 1 (path) | 1,704,023 (from 2,175,448) |
+| A → A+B (structure) | 25 (13.4%): 15 xss, 5 sql, 3 command, 1 path, 1 upload | 2 (log, path) | 1,614,930 |
+| A+B → C (XSS labels) | 19 (10.2%), all xss | 0 | 1,590,248 |
+
+Every step moves about the same share of records, in every family it touches. Of the 26 DVWA
+B1→C changes, 11 first moved at A, 10 at B and 5 at D. A further 24 records changed at an
+intermediate step and returned to their B1 status by C. JS-LOG-01 first moved at B.
+
+Keyed accuracy held at every step, with one exception per intermediate arm:
+- **A:** protected control PC-CMD-02 (`exec/source/impossible.php`) presented as a finding. It is
+  Inconclusive in B1 and correctly Protected in C.
+- **A+B:** JS-LOG-01 presented as a practice finding, as it does in C.
+
+No workstream drives a direction. Any request change, including lossless ones, re-draws the
+close-call answers.
+
+**How certain the verdicts are (B1).** Median top-choice probability of the verdict question:
+
+| Family | Answer | Records | Median | Share ≥ 0.70 |
+|---|---|---:|---:|---:|
+| SQL | vulnerable / protected | 38 / 14 (DVWA) | 0.86 / 0.82 | 89% / 71% |
+| Command | vulnerable | 17 (DVWA) | 0.88 | 76% |
+| Path | vulnerable | 14 (DVWA), 4 (Juice Shop) | 0.83 / 0.82 | 79% / 100% |
+| XSS | vulnerable | 9 (Juice Shop) | 0.85 | 89% |
+| XSS | vulnerable / unknown | 59 / 19 (DVWA) | 0.69 / 0.56 | 49% / 0% |
+| Logging | vulnerable / unknown | 1 / 1 (Juice Shop) | 0.56 / 0.50 | 0% |
+
+76 of the 78 judged DVWA XSS records are the one shared page renderer
+(`dvwaPage.inc.php:388`). It is judged once per entry, and its sources are `$_COOKIE['theme']` and
+`$_COOKIE['security']`. Their median P(vulnerable) is 0.60.
+
+**Evidence-quality defects in the low-confidence requests:**
+- **SQL, `brute/source/impossible.php`.** The request has the query literal, the
+  `bindParam(..., PDO::PARAM_STR)` line and `execute()`, but not the `$db->prepare(` call that
+  makes the literal the prepared statement. Its sink binding points at `dvwaDatabaseConnect()`.
+  Answers sat near a three-way tie (protected 0.37, vulnerable 0.31, unknown 0.31).
+- **XSS, shared renderer.** The record states one output context, `html_text`, for the whole
+  `echo`. The cookie values actually land in quoted attributes (`<body class="…">` and
+  `data-help-url='…'`). The sink row is the entire ~3 KB template string, and the theme path
+  repeats that same row as eight transfers, so the request does not show where in the template
+  each value lands.
+- **Rules.** The XSS rules and the PHP input material name `$_COOKIE` as a cookie origin but do
+  not say how a cookie source bears on exposure. The model splits between vulnerable and unknown.
+- **Noise.** The SQL request is 21 mostly one-line fragments rather than the contiguous handler,
+  plus about 2.8 KB of unrelated `dvwaPage.inc.php` helper excerpts.
+
 ## Open for the owner
 
-AC8 as written cannot pass while identical requests get identical statuses: a zero noise floor
-leaves an allowance of 2 points. Any change to the request then counts against it, including
-changes that remove no source or fact. The keyed result is unchanged on DVWA. On Juice Shop one
-keyed positive moved from Confirmed to a practice finding (JS-LOG-01). The owner decides whether to
-accept, re-scope or revise AC8, or to attribute the changes with further paid runs. Those runs are
-not covered by OQ-1 or OQ-2.
+The size reduction is real, and the model receives the same evidence it did before. The AC8
+failure is close-call answers being re-drawn by any change to the request. The attribution runs
+show no workstream with a systematic effect. Two decisions remain:
+- AC8: accept it, or revise it so the comparison of close-call answers is judged on keyed rows
+  and confidence rather than a zero noise floor.
+- Whether to take up the evidence-quality defects above. They are outside this contract.

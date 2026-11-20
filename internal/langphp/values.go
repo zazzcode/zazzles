@@ -35,11 +35,14 @@ type phpLiteral struct {
 }
 
 type phpValue struct {
-	deps     []phpDep
-	gaps     []analysis.Gap
-	literals []phpLiteral
-	constant bool
-	fields   map[string]phpValue
+	// superglobalFresh marks tracked request-element state that some joined
+	// path left unwritten and unchecked: a read also yields fresh input.
+	superglobalFresh bool
+	deps             []phpDep
+	gaps             []analysis.Gap
+	literals         []phpLiteral
+	constant         bool
+	fields           map[string]phpValue
 	// binding labels tracked objects: db_connection, db_statement, db_result.
 	binding string
 	driver  string

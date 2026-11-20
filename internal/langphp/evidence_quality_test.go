@@ -109,3 +109,45 @@ func TestPHPNestedConcatenationTransfers(t *testing.T) {
 		t.Fatalf("string_construction transfers: %q", built)
 	}
 }
+
+// TestPHPSuperglobalElementState (judge evidence quality V): a request
+// superglobal element that page-level code checks against an allow-list and
+// resets when invalid is no longer raw input where a helper reads it later;
+// an element nothing checks stays raw, and a written literal carries no input.
+func TestPHPSuperglobalElementState(t *testing.T) {
+	src := `<?php
+$levels = array('low', 'medium', 'high', 'impossible');
+function levelSet($l) { $_COOKIE['security'] = $l; }
+function levelGet() { if (isset($_COOKIE['security'])) { return $_COOKIE['security']; } return 'impossible'; }
+function themeGet() { if (isset($_COOKIE['theme'])) { return $_COOKIE['theme']; } return 'light'; }
+if (!isset($_COOKIE['security']) || !in_array($_COOKIE['security'], $levels)) {
+	levelSet('impossible');
+}
+echo "<body class=\"" . themeGet() . "\"><a data-level='" . levelGet() . "'>x</a>";
+`
+	r := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": src}), "index.php")
+	uses := phpUsesOfKind(r, "xss_candidate")
+	if len(uses) != 1 {
+		t.Fatalf("xss uses: %d", len(uses))
+	}
+	got := map[string][]string{}
+	for _, p := range uses[0].XSS.Paths {
+		s := uses[0].Dependencies[p.Dependency].Source.Text
+		got[s] = append(got[s], p.Protection)
+	}
+	for source, protections := range got {
+		for _, p := range protections {
+			if strings.Contains(source, "security") && p == "raw" {
+				t.Errorf("allow-listed and reset cookie still raw: %v", got)
+			}
+		}
+	}
+	theme := got["$_COOKIE['theme']"]
+	if len(theme) != 1 || theme[0] != "raw" {
+		t.Errorf("unchecked cookie: %v", got)
+	}
+	written := phpAnalyze(t, phpFixture(t, map[string]string{"index.php": `<?php $_GET['x'] = 'fixed'; echo "<p>" . $_GET['x'] . "</p>";`}), "index.php")
+	if u := phpUsesOfKind(written, "xss_candidate"); len(u) != 0 {
+		t.Errorf("a written literal is rendered as request input: %+v", u[0].Dependencies)
+	}
+}

@@ -659,7 +659,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	h.module = m
 	h.depth++
 	h.env = map[string]phpValue{}
-	h.globals = map[string]phpValue{}
+	h.globals = superglobalState(f.globals)
 	h.class = callable.class
 	if callable.object != nil {
 		h.env["this"] = *callable.object
@@ -740,6 +740,11 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 		}
 	}
 	for k, v := range h.globals {
+		// Tracked request elements come back only when the helper changed
+		// them; an unchanged copy would mark them dirty at every call.
+		if strings.HasPrefix(k, phpSuperglobalPrefix) && !h.dirty[phpGlobalsKeyPrefix+k] {
+			continue
+		}
 		if f.globals == nil {
 			f.globals = map[string]phpValue{}
 		}

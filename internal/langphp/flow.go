@@ -369,6 +369,16 @@ func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
 			}
 			return v
 		}
+		if obj != nil && obj.Kind() == "variable_name" {
+			if sg, ok := phpSuperglobalKey(phpVarName(m, obj), key); ok {
+				if f.globals == nil {
+					f.globals = map[string]phpValue{}
+				}
+				f.markDirty(phpGlobalsKeyPrefix + sg)
+				f.globals[sg] = v
+				return v
+			}
+		}
 		if obj != nil {
 			name := phpVarName(m, obj)
 			if base, ok := f.env[name]; ok {
@@ -422,6 +432,11 @@ func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 					return phpValue{evidence: []analysis.Evidence{m.evidence("server_value", n)}}
 				}
 				origin = serverKeyOrigin(key)
+			}
+			if sg, tracked := phpSuperglobalKey(name, key); tracked {
+				if state, ok := f.globals[sg]; ok {
+					return f.superglobalRead(n, state, container, origin, key)
+				}
 			}
 			return f.source(n, container, origin, key)
 		}

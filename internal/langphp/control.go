@@ -55,6 +55,8 @@ func (f *phpFlow) merge(branches ...*phpFlow) {
 	for key := range keys {
 		global, isGlobal := strings.CutPrefix(key, phpGlobalsKeyPrefix)
 		var v phpValue
+		fresh := false
+		superglobal := isGlobal && strings.HasPrefix(global, phpSuperglobalPrefix)
 		for _, b := range branches {
 			scope := b.env
 			name := key
@@ -64,8 +66,17 @@ func (f *phpFlow) merge(branches ...*phpFlow) {
 			candidate := phpValue{unknown: true}
 			if value, ok := scope[name]; ok {
 				candidate = value
+				fresh = fresh || value.superglobalFresh
+			} else if superglobal {
+				// An untouched request element is still the request's value.
+				fresh = true
+				continue
 			}
 			v = phpJoin(v, candidate)
+		}
+		if superglobal {
+			v.superglobalFresh = fresh
+			v.gaps = phpMergeGaps(nil, v.gaps)
 		}
 		if isGlobal {
 			if f.globals == nil {
@@ -240,6 +251,7 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	yes := f.clone()
 	yes.context = append(yes.context, f.module.evidence("branch_precondition", test))
 	yes.applyProtections(yesProt)
+	yes.narrowSuperglobals(test, yesProt)
 	yt := false
 	if walkYes {
 		yt = yes.body(body)
@@ -259,6 +271,7 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 		// everything after the conditional.
 		no.applyProtections(noProt)
 	}
+	no.narrowSuperglobals(test, noProt)
 	no.context = append(no.context, f.module.evidence("branch_false_precondition", test))
 	nt := false
 	if walkNo && len(alternatives) > 0 {

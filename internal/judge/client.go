@@ -212,10 +212,12 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 		if err != nil {
 			return nil, errors.New("could not compact evidence")
 		}
-		bundle = wire
 		if resolve {
 			asks = resolutionAsks(use, wire, gapIDs)
 		}
+		// The model-facing identity projection runs after resolution
+		// questions are planned from the compacted rows (D-2).
+		bundle = localIdentity(wire)
 	}
 	var guidance *guidelines.AnalysisGuidelines
 	var selected *analysispacks.Material

@@ -1,7 +1,7 @@
 {
   "failed": false,
   "requests": 1,
-  "report_sha256": "b241a131e8d1817d73c7dc983aa33988827e89efacc5552f87b5d589eb430f35",
+  "report_sha256": "e0639664cdb24dd242bdae57c53ae804ebe815cbfa54c225f6ef4ef5fc46d5da",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -55,7 +55,7 @@
     {
       "id": "logging-claim",
       "assessment": {
-        "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
+        "request_digest": "2da25c25a589d5914764d8b8a558988602bbcaf11b5079962e43809705037eb2",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "content_exposure": "yes",
@@ -86,10 +86,10 @@
   ],
   "traces": {
     "logging-claim": {
-      "sha256": "f5e56a4dd325203027470f84742d81a51a32a842a28fda1b647461c020325dc3",
-      "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
+      "sha256": "261635267ebacd028f5a1dfa38dd16fe8c6d5443573c65bd4ddcea28a7d60720",
+      "request_digest": "2da25c25a589d5914764d8b8a558988602bbcaf11b5079962e43809705037eb2",
       "http_status": 200,
-      "request_bytes": 9103
+      "request_bytes": 9068
     }
   }
 }

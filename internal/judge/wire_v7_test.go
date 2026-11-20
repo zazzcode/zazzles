@@ -72,7 +72,7 @@ func TestWireV7EnvelopeAndProvenance(t *testing.T) {
 		t.Fatal(err)
 	}
 	input := envelope.Input
-	for _, field := range []string{`"evidence_version":7`, `"compact_wire"`, `"evidence_coverage"`, `"dependencies"`, `"control_edges"`} {
+	for _, field := range []string{`"evidence_version":8`, `"compact_wire"`, `"evidence_coverage"`, `"dependencies"`, `"control_edges"`} {
 		if !strings.Contains(input, field) {
 			t.Fatalf("missing %s", field)
 		}

@@ -44,7 +44,11 @@ func TestEntryContextReplayMismatch(t *testing.T) {
 			ctx.Inputs[0].Role = "browser.message"
 			v.InvocationFacts = &ctx
 		}},
-		{"entry metadata", func(v *analysis.CandidateUse) { e := *v.EntryFacts; e.InstanceID = "other-page"; v.EntryFacts = &e }},
+		{"entry metadata", func(v *analysis.CandidateUse) {
+			e := *v.EntryFacts
+			e.Browser = &analysis.BrowserEntryMetadata{Category: "event"}
+			v.EntryFacts = &e
+		}},
 		{"dispatch resolution", func(v *analysis.CandidateUse) { b := *v.DispatchFacts; b.Resolution = "partial"; v.DispatchFacts = &b }},
 		{"required role", func(v *analysis.CandidateUse) {
 			completeness := *v.Completeness
@@ -59,6 +63,15 @@ func TestEntryContextReplayMismatch(t *testing.T) {
 				t.Fatalf("changed invocation replayed: %+v", got)
 			}
 		})
+	}
+	// A single-occurrence instance ID is not in the request (D-2), so a
+	// change to it alone leaves the request, and its replay, unchanged.
+	v := u
+	e := *v.EntryFacts
+	e.InstanceID = "other-page"
+	v.EntryFacts = &e
+	if got := c.Replay(v, trace); got.Status != "completed" {
+		t.Fatalf("instance-only change rejected an identical request: %+v", got)
 	}
 }
 

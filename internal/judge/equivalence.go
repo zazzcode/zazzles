@@ -32,7 +32,13 @@ func (c *Client) EquivalenceSignature(u analysis.CandidateUse) (string, error) {
 		return "", err
 	}
 	use := input["use"].(map[string]any)
+	// The signature reads the identity shape the model receives (D-2):
+	// single identifiers leave, lists become counts plus recurring members.
+	// Invocation identity is then normalized, and the identifiers left are
+	// renumbered in order, so only their equality pattern is signed.
+	projectIdentity(use, keepIdentity)
 	normalizeBundle(use)
+	projectIdentity(use, renumberIdentity)
 	request[field] = input
 	data, err := json.Marshal(request)
 	if err != nil {

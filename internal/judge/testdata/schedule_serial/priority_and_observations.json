@@ -1,12 +1,12 @@
 {
   "failed": true,
   "requests": 2,
-  "report_sha256": "e97e23bf0dcd2dafcfe3ef4735d896a624d71cbf5b4a6f04017b9a345c42d11b",
+  "report_sha256": "190a3c83fec3f038fb54c883d296292b4e6116a48971e0099c1d5dab0ed218ca",
   "assessments": [
     {
       "id": "candidate:v1:c47c311d759ccc085244b465f7685a8e3fc1190221c05bff46ad6500bed04fb6",
       "assessment": {
-        "request_digest": "b4bbe1eef9b7375489d7cdd287d187528cc364451ba04db2ebf0d63f68f84036",
+        "request_digest": "58a721af002d21a8201d45494fb9ed7dfbd62e61ed99134dba60296ad22fabcf",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -28,7 +28,7 @@
     {
       "id": "candidate:v1:38d4055d86f9345b5c8c10f334c8c786ca424ec8a36a49c09a3054aacdf3af48",
       "assessment": {
-        "request_digest": "925e5ff69862b4b9267b847d6ef38b78c857a2da3c85ae1f9013de430d6769d2",
+        "request_digest": "2fdd602ef8560c28e0968e87216fbe8e36ec0370bcce0da6589e0854f997b177",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -88,16 +88,16 @@
   ],
   "traces": {
     "candidate:v1:38d4055d86f9345b5c8c10f334c8c786ca424ec8a36a49c09a3054aacdf3af48": {
-      "sha256": "c9e20012d20586b27bdacf7b79a5ae29a86bb2f16bd149b7840f44001a880f26",
-      "request_digest": "925e5ff69862b4b9267b847d6ef38b78c857a2da3c85ae1f9013de430d6769d2",
+      "sha256": "54d447ef9ba8a6695ed2622a22eca4bcb7477248fcd51ec26e4e35508bc0f8ff",
+      "request_digest": "2fdd602ef8560c28e0968e87216fbe8e36ec0370bcce0da6589e0854f997b177",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17313
     },
     "candidate:v1:c47c311d759ccc085244b465f7685a8e3fc1190221c05bff46ad6500bed04fb6": {
-      "sha256": "d424705d720e6cc8467aea599544b2bb1b85422692b33ae369d443bb859532f7",
-      "request_digest": "b4bbe1eef9b7375489d7cdd287d187528cc364451ba04db2ebf0d63f68f84036",
+      "sha256": "bb033e6fbad408e1beada01a67fc5ce0a69c34a2ce41c74f2febd1d8b9268b65",
+      "request_digest": "58a721af002d21a8201d45494fb9ed7dfbd62e61ed99134dba60296ad22fabcf",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17313
     }
   }
 }

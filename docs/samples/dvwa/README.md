@@ -5,7 +5,22 @@
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
 [Results](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (rebuilt 2026-11-19)
+## Current report (2026-11-20)
+
+A full static scan of DVWA revision `a1978a2` with scanner `ebf366a` and OpenAI
+`gpt-6-luna` produced 247 records across 174 entries. The report presents 145 Confirmed,
+39 practice findings, 49 Review (34 needs-review and 15 needs-evidence), and 14 Protected.
+
+The judge completed 190 assessments from 187 requests, including three assessments shared
+across equivalent contexts. The scanner kept 57 records in Review because their blockers
+have no model-resolvable question. Provider usage was 1,644,037 input tokens with zero
+failures. All 190 assessments replayed exactly offline.
+
+All 11 keyed positives were Confirmed. One protected control, PC-CMD-02 at
+`vulnerabilities/exec/source/impossible.php:26`, was a false positive against the key.
+The results and release decision are in the [PR evaluation](../../../.zazz/evaluation/judge-request-size-reduction-results.md#pre-merge-dvwa-scan).
+
+## Previous report (2026-11-19)
 
 Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
 scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
@@ -49,7 +64,7 @@ judgments, not runtime exploit confirmation or exhaustive recall. Follow the
 ## Living expectations and limits
 
 The source of truth is the pinned DVWA revision; re-review changed modules and re-pin the guide
-before publishing new results. Bounded, honestly-reported limits in this run: cross-entry
+before publishing new results. Limits recorded in the 2026-11-17 run: cross-entry
 `$_SESSION` write ordering and the `bac_log` `NOW()` column keep three stored reads
 origin-unresolved (Review); the four wire-limited stored-XSS render records; captcha's UPDATE
 interpolates `md5`-hashed and session-sourced operands (candidate, not a raw request→SQL path);

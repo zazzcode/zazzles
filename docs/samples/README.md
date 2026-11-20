@@ -17,8 +17,9 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
 | [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
 | [vuln-nextjs (Pages Router lab)](vuln-nextjs/README.md) | [findings.html](vuln-nextjs/findings.html) | [findings.json](vuln-nextjs/findings.json) | [findings.sarif](vuln-nextjs/findings.sarif) |
+| [DVWA (PHP)](dvwa/README.md) | [findings.html](dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
 
-Every sample was rescanned on 2026-11-19 with model-assisted evidence resolution
+The preceding 2026-11-19 evaluation rescanned every sample with model-assisted evidence resolution
 ([results](../../.zazz/evaluation/model-resolution-results.md)), with zero provider failures.
 Undecidable validation records and records whose outcome a scanner fact already fixes are no
 longer sent (Juice Shop went from 153 requests to 28 across this and the previous accuracy
@@ -106,9 +107,9 @@ Python NoSQL is out of this corpus; no sample contains a MongoDB driver.
 
 The [PHP evaluation](../../.zazz/evaluation/php-support-results.md) records the offline DVWA
 `a1978a2` structural pass and the paid AC14 closeout. The curated
-[DVWA sample](dvwa/README.md) publishes the final judged run: 292 of 296 records assessed by
-`gpt-6-luna` within the 300-request cap, 292/292 exact offline replay, every cataloged required
-positive Confirmed and no impossible-level-only record red.
+[DVWA sample](dvwa/README.md) now publishes the 2026-11-20 pre-merge run. All 11 keyed
+positives were Confirmed, one protected control was a false positive, and all 190 completed
+assessments replayed exactly.
 
 ## VulnPy coverage corpus
 

@@ -368,3 +368,13 @@ reuse signature. The architecture golden changed only in 316 signature digests. 
 membership held. All 190 completed DVWA assessments and 28 Juice Shop assessments replayed
 exactly, with zero mismatches or missing traces. Offline `check.py` and `accuracy.py` outputs
 matched baseline across eleven samples. Formatting, vet, build and the full Go race suite passed.
+
+### Pre-merge DVWA scan
+
+Fresh paid run `run-729503128` on 2026-11-20 scanned the clean DVWA pin `a1978a2` with
+scanner `ebf366a`, OpenAI `gpt-6-luna`, and the default judge limit. All 187 provider
+requests succeeded, consuming 1,644,037 input tokens. The 190 completed assessments include
+three equivalent-context reuses. Answers and finding statuses match the previous evidence-quality
+run for every use. All 190 new assessments replayed exactly. All 11 keyed positives were
+Confirmed and PC-CMD-02 remained the single protected-control false positive. The merge
+recommendation stands. [Published sample and provenance](../../docs/samples/dvwa/README.md).

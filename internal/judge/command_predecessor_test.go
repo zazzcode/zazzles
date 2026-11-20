@@ -31,11 +31,11 @@ func TestCommandPredecessorRequests(t *testing.T) {
 		"typescript/grpc":             {7, "5c9521a5235e04a2550e8d678f8437910421ad11530ba5d6d3152e1fa37b735e"},
 		"javascript/graphql":          {7, "7445b5e70d2f6fa6a8d8c0f4b458b6a375864aafad68c370da898cb26865da8a"},
 		"typescript/graphql":          {7, "f2d3c9ce3efcf846047b47bb7fe21d9c95d8e2699c7a639c9169ae4f9ce89bc7"},
-		"javascript/dynamic-dispatch": {4, "480efe80084653aae9840b3889570520d9c7cc88afc4577114ce3aca0f465ca1"},
-		"typescript/dynamic-dispatch": {4, "6dc83c5bc5b58dac19e9d2e1fd54eab0a7242632863d2abd2b9ba6e3c26882b0"},
-		"python/routes":               {5, "a64fe783f17078a275a5b3ef7ef3f04bf2929b31bf9a65380148ddace80f27ad"},
-		"python/dynamic-vulnpy":       {31, "4685616050e8858f0dcd2eda6b21dbd4ba66dc06f3b82e4b92a02b947c091736"},
-		"javascript/xss-fetch":        {5, "4dc77d57af759f54da6d700b9020125c50921424e3ce06deabded130a3de4e62"},
+		"javascript/dynamic-dispatch": {4, "624d11b5057798e312b8e4856ef5adc8e2d9336aef71376a2e9376072d2f5602"},
+		"typescript/dynamic-dispatch": {4, "37d1411d299977b2477d769def9648d0bf701e40b4e59cb4a5c0d53058733055"},
+		"python/routes":               {5, "389a404d9af4f20a4c5cdcd4e2c6f0d987c3f1d57c6a034cdf212e320ac24540"},
+		"python/dynamic-vulnpy":       {31, "9f97cd52cba9ee1fa5f381f18f9dc85313fb622471f80d1cebe807ca301c1a07"},
+		"javascript/xss-fetch":        {5, "b0270cc80f7cd1685b91153348fd1800b9148cffebe7778962475e33bee00745"},
 		"javascript/outbound":         {4, "7616f13e1350e438c8ff872759a2b58a948bf45f08379401a1f0a6c5c341718b"},
 	}
 	c, _ := New("openai", "fixture-model", "k")

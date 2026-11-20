@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 2,
-  "report_sha256": "7e008ff70e8822ce817cf50667d8786112717fd851b66d1abe8fa0f7ac2c8bf9",
+  "report_sha256": "26b3b1e6d0f888860ca545e5a3dcb7f699c62c8283a81502d9e1ff95abc35272",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -41,7 +41,7 @@
     {
       "id": "xss-claim",
       "assessment": {
-        "request_digest": "c60e244338ba3eaccf828c7253da3ba16263165168fc560275da00afb8ccf125",
+        "request_digest": "bdc0c203d8706607ab5370c985f7d5604c9f0bf72faf743bf096c1682804cb17",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "encoding_adequacy": "not_present",
@@ -112,10 +112,10 @@
       "request_bytes": 9130
     },
     "xss-claim": {
-      "sha256": "87486d4798e914ea805e40e9bd263300993bf72f11e6372da6dec292cf7e3d98",
-      "request_digest": "c60e244338ba3eaccf828c7253da3ba16263165168fc560275da00afb8ccf125",
+      "sha256": "a4fdc59fdd0e24206d81184a4081e61c47b4bfdfd5fb9bcd2005158a03573aa6",
+      "request_digest": "bdc0c203d8706607ab5370c985f7d5604c9f0bf72faf743bf096c1682804cb17",
       "http_status": 200,
-      "request_bytes": 10307
+      "request_bytes": 10599
     }
   }
 }

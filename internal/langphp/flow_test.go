@@ -870,7 +870,8 @@ $data->execute();
 			continue
 		}
 		text := u.Completeness.Evidence["query_text"]
-		if len(text) != 1 || !strings.Contains(text[0].Text, "(:user)") {
+		// The literal plus the prepare call that makes it this statement's text.
+		if len(text) != 2 || text[0].Kind != "statement_preparation" || !strings.Contains(text[1].Text, "(:user)") {
 			t.Fatalf("execute query_text: %#v", text)
 		}
 		sent := false

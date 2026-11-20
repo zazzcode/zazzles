@@ -27,4 +27,7 @@ type XSSPath struct {
 	Dependency int    `json:"dependency"`
 	Entry      string `json:"entry,omitempty"`
 	Protection string `json:"protection"`
+	// OutputContext is the HTML context where this path's value lands, when
+	// an adapter establishes it per path (PHP templates).
+	OutputContext string `json:"output_context,omitempty"`
 }

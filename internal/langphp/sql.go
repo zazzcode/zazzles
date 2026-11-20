@@ -168,6 +168,14 @@ func (f *phpFlow) sqlPrepare(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	}
 	stmt := f.sqlClaim(n, queryNode, nil, text, driver, "prepare", connection.evidence, nil, nil)
 	stmt.binding = "db_statement"
+	// The prepare call, with the variable it is assigned to, is what makes the
+	// query text this statement's text; an execute() claim carries it so the
+	// judge sees the literal, the bindings and the execution as one statement.
+	prepared := n
+	if p := n.Parent(); p != nil && p.Kind() == "assignment_expression" {
+		prepared = p
+	}
+	stmt.sqlTextEvidence = append([]analysis.Evidence{f.module.evidence("statement_preparation", prepared)}, stmt.sqlTextEvidence...)
 	return stmt
 }
 
@@ -336,9 +344,10 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			kept = append(kept, *u)
 			continue
 		}
-		own := map[int]string{}
+		own, ownContext := map[int]string{}, map[int]string{}
 		for _, p := range u.XSS.Paths {
 			own[p.Dependency] = p.Protection
+			ownContext[p.Dependency] = p.OutputContext
 		}
 		var deps []analysis.Dependency
 		var paths []analysis.XSSPath
@@ -347,12 +356,19 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 		// The record's storage key names its first raw stored path, else its
 		// first stored read, independent of dependency order otherwise.
 		firstKey, rawKey := "", ""
+		context := ""
 		add := func(d analysis.Dependency, entry, protection string) {
 			deps = append(deps, d)
-			paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Entry: entry, Protection: protection})
+			paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Entry: entry, Protection: protection, OutputContext: context})
 		}
 		for j, d := range u.Dependencies {
 			read := own[j]
+			// A stored path lands where its read lands (judge evidence quality O).
+			context = ownContext[j]
+			pathContext := u.XSS.OutputContext
+			if context != "" {
+				pathContext = context
+			}
 			if d.StorageKey == "" {
 				directRaw = directRaw || read == "raw"
 				add(d, "", read)
@@ -383,7 +399,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 					nd := source.dep
 					nd.StorageKey = d.StorageKey
 					nd.Transfers = append(append([]analysis.Evidence{}, nd.Transfers...), d.Transfers...)
-					protection := phpStoredPathProtection(read, source.protection, u.XSS.OutputContext)
+					protection := phpStoredPathProtection(read, source.protection, pathContext)
 					if protection == "raw" && rawKey == "" {
 						rawKey = d.StorageKey
 					}

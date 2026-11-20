@@ -306,7 +306,7 @@ func (f *phpFlow) binaryValues(n *sitter.Node, op string, a, b phpValue) phpValu
 		if a.template != "" && b.template != "" {
 			v.template = a.template + b.template
 		}
-		return phpTransfer(v, m.evidence("string_construction", n))
+		return phpConcatTransfer(v, m.evidence("string_construction", n))
 	case "==", "===", "!=", "!==", "<", ">", "<=", ">=", "<=>":
 		return phpTransfer(phpProtect(phpCombine(a, b), "non_content"), m.evidence("comparison", n))
 	case "&&", "||", "and", "or", "xor":
@@ -478,7 +478,7 @@ func (f *phpFlow) render(n *sitter.Node, v phpValue) {
 	}
 	m := f.module
 	markup := m.inlineHTMLBefore(n.StartByte())
-	f.recordXSS(m.evidence("html_output", n), v, parse.HTMLOutputContext(markup))
+	f.recordXSS(m.evidence("html_output", n), v, parse.HTMLOutputContext(markup), f.pathContexts(n, v, markup))
 	if markup != "" {
 		// The judge sees the markup around an echo embedded in a page, so the
 		// output context (`value="<?php echo $x ?>"`) is source-backed.

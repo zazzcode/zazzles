@@ -43,12 +43,13 @@ func TestOutboundComponentEvidenceParity(t *testing.T) {
 			// path/SQL/command/XSS protocols are bumped, so component digests move once.
 			// Phase 3B: fixtures moved to internal/langpy and internal/langjs; only the embedded root changed.
 			// Judge request size reduction: xss-components-v4 and short XSS choice
-			// labels move component digests once (D-5, D-6).
+			// labels move component digests once (D-5, D-6); the cookie-source
+			// XSS guidance moves them within the same unreleased bump.
 			want := map[string]string{
 				"javascript/outbound":  "08caf8cce772ba1666f7b5c136ec2b12d2d5b00c5e5ed484f768797cc3bde603",
 				"typescript/outbound":  "207a27a6541c26b9d83f66060fccc99327905f8eacbfb1e079311e814405b676",
 				"python/outbound":      "0d8c122e6cd35ff8127b23e8456757ed4449e74dac94309b828008714b6bc88e",
-				"javascript/xss-fetch": "6ed2bc1419b314bfa5fcfb4ba2d3c954e6146c3507ade08b3d3f06608bd451f1",
+				"javascript/xss-fetch": "cf006b4088a4bd013d7e258cc6bed9cdf42e7a4e14df10f2bbb347e66a8da7d0",
 			}[fixture]
 			if got := fmt.Sprintf("%x", sha256.Sum256(b)); got != want {
 				t.Fatalf("source/report drift: got %s want %s", got, want)

@@ -211,6 +211,25 @@ func phpTransfer(v phpValue, e analysis.Evidence) phpValue {
 	return v
 }
 
+// phpConcatTransfer records a concatenation as a string_construction transfer,
+// except on a path whose last transfer is the inner concatenation of the same
+// left-nested template (same start): that innermost one already shows where
+// the value lands, and each enclosing level would repeat the template from
+// its start (judge evidence quality T).
+func phpConcatTransfer(v phpValue, e analysis.Evidence) phpValue {
+	v.deps = append([]phpDep{}, v.deps...)
+	for i := range v.deps {
+		t := v.deps[i].dep.Transfers
+		if n := len(t); n > 0 && t[n-1].Kind == "string_construction" && t[n-1].Span.File == e.Span.File && t[n-1].Span.StartByte == e.Span.StartByte {
+			continue
+		}
+		one := phpTransfer(phpValue{deps: []phpDep{v.deps[i]}}, e)
+		v.deps[i] = one.deps[0]
+		v.gaps = append(v.gaps, one.gaps...)
+	}
+	return v
+}
+
 func phpProtect(v phpValue, p string) phpValue {
 	v.deps = append([]phpDep{}, v.deps...)
 	for i := range v.deps {

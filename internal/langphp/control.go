@@ -255,9 +255,10 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	walkYes, walkNo := !known || truth, !known || !truth
 	yesProt, noProt := f.branchProtection(test)
 	yes := f.clone()
-	yes.context = append(yes.context, f.module.evidence("branch_precondition", test))
-	yes.applyProtections(yesProt)
-	yes.narrowSuperglobals(test, yesProt)
+	holds := f.module.evidence("branch_precondition", test)
+	yes.context = append(yes.context, holds)
+	yes.applyProtections(yesProt, holds)
+	yes.narrowSuperglobals(test, yesProt, holds)
 	yt := false
 	if walkYes {
 		yt = yes.body(body)
@@ -271,14 +272,15 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 		f.returns = phpCombine(f.returns, phpTransfer(yes.returns, f.module.evidence("branch_precondition", test)))
 	}
 	no := f.clone()
+	fails := f.module.evidence("branch_false_precondition", test)
 	if yt {
 		// A rejecting branch that terminates makes the false-branch
 		// precondition (for example a membership allowlist) enforcing for
 		// everything after the conditional.
-		no.applyProtections(noProt)
+		no.applyProtections(noProt, fails)
 	}
-	no.narrowSuperglobals(test, noProt)
-	no.context = append(no.context, f.module.evidence("branch_false_precondition", test))
+	no.narrowSuperglobals(test, noProt, fails)
+	no.context = append(no.context, fails)
 	nt := false
 	if walkNo && len(alternatives) > 0 {
 		switch alt := alternatives[0]; alt.Kind() {

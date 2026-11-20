@@ -31,7 +31,7 @@ a command candidate. Callback output parameters never become command dependencie
 ## Facets and outcomes
 
 Each process use is one record. A model decision answers five questions (shell syntax, executable
-control, argument control, guard bypass, protection coverage; protocol `command-components-v4`);
+control, argument control, guard bypass, protection coverage; protocol `command-components-v5`);
 evidence validation checks those answers against the source facts before classification:
 
 - A shell answer of vulnerable needs a request-derived value in an effective shell-command operand.
@@ -55,8 +55,8 @@ evidence validation checks those answers against the source facts before classif
   `ctype_digit`, integer casts, anchored and unanchored regular expressions, allow-list membership)
   the request carries a short source-backed contract of the values the guard accepts, with its edge
   cases (for example PHP 8 `is_numeric` accepts trailing whitespace; PCRE `$` matches before a final
-  newline). The guard-bypass question asks whether a value passes every guard and still alters the
-  command: `bypass_identified`, `no_bypass`, `guard_semantics_unknown` or `not_applicable`. Policy
+  newline). The guard-bypass question asks whether a value passes every guard and still adds command
+  text of the request's choosing: `bypass_identified`, `no_bypass`, `guard_semantics_unknown` or `not_applicable`. Policy
   checks only self-consistency: a vulnerable or unsafe answer on a facet whose every path is guarded
   stands only with `bypass_identified`; with `no_bypass` it is `command_answers_inconsistent`; with
   `guard_semantics_unknown`, or a guard that has no contract, it stays Review
@@ -82,8 +82,31 @@ evidence validation checks those answers against the source facts before classif
   that chain, so the question is not sent: the scanner binds the bypass answer to it and records
   `citation: implied_single_path` with `verifier: scanner`. A model citation that failed verification
   is never overridden. A follow-up request for a member that a supplied guard contract already
-  describes (for example `item.match` under the regular-expression contract) has no body to fetch
-  and is recorded as `answered_by_contract`.
+  describes (for example `item.match` under the regular-expression contract) has no body to fetch and
+  is recorded as `answered_by_contract`.
+- A bypass is command text of the request's choosing: a command, a substitution, a redirection or an
+  option the executable acts on. A value that can only break a line or a word is not one, and the
+  question says so. Binding a bypass to a path establishes where it is, not that the path's value
+  can carry it. For the shell facet the scanner checks that too wherever it can list every character
+  the guarded value can hold:
+  - a PHP value that passed `is_numeric` (digits, a sign, a decimal point, an exponent marker and
+    leading or trailing whitespace, including a line break), passed `ctype_digit` (digits only), or
+    was converted with `intval`, `floatval` or a cast (the text of a number, no whitespace);
+  - a capture classified `explicit_alphabet` with a complete listing.
+
+  Such a PHP path cites the check itself as its control, and its reason states those characters and
+  what they can do. A value carries command text when its characters include a redirection, or a
+  separator (`;`, `&`, `|`, line break) or command substitution together with letters to name a
+  command. When they do not, the bypass is not supported: the record stays Review
+  (`command_bypass_unsupported`) and the reason names the guard and what its characters can still
+  do. This applies to a path the scanner bound and to a path the model cited, so citing a limited
+  sibling never confirms. It never creates protection, and guards the scanner cannot list (a hash,
+  an allow-list, an opaque helper) stay the model's call.
+- What a limited value can still do is stated, not dropped. A line break after `is_numeric` ends the
+  command and starts a second one built from the same characters: `1⏎. 2.3.4` passes four
+  `is_numeric` octets and runs the shell's `.` builtin on a file named `2.3.4` if one exists (checked
+  with PHP 8.6 and `sh`). That needs a file the request did not write, so it is not a finding. A
+  record that is Protected for the claim carries it as a `Hardening:` note in its reason.
 - Unknown utility options are Review: no CWE-88 finding is made without established option or
   interpreter semantics (for example a literal `sh -c`).
 - An unsafe witness needs only its own source-to-operand path; unresolved sibling paths remain

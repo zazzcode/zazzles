@@ -13,6 +13,10 @@ type phpDep struct {
 	// regexGuard is the preg_match call whose capture this path reads, when
 	// protection is phpRegexCapture.
 	regexGuard analysis.Evidence
+	// numeric is the analysis.CommandValue class of a path whose protection
+	// is "numeric", and numericAt the check or conversion that made it so.
+	numeric   string
+	numericAt analysis.Evidence
 }
 
 // phpRegexCapture labels a path that is a capture group of a literal
@@ -191,13 +195,19 @@ func phpJoin(a, b phpValue) phpValue {
 
 func phpMergeDeps(a, b []phpDep) []phpDep {
 	out := []phpDep{}
-	seen := map[string]bool{}
+	seen := map[string]int{}
 	for _, d := range append(append([]phpDep{}, a...), b...) {
 		key := fmt.Sprintf("%v|%s|%s|%s|%s", d.dep.Source.Span, d.protection, d.container, d.key, d.dep.StorageKey)
-		if !seen[key] {
-			seen[key] = true
-			out = append(out, d)
+		if i, ok := seen[key]; ok {
+			// One path that joins differently checked numeric values holds
+			// no single class of text.
+			if out[i].numeric != d.numeric {
+				out[i].numeric = ""
+			}
+			continue
 		}
+		seen[key] = len(out)
+		out = append(out, d)
 	}
 	return out
 }
@@ -237,8 +247,34 @@ func phpProtect(v phpValue, p string) phpValue {
 	v.deps = append([]phpDep{}, v.deps...)
 	for i := range v.deps {
 		v.deps[i].protection = p
+		v.deps[i].numeric, v.deps[i].numericAt = "", analysis.Evidence{}
 	}
 	return v
+}
+
+// phpNumeric marks a value numeric and records which check or conversion at
+// made it so, with the class of text that leaves.
+func phpNumeric(v phpValue, class string, at analysis.Evidence) phpValue {
+	v = phpProtect(v, "numeric")
+	for i := range v.deps {
+		v.deps[i].numeric, v.deps[i].numericAt = class, at
+	}
+	return v
+}
+
+// phpDigitsGuard is the branch-protection label of ctype_digit: a numeric
+// protection whose value holds digits only.
+const phpDigitsGuard = "numeric_digits"
+
+// phpGuarded applies the protection a branch condition at implies.
+func phpGuarded(v phpValue, protection string, at analysis.Evidence) phpValue {
+	switch protection {
+	case "numeric":
+		return phpNumeric(v, analysis.CommandValueNumericString, at)
+	case phpDigitsGuard:
+		return phpNumeric(v, analysis.CommandValueDigits, at)
+	}
+	return phpProtect(v, protection)
 }
 
 func phpSlot(v phpValue, slot string) phpValue {

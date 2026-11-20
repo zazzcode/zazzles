@@ -46,9 +46,12 @@ func requestQuestionNames(t *testing.T, use analysis.CandidateUse) map[string]bo
 
 // TestCommandImpliedSinglePath (close-findings-gaps AC1, D-1, D-2): a bypass
 // on the only guarded path binds to that path without a model citation; two
-// guarded paths keep the D-8 citation requirement.
+// guarded paths keep the citation requirement. The single path's guard is
+// one whose accepted characters the scanner cannot list, so its adequacy is
+// the assessment's call (TestCommandBypassNeedsSupportedConsequence covers
+// the listed ones).
 func TestCommandImpliedSinglePath(t *testing.T) {
-	one := guardedCommandUse(t, map[string]string{"index.php": numericGuardPHP})
+	one := guardedCommandUse(t, map[string]string{"package.json": `{"dependencies":{"express":"4.18.2"}}`, "server.js": lookaheadRegexJS})
 	two := guardedCommandUse(t, map[string]string{"index.php": twoGuardedPHP})
 	if guarded := len(two.Command.Paths); guarded != 2 {
 		t.Fatalf("fixture wants two guarded paths, got %+v", two.Command.Paths)

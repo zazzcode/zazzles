@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
 // Request superglobal element state (judge evidence quality V). Page code may
@@ -49,7 +50,7 @@ func (f *phpFlow) superglobalRead(n *sitter.Node, state phpValue, container, ori
 // the request elements it tests. The branch holds only where the condition
 // has that truth, so the narrowing is sound for that branch whether or not
 // the other one terminates.
-func (f *phpFlow) narrowSuperglobals(test *sitter.Node, protections map[string]string) {
+func (f *phpFlow) narrowSuperglobals(test *sitter.Node, protections map[string]string, guard analysis.Evidence) {
 	for name, protection := range protections {
 		base, index, element := strings.Cut(name, phpElementSeparator)
 		if !element {
@@ -77,7 +78,7 @@ func (f *phpFlow) narrowSuperglobals(test *sitter.Node, protections map[string]s
 			v.superglobalFresh = false
 			v = phpJoin(v, f.source(at, container, origin, index))
 		}
-		f.setSuperglobal(sg, phpProtect(v, protection))
+		f.setSuperglobal(sg, phpGuarded(v, protection, guard))
 	}
 }
 

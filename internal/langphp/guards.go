@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
 // branchProtection returns variable protections that hold on the true branch
@@ -63,10 +64,14 @@ func (f *phpFlow) impliedProtections(c *sitter.Node, truth bool, out map[string]
 			if len(args) != 1 {
 				return
 			}
+			protection := "numeric"
+			if name == "ctype_digit" {
+				protection = phpDigitsGuard
+			}
 			if v := phpVarName(m, args[0]); v != "" {
-				out[v] = "numeric"
+				out[v] = protection
 			} else if key := phpElementKey(m, args[0]); key != "" {
-				out[key] = "numeric"
+				out[key] = protection
 			}
 		case "in_array":
 			if len(args) != 2 {
@@ -92,14 +97,15 @@ func (f *phpFlow) impliedProtections(c *sitter.Node, truth bool, out map[string]
 	}
 }
 
-func (f *phpFlow) applyProtections(p map[string]string) *phpFlow {
+// applyProtections applies the protections the branch condition at implies.
+func (f *phpFlow) applyProtections(p map[string]string, at analysis.Evidence) *phpFlow {
 	for name, protection := range p {
 		if base, index, element := strings.Cut(name, phpElementSeparator); element {
-			f.protectElement(base, index, protection)
+			f.protectElement(base, index, protection, at)
 			continue
 		}
 		if v, ok := f.env[name]; ok {
-			f.env[name] = phpProtect(v, protection)
+			f.env[name] = phpGuarded(v, protection, at)
 			// Branch merges join only dirty variables; a protection-only
 			// change must survive the join like an assignment would.
 			f.markDirty(name)
@@ -177,7 +183,7 @@ func phpElementKey(m *phpModule, n *sitter.Node) string {
 // `is_numeric($octet[0])`): later reads of that element see the protection;
 // sibling elements and the whole array keep their own protection. The fields
 // map is copied because branch clones share it with their parent.
-func (f *phpFlow) protectElement(name, index, protection string) {
+func (f *phpFlow) protectElement(name, index, protection string, at analysis.Evidence) {
 	v, ok := f.env[name]
 	if !ok {
 		return
@@ -191,7 +197,7 @@ func (f *phpFlow) protectElement(name, index, protection string) {
 	for k, field := range v.fields {
 		fields[k] = field
 	}
-	fields[index] = phpProtect(element, protection)
+	fields[index] = phpGuarded(element, protection, at)
 	v.fields = fields
 	f.env[name] = v
 	f.markDirty(name)

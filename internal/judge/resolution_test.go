@@ -28,11 +28,26 @@ func bypassCitation(u analysis.CandidateUse) []analysis.Resolution {
 	return nil
 }
 
+// twoCapturesPHP guards two request values with captures whose listed
+// alphabets hold a command separator and letters: two guarded paths, each
+// able to carry a bypass.
+const twoCapturesPHP = `<?php
+$host = $_REQUEST['host'];
+$tag = $_REQUEST['tag'];
+if( preg_match( '/^([a-z0-9.; -]+)$/', $host, $m ) && preg_match( '/^([a-z;]+)$/', $tag, $n ) ) {
+	$cmd = shell_exec( 'ping -c 4 ' . $m[1] . ' ' . $n[1] );
+	echo $cmd;
+}
+`
+
 // TestCommandBypassCitation (AC1, D-8): with two guarded paths a
 // bypass_identified answer needs a verified citation of a guarded path of the
 // unsafe facet. One guarded path binds itself (TestCommandImpliedSinglePath).
 func TestCommandBypassCitation(t *testing.T) {
-	weak := guardedCommandUse(t, map[string]string{"index.php": twoGuardedPHP})
+	weak := guardedCommandUse(t, map[string]string{"index.php": twoCapturesPHP})
+	if len(weak.Command.Paths) != 2 {
+		t.Fatalf("fixture wants two guarded paths, got %+v", weak.Command.Paths)
+	}
 	vulnerable := commandAnswers{"shell_syntax_protection": "vulnerable", "executable_control": "not_applicable", "argument_control": "not_applicable", "guard_bypass": "bypass_identified", "protection_coverage": "incomplete"}
 	verified := bypassCitation(weak)
 	if verified == nil {

@@ -327,6 +327,42 @@ Reordering outer JSON keys cannot move questions into that prefix. Keep the alre
 static-first input envelope and its ordering regression test; do not duplicate questions
 or claim cache savings from JSON key order. Record actual cached-token usage from live responses.
 
+### W13: Request-local identity — implemented
+
+Extends W8 to identifiers ([judge request size reduction](../specifications/judge-request-size-reduction.md)
+D-2). A `<kind>:v1:<64 hex>` value, the entry `instance_id` and `candidate_id` tell the model only
+whether two of them are equal. An identifier that occurs twice or more becomes one alias (`i0`, `i1`,
+… in first-occurrence order over sorted keys); one that occurs once leaves with its key; a list of
+identifiers keeps the aliases of members that occur elsewhere plus a count (`xss.related_entries` →
+`related_entry_count`). Source excerpt and evidence text is never rewritten. The equivalence
+signature reads the same shape: single identifiers leave, invocation identity is normalized, and
+the identifiers left are renumbered, so only their equality pattern is signed (`wire_identity.go`).
+
+### W14: State repeated structure once — implemented
+
+D-3. Evidence rows put `text` last and omit trailing empty columns; a short row leaves its missing
+columns empty. Dependencies that end with the same run of four or more transfer references state
+it once in `shared_transfer_tails` and end with `tN`. Both are applied after resolution questions
+and citation chains are planned from the unfactored rows; `requestUse` expands them before a
+citation is checked, so the check reads the chains the request states. Both are reversible
+(`expandStructure`), proved over every judge fixture request.
+
+### W15: Size notices as counts — implemented
+
+D-4. The `evidence_omitted_for_size` notice states omitted items by kind, how many only repeat
+supplied text, the source bytes removed and one `file: first-last (n)` range per file; the
+`path_group_omitted` notice states the group, how many of the record's paths it carries and the
+withheld count per source file. Lists described code the model cannot see and grew as more was
+shed. Closing sentences are unchanged; `assessment.evidence_omissions`, the plan and traces keep
+the full lists.
+
+### W16: XSS choice labels — implemented
+
+D-5. Each XSS choice description was "Apply the definition of *X* in this question to the supplied
+source evidence."; it is now the value written as words (`html text`). The definitions are in the
+question instructions; a non-empty label is kept because an empty description is unverified with
+the provider. W13–W16 share one bump: `evidence_version` 8 and `xss-components-v4`.
+
 ### S5: Claim-relevant coverage gaps — not adopted (accuracy-affecting)
 
 Coverage gaps are by definition not blockers, yet they reach the model in full. Send only those that
@@ -390,6 +426,8 @@ Append one row per implemented or measured strategy. Do not rewrite earlier rows
 | 2026-11-15 | S4 | Implemented and independently reviewed | Precise JS `if` modeling removed 161 `unsupported_control_flow` and 111 `branch_exit` gaps from Juice Shop requests; 4,405 candidates unchanged; no Python request changed. Juice Shop bytes −1.1%; `order.ts:164` 61,735 → about 59,100. Paid calibration recorded in the verification record. |
 | 2026-11-15 | W6 (query/middleware) | Implemented as guidance-owned fact codes | Byte-neutral on affected JS SQL/NoSQL/command/SSRF requests; single interpretation owner; unknown codes fail. |
 | 2026-11-15 | S1, S2, S5 after S4 | Measured; not adopted | 1 of 3,934 assessed sample requests over 55,000 bytes, 0 over the limit. Decisions: [relevance tier](../specifications/evidence-relevance-tier.md), [data-path slicing](../specifications/data-path-slicing.md). |
+| 2026-11-20 | W13–W16 | Implemented, one bump (`evidence_version` 8, `xss-components-v4`) | DVWA 9,388,206 → 7,529,573 bytes (80.2%), Juice Shop 94.5%; group requests 24 → 2; provider input tokens −26.9% / −7.1%. Close-call answers move under any lossless change (attribution runs). [Results](../evaluation/judge-request-size-reduction-results.md). |
+| 2026-11-20 | Evidence quality (P, O, T, K, V) | Implemented | DVWA XSS verdict median 0.62 → 0.88; PDO-bound SQL 7/7 correct; offline accuracy unchanged. [Contract](../specifications/judge-evidence-quality.md). |
 
 Measured distributions and validation limits are in the [v7 verification record](../evaluation/wire-bundle-v7-results.md).
 

@@ -257,3 +257,13 @@ Append to the branch run log under "Evidence quality". Record:
 
 The owner asked for unattended iteration. P, O, T and K were implemented test-first before the
 first live round.
+
+### 2026-11-20 — Live rounds 1 and 2
+
+Round 1 met every AC5 target except two. Cookie-only confidence was a median of 0.69 with 48% at or
+above 0.70. Protected control PC-CMD-02 presented as a finding. Investigating the first found the
+unmodeled allow-list reset of the `security` cookie, which became fix V (§1, §4, D-6, AC4b).
+Round 2 met the cookie target: a median of 0.72, with 61% at or above 0.70. PC-CMD-02 remains a
+finding. Its guard contract already states the `is_numeric` trailing-newline edge case, so it is a
+close-call judgment reported to the owner, not tuned (§6 halt recorded in the results document).
+

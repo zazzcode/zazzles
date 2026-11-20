@@ -284,11 +284,56 @@ close-call answers.
 - **Noise.** The SQL request is 21 mostly one-line fragments rather than the contiguous handler,
   plus about 2.8 KB of unrelated `dvwaPage.inc.php` helper excerpts.
 
+## Evidence quality follow-on
+
+Contract: [judge evidence quality](../specifications/judge-evidence-quality.md). Code commits
+`603365c` (P, O, T, K) and `e3c66e6` (V). The owner asked for unattended iteration, so the live
+checks used the AGENTS.md terms with explicit caps:
+- Round 1, DVWA `eq-dvwa` `run-763513282`: 187 attempts.
+- Round 1, Juice Shop `eq-juice-shop` `run-2202945286`: 28 attempts.
+- Round 2, DVWA only, `eq2-dvwa` `run-4283379444`: 187 attempts. Round 2 changed only PHP.
+
+Offline:
+- `check.py` and `accuracy.py` output is byte-identical to the size-reduction candidate across the
+  eleven samples.
+- DVWA total request bytes are 7,470,065, with no path-group requests.
+- Every DVWA `execute()` of a prepared statement carries its prepare assignment.
+- Every DVWA XSS path states its context.
+- All 82 `$_COOKIE['security']` paths are allow-list constrained, and all 89 `theme` paths stay raw.
+
+Verdict confidence on DVWA (`live/confidence.py`; median top probability, then the share ≥ 0.70):
+
+| Set | B1 | C | Round 1 | Round 2 |
+|---|---|---|---|---|
+| XSS, all (89) | 0.62, 37% | 0.79, 65% | 0.81, 72% | **0.88, 79%**; unknown 19 → 11 → 5 → 2 |
+| XSS, cookie-only (46) | 0.56, 9% | 0.64, 39% | 0.69, 48% | **0.72, 61%** |
+| SQL, PDO-bound `impossible.php`, correct answers (7) | 6/7 | 5/7 | **7/7** | **7/7** |
+| SQL, all (53) | 0.86, 83% | 0.87, 81% | 0.85, 81% | 0.85, 81% |
+| Command (17) / path (20) | unchanged within ±0.04 | | | |
+
+Juice Shop XSS rose to a median of 0.91, with every record at or above 0.70.
+
+Keyed accuracy:
+- DVWA: 11 of 11 positives Confirmed in every round.
+- Juice Shop: 15 of 15 found, with JS-LOG-01 a practice finding as in C.
+- Protected control PC-CMD-02 (`exec/source/impossible.php`) presents as a finding in rounds 1 and
+  2, as it did in arm A. It is a close call in every arm, with a top probability between 0.37 and
+  0.56. The request already carries the `is_numeric` guard contract, which states that PHP 8
+  accepts trailing whitespace including a newline. An octet such as `2\n` passes the check and
+  puts a newline into the `ping` command line. The model weighs that edge case, and its answer
+  follows request wording. This is a judgment on full evidence, not a missing fact, so it was not
+  tuned.
+
+An early build of V hung on DVWA. Every helper call wrote back unchanged state, and the gap list
+doubled at each merge. Helpers now return only the elements they changed, and joins deduplicate
+gaps. The DVWA scan takes 5 s.
+
 ## Open for the owner
 
-The size reduction is real, and the model receives the same evidence it did before. The AC8
-failure is close-call answers being re-drawn by any change to the request. The attribution runs
-show no workstream with a systematic effect. Two decisions remain:
-- AC8: accept it, or revise it so the comparison of close-call answers is judged on keyed rows
-  and confidence rather than a zero noise floor.
-- Whether to take up the evidence-quality defects above. They are outside this contract.
+- **AC8 of the size reduction.** Identical requests get identical statuses, so close-call answers
+  move under any request change. The attribution runs show no workstream with a direction. Accept
+  AC8, or revise it to judge keyed rows and confidence.
+- **PC-CMD-02.** Either accept the `is_numeric` trailing-newline judgment, or decide the product
+  rule (keyed control versus finding).
+- **Cookie rule (evidence quality OQ-1).** Cookie-only XSS is now an ordinary request-source
+  finding.

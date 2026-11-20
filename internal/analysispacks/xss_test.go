@@ -118,3 +118,36 @@ func TestXSSFetchResponseContract(t *testing.T) {
 		t.Fatalf("fetch response selection: %+v", u.Components)
 	}
 }
+
+// TestXSSChoiceLabels (judge-request-size-reduction D-5): every XSS choice
+// carries a short non-empty label instead of the boilerplate sentence; the
+// values are unchanged and the protocol is xss-components-v4.
+func TestXSSChoiceLabels(t *testing.T) {
+	values := map[string][]string{
+		"output_context":          {"html_text", "html_attribute", "url", "script", "style", "unquoted_attribute", "active_attribute", "html_tag", "template_code", "unknown"},
+		"encoding_adequacy":       {"adequate", "inadequate", "not_present", "unknown"},
+		"sanitizer_effectiveness": {"effective", "ineffective", "absent", "unknown"},
+		"xss_all_paths_protected": {"yes", "no", "unknown"},
+		"xss_exposure":            {"vulnerable", "protected", "unknown", "not_applicable"},
+	}
+	for _, q := range XSSQuestions() {
+		choices := XSSChoices(q.Name)
+		if len(choices) != len(values[q.Name]) {
+			t.Fatalf("%s: %d choices", q.Name, len(choices))
+		}
+		for i, c := range choices {
+			if c["value"] != values[q.Name][i] {
+				t.Errorf("%s: choice %d value %q, want %q", q.Name, i, c["value"], values[q.Name][i])
+			}
+			if d := c["description"]; d == "" || strings.Contains(d, "Apply the definition of") {
+				t.Errorf("%s/%s: description %q", q.Name, c["value"], d)
+			}
+			if c["description"] != strings.ReplaceAll(c["value"], "_", " ") {
+				t.Errorf("%s/%s: label %q", q.Name, c["value"], c["description"])
+			}
+		}
+	}
+	if XSSProtocol != "xss-components-v4" {
+		t.Errorf("XSSProtocol = %s", XSSProtocol)
+	}
+}

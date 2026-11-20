@@ -28,8 +28,8 @@ func TestOutboundPredecessorRequests(t *testing.T) {
 				"nosql/jev":         "07d9901363d870c7db6db3fa43aa798016a2422552a101659ce7523cc77b9d7c",
 				"validation/openai": "179c3c875bd0ce4d6a344a063254cce6b3222be2226e83c441be676f83ce3684",
 				"validation/jev":    "130289061e1ca2efd3163eb79e30ac57890750514e342d789e986c1700d66736",
-				"xss/openai":        "03cf9c3473fe14ffd06de73e018430817b04c0e6ab1cefb73367737dfae4245c",
-				"xss/jev":           "4a4ebf2e0bf8380defbca3e86a6c75b71c3911794ea57d6c2768778329fb1008",
+				"xss/openai":        "d237cd654e4a634f3cc86e4837f1eb30059686d95ee0526f14fa8a384ad4e34c",
+				"xss/jev":           "122317d71a6dea52a381987de02f758a61ab64a7bb001db06c9d43d5c92c2674",
 			}[family+"/"+provider]
 			if got := fmt.Sprintf("%x", sha256.Sum256(p)); got != want {
 				t.Fatalf("%s/%s request bytes changed: %s", family, provider, got)

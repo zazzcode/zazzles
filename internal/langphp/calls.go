@@ -660,6 +660,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 	h.depth++
 	h.env = map[string]phpValue{}
 	h.globals = superglobalState(f.globals)
+	h.helperExits = &phpSuperglobalExits{includeDepth: h.include, changed: map[string]bool{}}
 	h.class = callable.class
 	if callable.object != nil {
 		h.env["this"] = *callable.object
@@ -723,6 +724,7 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 		}
 	}
 	terminated := h.block(phpField(fn, "body"))
+	h.joinHelperExits(terminated)
 	if callable.object != nil {
 		if this, ok := h.env["this"]; ok {
 			*callable.object = this

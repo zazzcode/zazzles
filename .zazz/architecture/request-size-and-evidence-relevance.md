@@ -335,8 +335,8 @@ whether two of them are equal. An identifier that occurs twice or more becomes o
 … in first-occurrence order over sorted keys); one that occurs once leaves with its key; a list of
 identifiers keeps the aliases of members that occur elsewhere plus a count (`xss.related_entries` →
 `related_entry_count`). Source excerpt and evidence text is never rewritten. The equivalence
-signature reads the same shape: single identifiers leave, invocation identity is normalized, and
-the identifiers left are renumbered, so only their equality pattern is signed (`wire_identity.go`).
+signature normalizes eligible route coordinates and signs the equality pattern across invocation,
+control, transport and XSS path references using the same alias projection.
 
 ### W14: State repeated structure once — implemented
 

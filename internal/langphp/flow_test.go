@@ -824,6 +824,9 @@ func TestPHPXSSTypeNamesTheRawWitness(t *testing.T) {
 		if u.XSS.Type != "reflected" || u.XSS.StorageKey != "php-sql:notes.body" || !u.XSS.OriginResolved {
 			t.Fatalf("direct raw witness with an encoded stored sibling is reflected: %#v", u.XSS)
 		}
+		if u.XSS.OutputContext != "html_attribute" {
+			t.Fatalf("after resolving the encoded writer, the raw cookie determines the record context: %#v", u.XSS)
+		}
 		return
 	}
 	t.Fatalf("missing read.php render: %#v", r.Uses)

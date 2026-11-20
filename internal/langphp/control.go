@@ -15,6 +15,9 @@ func (f *phpFlow) markDirty(name string) {
 		f.dirty = map[string]bool{}
 	}
 	f.dirty[name] = true
+	if f.helperExits != nil && strings.HasPrefix(name, phpGlobalsKeyPrefix+phpSuperglobalPrefix) {
+		f.helperExits.changed[strings.TrimPrefix(name, phpGlobalsKeyPrefix)] = true
+	}
 }
 
 func (f *phpFlow) clone() *phpFlow {
@@ -196,6 +199,9 @@ func (f *phpFlow) stmt(n *sitter.Node) bool {
 	case "return_statement":
 		if n.NamedChildCount() > 0 {
 			f.returns = phpCombine(f.returns, f.eval(n.NamedChild(0)))
+		}
+		if f.helperExits != nil && f.helperExits.includeDepth == f.include {
+			f.helperExits.states = append(f.helperExits.states, superglobalState(f.globals))
 		}
 		return true
 	case "exit_statement":

@@ -29,13 +29,15 @@ type phpFlow struct {
 	env        map[string]phpValue
 	// globals tracks $GLOBALS['name'] assignments (the DVWA mysqli idiom).
 	globals map[string]phpValue
-	context []analysis.Evidence
-	gaps    []analysis.Gap
-	depth   int
-	work    *int
-	stack   map[string]bool
-	include int
-	returns phpValue
+	// helperExits is shared by branch clones of the current helper invocation.
+	helperExits *phpSuperglobalExits
+	context     []analysis.Evidence
+	gaps        []analysis.Gap
+	depth       int
+	work        *int
+	stack       map[string]bool
+	include     int
+	returns     phpValue
 	// entryModule/entryModuleRoot anchor the invoked_callable evidence of the
 	// entry file even while helper expansion switches f.module.
 	entryModule     *phpModule
@@ -346,8 +348,10 @@ func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
 	case "member_access_expression":
 		f.propertyWrite(left, v)
 	case "variable_name":
-		f.markDirty(phpVarName(m, left))
-		f.env[phpVarName(m, left)] = v
+		name := phpVarName(m, left)
+		f.markDirty(name)
+		f.env[name] = v
+		f.replaceSuperglobalElements(name, v, left)
 	case "subscript_expression":
 		obj, index := phpSubscriptParts(left)
 		key, _ := phpStringLiteral(m, index)
@@ -369,15 +373,8 @@ func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
 			}
 			return v
 		}
-		if obj != nil && obj.Kind() == "variable_name" {
-			if sg, ok := phpSuperglobalKey(phpVarName(m, obj), key); ok {
-				if f.globals == nil {
-					f.globals = map[string]phpValue{}
-				}
-				f.markDirty(phpGlobalsKeyPrefix + sg)
-				f.globals[sg] = v
-				return v
-			}
+		if obj != nil && f.writeSuperglobalElement(phpVarName(m, obj), index, v) {
+			return v
 		}
 		if obj != nil {
 			name := phpVarName(m, obj)

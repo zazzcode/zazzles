@@ -18,9 +18,18 @@ func TestEquivalenceSignatureSoundness(t *testing.T) {
 	c, _ := New("openai", "fixture-model", "offline")
 	u := selectedSQLUse(t)
 	v := u
-	v.ID = "another-candidate"
-	v.EntryID = "another-entry"
-	v.InvocationContextID = "another-context"
+	v.ID = identityID("candidate", "1")
+	v.EntryID = identityID("entry", "2")
+	v.InvocationContextID = identityID("invocation", "3")
+	// Renaming a context must preserve the bindings of its applicable controls.
+	ctx := *u.InvocationFacts
+	ctx.Controls = append([]analysis.ApplicableControl{}, ctx.Controls...)
+	for i := range ctx.Controls {
+		if ctx.Controls[i].InvocationContextID == u.InvocationContextID {
+			ctx.Controls[i].InvocationContextID = v.InvocationContextID
+		}
+	}
+	v.InvocationFacts = &ctx
 	a, err := c.EquivalenceSignature(u)
 	if err != nil {
 		t.Fatal(err)
@@ -28,6 +37,11 @@ func TestEquivalenceSignatureSoundness(t *testing.T) {
 	b, err := c.EquivalenceSignature(v)
 	if err != nil || a != b {
 		t.Fatalf("identity split: %v", err)
+	}
+	unbound := v
+	unbound.InvocationFacts = u.InvocationFacts
+	if sig, err := c.EquivalenceSignature(unbound); err != nil || sig == a {
+		t.Fatalf("control bound to another context merged: %v", err)
 	}
 	facts := *u.InputFacts
 	facts.Controls = append([]analysis.Evidence{}, facts.Controls...)

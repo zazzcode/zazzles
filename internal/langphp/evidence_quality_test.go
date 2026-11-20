@@ -89,6 +89,21 @@ echo "<html><body class=\"home " . theme() . "\">" . $html . "<p>{$a}</p><a href
 	}
 }
 
+func TestPHPStoredEncodingUsesRenderContext(t *testing.T) {
+	r := phpAnalyze(t, phpFixture(t, map[string]string{
+		"write.php": `<?php $_SESSION['page'] = htmlspecialchars($_GET['page']);`,
+		"read.php":  `<?php echo "<a href='" . $_SESSION['page'] . "'>page</a>";`,
+	}), "")
+	uses := phpUsesOfKind(r, "xss_candidate")
+	if len(uses) != 1 || len(uses[0].XSS.Paths) != 1 {
+		t.Fatalf("expected a single stored render path, got %+v", uses)
+	}
+	path := uses[0].XSS.Paths[0]
+	if path.OutputContext != "url" || path.Protection != "unknown" || uses[0].XSS.Protection != "unknown" {
+		t.Fatalf("HTML encoding before storage cannot establish URL protection: %+v", uses[0].XSS)
+	}
+}
+
 // TestPHPNestedConcatenationTransfers (judge evidence quality T): a value in a
 // left-nested concatenation records one string_construction transfer, the
 // innermost one that shows where it lands, not one per enclosing level that

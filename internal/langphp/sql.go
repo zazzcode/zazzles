@@ -426,6 +426,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 		}
 		u.Dependencies = deps
 		u.XSS.Paths = paths
+		u.XSS.OutputContext = recordContext(paths, u.XSS.OutputContext)
 		u.XSS.StorageKey = firstKey
 		if rawKey != "" {
 			u.XSS.StorageKey = rawKey
@@ -444,6 +445,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			raw = raw || p.Protection == "raw"
 			unknown = unknown || p.Protection == "unknown"
 		}
+		initialProtection := u.XSS.Protection
 		switch {
 		case raw:
 			u.XSS.Protection = "raw"
@@ -451,6 +453,14 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			u.XSS.Protection = "unknown"
 		case len(paths) > 0 && resolved:
 			u.XSS.Protection = "encoded"
+		}
+		if u.XSS.Protection != initialProtection {
+			switch u.XSS.Protection {
+			case "unknown":
+				u.XSS.ProtectionReason = "Protection for a linked source path in its render context remains unresolved."
+			case "encoded":
+				u.XSS.ProtectionReason = "Every linked source path carries protection for its render context."
+			}
 		}
 		if !resolved {
 			u.XSS.ProtectionReason += " Stored field origin is unresolved."
@@ -465,11 +475,11 @@ func phpStoredPathProtection(read, written, context string) string {
 	switch {
 	case read != "raw":
 		return read
-	case written == "url_encoded":
-		return phpURLEncodedProtection(written, context)
+	case written == "url_encoded" || written == "encoded":
+		return phpRenderProtection(written, context)
 	case written == "unknown" || written == phpUnwritten || written == phpShellDenylist:
 		return "unknown"
-	case written == "encoded" || written == "numeric" || written == "non_content":
+	case written == "numeric" || written == "non_content":
 		return "encoded"
 	}
 	return "raw"

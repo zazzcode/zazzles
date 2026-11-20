@@ -30,10 +30,7 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, echoContext stri
 			// never output encoding: their guarantee is SQL-syntax scoped.
 			p = "unknown"
 		}
-		if (p == "encoded" || p == "sanitized") && context != "html_text" && context != "html_attribute" {
-			p = "unknown"
-		}
-		p = phpURLEncodedProtection(p, context)
+		p = phpRenderProtection(p, context)
 		if p == "numeric" || p == "non_content" {
 			p = "encoded"
 		}
@@ -46,7 +43,12 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, echoContext stri
 		deps = append(deps, d.dep)
 		paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Protection: p, OutputContext: context})
 	}
-	context := recordContext(paths, echoContext)
+	// Stored writers can remove a raw path or establish its protection.
+	// Keep the echo context as the fallback until linkStorage sees the final paths.
+	context := echoContext
+	if !stored {
+		context = recordContext(paths, echoContext)
+	}
 	p, reason := "encoded", "Every modeled source path is HTML-escaped in HTML text or a quoted non-active attribute."
 	if hasUnknown {
 		p, reason = "unknown", "A source transformation or output context remains unresolved."
@@ -84,9 +86,12 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, echoContext stri
 	f.report.Uses = append(f.report.Uses, u)
 }
 
-// phpURLEncodedProtection scopes urlencode/rawurlencode output to the
-// contexts where its alphabet cannot change markup or a URL's scheme.
-func phpURLEncodedProtection(p, context string) string {
+// phpRenderProtection scopes encoding to the context of the eventual render,
+// whether it was applied before storage or at the read.
+func phpRenderProtection(p, context string) string {
+	if (p == "encoded" || p == "sanitized") && context != "html_text" && context != "html_attribute" {
+		return "unknown"
+	}
 	if p != "url_encoded" {
 		return p
 	}

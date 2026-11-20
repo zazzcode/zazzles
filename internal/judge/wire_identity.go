@@ -26,53 +26,23 @@ var identityKeys = map[string]bool{"instance_id": true, "candidate_id": true}
 // of the bundle; text wherever it appears.
 var sourceKeys = map[string]bool{"evidence": true, "source_excerpts": true}
 
-type identityMode int
-
-const (
-	// aliasIdentity is the sent form: recurring identifiers become aliases.
-	aliasIdentity identityMode = iota
-	// keepIdentity drops single identifiers and reduces lists like
-	// aliasIdentity but keeps recurring values, so a later normalization can
-	// still recognize them.
-	keepIdentity
-	// renumberIdentity aliases every remaining identifier and drops none.
-	renumberIdentity
-)
-
 // localIdentity rewrites hash-based identifiers in a decoded request bundle:
 // recurring ones become aliases, single ones are removed, lists gain a count.
 // The bundle is rewritten in place and returned.
 func localIdentity(bundle map[string]any) map[string]any {
-	return projectIdentity(bundle, aliasIdentity)
-}
-
-func projectIdentity(bundle map[string]any, mode identityMode) map[string]any {
 	counts := map[string]int{}
+	walkIdentity(bundle, true, func(id string) { counts[id]++ })
 	aliases := map[string]string{}
-	walkIdentity(bundle, true, func(id string) {
-		counts[id]++
-		if _, ok := aliases[id]; !ok {
-			aliases[id] = "" // numbered below, in first-occurrence order
-		}
-	})
-	next := 0
-	walkIdentity(bundle, true, func(id string) {
-		if aliases[id] == "" && (counts[id] >= 2 || mode == renumberIdentity) {
-			aliases[id] = fmt.Sprintf("i%d", next)
-			next++
-		}
-	})
 	value := func(id string) (string, bool) {
-		alias := aliases[id]
-		if alias == "" {
+		if counts[id] < 2 {
 			return "", false
 		}
-		if mode == keepIdentity {
-			return id, true
+		if _, ok := aliases[id]; !ok {
+			aliases[id] = fmt.Sprintf("i%d", len(aliases))
 		}
-		return alias, true
+		return aliases[id], true
 	}
-	rewriteIdentity(bundle, true, mode, value)
+	rewriteIdentity(bundle, true, value)
 	return bundle
 }
 
@@ -111,7 +81,7 @@ func walkIdentity(v any, top bool, visit func(string)) {
 	}
 }
 
-func rewriteIdentity(v any, top bool, mode identityMode, value func(string) (string, bool)) {
+func rewriteIdentity(v any, top bool, value func(string) (string, bool)) {
 	switch x := v.(type) {
 	case map[string]any:
 		for _, k := range sortedKeys(x) {
@@ -126,7 +96,7 @@ func rewriteIdentity(v any, top bool, mode identityMode, value func(string) (str
 				}
 				continue
 			}
-			if list, ok := identifierList(x[k]); ok && mode != renumberIdentity {
+			if list, ok := identifierList(x[k]); ok {
 				kept := []any{}
 				for _, id := range list {
 					if alias, keep := value(id); keep {
@@ -141,7 +111,7 @@ func rewriteIdentity(v any, top bool, mode identityMode, value func(string) (str
 				}
 				continue
 			}
-			rewriteIdentity(x[k], false, mode, value)
+			rewriteIdentity(x[k], false, value)
 		}
 	case []any:
 		for i, e := range x {
@@ -155,7 +125,7 @@ func rewriteIdentity(v any, top bool, mode identityMode, value func(string) (str
 				}
 				continue
 			}
-			rewriteIdentity(e, false, mode, value)
+			rewriteIdentity(e, false, value)
 		}
 	}
 }

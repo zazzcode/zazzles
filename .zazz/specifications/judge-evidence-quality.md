@@ -89,7 +89,8 @@ Offline, at the baseline:
 
 Out of scope:
 - mysqli object-style `bind_param`. It produces no candidate today, which is a recall gap.
-- Logging confidence. JS-LOG-01 carries six genuine blocking gaps.
+- Logging confidence. The JS-LOG-01 request lists six gap references. Its logging assessment
+  records zero policy blockers and answers `log_exposure=unknown`.
 - Relevance filtering of off-chain helper excerpts. S2 was measured and not adopted, see the
   [request-size architecture](../architecture/request-size-and-evidence-relevance.md).
 - Question wording.
@@ -227,13 +228,13 @@ failing test. Halt when:
 
 ## 10. Definition of done
 
-- [ ] AC1–AC6 verified, each with its command in the run log.
-- [ ] Samples clean at their pins.
-- [ ] Results recorded in the request size reduction results document.
+- [x] AC1–AC6 reviewed with the named AC5 release exception in §14.
+- [x] Samples clean at their pins.
+- [x] Results recorded in the request size reduction results document.
 
 ## 11. Open questions
 
-- **OQ-1 (decided by default, owner may revert).** D-4 makes a cookie an ordinary request source
+- **OQ-1 (accepted in PR #33 review).** D-4 makes a cookie an ordinary request source
   for XSS. The alternative is to present cookie-only XSS as Review or as a practice finding. That
   needs a policy change and is out of this contract.
 
@@ -267,3 +268,13 @@ Round 2 met the cookie target: a median of 0.72, with 61% at or above 0.70. PC-C
 finding. Its guard contract already states the `is_numeric` trailing-newline edge case, so it is a
 close-call judgment reported to the owner, not tuned (§6 halt recorded in the results document).
 
+
+
+### 2026-11-20 — PR #33 review
+
+For this PR, accept the single PC-CMD-02 protected-control false positive under AC5.
+The protected answer key still governs scoring. The release exception applies only to this
+case in the recorded rounds. The review accepted the cookie-source rule under OQ-1.
+The [review decisions](../evaluation/judge-request-size-reduction-results.md#pr-33-review-decisions)
+record the distinction between a practice finding and a confirmed exposure, and the offline
+verification after corrections to PHP request state and stored output context.

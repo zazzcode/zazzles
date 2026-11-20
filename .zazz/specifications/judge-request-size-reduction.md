@@ -368,14 +368,25 @@ func factorStructure(bundle map[string]any) map[string]any
 func expandStructure(bundle map[string]any) map[string]any
 ```
 
+### PR #33 acceptance decision
+
+Evaluate AC1–AC8 on the size-only implementation. The separately specified
+[evidence-quality follow-on](judge-evidence-quality.md) intentionally changes PHP evidence and
+derived record IDs. Its measurements are reported separately. For this PR, the reviewer accepts
+the two recorded AC8 exceptions (status-change rate and JS-LOG-01 presentation). Keep the
+original thresholds and measured failures in the record. The acceptance applies only to the
+published comparison. It establishes no tolerance for future status changes or keyed misses.
+The [review decisions](../evaluation/judge-request-size-reduction-results.md#pr-33-review-decisions)
+also accept the citation decoder and digest/replay test changes needed for the new wire format.
+
 ## 10. Definition of done
 
-- [ ] AC1–AC9 verified, each with its command or table in the run log.
+- [x] AC1–AC9 reviewed with the release exceptions documented above.
 - [x] OQ-1 to OQ-3 answered by the owner and recorded (§11, 2026-11-19).
-- [ ] `git diff origin/stage --stat` matches §4.
-- [ ] Sample checkouts clean at their pins before and after.
-- [ ] A fresh-context verifier reports PASS (§13).
-- [ ] Draft PR into `stage` lists the evidence for each criterion.
+- [x] Scope checked against both contracts and the accepted deviations above.
+- [x] Sample checkouts clean at their pins before and after.
+- [x] Fresh-context verification completed for the size-only and combined implementations (§13).
+- [x] PR #33 into `stage` links the acceptance evidence.
 
 ## 11. Open questions
 

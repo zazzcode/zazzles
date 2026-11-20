@@ -19,13 +19,18 @@ const phpSuperglobalPrefix = "\x01superglobal:"
 // superglobal whose writes are modeled. $_SERVER keys and $_SESSION (storage)
 // keep their own handling.
 func phpSuperglobalKey(name, key string) (string, bool) {
-	switch name {
-	case "_GET", "_POST", "_REQUEST", "_COOKIE", "_FILES":
-		if key != "" {
-			return phpSuperglobalPrefix + name + phpElementSeparator + key, true
-		}
+	if prefix := phpRequestElementPrefix(name); prefix != "" && key != "" {
+		return prefix + key, true
 	}
 	return "", false
+}
+
+func phpRequestElementPrefix(name string) string {
+	switch name {
+	case "_GET", "_POST", "_REQUEST", "_COOKIE", "_FILES":
+		return phpSuperglobalPrefix + name + phpElementSeparator
+	}
+	return ""
 }
 
 // superglobalRead reads a tracked element: its state, joined with fresh
@@ -72,11 +77,7 @@ func (f *phpFlow) narrowSuperglobals(test *sitter.Node, protections map[string]s
 			v.superglobalFresh = false
 			v = phpJoin(v, f.source(at, container, origin, index))
 		}
-		if f.globals == nil {
-			f.globals = map[string]phpValue{}
-		}
-		f.globals[sg] = phpProtect(v, protection)
-		f.markDirty(phpGlobalsKeyPrefix + sg)
+		f.setSuperglobal(sg, phpProtect(v, protection))
 	}
 }
 
@@ -90,4 +91,88 @@ func superglobalState(globals map[string]phpValue) map[string]phpValue {
 		}
 	}
 	return out
+}
+
+func (f *phpFlow) setSuperglobal(key string, v phpValue) {
+	if f.globals == nil {
+		f.globals = map[string]phpValue{}
+	}
+	f.globals[key] = v
+	f.markDirty(phpGlobalsKeyPrefix + key)
+}
+
+// Replacing the container also replaces every individually tracked element.
+func (f *phpFlow) replaceSuperglobalElements(name string, v phpValue, at *sitter.Node) {
+	prefix := phpRequestElementPrefix(name)
+	if prefix == "" {
+		return
+	}
+	for key := range f.globals {
+		if field, ok := strings.CutPrefix(key, prefix); ok {
+			f.setSuperglobal(key, f.projectValue(v, field, at))
+		}
+	}
+}
+
+// A dynamic subscript can overwrite any previously tracked element of the
+// same container. Each of those reads may still see its earlier value.
+func (f *phpFlow) writeSuperglobalElement(name string, index *sitter.Node, v phpValue) bool {
+	prefix := phpRequestElementPrefix(name)
+	if prefix == "" || index == nil {
+		return false
+	}
+	key, known := phpStringLiteral(f.module, index)
+	switch index.Kind() {
+	case "integer":
+		key, known = phpText(f.module, index), true
+	case "variable_name":
+		candidate := f.env[phpVarName(f.module, index)]
+		if phpLiteralsOnly(candidate) && len(candidate.literals) == 1 {
+			key, known = candidate.literals[0].text, true
+		}
+	}
+	if known {
+		if key != "" {
+			f.setSuperglobal(prefix+key, v)
+		}
+		return true
+	}
+	for key, prior := range f.globals {
+		if strings.HasPrefix(key, prefix) {
+			joined := phpJoin(prior, v)
+			joined.superglobalFresh = prior.superglobalFresh
+			f.setSuperglobal(key, joined)
+		}
+	}
+	return true
+}
+
+// Branch clones within a helper share this collector. A return from an
+// included file does not return to the helper's caller.
+type phpSuperglobalExits struct {
+	includeDepth int
+	changed      map[string]bool
+	states       []map[string]phpValue
+}
+
+func (f *phpFlow) joinHelperExits(terminated bool) {
+	exits := f.helperExits
+	if len(exits.states) == 0 || len(exits.changed) == 0 {
+		return
+	}
+	if !terminated {
+		exits.states = append(exits.states, f.globals)
+	}
+	for key := range exits.changed {
+		var joined phpValue
+		fresh := false
+		for _, state := range exits.states {
+			v, ok := state[key]
+			fresh = fresh || !ok || v.superglobalFresh
+			joined = phpJoin(joined, v)
+		}
+		joined.superglobalFresh = fresh
+		joined.gaps = phpMergeGaps(nil, joined.gaps)
+		f.setSuperglobal(key, joined)
+	}
 }

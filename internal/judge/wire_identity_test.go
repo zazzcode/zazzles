@@ -162,6 +162,34 @@ func TestWireIdentityRelatedEntryClasses(t *testing.T) {
 	}
 }
 
+// An XSS path may refer to the current entry or to another transport entry.
+// A scheduler member may reuse the leader only if those links agree.
+func TestWireIdentitySignsPathEntryRelationships(t *testing.T) {
+	c, _ := New("openai", "fixture-model", "offline")
+	signature := func(entry, other, path string) string {
+		u := identityUse()
+		u.EntryID = entry
+		u.EntryFacts.Transports = []analysis.TransportAssociation{
+			{Kind: "http", EntryID: entry},
+			{Kind: "graphql", EntryID: other},
+		}
+		u.XSS.RelatedEntries = nil
+		u.XSS.Paths[0].Entry = path
+		sig, err := c.EquivalenceSignature(u)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return sig
+	}
+	a, b := identityID("entry", "a"), identityID("entry", "b")
+	if signature(a, b, a) == signature(a, b, b) {
+		t.Fatal("different path-to-transport relationships share a signature")
+	}
+	if signature(a, b, a) != signature(b, a, b) {
+		t.Fatal("renaming the entries split the equivalence class")
+	}
+}
+
 var hex64 = regexp.MustCompile(`[0-9a-f]{64}`)
 
 // TestWireIdentityNoHashesInFixtureRequests sweeps every judge fixture use:

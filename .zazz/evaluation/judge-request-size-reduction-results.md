@@ -7,7 +7,9 @@ inventory test added. The candidate is `695ce11` (W13–W16, `evidence_version` 
 `git status --porcelain --ignored` before and after every scan. All artifacts are under the
 container's `_test-findings/judge-request-size-reduction/`.
 
-**Status: offline criteria AC1–AC7 pass; AC8 fails** (§6 halt, see [AC8](#ac8-paired-live-comparison)).
+The original size-only AC8 comparison failed on status churn and one keyed presentation.
+The [PR review](#pr-33-review-decisions) accepts these two exceptions and records verification of
+the combined branch.
 
 ## Inventories (D-1)
 
@@ -71,7 +73,10 @@ exception: it still needs two group requests, down from five.
   no record plans more groups than at baseline. `TestDVWARequestSizes` passes: one record over the
   limit, grouped into requests of 62,477 and 55,101 bytes.
 - Lossy omitted source bytes fell from 5,874 to 2,333, and omitted items from 86 to 40.
-- No request drops its resolution questions, on either side.
+- Two baseline DVWA groups drop resolution questions (64,297 and 64,310 bytes). One size-only
+  candidate group does (62,477 bytes). The inventory TSV records this field as lowercase
+  `true`. The original comparison script checked for `True` and missed all three rows.
+  AC3 permits individually reported drops.
 - One request still sheds context: the first `sqli` group (62,477 bytes). It is smaller than that
   record's largest baseline request (64,805), and its lossy omitted bytes fell.
 - Equivalence classes are unchanged: 244 on DVWA and 157 on Juice Shop. No pair merged or split.
@@ -296,7 +301,7 @@ checks used the AGENTS.md terms with explicit caps:
 Offline:
 - `check.py` and `accuracy.py` output is byte-identical to the size-reduction candidate across the
   eleven samples.
-- DVWA total request bytes are 7,470,065, with no path-group requests.
+- Before fix V, DVWA total request bytes were 7,470,065, with no path-group requests.
 - Every DVWA `execute()` of a prepared statement carries its prepare assignment.
 - Every DVWA XSS path states its context.
 - All 82 `$_COOKIE['security']` paths are allow-list constrained, and all 89 `theme` paths stay raw.
@@ -305,7 +310,7 @@ Verdict confidence on DVWA (`live/confidence.py`; median top probability, then t
 
 | Set | B1 | C | Round 1 | Round 2 |
 |---|---|---|---|---|
-| XSS, all (89) | 0.62, 37% | 0.79, 65% | 0.81, 72% | **0.88, 79%**; unknown 19 → 11 → 5 → 2 |
+| XSS, all (78 / 85 / 89 / 89) | 0.62, 37% | 0.79, 65% | 0.81, 72% | **0.88, 79%**; unknown 19 → 11 → 5 → 2 |
 | XSS, cookie-only (46) | 0.56, 9% | 0.64, 39% | 0.69, 48% | **0.72, 61%** |
 | SQL, PDO-bound `impossible.php`, correct answers (7) | 6/7 | 5/7 | **7/7** | **7/7** |
 | SQL, all (53) | 0.86, 83% | 0.87, 81% | 0.85, 81% | 0.85, 81% |
@@ -328,12 +333,38 @@ An early build of V hung on DVWA. Every helper call wrote back unchanged state, 
 doubled at each merge. Helpers now return only the elements they changed, and joins deduplicate
 gaps. The DVWA scan takes 5 s.
 
-## Open for the owner
+## PR #33 review decisions
 
-- **AC8 of the size reduction.** Identical requests get identical statuses, so close-call answers
-  move under any request change. The attribution runs show no workstream with a direction. Accept
-  AC8, or revise it to judge keyed rows and confidence.
-- **PC-CMD-02.** Either accept the `is_numeric` trailing-newline judgment, or decide the product
-  rule (keyed control versus finding).
-- **Cookie rule (evidence quality OQ-1).** Cookie-only XSS is now an ordinary request-source
-  finding.
+| Item | Decision and basis |
+|---|---|
+| Size-only AC8 | Accept a one-time exception for the status-change rate (26/186 DVWA and 1/28 Juice Shop) and the lower presentation of JS-LOG-01. All 26 keyed positives were found, no protected control was a finding in arm C, and matched input tokens fell on both samples. The attribution runs and the difference table document sensitivity to request wording. Bidirectional changes alone establish neither accuracy nor statistical equivalence. |
+| PC-CMD-02 | Retain the protected key and count one false positive in evidence-quality AC5. One command record at line 26 presented as Confirmed in the final paid DVWA run. The guard semantics and reconstruction are visible. The newline edge and the model's confidence do not independently establish a vulnerability. Accept this named exception for this release. |
+| JS-LOG-01 | Accept a practice finding at `server.ts:366` for the `changePassword.ts:14` source. The request labels six entries as blocking gaps. The logging policy records zero assessment blockers. The saved answer says credential content reaches the log without redaction, but `log_exposure=unknown`. The practice remains visible and counts as found. |
+| Cookie-source rule | Accept evidence-quality OQ-1. A client-supplied cookie is a supported input. Confirmation still depends on the individual path, render context and protection. Delivery to another user remains unestablished. |
+| Scope deviations | Accept expansion at the citation reader so it validates the rows and ordered chains actually sent. Accept the Python component digest refresh and the replay tests that distinguish changed browser metadata from a singleton ID omitted on the wire. |
+| mysqli object-style `bind_param` | Defer candidate discovery to separate recall work. The prepared-statement criterion concerns evidence attached to existing candidates. |
+
+### Fresh-context verification and final gate
+
+The verifier reproduced the size-only inventories at `695ce11` and checked the reviewed branch
+against `stage` at `8dd0460`. AC1–AC5 passed at the size-only boundary. AC6 passed there after
+normalizing the documented XSS digests. The combined branch changes PHP evidence under the second
+contract, so its DVWA uses and findings differ from the baseline even after digest normalization.
+
+| Final offline measure | DVWA | Juice Shop |
+|---|---:|---:|
+| Planned request bytes | 7,483,772 (79.71% of baseline) | 3,025,612 (94.76%) |
+| Planned requests / group requests | 247 / 0 | 157 / 0 |
+| Equivalence classes | 244 | 157 |
+
+Matching the 127 rekeyed DVWA records by entry, invocation, sink, conditions and occurrence left
+no ambiguous pairs. Every whole record shrank. The eight originally oversized records saved
+10,303–17,407 bytes each. One final DVWA request for the SQL injection page omitted resolution
+questions at 65,357 bytes. Total lossy omissions fell from 5,874 to 2,333 bytes.
+
+Review fixes preserve request data across early helper returns and overlapping writes, determine
+stored output context after linking writers, and keep cross-entry reference relationships in the
+reuse signature. The architecture golden changed only in 316 signature digests. Sample class
+membership held. All 190 completed DVWA assessments and 28 Juice Shop assessments replayed
+exactly, with zero mismatches or missing traces. Offline `check.py` and `accuracy.py` outputs
+matched baseline across eleven samples. Formatting, vet, build and the full Go race suite passed.

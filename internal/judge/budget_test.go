@@ -129,9 +129,10 @@ func TestRequestBudgetShedsContextByRole(t *testing.T) {
 	if gap == nil || !strings.HasPrefix(gap.Detail, fmt.Sprintf("%d context evidence item(s)", len(omitted))) {
 		t.Fatalf("omission gap missing or miscounted: %+v", gap)
 	}
+	// The notice counts omissions per file (D-4); every omitted file is named.
 	for _, o := range omitted {
-		if !strings.Contains(gap.Detail, fmt.Sprintf("%s:%d-%d", o.Span.File, o.Span.StartLine, o.Span.EndLine)) {
-			t.Fatalf("omitted span %+v not named in the request: %s", o.Span, gap.Detail)
+		if !strings.Contains(gap.Detail, o.Span.File+": ") {
+			t.Fatalf("omitted file %s not named in the request: %s", o.Span.File, gap.Detail)
 		}
 	}
 	if !strings.Contains(string(payload), "evidence_omitted_for_size") {

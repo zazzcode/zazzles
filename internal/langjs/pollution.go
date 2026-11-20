@@ -13,7 +13,7 @@ import (
 type pollutionWrite struct {
 	operation, operand string
 	source, target     int
-	site               *sitter.Node
+	sites              []*sitter.Node
 	guard              pollutionGuard
 }
 
@@ -45,29 +45,32 @@ func (f *flow) pollutionCall(call, fn, arguments *sitter.Node, values []value) {
 	if f.helpers != nil && f.helpers.stack[fmt.Sprintf("%s:%d", m.file, callee.StartByte())] {
 		return
 	}
-	w := f.set.sourcePollutionWrite(m, callee)
-	if w.site == nil {
+	writes := f.set.sourcePollutionWrites(m, callee)
+	if len(writes) == 0 || callHasSpread(call) {
 		return
 	}
 	args, values := pollutionArguments(arguments, values)
-	if w.source >= len(args) || w.target >= len(args) || callHasSpread(call) {
-		return
+	for index, w := range writes {
+		if w.source >= len(args) || w.target >= len(args) {
+			continue
+		}
+		// Anchor each operand at the call and retain all matching write sites.
+		binding := []analysis.Evidence{
+			f.module.evidence("sink_binding", fn),
+			m.evidence("sink_binding", callee),
+		}
+		for _, site := range w.sites {
+			binding = append(binding, m.evidence("prototype_write", site))
+		}
+		if w.guard.kind == "" && pollutionNullTarget(f.module, call, args[w.target]) {
+			w.guard = pollutionGuard{kind: "null_prototype_root", evidence: []analysis.Evidence{f.module.evidence("key_guard", args[w.target])}}
+		}
+		facts := &analysis.PollutionFacts{Operation: w.operation, KeyOperand: w.operand}
+		f.recordPollution(call, index, []pollutionOperand{{args[w.source], values[w.source]}}, facts, binding, w.guard)
 	}
-	// Report this operation at its call site, with the body and actual write
-	// anchored in the source-visible function.
-	binding := []analysis.Evidence{
-		f.module.evidence("sink_binding", fn),
-		m.evidence("sink_binding", callee),
-		m.evidence("prototype_write", w.site),
-	}
-	if w.guard.kind == "" && pollutionNullTarget(f.module, call, args[w.target]) {
-		w.guard = pollutionGuard{kind: "null_prototype_root", evidence: []analysis.Evidence{f.module.evidence("key_guard", args[w.target])}}
-	}
-	facts := &analysis.PollutionFacts{Operation: w.operation, KeyOperand: w.operand}
-	f.recordPollution(call, []pollutionOperand{{args[w.source], values[w.source]}}, facts, binding, w.guard)
 }
 
-func (f *flow) recordPollution(sink *sitter.Node, operands []pollutionOperand, facts *analysis.PollutionFacts, binding []analysis.Evidence, guard pollutionGuard) {
+func (f *flow) recordPollution(sink *sitter.Node, writeIndex int, operands []pollutionOperand, facts *analysis.PollutionFacts, binding []analysis.Evidence, guard pollutionGuard) {
 	var deps []analysis.Dependency
 	var operandEvidence []analysis.Evidence
 	var gaps []analysis.Gap
@@ -121,8 +124,12 @@ func (f *flow) recordPollution(sink *sitter.Node, operands []pollutionOperand, f
 	}
 
 	m := f.module
+	id := fmt.Sprintf("use:%s:%s:%d:pollution", f.invocation.ID, m.file, sink.StartByte())
+	if writeIndex > 0 {
+		id += fmt.Sprintf(":%d", writeIndex)
+	}
 	u := analysis.CandidateUse{
-		ID:      fmt.Sprintf("use:%s:%s:%d:pollution", f.invocation.ID, m.file, sink.StartByte()),
+		ID:      id,
 		EntryID: f.entry.ID, EntryKind: f.entry.Kind, InvocationContextID: f.invocation.ID,
 		Kind: analysis.PollutionKind, Sink: m.evidence(analysis.PollutionKind, sink),
 		Dependencies: deps, Context: context, Pollution: facts,

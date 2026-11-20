@@ -7,14 +7,14 @@ import (
 	"github.com/zazzcode/zazzles/internal/analysis"
 )
 
-func pollutionPathLoop(m *sourceModule, body, loop *sitter.Node, params []boundParam) pollutionWrite {
+func pollutionPathLoop(m *sourceModule, body, loop *sitter.Node, params []boundParam) []pollutionWrite {
 	loopBody := loop.ChildByFieldName("body")
 	if loopBody == nil || loopBody.Kind() != "statement_block" {
-		return pollutionWrite{}
+		return nil
 	}
-	var out pollutionWrite
+	var writes []pollutionWrite
 	pollutionWalk(loopBody, func(n *sitter.Node) {
-		if out.site != nil || n.Kind() != "assignment_expression" {
+		if n.Kind() != "assignment_expression" {
 			return
 		}
 		cursor := pollutionIdentifier(n.ChildByFieldName("left"), m.src)
@@ -38,10 +38,10 @@ func pollutionPathLoop(m *sourceModule, body, loop *sitter.Node, params []boundP
 		final := pollutionPathFinal(m, body, loop, cursor, key, parts)
 		if final != nil {
 			guard := pollutionPartitionGuard(m, loopBody, key, cursor, true, n)
-			out = pollutionWrite{operation: analysis.PollutionWalk, operand: "path", source: source, target: target, site: final, guard: guard}
+			writes = append(writes, pollutionWrite{operation: analysis.PollutionWalk, operand: "path", source: source, target: target, sites: []*sitter.Node{final}, guard: guard})
 		}
 	})
-	return out
+	return writes
 }
 
 func pollutionPathParts(m *sourceModule, loop, part *sitter.Node) (parts, key string) {

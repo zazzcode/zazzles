@@ -37,6 +37,14 @@ sample scans and the partial-guard test with the same outcomes.
 - **AC10** `gofmt -l cmd internal`, `go vet ./...`, `go build ./...`,
   `go test -race ./... -count=1`, and `git diff --check` passed on Go 1.27.3.
 
+## Guard coverage follow-up
+
+The helper regression suite checks three cases with multiple merge loops. An incomplete guard on
+a later loop leaves a raw path. Two fully guarded loops preserve guarded status and attach both
+write sites. Separate request-derived arguments produce separate candidates. The Next.js lab
+exercises the application analyzer through its Pages and App Router source fixtures.
+[Next.js scanner regressions](https://github.com/zazzcode/vuln-nextjs/tree/main/tests/scanner)
+
 ## Remaining verification
 
 AC8 awaits an owner-authorized live judgment. AC9 follows phase 7 corpus keys and phase 8

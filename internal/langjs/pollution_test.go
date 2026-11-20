@@ -157,3 +157,58 @@ app.post('/settings/:data', (req, res) => { `+body+`; res.end(); });`)
 func pollutionHasGap(gaps []analysis.Gap, kind string) bool {
 	return slices.ContainsFunc(gaps, func(g analysis.Gap) bool { return g.Kind == kind })
 }
+
+func TestPollutionHelperGuardCoverage(t *testing.T) {
+	for _, tt := range []struct {
+		name, secondSource, secondGuard string
+		args                            string
+		want                            map[string]string
+	}{
+		{"independent guard coverage", "source", "if (key === '__proto__') continue;", "{}, req.body.settings", map[string]string{"req.body.settings": "raw"}},
+		{"both loops guarded", "source", "if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;", "{}, req.body.settings", map[string]string{"req.body.settings": "guarded"}},
+		{"each source argument is traced", "extra", "", "{}, req.body.settings, req.body.overrides", map[string]string{"req.body.settings": "guarded", "req.body.overrides": "raw"}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "server.js", `const express = require('express');
+const app = express();
+function merge(target, source, extra) {
+  for (const key of Object.keys(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    if (typeof source[key] === 'object') merge(target[key], source[key]);
+    else target[key] = source[key];
+  }
+  for (const key of Object.keys(`+tt.secondSource+`)) {
+    `+tt.secondGuard+`
+    if (typeof `+tt.secondSource+`[key] === 'object') merge(target[key], `+tt.secondSource+`[key], `+tt.secondSource+`[key]);
+    else target[key] = `+tt.secondSource+`[key];
+  }
+}
+app.post('/settings', (req, res) => { merge(`+tt.args+`); res.end(); });
+`)
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			uses := usesOf(report, analysis.PollutionKind, "server.js")
+			if len(uses) != len(tt.want) {
+				t.Fatalf("got %d candidates, want %d", len(uses), len(tt.want))
+			}
+			seen := map[string]bool{}
+			for _, u := range uses {
+				if seen[u.ID] {
+					t.Fatalf("duplicate ID %s", u.ID)
+				}
+				seen[u.ID] = true
+				p := u.Pollution.Paths
+				d := u.Dependencies[0]
+				if len(p) != 1 || p[0].Protection != tt.want[d.Source.Text] {
+					t.Fatalf("unexpected paths for %s: %+v", d.Source.Text, p)
+				}
+				if tt.secondSource == "source" && len(u.Completeness.Evidence["prototype_write"]) != 2 {
+					t.Fatalf("expected evidence from both write sites: %+v", u.Completeness.Evidence["prototype_write"])
+				}
+			}
+		})
+	}
+}

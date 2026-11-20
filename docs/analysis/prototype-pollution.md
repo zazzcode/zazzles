@@ -30,7 +30,8 @@ in Review. A request value supplied only as the assigned value cannot choose the
 ## Controls and outcomes
 
 The scanner lists prototype-related names blocked by literal, enforcing key guards on the
-relevant lookup paths. Own-property checks must apply at every recursive lookup. A fresh
+relevant lookup paths. A guard covers an operation only where the scanner can show that it
+applies across its modeled write sites. Own-property checks must apply at every recursive lookup. A fresh
 null-prototype object can protect one lookup. Deep traversal also needs evidence about nested
 containers.
 

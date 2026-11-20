@@ -1,6 +1,8 @@
 package langjs
 
 import (
+	"slices"
+
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/parse"
@@ -38,7 +40,7 @@ func (f *flow) pollutionAssignment(site, lhs *sitter.Node) {
 		guard.evidence = append(guard.evidence, f.module.evidence("key_guard", target))
 	}
 	facts := &analysis.PollutionFacts{Operation: analysis.PollutionNested, KeyOperand: "computed_keys", KeyLevels: 2}
-	f.recordPollution(site, []pollutionOperand{{key, v}}, facts, []analysis.Evidence{f.module.evidence("sink_binding", lhs)}, guard)
+	f.recordPollution(site, 0, []pollutionOperand{{key, v}}, facts, []analysis.Evidence{f.module.evidence("sink_binding", lhs)}, guard)
 }
 
 // The direct-write rule has no heap model for a receiver slot reassigned on an
@@ -73,34 +75,51 @@ func pollutionLiteral(n *sitter.Node) bool {
 	return false
 }
 
-// sourcePollutionWrite analyzes a function once, independent of its callers.
-func (s *moduleSet) sourcePollutionWrite(m *sourceModule, callee *sitter.Node) pollutionWrite {
+// sourcePollutionWrites analyzes a function once, independent of its callers.
+func (s *moduleSet) sourcePollutionWrites(m *sourceModule, callee *sitter.Node) []pollutionWrite {
 	if s.pollutionWrites == nil {
-		s.pollutionWrites = make(map[uintptr]pollutionWrite)
+		s.pollutionWrites = make(map[uintptr][]pollutionWrite)
 	}
-	if w, ok := s.pollutionWrites[callee.Id()]; ok {
-		return w
+	if writes, ok := s.pollutionWrites[callee.Id()]; ok {
+		return writes
 	}
-	var result pollutionWrite
-	s.pollutionWrites[callee.Id()] = result
+	s.pollutionWrites[callee.Id()] = nil
 	params, ok := functionParameters(callee, m.src)
 	body := callee.ChildByFieldName("body")
 	if !ok || len(params) < 2 || body == nil || body.Kind() != "statement_block" {
-		return result
+		return nil
 	}
-	pollutionWalk(body, func(n *sitter.Node) {
-		if result.site != nil {
+	var writes []pollutionWrite
+	collect := func(w pollutionWrite) {
+		for i := range writes {
+			prior := &writes[i]
+			if prior.operation != w.operation || prior.source != w.source || prior.target != w.target {
+				continue
+			}
+			prior.guard = intersectPollutionGuards(prior.guard, w.guard)
+			for _, site := range w.sites {
+				if !slices.ContainsFunc(prior.sites, func(prior *sitter.Node) bool { return prior.Id() == site.Id() }) {
+					prior.sites = append(prior.sites, site)
+				}
+			}
 			return
 		}
+		writes = append(writes, w)
+	}
+	pollutionWalk(body, func(n *sitter.Node) {
 		if loop := pollutionKeyLoop(m, n); loop.body != nil {
-			result = s.pollutionMergeLoop(m, callee, params, loop)
+			for _, w := range s.pollutionMergeLoop(m, callee, params, loop) {
+				collect(w)
+			}
 		}
-		if result.site == nil && (n.Kind() == "for_statement" || n.Kind() == "for_in_statement") {
-			result = pollutionPathLoop(m, body, n, params)
+		if n.Kind() == "for_statement" || n.Kind() == "for_in_statement" {
+			for _, w := range pollutionPathLoop(m, body, n, params) {
+				collect(w)
+			}
 		}
 	})
-	s.pollutionWrites[callee.Id()] = result
-	return result
+	s.pollutionWrites[callee.Id()] = writes
+	return writes
 }
 
 type pollutionLoop struct {
@@ -172,14 +191,14 @@ func pollutionObjectKeyLoop(m *sourceModule, iter, key, body *sitter.Node) pollu
 	return result
 }
 
-func (s *moduleSet) pollutionMergeLoop(m *sourceModule, callee *sitter.Node, params []boundParam, loop pollutionLoop) pollutionWrite {
+func (s *moduleSet) pollutionMergeLoop(m *sourceModule, callee *sitter.Node, params []boundParam, loop pollutionLoop) []pollutionWrite {
 	source := pollutionParameter(params, loop.source)
 	if source < 0 {
-		return pollutionWrite{}
+		return nil
 	}
 	type writeSite struct {
-		assignment *sitter.Node
-		recursions []*sitter.Node
+		assignments []*sitter.Node
+		recursions  []*sitter.Node
 	}
 	sites := make([]writeSite, len(params))
 	pollutionWalk(loop.body, func(n *sitter.Node) {
@@ -188,7 +207,7 @@ func (s *moduleSet) pollutionMergeLoop(m *sourceModule, callee *sitter.Node, par
 			lhs := n.ChildByFieldName("left")
 			for i, p := range params {
 				if i != source && pollutionSubscript(lhs, p.name, loop.key, m.src) {
-					sites[i].assignment = n
+					sites[i].assignments = append(sites[i].assignments, n)
 				}
 			}
 		case "call_expression":
@@ -201,16 +220,17 @@ func (s *moduleSet) pollutionMergeLoop(m *sourceModule, callee *sitter.Node, par
 			}
 		}
 	})
+	var writes []pollutionWrite
 	for i, pair := range sites {
-		if pair.assignment != nil && len(pair.recursions) > 0 {
+		if len(pair.assignments) > 0 && len(pair.recursions) > 0 {
 			guard := pollutionPartitionGuard(m, loop.body, loop.key, params[i].name, true, pair.recursions[0])
 			for _, call := range pair.recursions[1:] {
 				guard = intersectPollutionGuards(guard, pollutionPartitionGuard(m, loop.body, loop.key, params[i].name, true, call))
 			}
-			return pollutionWrite{operation: analysis.PollutionMerge, operand: "source", source: source, target: i, site: pair.assignment, guard: guard}
+			writes = append(writes, pollutionWrite{operation: analysis.PollutionMerge, operand: "source", source: source, target: i, sites: pair.assignments, guard: guard})
 		}
 	}
-	return pollutionWrite{}
+	return writes
 }
 
 func pollutionRecursiveOperands(args *sitter.Node, targetAt, sourceAt int, target string, loop pollutionLoop, src []byte) bool {

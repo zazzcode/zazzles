@@ -173,6 +173,10 @@ Out of scope:
   |---|---|---|---|
   | `jsonpath` | `1.1.1` (`value`, CVE-2025-61140) | `1.2.0` candidate pin. Verify the released artifact includes fix commit `9631412` | Path write. [CVE record](https://nvd.nist.gov/vuln/detail/CVE-2025-61140), [merged fix](https://github.com/dchester/jsonpath/pull/195) |
   | `dset` | `3.1.3` (CVE-2024-21529) | `3.1.4` | Path write. [Advisory and patch references](https://github.com/advisories/GHSA-f6v4-cf5j-vf3w) |
+  | `object-path` (`set`) | `0.11.5` (CVE-2021-23434) | `0.11.6` | Path write with inherited-property handling enabled. [Advisory](https://github.com/advisories/GHSA-v39p-96qg-c8rf), [upstream changelog](https://github.com/mariocasciaro/object-path#0116) |
+  | `object-path` (`del`) | `0.11.7` (CVE-2021-3805) | `0.11.8` | Prototype deletion. Scope control for the assignment claim. [Advisory](https://github.com/advisories/GHSA-8v63-cqqc-6r2c) |
+  | `merge-deep` | `3.0.2` (CVE-2021-26707) | `3.0.3` | Recursive merge and incomplete key protection. [Advisory](https://github.com/advisories/GHSA-r6rj-9ch6-g264), [upstream fix](https://github.com/jonschlinkert/merge-deep/commit/11e5dd56de8a6aed0b1ed022089dbce6968d82a5) |
+  | `json5` | `2.2.1` (CVE-2022-46175) | `2.2.2` | Returned-object prototype mutation. Scope control for the shared `Object.prototype` write claim at both pins. [Maintainer advisory](https://github.com/json5/json5/security/advisories/GHSA-9c47-m6qq-7p4h) |
   | `counterpart` | `0.18.6` per the advisory's structured npm range (CVE-2025-57354) | No patched release in the advisory. Review the source before promoting the row to a keyed positive | Translation-key processing. [Advisory](https://github.com/advisories/GHSA-2488-w585-72ch) |
   | React Server Components | `react-server-dom-*` 19.2.0 (CVE-2025-55182) | 19.2.1 historical fix pin for this CVE | Decoder and access checkpoint owned by phase 7 AC2. [React advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components) |
 
@@ -201,6 +205,9 @@ Out of scope:
   root. Each container on a deeper path needs its own protection evidence. Native `Map.set`
   writes collection entries and creates no prototype-write candidate. Bracket assignment on a map
   still uses ordinary property access.
+  An operation on the same source and target arguments retains evidence from all modeled write
+  sites in the helper. A key counts as blocked for that operation when its guard covers every
+  modeled traversal. Different argument pairs have independent candidates.
   **Why.** The proposal's bypass sibling is exactly a deny-list that blocks `__proto__` and
   leaves `constructor.prototype`. The scanner can read that; it should not be left to the model.
 - **D-7. A bypass answer is checked against the listing.** `key_guard_bypass` asks whether a key
@@ -245,6 +252,8 @@ advisory or changelog, with the review date.
    `key_guard_incomplete` naming `constructor`, and stub answers of `protected`, `no_bypass` and
    `complete` do not make it Protected. With all three names skipped, or an own-property test at
    every level, those stub answers make it Protected.
+   A helper with several loops over one operand must retain evidence from every modeled site, and
+   a second request-derived source argument must have its own candidate.
 3. **AC3 (path walk and nested write).** A path-walk setter called with a request path, and
    `store[req.body.a][req.body.b] = req.body.v`, each yield one candidate.
 4. **AC4 (controls).** No pollution record for: `Object.assign({}, req.body)`; object spread of
@@ -368,3 +377,10 @@ The `pollution` family records the verified write, key operand, version, and ind
 paths. It uses the `pollution-components-v1` decision protocol and reports CWE-1321 in JSON and
 SARIF. Pinned offline samples and in-memory decisions cover AC1–AC7. The analysis guide describes
 the bounded source shapes and guard limits. AC8 and AC9 remain in the acceptance checklist.
+
+### 2026-11-20 — Reviewed multiple write sites and additional package pairs
+
+The application analyzer now collects all modeled write sites for the same helper operands.
+Regression tests cover a later incomplete guard, two fully guarded loops, and independent source
+arguments. D-3 records `object-path` and `merge-deep` as affected/patched library candidates and
+`json5` and the later `object-path` deletion advisory as scope controls. Library-export verification remains in phase 7 and phase 8.

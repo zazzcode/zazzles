@@ -132,3 +132,159 @@ func gapKey(g any) string {
 	key, _ := json.Marshal(v)
 	return string(key)
 }
+
+// Structural factoring (judge-request-size-reduction D-3) is the last
+// projection step, after resolution questions and citation chains are built
+// from the unfactored rows. Both reductions are reversible: expandStructure
+// restores the version 7 rows and dependencies exactly.
+
+// v7EvidenceColumns is the evidence row order before D-3; factoredColumns
+// puts text last so a row can end at its last non-empty column.
+var (
+	v7EvidenceColumns = []string{"kind", "source_index", "start_line", "end_line", "text", "text_ref", "start_column", "end_column"}
+	factoredColumns   = []string{"kind", "source_index", "start_line", "end_line", "text_ref", "start_column", "end_column", "text"}
+)
+
+// minSharedTail is the shortest transfer run stated once for several dependencies.
+const minSharedTail = 4
+
+// factorStructure reorders evidence rows, trims trailing empty columns and
+// states shared transfer tails once. The bundle is rewritten in place.
+func factorStructure(bundle map[string]any) map[string]any {
+	cw, _ := bundle["compact_wire"].(map[string]any)
+	if rows, ok := bundle["evidence"].([]any); ok && cw != nil {
+		for i, r := range rows {
+			row, _ := r.([]any)
+			if len(row) != len(v7EvidenceColumns) {
+				continue
+			}
+			out := append(append(append([]any{}, row[:4]...), row[5:]...), row[4])
+			for len(out) > 4 && (out[len(out)-1] == nil || out[len(out)-1] == "") {
+				out = out[:len(out)-1]
+			}
+			rows[i] = out
+		}
+		cw["evidence_columns"] = factoredColumns
+	}
+	deps, _ := bundle["dependencies"].([]any)
+	chains := make([][]any, len(deps))
+	for i, d := range deps {
+		dep, _ := d.(map[string]any)
+		chains[i], _ = dep["transfers"].([]any)
+	}
+	tails := sharedTails(chains)
+	if len(tails) == 0 {
+		return bundle
+	}
+	stated := []any{}
+	for n, tail := range tails {
+		stated = append(stated, tail.run)
+		for _, i := range tail.deps {
+			dep := deps[i].(map[string]any)
+			dep["transfers"] = append(append([]any{}, chains[i][:len(chains[i])-len(tail.run)]...), fmt.Sprintf("t%d", n))
+		}
+	}
+	bundle["shared_transfer_tails"] = stated
+	return bundle
+}
+
+type sharedTail struct {
+	run  []any
+	deps []int
+}
+
+// sharedTails picks transfer suffixes shared by two or more dependencies, the
+// one that saves the most references first, until none of minSharedTail or
+// more remains. Ties go to the longer run, then the earliest dependency.
+func sharedTails(chains [][]any) []sharedTail {
+	done := make([]bool, len(chains))
+	var out []sharedTail
+	for {
+		best, bestSave := sharedTail{}, 0
+		for i, chain := range chains {
+			if done[i] {
+				continue
+			}
+			for n := len(chain); n >= minSharedTail; n-- {
+				run := chain[len(chain)-n:]
+				members := []int{i}
+				for j := i + 1; j < len(chains); j++ {
+					if !done[j] && hasSuffix(chains[j], run) {
+						members = append(members, j)
+					}
+				}
+				if len(members) < 2 {
+					continue
+				}
+				if save := (len(members) - 1) * (n - 1); save > bestSave || save == bestSave && n > len(best.run) {
+					best, bestSave = sharedTail{run: run, deps: members}, save
+				}
+			}
+		}
+		if bestSave == 0 {
+			return out
+		}
+		for _, i := range best.deps {
+			done[i] = true
+		}
+		out = append(out, best)
+	}
+}
+
+func hasSuffix(chain, run []any) bool {
+	if len(chain) < len(run) {
+		return false
+	}
+	tail := chain[len(chain)-len(run):]
+	for k := range run {
+		if tail[k] != run[k] {
+			return false
+		}
+	}
+	return true
+}
+
+// expandStructure reverses factorStructure: rows return to the version 7
+// column order with their empty columns ("" for text, null otherwise), and
+// each tN transfer reference is replaced by its shared run.
+func expandStructure(bundle map[string]any) map[string]any {
+	cw, _ := bundle["compact_wire"].(map[string]any)
+	if cols, _ := cw["evidence_columns"].([]any); len(cols) == len(factoredColumns) && cols[len(cols)-1] == "text" {
+		rows, _ := bundle["evidence"].([]any)
+		for i, r := range rows {
+			row, _ := r.([]any)
+			full := make([]any, len(factoredColumns))
+			copy(full, row)
+			if full[7] == nil {
+				full[7] = ""
+			}
+			rows[i] = append(append(append([]any{}, full[:4]...), full[7]), full[4:7]...)
+		}
+		columns := make([]any, len(v7EvidenceColumns))
+		for i, c := range v7EvidenceColumns {
+			columns[i] = c
+		}
+		cw["evidence_columns"] = columns
+	}
+	tails, _ := bundle["shared_transfer_tails"].([]any)
+	if len(tails) == 0 {
+		return bundle
+	}
+	deps, _ := bundle["dependencies"].([]any)
+	for _, d := range deps {
+		dep, _ := d.(map[string]any)
+		transfers, _ := dep["transfers"].([]any)
+		if len(transfers) == 0 {
+			continue
+		}
+		var n int
+		if ref, ok := transfers[len(transfers)-1].(string); ok {
+			if _, err := fmt.Sscanf(ref, "t%d", &n); err == nil && n >= 0 && n < len(tails) && ref == fmt.Sprintf("t%d", n) {
+				run, _ := tails[n].([]any)
+				dep["transfers"] = append(append([]any{}, transfers[:len(transfers)-1]...), run...)
+			}
+		}
+	}
+	delete(bundle, "shared_transfer_tails")
+	return bundle
+}

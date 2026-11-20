@@ -27,15 +27,15 @@ func TestCommandPredecessorRequests(t *testing.T) {
 	}
 	want := map[string]baseline{
 		"string-flow":                 {1, "6f9b69d1d97fc527823f4fbc55e28b09f1c46ae489bc6fcd34eebd06329758b6"},
-		"javascript/grpc":             {7, "c32c39ba4c1d68920468006300ab2497c2ff48c897d48d23c7b8143d1016a3c4"},
-		"typescript/grpc":             {7, "b224faba4c62ea83ff27ae0f4774e6bd8a5d089cf3ebe300ff4b75afd571cf48"},
-		"javascript/graphql":          {7, "783ee024e8cf8b2e4302f33c6a6bc3b1f4cbf087d0920d072efc48beaa09a330"},
-		"typescript/graphql":          {7, "5ecf0074a0c9f88ec6778464a6e7b5a86e051968dee4585a4e8494b0440b87e7"},
-		"javascript/dynamic-dispatch": {4, "fec97a09525dd0b5e68af6ed380988a0f872ab6cfe7f108726fa96750012254a"},
-		"typescript/dynamic-dispatch": {4, "a160c63e817184f8e4447e63bca7b9fed68a29780f9f6124f542174f0c4ad8c3"},
-		"python/routes":               {5, "175efac48fdf545ec7a8381fa0d3b3063fa27e9f202c10b1d4c2da8435450c25"},
-		"python/dynamic-vulnpy":       {31, "ecad7e229950d6a70ba89796812da6d19288cdc9c177745e1d97de6ea85694f3"},
-		"javascript/xss-fetch":        {5, "f74d892028f3f2c669b2cc34212231958046e766c9bc9ea124f83c4cacb67c79"},
+		"javascript/grpc":             {7, "e64335dd05c1dc3e1096c9abb4cdb503adc78228ae07eb8e82e3d81de3ca6fbf"},
+		"typescript/grpc":             {7, "5c9521a5235e04a2550e8d678f8437910421ad11530ba5d6d3152e1fa37b735e"},
+		"javascript/graphql":          {7, "7445b5e70d2f6fa6a8d8c0f4b458b6a375864aafad68c370da898cb26865da8a"},
+		"typescript/graphql":          {7, "f2d3c9ce3efcf846047b47bb7fe21d9c95d8e2699c7a639c9169ae4f9ce89bc7"},
+		"javascript/dynamic-dispatch": {4, "4ba57165b7e3d7235046e98169eeacdb4638a94055067e273d1496e6cae9f463"},
+		"typescript/dynamic-dispatch": {4, "47622e8f32acf52f05c096c727234b1364682f1b72ae1a2593c5e9af74b01be7"},
+		"python/routes":               {5, "cced0049fe56366dd72a759a045a5f52ddad2d78edff148cc335e3385b43844a"},
+		"python/dynamic-vulnpy":       {31, "01a5d6c0a0b4d2ad974be86996d655ee55205ebdccfb7baab3e73b4040167451"},
+		"javascript/xss-fetch":        {5, "be079b3e2a14d724537bf86f7a36b1ff2d696b8d019b0695bfbe7ccaa866a989"},
 		"javascript/outbound":         {4, "7616f13e1350e438c8ff872759a2b58a948bf45f08379401a1f0a6c5c341718b"},
 	}
 	c, _ := New("openai", "fixture-model", "k")

@@ -1,84 +1,84 @@
 {
   "failed": true,
   "requests": 0,
-  "report_sha256": "36bb5d03f3c9ffb233b118997ca4e7cb700b7d7baac565b68dc3d7650c457a9b",
+  "report_sha256": "48f4c571e16eedef8b55f2fd3563bd52f27deb5f0f0d6f58df99b51cfb735df8",
   "assessments": [
     {
       "id": "candidate:v1:c6a6ad74cd389bc37adad9d8461ebb45dfa2afba5ab88a5678c32f074809026a",
       "assessment": {
-        "request_digest": "2c5d19cd3e56bd60db174782df8679a2e08b18acd550d7f0076a7df79277c6a1",
+        "request_digest": "b3fd027e12040f3466cf3db71dccf004319fe3e7420578822844564420a700c7",
         "finding_status": "needs_evidence",
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v4",
         "protection": "uncertain",
-        "reason": "evidence_too_large: the request needs 17313 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2145, evidence_coverage 1121, invocation 954, compact_wire 760, evidence 451, declared_requirement 424, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
+        "reason": "evidence_too_large: the request needs 17335 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2227, evidence_coverage 1121, invocation 954, compact_wire 760, declared_requirement 424, evidence 415, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
       }
     },
     {
       "id": "candidate:v1:561b7b4c569d7dcc18b515631f35a7869d6036ba55df504213111dcdf39225c8",
       "assessment": {
-        "request_digest": "24a7a6b9d807b817aac2db59a4804150a6652f7157aa2e98ecc41ec7df852294",
+        "request_digest": "a4bd913332f83acb8568de42379c6646b00bc9bc6963f59fbd863518ba6380ed",
         "finding_status": "needs_evidence",
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v4",
         "protection": "uncertain",
-        "reason": "evidence_too_large: the request needs 17313 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2145, evidence_coverage 1121, invocation 954, compact_wire 760, evidence 451, declared_requirement 424, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
+        "reason": "evidence_too_large: the request needs 17335 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2227, evidence_coverage 1121, invocation 954, compact_wire 760, declared_requirement 424, evidence 415, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
       }
     },
     {
       "id": "candidate:v1:276430da0b440b01e9c8d3798063124f3f27602059b14db10f91e9a666651c5e",
       "assessment": {
-        "request_digest": "cc8ccea1939c37832351b23bc38cac05d6eb3c192b1da67baafd4bd5e65ef5de",
+        "request_digest": "40d26dbfaadd4a644261cee7387ffeccccb087dc7cc20ef630dcea367a05115d",
         "finding_status": "needs_evidence",
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v4",
         "protection": "uncertain",
-        "reason": "evidence_too_large: the request needs 17313 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2145, evidence_coverage 1121, invocation 954, compact_wire 760, evidence 451, declared_requirement 424, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
+        "reason": "evidence_too_large: the request needs 17335 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2227, evidence_coverage 1121, invocation 954, compact_wire 760, declared_requirement 424, evidence 415, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
       }
     },
     {
       "id": "candidate:v1:53d3114f15d3417c58c6de350286baa2a7837177934607702cd1b529f15e7314",
       "assessment": {
-        "request_digest": "f7b887ac7e4c5b13e0135e1eb245c03a6c303be740753d750109310c42c7d1d6",
+        "request_digest": "dca550b9e0279adf5c1c960a9a5760e53f6ac32c464789bc2ec88089960cc718",
         "finding_status": "needs_evidence",
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v4",
         "protection": "uncertain",
-        "reason": "evidence_too_large: the request needs 17313 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2145, evidence_coverage 1121, invocation 954, compact_wire 760, evidence 451, declared_requirement 424, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
+        "reason": "evidence_too_large: the request needs 17335 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2227, evidence_coverage 1121, invocation 954, compact_wire 760, declared_requirement 424, evidence 415, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
       }
     },
     {
       "id": "candidate:v1:35039b97602ab5f24148cccaf32062e278707ba4d707b91fc9590b49c4d3ad53",
       "assessment": {
-        "request_digest": "b965df91cb7b088f032626708b4e1760c306d16cdc47432f4ab70a6041b349a9",
+        "request_digest": "d4bcf57cb9bceb8066cc85523cc8a377ad539252ea935e2f401efcdb94bf7f0c",
         "finding_status": "needs_evidence",
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v4",
         "protection": "uncertain",
-        "reason": "evidence_too_large: the request needs 17313 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2145, evidence_coverage 1121, invocation 954, compact_wire 760, evidence 451, declared_requirement 424, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
+        "reason": "evidence_too_large: the request needs 17335 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2227, evidence_coverage 1121, invocation 954, compact_wire 760, declared_requirement 424, evidence 415, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
       }
     },
     {
       "id": "candidate:v1:31c6421b2b2fd182a4db0b6eec4c80ad6949b990bb71dba56b24f0cc09c65ff3",
       "assessment": {
-        "request_digest": "4475735655dca5641980c5edb9323c72137e8f8e170bb28001f94b02f7c0646d",
+        "request_digest": "3d38bf258f9302c21263bb54ec1b99181ad7f45e0483bdbc7ddceb0e196e3f8c",
         "finding_status": "needs_evidence",
         "status": "not_run",
         "provider": "openai",
         "model": "fixture-model",
         "question_version": "sql-components-v4",
         "protection": "uncertain",
-        "reason": "evidence_too_large: the request needs 17313 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2145, evidence_coverage 1121, invocation 954, compact_wire 760, evidence 451, declared_requirement 424, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
+        "reason": "evidence_too_large: the request needs 17335 bytes against the 1024-byte limit after 0 context evidence item(s) were left out; the remaining evidence is dependency, control or required evidence and is not shed. Bytes by section: analysis_guidelines 4122, instruction 2227, evidence_coverage 1121, invocation 954, compact_wire 760, declared_requirement 424, evidence 415, api_model 373, input_facts 232, source_excerpts 198, analysis_components 172, required_evidence 148, scope 122, dependencies 76, context_evidence 31, model_facts 24, kind 21, coverage_gaps 16, claim_kind 11, resolved_gaps 6, sink_evidence 4, blocking_gaps 2, control_edges 2, evidence_version 1"
       }
     }
   ],
@@ -91,40 +91,40 @@
   ],
   "traces": {
     "candidate:v1:276430da0b440b01e9c8d3798063124f3f27602059b14db10f91e9a666651c5e": {
-      "sha256": "eba47a9ef2d1683c42d85d08efa6197a5667100b54b5d31677a9673e86576f50",
-      "request_digest": "cc8ccea1939c37832351b23bc38cac05d6eb3c192b1da67baafd4bd5e65ef5de",
+      "sha256": "048a04b7f060ef9dc497de055ae2bca9f3a1b7a8c4c31406aa1fc0c9dbcd8f3b",
+      "request_digest": "40d26dbfaadd4a644261cee7387ffeccccb087dc7cc20ef630dcea367a05115d",
       "http_status": 0,
-      "request_bytes": 17313
+      "request_bytes": 17335
     },
     "candidate:v1:31c6421b2b2fd182a4db0b6eec4c80ad6949b990bb71dba56b24f0cc09c65ff3": {
-      "sha256": "4a59a4c307ba875b3c1cd53768b13427e37c3d2a28fcf7660a43aac7e76790f1",
-      "request_digest": "4475735655dca5641980c5edb9323c72137e8f8e170bb28001f94b02f7c0646d",
+      "sha256": "7cd6c46e464038a85f9432e113e1056de6e0f2e2c828ab45f79cc8adab2e4cf9",
+      "request_digest": "3d38bf258f9302c21263bb54ec1b99181ad7f45e0483bdbc7ddceb0e196e3f8c",
       "http_status": 0,
-      "request_bytes": 17313
+      "request_bytes": 17335
     },
     "candidate:v1:35039b97602ab5f24148cccaf32062e278707ba4d707b91fc9590b49c4d3ad53": {
-      "sha256": "7417d39f258d261821820671e5ce48f5070ae22f7c5ff57c0d99bbca5ac0aea2",
-      "request_digest": "b965df91cb7b088f032626708b4e1760c306d16cdc47432f4ab70a6041b349a9",
+      "sha256": "3ba0c003acbcf4388f48dc9befae12e11d148cd8ba632767d0f7b811ff11c318",
+      "request_digest": "d4bcf57cb9bceb8066cc85523cc8a377ad539252ea935e2f401efcdb94bf7f0c",
       "http_status": 0,
-      "request_bytes": 17313
+      "request_bytes": 17335
     },
     "candidate:v1:53d3114f15d3417c58c6de350286baa2a7837177934607702cd1b529f15e7314": {
-      "sha256": "2c83a6855341e4064db1894243375dca4ead8af412bb33aa252025160258a7bb",
-      "request_digest": "f7b887ac7e4c5b13e0135e1eb245c03a6c303be740753d750109310c42c7d1d6",
+      "sha256": "70f1258866c2a46ba706c8afa1765391ade2933f0e551fe6ff8524fba09e89a5",
+      "request_digest": "dca550b9e0279adf5c1c960a9a5760e53f6ac32c464789bc2ec88089960cc718",
       "http_status": 0,
-      "request_bytes": 17313
+      "request_bytes": 17335
     },
     "candidate:v1:561b7b4c569d7dcc18b515631f35a7869d6036ba55df504213111dcdf39225c8": {
-      "sha256": "9b1dc65c6df17ac52a579827e3819301d5096b4de3726e4865c4a41c8aa3ee9c",
-      "request_digest": "24a7a6b9d807b817aac2db59a4804150a6652f7157aa2e98ecc41ec7df852294",
+      "sha256": "217dadf9b79ff8e3455c50281559442e4818ea8a15f29d136a2c1bd0aabf4cd0",
+      "request_digest": "a4bd913332f83acb8568de42379c6646b00bc9bc6963f59fbd863518ba6380ed",
       "http_status": 0,
-      "request_bytes": 17313
+      "request_bytes": 17335
     },
     "candidate:v1:c6a6ad74cd389bc37adad9d8461ebb45dfa2afba5ab88a5678c32f074809026a": {
-      "sha256": "de9777ab9bac403c9bf0b478cc5df133ba43986422bc4721b861d7f5329bd804",
-      "request_digest": "2c5d19cd3e56bd60db174782df8679a2e08b18acd550d7f0076a7df79277c6a1",
+      "sha256": "87c04ea92c5782544663df8212ebdc98cac1d1c82042db9bffc3ca26b0a50096",
+      "request_digest": "b3fd027e12040f3466cf3db71dccf004319fe3e7420578822844564420a700c7",
       "http_status": 0,
-      "request_bytes": 17313
+      "request_bytes": 17335
     }
   }
 }

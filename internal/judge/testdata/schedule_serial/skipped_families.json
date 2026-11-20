@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 2,
-  "report_sha256": "0f97d067c572824626768c82fb3c6ef822363eb1a3d65479509086bb53b10066",
+  "report_sha256": "a4b3bf50b331a32673cbd6352ba5aed46555501664f9799cbc5dffc244462924",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -41,7 +41,7 @@
     {
       "id": "xss-claim",
       "assessment": {
-        "request_digest": "96007be5d4b29c4acfb4c0c4ffcd3b0271ede8e8e5a589c476cd834f5a0a0a3c",
+        "request_digest": "3515add1dc84916d9bfda5cb4b90cd871a3585c576c893d0e973679007e405fd",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "encoding_adequacy": "not_present",
@@ -75,7 +75,7 @@
     {
       "id": "logging-claim",
       "assessment": {
-        "request_digest": "2da25c25a589d5914764d8b8a558988602bbcaf11b5079962e43809705037eb2",
+        "request_digest": "7e05b53b17ee53b38ca4930d0019cd92b71ddfafa6fad8f1801f9d062ba2efd3",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "content_exposure": "yes",
@@ -106,16 +106,16 @@
   ],
   "traces": {
     "logging-claim": {
-      "sha256": "261635267ebacd028f5a1dfa38dd16fe8c6d5443573c65bd4ddcea28a7d60720",
-      "request_digest": "2da25c25a589d5914764d8b8a558988602bbcaf11b5079962e43809705037eb2",
+      "sha256": "f6d139ecbec379b6bee1eeb9f9bb788ceb97b74848b458bd80fce89f18d8d899",
+      "request_digest": "7e05b53b17ee53b38ca4930d0019cd92b71ddfafa6fad8f1801f9d062ba2efd3",
       "http_status": 200,
-      "request_bytes": 9068
+      "request_bytes": 9130
     },
     "xss-claim": {
-      "sha256": "8e90c70ebc56dfbbdc0feefc93a8378006b7553bc3e34d9765fbe0d04f1261b5",
-      "request_digest": "96007be5d4b29c4acfb4c0c4ffcd3b0271ede8e8e5a589c476cd834f5a0a0a3c",
+      "sha256": "5a8a540e882405f8b52959bcc79c6f975a21e9d25432ae07aa64f30c5f6c1674",
+      "request_digest": "3515add1dc84916d9bfda5cb4b90cd871a3585c576c893d0e973679007e405fd",
       "http_status": 200,
-      "request_bytes": 12175
+      "request_bytes": 12157
     }
   }
 }

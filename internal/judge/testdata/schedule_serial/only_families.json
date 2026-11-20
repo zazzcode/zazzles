@@ -1,7 +1,7 @@
 {
   "failed": false,
   "requests": 1,
-  "report_sha256": "e0639664cdb24dd242bdae57c53ae804ebe815cbfa54c225f6ef4ef5fc46d5da",
+  "report_sha256": "ebc6ad96a08660791123bf97d483a022648d628f03557256631fa847ac977187",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -55,7 +55,7 @@
     {
       "id": "logging-claim",
       "assessment": {
-        "request_digest": "2da25c25a589d5914764d8b8a558988602bbcaf11b5079962e43809705037eb2",
+        "request_digest": "7e05b53b17ee53b38ca4930d0019cd92b71ddfafa6fad8f1801f9d062ba2efd3",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "content_exposure": "yes",
@@ -86,10 +86,10 @@
   ],
   "traces": {
     "logging-claim": {
-      "sha256": "261635267ebacd028f5a1dfa38dd16fe8c6d5443573c65bd4ddcea28a7d60720",
-      "request_digest": "2da25c25a589d5914764d8b8a558988602bbcaf11b5079962e43809705037eb2",
+      "sha256": "f6d139ecbec379b6bee1eeb9f9bb788ceb97b74848b458bd80fce89f18d8d899",
+      "request_digest": "7e05b53b17ee53b38ca4930d0019cd92b71ddfafa6fad8f1801f9d062ba2efd3",
       "http_status": 200,
-      "request_bytes": 9068
+      "request_bytes": 9130
     }
   }
 }

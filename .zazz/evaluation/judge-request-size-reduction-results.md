@@ -185,6 +185,48 @@ the OQ-2 XSS-only rerun does not apply. No further paid call was made.
 |---|---|---|---|---|---|---|---|
 | 1 | log_sink | `server.ts:366` | `server.ts` | Confirmed | practice finding | `log_exposure` vulnerable → unknown | 0/0 |
 
+## Investigation of the AC8 changes (offline, no paid calls)
+
+Scripts and outputs are under `live/`: `reqdiff.py`, `margins.py`, `reqdiff.txt` and `margins.txt`.
+
+**What the model received.** `reqdiff.py` compares the B1 and C request of every record sent as a
+single request: 179 on DVWA and 28 on Juice Shop. It first expands C's rows and shared tails back
+to the version 7 form and drops identifiers and aliases from both. After that, the requests differ
+in only three places, whether or not the record's status changed:
+- `evidence_version`
+- the instruction's schema sentences
+- the XSS choice descriptions
+
+No evidence row, excerpt, dependency, gap, fact or question instruction differs.
+
+**Size actually sent.** On the same records, sent as single requests in both arms:
+
+| Sample | Requests | Bytes | Provider input tokens | Per-request token cut |
+|---|---:|---|---|---|
+| DVWA | 179 | 6,135,031 → 5,351,005 (−12.8%) | 1,837,058 → 1,495,989 (−18.6%) | median 13.0%, min 7.1%, max 34.1% |
+| Juice Shop | 28 | 841,230 → 795,031 (−5.5%) | 211,937 → 196,909 (−7.1%) | median 5.4%, min 3.6%, max 19.7% |
+
+Every request is smaller in C. Tokens fall more than bytes because hex identifiers tokenize
+poorly. The DVWA total cut (−26.9%) also includes 12 fewer path-group requests.
+
+**Which answers moved.** The changed answers were close calls in B1. Of the 22 XSS changes, 17
+had a B1 `xss_exposure` margin (top probability minus runner-up) of 0.25 or less. A typical pair
+was unknown 0.54 against vulnerable 0.43. On records whose status did not change, the median
+margin for that question is 0.60. The non-XSS changes had B1 margins between 0.01 and 0.40, and
+the Juice Shop log record had 0.19. Because the evidence is the same in both arms, these answers
+are sensitive to request wording, not to missing content.
+
+**Source review of the non-XSS changes.** The changes do not all go one way:
+- `brute/source/impossible.php:79`, `:90` and `:96` are PDO prepared statements with bound
+  parameters, so Protected is correct for all three. B1 got two of the three right (79, 90). C got
+  one right (96).
+- `exec/source/impossible.php:26` is reached only after the impossible level's octet validation.
+  C's Protected is correct and B1's Inconclusive is not.
+- JS-LOG-01 (`server.ts:366`) is a keyed positive. B1's Confirmed is correct; C answered unknown.
+
+The 22 XSS changes are at DVWA's shared page renderers, which are outside the answer key. They go
+both ways: 15 became Confirmed and 7 dropped to a practice finding.
+
 ## Open for the owner
 
 AC8 as written cannot pass while identical requests get identical statuses: a zero noise floor

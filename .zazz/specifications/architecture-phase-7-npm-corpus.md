@@ -44,8 +44,9 @@ Phase 8's library mode must beat that baseline on recall and unsupported claims.
 
 | Path | New / modified | Purpose |
 |---|---|---|
-| `.zazz/evaluation/npm-library-rce/corpus.json` | new | Per row: package, advisory IDs, repository URL, vulnerable and fixed commits, manifest path, export path, parameter, vector, sink `file:line`, fix summary |
-| `.zazz/evaluation/npm-library-rce/answer-keys/<package>.md` | new | Source-reviewed expected outcome for vulnerable, fixed, and bypass sibling |
+| `.zazz/evaluation/npm-library-rce/corpus.json` | new | Per row: package, advisory IDs, repository URL, vulnerable and fixed commits, manifest path, export path, parameter, vector, sink `file:line`, fix summary, and the detection path and proposal phase that owns the row |
+| `.zazz/evaluation/npm-library-rce/answer-keys/<package>.md` | new | Source-reviewed expected outcome for vulnerable, fixed, and bypass sibling, with the export-to-sink hop list (D-4) |
+| `.zazz/evaluation/npm-library-rce/gadgets.json` | new | The *Silent Spring* Node core gadget list confirmed from its artifact: property read, sink, Node version |
 | `.zazz/evaluation/npm-library-rce/baseline-results.md` | new | Direct-model recall, unsupported claims, cost, run-to-run variation |
 | `.zazz/project/vulnerable-sample-apps.md` | modified | Corpus pins section |
 | `.zazz/specifications/README.md`, this spec | modified | Index, change log |
@@ -62,6 +63,20 @@ Out of scope: library mode (phase 8), new sinks, the pollution pack, feasibility
 - **D-3 The paid baseline is a separate checkpoint.** All offline pinning and keys are committed
   first. Without an owner cap the phase ends there, with the baseline marked "not run". That is a
   valid partial exit, recorded in the run log.
+- **D-4 The keys record how the value travels, not only where it lands.** Library code is class-
+  and prototype-heavy, and the JS/TS adapter's reach through `new C()`, `this` and `C.prototype`
+  has never been measured on this corpus. Each key lists the hops from the exported function to
+  the sink and gives each a kind: plain call, method on `this`, method through `new`, prototype
+  assignment, callback, computed property, or re-export. Phase 8 reports which hops it resolves, so
+  a flow contract can be sized from counts and not from a guess.
+- **D-5 An argument-injection key states the option semantics.** For `simple-git` the key names
+  the git behaviour that makes the argument dangerous (the `ext::` transport, option-shaped
+  operands such as `--upload-pack`) and the exact check the fixed version adds. Today the command
+  analyzer reports CWE-88 only for a literal interpreter and holds unknown utility options in
+  Review, so phase 8 needs these facts to decide whether the row is in its reach.
+- **D-6 Pollution-only packages are controls.** `lodash` `defaultsDeep`, `minimist` and `set-value`
+  have published pollution writes with no known code execution. They are pinned and keyed like
+  the other rows, marked `control: gadget_noise`, to measure false gadget links later.
 
 ## 6. Agent implementation rules
 
@@ -75,17 +90,25 @@ Additional halts:
 
 ## 7. Acceptance criteria
 
-1. **AC1** `corpus.json` has every proposal row, React2Shell included. Each row has confirmed
-   vulnerable and fixed commits that resolve in the cloned repository, and the "to confirm" `pug`
-   and `lodash` versions are resolved.
+1. **AC1** `corpus.json` has every proposal row, React2Shell included, and the three D-6
+   controls. Each row has confirmed vulnerable and fixed commits that resolve in the cloned
+   repository, and the "to confirm" `pug` and `lodash` versions are resolved. Each row names its
+   vector in the proposal's vocabulary (with `deserialization` as a label where the entry decodes
+   a serialized graph), its detection path, and the proposal phase that owns it.
 2. **AC2** Each answer key names the vulnerable export, parameter, vector, and sink anchor; the
-   fixed revision's control; and one bypass sibling name. For React2Shell it names the exact
-   decoder function from the 19.2.0→19.2.1 fix diff.
+   fixed revision's control; one bypass sibling name; and the D-4 hop list with a kind per hop. For
+   React2Shell it names the exact decoder function from the 19.2.0→19.2.1 fix diff. The
+   `simple-git` key carries the D-5 option semantics.
 3. **AC3** Corpus HEADs and clean status are recorded before and after.
 4. **AC4** With an owner cap: `baseline-results.md` reports per-row detection on vulnerable pins,
    unsupported claims, requests, cost, and run-to-run variation on at least two rows (2 runs each).
    Without a cap: the file states "baseline not run: no cap", and AC4 is deferred, not failed.
 5. **AC5** Doc-check passes on the new documents.
+6. **AC6** `gadgets.json` lists each *Silent Spring* universal gadget the artifact confirms, with
+   its property name, sink and the Node version it was shown on. Gadgets the artifact does not
+   reproduce are listed as unconfirmed, not dropped.
+7. **AC7** `baseline-results.md` has a flow-shape table: per row, the number of hops of each D-4
+   kind. It needs no paid call and is written before the baseline checkpoint.
 
 ## 8. Test strategy
 
@@ -95,14 +118,15 @@ fix diffs, and the paid ledger.
 ## 9. TDD entry point and execution sequence
 
 1. Get approval for the clone list, then clone and pin (AC1, AC3).
-2. Write the answer keys from the advisories and fix diffs (AC2). Commit.
+2. Write the answer keys from the advisories and fix diffs, with hop lists, the gadget list and
+   the flow-shape table (AC2, AC6, AC7). Commit.
 3. Checkpoint: ask for provider, model, and cap.
 4. If granted, run the baseline method agreed in OQ-1 and write the results (AC4).
 5. Doc-check, then a draft PR.
 
 ## 10. Definition of done
 
-- [ ] AC1–AC5 verified, or AC4 deferred with its reason.
+- [ ] AC1–AC7 verified, or AC4 deferred with its reason.
 - [ ] No tracked file contains unpublished findings.
 - [ ] The paid ledger is retained, and the request count is stated in the PR.
 
@@ -131,4 +155,10 @@ Use the plan's common rules. Record OQ answers verbatim, clone approvals, and pe
 
 ## 14. Implementation and review change log
 
-No changes recorded.
+### 2026-11-20 — Reviewed against the refreshed proposal
+
+Requested by the owner while planning the work before library scanning. No scope is widened
+beyond the proposal's phase 0. Added: hop lists and the flow-shape table (D-4, AC2, AC7), which
+the implementation plan asked this phase to record; option semantics in the `simple-git` key
+(D-5); the pollution-only controls (D-6, AC1) and the *Silent Spring* gadget list (AC6), both named
+in the proposal's phase-0 mining; the vector label and owning phase per row (AC1).

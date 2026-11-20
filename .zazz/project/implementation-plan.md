@@ -112,25 +112,51 @@ Three proposal contracts come first, then npm library scanning. Each starts on o
 
 | Order | Planned functionality | Notes |
 |---|---|---|
-| 1 | **Close findings gaps** (Node.js Goof, DVWA, Python insecure app) | [Contract](../specifications/close-findings-gaps.md), worktree `close-findings-gaps-dvwa`. Closes the three Review rows in the README accuracy table and the misses found by source review: single-path bypass citation, regex capture facts, PHP class and method binding, over-limit path-group requests, unrestricted upload (CWE-434) and template injection (CWE-1336) claims, key corrections. Its PHP class binding is the prerequisite for order 2. Implemented 2026-11-19 (draft PR; [results](../evaluation/close-findings-gaps-results.md)); live check met (Goof 7/7, DVWA 11/11, Python insecure app 3/3); Node/Starlette/Symfony upload adapters remain |
+| 1 | **Close findings gaps** (Node.js Goof, DVWA, Python insecure app) | [Contract](../specifications/close-findings-gaps.md), worktree `close-findings-gaps-dvwa`. Closes the three Review rows in the README accuracy table and the misses found by source review: single-path bypass citation, regex capture facts, PHP class and method binding, over-limit path-group requests, unrestricted upload (CWE-434) and template injection (CWE-1336) claims, key corrections. Its PHP class binding is the prerequisite for order 2. Implemented 2026-11-19 and merged via [PR #31](https://github.com/zazzcode/zazzles/pull/31) ([results](../evaluation/close-findings-gaps-results.md)); live check met (Goof 7/7, DVWA 11/11, Python insecure app 3/3); Node/Starlette/Symfony upload adapters remain |
 | 2 | **PHP Symfony support** | [Contract](../specifications/php-symfony-support.md), supersedes architecture phase 6. Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF, with the `vuln-symfony` answer key at `086f81f`. Its key and routing slices need nothing from order 1 and may start beside it. `gopkg.in/yaml.v3` is approved |
 | 3 | **Unsafe deserialization analyzer (CWE-502)** | [Contract](../specifications/unsafe-deserialization.md), own worktree `unsafe-deserialization`. New `deserialization` family for Python `pickle` and PyYAML, PHP `unserialize`, Node `node-serialize` and js-yaml. Python and JS/TS are independent of orders 1 and 2 and may run beside them; the `vuln-symfony` row needs order 2 |
-| 4 | **npm library RCE scanning** | Container-root npm library RCE proposal, as architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline, no engine change) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on the existing command and code analyzers), then the proposal's compile-to-JS sinks and prototype pollution pack under new contracts. See the analyzer notes below |
+| 4 | **npm library RCE scanning** | Container-root npm library RCE proposal, as architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline, no engine change) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on the existing command and code analyzers), then the proposal's compile-to-JS sinks and prototype pollution pack under new contracts. The [waypoints below](#before-library-scanning) set what comes first |
 
-Analyzers the npm work needs, checked against the proposal on 2026-11-19:
+<a id="before-library-scanning"></a>
 
-- **Prototype pollution is the one missing analyzer.** Six of the eleven corpus rows depend on it
-  (`superjson`, `express-fileupload`, `ajv`, `parse-server`, `handlebars`, React2Shell). It is the
-  row at order 2 of the earlier table below and the proposal's phase 3. Build it once for both
-  modes: the application write claim first, verified on Node.js Goof (`routes/index.js:360`, which
-  order 1 makes reachable), then the library access and gadget claims.
+### Before library scanning (waypoints, 2026-11-20)
+
+Checked against the refreshed npm proposal and the code on 2026-11-20. The corpus phase can start
+now. One analyzer and two contracts are missing before every corpus row is in reach.
+
+| Waypoint | Work | Spec | State | Needed before |
+|---|---|---|---|---|
+| W0 | **Command bypass support** | [Contract](../specifications/command-bypass-support.md) | In review, [PR #34](https://github.com/zazzcode/zazzles/pull/34) | W4. Library mode runs the JS command analyzer, and D-6 of phase 8 reads this contract's guard listing |
+| W1 | **Re-judge the JS command samples** under `command-components-v5` (Node.js Goof, vuln-nextjs) | None needed: a live check | Owner's call (open question 2 of W0) | W4, so library mode starts from a measured JS command baseline |
+| W2 | **npm corpus, answer keys and direct-model baseline** | [Phase 7](../specifications/architecture-phase-7-npm-corpus.md), reviewed 2026-11-20 | Ready to assign. Offline steps need no cap; the baseline needs a model and a numeric cap | W3, W4 and W5. Its keys supply the sink anchors, hop lists, git option semantics and gadget list those specs are written from |
+| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/prototype-pollution.md), proposal drafted 2026-11-20 | The one missing analyzer. Stage 1 (application write claim, Node.js Goof and the TypeScript app) can start now; stage 2 (library write) follows W2 and W4. Access and gadget claims are added from W2's keys | The six pollution rows (`superjson`, `express-fileupload`, `ajv`, `parse-server`, `handlebars`, React2Shell) |
+| W4 | **Library mode on the existing analyzers** | [Phase 8](../specifications/architecture-phase-8-npm-library-mode.md), reviewed 2026-11-20 | Starts after W0 and W2 merge | Every library result |
+| W5 | **Utility option contracts for argument arrays**, `git` first | **Not written** | Decide after W2: write it only if the `simple-git` key shows the row is outside W4's reach | The `simple-git` row |
+| W6 | **Library judge contract**: parameter-trust question, a question protocol for caller-argument inputs, the feasibility consumer | **Not written** | After W4 reports candidates per library | The proposal's phase 1 exit and any paid library judgment |
+| W7 | **Code-execution sinks for libraries**: compile-to-JS, deserialization-to-code, dynamic `require` | **Not written** (proposal phase 2) | After W4. Reuse the Node contracts of [unsafe deserialization](../specifications/unsafe-deserialization.md) | `ejs`, `pug`, `lodash`, `ajv`, `node-serialize` |
+
+What the check found:
+
+- **Prototype pollution is the one missing analyzer.** Six of the eleven corpus rows depend on
+  it. Its [contract](../specifications/prototype-pollution.md) builds the write claim once for
+  both modes: applications first, verified on Node.js Goof (`routes/index.js:360`) and the
+  Vulnerable TypeScript app (`src/server.ts:246`), then library exports. The access and gadget
+  claims wait for the corpus keys.
 - **No other analyzer is needed.** Command, argument and code injection exist. Compile-to-JS,
-  deserialization-to-code and dynamic `require` are sinks on the code family in library mode. The
-  order 3 family and order 1's template-injection claim cover an application calling a library;
-  they do not replace those library-side sinks and are not prerequisites for them.
-- **A flow limit to measure before phase 8.** Library code is class- and prototype-heavy. The
-  JS/TS adapter's handling of methods reached through `new C()`, `this` and `C.prototype` has not
-  been measured on the corpus. Phase 7's baseline should record it, as order 1 does for PHP.
+  deserialization-to-code and dynamic `require` are sinks on the code family (W7). Unsafe
+  deserialization (order 3) covers an application calling a decoder; it is not a prerequisite, but
+  its Node contracts are the ones W7 needs, so write them once.
+- **Argument injection is narrower than the proposal assumes.** The command analyzer reports
+  CWE-88 only for a literal interpreter and holds unknown utility options in Review. `simple-git`
+  needs git's option and transport semantics stated in a contract (W5), or it stays Review.
+- **The judge is off in library mode until W6.** Existing questions presume request-origin inputs.
+  Phase 8 is the offline half of the proposal's phase 1; trust classification and feasibility are
+  the other half.
+- **Flow reach through classes is unmeasured.** Phase 7 now records each row's export-to-sink hops
+  by kind, and phase 8 reports which it resolves. A flow contract is sized from those counts.
+
+Orders 2 and 3 above (Symfony, unsafe deserialization) are not prerequisites for W2 to W4 and may
+run beside them.
 
 ### Earlier order (2026-11-16), queued after the rows above
 
@@ -179,7 +205,7 @@ approved implementation assignments.
 | **Unrestricted upload and template injection** | In review (order 1, W5 and W6 of the [gaps contract](../specifications/close-findings-gaps.md)): PHP and Werkzeug upload writes, Jinja2/Flask/Mako, Twig and Node template engines; Node, Starlette and Symfony upload writes remain |
 | **PHP Symfony** | Next up, order 2; [contract](../specifications/php-symfony-support.md). Drupal follows it |
 | **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with appropriate negative controls |
-| **Prototype pollution** | The one analyzer npm library scanning still needs; see [next up](#next-up). JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
+| **Prototype pollution** | The one analyzer npm library scanning still needs; [contract](../specifications/prototype-pollution.md) drafted, see [waypoint W3](#before-library-scanning). JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |

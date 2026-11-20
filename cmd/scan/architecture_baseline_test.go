@@ -124,7 +124,8 @@ func architectureFixtures(t *testing.T) []string {
 			}
 		}
 	}
-	out = append(out, "internal/langjs/testdata/express-login", "internal/langjs/testdata/string-flow")
+	out = append(out, "internal/langjs/testdata/express-login", "internal/langjs/testdata/string-flow",
+		"internal/langjs/testdata/pollution/lodash-old", "internal/langjs/testdata/pollution/source-writes")
 	sort.Strings(out)
 	return out
 }

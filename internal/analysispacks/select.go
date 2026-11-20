@@ -30,11 +30,11 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	if !ok || !family.supports(language) {
 		return nil, fmt.Errorf("unsupported %s source language", family.Label)
 	}
-	if family.Name != "xss" && family.Name != "logging" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
+	if family.Name != "xss" && family.Name != "logging" && family.Name != "pollution" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
 		return nil, fmt.Errorf("%s selection must not carry an API contract", family.Label)
 	}
 	var contract *analysis.APIModel
-	if family.RequiresAPI {
+	if family.RequiresAPI || family.Name == "pollution" && use.APIModel != nil {
 		if use.APIModel == nil || use.Completeness == nil || len(use.Completeness.Evidence["sink_binding"]) == 0 {
 			return nil, fmt.Errorf("%s component selection needs verified API binding", family.Label)
 		}
@@ -76,7 +76,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	}
 	roots := []string{family.Pack, languageID(family, language)}
 	if entry != "" {
-		if entry == "browser" && operandFamily(family.Name) {
+		if family.Name == "pollution" {
+			roots = append(roots, "entry.pollution."+entry)
+		} else if entry == "browser" && operandFamily(family.Name) {
 			roots = append(roots, "entry."+family.Name+".browser")
 		} else {
 			roots = append(roots, "entry."+entry)
@@ -108,7 +110,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		}
 		input := "source.node-input-v2"
 		switch family.Name {
-		case "code", "redirect", "upload":
+		case "code", "redirect", "upload", "pollution":
 			input = "source.node-input-" + family.Name + "-v1"
 		case "path":
 			input = "source.node-input-path-v2"

@@ -21,6 +21,12 @@ func Enrich(r *analysis.AnalysisReport) {
 			}
 		}
 	}
+	for _, u := range r.Uses {
+		if u.Kind == analysis.PollutionKind {
+			r.FindingTypes = append(r.FindingTypes, pollutionFindingType)
+			break
+		}
+	}
 	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
 	for _, u := range r.Uses {
 		r.Findings = append(r.Findings, describe(u))
@@ -165,6 +171,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		}
 		switch a.FindingStatus {
 		case "confirmed_vulnerability":
+			if u.Kind == analysis.PollutionKind && u.Pollution != nil && a.QuestionVersion == analysispacks.PollutionProtocol && len(a.BlockingGaps) == 0 {
+				f.RecordType, f.Status = "finding", "confirmed_vulnerability"
+			}
 			if u.Kind == "xss_candidate" && (a.QuestionVersion == "xss-use-v1" || a.QuestionVersion == analysispacks.XSSProtocol) && len(a.BlockingGaps) == 0 && a.Answers["xss_exposure"] == "vulnerable" && u.XSS != nil && u.XSS.Protection != "unknown" {
 				f.RecordType, f.Status = "finding", "confirmed_vulnerability"
 				f.Title = "Cross-site scripting supported by source analysis"
@@ -284,6 +293,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if u.Upload != nil {
 		describeUpload(u, &f)
+	}
+	if u.Kind == analysis.PollutionKind {
+		describePollution(&f)
 	}
 	return f
 }

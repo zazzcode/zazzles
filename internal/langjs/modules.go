@@ -51,6 +51,7 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
+	pollutionWrites map[uintptr]pollutionWrite
 	witnessPlans    map[string]*jsWitnessPlan
 	prismaSchemas   map[string]map[string]map[string]string
 	browserStates   map[string]*browserEvents

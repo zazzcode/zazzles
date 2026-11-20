@@ -213,6 +213,11 @@ func indexedContext(use analysis.CandidateUse) []int {
 		interpreterIndices = append(interpreterIndices, p.Controls...)
 	}
 	out := interpreterIndices
+	if f := use.Pollution; f != nil {
+		for _, p := range f.Paths {
+			out = append(out, p.Controls...)
+		}
+	}
 	if f := use.Command; f != nil {
 		for _, o := range f.Operands {
 			out = append(out, o.Context...)
@@ -308,6 +313,14 @@ func withoutContext(use analysis.CandidateUse, dropped map[spanKey]bool, omitted
 			copyFacts.Paths[i].Controls = mapAll(f.Paths[i].Controls)
 		}
 		out.Code = &copyFacts
+	}
+	if f := use.Pollution; f != nil {
+		copyFacts := *f
+		copyFacts.Paths = append([]analysis.CommandPath(nil), f.Paths...)
+		for i := range copyFacts.Paths {
+			copyFacts.Paths[i].Controls = mapAll(f.Paths[i].Controls)
+		}
+		out.Pollution = &copyFacts
 	}
 	if f := use.Redirect; f != nil {
 		copyFacts := *f

@@ -21,7 +21,7 @@ func validationSelectionUse(file string, claim bool) analysis.CandidateUse {
 }
 
 func TestFamilyComponentSelection(t *testing.T) {
-	families := map[string][]string{"logging": nil, "sql": nil, "nosql": nil, "validation": nil, "xss": nil, "outbound": nil, "command": nil, "path": nil, "ssrf": nil, "code": nil, "redirect": nil, "upload": nil}
+	families := map[string][]string{"logging": nil, "sql": nil, "nosql": nil, "validation": nil, "xss": nil, "outbound": nil, "command": nil, "path": nil, "ssrf": nil, "code": nil, "redirect": nil, "upload": nil, "pollution": nil}
 	for _, fam := range Families() {
 		if _, ok := families[fam.Name]; !ok {
 			t.Fatalf("unexpected family %s", fam.Name)

@@ -51,6 +51,7 @@ all its syntax, APIs, or vulnerable paths are covered.
 | **JavaScript conditional flow** | Precise JS/TS `if`/`else if`/`else`: arm polarity, exits including `process.exit`, isolated joins, block scoping. A guard on one arm never protects a sibling arm or later code. Loops, `switch`, `try`/`finally` and request rebinding keep a conservative fallback | [Analysis rules](../../docs/analysis/README.md#javascript-conditional-flow), [contract](../specifications/javascript-if-flow.md) |
 | **Evidence wire v7** | Always-compact requests with evidence IDs, character-column locators, one obligation ledger, a role budget with visible omissions and an `evidence_too_large` floor. Transparent wrappers and header-only middleware summaries. Guidance-owned fact codes. Largest sample request about 59 KB | [Wire v7 contract](../specifications/wire-bundle-v7.md), [verification](../evaluation/wire-bundle-v7-results.md) |
 | **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins (including URL path/url/originalUrl/baseUrl and verified upload filename/content), types, transfers, controls, lifecycle stages, and Express non-final middleware-chain sibling entries | [Node refactor results](../evaluation/node-input-refactor-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Prototype pollution (CWE-1321)** | JS/TS application writes through affected Lodash methods and bounded source-visible recursive, split-path, and nested writes. Implemented on the assigned feature branch, pending merge | [Rules](../../docs/analysis/prototype-pollution.md), [results](../evaluation/prototype-pollution-results.md) |
 | **Next.js acquisition** | App Router route handlers, Server Component pages and `generateMetadata`, Server Actions, middleware matcher stages; Pages Router API routes (including CommonJS handler factories) and `getServerSideProps` pages whose props feed the server render; Web Request API origins, zod evidence, `"use client"` React flow; `prisma-raw-v1`, `prisma-filter-object-v1`, `better-sqlite3-v1`, `pglite-v1`; raw-SQL and Prisma stored-XSS links; model-free NX-BP practice observations. Verified on OopsSec Store (`2d530ef`) and the owner-maintained vuln-nextjs lab (`ea10efb`; full sample reports published). [PR #18](https://github.com/zazzcode/zazzles/pull/18) merged; phase 2 follows the [combined contract](../specifications/nextjs-phase-2-and-code-redirect.md) | [Next.js support](../../docs/nextjs-support.md), [rules](../../docs/analysis/nextjs.md), [contract](../specifications/nextjs-support.md) |
 | **Python input acquisition** | Existing bounded Python HTTP adapters emit the same optional origin/type/transfer schema as Node, with invocation-local acquisition and separate `source.python-input-v1` interpretation; runtime types remain unknown, existing sink contracts and behavior preserved; new dependency/lifecycle/discovery coverage remains deferred | [Python refactor contract](../specifications/python-input-refactor.md), [verification](../evaluation/python-input-refactor-results.md) |
 | **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
@@ -121,15 +122,15 @@ Three proposal contracts come first, then npm library scanning. Each starts on o
 
 ### Before library scanning (waypoints, 2026-11-20)
 
-Checked against the refreshed npm proposal and the code on 2026-11-20. The corpus phase can start
-now. One analyzer and two contracts are missing before every corpus row is in reach.
+Checked against the refreshed npm proposal and the code on 2026-11-20. The corpus phase can start now. Library-mode integration and the remaining contracts govern which
+corpus rows can be measured.
 
 | Waypoint | Work | Spec | State | Needed before |
 |---|---|---|---|---|
-| W0 | **Command bypass support** | [Contract](../specifications/command-bypass-support.md) | In review, [PR #34](https://github.com/zazzcode/zazzles/pull/34) | W4. Library mode runs the JS command analyzer, and D-6 of phase 8 reads this contract's guard listing |
+| W0 | **Command bypass support** | [Contract](../specifications/command-bypass-support.md) | Merged into `stage`, [PR #34](https://github.com/zazzcode/zazzles/pull/34) | W4. Library mode runs the JS command analyzer, and D-6 of phase 8 reads this contract's guard listing |
 | W1 | **Re-judge the JS command samples** under `command-components-v5` (Node.js Goof, vuln-nextjs) | None needed: a live check | Owner's call (open question 2 of W0) | W4, so library mode starts from a measured JS command baseline |
 | W2 | **npm corpus, answer keys and direct-model baseline** | [Phase 7](../specifications/architecture-phase-7-npm-corpus.md), reviewed 2026-11-20 | Ready to assign. Offline steps need no cap; the baseline needs a model and a numeric cap | W3, W4 and W5. Its keys supply the sink anchors, hop lists, git option semantics and gadget list those specs are written from |
-| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/prototype-pollution.md), proposal drafted 2026-11-20 | The one missing analyzer. Stage 1 (application write claim, Node.js Goof and the TypeScript app) can start now; stage 2 (library write) follows W2 and W4. Access and gadget claims are added from W2's keys | The six pollution rows (`superjson`, `express-fileupload`, `ajv`, `parse-server`, `handlebars`, React2Shell) |
+| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/prototype-pollution.md), proposal drafted 2026-11-20 | Stage 1 application write claim implemented on `prototype-polution-analyzer`, pending merge. Stage 2 library writes follow W2 and W4. Access and gadget claims follow the corpus keys | The six pollution rows (`superjson`, `express-fileupload`, `ajv`, `parse-server`, `handlebars`, React2Shell) |
 | W4 | **Library mode on the existing analyzers** | [Phase 8](../specifications/architecture-phase-8-npm-library-mode.md), reviewed 2026-11-20 | Starts after W0 and W2 merge | Every library result |
 | W5 | **Utility option contracts for argument arrays**, `git` first | **Not written** | Decide after W2: write it only if the `simple-git` key shows the row is outside W4's reach | The `simple-git` row |
 | W6 | **Library judge contract**: parameter-trust question, a question protocol for caller-argument inputs, the feasibility consumer | **Not written** | After W4 reports candidates per library | The proposal's phase 1 exit and any paid library judgment |
@@ -137,8 +138,8 @@ now. One analyzer and two contracts are missing before every corpus row is in re
 
 What the check found:
 
-- **Prototype pollution is the one missing analyzer.** Six of the eleven corpus rows depend on
-  it. Its [contract](../specifications/prototype-pollution.md) builds the write claim once for
+- **Prototype pollution has an application write analyzer.** Six of the original corpus rows depend
+  on library write, access, or gadget coverage. Its [contract](../specifications/prototype-pollution.md) builds the write claim once for
   both modes: applications first, verified on Node.js Goof (`routes/index.js:360`) and the
   Vulnerable TypeScript app (`src/server.ts:246`), then library exports. The access and gadget
   claims wait for the corpus keys.
@@ -162,8 +163,8 @@ run beside them.
 
 | Order | Planned functionality | Notes |
 |---|---|---|
-| 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Implemented with Next.js B–D in `nextjs-support-phase-2`; human review pending. [Contract](../specifications/nextjs-phase-2-and-code-redirect.md), [results](../evaluation/nextjs-phase-2-results.md). Prototype pollution remains the next implementation assignment |
-| 2 | **Prototype pollution (CWE-1321)** | JS/TS recursive merge and library `merge`/`set`/`defaultsDeep` sinks, computed key writes, key deny-list and null-prototype controls |
+| 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Implemented with Next.js B–D in `nextjs-support-phase-2`; human review pending. [Contract](../specifications/nextjs-phase-2-and-code-redirect.md), [results](../evaluation/nextjs-phase-2-results.md). The related prototype-write work is tracked at [W3](#before-library-scanning) |
+| 2 | **Prototype pollution (CWE-1321)** | Stage 1 application writes implemented on `prototype-polution-analyzer`. Library-mode verification is at [W3](#before-library-scanning) |
 | 3 | **PHP support (DVWA MVP), then Drupal** | Plain-PHP adapter implemented on `php-dvwa` (server-mapped entries, include dispatch, superglobal input facts, SQL/command/XSS/path/code/redirect/validation families) with offline DVWA `a1978a2` ACs green and the paid AC14 `gpt-6-luna` pass complete (292/296 assessed, 292/292 exact replay, sample published): [contract](../specifications/php-support.md), [results](../evaluation/php-support-results.md), [guide](../evaluation/dvwa-detection-guide.md), [sample](../../docs/samples/dvwa/README.md). Draft PR #23 into `stage`; then Drupal routing/controllers, Symfony `Request`, Form API, database API, Twig and render arrays as a separate follow-up deliverable |
 | 4 | **Agent skills fixes, scan/fix loop, external SAST findings import** | Fix-workflow skills, the scheduled/on-demand loop, and provenance-preserving import of third-party SAST findings |
 | Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
@@ -205,7 +206,7 @@ approved implementation assignments.
 | **Unrestricted upload and template injection** | In review (order 1, W5 and W6 of the [gaps contract](../specifications/close-findings-gaps.md)): PHP and Werkzeug upload writes, Jinja2/Flask/Mako, Twig and Node template engines; Node, Starlette and Symfony upload writes remain |
 | **PHP Symfony** | Next up, order 2; [contract](../specifications/php-symfony-support.md). Drupal follows it |
 | **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with appropriate negative controls |
-| **Prototype pollution** | The one analyzer npm library scanning still needs; [contract](../specifications/prototype-pollution.md) drafted, see [waypoint W3](#before-library-scanning). JS/TS object/prototype operations and verified library behavior; no invented Python equivalent |
+| **Prototype pollution in libraries** | Application write analysis is implemented on its feature branch. Library export coverage follows [waypoint W3](#before-library-scanning) and phase 8. [Contract](../specifications/prototype-pollution.md), [results](../evaluation/prototype-pollution-results.md) |
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |

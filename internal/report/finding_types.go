@@ -100,6 +100,8 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		ids = append(ids, "account-creation-validation", "input-validation")
 	case "outbound_http", "outbound_http_candidate":
 		ids = append(ids, "outbound-request-safety")
+	case analysis.PollutionKind:
+		return []string{analysis.PollutionFinding}
 	case "code", "code_execution_candidate":
 		return []string{"code-injection"}
 	case "template_injection_candidate":

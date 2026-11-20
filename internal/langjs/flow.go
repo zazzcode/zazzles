@@ -38,6 +38,7 @@ type value struct {
 	web string
 }
 type flow struct {
+	pollutionRead    bool
 	witness          *jsWitnessFrame
 	redirectResponse string
 	nextData         bool
@@ -599,6 +600,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		return f.transfer(v, "property_read", n)
 	case "assignment_expression":
 		left := n.ChildByFieldName("left")
+		f.pollutionAssignment(n, left)
 		v := f.transfer(f.eval(n.ChildByFieldName("right")), "assignment", n)
 		if f.client != nil {
 			text := left.Utf8Text(f.module.src)
@@ -985,6 +987,7 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	if mapped != nil {
 		return f.transfer(*mapped, "collection_map", n)
 	}
+	f.pollutionCall(n, fn, args, values)
 	if f.responseCall(n, fn, args, values) {
 		return value{}
 	}

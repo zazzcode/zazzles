@@ -27,6 +27,53 @@
   },
   "cases": [
     {
+      "id": "GOOF-PP-01",
+      "app": "nodejs-goof",
+      "key": "docs/samples/nodejs-goof/README.md",
+      "kind": "prototype_write_candidate",
+      "file": "routes/index.js",
+      "line": 360,
+      "expect": "positive",
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "TS-PP-01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/evaluation/vulnerable-typescript-app-detection-guide.md",
+      "kind": "prototype_write_candidate",
+      "file": "src/server.ts",
+      "line": 246,
+      "expect": "positive",
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-PP-N01",
+      "app": "juice-shop",
+      "key": ".zazz/specifications/prototype-pollution.md",
+      "kind": "prototype_write_candidate",
+      "file": "server.ts",
+      "line": 351,
+      "expect": "no_record"
+    },
+    {
+      "id": "JS-PP-N01b",
+      "app": "juice-shop",
+      "key": ".zazz/specifications/prototype-pollution.md",
+      "kind": "prototype_write_candidate",
+      "file": "routes/recycles.ts",
+      "line": 14,
+      "expect": "no_record"
+    },
+    {
+      "id": "OSS-PP-N01",
+      "app": "oss-oopssec-store",
+      "key": ".zazz/specifications/prototype-pollution.md",
+      "kind": "prototype_write_candidate",
+      "file": "packages/react-toastfy/index.js",
+      "line": 33,
+      "expect": "no_record"
+    },
+    {
       "id": "DEMO-XSS-01",
       "app": "vuln-demo-app",
       "key": ".zazz/evaluation/vuln-demo-app-detection-guide.md",

@@ -39,6 +39,13 @@ handlers and templates supplied the initial case inventory.
 
 
 
+## Prototype pollution source key
+
+`GOOF-PP-01` expects one prototype-write candidate at `routes/index.js:360` on the pinned sample.
+The request message supplies the keys to a Lodash merge and the lockfile resolves Lodash to
+`4.17.4`. The offline candidate carries a complete raw path. The published judged counts above
+predate this analyzer. [Offline verification](../../../.zazz/evaluation/prototype-pollution-results.md).
+
 ## Command-injection acceptance scan (2026-11-07)
 
 The report linked above is now a full source-transmitting scan with OpenAI Decisions `gpt-6-luna` at scanner

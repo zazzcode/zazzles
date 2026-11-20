@@ -702,6 +702,158 @@
     "uses_count": 5,
     "gaps": 0
   },
+  "internal/langjs/testdata/pollution/lodash-old": {
+    "uses": [
+      {
+        "id": "candidate:v1:66c0aa82b574917ff527ba17c0e8dbc28a2074428e6e4bb5bf1b6d94e2868a17",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "451e44768f75bd7f5cdb3b40c3ef237e28c589c3245be82abeefff0f77b13e5a",
+        "signature_sha256": "3d0aa1a07cf8a096075830853b57c8f691d7f378c17df6f132e023aaede82c5f"
+      },
+      {
+        "id": "candidate:v1:e33d4c63a54478a5aef4125d1947ef3aacefcffd12918ab5deb7a0cb750cebc5",
+        "kind": "input_validation_candidate",
+        "request_sha256": "082d3c7ce883baa61a64983ad0e33f744f84949a87cba69592d4f5ae921b9529",
+        "signature_sha256": "2ff2985754b778050e3c7291ae2dc542bd7c99170104226aa0118bbecb5cdfc0"
+      }
+    ],
+    "report_sha256": "72004e5f6c40e17c0b75077b463819fbacf434ba6ff2259e76e3be754a85fcb7",
+    "sarif_sha256": "d2c7959b2006658ddf219b23409193e9b50c02080afb41f7ffc4abd65f20054f",
+    "entries": 1,
+    "registrations": 1,
+    "dispatch_bindings": 1,
+    "callables": 1,
+    "invocation_contexts": 1,
+    "uses_count": 2,
+    "gaps": 0
+  },
+  "internal/langjs/testdata/pollution/source-writes": {
+    "uses": [
+      {
+        "id": "candidate:v1:4256808b2f32cbddf7472634d272332f916856eeb75a55e64799a303b7b340c6",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "3e9de123cf93c934bd8188c99bda0fd6c93e592fd3ca19b7e11d2d859bb3941f",
+        "signature_sha256": "e9c664e044209a77b74c0a0c8b9762864224ca0750f8a6f5e6291966fbcced12"
+      },
+      {
+        "id": "candidate:v1:f58b78eacaa9e922409f59bfcc7ac3b99480328f20cdbf23c49e4d098c5a7c63",
+        "kind": "input_validation_candidate",
+        "request_sha256": "04a738a94d838b873d3d1fa1576fc92027285484c18ed94c003f8e5fe0a222e3",
+        "signature_sha256": "f79b934bffe66c1e57e29eee685c4f308f14da7941554a6a9a9ca69b74656f7f"
+      },
+      {
+        "id": "candidate:v1:df1466080b5b72643557ea08c5b5360a567c7db72afb703d516b13892060681c",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "b2046bf34fc98a531932091a0c5aacedee73d2afcea0c8c8bd852d1b2c05b7a1",
+        "signature_sha256": "01af95a601767b9f292cab71369345735ac0b1891b239b03ea66ea4800673322"
+      },
+      {
+        "id": "candidate:v1:370745e6518c007e7c5919965dd5c19663b8be14916b91803156217d2b02513a",
+        "kind": "input_validation_candidate",
+        "request_sha256": "9c056ba120609bde79bf253c3757d80d158736598559d500ed74e4847dd28046",
+        "signature_sha256": "c2ac3abadab7089d934c407d4914791b8324bca1d212d37e370be50ab63e56d6"
+      },
+      {
+        "id": "candidate:v1:128eeb0a0514ef201dd9590b0e4b558974d41d40790c9e714c8f9a3a40303354",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "385fedb4b4affecca056d8dabe9d19cb5e6819345b9aa0dd37e2275b317ffcec",
+        "signature_sha256": "e811d15efedbc12f8f9b8a097b666bb6d782b939b40b8892b63498409fe72732"
+      },
+      {
+        "id": "candidate:v1:18d818c7c421aa38fbb9782b0c7b643762f1fda610fbfa0c9c9fcd6128ce45c2",
+        "kind": "input_validation_candidate",
+        "request_sha256": "859a2b103b16aa88800c68481ac906721f9b6cd5f5c52c331c1183261af0c96d",
+        "signature_sha256": "38674d0c36c1d4bca0fc779776b040a775c326a12eecacb2a7a1cbe2f295f892"
+      },
+      {
+        "id": "candidate:v1:be045dad41a598de4769d0152489b17504018522f23d9f687ee2f5f5d4dfce03",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "1f743a51afc268a81d6a24b4794a13786714901cfc3f086e0b2bf28ab1f875c7",
+        "signature_sha256": "e60182acca5dda88f22bd96a33a252cfff3c1760a94f0ef2b4516a5a99d2b3f4"
+      },
+      {
+        "id": "candidate:v1:339f6f70ed7e319cf1e7725c499917df255d80e1d69d91d016cc508e09bf6e6e",
+        "kind": "input_validation_candidate",
+        "request_sha256": "64c516914613b071b57713f2f59a9a95d8a77700d741ae9ee8ca9c1b9ae8603a",
+        "signature_sha256": "3a4e6432255f491affc9eace78a8c39de3ff3d50a4b8ff2b1b99b3c3570edd2b"
+      },
+      {
+        "id": "candidate:v1:caef2be2f99f009276772f19c65aaa0b8621ee49673775ff09f0e251b89895c8",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "43057cf5a9cf81bc38444820ef2919509217ec1e66110eea9e798e2ce161b5f6",
+        "signature_sha256": "473e84bcdde6d00a1966d63bccddd2fa156873519fd034c5947656fbc2b2049e"
+      },
+      {
+        "id": "candidate:v1:6cc38ceb207a3a431651b594f407bce4b827ff20f639344ad560b83a609aa363",
+        "kind": "input_validation_candidate",
+        "request_sha256": "ea301eeb043e7d4d1fbab4e59679f0027e188b7132d317b3e221c9040170420e",
+        "signature_sha256": "7378b72d4401a312f354ddc816492b0879e239b9e6209eca3117d9a55dc6fc90"
+      },
+      {
+        "id": "candidate:v1:3ac42614b8423f430fc3ce8c1c015f1241daf013ed0e08dfeeabad26c5f0af86",
+        "kind": "input_validation_candidate",
+        "request_sha256": "67840beb229d187508b55e3ca695c54558579ee8f41d5e31c48f6d96e1689a7a",
+        "signature_sha256": "893bbc1743345f9c252023ed5f37786736c131c4e76d4902a57d2670ab11d0e0"
+      },
+      {
+        "id": "candidate:v1:7a04408876b4e81e2d3bf907e1ac74e753aace34c833cdc56df3e05bab00296a",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "4d5e34ae324e2ac62c4a4be5e7f4caf4a4c349f6954d8f76323e2937a20b6b21",
+        "signature_sha256": "73963513142e3fa56049ab4c8e570090a6cdcdd33e71de90cfe75158b01fae5f"
+      },
+      {
+        "id": "candidate:v1:5d0dfa39b65be44fb59e01f31935c63d356d00f5f4c1376bc2a93fba3a541a9e",
+        "kind": "input_validation_candidate",
+        "request_sha256": "d095c35d7079fbca4b4fd5a07f10e27be3b99154a3bb3d591aa01c90519fd12d",
+        "signature_sha256": "6cea9e9b7ef560ee9015506d9d22d835828681384170c8a35dce16676d1e2538"
+      },
+      {
+        "id": "candidate:v1:3a915b63edebbb561be3c9130ee34a0be2b263d54206f495ef83151faca01b8a",
+        "kind": "prototype_write_candidate",
+        "request_sha256": "19e1a6619169c3c893751272b3284cafaa0876506dd2e0e4f35352210aaa3c7c",
+        "signature_sha256": "def9edf7883f96f0a5c0c510b912d71a911a45ce77fc7214dc36f482dc2a1e95"
+      },
+      {
+        "id": "candidate:v1:52b363620701681ed1670214fcc631c9840cffee998c08df1e2e6ddb4cd0acf1",
+        "kind": "input_validation_candidate",
+        "request_sha256": "bdbbd79b884c39cc63ee0ecd437943ddfa75ad1f142d13fff87b57fcebe459f3",
+        "signature_sha256": "194fbeeeea018e00d6d5062e48129b86e8a32387198ad6043d58511eeba705aa"
+      },
+      {
+        "id": "candidate:v1:998f2df30792a6de0b16b08136ffe713b249abaac224fd17e2552756c7d4a33e",
+        "kind": "input_validation_candidate",
+        "request_sha256": "1706f82d54c8285f6aaaf3ab6e550e1c2cd808b518eb55d839d02b303d5b6d75",
+        "signature_sha256": "a1623b2dbdbdb8670def152c9ff1b2349afc05a26a64e1cebb3245ee22e1d7ad"
+      },
+      {
+        "id": "candidate:v1:d630e20084e101036245be8376c6e4946b626e713079e943dda414c1df35379f",
+        "kind": "input_validation_candidate",
+        "request_sha256": "6d66f69ff96b3d57fa5e28c14973ee10c3a60998555b34a58b5d0fd04c8e83b1",
+        "signature_sha256": "58e451ffd007e440b65ea156d603e1b737b4f469b65d7ef2bfe64fd2151901ba"
+      },
+      {
+        "id": "candidate:v1:81fff7d6bbd00f93840de72bbeb2d498b5d43ce97287462fd5fa74db2669aa89",
+        "kind": "input_validation_candidate",
+        "request_sha256": "2f6c7a662a152cf487b5e2e00f454b504c62d9a9951c9f2c2d6def4723570bc2",
+        "signature_sha256": "2579b14fff20245871ce6a0a9f9792439263c204e7e9612dc9cc3de409d2dc78"
+      },
+      {
+        "id": "candidate:v1:a6fc87f19e76d25d03adce7ce141d5b67974db32bd40a01f7f2dfc769b6308c2",
+        "kind": "input_validation_candidate",
+        "request_sha256": "2521094dadbc47020c1419be25c3acfac83c5d4ed7dba071e1c2d3bc0dc11111",
+        "signature_sha256": "9b83f88a18479c50ebb17ae762699fe906cd28e08d847ffe2595cab6b8c3fd7a"
+      }
+    ],
+    "report_sha256": "8fa6ce49696a29b784fb9095fd62b0051ad96402e1241ebf52c65b70f85ef503",
+    "sarif_sha256": "db2bd18f0a891f57ab8217daaec1fe83ba36891c0719eefe3d72f3b737a57157",
+    "entries": 9,
+    "registrations": 9,
+    "dispatch_bindings": 9,
+    "callables": 9,
+    "invocation_contexts": 9,
+    "uses_count": 19,
+    "gaps": 0
+  },
   "internal/langjs/testdata/string-flow": {
     "uses": [
       {

@@ -57,6 +57,7 @@ type CandidateUse struct {
 	XSS        *XSSFacts           `json:"xss,omitempty"`
 	Command    *CommandFacts       `json:"command,omitempty"`
 	Path       *PathFacts          `json:"path,omitempty"`
+	Pollution  *PollutionFacts     `json:"pollution,omitempty"`
 	Code       *CodeFacts          `json:"code,omitempty"`
 	Redirect   *RedirectFacts      `json:"redirect,omitempty"`
 	Upload     *UploadFacts        `json:"upload,omitempty"`

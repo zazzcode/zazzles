@@ -192,8 +192,12 @@ Code injection (`eval`, CWE-94/95) and open redirect (CWE-601) are implemented; 
 [combined implementation contract](.zazz/specifications/nextjs-phase-2-and-code-redirect.md) and
 [verification results](.zazz/evaluation/nextjs-phase-2-results.md).
 
+The JavaScript and TypeScript prototype pollution analyzer follows request-derived keys to verified
+Lodash and source-visible writes. It reports CWE-1321 when the write and its paths meet the claim's
+evidence requirements. [Prototype pollution rules](docs/analysis/prototype-pollution.md).
+
 The [implementation plan](.zazz/project/implementation-plan.md#next-up) records further analyzer,
-language and workflow work, including prototype pollution, PHP, agent workflows and external
+language and workflow work, including npm library scanning, PHP, agent workflows and external
 finding imports. XXE and dependency auditing (SCA) remain deferred.
 The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
 exactly which languages, frameworks and operations each analyzer supports, with its limits.

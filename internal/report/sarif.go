@@ -224,6 +224,8 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/sql-input-protection", "CWE-89"
 	case "nosql_query", "nosql_query_candidate":
 		return "scan/nosql-input-protection", "CWE-943"
+	case analysis.PollutionKind:
+		return "scan/prototype-pollution", "CWE-1321"
 	case "code", "code_execution_candidate":
 		return "scan/code-injection", "CWE-95"
 	case "template_injection_candidate":

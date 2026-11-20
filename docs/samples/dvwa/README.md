@@ -3,9 +3,31 @@
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json.gz) ·
 [SARIF](findings.sarif.gz) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
-[Results](../../../.zazz/evaluation/php-support-results.md)
+[Results](../../../.zazz/evaluation/command-bypass-support-results.md) ·
+[PHP evaluation](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (2026-11-20)
+## Current report (2026-11-20, command bypass support)
+
+A full static scan of DVWA revision `a1978a2` with scanner `ea8640a` and OpenAI `gpt-6-luna`
+produced 247 records across 174 entries. The report presents 144 Confirmed, 39 practice findings,
+46 Review (34 needs-review and 12 needs-evidence), and 18 Protected.
+
+- **Answer key:** all 11 keyed positives are Confirmed, and no protected control is a finding.
+- **PC-CMD-02 is Protected.** The four records for `vulnerabilities/exec/source/impossible.php`
+  (lines 22 and 26, two entries) were one Confirmed and three Review in the previous report. The
+  path now cites the `is_numeric` check and states the characters it accepts, and the question
+  asks for command text of the request's choosing. Each record keeps a `Hardening:` note: the
+  check still admits a line break.
+- **Nothing else moved.** The other 243 records have the same status as the previous report. Only
+  the 17 command records have a new request.
+- **Usage:** 190 assessments from 187 requests, three shared across equivalent contexts,
+  1,645,909 input tokens, zero failures. 57 records stay in Review without a request because
+  their blockers have no model-resolvable question. All 190 assessments replayed exactly offline.
+
+The evidence is in the
+[command bypass support results](../../../.zazz/evaluation/command-bypass-support-results.md#paid-dvwa-run).
+
+## Previous report (2026-11-20, pre-merge for PR #33)
 
 A full static scan of DVWA revision `a1978a2` with scanner `ebf366a` and OpenAI
 `gpt-6-luna` produced 247 records across 174 entries. The report presents 145 Confirmed,

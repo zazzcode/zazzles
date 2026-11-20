@@ -151,11 +151,48 @@ model's call.
 | Architecture baseline | 33 of 33 command records changed request and signature digest. No other record kind changed and no record was added or removed |
 | Python input baseline | The two fixtures with command records changed, through the protocol version |
 
+## Paid DVWA run
+
+One run, `run-2645224166`, on 2026-11-20 with scanner `ea8640a`: `--judge openai
+--judge-model gpt-6-luna`, the default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000` and
+`--trace-dir`. Only the OpenAI key was passed. DVWA was clean at the pin before and after. Outputs
+are under the container's `_test-findings/command-bypass-support/live/dvwa/`.
+
+| Measure | Previous run `run-729503128` | This run |
+|---|---|---|
+| Requests, failures | 187, 0 | 187, 0 |
+| Input tokens | 1,644,037 | 1,645,909 |
+| Completed assessments, exact replays | 190, 190 | 190, 190 |
+| Keyed positives Confirmed | 11 of 11 | 11 of 11 |
+| Protected controls presenting as findings | 1 | **0** |
+| Presented Confirmed, practice, Review, Protected | 145, 39, 49, 14 | 144, 39, 46, 18 |
+
+Every changed status, and the reason for it:
+
+| Record | Before | After | `guard_bypass` | `shell_syntax_protection` |
+|---|---|---|---|---|
+| `4f0b41a7…`, `impossible.php:26` | Confirmed | Protected | no_bypass 0.77 (was bypass_identified 0.56) | protected 0.48 (was vulnerable 0.46) |
+| `65909cf4…`, `impossible.php:26` | Review | Protected | no_bypass 0.57 | protected 0.61 |
+| `c801841d…`, `impossible.php:22` | Review | Protected | no_bypass 0.78 | protected 0.55 |
+| `2d0d228d…`, `impossible.php:22` | Review | Protected | no_bypass 0.68 | protected 0.59 |
+
+- These are the four PC-CMD-02 records. The three that were Review had answered vulnerable with
+  `no_bypass`, which policy holds as inconsistent. With the path's check cited and the claim
+  stated, all four answer protected, `no_bypass` and complete coverage.
+- Each carries the `Hardening:` note in its reason.
+- **The other 243 records have the same status, and the other 186 completed assessments the same
+  answers.** The 13 other command records, all raw paths, are Confirmed as before under their new
+  request.
+- `accuracy.py` on the run: 11 positives Confirmed, 2 protected controls, 0 false positives
+  (1 before). Findings 183 (184 before), 29 of them keyed.
+- The policy check was not exercised on this run: no record answered `bypass_identified`. It is
+  held by the frozen expectations and the policy-only comparison.
+
 ## Gate
 
 `gofmt -l cmd internal` prints nothing. `go vet ./...`, `go build ./...` and
 `go test -race ./... -count=1` pass. The two digest baselines above are the only golden files that
-moved.
+moved. `TestDVWASourceKey` passes on the pinned checkout.
 
 ## Not done
 

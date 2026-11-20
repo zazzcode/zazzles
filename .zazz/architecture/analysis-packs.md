@@ -602,6 +602,22 @@ references into the deduplicated evidence table) travel in the wire bundle. Cont
 namespaced so invocation identity, and therefore every existing candidate ID, is unchanged. Limits: POSIX assumption,
 bounded transfers, adapter-specific entry models (see the [public guide](../../docs/analysis/command-injection.md)).
 
+**Guard reach (2026-11-20, `command-components-v5`).** A model answer about a guarded path is
+checked against that path's own facts ([contract](../specifications/command-bypass-support.md)):
+
+- **One listing, two readers.** `internal/analysispacks/guard_reach.go` holds every character a
+  guarded value can hold where the scanner knows it exactly: a PHP `is_numeric`, `ctype_digit` or
+  number-conversion path, or a regex capture with a complete explicit alphabet. The path reason
+  sent to the model and the policy check both read it.
+- **The path names its guard.** A PHP numeric path's control is the check or conversion itself.
+  The adapter records the class on `CommandPath.Class`, which is extraction-only and never sent.
+- **The question states the claim.** `guard_bypass` asks for command text of the request's
+  choosing; a line or word break alone is not a bypass. The choice names are unchanged.
+- **Policy withholds, never grants.** `bypass_identified` on a path whose listed characters cannot
+  carry command text is Review (`command_bypass_unsupported`). Protection still needs the model's
+  protected answers, and a Protected record keeps a `Hardening:` note for what its guard lets
+  through.
+
 ## Path traversal components (2026-11-14)
 
 The path family follows the command pattern: path-only embedded guidance (`internal/guidelines/path*.go`, never in

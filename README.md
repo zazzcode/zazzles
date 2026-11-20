@@ -143,7 +143,7 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
-**Accuracy against the answer keys** (every sample report rescanned 2026-11-19; Node.js Goof, DVWA and the Python insecure app judged again on 2026-11-19 after the [findings-gaps work](.zazz/evaluation/close-findings-gaps-results.md)). *Expected* counts the source-reviewed vulnerable cases keyed for our
+**Accuracy against the answer keys** (every sample report rescanned 2026-11-19; Node.js Goof, DVWA and the Python insecure app judged again on 2026-11-19 after the [findings-gaps work](.zazz/evaluation/close-findings-gaps-results.md); DVWA judged again on 2026-11-20 after [command bypass support](.zazz/evaluation/command-bypass-support-results.md)). *Expected* counts the source-reviewed vulnerable cases keyed for our
 implemented analyzers. *Found* means Zazzles reports the case as a finding: Confirmed, or a
 construction-practice finding where the key expects one. *False positives* counts the known-safe
 cases (keyed controls) that Zazzles reports as a finding, plus any finding source review showed
@@ -153,7 +153,7 @@ to be false.
 |---|---:|---:|---:|---:|---:|---|
 | Juice Shop | 15 | 15 | 0 | 0 | 0 | 3 safe cases checked. 8 findings outside the key match known challenge routes |
 | OSS OopsSec Store | 13 | 13 | 0 | 0 | 0 | 5 safe cases checked. 8 findings outside the key, unreviewed |
-| DVWA | 11 | 11 | 0 | 0 | 0 | Includes the API health command (`HealthController.php:88`), unrestricted upload (CWE-434, its path claim not a finding) and stored XSS judged in path groups. One bound-PDO false positive (`brute/impossible.php:90`) found by review and fixed. 154 findings outside the key in this run (98 before), unreviewed |
+| DVWA | 11 | 11 | 0 | 0 | 0 | Includes the API health command (`HealthController.php:88`), unrestricted upload (CWE-434, its path claim not a finding) and stored XSS judged in path groups. Two false positives on impossible-level controls were found and fixed: a bound PDO statement (`brute/impossible.php:90`) and the `is_numeric`-guarded ping (`exec/impossible.php:26`), which is now Protected with a note that the check still admits a line break. 154 findings outside the key in this run, unreviewed |
 | Node.js Goof | 7 | 7 | 0 | 0 | 0 | Command injection (`routes/index.js:174`) Confirmed: its regex capture admits any character. Open redirect (`routes/index.js:74`) now keyed |
 | Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 0 | Includes `eval` and open redirect |
 | vuln-nextjs lab | 13 | 13 | 0 | 0 | 0 | 23 safe cases checked, none red. Includes code execution and open redirect |

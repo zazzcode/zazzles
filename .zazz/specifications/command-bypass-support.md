@@ -151,7 +151,7 @@ and the record is Confirmed unless the path's listed characters cannot carry it.
 
 - [x] AC1–AC6 and AC8 verified offline, with evidence in the
   [results](../evaluation/command-bypass-support-results.md).
-- [ ] AC7 verified on the paid run and the DVWA sample refreshed.
+- [x] AC7 verified on the paid run `run-2645224166` and the DVWA sample refreshed.
 - [x] The analysis guide states the rule.
 - [ ] Owner review.
 

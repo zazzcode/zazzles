@@ -107,8 +107,9 @@ Python NoSQL is out of this corpus; no sample contains a MongoDB driver.
 
 The [PHP evaluation](../../.zazz/evaluation/php-support-results.md) records the offline DVWA
 `a1978a2` structural pass and the paid AC14 closeout. The curated
-[DVWA sample](dvwa/README.md) now publishes the 2026-11-20 pre-merge run. All 11 keyed
-positives were Confirmed, one protected control was a false positive, and all 190 completed
+[DVWA sample](dvwa/README.md) now publishes the 2026-11-20
+[command bypass support](../../.zazz/evaluation/command-bypass-support-results.md) run. All 11
+keyed positives are Confirmed, no protected control is a finding, and all 190 completed
 assessments replayed exactly.
 
 ## VulnPy coverage corpus

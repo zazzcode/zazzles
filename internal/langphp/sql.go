@@ -168,6 +168,14 @@ func (f *phpFlow) sqlPrepare(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	}
 	stmt := f.sqlClaim(n, queryNode, nil, text, driver, "prepare", connection.evidence, nil, nil)
 	stmt.binding = "db_statement"
+	// The prepare call, with the variable it is assigned to, is what makes the
+	// query text this statement's text; an execute() claim carries it so the
+	// judge sees the literal, the bindings and the execution as one statement.
+	prepared := n
+	if p := n.Parent(); p != nil && p.Kind() == "assignment_expression" {
+		prepared = p
+	}
+	stmt.sqlTextEvidence = append([]analysis.Evidence{f.module.evidence("statement_preparation", prepared)}, stmt.sqlTextEvidence...)
 	return stmt
 }
 
@@ -336,9 +344,10 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			kept = append(kept, *u)
 			continue
 		}
-		own := map[int]string{}
+		own, ownContext := map[int]string{}, map[int]string{}
 		for _, p := range u.XSS.Paths {
 			own[p.Dependency] = p.Protection
+			ownContext[p.Dependency] = p.OutputContext
 		}
 		var deps []analysis.Dependency
 		var paths []analysis.XSSPath
@@ -347,12 +356,19 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 		// The record's storage key names its first raw stored path, else its
 		// first stored read, independent of dependency order otherwise.
 		firstKey, rawKey := "", ""
+		context := ""
 		add := func(d analysis.Dependency, entry, protection string) {
 			deps = append(deps, d)
-			paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Entry: entry, Protection: protection})
+			paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Entry: entry, Protection: protection, OutputContext: context})
 		}
 		for j, d := range u.Dependencies {
 			read := own[j]
+			// A stored path lands where its read lands (judge evidence quality O).
+			context = ownContext[j]
+			pathContext := u.XSS.OutputContext
+			if context != "" {
+				pathContext = context
+			}
 			if d.StorageKey == "" {
 				directRaw = directRaw || read == "raw"
 				add(d, "", read)
@@ -383,7 +399,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 					nd := source.dep
 					nd.StorageKey = d.StorageKey
 					nd.Transfers = append(append([]analysis.Evidence{}, nd.Transfers...), d.Transfers...)
-					protection := phpStoredPathProtection(read, source.protection, u.XSS.OutputContext)
+					protection := phpStoredPathProtection(read, source.protection, pathContext)
 					if protection == "raw" && rawKey == "" {
 						rawKey = d.StorageKey
 					}
@@ -410,6 +426,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 		}
 		u.Dependencies = deps
 		u.XSS.Paths = paths
+		u.XSS.OutputContext = recordContext(paths, u.XSS.OutputContext)
 		u.XSS.StorageKey = firstKey
 		if rawKey != "" {
 			u.XSS.StorageKey = rawKey
@@ -428,6 +445,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			raw = raw || p.Protection == "raw"
 			unknown = unknown || p.Protection == "unknown"
 		}
+		initialProtection := u.XSS.Protection
 		switch {
 		case raw:
 			u.XSS.Protection = "raw"
@@ -435,6 +453,14 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			u.XSS.Protection = "unknown"
 		case len(paths) > 0 && resolved:
 			u.XSS.Protection = "encoded"
+		}
+		if u.XSS.Protection != initialProtection {
+			switch u.XSS.Protection {
+			case "unknown":
+				u.XSS.ProtectionReason = "Protection for a linked source path in its render context remains unresolved."
+			case "encoded":
+				u.XSS.ProtectionReason = "Every linked source path carries protection for its render context."
+			}
 		}
 		if !resolved {
 			u.XSS.ProtectionReason += " Stored field origin is unresolved."
@@ -449,11 +475,11 @@ func phpStoredPathProtection(read, written, context string) string {
 	switch {
 	case read != "raw":
 		return read
-	case written == "url_encoded":
-		return phpURLEncodedProtection(written, context)
+	case written == "url_encoded" || written == "encoded":
+		return phpRenderProtection(written, context)
 	case written == "unknown" || written == phpUnwritten || written == phpShellDenylist:
 		return "unknown"
-	case written == "encoded" || written == "numeric" || written == "non_content":
+	case written == "numeric" || written == "non_content":
 		return "encoded"
 	}
 	return "raw"

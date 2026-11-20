@@ -340,14 +340,22 @@ func withoutContext(use analysis.CandidateUse, dropped map[spanKey]bool, omitted
 	return out
 }
 
-// omissionGap states every omitted item so the model can weigh what it did not see.
+// omissionGap states what was omitted by count (D-4): items by kind, how many
+// only repeat supplied text, the source bytes removed and one line range per
+// file. The assessment and trace keep the full list.
 func omissionGap(at analysis.Span, omitted []analysis.EvidenceOmission) analysis.Gap {
 	kinds := map[string]int{}
+	type fileRange struct{ first, last, n int }
+	files := map[string]*fileRange{}
 	total, lossless := 0, 0
-	spans := make([]string, 0, len(omitted))
 	for _, o := range omitted {
 		kinds[o.Kind]++
-		spans = append(spans, fmt.Sprintf("%s:%d-%d", o.Span.File, o.Span.StartLine, o.Span.EndLine))
+		f := files[o.Span.File]
+		if f == nil {
+			f = &fileRange{first: o.Span.StartLine, last: o.Span.EndLine}
+			files[o.Span.File] = f
+		}
+		f.first, f.last, f.n = min(f.first, o.Span.StartLine), max(f.last, o.Span.EndLine), f.n+1
 		if o.Lossless {
 			lossless++
 			continue
@@ -359,9 +367,14 @@ func omissionGap(at analysis.Span, omitted []analysis.EvidenceOmission) analysis
 		names = append(names, fmt.Sprintf("%s x%d", k, kinds[k]))
 	}
 	sort.Strings(names)
+	ranges := make([]string, 0, len(files))
+	for file, f := range files {
+		ranges = append(ranges, fmt.Sprintf("%s: %d-%d (%d)", file, f.first, f.last, f.n))
+	}
+	sort.Strings(ranges)
 	return analysis.Gap{Kind: "evidence_omitted_for_size", At: at, Detail: fmt.Sprintf(
-		"%d context evidence item(s) (%s) were left out so the request fits the %d-byte limit; %d of them only repeat source text still supplied in another item, and the others remove %d source bytes. None is dependency, control or required evidence; the scanner still holds them. Omitted spans: %s. Do not treat omitted context as absent protection or absent risk.",
-		len(omitted), strings.Join(names, ", "), requestLimit, lossless, total, strings.Join(spans, ", "))}
+		"%d context evidence item(s) (%s) were left out so the request fits the %d-byte limit; %d of them only repeat source text still supplied in another item, and the others remove %d source bytes. None is dependency, control or required evidence; the scanner still holds them. Omitted by file, first-last line (items): %s. Do not treat omitted context as absent protection or absent risk.",
+		len(omitted), strings.Join(names, ", "), requestLimit, lossless, total, strings.Join(ranges, ", "))}
 }
 
 // sectionSizes reports request bytes by section of the encoded evidence so an
@@ -544,12 +557,21 @@ func groupUse(use analysis.CandidateUse, g pathGroup, all []pathGroup) analysis.
 		keep[i] = len(out.Dependencies)
 		out.Dependencies = append(out.Dependencies, use.Dependencies[i])
 	}
-	var withheld []string
+	// The notice counts withheld paths per source file (D-4); the plan
+	// keeps which paths they are.
+	withheld := 0
+	byFile := map[string]int{}
 	for i, d := range use.Dependencies {
 		if _, ok := keep[i]; !ok {
-			withheld = append(withheld, fmt.Sprintf("%s:%d %s", d.Source.Span.File, d.Source.Span.StartLine, strings.Join(strings.Fields(d.Source.Text), " ")))
+			withheld++
+			byFile[d.Source.Span.File]++
 		}
 	}
+	files := make([]string, 0, len(byFile))
+	for file, n := range byFile {
+		files = append(files, fmt.Sprintf("%s (%d)", file, n))
+	}
+	sort.Strings(files)
 	if use.XSS != nil {
 		x := *use.XSS
 		x.Paths = nil
@@ -624,8 +646,8 @@ func groupUse(use analysis.CandidateUse, g pathGroup, all []pathGroup) analysis.
 			c.Blockers = []analysis.Gap{}
 		}
 		c.Coverage = append(append([]analysis.Gap{}, use.Completeness.Coverage...), analysis.Gap{Kind: "path_group_omitted", At: use.Sink.Span, Detail: fmt.Sprintf(
-			"This request carries path group %s (%d of the record's %d dependency paths). The other %d paths are withheld for size and judged in their own requests: %s. Judge only the supplied paths; a withheld path is neither absent nor protected.",
-			g.key, len(g.deps), len(use.Dependencies), len(withheld), strings.Join(withheld, "; "))})
+			"This request carries path group %s (%d of the record's %d dependency paths). The other %d paths are withheld for size and judged in their own requests; withheld paths by source file: %s. Judge only the supplied paths; a withheld path is neither absent nor protected.",
+			g.key, len(g.deps), len(use.Dependencies), withheld, strings.Join(files, ", "))})
 		out.Completeness = &c
 	}
 	return out

@@ -58,6 +58,15 @@ follow the [replacement rules](#sanitizer-advisories-and-replacements) below. Un
 same-name fake libraries, shadowed imports and custom sanitizer options are not trusted. Every
 modeled path must be protected; protection on one branch does not protect a raw sibling branch.
 
+In PHP each path states its own context (`xss.paths[].output_context`): the markup position where
+that path's value lands in the constructed string, including markup built in a helper and echoed
+later. A record states the context its raw paths share; when they differ it keeps the echo-level
+context, and each path still carries its own.
+
+A cookie is request input the client sends, like a query or form field. A raw cookie value
+rendered into markup is a supported source path. Whether an attacker can set another user's cookie
+is a delivery question the scanner does not establish, so it alone does not make exposure unknown.
+
 When the output context is unresolved (`unknown`), the record-level protection is `unknown` too:
 raw, encoded or sanitized are relative to a context. Per-path protection facts keep what each path
 showed.
@@ -198,9 +207,9 @@ server producer. GET and POST at the same path cannot exchange origins or protec
 
 A rendering record whose evidence is over the request limit is judged in path groups: one ordinary
 request per group of dependency paths (by source file, packed while a request still fits, at most
-five), each naming the paths it withholds. One Confirmed group makes the record Confirmed for that
-path; Protected needs every group judged and Protected; anything else is Review. Groups past the cap
-or still over the limit are reported, never read as safe.
+five), each stating how many paths it withholds per source file. One Confirmed group makes the
+record Confirmed for that path; Protected needs every group judged and Protected; anything else is
+Review. Groups past the cap or still over the limit are reported, never read as safe.
 
 The protocol asks output context, encoding adequacy, sanitizer effectiveness, path protection and
 exposure. Provider confidence/probabilities are retained for audit but never establish a verdict.

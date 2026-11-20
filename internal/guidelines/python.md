@@ -31,7 +31,7 @@ Do not invent a guard, a parameter binding, or a branch that the evidence does n
 Flask string returns are HTML unless an explicit response contract says otherwise. JSON is not an
 HTML sink. Jinja autoescaping protects substituted variables in supported contexts; it does not
 escape input that was interpolated into template source before compilation. Safe/Markup bypasses
-and disabled autoescape need separate analysis. HTML escaping does not establish script/URL safety.
+and disabled autoescape need separate analysis. HTML escaping does not establish script/URL safety. A cookie value is request input the client sends, like a query or form field: a raw cookie value rendered into markup is a supported source path. Whether an attacker can set another user's cookie is a delivery question the scanner does not establish; it alone does not make exposure unknown.
 
 ## Logging
 

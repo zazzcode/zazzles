@@ -130,7 +130,9 @@ func indexWire(use map[string]any) (*wireIndex, error) {
 	return x, nil
 }
 
-// requestUse extracts the compacted "use" bundle from a provider request.
+// requestUse extracts the compacted "use" bundle from a provider request, with
+// its factored rows and shared transfer tails expanded (D-3), so a citation
+// is checked against the chains the request states.
 func requestUse(payload []byte) (map[string]any, error) {
 	var envelope map[string]any
 	if err := json.Unmarshal(payload, &envelope); err != nil {
@@ -146,7 +148,7 @@ func requestUse(payload []byte) (map[string]any, error) {
 	if err := json.Unmarshal([]byte(input), &body); err != nil || body.Use == nil {
 		return nil, errors.New("request has no use bundle")
 	}
-	return body.Use, nil
+	return expandStructure(body.Use), nil
 }
 
 func intOf(v any) int {

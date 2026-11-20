@@ -137,9 +137,9 @@ A decision request is limited to 65,536 bytes. A request under the limit is sent
 limit the scanner first uses its lossless compact form, then leaves out whole context evidence items
 (text already inside another item first, then context in other files, then same-file context furthest
 from the operation). Dependency, control and required evidence is never left out. The request states
-each omission in an `evidence_omitted_for_size` gap, and the record lists it in
-`assessment.evidence_omissions`. If the required evidence alone is too large, no request is sent and
-the record stays **Inconclusive** with a reason starting `evidence_too_large:` and the bytes by section.
+the omissions in an `evidence_omitted_for_size` gap as counts by kind and one line range per file,
+and the record lists each one in `assessment.evidence_omissions`. If the required evidence alone is
+too large, no request is sent and the record stays **Inconclusive** with a reason starting `evidence_too_large:` and the bytes by section.
 
 ## Outbound observations and SSRF
 
@@ -184,10 +184,15 @@ not rerun analysis or transfer those answers onto changed requests.
 
 ## Evidence wire versions and historical judgments
 
-Current model requests use evidence wire version 7. Compact evidence rows retain file
-and line ranges; context facts refer to evidence IDs, and dependencies preserve each
-source, transfer, operand slot and storage key. Full source hashes, byte coordinates
-and selected component digests remain in local report and trace provenance.
+Current model requests use evidence wire version 8. Compact evidence rows retain file
+and line ranges, put source text last and omit trailing empty columns; context facts
+refer to evidence IDs, and dependencies preserve each source, transfer, operand slot and
+storage key (a transfer run shared by several dependencies is stated once in
+`shared_transfer_tails`). Entry, invocation, dispatch and candidate identifiers are sent
+as request-local aliases (`i0`, `i1`, …) where they occur more than once and left out
+where they occur once; identifier lists such as `xss.related_entries` become a count plus
+the aliases that recur. Full identifiers, source hashes, byte coordinates and selected
+component digests remain in local report and trace provenance.
 
 Wire representation changes invalidate exact saved-request replay. Historical reports
 remain readable with their original model answers; a current scan needs a fresh

@@ -84,19 +84,20 @@ func TestDVWARequestSizes(t *testing.T) {
 // some dependency-chain or sink evidence row references and excerpts that only
 // context rows reference: the bytes an S2 relevance filter could consider.
 func excerptRelevance(request []byte) (onChain, offChain int) {
-	var envelope struct{ Input string }
-	if json.Unmarshal(request, &envelope) != nil {
+	use, err := requestUse(request) // expanded to the version 7 row form
+	if err != nil {
 		return 0, 0
 	}
+	raw, _ := json.Marshal(use)
 	var inner struct {
 		Use struct {
 			Sink         string           `json:"sink_evidence"`
 			Evidence     [][]any          `json:"evidence"`
 			Excerpts     [][]any          `json:"source_excerpts"`
 			Dependencies []map[string]any `json:"dependencies"`
-		} `json:"use"`
+		}
 	}
-	if json.Unmarshal([]byte(envelope.Input), &inner) != nil {
+	if json.Unmarshal(raw, &inner.Use) != nil {
 		return 0, 0
 	}
 	chain := map[string]bool{inner.Use.Sink: true}

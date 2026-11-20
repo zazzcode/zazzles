@@ -1,6 +1,10 @@
 package analysispacks
 
-import "github.com/zazzcode/zazzles/internal/analysis"
+import (
+	"strings"
+
+	"github.com/zazzcode/zazzles/internal/analysis"
+)
 
 // XSSQuestions returns the rendering-specific five-question protocol.
 func XSSQuestions() []Question {
@@ -30,9 +34,11 @@ func XSSChoices(name string) []map[string]string {
 	default:
 		return nil
 	}
+	// Each description is the value written as words: the definitions are in
+	// the question instructions, and a non-empty label is always sent (D-5).
 	var out []map[string]string
 	for _, value := range values {
-		out = append(out, map[string]string{"value": value, "description": "Apply the definition of " + value + " in this question to the supplied source evidence."})
+		out = append(out, map[string]string{"value": value, "description": strings.ReplaceAll(value, "_", " ")})
 	}
 	return out
 }

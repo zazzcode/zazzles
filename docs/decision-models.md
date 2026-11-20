@@ -163,7 +163,7 @@ raw historical responses remain intact.
 Registered families compose scanner-owned interpretation material selected by the static analyzer
 from verified source facts. Fresh schema-4 JSON reports identify the selected pack/components,
 versions and digests; a selection alone does not mean a model assessment ran. Current protocols
-are `sql-components-v4`, `nosql-components-v2`, `validation-components-v2`, `xss-components-v3`,
+are `sql-components-v4`, `nosql-components-v2`, `validation-components-v2`, `xss-components-v4`,
 `command-components-v4`, `path-components-v3`, `ssrf-components-v2`, `code-components-v2`, `upload-components-v2`,
 `redirect-components-v1` and `log-components-v2`. A component shared by several families is
 referenced per family, so a protocol change re-judges only its own family. Mandatory evidence and

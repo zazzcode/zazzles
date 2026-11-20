@@ -1,12 +1,12 @@
 {
   "failed": true,
   "requests": 3,
-  "report_sha256": "ec0a65490112136d83710ba3fb2612035803f5589654ba12f2fcc23a3fa2170e",
+  "report_sha256": "382c341170d66eab4d2cedb2426f3b33334c19e9868dfa40f2c96f087198d95b",
   "assessments": [
     {
       "id": "candidate:v1:af8d41289700cf5e040128da1d53f40299a41962831a96fff29816c3d0d22e09",
       "assessment": {
-        "request_digest": "e5de080226b4f98637f74b88d5bee3f035160851b4192c8ccd68a04f51277d18",
+        "request_digest": "9fdb1f24c559e434b614bd118fa6bf481ddebc25d0899c0d88fe19e6fd03ff57",
         "status": "failed",
         "provider": "openai",
         "model": "fixture-model",
@@ -17,7 +17,7 @@
     {
       "id": "candidate:v1:a3cef7d80999d1ffc42fe1067122782a6c06257dcb30f0ca50c272644205083c",
       "assessment": {
-        "request_digest": "3e930fad72b9edf707fd07a0575d756aef165656ec56d1d5a03eaa2638cbd49a",
+        "request_digest": "e08d993fff92cbdd630737ab5094e5789e005d600ac25bf190519bbabd042aed",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -40,7 +40,7 @@
       "id": "candidate:v1:7930228b8ae6007c2c8dd30cbe60462a7fc5e2bb6ef40358e65781ecbbf49d9d",
       "assessment": {
         "deduplicated_from": "candidate:v1:a3cef7d80999d1ffc42fe1067122782a6c06257dcb30f0ca50c272644205083c",
-        "request_digest": "73fa847712da0d7a1d4140d89fab9924d433a46a24c67fe2a091e8a21af8c3b8",
+        "request_digest": "a7ecb2bf7e9e83a275e0018b1133ff7bf867e68f9b180b597ff3cfcd00f7ea43",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -58,7 +58,7 @@
     {
       "id": "candidate:v1:1bf2251c91f7d55473e56bfd7e08788560ab1268f59ef44abc72866e5c6e452e",
       "assessment": {
-        "request_digest": "0f8c3a1ac94f3e7e53a67f3863f65a5c1e4b8592727077006f426e1ddba53a2a",
+        "request_digest": "bf5a1ab077a93bce3aa084541c699bc159f0a29360c3287e483a9cba768e4135",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -81,7 +81,7 @@
       "id": "candidate:v1:5c9ff978bf01866156fb49129a1b3a281a056aec8c415a9263e811e2c5016ce3",
       "assessment": {
         "deduplicated_from": "candidate:v1:1bf2251c91f7d55473e56bfd7e08788560ab1268f59ef44abc72866e5c6e452e",
-        "request_digest": "5dad9a1def8740c689c2260dcda5e237bc937e0f05880bc9e3829532bb336f17",
+        "request_digest": "f87b4b27e39ecda6a661a9e2a1a8041ba018a1c8027239b38e41ffa3d3f7de0d",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -100,7 +100,7 @@
       "id": "candidate:v1:815ddb0183e6991dbd861e42400c7d482e9f6dbad545e6e40d6458d0c0dd5a57",
       "assessment": {
         "deduplicated_from": "candidate:v1:1bf2251c91f7d55473e56bfd7e08788560ab1268f59ef44abc72866e5c6e452e",
-        "request_digest": "8a3ce7302f4d8c7d37cf54c44516df8058d735cd9874e7a7bde6c9b727d8c329",
+        "request_digest": "65bda55ddb8569f4a634631e36fa210dcc27ae982d8b45bedcc323365d95bb44",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "injection_protection": "vulnerable",
@@ -125,40 +125,40 @@
   ],
   "traces": {
     "candidate:v1:1bf2251c91f7d55473e56bfd7e08788560ab1268f59ef44abc72866e5c6e452e": {
-      "sha256": "977b51a86127bc04b44273b1e69498ed66d5d457cc34c19218fd78d6ac92039f",
-      "request_digest": "0f8c3a1ac94f3e7e53a67f3863f65a5c1e4b8592727077006f426e1ddba53a2a",
+      "sha256": "fc1ab69b183eb015840cc579777b43f75ba9aeb284ccc7dfdf519b2ecd8eaf93",
+      "request_digest": "bf5a1ab077a93bce3aa084541c699bc159f0a29360c3287e483a9cba768e4135",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17335
     },
     "candidate:v1:5c9ff978bf01866156fb49129a1b3a281a056aec8c415a9263e811e2c5016ce3": {
-      "sha256": "1526d824f6ea2ecde4d527701ad5cd3917445c2582a59b3db662caf642b85b19",
-      "request_digest": "5dad9a1def8740c689c2260dcda5e237bc937e0f05880bc9e3829532bb336f17",
+      "sha256": "fd7a9db8285bba2dc7043c3b75b748c0bf5e7ea5d4a62ff3e5a6c347daa5ea02",
+      "request_digest": "f87b4b27e39ecda6a661a9e2a1a8041ba018a1c8027239b38e41ffa3d3f7de0d",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17335
     },
     "candidate:v1:7930228b8ae6007c2c8dd30cbe60462a7fc5e2bb6ef40358e65781ecbbf49d9d": {
-      "sha256": "38a34cb49ed85af14df59f81e1d1e7b0159ab52d169badc7ff8a466de12d22bc",
-      "request_digest": "73fa847712da0d7a1d4140d89fab9924d433a46a24c67fe2a091e8a21af8c3b8",
+      "sha256": "93fde5a4555fc95e886e315e2619af390a5b4f9347b18b7e31820fb10b55fb4d",
+      "request_digest": "a7ecb2bf7e9e83a275e0018b1133ff7bf867e68f9b180b597ff3cfcd00f7ea43",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17335
     },
     "candidate:v1:815ddb0183e6991dbd861e42400c7d482e9f6dbad545e6e40d6458d0c0dd5a57": {
-      "sha256": "75a41eb4a0e5aa2347aa2df4394aef7ee10b1defdfbfe4e67f8f53181f21c4b2",
-      "request_digest": "8a3ce7302f4d8c7d37cf54c44516df8058d735cd9874e7a7bde6c9b727d8c329",
+      "sha256": "95a5b0ff52b4136ce03df348733119a653916673370160a88ecad1087cfdd5e9",
+      "request_digest": "65bda55ddb8569f4a634631e36fa210dcc27ae982d8b45bedcc323365d95bb44",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17335
     },
     "candidate:v1:a3cef7d80999d1ffc42fe1067122782a6c06257dcb30f0ca50c272644205083c": {
-      "sha256": "37770b0593c69d11886875e53f4ab6c26344c8c21a6dc66ff1048f65e961dcf2",
-      "request_digest": "3e930fad72b9edf707fd07a0575d756aef165656ec56d1d5a03eaa2638cbd49a",
+      "sha256": "3aceb3b78bc7f24b28b12aead3df8b30677049cc4fe6bebaa774e0ac8d091eb4",
+      "request_digest": "e08d993fff92cbdd630737ab5094e5789e005d600ac25bf190519bbabd042aed",
       "http_status": 200,
-      "request_bytes": 18104
+      "request_bytes": 17335
     },
     "candidate:v1:af8d41289700cf5e040128da1d53f40299a41962831a96fff29816c3d0d22e09": {
-      "sha256": "d20888e8011e3af240f69a593df376d4981ea7291abb2c0bb41c02bc86b572d6",
-      "request_digest": "e5de080226b4f98637f74b88d5bee3f035160851b4192c8ccd68a04f51277d18",
+      "sha256": "b1c9c1ad3b631a33efda718dc4f61e9f197ff64a4b9e0fb77b92e0a81ba772ef",
+      "request_digest": "9fdb1f24c559e434b614bd118fa6bf481ddebc25d0899c0d88fe19e6fd03ff57",
       "http_status": 400,
-      "request_bytes": 18104
+      "request_bytes": 17335
     }
   }
 }

@@ -50,7 +50,7 @@ HTML entity encoding protects HTML text and quoted non-active attributes; it doe
 safe JavaScript, URL schemes, event-handler content, unquoted attributes or template source code.
 Use escaped templates and text APIs for plain content. Rich HTML requires a verified maintained
 sanitizer before every sink. Imported library identity, actual version, options and ordering matter;
-a sanitizer name or an obsolete sanitize option alone does not establish protection.
+a sanitizer name or an obsolete sanitize option alone does not establish protection. A cookie value is request input the client sends, like a query or form field: a raw cookie value rendered into markup is a supported source path. Whether an attacker can set another user's cookie is a delivery question the scanner does not establish; it alone does not make exposure unknown.
 
 Stored claims require matching write/read storage identity and field evidence. API JSON alone is
 not an HTML rendering sink. Browser sources and DOM/framework sinks require their own entry and

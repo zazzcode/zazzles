@@ -1,7 +1,7 @@
 {
   "failed": true,
   "requests": 2,
-  "report_sha256": "2338545824d5e7a1143e5bc7daf5b00afb31b6b5cf0a99af4dfe2d4d6e78eb0d",
+  "report_sha256": "26b3b1e6d0f888860ca545e5a3dcb7f699c62c8283a81502d9e1ff95abc35272",
   "assessments": [
     {
       "id": "candidate:v1:e1fe25a8690cefb788a44fc01671014b552379d0c5dc601db42502d876fec958",
@@ -41,7 +41,7 @@
     {
       "id": "xss-claim",
       "assessment": {
-        "request_digest": "162464843e9d8923f37e96ebac029290d7804e11dbc1078821c15b0c8af33ebc",
+        "request_digest": "bdc0c203d8706607ab5370c985f7d5604c9f0bf72faf743bf096c1682804cb17",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "encoding_adequacy": "not_present",
@@ -57,7 +57,7 @@
         "status": "completed",
         "provider": "openai",
         "model": "fixture-model",
-        "question_version": "xss-components-v3",
+        "question_version": "xss-components-v4",
         "protection": "insufficient",
         "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
       }
@@ -75,7 +75,7 @@
     {
       "id": "logging-claim",
       "assessment": {
-        "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
+        "request_digest": "7e05b53b17ee53b38ca4930d0019cd92b71ddfafa6fad8f1801f9d062ba2efd3",
         "finding_status": "confirmed_vulnerability",
         "answers": {
           "content_exposure": "yes",
@@ -106,16 +106,16 @@
   ],
   "traces": {
     "logging-claim": {
-      "sha256": "f5e56a4dd325203027470f84742d81a51a32a842a28fda1b647461c020325dc3",
-      "request_digest": "2ae4e8aff7add3cb13c843d86cac3a6c71485c1b7a5a70f7d13f5508b58a17a3",
+      "sha256": "f6d139ecbec379b6bee1eeb9f9bb788ceb97b74848b458bd80fce89f18d8d899",
+      "request_digest": "7e05b53b17ee53b38ca4930d0019cd92b71ddfafa6fad8f1801f9d062ba2efd3",
       "http_status": 200,
-      "request_bytes": 9103
+      "request_bytes": 9130
     },
     "xss-claim": {
-      "sha256": "f7a4675cdb019da836aa036ad32ad30eb45b1b22ee4933b0e40fbf9c3328eac6",
-      "request_digest": "162464843e9d8923f37e96ebac029290d7804e11dbc1078821c15b0c8af33ebc",
+      "sha256": "a4fdc59fdd0e24206d81184a4081e61c47b4bfdfd5fb9bcd2005158a03573aa6",
+      "request_digest": "bdc0c203d8706607ab5370c985f7d5604c9f0bf72faf743bf096c1682804cb17",
       "http_status": 200,
-      "request_bytes": 12206
+      "request_bytes": 10599
     }
   }
 }

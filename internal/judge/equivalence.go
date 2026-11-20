@@ -33,6 +33,9 @@ func (c *Client) EquivalenceSignature(u analysis.CandidateUse) (string, error) {
 	}
 	use := input["use"].(map[string]any)
 	normalizeBundle(use)
+	// Preserve the equality pattern across invocation, control, transport and
+	// path references, using the same aliases as the sent identity projection.
+	localIdentity(use)
 	request[field] = input
 	data, err := json.Marshal(request)
 	if err != nil {
@@ -50,7 +53,14 @@ func normalizeBundle(use map[string]any) {
 	sensitive := routeMetadataSensitive(use)
 	protected, protectedSpans := registrationProtection(use, invocation)
 	registrationSpans := normalizeEvidence(use, protected, protectedSpans, path, sourcePath, sensitive)
-	normalizeIdentity(use, invocation, http, path, sourcePath, sensitive)
+	delete(use, "source_excerpts")
+	// The compact request omits this derived graph. Its copy of the entry or
+	// context must not turn a single occurrence into a recurring identifier.
+	if graph, ok := use["trace_graph"].(map[string]any); ok {
+		delete(graph, "entry")
+		delete(graph, "invocation_context_id")
+	}
+	normalizeRouteCoordinates(use, http, path, sourcePath, sensitive)
 	normalizeGapCoordinates(use, registrationSpans)
 }
 
@@ -153,9 +163,7 @@ func normalizeEvidence(use map[string]any, protected, protectedSpans map[string]
 	return registrationSpans
 }
 
-func normalizeIdentity(use, invocation, http map[string]any, path, sourcePath string, sensitive bool) {
-	delete(use, "source_excerpts")
-	delete(use, "candidate_id")
+func normalizeRouteCoordinates(use, http map[string]any, path, sourcePath string, sensitive bool) {
 	if !sensitive && !strings.ContainsAny(path+sourcePath, "<>:") {
 		delete(http, "path")
 		delete(http, "source_path")
@@ -163,26 +171,6 @@ func normalizeIdentity(use, invocation, http map[string]any, path, sourcePath st
 	if check, ok := use["declared_requirement"].(map[string]any); ok && !sensitive {
 		delete(check, "path")
 		delete(check, "method")
-	}
-	// Normalize IDs only at the known wire identity locations. Future nested
-	// fields are retained rather than silently treated as identity metadata.
-	for _, key := range []string{"entry_id", "invocation_context_id", "registration_id", "dispatch_binding_id", "instance_id"} {
-		delete(invocation, key)
-	}
-	if graph, ok := use["trace_graph"].(map[string]any); ok {
-		delete(graph, "entry")
-		delete(graph, "invocation_context_id")
-	}
-	for _, key := range []string{"controls", "transports"} {
-		if rows, ok := invocation[key].([]any); ok {
-			for _, row := range rows {
-				if m, ok := row.(map[string]any); ok {
-					delete(m, "invocation_context_id")
-					delete(m, "dispatch_binding_id")
-					delete(m, "entry_id")
-				}
-			}
-		}
 	}
 }
 

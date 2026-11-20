@@ -11,7 +11,7 @@ import (
 // renders by string interpolation/concatenation ending in echo/print; there is
 // no template engine, so the output context is HTML text unless the value
 // itself establishes otherwise (D-7).
-func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) {
+func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, echoContext string, pathContexts []string) {
 	if len(v.deps) == 0 {
 		return
 	}
@@ -19,17 +19,18 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 	paths := []analysis.XSSPath{}
 	hasRaw, hasUnknown := false, false
 	stored := false
-	for _, d := range v.deps {
+	for i, d := range v.deps {
+		context := echoContext
+		if i < len(pathContexts) && pathContexts[i] != "" {
+			context = pathContexts[i]
+		}
 		p := phpNonShellProtection(d.protection)
 		if p == "escaped_routine" {
 			// mysqli_real_escape_string and friends are recorded transforms,
 			// never output encoding: their guarantee is SQL-syntax scoped.
 			p = "unknown"
 		}
-		if (p == "encoded" || p == "sanitized") && context != "html_text" && context != "html_attribute" {
-			p = "unknown"
-		}
-		p = phpURLEncodedProtection(p, context)
+		p = phpRenderProtection(p, context)
 		if p == "numeric" || p == "non_content" {
 			p = "encoded"
 		}
@@ -40,7 +41,13 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 		hasUnknown = hasUnknown || p == "unknown"
 		stored = stored || d.dep.StorageKey != ""
 		deps = append(deps, d.dep)
-		paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Protection: p})
+		paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Protection: p, OutputContext: context})
+	}
+	// Stored writers can remove a raw path or establish its protection.
+	// Keep the echo context as the fallback until linkStorage sees the final paths.
+	context := echoContext
+	if !stored {
+		context = recordContext(paths, echoContext)
 	}
 	p, reason := "encoded", "Every modeled source path is HTML-escaped in HTML text or a quoted non-active attribute."
 	if hasUnknown {
@@ -79,9 +86,12 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, context string) 
 	f.report.Uses = append(f.report.Uses, u)
 }
 
-// phpURLEncodedProtection scopes urlencode/rawurlencode output to the
-// contexts where its alphabet cannot change markup or a URL's scheme.
-func phpURLEncodedProtection(p, context string) string {
+// phpRenderProtection scopes encoding to the context of the eventual render,
+// whether it was applied before storage or at the read.
+func phpRenderProtection(p, context string) string {
+	if (p == "encoded" || p == "sanitized") && context != "html_text" && context != "html_attribute" {
+		return "unknown"
+	}
 	if p != "url_encoded" {
 		return p
 	}

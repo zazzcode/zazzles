@@ -74,6 +74,9 @@ func (f *phpFlow) impliedProtections(c *sitter.Node, truth bool, out map[string]
 			}
 			v := phpVarName(m, args[0])
 			if v == "" {
+				v = phpElementKey(m, args[0])
+			}
+			if v == "" {
 				return
 			}
 			options := phpArrayLiteralStrings(m, args[1])

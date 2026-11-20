@@ -29,13 +29,15 @@ type phpFlow struct {
 	env        map[string]phpValue
 	// globals tracks $GLOBALS['name'] assignments (the DVWA mysqli idiom).
 	globals map[string]phpValue
-	context []analysis.Evidence
-	gaps    []analysis.Gap
-	depth   int
-	work    *int
-	stack   map[string]bool
-	include int
-	returns phpValue
+	// helperExits is shared by branch clones of the current helper invocation.
+	helperExits *phpSuperglobalExits
+	context     []analysis.Evidence
+	gaps        []analysis.Gap
+	depth       int
+	work        *int
+	stack       map[string]bool
+	include     int
+	returns     phpValue
 	// entryModule/entryModuleRoot anchor the invoked_callable evidence of the
 	// entry file even while helper expansion switches f.module.
 	entryModule     *phpModule
@@ -306,7 +308,7 @@ func (f *phpFlow) binaryValues(n *sitter.Node, op string, a, b phpValue) phpValu
 		if a.template != "" && b.template != "" {
 			v.template = a.template + b.template
 		}
-		return phpTransfer(v, m.evidence("string_construction", n))
+		return phpConcatTransfer(v, m.evidence("string_construction", n))
 	case "==", "===", "!=", "!==", "<", ">", "<=", ">=", "<=>":
 		return phpTransfer(phpProtect(phpCombine(a, b), "non_content"), m.evidence("comparison", n))
 	case "&&", "||", "and", "or", "xor":
@@ -346,8 +348,10 @@ func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
 	case "member_access_expression":
 		f.propertyWrite(left, v)
 	case "variable_name":
-		f.markDirty(phpVarName(m, left))
-		f.env[phpVarName(m, left)] = v
+		name := phpVarName(m, left)
+		f.markDirty(name)
+		f.env[name] = v
+		f.replaceSuperglobalElements(name, v, left)
 	case "subscript_expression":
 		obj, index := phpSubscriptParts(left)
 		key, _ := phpStringLiteral(m, index)
@@ -367,6 +371,9 @@ func (f *phpFlow) assignValue(n, left *sitter.Node, v phpValue) phpValue {
 				v = phpTransfer(v, m.evidence("storage_write", left))
 				f.set.sessionWrites["php-session:"+key] = append(f.set.sessionWrites["php-session:"+key], phpWrite{value: v, entry: f.invocation.EntryID, evidence: m.evidence("storage_write", left)})
 			}
+			return v
+		}
+		if obj != nil && f.writeSuperglobalElement(phpVarName(m, obj), index, v) {
 			return v
 		}
 		if obj != nil {
@@ -423,6 +430,11 @@ func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 				}
 				origin = serverKeyOrigin(key)
 			}
+			if sg, tracked := phpSuperglobalKey(name, key); tracked {
+				if state, ok := f.globals[sg]; ok {
+					return f.superglobalRead(n, state, container, origin, key)
+				}
+			}
 			return f.source(n, container, origin, key)
 		}
 		if name == "GLOBALS" {
@@ -478,7 +490,7 @@ func (f *phpFlow) render(n *sitter.Node, v phpValue) {
 	}
 	m := f.module
 	markup := m.inlineHTMLBefore(n.StartByte())
-	f.recordXSS(m.evidence("html_output", n), v, parse.HTMLOutputContext(markup))
+	f.recordXSS(m.evidence("html_output", n), v, parse.HTMLOutputContext(markup), f.pathContexts(n, v, markup))
 	if markup != "" {
 		// The judge sees the markup around an echo embedded in a page, so the
 		// output context (`value="<?php echo $x ?>"`) is source-backed.

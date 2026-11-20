@@ -824,6 +824,9 @@ func TestPHPXSSTypeNamesTheRawWitness(t *testing.T) {
 		if u.XSS.Type != "reflected" || u.XSS.StorageKey != "php-sql:notes.body" || !u.XSS.OriginResolved {
 			t.Fatalf("direct raw witness with an encoded stored sibling is reflected: %#v", u.XSS)
 		}
+		if u.XSS.OutputContext != "html_attribute" {
+			t.Fatalf("after resolving the encoded writer, the raw cookie determines the record context: %#v", u.XSS)
+		}
 		return
 	}
 	t.Fatalf("missing read.php render: %#v", r.Uses)
@@ -870,7 +873,8 @@ $data->execute();
 			continue
 		}
 		text := u.Completeness.Evidence["query_text"]
-		if len(text) != 1 || !strings.Contains(text[0].Text, "(:user)") {
+		// The literal plus the prepare call that makes it this statement's text.
+		if len(text) != 2 || text[0].Kind != "statement_preparation" || !strings.Contains(text[1].Text, "(:user)") {
 			t.Fatalf("execute query_text: %#v", text)
 		}
 		sent := false

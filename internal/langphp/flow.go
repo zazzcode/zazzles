@@ -256,7 +256,8 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 func (f *phpFlow) castValue(n *sitter.Node, v phpValue) phpValue {
 	switch castKind(f.module, n) {
 	case "int", "integer", "float", "double":
-		return phpTransfer(phpProtect(v, "numeric"), f.module.evidence("numeric_conversion", n))
+		at := f.module.evidence("numeric_conversion", n)
+		return phpTransfer(phpNumeric(v, analysis.CommandValueNumber, at), at)
 	case "string":
 		return phpTransfer(v, f.module.evidence("string_conversion", n))
 	}

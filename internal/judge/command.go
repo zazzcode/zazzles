@@ -181,7 +181,7 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 			global = append(global, g)
 		}
 	}
-	unsafeFacet := ""
+	unsafeFacet, unsupportedBypass := "", false
 	switch {
 	case ans["shell_syntax_protection"] == "vulnerable" && shell.reachable():
 		unsafeFacet = "shell syntax (CWE-78)"
@@ -220,11 +220,28 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 				}
 				// D-1: the facet's single guarded path, the record's only
 				// one, carries the bypass; the scanner binds it.
-				if implied, ok := impliedBypassPath(use); r == nil && !rejectedCitation(a, resolvePrefix+"bypass") && ok && len(facet.paths) == 1 && facet.paths[0].Dependency == implied {
+				implied, ok := impliedBypassPath(use)
+				bindsItself := r == nil && !rejectedCitation(a, resolvePrefix+"bypass") && ok && len(facet.paths) == 1 && facet.paths[0].Dependency == implied
+				if bindsItself {
+					dep = implied
+				}
+				// A binding establishes which path the bypass is on, never
+				// that the path's value can carry it: a value limited to
+				// characters the scanner lists must be able to add command
+				// text, or the answer asserts more than the facts hold.
+				limit, limited := "", false
+				if (bindsItself || onFacet) && unsafeFacet == "shell syntax (CWE-78)" {
+					limit, limited = analysispacks.ShellBypassLimit(use, dep)
+				}
+				switch {
+				case limited:
+					unsupportedBypass = true
+					add("command_bypass_unsupported", limit)
+				case bindsItself:
 					a.Resolutions = append(a.Resolutions, impliedBypassResolution(use, a, implied))
-				} else if !onFacet {
+				case !onFacet:
 					add("command_guard_semantics_unknown", "A bypass was identified without a verified citation of a guarded path of the unsafe facet; its adequacy is not established.")
-				} else {
+				default:
 					r.Discharged = true
 				}
 			}
@@ -248,6 +265,10 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		return
 	}
 	a.BlockingGaps = append(append([]analysis.Gap{}, blockers...), c.Blockers...)
+	if unsupportedBypass {
+		a.Reason = "The assessment identified a guard bypass, but the guarded value's listed characters cannot add command text of the request's choosing; raw answers are retained and no status is claimed from them."
+		return
+	}
 	if len(a.BlockingGaps) > 0 {
 		a.Reason = "Claim-relevant command evidence is incomplete; raw answers and unrelated coverage gaps are retained."
 		return
@@ -269,6 +290,11 @@ func applyCommandPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	if !unsafeSomewhere && !unknown && applicable > 0 && ans["protection_coverage"] == "complete" && !hasUnguardedPath(f) {
 		a.FindingStatus, a.Protection = "protected_for_claim", "sufficient"
 		a.Reason = "Every applicable facet is protected or constrained by a source-backed control on each request-derived path with complete coverage; this applies only to the stated claim."
+		// Protection for the claim is not a clean guard: what a listed
+		// value can still add stays visible.
+		if note := analysispacks.ShellPathResidue(use); note != "" {
+			a.Reason += " " + note
+		}
 		return
 	}
 	a.Reason = "The command assessment is inconclusive; unknown, unsafe-without-a-complete-witness or incomplete coverage cannot support protection."

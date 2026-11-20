@@ -27,9 +27,11 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	var all phpValue
 	var context []analysis.Evidence
 	var deps []phpDep
-	// guardOperand maps a guarded path to its operand's local context index;
-	// the shared contract requires guarded paths to cite a control.
+	// guardOperand maps a guarded path to the control it cites: a local
+	// context index, or -1-i for entry i of the flow context the use starts
+	// with. The shared contract requires guarded paths to cite a control.
 	guardOperand := map[int]int{}
+	flowContext := phpDedupeEvidence(f.context)
 	request := false
 	for i, slot := range slots {
 		var v phpValue
@@ -54,11 +56,25 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 		for _, d := range v.deps {
 			d.dep.SinkSlot = slot
 			o.Dependencies = append(o.Dependencies, len(deps))
-			protection, reason := "raw", ""
+			protection, reason, class := "raw", "", ""
+			control := o.Context[0]
 			switch d.protection {
 			case "shell_quoted":
 				protection, reason = "guarded", "escapeshellarg/escapeshellcmd quotes the shell operand"
-			case "numeric", "non_content":
+			case "numeric":
+				// The path states the characters its check or conversion
+				// leaves and cites that check, not the operand it guards.
+				protection, class = "guarded", d.numeric
+				reason = analysispacks.NumericPathReason(class)
+				if d.numericAt.Kind != "" {
+					if i := phpEvidenceIndex(flowContext, d.numericAt); i >= 0 {
+						control = -1 - i
+					} else {
+						control = len(context)
+						context = append(context, d.numericAt)
+					}
+				}
+			case "non_content":
 				protection, reason = "guarded", "numeric or non-content value cannot carry shell syntax"
 			case "unknown", phpUnwritten:
 				protection = "unknown"
@@ -66,7 +82,6 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 				// The deny-list leaves a shell metacharacter usable.
 				protection = "raw"
 			}
-			control := o.Context[0]
 			if d.protection == phpRegexCapture {
 				// D-6: a capture that admits any character is raw for the
 				// shell; any other capture is guarded by its preg_match.
@@ -82,7 +97,7 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 			if protection == "guarded" {
 				guardOperand[len(facts.Paths)] = control
 			}
-			facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: len(deps), Operand: slot, Protection: protection, Reason: reason})
+			facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: len(deps), Operand: slot, Protection: protection, Reason: reason, Class: class})
 			deps = append(deps, d)
 			request = true
 		}
@@ -97,6 +112,10 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	u.APIModel = analysispacks.CommandContract(analysispacks.PHPProgramContract)
 	base := len(u.Context)
 	for i, local := range guardOperand {
+		if local < 0 {
+			facts.Paths[i].Controls = []int{-1 - local}
+			continue
+		}
 		facts.Paths[i].Controls = []int{base + local}
 	}
 	u.Context = append(u.Context, context...)
@@ -125,6 +144,16 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	c.Blockers = append(c.Blockers, phpStoredOnlyBlockers(deps, u.Sink.Span)...)
 	u.Completeness = c
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
+}
+
+// phpEvidenceIndex returns the index of e in list, or -1.
+func phpEvidenceIndex(list []analysis.Evidence, e analysis.Evidence) int {
+	for i, item := range list {
+		if item == e {
+			return i
+		}
+	}
+	return -1
 }
 
 // phpSoleCapture returns the regex capture a path reads.

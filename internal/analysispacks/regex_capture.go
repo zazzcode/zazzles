@@ -196,9 +196,17 @@ func (s *classState) note(what string) {
 // ClassifyCapture classifies a capture group's sub-pattern under a flavor
 // and the expression's flags (for example "i", "x", "s").
 func ClassifyCapture(sub, flavor, flags string) CaptureClass {
+	class, _ := classifyCapture(sub, flavor, flags)
+	return class
+}
+
+// classifyCapture also returns the accepted characters of an
+// explicit_alphabet class when the listing is complete; the set is nil for
+// every other class and when unlisted Unicode characters are also accepted.
+func classifyCapture(sub, flavor, flags string) (CaptureClass, map[rune]bool) {
 	s := &classState{set: map[rune]bool{}, flavor: flavor, flags: flags, caseInsensitive: strings.Contains(flags, "i")}
 	if strings.Contains(flags, "x") {
-		return CaptureClass{Class: CaptureUnknown, Reason: "extended (verbose) syntax is not modelled"}
+		return CaptureClass{Class: CaptureUnknown, Reason: "extended (verbose) syntax is not modelled"}, nil
 	}
 	for i := 0; i < len(sub); i++ {
 		c := sub[i]
@@ -242,15 +250,17 @@ func ClassifyCapture(sub, flavor, flags string) CaptureClass {
 	}
 	switch {
 	case s.unknown != "":
-		return CaptureClass{Class: CaptureUnknown, Reason: s.unknown}
+		return CaptureClass{Class: CaptureUnknown, Reason: s.unknown}, nil
 	case s.admitsAny:
-		return CaptureClass{Class: CaptureAdmitsAny, Reason: "the sub-pattern accepts any character, including shell syntax"}
+		return CaptureClass{Class: CaptureAdmitsAny, Reason: "the sub-pattern accepts any character, including shell syntax"}, nil
 	}
 	alphabet := formatAlphabet(s.set)
 	if len(s.unicode) > 0 {
+		// The listed characters are not the whole accepted set.
 		alphabet += " and other Unicode " + strings.Join(s.unicode, ", ")
+		return CaptureClass{Class: CaptureExplicitAlphabet, Alphabet: alphabet}, nil
 	}
-	return CaptureClass{Class: CaptureExplicitAlphabet, Alphabet: alphabet}
+	return CaptureClass{Class: CaptureExplicitAlphabet, Alphabet: alphabet}, s.set
 }
 
 func quantifierBody(b string) bool {

@@ -59,7 +59,27 @@ type CommandPath struct {
 	Protection string `json:"protection"`
 	Controls   []int  `json:"controls,omitempty"`
 	Reason     string `json:"reason,omitempty"`
+	// Class is the adapter's own classification of the value a guarded path
+	// carries, when it holds one (a CommandValue constant). It is
+	// extraction-only: policy reads it to check a claimed bypass against what
+	// the value can hold, and the path reason words it; the class itself is
+	// never sent or reported.
+	Class string `json:"-"`
 }
+
+// Classes of a guarded path's value whose every character the adapter knows.
+// A value the adapter cannot list this way (a hash, a predicate result, an
+// allow-list member) has no class.
+const (
+	// CommandValueNumericString passed PHP is_numeric: a numeric token with
+	// optional leading and trailing whitespace.
+	CommandValueNumericString = "numeric_string"
+	// CommandValueDigits passed PHP ctype_digit: ASCII digits only.
+	CommandValueDigits = "digits"
+	// CommandValueNumber is the text of a converted number (PHP intval,
+	// floatval, an int or float cast): no whitespace.
+	CommandValueNumber = "number"
+)
 
 // Validate checks every index and enumerated value against the candidate use.
 func (c *CommandFacts) Validate(deps, context int) error {

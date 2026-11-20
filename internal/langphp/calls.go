@@ -142,7 +142,8 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 	case "intval", "floatval", "doubleval":
 		if f.builtin(qname) && len(values) >= 1 {
-			return phpTransfer(phpProtect(values[0], "numeric"), f.module.evidence("numeric_conversion", n))
+			at := f.module.evidence("numeric_conversion", n)
+			return phpTransfer(phpNumeric(values[0], analysis.CommandValueNumber, at), at)
 		}
 	case "is_numeric", "ctype_digit", "isset", "empty", "is_int", "is_string", "is_array":
 		return phpTransfer(phpProtect(all, "non_content"), f.module.evidence("non_content", n))

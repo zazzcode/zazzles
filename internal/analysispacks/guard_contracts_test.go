@@ -44,7 +44,7 @@ func TestCommandGuardContract(t *testing.T) {
 	for _, q := range CommandQuestions() {
 		found = found || q.Name == "guard_bypass"
 	}
-	if !found || len(CommandChoices("guard_bypass")) != 4 || CommandProtocol != "command-components-v4" {
+	if !found || len(CommandChoices("guard_bypass")) != 4 || CommandProtocol != "command-components-v5" {
 		t.Fatal("the bypass question and protocol bump are required")
 	}
 }

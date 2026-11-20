@@ -7,8 +7,10 @@
 **Coordination:** Lead Agent. One Contributor Agent may own the `package.json` export resolver and its tests
 **Run log:** `.zazz/ephemeral/architecture-phase-8-npm-library-mode-run-log.md`
 **Product scope source:** container-root `3-npm-library-rce-mvp-proposal.md`, "Phase 1: Library mode
-with existing analyzers", "Source and entry points", "Result model", and "Candidate policy". The
-parameter-trust judge question and the feasibility consumer are deferred (plan "Explicitly later").
+with existing analyzers", "Source and entry points", "Result model", and "Candidate policy". This
+phase is the offline half of the proposal's phase 1. The parameter-trust judge question and the
+feasibility consumer are its other half and need their own contract (the library judge contract
+in the [implementation plan](../project/implementation-plan.md#before-library-scanning)).
 **Drafted:** 2026-11-17
 
 ## 1. Capability
@@ -83,6 +85,23 @@ Review shape: one PR.
 - **D-4 The judge is off in library mode.** Existing questions presume request-origin inputs.
   Sending caller-argument evidence through them would yield answers to a question that was never
   asked. A library question contract comes later.
+- **D-6 A listed guard is read without the judge.** [Command bypass support](command-bypass-support.md)
+  lists every character a guarded shell value can hold where the scanner knows it exactly (a
+  regex capture with an explicit alphabet, for example). With the judge off, that listing decides
+  the cases it can: a guarded path whose listed characters can carry command text is a conditional
+  weakness that names the guard, and one whose characters cannot is Protected with what they still
+  admit. A guard the scanner cannot list stays Review. This is what keeps a phase 7 bypass sibling
+  from reading as Protected.
+- **D-7 Argument injection needs the utility's option semantics.** The command analyzer reports
+  CWE-88 only for a literal interpreter and holds unknown utility options in Review. A caller
+  argument in a `git` argument array is therefore Review, not a conditional weakness, unless a
+  contract states which operands git reads as options or transports. The phase adds no such
+  contract. If the phase 7 `simple-git` key shows the row needs one, the row is listed "out of
+  phase" and the contract is written first (plan waypoint, utility option contracts).
+- **D-8 Unresolved hops are counted by kind.** Each in-phase corpus row is compared with its
+  phase 7 hop list. A hop the adapter does not resolve is a gap that names its kind (`this`
+  method, `new`, prototype assignment, callback, computed property). The counts size the flow
+  contract that follows; this phase does not widen the adapter to chase them.
 - **D-5 Entry identity.** The instance is `npm:<package>@<version>`. The entry ID uses the defining
   function's evidence plus the export path and condition. Two export paths reaching one function
   are two entries sharing one callable.
@@ -115,7 +134,9 @@ Additional halts:
    trust `undetermined`, including destructured object parameters with projections.
 3. **AC3 Results.** On synthetic pairs, `exec(cmd)` from a parameter is a conditional weakness.
    The same call behind an allow-list guard is Protected or Review with the guard evidence, never a
-   conditional weakness. An unresolved helper is Review.
+   conditional weakness. An unresolved helper is Review. Per D-6, a capture guard whose alphabet
+   holds `;` and letters is a conditional weakness naming the guard, and one limited to
+   `[a-z0-9.-]` is Protected with its residue stated.
 4. **AC4 Corpus.** `simple-git` is fixed only if phase 7 confirms its path lies within the existing
    command and argument analyzer. In that case:
    - its vulnerable pin yields a conditional weakness or Review at the answer-key anchor;
@@ -129,6 +150,9 @@ Additional halts:
 7. **AC7 Results record.** `library-mode-results.md` compares against the phase 7 baseline:
    per-row outcome, recall on in-phase rows, Review burden, and candidates per library. Gaps are
    named. The contributor gate passes.
+8. **AC8 Flow shape.** For each in-phase row, the results record lists every phase 7 hop as
+   resolved or unresolved, with totals by hop kind (D-8).
+9. **AC9 Bypass siblings.** No phase 7 bypass sibling of an in-phase row is Protected.
 
 ## 8. Test strategy
 
@@ -161,7 +185,7 @@ func (s *moduleSet) resolveExports(p *libraryPackage) []libraryExport // bounded
 ## 10. Definition of done
 
 - [ ] Required reading done; standards lookup recorded.
-- [ ] AC1–AC7 verified, with evidence in the run log.
+- [ ] AC1–AC9 verified, with evidence in the run log.
 - [ ] `git diff origin/stage --stat` matches §4.
 - [ ] The PR states the deferred items (trust question, feasibility, later sinks).
 
@@ -181,7 +205,7 @@ Use the plan's common rules. Record the corpus pins checked, the per-row outcome
 > spec, the phase 7 corpus and keys, and the container-root npm proposal sections it names. Follow
 > the plan's session start and common rules. Execute §9 TDD-first. You may delegate the export
 > resolver (§9 step 2) to one Contributor Agent that owns those files. Make no paid calls. Finish
-> with a draft PR into `stage` listing AC1–AC7 evidence. Verifier: a fresh-context subagent confirms
+> with a draft PR into `stage` listing AC1–AC9 evidence. Verifier: a fresh-context subagent confirms
 > `TestArchitectureBaseline` is unchanged, runs the library tests, and checks that no library result
 > can be Confirmed and that `--library --judge` is refused. It reports PASS or FAIL.
 
@@ -191,3 +215,11 @@ Use the plan's common rules. Record the corpus pins checked, the per-row outcome
 
 Source: [phase 3B](architecture-phase-3-js-ts-python-package.md) moved JS/TS to `internal/langjs` and
 Python to `internal/langpy`; `internal/parse` is the language core. Changed: §2 code paths and §4 file table (new files land in `internal/langjs`). No scope change.
+
+### 2026-11-20 — Reviewed against the refreshed proposal
+
+Requested by the owner while planning the work before library scanning. Added: D-6 and AC3's
+listed-guard cases, using the guard listing delivered by command bypass support; D-7, which
+states why `simple-git` may be out of this phase's reach; D-8, AC8 and AC9, which measure flow
+shape and bypass siblings against the phase 7 keys. The header now says this phase is the offline
+half of the proposal's phase 1. No file was added to §4.

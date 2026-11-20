@@ -328,7 +328,9 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 			}
 		}
 	case "command":
-		if f := u.Command; f != nil {
+		// D-2: the only guarded path cites itself; its question is not sent.
+		if _, implied := impliedBypassPath(u); u.Command != nil && !implied {
+			f := u.Command
 			choices := []map[string]string{}
 			for _, p := range f.Paths {
 				if p.Protection == "guarded" && p.Dependency >= 0 && p.Dependency < len(x.chains) && len(choices) < maxCiteChoices {
@@ -506,6 +508,63 @@ func matchBlocker(use analysis.CandidateUse, x *wireIndex, id string) *analysis.
 		}
 	}
 	return nil
+}
+
+// ImpliedSinglePath is the citation of a bypass the scanner bound to the
+// record's only guarded path (D-1); no model citation was asked.
+const ImpliedSinglePath = "implied_single_path"
+
+// impliedBypassPath returns the dependency of the record's only guarded
+// command path when its chain has no scanner gap. A bypass answer can then
+// name no other chain, so the scanner binds it without a citation question.
+func impliedBypassPath(u analysis.CandidateUse) (int, bool) {
+	f := u.Command
+	if f == nil || familyOf(u) != "command" {
+		return -1, false
+	}
+	dep, guarded := -1, 0
+	for _, p := range f.Paths {
+		if p.Protection == "guarded" {
+			guarded++
+			dep = p.Dependency
+		}
+	}
+	if guarded != 1 || dep < 0 || dep >= len(u.Dependencies) {
+		return -1, false
+	}
+	if u.Completeness != nil {
+		for _, g := range u.Completeness.Blockers {
+			if gapTouchesCommandDependency(g, u.Dependencies[dep]) {
+				return -1, false
+			}
+		}
+	}
+	return dep, true
+}
+
+// impliedBypassResolution records the scanner's binding of a bypass answer to
+// the record's only guarded path.
+func impliedBypassResolution(u analysis.CandidateUse, a *analysis.Assessment, dep int) analysis.Resolution {
+	d := u.Dependencies[dep]
+	spans := []analysis.Span{d.Source.Span}
+	for _, e := range d.Transfers {
+		spans = append(spans, e.Span)
+	}
+	spans = append(spans, u.Sink.Span)
+	return analysis.Resolution{Question: resolvePrefix + "bypass", QuestionVersion: BypassQuestionVersion, Answer: a.Answers["guard_bypass"],
+		Citation: []string{ImpliedSinglePath}, CitedSpans: spans, Dependency: &dep, Verified: true, Verifier: "scanner", Discharged: true,
+		Provider: a.Provider, Model: a.Model}
+}
+
+// rejectedCitation reports a model citation of the question that the
+// verifier rejected; the scanner never overrides it.
+func rejectedCitation(a *analysis.Assessment, name string) bool {
+	for _, r := range a.Resolutions {
+		if r.Question == name && len(r.Citation) > 0 && !r.Verified {
+			return true
+		}
+	}
+	return false
 }
 
 // verifiedResolution returns the record's verified resolution of a question

@@ -24,6 +24,30 @@ type Dependency struct {
 	// browser value was read from. Neither is serialized or sent to a model.
 	OutputContext string `json:"-"`
 	ResponseField string `json:"-"`
+	// Transforms are source-backed transforms on this chain that the scanner
+	// states exactly, such as a regular-expression capture.
+	Transforms []ValueTransform `json:"transforms,omitempty"`
+}
+
+// ValueTransform is one exactly stated transform on a dependency chain. For
+// kind regex_capture the value is group Group of a literal regular
+// expression: Pattern and Flags are the expression, SubPattern the group's
+// own pattern, and Class/Alphabet what that sub-pattern accepts.
+type ValueTransform struct {
+	Kind       string `json:"kind"`
+	At         Span   `json:"at"`
+	Flavor     string `json:"flavor,omitempty"`
+	Pattern    string `json:"pattern"`
+	Flags      string `json:"flags,omitempty"`
+	Group      int    `json:"group"`
+	SubPattern string `json:"sub_pattern"`
+	Class      string `json:"class"`
+	Alphabet   string `json:"alphabet,omitempty"`
+	// Regex is the source text naming the expression (a literal or the name
+	// bound to it); Tests are the source texts of match tests of the same
+	// expression on the same value. Both are extraction-only.
+	Regex string   `json:"-"`
+	Tests []string `json:"-"`
 }
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.
@@ -35,6 +59,7 @@ type CandidateUse struct {
 	Path       *PathFacts          `json:"path,omitempty"`
 	Code       *CodeFacts          `json:"code,omitempty"`
 	Redirect   *RedirectFacts      `json:"redirect,omitempty"`
+	Upload     *UploadFacts        `json:"upload,omitempty"`
 	Outbound   *OutboundFacts      `json:"outbound,omitempty"`
 	// StoredOrigin is write-set evidence for a record whose stored origin is
 	// unresolved (blocked by storage_origin_unresolved). It is evidence, not a
@@ -83,6 +108,24 @@ type Assessment struct {
 	// FollowUp records the one evidence follow-up request, when one was
 	// asked for.
 	FollowUp *FollowUp `json:"follow_up,omitempty"`
+	// PathGroups records the per-group requests of a record whose evidence
+	// exceeded the request limit and was judged in path groups.
+	PathGroups []PathGroupResult `json:"path_groups,omitempty"`
+}
+
+// PathGroupResult is one path-group request of an over-limit record: the
+// record dependencies it carried, those it withheld, and its own outcome.
+type PathGroupResult struct {
+	Group         int    `json:"group"`
+	Key           string `json:"key"`
+	Dependencies  []int  `json:"dependencies"`
+	Omitted       []int  `json:"omitted,omitempty"`
+	Status        string `json:"status"`
+	FindingStatus string `json:"finding_status,omitempty"`
+	Protection    string `json:"protection,omitempty"`
+	RequestDigest string `json:"request_digest,omitempty"`
+	RequestBytes  int    `json:"request_bytes,omitempty"`
+	Reason        string `json:"reason,omitempty"`
 }
 
 // FollowUp is the single evidence follow-up of a record: the item the model
@@ -91,7 +134,9 @@ type FollowUp struct {
 	Kind   string `json:"kind"`
 	Symbol string `json:"symbol"`
 	// Status is "sent", "unresolved" (the snapshot did not resolve the
-	// symbol exactly), "follow_up_cap_reached" or "failed".
+	// symbol exactly), "answered_by_contract" (a guard contract on the
+	// request already describes the member), "follow_up_cap_reached" or
+	// "failed".
 	Status   string    `json:"status"`
 	Evidence *Evidence `json:"evidence,omitempty"`
 	Reason   string    `json:"reason,omitempty"`

@@ -55,10 +55,15 @@ func TestPythonInputRequestCompatibility(t *testing.T) {
 				if err := json.Unmarshal(fresh.Request, &envelope); err != nil {
 					t.Fatal(err)
 				}
-				for _, want := range []string{"input_facts", "source.python-input-v1", "initial_type", "sink_type"} {
+				for _, want := range []string{"input_facts", "initial_type", "sink_type"} {
 					if !strings.Contains(envelope.Input, want) {
 						t.Fatalf("wire omits %s", want)
 					}
+				}
+				// The shared Python input rules, or their family-specific copy
+				// (an upload claim selects source.python-input-upload-v1).
+				if !strings.Contains(envelope.Input, "source.python-input-v1") && !strings.Contains(envelope.Input, "source.python-input-"+analysispacks.FamilySlugForKind(u.Kind)+"-v1") {
+					t.Fatal("wire omits the Python input interpretation")
 				}
 				if strings.Contains(envelope.Input, "source.node-input") {
 					t.Fatal("selected Node interpretation for Python")

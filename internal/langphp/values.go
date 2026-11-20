@@ -10,6 +10,21 @@ import (
 type phpDep struct {
 	dep                               analysis.Dependency
 	protection, container, key, entry string
+	// regexGuard is the preg_match call whose capture this path reads, when
+	// protection is phpRegexCapture.
+	regexGuard analysis.Evidence
+}
+
+// phpRegexCapture labels a path that is a capture group of a literal
+// preg_match expression (close-findings-gaps D-4). Only command sinks read it
+// (D-6); every other family treats it as unknown.
+const phpRegexCapture = "regex_capture"
+
+// phpRegex is the literal expression of a preg_match whose matches array a
+// variable holds.
+type phpRegex struct {
+	pattern, flags, text string
+	call                 analysis.Evidence
 }
 
 // phpLiteral is one finite literal candidate. More than one candidate means a
@@ -30,6 +45,18 @@ type phpValue struct {
 	driver  string
 	// class names the user class of a `new C` object (binding php_class).
 	class string
+	// regex is set on the matches array of a literal preg_match.
+	regex *phpRegex
+	// classDecl is the declaration of a `new C` object; props is its
+	// property map (D-10). propsUnknown marks a write through a dynamic
+	// property name: no property read is then established.
+	classDecl    *phpClassDecl
+	props        map[string]phpValue
+	propsUnknown bool
+	// objectID identifies one created object so aliases see its writes.
+	objectID int
+	// prefix is the literal text a concatenated string starts with.
+	prefix string
 	// table/columns carry SQL read provenance for storage linking.
 	table   string
 	columns []string
@@ -105,7 +132,35 @@ func phpCombine(a, b phpValue) phpValue {
 	if a.fields == nil {
 		a.fields = b.fields
 	}
+	if a.classDecl != nil || b.classDecl != nil {
+		// Object values join property by property; different classes are
+		// no longer one object.
+		if a.classDecl != b.classDecl {
+			a.classDecl, a.props = nil, nil
+		} else {
+			a.props = phpJoinProps(a.props, b.props)
+		}
+		a.propsUnknown = a.propsUnknown || b.propsUnknown
+	}
 	return a
+}
+
+func phpJoinProps(a, b map[string]phpValue) map[string]phpValue {
+	if a == nil && b == nil {
+		return nil
+	}
+	out := map[string]phpValue{}
+	for k, v := range a {
+		out[k] = v
+	}
+	for k, v := range b {
+		if prior, ok := out[k]; ok {
+			out[k] = phpJoin(prior, v)
+		} else {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 // phpJoin merges branch values: distinct protections on the same source stay
@@ -216,4 +271,16 @@ func phpDedupeEvidence(list []analysis.Evidence) []analysis.Evidence { return ph
 
 func inertPHP(v phpValue) bool {
 	return len(v.deps) == 0 && len(v.gaps) == 0 && v.fields == nil && v.binding == "" && v.class == "" && v.driver == "" && v.table == "" && v.columns == nil && v.sqlText == nil && v.sqlParams == nil && v.sqlWrites == nil && v.escapes == nil && v.bindingControls == nil && !v.unknown && !v.built
+}
+
+// phpPrefixOf returns the literal text a value starts with.
+func phpPrefixOf(v phpValue) string {
+	if v.constant && len(v.literals) == 1 && len(v.deps) == 0 {
+		return v.literals[0].text
+	}
+	return v.prefix
+}
+
+func phpConstantText(v phpValue) bool {
+	return v.constant && len(v.literals) == 1 && len(v.deps) == 0
 }

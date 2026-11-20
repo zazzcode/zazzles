@@ -231,7 +231,7 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 		}
 		target, n = s.resolve(m, name)
 	}
-	if target == nil || n == nil || (!isFunction(n) && n.Kind() != "function_declaration") {
+	if target == nil || n == nil || (!isFunction(n) && n.Kind() != "function_declaration" && n.Kind() != "method_definition") {
 		return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "handler is not a directly resolved function", At: parse.Span(m.file, m.tree.RootNode())})
 	}
 	if target.tree.RootNode().HasError() {

@@ -2,10 +2,12 @@ package langpy
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/internal/analysis"
+	"github.com/zazzcode/zazzles/internal/analysispacks"
 	"github.com/zazzcode/zazzles/internal/parse"
 )
 
@@ -20,6 +22,12 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	}
 	nodes, values, all := f.callArguments(n)
 	f.interpreterOperation(n, fn, nodes, values)
+	if v, ok := f.regexMatch(n, q, nodes, values); ok {
+		return v
+	}
+	if v, ok := f.regexGroup(n, fn, nodes); ok {
+		return v
+	}
 
 	object := pyField(fn, "object")
 	method := pyText(m, pyField(fn, "attribute"))
@@ -30,6 +38,10 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	// Recording a filesystem candidate is additive and precedes framework call
 	// models, which can consume a call such as send_from_directory whole.
 	f.pathCall(n, fn, receiver, object, method)
+	f.uploadCall(n, fn, object, receiver, method, nodes, values)
+	if receiver.binding == "jinja_environment" && method == "from_string" && len(values) > 0 && len(values[0].deps) > 0 {
+		f.pythonInterpreter(n, "jinja2.Environment.from_string", fn, values[0], "code", "python-template-source-v1")
+	}
 	if v, ok := f.frameworkCall(n, q, nodes, values, all); ok {
 		return v
 	}
@@ -375,4 +387,92 @@ func (f *pythonFlow) callArguments(n *sitter.Node) ([]*sitter.Node, []pythonValu
 		}
 	}
 	return nodes, values, all
+}
+
+// pythonRegexFlags maps re flag names to the classifier's flag letters.
+var pythonRegexFlags = map[string]string{"re.I": "i", "re.IGNORECASE": "i", "re.X": "x", "re.VERBOSE": "x", "re.A": "a", "re.ASCII": "a",
+	"re.S": "s", "re.DOTALL": "s", "re.M": "m", "re.MULTILINE": "m"}
+
+// regexMatch models re.match/fullmatch/search(<literal>, subject[, flags]):
+// the match object holds substrings of the subject, so it keeps the
+// subject's paths with a regex_match transfer.
+func (f *pythonFlow) regexMatch(n *sitter.Node, q string, nodes []*sitter.Node, values []pythonValue) (pythonValue, bool) {
+	if q != "re.match" && q != "re.fullmatch" && q != "re.search" {
+		return pythonValue{}, false
+	}
+	if len(nodes) < 2 || len(nodes) > 3 || nodes[0].Kind() != "string" || nodes[1].Kind() == "keyword_argument" {
+		return pythonValue{}, false
+	}
+	m := f.module
+	pattern, ok := analysispacks.PythonStringLiteral(pyText(m, nodes[0]))
+	if !ok {
+		return pythonValue{}, false
+	}
+	flags := ""
+	if len(nodes) == 3 {
+		text := pyText(m, nodes[2])
+		if nodes[2].Kind() == "keyword_argument" {
+			key := pyText(m, nodes[2].ChildByFieldName("name"))
+			if key != "flags" {
+				return pythonValue{}, false
+			}
+			text = pyText(m, nodes[2].ChildByFieldName("value"))
+		}
+		for _, part := range strings.Split(text, "|") {
+			letter, known := pythonRegexFlags[strings.TrimSpace(part)]
+			if !known {
+				return pythonValue{}, false
+			}
+			flags += letter
+		}
+	}
+	v := pyTransfer(values[1], m.evidence("regex_match", n))
+	v.literal, v.constant, v.fields, v.finite = "", false, nil, nil
+	v.regex = &pythonRegex{pattern: pattern, flags: flags, text: pyText(m, nodes[0]), call: m.evidence("regex_match", n)}
+	return v, true
+}
+
+// regexGroup models m.group(n) on a literal regex match object: group n of
+// the subject, recorded as a regex_capture transform on each path.
+func (f *pythonFlow) regexGroup(n, fn *sitter.Node, nodes []*sitter.Node) (pythonValue, bool) {
+	m := f.module
+	object := pyField(fn, "object")
+	if fn.Kind() != "attribute" || object == nil || object.Kind() != "identifier" || pyText(m, pyField(fn, "attribute")) != "group" || len(nodes) != 1 || nodes[0].Kind() != "integer" {
+		return pythonValue{}, false
+	}
+	match, ok := f.env[pyText(m, object)]
+	if !ok || match.regex == nil {
+		return pythonValue{}, false
+	}
+	group, err := strconv.Atoi(pyText(m, nodes[0]))
+	if err != nil || group < 1 {
+		return pythonValue{}, false
+	}
+	re := match.regex
+	sub, ok := analysispacks.CaptureSubPattern(re.pattern, group)
+	if !ok {
+		return pythonValue{}, false
+	}
+	class := analysispacks.ClassifyCapture(sub, analysispacks.FlavorPython, re.flags)
+	v := pyTransfer(match, m.evidence("regex_capture", n))
+	v.regex = nil
+	v.deps = append([]pythonDep{}, v.deps...)
+	for i := range v.deps {
+		d := &v.deps[i]
+		d.dep.Transforms = append(append([]analysis.ValueTransform{}, d.dep.Transforms...), analysis.ValueTransform{Kind: "regex_capture", At: parse.Span(m.file, n),
+			Flavor: analysispacks.FlavorPython, Pattern: re.pattern, Flags: re.flags, Group: group, SubPattern: sub, Class: class.Class, Alphabet: class.Alphabet,
+			Regex: re.text, Tests: []string{re.call.Text, pyText(m, object)}})
+	}
+	return v, true
+}
+
+// regexMatchTest reports a condition that only tests the presence of a
+// literal regex match object: the regex test itself.
+func (f *pythonFlow) regexMatchTest(text string) bool {
+	for name, v := range f.env {
+		if v.regex != nil && parse.MentionsAny(text, []string{name}) && parse.PresenceOnlyCondition(text, []string{name}) {
+			return true
+		}
+	}
+	return false
 }

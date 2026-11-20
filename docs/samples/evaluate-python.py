@@ -33,6 +33,11 @@ def evaluate(case, uses, gaps=(), catalog=None):
                         return True
         return False
     found = matches(case, uses)
+    if 'source' in case:
+        # A source anchor names the dependency origin the case is about.
+        anchor = tuple(case['source'])
+        found = [u for u in found if any((d.get('source', {}).get('span', {}).get('file'), d.get('source', {}).get('span', {}).get('start_line')) == anchor
+                                         for d in u.get('dependencies', []))]
     expected = case['expect']
     if expected == 'absent':
         return not found
@@ -40,6 +45,8 @@ def evaluate(case, uses, gaps=(), catalog=None):
         return False
     if expected == 'candidate':
         return True
+    if expected == 'review':
+        return all((u.get('assessment') or {}).get('finding_status') not in ('confirmed_vulnerability', 'poor_practice') for u in found)
     if expected == 'raw_xss':
         return any(u.get('xss', {}).get('protection') == 'raw' for u in found)
     if expected == 'construction':

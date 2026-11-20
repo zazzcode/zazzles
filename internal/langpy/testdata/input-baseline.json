@@ -2,6 +2,6 @@
   "command-injection": "5033e0eca181ce6cf5402881bd00bf28ae563b74d76fee99947852b303b8c80b",
   "dynamic-vulnpy": "2ea9cef6ffa3c7e118beeade4bae89f49caa6187a35dd490b11f73b27034f27d",
   "outbound": "585bc8c87c5aa06db230c56350ebf6a12d7b0eeef237b08ba0b957c8e7adafcc",
-  "path-traversal": "a0ab94525266252b097b90e95f3fe1dc0eb8d22e7ffe9853328b27cc90c8a143",
+  "path-traversal": "8880d82d3ad5788feae4586c47ad2103317175b9e62a65e3f1480ae4c6313e94",
   "routes": "3b4d3c24439b0c651cf6e257a22f48f6a5bbca9dff05a8c83573e79d7b634284"
 }

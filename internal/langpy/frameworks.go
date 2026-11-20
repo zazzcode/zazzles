@@ -75,6 +75,10 @@ func (f *pythonFlow) frameworkCall(n *sitter.Node, q string, nodes []*sitter.Nod
 		v.binding = "json"
 		v.rendered = true
 		return v, true
+	case "jinja2.Environment", "jinja2.environment.Environment", "jinja2.sandbox.SandboxedEnvironment":
+		// A Jinja environment compiles source passed to from_string. A
+		// sandboxed environment is a recorded control, never protection.
+		return pythonValue{binding: "jinja_environment", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}, true
 	case "jinja2.Template":
 		v := pythonValue{}
 		if len(values) > 0 {

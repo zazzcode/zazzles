@@ -364,7 +364,7 @@ func (f *pythonFlow) commandCall(call, fn *sitter.Node) (pythonValue, bool) {
 	base := len(u.Context) + len(binding)
 	u.Context = append(u.Context, binding...)
 	for _, e := range f.context {
-		if (e.Kind == "branch_precondition" || e.Kind == "branch_false_precondition") && b.mentions(e.Text) && !b.presenceOnly(e.Text) {
+		if (e.Kind == "branch_precondition" || e.Kind == "branch_false_precondition") && b.mentions(e.Text) && (!b.presenceOnly(e.Text) || e.Kind == "branch_precondition" && f.regexMatchTest(e.Text)) {
 			guardIndex = append(guardIndex, len(u.Context))
 			u.Context = append(u.Context, e)
 			guards = append(guards, e)
@@ -500,6 +500,11 @@ func (f *pythonFlow) completePythonOperandClaim(u *analysis.CandidateUse, call *
 	parse.FinishOperandPaths(u, paths, c, guards, guardIndex, derived, func(g analysis.Gap, d analysis.Dependency) bool {
 		return parse.GapTouchesDependency(g, d) || pythonGapTouches(g, d)
 	})
+	if u.Command != nil {
+		parse.ApplyCaptureRule(u, c, paths, func(p analysis.CommandPath) bool {
+			return p.Operand == analysis.CommandSlotShell || u.Command.JoinedShellText
+		})
+	}
 	u.Completeness = c
 	u.Gaps = parse.DedupeGaps(append(append([]analysis.Gap{}, u.Gaps...), blockers...))
 }

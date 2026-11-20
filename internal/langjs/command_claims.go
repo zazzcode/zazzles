@@ -2,6 +2,7 @@ package langjs
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -55,7 +56,11 @@ func (s *moduleSet) assembleCommandClaims(report *analysis.AnalysisReport) {
 		},
 		complete: parse.CommandCompleteness,
 		finish: func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int) {
+			s.recordRegexCaptures(u)
 			finishCommandPaths(u, c, guards, guardIndex, s.commandDerivedNames(u), func(g analysis.Gap, d analysis.Dependency) bool { return parse.GapTouchesDependency(g, d) })
+			parse.ApplyCaptureRule(u, c, u.Command.Paths, func(p analysis.CommandPath) bool {
+				return p.Operand == analysis.CommandSlotShell || u.Command.JoinedShellText
+			})
 		},
 		contract: func(u *analysis.CandidateUse) *analysis.APIModel {
 			return analysispacks.CommandContract(u.Command.ContractID)
@@ -227,29 +232,108 @@ func (s *moduleSet) commandGuards(u *analysis.CandidateUse) (guards, transforms 
 	if regexScope.Kind() == "program" {
 		regexScope = call.Parent()
 	}
-	// Supported regex capture: receiver.match(<regex literal>)[n].
+	// Supported regex capture: receiver.match(<regex literal>)[n] and
+	// <regex literal>.exec(receiver)[n].
 	walkCalls(regexScope, func(c *sitter.Node) {
-		fn := c.ChildByFieldName("function")
-		if fn == nil || fn.Kind() != "member_expression" {
-			return
-		}
-		prop := fn.ChildByFieldName("property")
-		a := c.ChildByFieldName("arguments")
-		if prop == nil || a == nil || prop.Utf8Text(m.src) != "match" || a.NamedChildCount() != 1 {
-			return
-		}
-		arg := a.NamedChild(0)
-		literal := arg.Kind() == "regex"
-		if arg.Kind() == "identifier" {
-			if v := variable(m, arg.Utf8Text(m.src)); v != nil && v.Kind() == "regex" {
-				literal = true
-			}
-		}
-		if literal {
+		if _, _, _, ok := jsRegexCall(m, c); ok {
 			transforms = append(transforms, m.evidence("regex_capture", c))
 		}
 	})
 	return guards, transforms
+}
+
+// jsRegexCall recognises a match of a literal regular expression on a
+// subject: subject.match(re), re.exec(subject) or re.test(subject), where re
+// is a regex literal or a name bound to one. It returns the expression node,
+// its literal and the subject.
+func jsRegexCall(m *sourceModule, c *sitter.Node) (re, literal, subject *sitter.Node, ok bool) {
+	if c == nil || c.Kind() != "call_expression" {
+		return nil, nil, nil, false
+	}
+	fn := c.ChildByFieldName("function")
+	a := c.ChildByFieldName("arguments")
+	if fn == nil || fn.Kind() != "member_expression" || a == nil || a.NamedChildCount() != 1 {
+		return nil, nil, nil, false
+	}
+	prop := fn.ChildByFieldName("property")
+	obj := fn.ChildByFieldName("object")
+	if prop == nil || obj == nil {
+		return nil, nil, nil, false
+	}
+	switch prop.Utf8Text(m.src) {
+	case "match":
+		re, subject = a.NamedChild(0), obj
+	case "exec", "test":
+		re, subject = obj, a.NamedChild(0)
+	default:
+		return nil, nil, nil, false
+	}
+	literal = re
+	if re.Kind() == "identifier" {
+		literal = variable(m, re.Utf8Text(m.src))
+	}
+	if literal == nil || literal.Kind() != "regex" {
+		return nil, nil, nil, false
+	}
+	return re, literal, subject, true
+}
+
+// recordRegexCaptures records a regex_capture transform on each dependency
+// whose chain reads group n of a literal expression's match
+// (close-findings-gaps D-4), with the match tests of that expression in the
+// same function.
+func (s *moduleSet) recordRegexCaptures(u *analysis.CandidateUse) {
+	for i := range u.Dependencies {
+		d := &u.Dependencies[i]
+		for _, t := range d.Transfers {
+			if t.Kind != "property_read" {
+				continue
+			}
+			m := s.modules[t.Span.File]
+			if m == nil {
+				continue
+			}
+			n := parse.NodeAt(m.tree.RootNode(), t.Span.StartByte, t.Span.EndByte)
+			if n == nil || n.Kind() != "subscript_expression" {
+				continue
+			}
+			index := n.ChildByFieldName("index")
+			call := n.ChildByFieldName("object")
+			if index == nil || index.Kind() != "number" || call == nil {
+				continue
+			}
+			group, err := strconv.Atoi(index.Utf8Text(m.src))
+			if err != nil || group < 1 {
+				continue
+			}
+			re, literal, _, ok := jsRegexCall(m, call)
+			if !ok || strings.HasSuffix(call.ChildByFieldName("function").Utf8Text(m.src), ".test") {
+				continue
+			}
+			pattern, flags, ok := analysispacks.JSRegexLiteral(literal.Utf8Text(m.src))
+			if !ok {
+				continue
+			}
+			sub, ok := analysispacks.CaptureSubPattern(pattern, group)
+			if !ok {
+				continue
+			}
+			class := analysispacks.ClassifyCapture(sub, analysispacks.FlavorECMAScript, flags)
+			regex := re.Utf8Text(m.src)
+			scope := n
+			for scope.Parent() != nil && !isFunction(scope) {
+				scope = scope.Parent()
+			}
+			var tests []string
+			walkCalls(scope, func(c *sitter.Node) {
+				if r, _, _, ok := jsRegexCall(m, c); ok && r.Utf8Text(m.src) == regex {
+					tests = append(tests, c.Utf8Text(m.src))
+				}
+			})
+			d.Transforms = append(d.Transforms, analysis.ValueTransform{Kind: "regex_capture", At: t.Span, Flavor: analysispacks.FlavorECMAScript,
+				Pattern: pattern, Flags: flags, Group: group, SubPattern: sub, Class: class.Class, Alphabet: class.Alphabet, Regex: regex, Tests: tests})
+		}
+	}
 }
 
 // commandTransportMiddleware are libraries whose middleware populate req.session,

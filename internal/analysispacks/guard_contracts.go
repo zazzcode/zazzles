@@ -87,7 +87,70 @@ func GuardContracts(use analysis.CandidateUse) []GuardContract {
 			out = append(out, GuardContract{Guard: g.name, At: at, Text: compactGuardText(e.Text), Accepts: g.accepts})
 		}
 	}
+	return append(out, captureContracts(use)...)
+}
+
+// captureContracts states, for each guarded command path that reads a
+// regex capture, what that capture's sub-pattern accepts (close-findings-gaps
+// D-5, D-6): the scanner's classification replaces leaving the sub-pattern
+// for the model to find.
+func captureContracts(use analysis.CandidateUse) []GuardContract {
+	if use.Command == nil {
+		return nil
+	}
+	var out []GuardContract
+	seen := map[string]bool{}
+	for _, p := range use.Command.Paths {
+		if p.Protection != "guarded" || p.Dependency < 0 || p.Dependency >= len(use.Dependencies) {
+			continue
+		}
+		for _, x := range use.Dependencies[p.Dependency].Transforms {
+			if x.Kind != "regex_capture" {
+				continue
+			}
+			at := fmt.Sprintf("%s:%d", x.At.File, x.At.StartLine)
+			if seen[at] {
+				continue
+			}
+			seen[at] = true
+			out = append(out, GuardContract{Guard: "regex_capture", At: at, Text: compactGuardText(fmt.Sprintf("group %d of %s (flags %q)", x.Group, x.Pattern, x.Flags)), Accepts: CaptureAccepts(x)})
+		}
+	}
 	return out
+}
+
+// CaptureAccepts renders what a classified capture accepts.
+func CaptureAccepts(x analysis.ValueTransform) string {
+	head := fmt.Sprintf("The operand is capture group %d, whose own sub-pattern is %s (%s syntax).", x.Group, x.SubPattern, x.Flavor)
+	switch x.Class {
+	case CaptureAdmitsAny:
+		return head + " It admits any character, including the shell metacharacters ; | & $ ` ( ) < >."
+	case CaptureExplicitAlphabet:
+		return head + " It accepts only these characters: " + x.Alphabet + ". Whether that alphabet can alter the command is your call."
+	}
+	return head + " The scanner could not list what it accepts (backreference, lookaround or unsupported syntax); judge it from the pattern."
+}
+
+// GuardContractMember returns the recognised guard on the record whose
+// contract describes symbol's final member (for example "item.match" under
+// regex_match), or "" when no contract on the record describes it.
+func GuardContractMember(use analysis.CandidateUse, symbol string) string {
+	member := symbol[strings.LastIndex(symbol, ".")+1:]
+	if member == "" {
+		return ""
+	}
+	call := member + "("
+	if strings.Contains(symbol, ".") {
+		call = "." + call
+	}
+	for _, c := range GuardContracts(use) {
+		for _, g := range guardSemantics {
+			if g.name == c.Guard && g.pattern.MatchString(call) {
+				return c.Guard
+			}
+		}
+	}
+	return ""
 }
 
 // GuardedCommandPath reports a request-derived command path whose protection

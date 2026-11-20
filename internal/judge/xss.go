@@ -1,8 +1,10 @@
 package judge
 
 import (
+	"fmt"
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
+	"strings"
 )
 
 const xssQuestionVersion = analysispacks.XSSProtocol
@@ -85,4 +87,31 @@ func applyXSSPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	default:
 		a.Reason = "XSS assessment is inconclusive; absence of a positive answer is not protection."
 	}
+}
+
+// combinePathGroups is the path-group combination rule (close-findings-gaps
+// D-14). A raw witness is scoped to its own source-to-operand path, so one
+// Confirmed group is Confirmed for the record; Protected needs every group
+// judged and Protected; anything else is Review.
+func combinePathGroups(groups []analysis.PathGroupResult) (string, string) {
+	judged, protected := 0, 0
+	var parts []string
+	for _, g := range groups {
+		state := g.Status
+		if g.Status == "completed" {
+			judged++
+			state = g.FindingStatus
+			switch g.FindingStatus {
+			case "confirmed_vulnerability":
+				return g.FindingStatus, fmt.Sprintf("Confirmed on path group %s: that group's own request holds a complete raw witness with consistent answers; it is scoped to that path. %d of %d groups were judged.", g.Key, judged, len(groups))
+			case "protected_for_claim":
+				protected++
+			}
+		}
+		parts = append(parts, g.Key+": "+state)
+	}
+	if len(groups) > 0 && judged == len(groups) && protected == len(groups) {
+		return "protected_for_claim", fmt.Sprintf("Every one of the record's %d path groups was judged in its own request and is Protected.", len(groups))
+	}
+	return "needs_evidence", "The record was judged in path groups and no group is Confirmed; Protected needs every group judged and Protected (" + strings.Join(parts, "; ") + ")."
 }

@@ -1,5 +1,8 @@
 # Architecture phase 6 — Symfony registration resolver
 
+**Superseded (2026-11-19):** [PHP Symfony support](php-symfony-support.md) replaces this scope and
+keeps D-3 to D-6. This document stays as history.
+
 **Worktree / branch:** `php-symfony`
 **Plan:** [architecture update plan](architecture-update-plan.md), phase 6. Objective: new feature on the foundation
 **Depends on:** phases 0–3 merged (`internal/langphp`, the core API, and the graph classification table)

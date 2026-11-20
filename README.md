@@ -143,7 +143,7 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
-**Accuracy against the answer keys** (every sample report rescanned 2026-11-19 on this scanner). *Expected* counts the source-reviewed vulnerable cases keyed for our
+**Accuracy against the answer keys** (every sample report rescanned 2026-11-19; Node.js Goof, DVWA and the Python insecure app judged again on 2026-11-19 after the [findings-gaps work](.zazz/evaluation/close-findings-gaps-results.md)). *Expected* counts the source-reviewed vulnerable cases keyed for our
 implemented analyzers. *Found* means Zazzles reports the case as a finding: Confirmed, or a
 construction-practice finding where the key expects one. *False positives* counts the known-safe
 cases (keyed controls) that Zazzles reports as a finding, plus any finding source review showed
@@ -153,16 +153,16 @@ to be false.
 |---|---:|---:|---:|---:|---:|---|
 | Juice Shop | 15 | 15 | 0 | 0 | 0 | 3 safe cases checked. 8 findings outside the key match known challenge routes |
 | OSS OopsSec Store | 13 | 13 | 0 | 0 | 0 | 5 safe cases checked. 8 findings outside the key, unreviewed |
-| DVWA | 10 | 9 | 1 | 0 | 0 | Upload stays Review: `basename()` blocks traversal, and the real flaw (any file type) is outside our analyzers. One bound-PDO false positive (`brute/impossible.php:90`) found by review and fixed. 98 findings outside the key, none from impossible-level code only |
-| Node.js Goof | 6 | 5 | 1 | 0 | 0 | Command injection (`routes/index.js:174`) stays Review: the model found the guard bypass but did not cite the offered chain |
+| DVWA | 11 | 11 | 0 | 0 | 0 | Includes the API health command (`HealthController.php:88`), unrestricted upload (CWE-434, its path claim not a finding) and stored XSS judged in path groups. One bound-PDO false positive (`brute/impossible.php:90`) found by review and fixed. 154 findings outside the key in this run (98 before), unreviewed |
+| Node.js Goof | 7 | 7 | 0 | 0 | 0 | Command injection (`routes/index.js:174`) Confirmed: its regex capture admits any character. Open redirect (`routes/index.js:74`) now keyed |
 | Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 0 | Includes `eval` and open redirect |
 | vuln-nextjs lab | 13 | 13 | 0 | 0 | 0 | 23 safe cases checked, none red. Includes code execution and open redirect |
 | vuln-demo-app | 11 | 11 | 0 | 0 | 0 | 7 safe cases checked. No published sample report |
 | ThreatByte | 5 | 5 | 0 | 0 | 0 | 6 safe cases checked. Dashboard XSS found as a construction-practice finding |
 | Vulnerable Flask App | 4 | 4 | 0 | 0 | 0 | 4 findings outside the key, unreviewed |
-| Python insecure app | 2 | 1 | 1 | 0 | 0 | The name-field validation defect is undecidable and is not sent |
+| Python insecure app | 3 | 3 | 0 | 0 | 0 | XSS plus template injection from both the name and the remote response. The name-field validation row expects Review |
 | VulnPy | 6 | 6 | 0 | 0 | 0 | No keyed safe cases. 369 findings outside the key, unreviewed (repeated contexts share sinks) |
-| **Total** | **91** | **88** | **3** | **0** | **0** | 55 known-safe cases checked; 490 findings outside the key |
+| **Total** | **94** | **94** | **0** | **0** | **0** | 57 known-safe cases checked; 546 findings outside the key |
 
 Findings outside the key are not counted as true or false until someone reviews their source.
 
@@ -172,8 +172,8 @@ Scored with
 
 On the current Node samples (Juice Shop, Node.js Goof, Vulnerable TypeScript app and
 vuln-demo-app), the cataloged XSS, SQL, NoSQL, command, path/Zip Slip, logging, SSRF,
-`eval`/code-injection and open-redirect positives are found. The exception is Goof's command
-injection, which stays Review, as the table shows. Cases the answer keys mark as Review stay
+`eval`/code-injection and open-redirect positives are found, including Goof's command
+injection. Cases the answer keys mark as Review stay
 Review (for example Juice Shop subtitle XSS). Defects outside those analyzers (authentication,
 IDOR, secrets, cookie flags and most Juice Shop challenge categories) are **not covered** yet; a
 clean row there is not a pass.

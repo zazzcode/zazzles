@@ -62,6 +62,10 @@ type phpSet struct {
 	// storedOnly lists, per SQL use ID, the storage keys of a claim whose only
 	// content is stored; session writers from later entries resolve it.
 	storedOnly map[string][]string
+	// classes indexes class-like declarations by fully qualified name (W3).
+	classes *phpClassIndex
+	// objects numbers created objects.
+	objects int
 }
 
 type phpWrite struct {
@@ -342,6 +346,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		fmt.Sprintf("PHP helper expansion is bounded to depth %d and %d calls per entry; framework adapters and template engines are not modeled", phpHelperDepthLimit, phpHelperWorkLimit),
 		"PHP SQL text, command strings, output rendering and file operands are candidate findings, not confirmed vulnerabilities",
 	}}
+	before := len(s.gaps)
 	for _, file := range s.files {
 		m := s.modules[file]
 		if m == nil {
@@ -352,6 +357,8 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		}
 		s.analyzeEntry(out, m)
 	}
+	// Class-resolution gaps found while walking entries are report coverage.
+	out.Gaps = append(out.Gaps, s.gaps[before:]...)
 	s.linkStorage(out)
 	s.linkStoredOnlySessions(out)
 	parse.AssembleXSSClaims(out)

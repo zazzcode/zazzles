@@ -19,6 +19,7 @@
     {"id": "PC-VAL-01", "app": "ThreatByte", "key": "docs/samples/ThreatByte/cases.json TB-VALIDATION-SIGNUP-USER", "kind": "input_validation_candidate", "file": "server/routes.py", "line": 81},
     {"id": "PC-VAL-02", "app": "ThreatByte", "key": "docs/samples/ThreatByte/cases.json TB-VALIDATION-LOGIN-USER", "kind": "input_validation_candidate", "file": "server/routes.py", "line": 37},
     {"id": "PC-CODE-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) JS-002-safeControl", "kind": "code_execution_candidate", "file": "pages/api/protected-example.js"},
-    {"id": "PC-REDIR-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) REDIR-001-safeControl", "kind": "open_redirect_candidate", "file": "pages/secure/redirect.js"}
+    {"id": "PC-REDIR-01", "app": "vuln-nextjs", "key": "tests/expected-scanner-findings.json (lab) REDIR-001-safeControl", "kind": "open_redirect_candidate", "file": "pages/secure/redirect.js"},
+    {"id": "PC-UPLD-01", "app": "dvwa", "key": ".zazz/evaluation/dvwa-detection-guide.md (upload impossible level; generated name and re-encode)", "kind": "file_upload_candidate", "file": "vulnerabilities/upload/source/impossible.php"}
   ]
 }

@@ -408,3 +408,225 @@ func sectionSizes(payload []byte) string {
 	}
 	return strings.Join(out, ", ")
 }
+
+// Path-group requests (close-findings-gaps W4, D-14 to D-17). A record whose
+// mandatory evidence exceeds the request limit is sent as several ordinary
+// requests for the same claim. Each carries the dependency paths of one
+// group, lossless for those paths, and names the withheld sibling paths. The
+// group key is structural: the dispatch alternative of the dependency's
+// source (its file), split by storage key only when a file group alone is
+// over the limit.
+
+// maxPathGroups bounds the group requests of one record (D-15).
+const maxPathGroups = 5
+
+// pathGroupCap is the reason of a group beyond maxPathGroups.
+const pathGroupCap = "path_group_cap"
+
+// pathGroupFamilies are the families whose policy combines path groups
+// (D-17: XSS first).
+var pathGroupFamilies = map[string]bool{"xss": true}
+
+// pathGroup is one planned group: its key and record dependency indices.
+type pathGroup struct {
+	key  string
+	deps []int
+}
+
+// planPathGroups returns the groups of an over-limit record in send order,
+// or false when the record fits or its family does not combine groups.
+// Groups beyond maxPathGroups are still returned, so callers report them.
+func (c *Client) planPathGroups(use analysis.CandidateUse) ([]pathGroup, bool) {
+	if !pathGroupFamilies[familyOf(use)] || len(use.Dependencies) < 2 {
+		return nil, false
+	}
+	full, _, err := c.budgetedPayload(use)
+	if err != nil || len(full) <= requestLimit {
+		return nil, false
+	}
+	byFile := map[string][]int{}
+	for i, d := range use.Dependencies {
+		byFile[d.Source.Span.File] = append(byFile[d.Source.Span.File], i)
+	}
+	if len(byFile) < 2 {
+		return nil, false
+	}
+	var groups []pathGroup
+	for file, deps := range byFile {
+		g := pathGroup{key: file, deps: deps}
+		if c.groupFits(use, g) {
+			groups = append(groups, g)
+			continue
+		}
+		byKey := map[string][]int{}
+		for _, i := range deps {
+			byKey[use.Dependencies[i].StorageKey] = append(byKey[use.Dependencies[i].StorageKey], i)
+		}
+		if len(byKey) < 2 {
+			groups = append(groups, g) // still over the limit; reported
+			continue
+		}
+		for key, ds := range byKey {
+			groups = append(groups, pathGroup{key: file + "|" + key, deps: ds})
+		}
+	}
+	sort.Slice(groups, func(i, j int) bool { return groups[i].key < groups[j].key })
+	groups = c.packPathGroups(use, groups)
+	raw := func(g pathGroup) bool {
+		for _, i := range g.deps {
+			if xssPathProtection(use, i) == "raw" {
+				return true
+			}
+		}
+		return false
+	}
+	sort.SliceStable(groups, func(i, j int) bool {
+		if ri, rj := raw(groups[i]), raw(groups[j]); ri != rj {
+			return ri
+		}
+		return groups[i].key < groups[j].key
+	})
+	return groups, true
+}
+
+// packPathGroups merges whole structural groups into one request while the
+// merged request still fits, in key order (first fit). A merged request
+// carries every path of the groups it holds, so it stays lossless; packing
+// only lowers the request count and keeps more paths under maxPathGroups.
+func (c *Client) packPathGroups(use analysis.CandidateUse, groups []pathGroup) []pathGroup {
+	var bins []pathGroup
+	for _, g := range groups {
+		placed := false
+		if c.groupFits(use, g) {
+			for b := range bins {
+				merged := pathGroup{key: bins[b].key + " + " + g.key, deps: append(append([]int{}, bins[b].deps...), g.deps...)}
+				sort.Ints(merged.deps)
+				if c.groupFits(use, merged) {
+					bins[b], placed = merged, true
+					break
+				}
+			}
+		}
+		if !placed {
+			bins = append(bins, g)
+		}
+	}
+	return bins
+}
+
+// xssPathProtection is dependency i's rendering protection.
+func xssPathProtection(use analysis.CandidateUse, i int) string {
+	if use.XSS == nil {
+		return ""
+	}
+	for _, p := range use.XSS.Paths {
+		if p.Dependency == i {
+			return p.Protection
+		}
+	}
+	return use.XSS.Protection
+}
+
+func (c *Client) groupFits(use analysis.CandidateUse, g pathGroup) bool {
+	p, _, err := c.budgetedPayload(groupUse(use, g, nil))
+	return err == nil && len(p) <= requestLimit
+}
+
+// groupUse projects a record onto one group's dependencies. The withheld
+// siblings are named in a path_group_omitted coverage gap; dependency
+// indices of path facts are remapped; blockers on withheld paths only and
+// their input-source roles leave with them.
+func groupUse(use analysis.CandidateUse, g pathGroup, all []pathGroup) analysis.CandidateUse {
+	keep := map[int]int{}
+	out := use
+	out.Dependencies = nil
+	for _, i := range g.deps {
+		keep[i] = len(out.Dependencies)
+		out.Dependencies = append(out.Dependencies, use.Dependencies[i])
+	}
+	var withheld []string
+	for i, d := range use.Dependencies {
+		if _, ok := keep[i]; !ok {
+			withheld = append(withheld, fmt.Sprintf("%s:%d %s", d.Source.Span.File, d.Source.Span.StartLine, strings.Join(strings.Fields(d.Source.Text), " ")))
+		}
+	}
+	if use.XSS != nil {
+		x := *use.XSS
+		x.Paths = nil
+		for _, p := range use.XSS.Paths {
+			if j, ok := keep[p.Dependency]; ok {
+				p.Dependency = j
+				x.Paths = append(x.Paths, p)
+			}
+		}
+		out.XSS = &x
+	}
+	if use.InputFacts != nil {
+		f := *use.InputFacts
+		f.Values = nil
+		for _, v := range use.InputFacts.Values {
+			if j, ok := keep[v.Dependency]; ok {
+				v.Dependency = j
+				f.Values = append(f.Values, v)
+			}
+		}
+		out.InputFacts = &f
+	}
+	if use.StoredOrigin != nil {
+		keys := map[string]bool{}
+		for _, d := range out.Dependencies {
+			keys[d.StorageKey] = true
+		}
+		so := *use.StoredOrigin
+		so.Stores = nil
+		for _, s := range use.StoredOrigin.Stores {
+			if keys[s.Key] {
+				so.Stores = append(so.Stores, s)
+			}
+		}
+		out.StoredOrigin = &so
+	}
+	if use.Completeness != nil {
+		c := *use.Completeness
+		sources := map[analysis.Evidence]bool{}
+		for _, d := range use.Dependencies {
+			sources[d.Source] = true
+		}
+		kept := map[analysis.Evidence]bool{}
+		for _, d := range out.Dependencies {
+			kept[d.Source] = true
+		}
+		c.Evidence = map[string][]analysis.Evidence{}
+		for role, items := range use.Completeness.Evidence {
+			for _, e := range items {
+				if role == "input_source" && sources[e] && !kept[e] {
+					continue
+				}
+				c.Evidence[role] = append(c.Evidence[role], e)
+			}
+		}
+		c.Blockers = nil
+		for _, b := range use.Completeness.Blockers {
+			onKept, onAny := false, false
+			for i, d := range use.Dependencies {
+				if overlapsDependency(b, d, use.Sink) && (b.At.File != use.Sink.Span.File || b.At.StartByte != use.Sink.Span.StartByte) {
+					onAny = true
+					if _, ok := keep[i]; ok {
+						onKept = true
+					}
+				}
+			}
+			if onKept || !onAny {
+				c.Blockers = append(c.Blockers, b)
+			}
+		}
+		if c.Blockers == nil {
+			c.Blockers = []analysis.Gap{}
+		}
+		c.Coverage = append(append([]analysis.Gap{}, use.Completeness.Coverage...), analysis.Gap{Kind: "path_group_omitted", At: use.Sink.Span, Detail: fmt.Sprintf(
+			"This request carries path group %s (%d of the record's %d dependency paths). The other %d paths are withheld for size and judged in their own requests: %s. Judge only the supplied paths; a withheld path is neither absent nor protected.",
+			g.key, len(g.deps), len(use.Dependencies), len(withheld), strings.Join(withheld, "; "))})
+		out.Completeness = &c
+	}
+	return out
+}

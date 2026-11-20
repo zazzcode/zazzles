@@ -118,6 +118,8 @@ func claimFamily(u analysis.CandidateUse) string {
 	switch {
 	case u.Redirect != nil:
 		return "redirect"
+	case u.Kind == "template_injection_candidate":
+		return "template"
 	case u.Code != nil:
 		return "code"
 	}
@@ -145,6 +147,23 @@ func linkIndependentClaims(r *analysis.AnalysisReport) {
 		k := site{u.Sink.Span.File, u.Sink.Span.StartByte, u.Sink.Span.EndByte, u.InvocationContextID}
 		groups[k] = append(groups[k], i)
 	}
+	// A template-source claim and the XSS claim of the same construction link
+	// across nested sink spans (close-findings-gaps D-26).
+	for i, u := range r.Uses {
+		if u.Kind != "template_injection_candidate" || i >= len(r.Findings) {
+			continue
+		}
+		for j, x := range r.Uses {
+			if x.Kind != "xss_candidate" || j >= len(r.Findings) || x.InvocationContextID != u.InvocationContextID || x.Sink.Span.File != u.Sink.Span.File {
+				continue
+			}
+			a, b := u.Sink.Span, x.Sink.Span
+			if a.StartByte <= b.StartByte && b.EndByte <= a.EndByte || b.StartByte <= a.StartByte && a.EndByte <= b.EndByte {
+				r.Findings[i].LinkedUseIDs = appendUnique(r.Findings[i].LinkedUseIDs, x.ID)
+				r.Findings[j].LinkedUseIDs = appendUnique(r.Findings[j].LinkedUseIDs, u.ID)
+			}
+		}
+	}
 	for _, idx := range groups {
 		for _, i := range idx {
 			var ids []string
@@ -154,8 +173,9 @@ func linkIndependentClaims(r *analysis.AnalysisReport) {
 				}
 			}
 			if len(ids) > 0 {
+				ids = append(ids, r.Findings[i].LinkedUseIDs...)
 				sort.Strings(ids)
-				r.Findings[i].LinkedUseIDs = ids
+				r.Findings[i].LinkedUseIDs = dedupeSorted(ids)
 			}
 		}
 	}
@@ -198,4 +218,25 @@ func modelResolvedMark(a analysis.Assessment) *analysis.ModelResolvedMark {
 		}
 	}
 	return m
+}
+
+func appendUnique(list []string, id string) []string {
+	for _, e := range list {
+		if e == id {
+			return list
+		}
+	}
+	out := append(list, id)
+	sort.Strings(out)
+	return out
+}
+
+func dedupeSorted(ids []string) []string {
+	var out []string
+	for i, id := range ids {
+		if i == 0 || id != ids[i-1] {
+			out = append(out, id)
+		}
+	}
+	return out
 }

@@ -374,15 +374,19 @@ func (f *phpFlow) switchStatement(n *sitter.Node) bool {
 	if disc != nil && disc.Kind() == "parenthesized_expression" && disc.NamedChildCount() > 0 {
 		disc = disc.NamedChild(0)
 	}
-	f.eval(disc)
+	subject := f.eval(disc)
 	block := phpField(n, "body")
 	if block == nil || block.Kind() != "switch_block" {
 		return false
 	}
+	feasible := f.switchFeasible(subject, block)
 	branches := []*phpFlow{}
 	for i := uint(0); i < block.NamedChildCount(); i++ {
 		c := block.NamedChild(i)
 		if c.Kind() != "case_statement" && c.Kind() != "default_statement" {
+			continue
+		}
+		if !feasible[c.Id()] {
 			continue
 		}
 		b := f.clone()
@@ -403,6 +407,73 @@ func (f *phpFlow) switchStatement(n *sitter.Node) bool {
 	branches = append(branches, f.clone())
 	f.merge(branches...)
 	return false
+}
+
+// switchFeasible returns the cases a switch can enter. A subject that is a
+// finite literal set (a property set from constants, a narrowed level)
+// enters only the cases whose literal label it holds, and default when some
+// candidate matches no label; any other subject or label keeps every case.
+func (f *phpFlow) switchFeasible(subject phpValue, block *sitter.Node) map[uintptr]bool {
+	out := map[uintptr]bool{}
+	finite := phpLiteralsOnly(subject)
+	labels := map[string]bool{}
+	exact := finite
+	var defaults []*sitter.Node
+	for i := uint(0); i < block.NamedChildCount(); i++ {
+		c := block.NamedChild(i)
+		switch c.Kind() {
+		case "default_statement":
+			defaults = append(defaults, c)
+		case "case_statement":
+			out[c.Id()] = true
+			if !finite {
+				continue
+			}
+			label, ok := phpStringLiteral(f.module, phpField(c, "value"))
+			if !ok || phpNumericText(label) {
+				exact = false // a dynamic or numeric label compares loosely
+				continue
+			}
+			labels[label] = true
+		}
+	}
+	unmatched := !finite
+	if finite && exact {
+		for _, lit := range subject.literals {
+			if phpNumericText(lit.text) {
+				exact = false
+			}
+		}
+	}
+	if finite && exact {
+		held := map[string]bool{}
+		for _, lit := range subject.literals {
+			held[lit.text] = true
+			unmatched = unmatched || !labels[lit.text]
+		}
+		for i := uint(0); i < block.NamedChildCount(); i++ {
+			c := block.NamedChild(i)
+			if c.Kind() == "case_statement" {
+				label, _ := phpStringLiteral(f.module, phpField(c, "value"))
+				out[c.Id()] = held[label]
+			}
+		}
+	} else {
+		unmatched = true
+	}
+	for _, d := range defaults {
+		out[d.Id()] = unmatched
+	}
+	return out
+}
+
+// phpNumericText reports a string PHP compares numerically.
+func phpNumericText(s string) bool {
+	if s == "" {
+		return false
+	}
+	_, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+	return err == nil
 }
 
 func (f *phpFlow) tryStatement(n *sitter.Node) bool {

@@ -1,16 +1,24 @@
 package analysispacks
 
 import (
+	"strings"
+
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/guidelines"
 	"github.com/zazzcode/zazzles/internal/lang"
 )
 
 // CodeProtocol and RedirectProtocol version the independent claim questions.
-const CodeProtocol = "code-components-v1"
+// code-components-v2 adds template_injection_candidate (close-findings-gaps W6).
+const CodeProtocol = "code-components-v2"
 const RedirectProtocol = "redirect-components-v1"
 
-var codeContracts = []string{"js-eval-v1", "js-function-constructor-v1", "js-timer-string-v1", "node-vm-v1", "python-eval-v1", "php-eval-v1", "js-safe-eval-libs-v1"}
+var codeContracts = []string{"js-eval-v1", "js-function-constructor-v1", "js-timer-string-v1", "node-vm-v1", "python-eval-v1", "php-eval-v1", "js-safe-eval-libs-v1", "python-template-source-v1", "php-template-source-v1", "js-template-source-v1"}
+
+// TemplateKind is the server-side template injection claim (CWE-1336): the
+// operand is template source compiled by a verified engine.
+const TemplateKind = "template_injection_candidate"
+
 var redirectContracts = []string{"express-redirect-v1", "node-location-header-v1", "fastify-redirect-v1", "hapi-redirect-v1", "next-redirect-v1", "browser-navigation-v1", "python-redirect-v1", "php-header-redirect-v1"}
 
 // CodeContract returns semantics only for a verified interpreter binding.
@@ -23,12 +31,19 @@ func CodeContract(id string) *analysis.APIModel {
 		"python-eval-v1":             "Python builtin eval/exec and compile interpret argument 0 as Python source. compile produces executable code; ast.literal_eval parses literals and is excluded.",
 		"php-eval-v1":                "PHP eval interprets its argument as PHP source. A string assert evaluates its argument as code before PHP 8 (recorded as a fact); create_function evaluates its two string arguments into a function (removed in PHP 8; poor practice when bound). Quoting request text inside the source does not constrain program structure.",
 		"js-safe-eval-libs-v1":       "A verified sandbox evaluator interprets argument 0 as code. Library isolation requires source-established version/advisory evidence; library branding alone proves no security boundary.",
+		"python-template-source-v1":  "jinja2.Template(source), Environment.from_string(source), Flask render_template_string(source) and Mako Template(text) compile argument 0 as template source: expressions and statements in it run on the server with the template's globals. Values passed as render variables are data, not template source. A sandboxed environment is a recorded control, never protection by itself.",
+		"php-template-source-v1":     "Twig Environment::createTemplate(source) and template_from_string(env, source) compile the source as a Twig template; its expressions run on the server. Variables passed to render are data. A sandbox extension is a recorded control, never protection by itself.",
+		"js-template-source-v1":      "ejs.render/compile(source), Handlebars.compile(source), pug.render/compile(source), nunjucks.renderString(source) and lodash template(source) compile argument 0 as template source; expressions in it run on the server (lodash, ejs and pug compile to JavaScript). Data passed as render variables is not template source.",
 	}
 	text, ok := semantics[id]
 	if !ok {
 		return nil
 	}
-	return &analysis.APIModel{ID: id, Library: id, Semantics: text, Reference: "https://cwe.mitre.org/data/definitions/95.html"}
+	reference := "https://cwe.mitre.org/data/definitions/95.html"
+	if strings.HasSuffix(id, "-template-source-v1") {
+		reference = "https://cwe.mitre.org/data/definitions/1336.html"
+	}
+	return &analysis.APIModel{ID: id, Library: id, Semantics: text, Reference: reference}
 }
 
 // RedirectContract returns semantics for a verified redirect/navigation binding.
@@ -47,6 +62,9 @@ func redirectQuestionNames() []string {
 }
 
 func interpreterQuestions(name string) []Question {
+	if name == "upload" {
+		return uploadQuestions()
+	}
 	if name == "code" {
 		return []Question{
 			{"code_control", "Classify request text in the interpreter's code operand: whole_program, inside_string_literal, data_only (fixed code, request data only in context), none, unknown. Parameter declarations of Function are code."},
@@ -65,6 +83,8 @@ func interpreterQuestions(name string) []Question {
 func InterpreterChoices(name, question string) []map[string]string {
 	var choices []string
 	switch question {
+	case "type_restriction", "execution_exposure":
+		choices = uploadChoices(question)
 	case "code_control":
 		choices = []string{"whole_program", "inside_string_literal", "data_only", "none", "unknown"}
 	case "code_restriction":
@@ -104,6 +124,9 @@ func interpreterDescriptors(name string) []Component {
 	flow.CompiledOwner = "internal/parse/code_redirect.go"
 	out := []Component{pack, claim, evidence, flow}
 	for _, language := range []lang.Language{lang.JavaScript, lang.Python, lang.PHP} {
+		if !f.supports(language) {
+			continue
+		}
 		langs := []string{string(language)}
 		if language == lang.JavaScript {
 			langs = append(langs, string(lang.TypeScript))
@@ -129,6 +152,22 @@ func interpreterDescriptors(name string) []Component {
 	python.Applicability = f.Kinds
 	python.Compatibility = []string{protocol}
 	out = append(out, python)
+	if name == "code" {
+		// Template claims in PHP select their own copy, so no earlier PHP
+		// request changes.
+		php := phpInputComponent()
+		php.ID = "source.php-input-template-v1"
+		php.Applicability = []string{TemplateKind}
+		php.Compatibility = []string{protocol}
+		out = append(out, php)
+	}
+	if name == "upload" {
+		php := phpInputComponent()
+		php.ID = "source.php-input-upload-v1"
+		php.Applicability = f.Kinds
+		php.Compatibility = []string{protocol}
+		return append(out, php) // an upload is an HTTP request capability only
+	}
 	// Browser is a capability of these families, not a widening of existing entry
 	// descriptors (which would invalidate prior replay).
 	entry := base("entry."+name+".browser", "compiled_capability", "", []string{"browser"})

@@ -3,7 +3,10 @@ package judge
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
@@ -26,11 +29,25 @@ type DecisionTrace struct {
 	// EvidenceOmissions lists context evidence an over-limit request left out;
 	// the budget is deterministic, so a replay rebuilds the same request.
 	EvidenceOmissions []analysis.EvidenceOmission `json:"evidence_omissions,omitempty"`
+	// Groups are the path-group requests of an over-limit record, in group
+	// order; each replays alone against its own group projection.
+	Groups []DecisionTrace `json:"groups,omitempty"`
 }
 
 // Replay applies the current decoder/policy to a saved decision only when its
 // exact request still matches the supplied use. It makes no network request.
 func (c *Client) Replay(use analysis.CandidateUse, trace DecisionTrace) analysis.Assessment {
+	if len(trace.Groups) > 0 {
+		if groups, ok := c.planPathGroups(use); ok {
+			a, _ := c.groupAssessment(use, groups, func(i int, sub analysis.CandidateUse) (analysis.Assessment, DecisionTrace) {
+				if i >= len(trace.Groups) {
+					return analysis.Assessment{Status: "failed", Reason: "Saved decision has no trace for this path group."}, DecisionTrace{}
+				}
+				return c.Replay(sub, trace.Groups[i]), trace.Groups[i]
+			})
+			return a
+		}
+	}
 	version := protocolVersion(use)
 	a := analysis.Assessment{Status: "failed", Provider: c.provider, Model: c.model, QuestionVersion: version}
 	payload, omitted, err := c.budgetedPayload(use)
@@ -74,6 +91,11 @@ func (c *Client) Preview(use analysis.CandidateUse) (DecisionTrace, error) {
 	if err != nil && analysispacks.ObservationOnly(use.Kind) {
 		return DecisionTrace{}, err
 	}
+	if err == nil && len(payload) > requestLimit {
+		if groups, ok := c.planPathGroups(use); ok {
+			return c.previewGroups(use, groups), nil
+		}
+	}
 	version := protocolVersion(use)
 	return DecisionTrace{QuestionVersion: version, Request: payload, RequestBytes: len(payload), RequestDigest: requestDigest(use, payload), Components: cloneComponents(use.Components), EvidenceOmissions: omitted}, err
 }
@@ -101,4 +123,44 @@ func sameComponents(a, b *analysis.ComponentSelection) bool {
 	x, xe := json.Marshal(a)
 	y, ye := json.Marshal(b)
 	return xe == nil && ye == nil && bytes.Equal(x, y)
+}
+
+// previewGroups prepares a path-group record's requests. RequestBytes is the
+// smallest group request within the cap, so a record with any group that fits
+// is planned as spending; RequestDigest covers every group digest.
+func (c *Client) previewGroups(use analysis.CandidateUse, groups []pathGroup) DecisionTrace {
+	out := DecisionTrace{QuestionVersion: protocolVersion(use), Components: cloneComponents(use.Components)}
+	var digests []string
+	for i, g := range groups {
+		if i >= maxPathGroups {
+			break
+		}
+		t, _ := c.Preview(groupUse(use, g, groups))
+		out.Groups = append(out.Groups, t)
+		digests = append(digests, t.RequestDigest)
+		if out.RequestBytes == 0 || t.RequestBytes < out.RequestBytes {
+			out.RequestBytes = t.RequestBytes
+		}
+	}
+	out.RequestDigest = groupDigest(digests)
+	return out
+}
+
+func groupDigest(digests []string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte("path-groups:"+strings.Join(digests, ","))))
+}
+
+// groupCost is the number of requests a planned record may send: one per
+// path group that fits, otherwise one.
+func groupCost(t DecisionTrace) int {
+	if len(t.Groups) == 0 {
+		return 1
+	}
+	n := 0
+	for _, g := range t.Groups {
+		if g.RequestBytes > 0 && g.RequestBytes <= requestLimit {
+			n++
+		}
+	}
+	return max(n, 1)
 }

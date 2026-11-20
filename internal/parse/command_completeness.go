@@ -164,13 +164,22 @@ func FinishOperandPaths(u *analysis.CandidateUse, paths []analysis.CommandPath, 
 		c.Evidence["guard"] = append(c.Evidence["guard"], guards...)
 	}
 	// A per-path summary so one unresolved sibling is not mistaken for the state of every path.
+	if summary := operandPathSummary(u, paths); summary != "" {
+		c.ModelFacts = append(c.ModelFacts, summary)
+	}
+}
+
+const operandPathFacts = "Operand path facts: "
+
+func operandPathSummary(u *analysis.CandidateUse, paths []analysis.CommandPath) string {
 	summary := []string{}
 	for _, p := range paths {
 		summary = append(summary, "dependency "+Itoa(p.Dependency)+" ("+u.Dependencies[p.Dependency].Source.Text+") -> "+p.Operand+": "+p.Protection)
 	}
-	if len(summary) > 0 {
-		c.ModelFacts = append(c.ModelFacts, "Operand path facts: "+strings.Join(summary, "; ")+".")
+	if len(summary) == 0 {
+		return ""
 	}
+	return operandPathFacts + strings.Join(summary, "; ") + "."
 }
 
 // DedupeGaps drops repeated gaps (same kind, detail and location), keeping first-seen order.

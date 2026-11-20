@@ -196,6 +196,12 @@ server producer. GET and POST at the same path cannot exchange origins or protec
 - **Red:** complete consistent `xss-components-v1` answers and source evidence establish a static XSS claim.
   Runtime confirmation and independent review remain separate.
 
+A rendering record whose evidence is over the request limit is judged in path groups: one ordinary
+request per group of dependency paths (by source file, packed while a request still fits, at most
+five), each naming the paths it withholds. One Confirmed group makes the record Confirmed for that
+path; Protected needs every group judged and Protected; anything else is Review. Groups past the cap
+or still over the limit are reported, never read as safe.
+
 The protocol asks output context, encoding adequacy, sanitizer effectiveness, path protection and
 exposure. Provider confidence/probabilities are retained for audit but never establish a verdict.
 Unknown middleware and unsupported paths remain visible. No output or finding is not a safety verdict.

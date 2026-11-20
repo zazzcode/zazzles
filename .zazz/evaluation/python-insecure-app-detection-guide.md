@@ -61,12 +61,19 @@ The `public_ip` variable name is not evidence that its value is a parsed or vali
 | --- | --- | --- |
 | PI-XSS-NAME | Query name → f-string → Template/render → HTML | XSS finding; raw request content reaches browser markup at main 41 |
 | PI-XSS-REMOTE | Remote body text → public_ip → same HTML/template sink | Separate untrusted-origin witness; output vulnerability if that response is attacker-influenced; no claim every visitor controls the configured service |
-| PI-VALIDATION | Business validity of name | Review unless an actual policy is supplied; no required email/identifier/length rule is established merely by `str` |
+| PI-VAL-NAME | Business validity of name | Review unless an actual policy is supplied; no required email/identifier/length rule is established merely by `str`. Keyed `review` in `cases.json` |
+| PI-SSTI-NAME | Query name → f-string → `Template(content)` | `template_injection_candidate` with the `name` source (main 19); see [SSTI](#ssti-author-confirmed-request-path-and-source-derived-response-path) |
+| PI-SSTI-REMOTE | Remote body → `public_ip` → `Template(content)` | `template_injection_candidate` with the response-body source (main 36) |
 | PI-SQL-NONE | SQL injection | No demonstrated SQL sink in application source; do not invent a SQL finding |
 | PI-LOG-NONE | Password/email logger leak | No application logging/print emission of those values is shown; do not invent a leak from secret variable names |
 | PI-OUTBOUND | Destination of requests.get | Configuration-derived, not a direct request-to-URL SSRF witness; remote response remains a distinct input |
 | PI-XSS-FALLBACK | Constant public-IP fallback | The constant alone is not an unsafe source; it does not protect a simultaneously unescaped name |
 | PI-STORED-DOM | Stored or DOM XSS | No persistence/browser script sink is established here; do not relabel server HTML flow as stored/DOM XSS |
+
+Key corrections (2026-11-19): `PI-VAL-NAME` was keyed `candidate`, which the scorer counted as a
+required positive although this guide expects Review; it is now `review`. `PI-SSTI-NAME` and
+`PI-SSTI-REMOTE` are new `candidate` rows with source anchors at main 19 and main 36; main 41
+compiles `content` as template source (`Template(content).render()` with no variables).
 
 Two XSS source witnesses converge at the same vulnerable construction/output site. A report may
 group them as one sink-level defect, but must retain both sources and their different control

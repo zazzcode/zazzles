@@ -30,6 +30,9 @@ func (u CandidateUse) CodePaths() []CommandPath {
 	if u.Redirect != nil {
 		return u.Redirect.Paths
 	}
+	if u.Upload != nil {
+		return u.Upload.Paths
+	}
 	return nil
 }
 
@@ -38,7 +41,7 @@ func (c *CodeFacts) Validate(deps, context int) error {
 	if c == nil {
 		return nil
 	}
-	if c.Operation == "" || c.ContractID == "" || c.ExecutionContext != "server" && c.ExecutionContext != "browser" {
+	if c.Operation == "" || c.ContractID == "" || c.ExecutionContext != "server" && c.ExecutionContext != "browser" && c.ExecutionContext != "template_engine" {
 		return fmt.Errorf("invalid interpreter operation or context")
 	}
 	return validateInterpreterPaths(c.Paths, "code", deps, context)

@@ -1,7 +1,7 @@
 {
   "scope": "Phase 5 frozen structural case universe for source-reviewed keys that have no machine-readable cases.json. Python rows are read from docs/samples/<app>/cases.json and vuln-nextjs rows from the lab's tests/expected-scanner-findings.json at the pin; neither is copied here. Rows restate the cited key; expectations never enter scanner or model input.",
   "expectations": {
-    "positive": "Candidate of the kind at the anchor with a witnessed source (source anchor when given) and no completeness blockers",
+    "positive": "Candidate of the kind at the anchor with a witnessed source (source anchor when given) and no completeness blockers; expect_status names the presented status a positive must reach (a practice finding does not satisfy confirmed)",
     "review": "Candidate required; the key expects Review, so blockers are allowed and the decisive assessment is out of scope",
     "present": "Candidate required; the key's expectation is assessment-dependent (judge decides)",
     "no_record": "No candidate of the kind at the anchor",
@@ -527,6 +527,21 @@
       "tag": "post_delivery"
     },
     {
+      "id": "GOOF-REDIR-01",
+      "app": "nodejs-goof",
+      "key": ".zazz/project/vulnerable-sample-apps.md",
+      "kind": "open_redirect_candidate",
+      "file": "routes/index.js",
+      "line": 74,
+      "source": [
+        "routes/index.js",
+        54
+      ],
+      "expect": "positive",
+      "note": "req.body.redirectPage reaches res.redirect after login; source-reviewed true positive previously outside the key",
+      "tag": "post_delivery"
+    },
+    {
       "id": "GOOF-LOG-N01",
       "app": "nodejs-goof",
       "key": "docs/samples/nodejs-goof/xss-answer-key.md",
@@ -1031,6 +1046,22 @@
       "expect": "positive"
     },
     {
+      "id": "DVWA-API-CMD-01",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "command_execution_candidate",
+      "file": "vulnerabilities/api/src/HealthController.php",
+      "line": 88,
+      "source": [
+        "vulnerabilities/api/src/HealthController.php",
+        84
+      ],
+      "entry_file": "vulnerabilities/api/public/index.php",
+      "expect": "positive",
+      "note": "JSON body target concatenated into exec('ping -c 4 ' . $target); reached through new HealthController(...)->processRequest() and switch ($this->command)",
+      "tag": "post_delivery"
+    },
+    {
       "id": "XSSR-001",
       "app": "dvwa",
       "key": ".zazz/evaluation/dvwa-detection-guide.md",
@@ -1050,17 +1081,35 @@
       "entry_file": "vulnerabilities/xss_s/index.php",
       "dep_file": "vulnerabilities/xss_s/source/low.php",
       "expect": "positive",
-      "note": "Stored link to the writing entry is asserted by TestDVWASourceKey",
-      "tag": "post_delivery"
+      "note": "Stored link to the writing entry is asserted by TestDVWASourceKey; a construction-practice finding does not satisfy this stored-XSS row (expect_status confirmed)",
+      "tag": "post_delivery",
+      "expect_status": "confirmed"
     },
     {
       "id": "UPLD-001",
       "app": "dvwa",
       "key": ".zazz/evaluation/dvwa-detection-guide.md",
+      "kind": "file_upload_candidate",
+      "file": "vulnerabilities/upload/source/low.php",
+      "line": 9,
+      "source": [
+        "vulnerabilities/upload/source/low.php",
+        6
+      ],
+      "expect": "positive",
+      "note": "Corrected from path_traversal_candidate: basename() contains the path; the defect is an unrestricted file type (CWE-434)",
+      "tag": "post_delivery"
+    },
+    {
+      "id": "UPLD-001-PATH",
+      "app": "dvwa",
+      "key": ".zazz/evaluation/dvwa-detection-guide.md",
       "kind": "path_traversal_candidate",
       "file": "vulnerabilities/upload/source/low.php",
       "line": 9,
-      "expect": "positive"
+      "expect": "control_assessment",
+      "note": "basename() of the client name contains the destination path; the path claim at the upload call must not be a finding",
+      "tag": "post_delivery"
     },
     {
       "id": "FI-001",

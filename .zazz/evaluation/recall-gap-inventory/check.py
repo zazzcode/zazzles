@@ -25,7 +25,7 @@ LAB_FAMILIES = {'CWE-22': 'path_traversal_candidate', 'CWE-78': 'command_executi
 PY_EXPECT = {'construction': 'positive', 'raw_xss': 'positive', 'candidate': 'positive',
              'validation_defect': 'present', 'not_confirmed': 'present', 'validation_enforced': 'present',
              'form_policy': 'present', 'encoded': 'encoded', 'bound': 'bound', 'absent': 'no_record',
-             'registration_or_gap': 'registration'}
+             'registration_or_gap': 'registration', 'review': 'review'}
 ASSESSMENT = {'validation_defect', 'not_confirmed', 'validation_enforced'}
 
 
@@ -137,7 +137,9 @@ def python_rows(app, report, ev):
     for c in cases:
         row = {'id': c['id'], 'app': app, 'key': f'docs/samples/{app}/cases.json', 'kind': c['kind'],
                'file': c['file'], 'line': c['line'], 'expect': PY_EXPECT[c['expect']], 'key_expect': c['expect'],
-               'tag': 'post_delivery' if any(k.startswith('previous_') for k in c) else 'independent'}
+               'tag': c.get('tag') or ('post_delivery' if any(k.startswith('previous_') for k in c) else 'independent')}
+        if 'source' in c:
+            row['source'] = c['source']
         if row['expect'] == 'registration':
             gaps = report.get('gaps', [])
             gap = any(g['kind'] == c['kind'] and g.get('at', {}).get('file') == c['file'] and g.get('at', {}).get('start_line') == c['line'] for g in gaps)

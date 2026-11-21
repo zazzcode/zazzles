@@ -16,6 +16,10 @@ acceptance evidence. This roadmap does not authorize implementation or live mode
 These modules can work independently or in combination. Fix accepts finding details even when
 another tool performed the assessment. [Project overview](../../README.md#modules)
 
+The [repository layout contract](../specifications/scan-fix-probe-repository-layout.md) covers moving
+Scan code and organizing user docs by module. Its acceptance checks include an audit of all tracked
+docs and setup and contributor walkthroughs from the repository root.
+
 ## Delivery priorities
 
 1. Continue work on Scan and its evidence and reporting.

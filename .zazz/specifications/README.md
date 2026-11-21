@@ -17,6 +17,8 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
+- [Scan, Fix, and Probe repository layout](scan-fix-probe-repository-layout.md) — proposed module migration, CLI and report compatibility, and a full documentation audit.
+
 - [Architecture update plan](architecture-update-plan.md) — foundation first (accuracy, performance, maintainability), then features. Capability matrix and one spec per phase, run in series:
   [0 compatibility baseline](architecture-phase-0-compatibility-baseline.md) (implemented:
   `TestArchitectureBaseline`, [before measurements](../evaluation/architecture-baseline.md)),

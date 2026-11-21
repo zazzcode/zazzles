@@ -1,33 +1,32 @@
 # Implementation plan
 
-**Reconciled: 2026-11-16.** This document owns the functionality roadmap. **Implemented** means
-bounded code and verification exist in this checkout; it does not mean complete ecosystem coverage,
-a released version, or a merged feature branch. Contracts and evaluation records own detailed
-acceptance evidence. This roadmap does not authorize implementation or live model calls.
+**Reconciled: 2026-11-21.** This document owns the functionality roadmap. **Implemented** means
+bounded code and verification exist on `stage` (through PR #36) or in the named draft PR; it does
+not mean complete ecosystem coverage or a released version. Contracts and evaluation records own
+detailed acceptance evidence. This roadmap does not authorize implementation or live model calls.
 
 ## Product goals and capability boundaries
 
 | Module | Function | State |
 |---|---|---|
-| [**Scan**](../../scan/README.md) | Assess source-code vulnerabilities, controls and supported validation and construction practices | Implemented for bounded JavaScript, TypeScript, Python and PHP cases |
-| [**Fix**](../../fix/README.md) | Provide agent skills, remediation standards and playbooks for findings from Zazzles and external SAST, dependency audit and DAST tools | Planned, expected before Probe |
-| [**Probe**](../../probe/README.md) | Check authorized endpoints for externally observable issues, starting with TLS and certificates, and provide remediation guidance | Planned |
+| [**Code Scan**](../../scan/README.md) (`scan/`) | Assess source-code vulnerabilities, controls, evidence gaps, and code smells or poor coding practices that can impact security or performance | Implemented for bounded JavaScript, TypeScript, Python, and PHP cases |
+| [**Fix**](../../fix/README.md) (`fix/`) | Agent skills, remediation standards, and playbooks for findings from Zazzles modules and external scanners (SAST, dependency audit, DAST, and endpoint probe / TLS & certificate scanners such as Nuclei) | Planned, expected before Endpoint Probe |
+| [**Endpoint Probe**](../../probe/README.md) (`probe/`) | Check authorized endpoints for externally observable issues, starting with TLS and certificates, with evidence and remediation guidance | Planned |
 
 These modules can work independently or in combination. Fix accepts finding details even when
 another tool performed the assessment. [Project overview](../../README.md#modules)
 
-The [repository layout contract](../specifications/scan-fix-probe-repository-layout.md) covers moving
-Scan code and organizing user docs by module. Its acceptance checks include an audit of all tracked
-docs and setup and contributor walkthroughs from the repository root.
+The [repository layout contract](../specifications/scan-fix-probe-repository-layout.md) moves
+Code Scan under `scan/` and organizes user docs under `docs/scan/`, `docs/fix/`, and `docs/probe/`
+(draft [PR #37](https://github.com/zazzcode/zazzles/pull/37) into `stage`).
 
 ## Delivery priorities
 
-1. Continue work on Scan and its evidence and reporting.
-2. Build Fix with remediation playbooks, verification and reviewable changes. Start with reports
-   that provide enough detail to identify and check a repair.
-3. Build Probe, starting with TLS and certificate findings on authorized endpoints.
+1. Continue work on Code Scan and its evidence, coverage, and reporting.
+2. Build Fix with remediation skills, standards, playbooks, verification, and reviewable changes.
+3. Build Endpoint Probe, starting with TLS and certificate findings on authorized endpoints.
 
-The detailed roadmap below also tracks Inspect, dependency audit and other longer-term proposals.
+The detailed roadmap below also tracks longer-term proposals (Inspect, dependency audit, etc.).
 Proposed features need bounded contracts before implementation.
 
 <a id="supported-capability-checklist"></a>
@@ -36,191 +35,95 @@ Proposed features need bounded contracts before implementation.
 
 ## Completed functionality
 
-Every row describes an implemented subset. A supported language or framework is not a claim that
-all its syntax, APIs, or vulnerable paths are covered.
+Every row describes an implemented subset merged into `stage` (through PR #36). A supported
+language or framework is not a claim that all its syntax, APIs, or vulnerable paths are covered.
 
 | Functionality | Implemented behavior and boundary | Owning reference |
 |---|---|---|
-| **SQL injection** | JS/TS and Python query construction, verified API operand/binding models, and separate injection judgments | [Database rules](../../docs/analysis/database-injection.md#sql-rules) |
-| **NoSQL injection** | JS/TS MongoDB/Mongoose and MarsDB-compatible selectors and executable expressions; Python and other engines remain planned | [Database-specific scope](../../docs/analysis/database-injection.md#database-specific-nosql-scope) |
-| **Input validation** | JS/TS/Python source-established field requirements and enforcing controls, separate from destination protection; missing business policy stays unresolved | [Validation rules](../../docs/analysis/input-validation.md) |
-| **Sensitive-data logging** | JS/TS/Python supported logger calls and access-log credential exposure; data class, content, and redaction assessed separately | [Logging contract](../specifications/sensitive-data-logging.md) |
-| **Cross-site scripting** | Supported server/template and stored-value claims, browser/DOM/framework sinks, and selected JS/TS API-to-browser links; general Python-to-browser linkage remains planned | [XSS rules](../../docs/analysis/xss.md), [hardening results](../evaluation/xss-hardening-results.md) |
-| **Command injection** | Node `child_process` and Python `os`/`subprocess` contracts; shell syntax, executable selection, arguments, and control coverage | [Command results](../evaluation/command-injection-results.md) |
-| **Path traversal** | Supported Node/Python file operands (including `fs.open`/`copyFile`/`rename`, Starlette/FastAPI `FileResponse`/`UploadFile`, `shutil` copy/move, `tarfile.extractall` with filter facts), file serving, archive opens/extraction, Zip Slip, and render-layout paths; dual-path independence; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
-| **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Node `http`/`https`/`node:http`/`node:https` and Python `requests`/`httpx`/`urllib` calls with a request-derived destination | [Outbound contract](../specifications/components-03-outbound.md), [assessment coverage](../specifications/analyzer-assessment-coverage.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
-| **Entry discovery and bounded flow** | Source inventory; shared entry/registration/dispatch/callable records; supported HTTP, browser events, finite dynamic routes, Node Apollo GraphQL, and Node unary gRPC | [Entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05) |
-| **JavaScript conditional flow** | Precise JS/TS `if`/`else if`/`else`: arm polarity, exits including `process.exit`, isolated joins, block scoping. A guard on one arm never protects a sibling arm or later code. Loops, `switch`, `try`/`finally` and request rebinding keep a conservative fallback | [Analysis rules](../../docs/analysis/README.md#javascript-conditional-flow), [contract](../specifications/javascript-if-flow.md) |
-| **Evidence wire v7** | Always-compact requests with evidence IDs, character-column locators, one obligation ledger, a role budget with visible omissions and an `evidence_too_large` floor. Transparent wrappers and header-only middleware summaries. Guidance-owned fact codes. Largest sample request about 59 KB | [Wire v7 contract](../specifications/wire-bundle-v7.md), [verification](../evaluation/wire-bundle-v7-results.md) |
-| **Node input acquisition** | Bounded Express/Fastify/Hapi adapters supply shared input origins (including URL path/url/originalUrl/baseUrl and verified upload filename/content), types, transfers, controls, lifecycle stages, and Express non-final middleware-chain sibling entries | [Node refactor results](../evaluation/node-input-refactor-results.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
-| **Prototype pollution (CWE-1321)** | JS/TS application writes through affected Lodash methods and bounded source-visible recursive, split-path, and nested writes. Implemented on the assigned feature branch, pending merge. The [added write shapes](../specifications/pollution-write-shapes.md) are implemented there and pending owner review | [Rules](../../docs/analysis/prototype-pollution.md), [results](../evaluation/prototype-pollution-results.md), [write shapes results](../evaluation/pollution-write-shapes-results.md) |
-| **Next.js acquisition** | App Router route handlers, Server Component pages and `generateMetadata`, Server Actions, middleware matcher stages; Pages Router API routes (including CommonJS handler factories) and `getServerSideProps` pages whose props feed the server render; Web Request API origins, zod evidence, `"use client"` React flow; `prisma-raw-v1`, `prisma-filter-object-v1`, `better-sqlite3-v1`, `pglite-v1`; raw-SQL and Prisma stored-XSS links; model-free NX-BP practice observations. Verified on OopsSec Store (`2d530ef`) and the owner-maintained vuln-nextjs lab (`ea10efb`; full sample reports published). [PR #18](https://github.com/zazzcode/zazzles/pull/18) merged; phase 2 follows the [combined contract](../specifications/nextjs-phase-2-and-code-redirect.md) | [Next.js support](../../docs/nextjs-support.md), [rules](../../docs/analysis/nextjs.md), [contract](../specifications/nextjs-support.md) |
-| **Python input acquisition** | Existing bounded Python HTTP adapters emit the same optional origin/type/transfer schema as Node, with invocation-local acquisition and separate `source.python-input-v1` interpretation; runtime types remain unknown, existing sink contracts and behavior preserved; new dependency/lifecycle/discovery coverage remains deferred | [Python refactor contract](../specifications/python-input-refactor.md), [verification](../evaluation/python-input-refactor-results.md) |
-| **Optional model-assisted route discovery** | Explicitly enabled, separately capped proposals with source/binding verification; unfamiliar wrappers remain provisional coverage, not trusted flow | [Node input/discovery contract](../specifications/node-http-input-refactor.md) |
-| **Decision-model assessment** | OpenAI Luna Decisions is primary; optional Gemini and stub-tested Jev adapters use the shared evidence gates and one model selection per scan, without fallback | [Model setup](../../docs/decision-models.md) |
-| **Assessment scheduling and family selection** | Primary security sinks precede standalone validation; zero-call observations consume no request slots; canonical `--only-family` / `--skip-family` flags and environment defaults | [E1 contract](../specifications/analyzer-engine-hardening.md) |
-| **Equivalent-context reuse** | Scan-local reuse only for conservatively equivalent requests; retain each entry's finding, provenance, policy evaluation, and existing exact-request identity; derived records add no usage | [E1 contract and measured limits](../specifications/analyzer-engine-hardening.md#6-acceptance-criteria-slice-e1) |
-| **Request and rate controls** | Per-run assessment cap and optional shared RPM/TPM pacing; disabled pacing skips clock/window work. Spending is managed in the provider console; local dollar budgets/pricing are removed | [Limits contract](../specifications/decision-model-limits.md) |
-| **Embedded analysis knowledge** | Versioned catalog selection and provenance for SQL, NoSQL, validation, XSS, command, path, logging and outbound observations; fixed query/middleware fact interpretation in `internal/guidelines/facts.md` | [Catalog architecture](../architecture/analysis-packs.md), [path contract](../specifications/path-traversal.md) |
-| **False positives and Review noise** | Validation records that no answer could decide are not sent; own-API response fields take their handler's origin; a closed constant type map resolves the response type; stored-origin records carry their write set; records are grouped by kind, sink span and status; the model judges command guard adequacy with each guard's contract | [Contract](../specifications/accuracy-false-positive-noise.md), [precision baseline](../evaluation/precision-noise-baseline.md) |
-| **Evidence validation and exact replay** | Source-backed completeness/consistency gates, request traces, and exact-match offline replay; confidence cannot supply missing evidence | [Trace architecture](../architecture/trace-judgment.md), [report contract](../architecture/reporting-and-sarif.md) |
-| **Reports and artifacts** | Canonical JSON, standalone HTML, SARIF, entry selection, findings/Review/Protected presentation, saved-report export, and historical schema compatibility; artifacts can be retained in CI | [Running guide](../../docs/running-scans.md), [CI artifacts](../../docs/ci.md) |
-
-## Active delivery: analyzer engine hardening
-
-E1 (scheduling, family filters, context reuse), E2 (shared guard and workspace-manifest
-engine), and E3 (evidence wire v7, assessment coverage, JavaScript conditional flow and
-fact-code consolidation) are merged into `stage` via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
-(`6e815ec`).
-
-**E4 merged into `stage` via [PR #15](https://github.com/zazzcode/zazzles/pull/15)
-(`eafabcc`, base `6e815ec`).** Shared Express middleware-chain / URL/upload inputs, path
-second-pass retirement, phase-2 file APIs, and Node `http`/`https` SSRF are in `stage`; Node
-sample reports republished under a 350-request `gpt-6-luna` cap (250 charged, 250 exact
-replays). Contract:
-[shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md).
-
-Deferred with recorded decisions: S1 data-path slicing and S2/S5 relevance filtering. Size pressure
-is one record near the soft threshold and none over the limit. The user-authorized full Python
-validation below includes the 260 VulnPy path contexts and standalone input validation.
-
-**Next.js support is implemented on `nextjs-support-mvp`, draft
-[PR #18](https://github.com/zazzcode/zazzles/pull/18) into `stage`.** It covers proposal slices N0–N5,
-partial N6 (model-free practice checks) and a second iteration for the vuln-nextjs lab. Every required
-positive in a supported family is Confirmed on both Next.js samples, no safe control is red, and both
-fresh full paid runs replay exactly (149/149 assessments, including standalone input validation);
-both [sample reports](../../docs/samples/README.md) and detection guides are published in this branch. [Contract](../specifications/nextjs-support.md).
-
-**Model-assisted evidence resolution is implemented on `model-evidence-resolution`, PR into
-`stage` open.** The scanner asks the decision model specific questions about the points it could
-not resolve (flow gaps, stored origin, a missing witness, a command guard bypass, one missing
-definition) and an answer counts only when its cited evidence chain verifies against the request.
-A model-resolved fact can move a record to a finding with a visible mark, never to Protected without
-a scanner-held coverage fact; records no answer could change are not sent; follow-ups are capped at
-25% of requests; a protocol bump re-judges only its family. Offline gates and the recall floor hold;
-the W3a write census covers 29 of 45 stored-origin records (AC3 asks 40). The authorized
-`gpt-6-luna` runs (VulnPy path, OopsSec, DVWA) produced one model-resolved finding, source-reviewed
-true, and no false finding. A later Juice Shop check sent 28 requests with no fixed-outcome
-request (34 of 62 before). Every sample except VulnPy is republished from a
-rescan on this scanner. Against the answer keys, 88 of 91 expected positives are found, none is
-missed, and no keyed safe case is red. Two defects found by scoring are fixed: a bound-only PDO
-statement was Confirmed, and citation choices showed empty text. [Contract](../specifications/model-assisted-evidence-resolution.md),
-[results](../evaluation/model-resolution-results.md).
+| **SQL injection** | JS/TS, Python, and PHP query construction, verified API operand/binding models, and separate injection judgments | [Database rules](../../docs/scan/analysis/database-injection.md#sql-rules) |
+| **NoSQL injection** | JS/TS MongoDB/Mongoose, MarsDB, and Prisma filter-object selectors and executable expressions; Python and other engines remain planned | [Database-specific scope](../../docs/scan/analysis/database-injection.md#database-specific-nosql-scope) |
+| **Input validation** | JS/TS, Python, and PHP source-established field requirements and enforcing controls, separate from destination protection; missing business policy stays unresolved | [Validation rules](../../docs/scan/analysis/input-validation.md) |
+| **Sensitive-data logging** | JS/TS and Python supported logger calls and access-log credential exposure; data class, content, and redaction assessed separately | [Logging contract](../specifications/sensitive-data-logging.md) |
+| **Cross-site scripting** | Supported server/template and stored-value claims (JS/TS, Python, PHP), browser/DOM/framework sinks, and selected JS/TS API-to-browser links; general Python-to-browser linkage remains planned | [XSS rules](../../docs/scan/analysis/xss.md), [hardening results](../evaluation/xss-hardening-results.md) |
+| **Command injection and bypass support** | Node `child_process`, Python `os`/`subprocess`, and PHP process-execution contracts; shell syntax, executable selection, arguments, regex capture facts, and guard-reach bypass validation (`command-components-v5`, [PR #34](https://github.com/zazzcode/zazzles/pull/34)) | [Command rules](../../docs/scan/analysis/command-injection.md), [bypass results](../evaluation/command-bypass-support-results.md) |
+| **Path traversal** | Supported Node, Python, and PHP file operands, file serving, archive opens/extraction, Zip Slip, and render-layout paths; dual-path independence; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/scan/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md) |
+| **Unrestricted file upload (CWE-434)** | Verified PHP `move_uploaded_file` and Python Werkzeug upload writes with stored-name, type-control, and served-destination facts ([PR #31](https://github.com/zazzcode/zazzles/pull/31)); Node, Starlette, and Symfony upload adapters remain planned | [Upload rules](../../docs/scan/analysis/file-upload.md), [results](../evaluation/close-findings-gaps-results.md) |
+| **Code and template injection (CWE-94/95, CWE-1336)** | Verified JS/TS, Python, and PHP interpreter sinks ([PR #19](https://github.com/zazzcode/zazzles/pull/19)) and Jinja2/Flask/Mako, Twig, and Node EJS template-source operands ([PR #31](https://github.com/zazzcode/zazzles/pull/31)) | [Code/template rules](../../docs/scan/analysis/code-injection.md), [phase 2 results](../evaluation/nextjs-phase-2-results.md) |
+| **Open redirect (CWE-601)** | Verified JS/TS, Python, and PHP redirect destinations and effective origin restrictions ([PR #19](https://github.com/zazzcode/zazzles/pull/19), [PR #23](https://github.com/zazzcode/zazzles/pull/23)) | [Redirect rules](../../docs/scan/analysis/open-redirect.md), [phase 2 results](../evaluation/nextjs-phase-2-results.md) |
+| **Prototype pollution (CWE-1321)** | JS/TS application writes through affected Lodash versions and bounded source-visible recursive, split-path, nested, and walk-start writes ([PR #35](https://github.com/zazzcode/zazzles/pull/35), [PR #36](https://github.com/zazzcode/zazzles/pull/36)); library-export mode remains planned at W3/W4 | [Pollution rules](../../docs/scan/analysis/prototype-pollution.md), [write shapes](../evaluation/pollution-write-shapes-results.md), [walk start](../evaluation/pollution-walk-start-results.md) |
+| **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Node `http`/`https` and Python `requests`/`httpx`/`urllib` calls with a request-derived destination | [SSRF rules](../../docs/scan/analysis/ssrf.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Next.js acquisition and practice checks** | App Router & Pages Router entries, Server Actions, middleware matchers, Web Request API origins, zod evidence, `"use client"` React flow, Prisma/better-sqlite3/PGlite contracts, and model-free NX-BP practice observations ([PR #18](https://github.com/zazzcode/zazzles/pull/18), [PR #19](https://github.com/zazzcode/zazzles/pull/19), [PR #20](https://github.com/zazzcode/zazzles/pull/20), [PR #21](https://github.com/zazzcode/zazzles/pull/21)) | [Next.js support](../../docs/scan/nextjs-support.md), [rules](../../docs/scan/analysis/nextjs.md) |
+| **PHP support (DVWA MVP)** | Plain-PHP adapter with server-mapped entries, include dispatch, superglobal input facts, class/method binding, and SQL/command/XSS/path/upload/code/redirect/validation families ([PR #23](https://github.com/zazzcode/zazzles/pull/23), [PR #31](https://github.com/zazzcode/zazzles/pull/31)); Symfony and Drupal remain planned | [PHP support](../../docs/scan/php-support.md), [results](../evaluation/php-support-results.md) |
+| **Node and Python input acquisition** | Shared transport-neutral acquisition/origin/type/transfer facts for Express/Fastify/Hapi ([PR #15](https://github.com/zazzcode/zazzles/pull/15)) and Python HTTP adapters ([PR #17](https://github.com/zazzcode/zazzles/pull/17)), plus opt-in provisional model-assisted route discovery | [Node input rules](../../docs/scan/analysis/node-inputs.md), [Python refactor results](../evaluation/python-input-refactor-results.md) |
+| **Architecture engine foundation (phases 0–4)** | Compatibility golden baseline, layered source index and bounded callable summaries ([PR #24](https://github.com/zazzcode/zazzles/pull/24)), single-walk concurrent language runners ([PR #25](https://github.com/zazzcode/zazzles/pull/25)), isolated `langjs`/`langpy`/`langphp` packages ([PR #26](https://github.com/zazzcode/zazzles/pull/26)), and parallel judge scheduling ([PR #27](https://github.com/zazzcode/zazzles/pull/27)) | [Architecture README](../architecture/README.md), [baseline measurements](../evaluation/architecture-baseline.md) |
+| **Model-assisted evidence resolution & noise reduction** | Verified citation follow-ups for resolvable scanner blockers ([PR #30](https://github.com/zazzcode/zazzles/pull/30)), undecidable-validation and unresolvable-blocker gates ([PR #29](https://github.com/zazzcode/zazzles/pull/29)), compact wire & request size reduction ([PR #14](https://github.com/zazzcode/zazzles/pull/14), [PR #33](https://github.com/zazzcode/zazzles/pull/33)), and exact-request offline replay | [Resolution results](../evaluation/model-resolution-results.md), [size reduction results](../evaluation/judge-request-size-reduction-results.md) |
+| **Decision-model controls, packs, and reports** | OpenAI (`gpt-6-luna`), optional Gemini (`gemini-decision-1`), and stub-tested Jev transports; `--only-family`/`--skip-family`, RPM/TPM pacing, context deduplication; embedded analysis packs & `facts.md`; canonical JSON, standalone HTML, SARIF, and saved-report export | [Decision models](../../docs/scan/decision-models.md), [running scans](../../docs/scan/running-scans.md), [catalog architecture](../architecture/analysis-packs.md) |
 
 <a id="next-up"></a>
 
-### Next up (owner order, 2026-11-19)
+## Next up
 
-Three proposal contracts come first, then npm library scanning. Each starts on owner assignment.
+Each item starts on owner assignment. Earlier items (Close findings gaps PR #31, Judge size
+reduction PR #33, Command bypass PR #34, Prototype pollution stage 1 + write shapes PR #35, and
+Prototype pollution walk start PR #36) are merged into `stage`.
 
 | Order | Planned functionality | Notes |
 |---|---|---|
-| 1 | **Close findings gaps** (Node.js Goof, DVWA, Python insecure app) | [Contract](../specifications/close-findings-gaps.md), worktree `close-findings-gaps-dvwa`. Closes the three Review rows in the README accuracy table and the misses found by source review: single-path bypass citation, regex capture facts, PHP class and method binding, over-limit path-group requests, unrestricted upload (CWE-434) and template injection (CWE-1336) claims, key corrections. Its PHP class binding is the prerequisite for order 2. Implemented 2026-11-19 and merged via [PR #31](https://github.com/zazzcode/zazzles/pull/31) ([results](../evaluation/close-findings-gaps-results.md)); live check met (Goof 7/7, DVWA 11/11, Python insecure app 3/3); Node/Starlette/Symfony upload adapters remain |
-| 2 | **PHP Symfony support** | [Contract](../specifications/php-symfony-support.md), supersedes architecture phase 6. Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF, with the `vuln-symfony` answer key at `086f81f`. Its key and routing slices need nothing from order 1 and may start beside it. `gopkg.in/yaml.v3` is approved |
-| 3 | **Unsafe deserialization analyzer (CWE-502)** | [Contract](../specifications/unsafe-deserialization.md), own worktree `unsafe-deserialization`. New `deserialization` family for Python `pickle` and PyYAML, PHP `unserialize`, Node `node-serialize` and js-yaml. Python and JS/TS are independent of orders 1 and 2 and may run beside them; the `vuln-symfony` row needs order 2 |
-| 4 | **npm library RCE scanning** | Container-root npm library RCE proposal, as architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline, no engine change) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on the existing command and code analyzers), then the proposal's compile-to-JS sinks and prototype pollution pack under new contracts. The [waypoints below](#before-library-scanning) set what comes first |
+| Active | **Scan / Fix / Endpoint Probe repository layout** | [Contract](../specifications/scan-fix-probe-repository-layout.md), draft [PR #37](https://github.com/zazzcode/zazzles/pull/37) on `update-repository-layout`. Moves Code Scan under `scan/` and organizes user docs by module |
+| 1 | **PHP Symfony support** | [Contract](../specifications/php-symfony-support.md) (supersedes architecture phase 6). Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF, with `vuln-symfony` answer key at `086f81f`. Prerequisite PHP class binding (PR #31) is merged; `gopkg.in/yaml.v3` is approved |
+| 2 | **Unsafe deserialization analyzer (CWE-502)** | **Not yet implemented.** [Contract](../specifications/unsafe-deserialization.md), own worktree `unsafe-deserialization`. New `deserialization` family for Python `pickle` and PyYAML, PHP `unserialize`, Node `node-serialize` and `js-yaml`. Python and JS/TS are independent of Symfony; the `vuln-symfony` row needs order 1 |
+| 3 | **npm library RCE scanning** | Architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on existing command and code analyzers), then compile-to-JS sinks and library prototype pollution per the [waypoints below](#before-library-scanning) |
+| 4 | **Fix module (agent skills, standards, playbooks & external findings import)** | Remediation skills, standards, and playbooks for findings from Zazzles modules and external SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
+| 5 | **Endpoint Probe module** | Authorized read-only endpoint checks starting with TLS versions, certificates, and trust chains, with remediation guidance |
+| Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
 
 <a id="before-library-scanning"></a>
 
-### Before library scanning (waypoints, 2026-11-20)
-
-Checked against the refreshed npm proposal and the code on 2026-11-20. The corpus phase can start now. Library-mode integration and the remaining contracts govern which
-corpus rows can be measured.
+### Before library scanning (waypoints)
 
 | Waypoint | Work | Spec | State | Needed before |
 |---|---|---|---|---|
-| W0 | **Command bypass support** | [Contract](../specifications/command-bypass-support.md) | Merged into `stage`, [PR #34](https://github.com/zazzcode/zazzles/pull/34) | W4. Library mode runs the JS command analyzer, and D-6 of phase 8 reads this contract's guard listing |
-| W1 | **Re-judge the JS command samples** under `command-components-v5` (Node.js Goof, vuln-nextjs) | None needed: a live check | Owner's call (open question 2 of W0) | W4, so library mode starts from a measured JS command baseline |
-| W2 | **npm corpus, answer keys and direct-model baseline** | [Phase 7](../specifications/architecture-phase-7-npm-corpus.md), reviewed 2026-11-20 | Ready to assign. Offline steps need no cap; the baseline needs a model and a numeric cap | W3, W4 and W5. Its keys supply the sink anchors, hop lists, git option semantics and gadget list those specs are written from |
-| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/prototype-pollution.md), proposal drafted 2026-11-20 | Stage 1 application write claim and the [write shapes](../specifications/pollution-write-shapes.md) implemented on `prototype-polution-analyzer`, AC8 live check passed 2026-11-21, pending merge. Stage 2 library writes follow W2 and W4. Access and gadget claims follow the corpus keys | The six pollution rows (`superjson`, `express-fileupload`, `ajv`, `parse-server`, `handlebars`, React2Shell) |
-| W3.1 | **Prototype pollution walk start**: path walks into module-level, local and property objects, and walks written in the handler | [Contract](../specifications/pollution-walk-start.md), proposal drafted 2026-11-21 | Ready to assign after W3 merges. Adds records to existing scans by design, so its noise check reviews each new sample record | Nothing in the library sequence. It closes the application gap most likely to hide a real write |
-| W4 | **Library mode on the existing analyzers** | [Phase 8](../specifications/architecture-phase-8-npm-library-mode.md), reviewed 2026-11-20 | Starts after W0 and W2 merge | Every library result |
-| W5 | **Utility option contracts for argument arrays**, `git` first | **Not written** | Decide after W2: write it only if the `simple-git` key shows the row is outside W4's reach | The `simple-git` row |
-| W6 | **Library judge contract**: parameter-trust question, a question protocol for caller-argument inputs, the feasibility consumer | **Not written** | After W4 reports candidates per library | The proposal's phase 1 exit and any paid library judgment |
-| W7 | **Code-execution sinks for libraries**: compile-to-JS, deserialization-to-code, dynamic `require` | **Not written** (proposal phase 2) | After W4. Reuse the Node contracts of [unsafe deserialization](../specifications/unsafe-deserialization.md) | `ejs`, `pug`, `lodash`, `ajv`, `node-serialize` |
+| W0 | **Command bypass support** | [Contract](../specifications/command-bypass-support.md) | Merged into `stage` ([PR #34](https://github.com/zazzcode/zazzles/pull/34)) | W4 |
+| W1 | **Re-judge the JS command samples** under `command-components-v5` (Node.js Goof, vuln-nextjs) | None needed: a live check | Owner's call | W4, so library mode starts from a measured JS command baseline |
+| W2 | **npm corpus, answer keys and direct-model baseline** | [Phase 7](../specifications/architecture-phase-7-npm-corpus.md) | Ready to assign. Offline steps need no cap; baseline needs a model and numeric cap | W3 (stage 2), W4, and W5 |
+| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/prototype-pollution.md), [write shapes](../specifications/pollution-write-shapes.md) | Stage 1 application writes + write shapes merged into `stage` ([PR #35](https://github.com/zazzcode/zazzles/pull/35)). Stage 2 library writes follow W2 and W4; access and gadget claims follow corpus keys | The six pollution corpus rows |
+| W3.1 | **Prototype pollution walk start** | [Contract](../specifications/pollution-walk-start.md) | Merged into `stage` ([PR #36](https://github.com/zazzcode/zazzles/pull/36)) | Completed |
+| W4 | **Library mode on the existing analyzers** | [Phase 8](../specifications/architecture-phase-8-npm-library-mode.md) | Starts after W2 merges (W0 is merged) | Every library result |
+| W5 | **Utility option contracts for argument arrays**, `git` first | **Not written** | Decide after W2: write only if `simple-git` is outside W4's reach | `simple-git` row |
+| W6 | **Library judge contract**: parameter-trust question, caller-argument protocol, feasibility consumer | **Not written** | After W4 reports candidates per library | Paid library judgment |
+| W7 | **Code-execution sinks for libraries**: compile-to-JS, deserialization-to-code, dynamic `require` | **Not written** | After W4; reuse Node contracts of [unsafe deserialization](../specifications/unsafe-deserialization.md) | `ejs`, `pug`, `lodash`, `ajv`, `node-serialize` |
 
-What the check found:
-
-- **Prototype pollution has an application write analyzer.** Six of the original corpus rows depend
-  on library write, access, or gadget coverage. Its [contract](../specifications/prototype-pollution.md) builds the write claim once for
-  both modes: applications first, verified on Node.js Goof (`routes/index.js:360`) and the
-  Vulnerable TypeScript app (`src/server.ts:246`), then library exports. The access and gadget
-  claims wait for the corpus keys.
-- **No other analyzer is needed.** Command, argument and code injection exist. Compile-to-JS,
-  deserialization-to-code and dynamic `require` are sinks on the code family (W7). Unsafe
-  deserialization (order 3) covers an application calling a decoder; it is not a prerequisite, but
-  its Node contracts are the ones W7 needs, so write them once.
-- **Argument injection is narrower than the proposal assumes.** The command analyzer reports
-  CWE-88 only for a literal interpreter and holds unknown utility options in Review. `simple-git`
-  needs git's option and transport semantics stated in a contract (W5), or it stays Review.
-- **The judge is off in library mode until W6.** Existing questions presume request-origin inputs.
-  Phase 8 is the offline half of the proposal's phase 1; trust classification and feasibility are
-  the other half.
-- **Flow reach through classes is unmeasured.** Phase 7 now records each row's export-to-sink hops
-  by kind, and phase 8 reports which it resolves. A flow contract is sized from those counts.
-
-Orders 2 and 3 above (Symfony, unsafe deserialization) are not prerequisites for W2 to W4 and may
-run beside them.
-
-### Earlier order (2026-11-16), queued after the rows above
-
-| Order | Planned functionality | Notes |
-|---|---|---|
-| 1 | **Code injection (CWE-94/95) and open redirect (CWE-601)** | Implemented with Next.js B–D in `nextjs-support-phase-2`; human review pending. [Contract](../specifications/nextjs-phase-2-and-code-redirect.md), [results](../evaluation/nextjs-phase-2-results.md). The related prototype-write work is tracked at [W3](#before-library-scanning) |
-| 2 | **Prototype pollution (CWE-1321)** | Stage 1 application writes and the write shapes implemented on `prototype-polution-analyzer`. Library-mode verification is at [W3](#before-library-scanning). The [walk start](../specifications/pollution-walk-start.md) follow-on is at W3.1 |
-| 3 | **PHP support (DVWA MVP), then Drupal** | Plain-PHP adapter implemented on `php-dvwa` (server-mapped entries, include dispatch, superglobal input facts, SQL/command/XSS/path/code/redirect/validation families) with offline DVWA `a1978a2` ACs green and the paid AC14 `gpt-6-luna` pass complete (292/296 assessed, 292/292 exact replay, sample published): [contract](../specifications/php-support.md), [results](../evaluation/php-support-results.md), [guide](../evaluation/dvwa-detection-guide.md), [sample](../../docs/samples/dvwa/README.md). Draft PR #23 into `stage`; then Drupal routing/controllers, Symfony `Request`, Form API, database API, Twig and render arrays as a separate follow-up deliverable |
-| 4 | **Agent skills fixes, scan/fix loop, external SAST findings import** | Fix-workflow skills, the scheduled/on-demand loop, and provenance-preserving import of third-party SAST findings |
-| Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
+Orders 1 and 2 (Symfony, unsafe deserialization) are not prerequisites for W2–W4 and may run
+beside them.
 
 <a id="future-capability-branches"></a>
 <a id="ordered-specification-backlog"></a>
 
 ## Planned functionality
 
-### Sequenced engine follow-ons
-
-The [hardening milestone](../specifications/analyzer-engine-hardening.md#0-capability--milestone-roadmap)
-sets the dependency order. Each remaining slice requires its dedicated executable contract before coding.
-
-| Slice | Planned outcome | State |
-|---|---|---|
-| **E2 — Shared guards and workspace manifests** | One lexical guard engine for Command and Path (branch polarity, terminators including exiting else-if links, derived values, reassignment, helper callers); nearest-workspace manifest and lockfile resolution for Path, XSS and NoSQL | Merged; [contract](../specifications/shared-guard-and-manifest-engine.md) |
-| **E3 — Wire bundle and catalog consolidation** | Compact v7 wire, evidence references, logging catalog, wrappers and middleware summaries, precise JS conditionals, fact codes | Merged via [PR #14](https://github.com/zazzcode/zazzles/pull/14); [contract](../specifications/wire-bundle-v7.md) |
-| **E4 — Shared Node inputs and file APIs** | Promote middleware-chain and URL/upload inputs across Node analyzers; extend verified Python/Node file and archive operation coverage; add Node core `http`/`https` client SSRF contracts (vuln-demo-app `/fetch` confirmed) | Merged via [PR #15](https://github.com/zazzcode/zazzles/pull/15) (`eafabcc`); paid Node rebuild 250/350 `gpt-6-luna`, exact replay 250/250; [contract](../specifications/shared-node-inputs-and-file-apis.md) |
-| **Shared Python input/acquisition refactor** | Migrate existing Python HTTP adapters to language-neutral acquisition/origin/type/transfer facts; retain flow, sink contracts and coverage; refresh complete Python sample reports and metrics | Implemented on `python-input-refactor`; full test/race/vet/build and four-app structural parity passed. Full all-family Python validation completed: 3,354/3,354 paid assessments and exact replays, zero failures/mismatches; all four Python samples republished with metrics. Future routine runs skip standalone input validation; [contract](../specifications/python-input-refactor.md), [results](../evaluation/python-input-refactor-results.md). Human PR review/merge pending |
-| **Judge request size reduction** | Smaller decision requests with no source or fact removed: request-local identity aliases, structure stated once, count-based size notices, XSS choice labels (`evidence_version` 8, `xss-components-v4`) | In review on `judge-request-size-reduction`; [contract](../specifications/judge-request-size-reduction.md), [results](../evaluation/judge-request-size-reduction-results.md) |
-| **Command bypass support** | A precise bypass claim for guarded command paths. Policy: a claimed bypass must be possible under the characters the scanner lists for the path. Request: a PHP numeric path cites its check and states its characters, and `guard_bypass` asks for command text of the request's choosing (`command-components-v5`). Protected records keep a hardening note | Implemented on `precise-claim-to-judge`, in review. Paid DVWA run: PC-CMD-02 Protected on all four records, 11 of 11 keyed positives Confirmed, 243 other records unchanged, 190 of 190 exact replays; DVWA sample republished. Other samples keep `command-components-v4` reports until rescanned. [contract](../specifications/command-bypass-support.md), [results](../evaluation/command-bypass-support-results.md) |
-
-The [proposal](analyzer-hardening-and-wire-efficiency-proposal.md) owns the detailed rationale and
-boundaries. Token and call savings remain measurements to establish, not guaranteed outcomes.
-
-### Analyzer expansion and product workflows
-
 The following work remains planned; rows are functional goals rather than reserved branches or
 approved implementation assignments.
 
 | Planned functionality | Intended outcome / remaining boundary |
 |---|---|
-| **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; expanded dependency/lifecycle/discovery coverage remains a separate feature beyond shared Python input facts |
-| **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases; no implied DynamoDB or universal NoSQL support |
-| **Code injection and open redirect** | Implemented in the assigned phase-2 worktree; [contract](../specifications/nextjs-phase-2-and-code-redirect.md) and [evaluation](../evaluation/nextjs-phase-2-results.md); review pending |
-| **XXE** | Request-to-XML parser paths with verified parser configuration contracts (deferred by the owner) |
-| **Unsafe deserialization** | Next up, order 3; [contract](../specifications/unsafe-deserialization.md) |
-| **Unrestricted upload and template injection** | In review (order 1, W5 and W6 of the [gaps contract](../specifications/close-findings-gaps.md)): PHP and Werkzeug upload writes, Jinja2/Flask/Mako, Twig and Node template engines; Node, Starlette and Symfony upload writes remain |
-| **PHP Symfony** | Next up, order 2; [contract](../specifications/php-symfony-support.md). Drupal follows it |
-| **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with appropriate negative controls |
-| **Prototype pollution in libraries** | Application write analysis is implemented on its feature branch. Library export coverage follows [waypoint W3](#before-library-scanning) and phase 8. [Contract](../specifications/prototype-pollution.md), [results](../evaluation/prototype-pollution-results.md) |
+| **PHP Symfony & Drupal** | Symfony is Next up order 1 ([contract](../specifications/php-symfony-support.md)); Drupal routing/controllers/Twig/render arrays follow ([phase 9](../specifications/architecture-phase-9-drupal.md)) |
+| **Unsafe deserialization (CWE-502)** | Next up order 2 ([contract](../specifications/unsafe-deserialization.md)); not yet implemented |
+| **Unrestricted upload adapter expansion** | PHP and Werkzeug uploads are merged (PR #31); Node, Starlette, and Symfony upload adapters remain |
+| **Prototype pollution in libraries** | Application writes and walk starts are merged (PR #35, PR #36); library export coverage follows W2/W4 |
+| **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; expanded dependency/lifecycle/discovery coverage beyond shared Python input facts |
+| **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases |
+| **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with negative controls |
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |
-| **Inspect workflow** | Select applicable engineering standards and present quality/maintainability findings separately from vulnerability claims |
-| **Dependency Audit** | Deferred by the owner (2026-11-16). npm/pnpm and pip-audit adapters, dependency/advisory provenance, SBOM artifacts, and explicit failure/reachability limits; [design](../architecture/sca-design.md) |
-| **Automation and Fix** | Next up, order 4, with agent skills fixes. Scheduled/on-demand assessments, scoped repair agents supplied with findings and standards, tests/reassessment, and reviewable pull requests; [workflow proposal](user-agent-skills.md) |
-| **External finding imports** | Next up, order 4. SAST/code-quality adapters retaining source, provenance, and uncertainty within the remediation workflow |
-| **Baselines and incremental analysis** | Stable finding identity, correct invalidation, comparison and explicit severity gates; current exit codes are not severity gates |
-| **Public analysis packs and standards** | Public pack loading and broader user-selected standards; embedded components do not imply an executable plugin system |
-| **Additional acquisition and languages** | PHP is next up (order 3) via the [DVWA MVP contract](../specifications/php-support.md); Drupal follows as its own deliverable; queue inputs and further source-language/framework adapters under separate coverage contracts |
-| **External generalization evaluation** | Bounded checks on fresh JS/TS and Python services against source-reviewed expectations; prior sample results do not establish general accuracy |
+| **Fix & external finding imports** | Next up order 4: agent remediation skills, standards, playbooks, and provenance-preserving import from SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
+| **Endpoint Probe** | Next up order 5: authorized read-only endpoint checks starting with TLS and certificates, with remediation recommendations |
+| **Inspect workflow** | Select applicable engineering standards and present broader quality/maintainability findings separately from vulnerability claims |
+| **Baselines and incremental analysis** | Stable finding identity, invalidation, comparison, and explicit severity gates |
+| **Public analysis packs and standards** | Public pack loading and user-selected standards; embedded components do not imply an executable plugin system |
+| **Additional acquisition and languages** | Queue inputs and further source-language/framework adapters under separate contracts |
+| **XXE; Dependency Audit (SCA)** | Deferred by the owner (2026-11-16); [SCA design](../architecture/sca-design.md) |
+| **External generalization evaluation** | Bounded checks on fresh applications against source-reviewed expectations |
 
 ### Deferred analysis boundaries
 
@@ -245,9 +148,7 @@ and known misses; historical counts and old reports are not automatically curren
 
 Verification uses source-reviewed vulnerable, protected, and unresolved controls, with answer keys
 kept outside model input. Keep pinned targets unchanged and write reports outside their trees.
-See the [baseline policy](../../docs/samples/reference-policy.md). The current worktree's E1 evidence
-includes full race checks, request-byte compatibility, historical exact replay, and report parity;
-future work needs evidence appropriate to its changed behavior.
+See the [baseline policy](../../docs/samples/reference-policy.md).
 
 <a id="how-a-phase-becomes-agent-manageable-work"></a>
 
@@ -282,7 +183,3 @@ These anchors preserve older links; the completed and planned tables above own c
 <a id="phase-11--python-adapter"></a>
 **Python foundation:** [contract](../specifications/python-support.md) and
 [results/limits](../evaluation/python-support-results.md).
-
-## Evidence wire v7
-
-The [E3 contract](../specifications/wire-bundle-v7.md) coordinates compact requests, evidence references, catalog-backed logging and transparent wrapper dispatch in `analyzer-assessment-coverage`. Its checklist records the completed JavaScript conditional flow, broader W6, the citation decision (retention proxy accepted) and the measured S1/S2/S5 deferrals.

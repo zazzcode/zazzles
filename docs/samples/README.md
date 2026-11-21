@@ -1,6 +1,6 @@
 # Sample findings reports
 
-[Project introduction](../../README.md) · [User documentation](../README.md) · [Interpret results](../interpreting-results.md)
+[Project introduction](../../README.md) · [User documentation](../README.md) · [Interpret results](../scan/interpreting-results.md)
 
 Explore actual scan output without installing the targets, configuring keys, or calling a model.
 Open the [hosted samples](https://zazzcode.github.io/zazzles/docs/samples/) in your browser, or download a standalone HTML file and open it
@@ -31,7 +31,7 @@ The [Semgrep comparison](../../.zazz/evaluation/semgrep-results.md) and
 
 Open an HTML report and expand an entry to see the finding location, evidence and remediation.
 The **Hide protected results** filter changes the report view. JSON preserves the full evidence.
-[Interpreting results](../interpreting-results.md)
+[Interpreting results](../scan/interpreting-results.md)
 
 These are evolving examples, not a complete benchmark or independent accuracy claim. Sample READMEs
 record target versions, actual assessment coverage, and current limitations. Inconclusive and
@@ -44,7 +44,7 @@ the upstream projects; vulnerable fixture values are training data, not scan pro
 Use the target revision and scan scope in a sample’s notes. For the TypeScript command finding,
 use a checkout of the sample pinned to `7f8b240a2f02beba099da3632d1ba679ff8bc32f`.
 From the scanner checkout, run this scoped scan after
-[configuring the decision provider](../decision-models.md#credentials-and-local-environment).
+[configuring the decision provider](../scan/decision-models.md#credentials-and-local-environment).
 
 ```bash
 ./bin/scan --analyze --entry src/server.ts --route /api/ping \
@@ -62,7 +62,7 @@ flags. [Sample notes](vulnerable-typescript-app/README.md) ·
 Build scan, then regenerate both checked-in HTML/SARIF views from the saved JSON:
 
 ```bash
-go build -o bin/scan ./cmd/scan
+go build -o bin/scan ./scan/cmd/scan
 python3 docs/samples/refresh.py --scan ./bin/scan
 ```
 

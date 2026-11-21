@@ -17,18 +17,18 @@ the tool a PR touches before opening it.
 
 | Label | Scope |
 |---|---|
-| `CLI` | `cmd/scan` — flags, output formats, exit codes |
-| `PARSE` | `internal/parse`, `internal/lang`, `internal/lang*` language packages (e.g. `internal/langphp`) — Tree-sitter integration, grammars, parsing, language adapters |
-| `PIPELINE` | `internal/pipeline` — one walk, language-runner selection and concurrency, fixed-order assembly |
-| `ANALYSIS` | `internal/analysis` — shared route, candidate, evidence and assessment records |
-| `GUIDELINES` | `internal/guidelines` — embedded language Analysis Guidelines |
-| `TRACE` | Bounded flow and witnesses currently in `internal/parse`; future dedicated packages |
+| `CLI` | `scan/cmd/scan`, `cmd/scan`, `scan/cli` — entry points, flags, output formats, exit codes |
+| `PARSE` | `scan/internal/parse`, `scan/internal/lang`, `scan/internal/lang*` language packages (e.g. `scan/internal/langphp`) — Tree-sitter integration, grammars, parsing, language adapters |
+| `PIPELINE` | `scan/internal/pipeline` — one walk, language-runner selection and concurrency, fixed-order assembly |
+| `ANALYSIS` | `scan/internal/analysis` — shared route, candidate, evidence and assessment records |
+| `GUIDELINES` | `scan/internal/guidelines` — embedded language Analysis Guidelines |
+| `TRACE` | Bounded flow and witnesses currently in `scan/internal/parse`; future dedicated packages |
 | `SCOPES` | future bounded scope checks, if separately approved |
-| `JUDGE` | `internal/judge` — provider transport, questions, answers, evidence and claim policy |
+| `JUDGE` | `scan/internal/judge` — provider transport, questions, answers, evidence and claim policy |
 | `LLM` | Planned independent Findings Reviewer; no implemented reviewer package |
-| `CONTEXT` | Evidence assembly in `internal/parse` and `internal/judge`; dedicated packages are planned |
-| `FIND` | Planned finding identity/baseline/diffing; presentation currently lives in `internal/report` |
-| `REPORT` | `internal/report` — JSON, HTML and SARIF emitters |
+| `CONTEXT` | Evidence assembly in `scan/internal/parse` and `scan/internal/judge`; dedicated packages are planned |
+| `FIND` | Planned finding identity/baseline/diffing; presentation currently lives in `scan/internal/report` |
+| `REPORT` | `scan/internal/report` — JSON, HTML and SARIF emitters |
 | `CI` | GitHub Actions, tooling, and format gates |
 | `DOC` | Documentation, standards, and specifications |
 | `AGENT` | Agent skills and agent configuration under `.agents/` |

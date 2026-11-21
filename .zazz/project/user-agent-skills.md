@@ -37,6 +37,6 @@ A generated remediation example is a starting point for inspection, not an alrea
   manufacturing verdicts or treating benchmark labels as runtime rules.
 
 Start with supported JS/TS input-validation and database-injection claims, then sensitive-data
-logging as that detector is implemented. The public [analysis guidelines](../../docs/analysis/README.md)
-and [result guide](../../docs/interpreting-results.md) supply the current semantics. Follow-on work
+logging as that detector is implemented. The public [analysis guidelines](../../docs/scan/analysis/README.md)
+and [result guide](../../docs/scan/interpreting-results.md) supply the current semantics. Follow-on work
 must pin a stable result contract and test fixtures before publishing installation instructions.

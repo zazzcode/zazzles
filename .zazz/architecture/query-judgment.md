@@ -1,6 +1,6 @@
 # SQL/NoSQL judgment design
 
-Product-facing [analysis rules](../../docs/analysis/README.md) own the interpretation and refinement
+Product-facing [analysis rules](../../docs/scan/analysis/README.md) own the interpretation and refinement
 guidelines. This internal document owns data flow and implementation boundaries. The implementation
 contract is [SQL/NoSQL judgment](../specifications/sql-nosql-judgment.md).
 

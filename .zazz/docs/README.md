@@ -24,6 +24,7 @@ work, and worktree setup owns layout/operations. The cheat sheet is for Worktrun
 
 - [zazzles-agent-orientation.md](zazzles-agent-orientation.md) — **first-read** agent orientation: repo layout, branch model, routing (repo-specific)
 - [openai-decisions-setup.md](openai-decisions-setup.md) — current GPT decision API key and Go setup
+- [gopls-setup.md](gopls-setup.md) — gopls benefits and setup for Claude Code and Codex (repo-specific)
 - [agent-execution-discipline.md](agent-execution-discipline.md) — agent execution discipline (vendored)
 - [worktree-setup.md](worktree-setup.md) — worktree operating model setup (adapted: stage integration branch)
 - [wt-cheat-sheet.md](wt-cheat-sheet.md) — Worktrunk cheat sheet (adapted for this container)

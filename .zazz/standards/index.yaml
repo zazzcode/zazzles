@@ -19,7 +19,7 @@ standards:
     applies_to:
       paths:
         - cmd/
-        - internal/
+        - scan/
         - .agents/skills/
         - .zazz/
       activities:
@@ -27,15 +27,16 @@ standards:
         - splitting oversized files or agent guides
         - reviewing package layout, module cohesion, duplicated logic, or redundant computation
     purpose: >-
-      Go package layout (cmd/, internal/), file-size thresholds, contextual splitting, module cohesion,
-      incrementally discoverable skills and docs, anti-slop structure, compute-once guidance, and
-      determinism requirements for graph and path output.
+      Go package layout (scan/cmd/, scan/cli/, scan/internal/, root cmd/scan/ compatibility wrapper),
+      file-size thresholds, contextual splitting, module cohesion, incrementally discoverable skills
+      and docs, anti-slop structure, compute-once guidance, and determinism requirements for graph
+      and path output.
 
   - file: testing.md
     applies_to:
       paths:
         - cmd/
-        - internal/
+        - scan/
         - testdata/
         - .github/workflows/
     activities:

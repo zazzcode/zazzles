@@ -1,8 +1,8 @@
 # Decision-provider integration notes
 
-Operational instructions now live in the root [decision-model user guide](../../docs/decision-models.md).
+Operational instructions now live in the [decision-model user guide](../../docs/scan/decision-models.md).
 It owns credentials, environment loading, scanner commands, request caps, and troubleshooting.
-[Getting started](../../docs/getting-started.md) owns compilation and local setup. This retained path
+[Getting started](../../docs/scan/getting-started.md) owns compilation and local setup. This retained path
 is for internal integration evidence and existing engineering links, not a second user setup guide.
 
 ## Implemented boundary
@@ -12,9 +12,9 @@ adapters. Offline extraction and tests do not require credentials; adapter tests
 Each provider has its own key and wire schema. Unknown/refused/invalid answers and provider errors
 remain failed assessments. No automatic provider/model fallback occurs.
 
-The [client implementation](../../internal/judge/client.go) and
-[judge bundle](../../internal/judge/bundle.go) own transport constraints, question format, and payload
-assembly. The [policy implementation](../../internal/judge/policy.go) preserves raw answers separately
+The [client implementation](../../scan/internal/judge/client.go) and
+[judge bundle](../../scan/internal/judge/bundle.go) own transport constraints, question format, and payload
+assembly. The [policy implementation](../../scan/internal/judge/policy.go) preserves raw answers separately
 from claim completeness. The [reporting design](../architecture/reporting-and-sarif.md) owns the
 presentation distinction between actionable poor practice, unresolved Review, and scoped protection.
 A model answer does not fill missing source evidence or erase an independently established practice.

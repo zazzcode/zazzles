@@ -154,10 +154,10 @@ record exact partial changes and failing checks, without claiming this deliverab
 
 ### Verification evidence, 2026-11-03
 
-The foundation is implemented in [entry records](../../internal/analysis/entries.go),
-[snapshot identities](../../internal/analysis/entry_ids.go), and
-[reference validation](../../internal/analysis/entry_validation.go).
-The [model tests](../../internal/analysis/entries_test.go) exercise the three acceptance
+The foundation is implemented in [entry records](../../scan/internal/analysis/entries.go),
+[snapshot identities](../../scan/internal/analysis/entry_ids.go), and
+[reference validation](../../scan/internal/analysis/entry_validation.go).
+The [model tests](../../scan/internal/analysis/entries_test.go) exercise the three acceptance
 criteria plus same-dispatch invocation-control isolation, input provenance/receiver/closure
 bindings, partial dispatch, transport associations and invalid identity sources.
 

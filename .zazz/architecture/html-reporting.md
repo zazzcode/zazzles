@@ -3,7 +3,7 @@
 ## Purpose and ownership
 
 Public philosophy and report instructions live in root [user documentation](../../docs/README.md),
-including [philosophy](../../docs/philosophy.md) and [interpretation](../../docs/interpreting-results.md).
+including [philosophy](../../docs/philosophy.md) and [interpretation](../../docs/scan/interpreting-results.md).
 This document owns renderer design, not the sole copy of user-facing semantics.
 
 
@@ -46,7 +46,7 @@ The user places regenerated JSON, HTML, and SARIF in the same run folder. Each g
 
 The exporter rebuilds deterministic presentation from saved raw uses, supporting older schema-v1
 reports without human fields. It preserves raw assessments and blockers; it does not invent a model
-answer or reclassify a finding as confirmed. `internal/report/findings.go` is the common presentation
+answer or reclassify a finding as confirmed. `scan/internal/report/findings.go` is the common presentation
 rule layer. Driver-specific remediation comes from `guidance.go`; illustrative examples are not patches.
 The CLI rejects invalid JSON, unsupported schema versions, route-only reports, and incompatible flags.
 Saved input is capped at 64 MiB by the shared JSON export reader.
@@ -61,7 +61,7 @@ in the expanded records labeled **Finding location**. Default to descending Find
 the grouped Findings/Review/Protected counts. The grouped descending order compares those three
 counts in that priority, then path A–Z and method, leaving empty rows last. Repeated activation
 reverses the selected order. The count block is one control, not three independent sorts. Keep stable input order for ties and place unresolved entries last. Distinct HTTP methods sharing a path remain separate. Presentation version 6 uses typed HTTP/browser/GraphQL/gRPC labels and generic unknown-kind
-fallbacks from `internal/report/entries.go`. Each entry discloses registration, dispatch alternatives,
+fallbacks from `scan/internal/report/entries.go`. Each entry discloses registration, dispatch alternatives,
 callable locations and invocation bindings. Zero-use coverage gaps remain visible, including while
 hiding protected records. Only final claim-level protection is green. A use without a matching
 entry appears under an explicit unresolved entry. Presenters do not imply adapter support.
@@ -100,7 +100,7 @@ Categories overlap and do not define independent counts. Atomic multi-claim coun
 
 Presentation version 2 introduced `type_ids` to each human-readable finding and a report-level
 `finding_types` registry. The canonical definitions live in
-[`internal/report/finding_types.go`](../../internal/report/finding_types.go); [finding-type design](finding-types.md)
+[`scan/internal/report/finding_types.go`](../../scan/internal/report/finding_types.go); [finding-type design](finding-types.md)
 owns their interpretation. JSON carries definitions and references; SARIF retains definitions in
 `scan.findingTypes` and references in `scan.finding`. Existing saved schema-v1 input is reinterpreted
 from raw uses at export time with the current presentation, without upgrading raw assessment state.

@@ -64,9 +64,9 @@ Per [`.zazz/standards/index.yaml`](../standards/index.yaml):
 
 ### 1.e Existing Code References
 
-- [`cmd/scan/main.go`](../../cmd/scan/main.go) — flag parsing, exit codes `0/1/2`, indented JSON.
-- [`cmd/scan/main_test.go`](../../cmd/scan/main_test.go) — CLI tests call `run` and do not spawn a binary.
-- [`internal/walk/walk.go`](../../internal/walk/walk.go) — file selection and `node_modules` skipping. Reuse it. Do not reimplement the walk.
+- [`cmd/scan/main.go`](../../cmd/scan/main.go) — flag parsing, exit codes `0/1/2`, indented JSON (CLI implementation now in `scan/cli/`).
+- [`cmd/scan/main_test.go`](../../scan/cli/main_test.go) — CLI tests call `run` and do not spawn a binary.
+- [`internal/walk/walk.go`](../../scan/internal/walk/walk.go) — file selection and `node_modules` skipping. Reuse it. Do not reimplement the walk.
 
 ### 1.f Project Orientation
 

@@ -122,11 +122,11 @@ For the full application scan, the source of truth is the lab’s
 generated from `lib/catalog.json`. Re-pin and re-evaluate changed source before publishing new results.
 A safe control applies to the weakness named by its key. The fixture export has its own
 [lab expectations](https://github.com/zazzcode/vuln-nextjs/blob/8d26f52/docs/vulnerabilities/prototype-pollution.md)
-and [prototype pollution coverage limits](../../detection-capabilities/prototype-pollution.md).
+and [prototype pollution coverage limits](../../scan/detection-capabilities/prototype-pollution.md).
 
 Dependency auditing for `SCA-001` is outside the scored cases. The nested React2Shell App Router
 target is a separate project. Try/catch flow, child-component props and some other entry forms
-remain bounded. [Next.js support](../../nextjs-support.md)
+remain bounded. [Next.js support](../../scan/nextjs-support.md)
 
 These are static source judgments, not runtime exploit confirmation or exhaustive recall. Follow the
 [reference policy](../reference-policy.md); repair an independent copy, leaving references unchanged.

@@ -314,7 +314,7 @@ handlers with local proto3 declarations and request-field inputs. Dynamic-route 
 real VulnPy traces/findings and Juice Shop regressions. GraphQL and gRPC acceptance uses source
 fixtures; real-application evaluation remains deferred. Dynamic schema composition, subscriptions,
 generated gRPC stubs, interceptors and streaming flow remain unsupported.
-The [coverage index](detection-capabilities.md#languages-and-entry-points) lists supported entry
+The [coverage index](scan/detection-capabilities.md#languages-and-entry-points) lists supported entry
 points. The [common-entry design](../.zazz/architecture/common-entry-dispatch.md) and
 [delivery contract](../.zazz/specifications/common-entry-dispatch.md) describe the detailed boundaries.
 

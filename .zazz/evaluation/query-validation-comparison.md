@@ -82,10 +82,10 @@ The human explanations correspond to internal evidence identifiers, retained for
 | `validation_insufficient_for_sink` / `validation_type_only` | A basic restriction was observed; business adequacy and operation protection still require separate review. |
 
 This Markdown comparison is maintained by review; no code generator for this file is present.
-Detection observations originate in [query-shape analysis](../../internal/parse/query_shape.go).
-The [embedded JS/TS Analysis Guidelines](../../internal/guidelines/javascript.md) constrain model assessment;
-the [human report rules](../../internal/report/findings.go) explain raw uses without upgrading their
-security verdict, and [remediation rules](../../internal/report/guidance.go) provide reviewable actions.
+Detection observations originate in [query-shape analysis](../../scan/internal/langjs/query_shape.go).
+The [embedded JS/TS Analysis Guidelines](../../scan/internal/guidelines/javascript.md) constrain model assessment;
+the [human report rules](../../scan/internal/report/findings.go) explain raw uses without upgrading their
+security verdict, and [remediation rules](../../scan/internal/report/guidance.go) provide reviewable actions.
 JSON, HTML, and SARIF share that interpretation; the HTML contains only scan results, without tool comparisons.
 
 Follow [README commands and interpretation](../../README.md#interpret-results) to regenerate a JSON

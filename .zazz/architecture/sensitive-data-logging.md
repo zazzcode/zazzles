@@ -1,12 +1,12 @@
 # Sensitive-data logging design
 
-Product [analysis rules](../../docs/analysis/sensitive-data-logging.md) own interpretation. This
+Product [analysis rules](../../docs/scan/analysis/sensitive-data-logging.md) own interpretation. This
 internal document owns data flow and boundaries. The contract is
 [sensitive-data logging](../specifications/sensitive-data-logging.md).
 
 ## Data flow
 
-Logging sinks reuse the route-handler flow in `internal/parse/flow.go`. `flow.call` asks
+Logging sinks reuse the route-handler flow in `scan/internal/parse/flow.go`. `flow.call` asks
 `logSink` (in `log_sinks.go`) whether the callee is a verified logger method before considering
 query or HTTP kinds. Verification is binding-based, never name-based:
 
@@ -52,7 +52,7 @@ outer call's may-dependency. This is shared engine behavior, so it also changes 
 log_exposure) with strict choices. `applyLogPolicy` requires a `logger_binding` context item and a
 request source, then accepts vulnerable only with a sensitive class, content yes and redaction no or
 not applicable, and never against non-content-only scanner facts. The embedded JavaScript/TypeScript Analysis Guidelines
-(`internal/guidelines/javascript.md`, v5) carry the logging guidance supplied with each request.
+(`scan/internal/guidelines/javascript.md`, v5) carry the logging guidance supplied with each request.
 The generic query protocol is now `candidate-use-v9`; logging questions retain `log-use-v1`.
 
 ## Reporting

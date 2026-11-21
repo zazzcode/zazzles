@@ -122,6 +122,10 @@ These forms can pollute `Object.prototype` and have no record:
 - **Slot local replaced on a branch.** `let slot = target[key]; if (!slot) slot = {};` followed
   by a recursion on `slot`. Any other write to the local ends the alias, although an inherited
   slot would skip that branch.
+- **Path normalised before the walk.** The only write a path parameter may receive is its own
+  split, `path = path.split('.')`. A path converted another way has no record: a string
+  conversion before the split, a conditional that yields the array or its split, or a helper
+  such as `toPath(path)`.
 - **Path walk into a local or module-level object.** A walk whose path is a parameter must start
   from another parameter. A start that is not a parameter is read only for the unflatten shape.
 - **More than one helper.** A merge reached through more than one forwarding helper, or a loop

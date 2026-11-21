@@ -104,6 +104,7 @@ not reported as safe. The table lists the forms known to be missed or left in Re
 | Keys taken from a query string or another input whose shape is not typed | Review (`key_control_unknown`) |
 | Nested write after the slot is replaced on a branch that does not test for its absence | No record. The slot's identity then needs heap-flow evidence |
 | Recursive merge through a local that a branch replaces: `if (!slot) slot = {}` then `merge(slot, value)` | No record. This can be a missed write |
+| Path normalised before the walk by anything but its own split: `String(path).split('.')`, a conditional, or a helper such as `toPath(path)` | No record. `path = path.split('.')` in place is read |
 | Path walk from a path parameter into a local or module-level object, as in `setPath(path, value)` writing to a module store | No record. Only the unflatten shape accepts a start that is not a parameter |
 | A merge reached through more than one forwarding helper, a walk split across functions, or a write through `Object.defineProperty` | No record |
 | A walk whose step and write are one chained assignment, `t = t[k] = …` | No record |

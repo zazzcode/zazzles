@@ -156,6 +156,7 @@ Out of scope:
 - **D-9. Decisions taken during implementation.** Each is open to owner review.
   - **A path parameter may be split in place.** `path = path.split('.')` keeps the caller's
     content, so the array-path shape still matches. Any other write to the parameter ends it.
+    Accepted by the owner on 2026-11-21 (section 11.1).
   - **A non-parameter start is read only for unflatten.** `p6` builds its result in a local
     object. A walk from a path parameter still needs a parameter target, as in stage 1.
   - **A local function or class shadows a built-in.** AC4 needs it for `Reflect` and `Object`.
@@ -299,6 +300,15 @@ contract.
   Recommendation: keep it; the parent contract links here.
 - **OQ-4. A larger measurement corpus.** Should the *Silent Spring* dataset be pinned for stage 2?
   It needs clone approval for 100 repositories and belongs to phase 7's rules.
+
+## 11.1 Owner review and future exploration
+
+The owner reviews D-9 to D-11 one choice at a time. Each accepted choice is listed with the
+limit it leaves, so the limit is known and can be taken up as a later capability.
+
+| Choice | Owner decision | Limit accepted | To explore later |
+|---|---|---|---|
+| D-9, split in place | Accepted 2026-11-21 | Only `path = path.split(…)` keeps the match. A path normalised any other way has no record: `path = String(path).split('.')`, `path = toPath(path)`, a ternary such as `Array.isArray(path) ? path : path.split('.')`, or a helper result held in a new local. Checked with the scanner at `6006eaa` | Read a path normaliser: a string conversion before the split, a conditional that yields the path or its split, and a one-line helper that returns one of those. Each keeps the caller's content, so the walk stays a candidate |
 
 ## 12. Run log protocol
 

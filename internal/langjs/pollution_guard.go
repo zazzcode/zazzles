@@ -364,6 +364,9 @@ func pollutionKeyPredicate(m *sourceModule, n *sitter.Node, key, target string, 
 		}
 	}
 	if n.Kind() == "call_expression" {
+		if blocked, ok := pollutionMembershipGuard(m, n, key, passes, stringKey); ok {
+			return blocked, false, true
+		}
 		if own, ok := pollutionOwnMethod(m, n, key, target); ok && (passes || !own) {
 			return nil, own, true
 		}

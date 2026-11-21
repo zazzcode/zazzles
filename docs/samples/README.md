@@ -16,12 +16,11 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
 | [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
-| [vuln-nextjs (Pages Router lab)](vuln-nextjs/README.md) | [findings.html](vuln-nextjs/findings.html) | [findings.json](vuln-nextjs/findings.json) | [findings.sarif](vuln-nextjs/findings.sarif) |
-| [vuln-nextjs prototype pollution fixtures](vuln-nextjs-prototype-pollution/README.md) | [findings.html](vuln-nextjs-prototype-pollution/findings.html) | [findings.json](vuln-nextjs-prototype-pollution/findings.json) | [findings.sarif](vuln-nextjs-prototype-pollution/findings.sarif) |
+| [vuln-nextjs JavaScript and TypeScript lab](vuln-nextjs/README.md) | [Full app](vuln-nextjs/findings.html) · [Prototype pollution fixtures](vuln-nextjs/reports/prototype-pollution/findings.html) | [Full app](vuln-nextjs/findings.json) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.json) | [Full app](vuln-nextjs/findings.sarif) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.sarif) |
 | [DVWA (PHP)](dvwa/README.md) | [findings.html](dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
 
-Each sample’s notes identify its target revision, scanner revision, assessment scope and
-observed outcomes. Use those notes when comparing a report with its
+Each sample represents one application. An application’s notes list its published scans with
+the target revision, scanner revision, assessment scope and observed outcomes. Use those notes when comparing a report with its
 [source-reviewed expectations](../../.zazz/project/vulnerable-sample-apps.md).
 The [reference policy](reference-policy.md) explains how the project evaluates keyed cases and
 keeps source baselines reproducible. Dated cross-sample measures live in the
@@ -67,7 +66,9 @@ go build -o bin/scan ./cmd/scan
 python3 docs/samples/refresh.py --scan ./bin/scan
 ```
 
-Use `--sample ThreatByte` (repeatable) to refresh only selected reports. This updates presentation only, offline. To publish improved analysis, run a fresh target scan into
+Use `--sample ThreatByte` (repeatable) to refresh selected applications. Selecting an application
+refreshes its main report and any scoped reports under `reports/<scope>/`. Add new scoped reports
+to the same application directory with their own metadata and a link from the app’s README. This updates presentation only, offline. To publish improved analysis, run a fresh target scan into
 your external findings directory (`<DEV_ROOT>/zazzcode/zazzles/_test-findings/`), replace the corresponding sample `findings.json` with that
 run's canonical JSON, update its README's target revision/date/assessment coverage, then run the
 refresh command. The script normalizes the public root label and exports matching HTML/SARIF.

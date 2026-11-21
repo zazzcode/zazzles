@@ -105,8 +105,8 @@ and one practice finding. The earlier 2026-11-16 report used 42 paid assessments
 replay for each request.
 
 The lab's prototype pollution fixtures are text files outside the application routes, so the
-report above has no pollution record. They are published as their own
-[sample](../../docs/samples/vuln-nextjs-prototype-pollution/README.md) at `8d26f52`: 19 judged
+report above has no pollution record. They appear in the same sample as a scoped
+[fixture report](../../docs/samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan) at `8d26f52`: 19 judged
 records, 14 Confirmed, 2 Protected and 3 Review, with no false positive against the lab's labels.
 
 Local checkout `<DEV_ROOT>/zazzcode/vuln-nextjs`, maintained by the project owner; new scenarios are

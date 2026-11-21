@@ -89,7 +89,7 @@ After this contract each probe yields one candidate. [Results](../evaluation/pol
 | `internal/langjs/pollution_gate.go` | New | Path tests that depend on a call taking the key operand (D-10) |
 | `internal/langjs/modules.go` | Modified | ESM default exports in the module index (D-10) |
 | `internal/langjs/pollution_walk_forms.go` | New | The `forEach` walk and the recursive walk (D-11) |
-| `docs/samples/nodejs-goof/`, `vulnerable-typescript-app/`, `vuln-nextjs-prototype-pollution/` | Modified, new | The reports of the AC8 live check |
+| `docs/samples/nodejs-goof/`, `vulnerable-typescript-app/`, `vuln-nextjs/reports/prototype-pollution/` | Modified, new | The reports of the AC8 live check |
 | `.zazz/evaluation/recall-gap-inventory/cases.json` | Modified | Key row `JS-PP-R01`, expectation `review` |
 | `docs/detection-capabilities.md` | Modified | The family row and the known gaps, at the owner's request |
 | `internal/langjs/pollution.go` | Modified | Branch evidence, local walk roots, the `source_keys` operand, local declarations that shadow a built-in, and the result-consumer gap |
@@ -413,7 +413,7 @@ known gaps.
 
 On the owner's word, one judged scan of the lab's combined pollution project: 19 requests, 14
 Confirmed, 2 Protected, 3 Review, no false positive and no false Protected against the lab's
-labels. Published as the `vuln-nextjs-prototype-pollution` sample.
+labels. Published as a [fixture report in the vuln-nextjs sample](../../docs/samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan).
 
 ### 2026-11-20 — Checked against published advisory libraries
 

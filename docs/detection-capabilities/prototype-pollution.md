@@ -111,7 +111,7 @@ One assumption can keep a record that should be dropped:
 
 - Fixtures in the scanner's tests hold a vulnerable, guarded and bypass-sibling function plus
   controls for each form in the first section.
-- The [vuln-nextjs prototype pollution sample](../samples/vuln-nextjs-prototype-pollution/README.md)
+- The [vuln-nextjs prototype pollution fixture report](../samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan)
   judges 19 records against labels confirmed by running each fixture: 14 of 15 exploitable
   sources Confirmed, no false positive and no false Protected.
 - [Node.js Goof](../samples/nodejs-goof/README.md) and the

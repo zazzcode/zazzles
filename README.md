@@ -80,12 +80,12 @@ revision and the scanner’s assessment scope. [Hosted reports](https://zazzcode
 
 ### Paid scans of the vuln-nextjs lab
 
-Both reports used OpenAI `gpt-6-luna` and were scored against the lab’s expected cases.
+The [JavaScript and TypeScript lab sample](docs/samples/vuln-nextjs/README.md) includes both reports. They used OpenAI `gpt-6-luna` and were scored against the lab’s expected cases.
 
 | Saved report | Run date and lab pin | Paid requests | Expected positives | Detected |
 |---|---|---:|---|---|
-| [Full Pages Router app](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Sample notes](docs/samples/vuln-nextjs/README.md) | 2026-11-19 · `ea10efb` | 27 | 13 in scope | 13 found (12 Confirmed and 1 practice finding) |
-| [Prototype pollution fixtures](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs-prototype-pollution/findings.html) · [Sample notes](docs/samples/vuln-nextjs-prototype-pollution/README.md) | 2026-11-21 · `8d26f52` | 19 | 17 in the key, 15 in scope | 14 Confirmed, 1 Review, 2 dependency cases with no record |
+| [Full Pages Router app](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Full scan results](docs/samples/vuln-nextjs/README.md#full-application-scan) | 2026-11-19 · `ea10efb` | 27 | 13 in scope | 13 found (12 Confirmed and 1 practice finding) |
+| [Prototype pollution fixtures](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/reports/prototype-pollution/findings.html) · [Fixture results](docs/samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan) | 2026-11-21 · `8d26f52` | 19 | 17 in the key, 15 in scope | 14 Confirmed, 1 Review, 2 dependency cases with no record |
 
 Both runs had zero findings on the keyed safe controls. The walk-start branch was verified
 separately with an [offline rescan](.zazz/evaluation/pollution-walk-start-results.md#six-sample-noise-check).

@@ -322,3 +322,7 @@ pollution page as the pattern. The coverage index separates reported weaknesses,
 selectors and versioned OWASP risk references. User guides and sample notes own setup,
 interpretation and historical evidence. Acceptance is a coverage inventory, validated links
 and anchors, and a documented offline scan smoke check.
+
+The owner clarified that each application has one sample. The vuln-nextjs application page
+now links its full scan and scoped fixture reports. The sample index and offline refresh
+workflow follow that organization.

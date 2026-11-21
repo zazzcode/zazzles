@@ -228,8 +228,10 @@ func TestPollutionShapeVariants(t *testing.T) {
 			call: "const key = req.body.key; const fixData = readFixes(key); if (fixData.fixes.length === 0) { res.status(404).end(); } else { storeVerdict(key, 'fix it', false); }", operation: analysis.PollutionNested, operand: "computed_keys", guard: "unknown", protection: "unknown"},
 		{name: "gated write: an allow-list call on the key", helper: "const solves = {};\nfunction storeVerdict(key, phase, verdict) {\nif (!solves[key]) {\nsolves[key] = { done: false };\n}\nif (!solves[key][phase]) {\nsolves[key][phase] = verdict;\n}\n}\nconst allowed = ['a', 'b'];",
 			call: "if (!allowed.includes(req.body.key)) { res.status(400).end(); return; } storeVerdict(req.body.key, 'find it', false)", operation: analysis.PollutionNested, operand: "computed_keys", guard: "unknown", protection: "unknown"},
-		{name: "gated write: an unknown validator inside the helper", helper: "const solves = {};\nfunction valid(key) { return typeof key === 'string'; }\nfunction storeVerdict(key, phase, verdict) {\nif (!valid(key)) return;\nsolves[key] = solves[key] || {};\nsolves[key][phase] = verdict;\n}",
+		{name: "gated write: an unknown validator inside the helper", helper: "const solves = {};\nfunction valid(key) { return registry.accepts(key) && check(key); }\nfunction storeVerdict(key, phase, verdict) {\nif (!valid(key)) return;\nsolves[key] = solves[key] || {};\nsolves[key][phase] = verdict;\n}",
 			call: "storeVerdict(req.body.key, 'find it', false)", operation: analysis.PollutionNested, operand: "computed_keys", guard: "unknown", protection: "unknown"},
+		{name: "ungated write: a one-line type validator blocks no name", helper: "const solves = {};\nfunction valid(key) { return typeof key === 'string'; }\nfunction storeVerdict(key, phase, verdict) {\nif (!valid(key)) return;\nsolves[key] = solves[key] || {};\nsolves[key][phase] = verdict;\n}",
+			call: "storeVerdict(req.body.key, 'find it', false)", operation: analysis.PollutionNested, operand: "computed_keys", protection: "raw"},
 		{name: "ungated write: an existence test on a plain object lets an inherited key through", helper: "const solves = {};\nfunction storeVerdict(key, phase, verdict) {\nif (!solves[key]) {\nsolves[key] = { done: false };\n}\nif (!solves[key][phase]) {\nsolves[key][phase] = verdict;\n}\n}\n",
 			call: "const key = req.body.key; if (!solves[key]) { res.status(404).end(); return; } storeVerdict(key, 'find it', false)", operation: analysis.PollutionNested, operand: "computed_keys", protection: "raw"},
 		{name: "ungated write: a presence test on the key itself", helper: "const solves = {};\nfunction storeVerdict(key, phase, verdict) {\nif (!solves[key]) {\nsolves[key] = { done: false };\n}\nif (!solves[key][phase]) {\nsolves[key][phase] = verdict;\n}\n}\n",
@@ -423,6 +425,58 @@ func TestPollutionTypeScriptShapes(t *testing.T) {
 				t.Fatalf("pollution candidates = %d, want 1", len(uses))
 			}
 			if p := uses[0].Pollution; p.Operation != tt.operation || p.KeyOperand != tt.operand {
+				t.Fatalf("unexpected facts: %+v", p)
+			}
+		})
+	}
+}
+
+// TestPollutionLibraryShapes holds forms found by scanning real advisory
+// libraries: a forEach walk, a walk that recurses on the next object, and key
+// tests written as one-line helpers. Each fixture is written for this test in
+// the shape of the library code, not copied from it.
+func TestPollutionLibraryShapes(t *testing.T) {
+	walk := "function setKey(obj, keys, value) {\nvar o = obj;\nkeys.slice(0, -1).forEach(function (key) {\n%s\nif (o[key] === undefined) o[key] = {};\no = o[key];\n});\nvar last = keys[keys.length - 1];\no[last] = value;\n}"
+	recursive := "function setIn(object, path, value, index) {\nif (index === path.length) return value;\nvar key = path[index];\n%s\nobject[key] = setIn(object[key], path, value, index + 1);\nreturn object;\n}"
+	sliced := "function setPath(obj, path, value) {\nvar current = path[0];\n%s\nif (path.length === 1) { obj[current] = value; return obj; }\nif (obj[current] === undefined) obj[current] = {};\nreturn setPath(obj[current], path.slice(1), value);\n}"
+	merge := "function hasOwn(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }\nfunction isValidKey(key) { return key !== '__proto__' && key !== 'constructor' && key !== 'prototype'; }\nfunction merge(target, obj) {\nfor (var key in obj) {\nif (%s) continue;\nvar oldVal = obj[key];\nvar newVal = target[key];\nif (newVal && typeof newVal === 'object' && oldVal && typeof oldVal === 'object') target[key] = merge(newVal, oldVal);\nelse target[key] = oldVal;\n}\nreturn target;\n}"
+	for _, tt := range []struct{ name, helper, call, operation, guard, protection string }{
+		{"forEach walk over the parts", fmt.Sprintf(walk, ""), "setKey({}, req.body.keys, req.body.value)", analysis.PollutionWalk, "", "raw"},
+		{"forEach walk with a type test and a deny-list", fmt.Sprintf(walk, "if (typeof key !== 'string' || key === '__proto__' || key === 'constructor' || key === 'prototype') return;"),
+			"setKey({}, req.body.keys, req.body.value)", analysis.PollutionWalk, "deny_list", "guarded"},
+		{"forEach walk that only reads", "function getKey(obj, keys) {\nvar o = obj;\nkeys.forEach(function (key) { o = o[key]; });\nreturn o;\n}", "res.json(getKey({}, req.body.keys))", "", "", ""},
+		{"walk that recurses with the next index", fmt.Sprintf(recursive, ""), "setIn({}, req.body.path, req.body.value, 0)", analysis.PollutionWalk, "", "raw"},
+		{"recursive walk behind an assertion on the key", fmt.Sprintf(recursive, "assert.ok(!['__proto__', 'constructor', 'prototype'].includes(key), 'unsafe key');"),
+			"setIn({}, req.body.path, req.body.value, 0)", analysis.PollutionWalk, "unknown", "unknown"},
+		{"walk that recurses with the rest of the path", fmt.Sprintf(sliced, ""), "setPath({}, req.body.path, req.body.value)", analysis.PollutionWalk, "", "raw"},
+		{"recursive walk with a type test and a deny-list", fmt.Sprintf(sliced, "if (typeof current !== 'string' || current === '__proto__' || current === 'constructor' || current === 'prototype') return obj;"),
+			"setPath({}, req.body.path, req.body.value)", analysis.PollutionWalk, "deny_list", "guarded"},
+		{"recursion that does not write", "function getIn(object, path, index) {\nif (index === path.length) return object;\nreturn getIn(object[path[index]], path, index + 1);\n}", "res.json(getIn({}, req.body.path, 0))", "", "", ""},
+		{"own-property helper on the source and a __proto__ test", fmt.Sprintf(merge, "key === '__proto__' || !hasOwn(obj, key)"), "merge({}, req.body.settings)", analysis.PollutionMerge, "deny_list", "raw"},
+		{"deny-list written as a helper", fmt.Sprintf(merge, "!isValidKey(key) || !hasOwn(obj, key)"), "merge({}, req.body.settings)", analysis.PollutionMerge, "deny_list", "guarded"},
+		{"own-property method on the source", fmt.Sprintf(merge, "!obj.hasOwnProperty(key)"), "merge({}, req.body.settings)", analysis.PollutionMerge, "", "raw"},
+		{"own-property helper on the target", fmt.Sprintf(merge, "!hasOwn(target, key)"), "merge({}, req.body.settings)", analysis.PollutionMerge, "own_property", "guarded"},
+		{"helper that is not a plain test of the key", "function allowed(key) { return lookup(key); }\n" + fmt.Sprintf(merge, "!allowed(key)"), "merge({}, req.body.settings)", analysis.PollutionMerge, "unknown", "unknown"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "server.js", "const express = require('express');\nconst assert = require('assert');\nconst app = express();\napp.use(express.json());\n"+tt.helper+
+				"\napp.post('/write', (req, res) => { "+tt.call+"; res.end(); });\n")
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			uses := usesOf(report, analysis.PollutionKind, "server.js")
+			if tt.operation == "" {
+				if len(uses) != 0 {
+					t.Fatalf("unexpected record: %+v", uses[0].Pollution)
+				}
+				return
+			}
+			if len(uses) != 1 {
+				t.Fatalf("pollution candidates = %d, want 1", len(uses))
+			}
+			if p := uses[0].Pollution; p.Operation != tt.operation || p.Guard != tt.guard || len(p.Paths) != 1 || p.Paths[0].Protection != tt.protection {
 				t.Fatalf("unexpected facts: %+v", p)
 			}
 		})

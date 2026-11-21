@@ -211,6 +211,9 @@ func (s *moduleSet) sourcePollutionWrites(m *sourceModule, callee *sitter.Node) 
 			collect(w)
 		}
 	})
+	for _, w := range s.pollutionRecursiveWalk(m, callee, params) {
+		collect(w)
+	}
 	s.pollutionWrites[callee.Id()] = writes
 	return writes
 }
@@ -222,7 +225,7 @@ func pollutionPathWalks(m *sourceModule, scope, n *sitter.Node, params []boundPa
 	case "for_statement", "for_in_statement", "while_statement":
 		return pollutionPathLoop(m, scope, n, params, keys)
 	case "call_expression":
-		return pollutionReduceWalk(m, scope, n, params, keys)
+		return append(pollutionReduceWalk(m, scope, n, params, keys), pollutionForEachWalk(m, scope, n, params, keys)...)
 	}
 	return nil
 }

@@ -363,7 +363,86 @@ func pollutionKeyPredicate(m *sourceModule, n *sitter.Node, key, target string, 
 			}
 		}
 	}
+	if n.Kind() == "call_expression" {
+		if own, ok := pollutionOwnMethod(m, n, key, target); ok && (passes || !own) {
+			return nil, own, true
+		}
+		return pollutionHelperPredicate(m, n, key, target, passes, stringKey)
+	}
 	return nil, false, false
+}
+
+// pollutionOwnMethod reads `object.hasOwnProperty(key)`. On the target it is an
+// own-property test. On any other object it says nothing about the lookup.
+func pollutionOwnMethod(m *sourceModule, n *sitter.Node, key, target string) (own, ok bool) {
+	fn, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments")
+	if fn == nil || fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() != 1 || args.NamedChild(0).Utf8Text(m.src) != key {
+		return false, false
+	}
+	if p := fn.ChildByFieldName("property"); p == nil || p.Utf8Text(m.src) != "hasOwnProperty" {
+		return false, false
+	}
+	object := pollutionIdentifier(fn.ChildByFieldName("object"), m.src)
+	return object == target, object != ""
+}
+
+// pollutionHelperPredicate reads a key test written as a one-line function of
+// this module, such as `function isValidKey(key) { return key !== '__proto__' }`
+// or a wrapper around hasOwnProperty. The helper's single returned expression is
+// read with the call's arguments in place of its parameters. A helper that
+// calls another function is not read.
+func pollutionHelperPredicate(m *sourceModule, call *sitter.Node, key, target string, passes, stringKey bool) ([]string, bool, bool) {
+	fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
+	if fn == nil || fn.Kind() != "identifier" || args == nil {
+		return nil, false, false
+	}
+	name := fn.Utf8Text(m.src)
+	helper := m.funcs[name]
+	if helper == nil || m.cachedShadowed(call, name) || pollutionBindingWritten(m, fn) {
+		return nil, false, false
+	}
+	params, ok := functionParameters(helper, m.src)
+	test := helper.ChildByFieldName("body")
+	if test != nil && test.Kind() == "statement_block" {
+		if test.NamedChildCount() != 1 || test.NamedChild(0).Kind() != "return_statement" || test.NamedChild(0).NamedChildCount() != 1 {
+			return nil, false, false
+		}
+		test = test.NamedChild(0).NamedChild(0)
+	}
+	if !ok || test == nil || pollutionCallsFunction(test, m.src) {
+		return nil, false, false
+	}
+	// No parameter can be named like this, so an absent target never matches.
+	keyParam, targetParam := "", "\x00"
+	for i, p := range params {
+		switch compactPollutionText(pollutionUnwrap(pollutionArg(args, i)), m.src) {
+		case key:
+			keyParam = p.name
+		case target:
+			targetParam = p.name
+		}
+	}
+	if keyParam == "" {
+		return nil, false, false
+	}
+	return pollutionKeyPredicate(m, test, keyParam, targetParam, passes, stringKey)
+}
+
+// pollutionCallsFunction reports a call to a plain identifier, which could be
+// another helper. Member calls such as Object.prototype.hasOwnProperty.call
+// are read by the predicate code itself.
+func pollutionCallsFunction(n *sitter.Node, src []byte) bool {
+	if n.Kind() == "call_expression" {
+		if fn := n.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" {
+			return true
+		}
+	}
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		if pollutionCallsFunction(n.NamedChild(i), src) {
+			return true
+		}
+	}
+	return false
 }
 
 func pollutionKeyBinary(m *sourceModule, n *sitter.Node, key, target string, passes, stringKey bool) ([]string, bool, bool) {

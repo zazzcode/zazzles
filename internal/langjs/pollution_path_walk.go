@@ -158,18 +158,7 @@ func pollutionReduceWalk(m *sourceModule, scope, call *sitter.Node, params []bou
 	if !ok || len(steps) < 2 || walked == nil {
 		return nil
 	}
-	if walked.Kind() == "call_expression" {
-		// parts.slice(0, -1) leaves the last part for the final write.
-		slice, sliceArgs := walked.ChildByFieldName("function"), walked.ChildByFieldName("arguments")
-		if slice == nil || slice.Kind() != "member_expression" || compactPollutionText(sliceArgs, m.src) != "(0,-1)" {
-			return nil
-		}
-		if p := slice.ChildByFieldName("property"); p == nil || p.Utf8Text(m.src) != "slice" {
-			return nil
-		}
-		walked = unwrapTS(slice.ChildByFieldName("object"))
-	}
-	parts, cursor, part := pollutionIdentifier(walked, m.src), steps[0].name, steps[1].name
+	parts, cursor, part := pollutionSlicedParts(m, walked), steps[0].name, steps[1].name
 	if parts == "" {
 		return nil
 	}

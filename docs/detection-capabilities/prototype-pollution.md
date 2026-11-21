@@ -49,7 +49,7 @@ Guards the scanner reads and credits:
 | `PP-R01` | A test that depends on a call taking the key | `if (!known.has(key)) return`, or `const row = find(key); if (row == null) return` | `key_guard_coverage_unknown`. The scanner does not read what the call accepts |
 | `PP-R02` | A key test in a helper that calls another function, or an assertion on the key before a recursive walk | `assert.ok(!BAD.includes(key))` | `key_guard_coverage_unknown` |
 | `PP-R03` | A comparison on the parts of a caller's array with no type test | `if (part === '__proto__') return; cursor = cursor[part]` | `key_guard_coverage_unknown`. A nested array such as `['__proto__']` passes the comparison. The code is exploitable and is not Confirmed |
-| `PP-R04` | Array parts made safe another way | `const part = String(path[i])`, or `path.every(p => typeof p === 'string')` | `key_guard_coverage_unknown`. Only the `typeof` test on the part is credited |
+| `PP-R04` | Array parts type-checked another way | `path.every(p => typeof p === 'string')`, or `if (typeof part === 'string') { … } else return` | `key_guard_coverage_unknown`. Only an exit on `typeof part !== 'string'` is credited |
 | `PP-R05` | A whole-path guard other than `includes` or `indexOf` | A regular-expression test, `parts.some(…)`, a deny array, a test on `path.toLowerCase()` | The record is raw without that control. An assessment that relies on it is a contradiction |
 | `PP-R06` | Another call with no definition in the scan receives the same input | `console.log(req.body)` before the write, or an unknown call after it | `input_helper_unresolved`, although neither can stop the write |
 | `PP-R07` | Keys from an input whose shape is not typed | `store[req.query.a][req.query.b] = v` | `key_control_unknown` |
@@ -72,6 +72,7 @@ Writes in application code that can pollute and have no record:
 | `PP-N08` | A write through `Object.defineProperty` | `Object.defineProperty(target, key, descriptor)` |
 | `PP-N09` | A walk whose step and write are one chained assignment | `t = t[k] = (i === l) ? val : …` |
 | `PP-N10` | A dynamic-key write that matches none of the forms above | |
+| `PP-N11` | An array-path walk whose part is converted before use | `const part = String(path[i])` or `'' + path[i]`, then `cursor = cursor[part]`. With a deny-list this is safe. Without one it is exploitable, and neither has a record |
 
 Libraries and dependencies:
 

@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-20",
+  "target_revision": "8d26f52a4b3179bd75d559bbe6eac0ff8ad311dc",
+  "upstream": "https://github.com/zazzcode/vuln-nextjs",
+  "target_export": "node scripts/export-prototype-pollution-fixtures.mjs --combined",
+  "source_run": "run-916237196",
+  "source_json_sha256": "a6ce20d2287b68887f4de1e6cee64075d3e2de927f1004667b0d703620e10aea",
+  "scanner_revision": "prototype-polution-analyzer d68fec6",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "provider_requests": 19,
+  "assessment_requests": 19,
+  "completed_assessments": 19,
+  "input_tokens": 48693,
+  "entries": 24,
+  "published_records": 63,
+  "outcomes": {
+    "confirmed_vulnerability": 14,
+    "protected_for_claim": 2,
+    "needs_evidence": 3
+  },
+  "not_run": 44,
+  "failed": 0,
+  "ground_truth": {
+    "exploitable_with_record": 15,
+    "confirmed": 14,
+    "review": 1,
+    "exploitable_without_record_known_gap": 2,
+    "safe_with_record": 4,
+    "protected": 2,
+    "safe_in_review": 2,
+    "false_positives": 0,
+    "false_protected": 0
+  },
+  "exact_replay": "not checked; request traces were not saved",
+  "runtime_confirmation": "none in this report; the lab confirms each fixture label by running it in Node",
+  "target_status_before_and_after": "clean (lab HEAD at pin; fixtures exported to a folder outside every checkout)",
+  "results": "../../../.zazz/evaluation/pollution-write-shapes-results.md"
+}

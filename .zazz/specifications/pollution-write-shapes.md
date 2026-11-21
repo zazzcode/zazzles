@@ -352,3 +352,9 @@ around the key enumerator, and a cast on the last path part. All three are read 
 by `TestPollutionTypeScriptShapes`. The lab gained 21 fixtures, including Lodash `set`,
 `defaultsDeep` and `zipObjectDeep` by version and two non-Lodash advisory libraries recorded as
 known gaps.
+
+### 2026-11-20 — Live judgment of the vuln-nextjs fixtures
+
+On the owner's word, one judged scan of the lab's combined pollution project: 19 requests, 14
+Confirmed, 2 Protected, 3 Review, no false positive and no false Protected against the lab's
+labels. Published as the `vuln-nextjs-prototype-pollution` sample.

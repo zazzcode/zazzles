@@ -17,7 +17,12 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
 | [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
 | [vuln-nextjs (Pages Router lab)](vuln-nextjs/README.md) | [findings.html](vuln-nextjs/findings.html) | [findings.json](vuln-nextjs/findings.json) | [findings.sarif](vuln-nextjs/findings.sarif) |
+| [vuln-nextjs prototype pollution fixtures](vuln-nextjs-prototype-pollution/README.md) | [findings.html](vuln-nextjs-prototype-pollution/findings.html) | [findings.json](vuln-nextjs-prototype-pollution/findings.json) | [findings.sarif](vuln-nextjs-prototype-pollution/findings.sarif) |
 | [DVWA (PHP)](dvwa/README.md) | [findings.html](dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
+
+The prototype pollution sample was added on 2026-11-20: one judged scan of the vuln-nextjs lab's
+CWE-1321 fixtures, 19 requests, 14 Confirmed, 2 Protected and 3 Review, with no false positive
+against the lab's ground truth. Its README lists every source with its outcome.
 
 The preceding 2026-11-19 evaluation rescanned every sample with model-assisted evidence resolution
 ([results](../../.zazz/evaluation/model-resolution-results.md)), with zero provider failures.

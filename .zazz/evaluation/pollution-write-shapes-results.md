@@ -187,6 +187,30 @@ The lab now holds 25 pollution fixtures in seven projects. Its ten offline scann
 with the final scanner, and each fixture's label was confirmed by running it in Node with its
 payload. [Lab guide](https://github.com/zazzcode/vuln-nextjs/blob/main/docs/vulnerabilities/prototype-pollution.md).
 
+## Live judgment of the lab fixtures
+
+The owner asked for a paid run on vuln-nextjs. The lab's combined export at `8d26f52` was
+scanned once with `--judge openai --judge-model gpt-6-luna` and the default limit, scanner
+`d68fec6`: 19 requests planned for the 19 pollution records and 19 sent, 48,693 input tokens, no
+failure. The 44 other records are observations that are not sent.
+
+| Ground truth | Records | Confirmed | Protected | Review |
+|---|---|---|---|---|
+| Exploitable | 15 | 14 | 0 | 1 |
+| Safe | 4 | 0 | 2 | 2 |
+
+No false positive and no false Protected. The exploitable source in Review is the array path
+compared without a type test, which the scanner leaves unread by design. One safe source,
+`pages/api/guarded.ts`, is in Review because the model answered that coverage was incomplete at
+0.49 confidence against the recorded guard. Two exploitable sources, the `dset` and `merge-deep`
+calls, have no record: the documented dependency gap. Request traces were not saved, so exact
+replay was not checked. The lab's application scan was not repeated, because its offline report
+is byte-identical before and after this work.
+[Published sample](../../docs/samples/vuln-nextjs-prototype-pollution/README.md).
+
+AC8 of the parent contract, the live judgment of Node.js Goof and the Vulnerable TypeScript app,
+is still open.
+
 ## Isolation and gate
 
 - The architecture baseline keeps all 48 earlier rows unchanged, including the two stage 1

@@ -104,6 +104,11 @@ assessments replay exactly, 10 Confirmed, 33 Review, 7 Protected (all implemente
 standalone input validation). The previous scoped acceptance results below remain valid; the only
 lab change since `022a863` is documentation.
 
+The lab's prototype pollution fixtures are text files outside the application routes, so the
+report above has no pollution record. They are published as their own
+[sample](../../docs/samples/vuln-nextjs-prototype-pollution/README.md) at `8d26f52`: 19 judged
+records, 14 Confirmed, 2 Protected and 3 Review, with no false positive against the lab's labels.
+
 Local checkout `<DEV_ROOT>/zazzcode/vuln-nextjs`, maintained by the project owner; new scenarios are
 added over time. The ground truth is the lab's generated `tests/expected-scanner-findings.json`
 (one row per source file, with `controlFor` safe controls), which `TestNextJSVulnLab`

@@ -67,7 +67,7 @@ Writes in application code that can pollute and have no record:
 | `PP-N03` | A path normalised by anything but its own split | `String(path).split('.')`, `toPath(path)`, `Array.isArray(path) ? path : path.split('.')` |
 | `PP-N04` | A path decoded at the point of use or into a new variable, after a check on the undecoded path | `decodeURIComponent(path).split('.')` |
 | `PP-N05` | A merge whose slot local is replaced on a branch | `let slot = target[key]; if (!slot) slot = {}; merge(slot, value)` |
-| `PP-N06` | A nested write after the slot is replaced on a branch that does not test for its absence | `if (reset) store[k] = {}; store[k][name] = v` |
+| `PP-N06` | A nested write after the slot is filled or replaced in a form the scanner does not read | `store[k] = store[k] ? store[k] : {}`; `if (!store[k]) { store[k] = {}; count++; }`; `if (!store[k] \|\| reset) store[k] = {}`; `if (typeof store[k] !== 'object') store[k] = {}`; an `if (!store[k])` with an `else`; `if (reset) store[k] = {}`. An inherited slot survives each of the first five |
 | `PP-N07` | A merge reached through more than one forwarding helper, or a loop walk split across functions | |
 | `PP-N08` | A write through `Object.defineProperty` | `Object.defineProperty(target, key, descriptor)` |
 | `PP-N09` | A walk whose step and write are one chained assignment | `t = t[k] = (i === l) ? val : …` |

@@ -1,10 +1,27 @@
 # Zazzles
 
-Zazzles scans JavaScript, TypeScript, Python and PHP application source for security
-vulnerabilities and practices worth fixing. Each reported claim links to the operation, the
-input paths and controls the scanner found, and any evidence still needed.
+Zazzles is a modular security project for analyzing application code, checking deployed
+endpoints, and remediating findings. **Scan** is available today. **Fix** and **Probe** are
+planned modules.
 
-[Get started](#quick-start) · [Detection capabilities](docs/detection-capabilities.md) · [Sample reports](docs/samples/README.md) · [Documentation](docs/README.md)
+[Modules](#modules) · [Run Scan](#quick-start) · [Detection capabilities](docs/detection-capabilities.md) · [Sample reports](docs/samples/README.md) · [Documentation](docs/README.md)
+
+## Modules
+
+| Module | Purpose | Status |
+|---|---|---|
+| **Scan** | Analyzes JavaScript, TypeScript, Python and PHP source for vulnerabilities and practices worth fixing. Reports include the affected operation, input paths, observed controls and evidence gaps. Optional model assessment uses that evidence to judge supported claims. | Available and in active development |
+| [**Fix**](fix/README.md) | Gives coding agents skills, standards and playbooks for fixing findings from Zazzles or other SAST, dependency audit and DAST tools. Guides agents from the finding evidence through a repair and verification. | Planned |
+| [**Probe**](probe/README.md) | Checks externally observable security settings on authorized endpoints. Initial coverage will include TLS versions and configuration, expired certificates and related issues, with evidence and remediation recommendations. | Planned |
+
+<a id="project-direction"></a>
+<a id="project-goals-scan-inspect-audit-and-fix"></a>
+<a id="project-goals-scan-audit-and-fix"></a>
+<a id="project-goals-scan-quality-audit-and-fix"></a>
+<a id="the-vision-scan-inspect-audit-and-fix"></a>
+
+Scan is the current development focus. Fix is expected to come before Probe.
+[Implementation plan](.zazz/project/implementation-plan.md)
 
 <a id="setup"></a>
 
@@ -54,7 +71,9 @@ framework practice checks.
 
 <a id="how-the-decision-model-judges-a-result"></a>
 
-## How it works
+<a id="how-it-works"></a>
+
+## How Scan works
 
 Zazzles finds supported entry points, follows input to a sensitive operation and records guards
 and transformations along the path. In a judged scan, the model answers bounded questions about
@@ -89,16 +108,6 @@ The [JavaScript and TypeScript lab sample](docs/samples/vuln-nextjs/README.md) i
 
 Both runs had zero findings on the keyed safe controls. The walk-start branch was verified
 separately with an [offline rescan](.zazz/evaluation/pollution-walk-start-results.md#six-sample-noise-check).
-
-<a id="project-goals-scan-inspect-audit-and-fix"></a>
-<a id="project-goals-scan-audit-and-fix"></a>
-<a id="project-goals-scan-quality-audit-and-fix"></a>
-<a id="the-vision-scan-inspect-audit-and-fix"></a>
-
-## Project direction
-
-Scan is available today and includes practice checks. The roadmap covers a separate Inspect
-workflow, dependency Audit, and agent-assisted Fix. [Implementation plan](.zazz/project/implementation-plan.md)
 
 ## Contributing
 

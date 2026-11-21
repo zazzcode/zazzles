@@ -35,26 +35,15 @@ coverage remain hypotheses to measure alongside false protection, abstention, la
 
 ## Shared analysis across distinct product goals
 
-The product goals are **Scan** (source security), **Inspect** (correctness and engineering standards),
-**Audit** (dependency/advisory assessment) and **Fix** (verified agent remediation).
-Scan is implemented with bounded coverage. A distinct Inspect capability, Audit and automated Fix
-remain planned. Existing validation and construction-practice findings provide a quality foundation
-inside today's scanner.
+[Scan](../README.md#modules) analyzes application source and reports security claims and
+supported practice findings. Each claim keeps its own evidence, policy and outcome. Related
+claims can share evidence while remaining separate for review.
 
-The separation is in assessment purpose, claim semantics and future report organization. It does
-not require duplicate engines. Analysis components can support security claims, quality claims or
-both, with the required evidence for each. Fix can consume supported issues from all three assessment
-capabilities while preserving intended behavior and existing controls.
-
-Future reporting should keep security and quality views distinct, link overlapping evidence and
-avoid duplicate issue counts. Priority depends on impact rather than assuming quality defects are
-always minor. Review remains the outcome for unresolved evidence. It is not another capability name.
-These goals do not change the current CLI or report schema.
-
-The intended capabilities are independent and can run in any order once implemented. A user can
-select an assessment or give Fix an existing report or a specific issue. Each operation still needs
-its own evidence and verification. The proposed agent feedback loop is optional composition rather
-than a requirement to run all four capabilities.
+[Fix](../fix/README.md) will apply remediation skills and playbooks to findings from Zazzles or
+other tools. [Probe](../probe/README.md) will assess externally observable endpoint
+configuration, starting with TLS and certificates. Each module has its own inputs and evidence.
+A team can use Scan or Probe to collect evidence, then apply Fix when the finding provides
+enough detail to repair and verify the issue.
 
 ## Code quality and engineering hygiene
 

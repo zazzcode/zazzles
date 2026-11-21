@@ -1,28 +1,22 @@
 # Zazzles — project overview
 
-**Project overview, updated 2026-11-14.** This overview owns product purpose, direction,
+**Project overview, updated 2026-11-21.** This overview owns product purpose, direction,
 and repository state. The [agent orientation](docs/zazzles-agent-orientation.md#documentation-map) routes
 to the detailed documents and defines their responsibilities.
 
 ## Purpose
 
-Zazzles helps developers and coding agents assess application security, code quality and
-dependencies, then use the evidence to make verified repairs. Its four product goals are Scan,
-Inspect, Audit and Fix. Scan has bounded implementations today. Inspect as a distinct capability,
-Audit and automated Fix remain planned. A completed run is not a security or quality certification.
+Zazzles supports application and endpoint security through the Scan, Fix and Probe modules.
+Scan analyzes application source and is the current development focus. Fix will provide agent
+skills, remediation standards and playbooks for findings from Zazzles or other tools. Probe
+will assess externally observable issues on authorized endpoints and recommend repairs.
 
-The long-term goal is an assessment and remediation framework that turns findings and applicable
-standards into tested changes and focused pull requests. Delivery starts with native **Scan and
-Inspect**, followed by **SCA Audit through language-specific ecosystem tools**, then **scheduled
-automation and agent-driven Fix**, and finally **external SAST/code-quality finding integrations**.
-The [delivery priorities](project/implementation-plan.md#delivery-priorities) own that sequence.
-The finished workflow should support on-demand and recurring execution, with human review governing
-integration. External findings retain their provenance and do not inherit Zazzles verification merely
-by being imported.
+Fix is expected to come before Probe. Users can apply Fix to an existing finding with enough
+evidence to identify and verify a repair. Findings retain their provenance for human review.
+[Module overview](../README.md#modules) · [Delivery priorities](project/implementation-plan.md#delivery-priorities)
 
-Each analyzer uses the shared engine for extraction, model assessment, evidence validation and
-reporting. The [architecture](architecture/README.md#evidence-validation) owns these definitions and the
-boundary between evidence validation and security policy.
+The [Scan architecture](architecture/README.md#evidence-validation) defines extraction, model
+assessment, evidence validation and reporting.
 
 ## Shared decision-model support
 
@@ -43,9 +37,12 @@ NoSQL remains an extensible analyzer category with bounded MongoDB/Mongoose and 
 support initially; other engines need distinct rules and guidance, and findings must identify the
 actual database/driver.
 
-## Four product capabilities
+<a id="four-product-capabilities"></a>
 
-**2026-11-05 user direction:** the product distinguishes these responsibilities:
+## Earlier product capability planning
+
+The 2026-11-05 direction distinguished the responsibilities below. The current module plan is
+in the [project overview](../README.md#modules).
 
 | Capability | Responsibility | Current boundary |
 | --- | --- | --- |

@@ -7,26 +7,24 @@ acceptance evidence. This roadmap does not authorize implementation or live mode
 
 ## Product goals and capability boundaries
 
-| Capability | Function | State |
+| Module | Function | State |
 |---|---|---|
-| **Scan** | Assess source-code vulnerabilities, controls, and supported validation/construction practices | Implemented for bounded JavaScript, TypeScript, and Python cases |
-| **Inspect** | Assess correctness, maintainability, and selected engineering standards | Planned as a distinct workflow; existing practice checks provide a foundation |
-| **Audit** | Assess dependency vulnerabilities and retain advisory evidence | Planned |
-| **Fix** | Turn findings or a specified issue into tested repairs and reviewable pull requests | Planned |
+| **Scan** | Assess source-code vulnerabilities, controls and supported validation and construction practices | Implemented for bounded JavaScript, TypeScript, Python and PHP cases |
+| [**Fix**](../../fix/README.md) | Provide agent skills, remediation standards and playbooks for findings from Zazzles and external SAST, dependency audit and DAST tools | Planned, expected before Probe |
+| [**Probe**](../../probe/README.md) | Check authorized endpoints for externally observable issues, starting with TLS and certificates, and provide remediation guidance | Planned |
 
-The capabilities are intended to work independently or in combination. Fix may start from an
-existing report or user-specified issue. Review is an unresolved report outcome, not an Inspect
-workflow or an independent review service. See [product responsibilities](../project.md#four-product-capabilities).
+These modules can work independently or in combination. Fix accepts finding details even when
+another tool performed the assessment. [Project overview](../../README.md#modules)
 
 ## Delivery priorities
 
-1. Strengthen native Scan and build the distinct Inspect workflow on the shared engine.
-2. Add dependency Audit through ecosystem tooling: npm/pnpm for JS/TS and pip-audit for Python.
-3. Add on-demand and scheduled execution, agent-driven Fix, verification, and pull-request preparation.
-4. Import external SAST and code-quality findings while preserving their provenance.
+1. Continue work on Scan and its evidence and reporting.
+2. Build Fix with remediation playbooks, verification and reviewable changes. Start with reports
+   that provide enough detail to identify and check a repair.
+3. Build Probe, starting with TLS and certificate findings on authorized endpoints.
 
-These are delivery priorities, not a mandatory sequence for users. The tables below distinguish
-implemented functionality from planned work; proposed features still need bounded contracts.
+The detailed roadmap below also tracks Inspect, dependency audit and other longer-term proposals.
+Proposed features need bounded contracts before implementation.
 
 <a id="supported-capability-checklist"></a>
 <a id="complete-delivery-list"></a>

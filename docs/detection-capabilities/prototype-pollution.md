@@ -27,7 +27,7 @@ Each gap has an identifier, so it can be taken up as a later capability.
 | Walk forms | Index loop, `for…of`, consuming `while`, `forEach`, `reduce`, or a function that calls itself on the next object | The final assignment must go through the walk result |
 | Unflatten | `{ "a.b": 1 }` expanded key by key | Dotted or bracketed keys. The walk may start from a local object |
 | Nested computed assignment | `store[a][b] = v` | Also after the slot is created only when absent: `if (!store[a]) store[a] = {}` |
-| Library source kept in the repository | `require('./lib/merge')` called from a route | CommonJS exports and ESM named, namespace or default imports. The write evidence is in the library file |
+| Library source kept in the repository | `require('./lib/merge')` called from a route | CommonJS exports and ESM named, namespace or default imports, imported from the defining file. The write evidence is in the library file |
 | TypeScript | Typed callbacks, `as` casts, non-null assertions | Read like the JavaScript forms |
 
 Guards the scanner reads and credits:
@@ -74,6 +74,7 @@ Each of these can hide a real write.
 | `PP-N09` | Step and write in one chained assignment | `t = t[k] = …` | Read the chained form |
 | `PP-N10` | Any other dynamic-key write | | Emit a Review record for unmatched writes |
 | `PP-N11` | An array part converted before use | `const part = String(path[i])` | Read a converted part as a string part |
+| `PP-N12` | The vulnerable function is reached through a re-export or a dynamic import | `export { merge } from './merge.js'`, `export * from …`, `export { merge as default }`, `await import('./merge.js')` | Follow re-exports and literal dynamic imports. This is shared by every vulnerability class |
 
 Libraries and dependencies:
 

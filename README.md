@@ -9,13 +9,40 @@ operations and records the controls on each path. A decision LLM evaluates that 
 distinguish vulnerabilities from protected or inconclusive paths and reduce false positives.
 Zazzles checks the answers against its source facts before assigning an outcome.
 
-[Modules](#modules) · [Run Scan](#quick-start) · [Detection capabilities](docs/scan/detection-capabilities.md) · [Sample reports](docs/samples/README.md) · [Documentation](docs/README.md)
+[Current coverage](#current-coverage) · [Run Scan](#quick-start) · [Sample reports](docs/samples/README.md) · [Modules](#modules) · [Documentation](docs/README.md)
+
+<a id="what-exists-today"></a>
+<a id="scan-current-implementation"></a>
+<a id="entry-use-cases-and-delivery-status"></a>
+
+## Current coverage
+
+| Languages | Application entry points |
+| --- | --- |
+| **JavaScript and TypeScript** | Node.js HTTP handlers, Next.js routes and Server Actions, browser entry points, Apollo GraphQL resolvers, and unary gRPC |
+| **Python** | HTTP handlers in Flask, FastAPI, Django, and other supported Python frameworks |
+| **PHP** | Server-mapped PHP files with bounded include and helper tracing |
+
+**Vulnerabilities Code Scan can identify**
+
+- **Injection** includes SQL injection, NoSQL injection, OS command injection, argument injection,
+  code injection, and server-side template injection.
+- **Web and file operations** include cross-site scripting (XSS), server-side request forgery (SSRF),
+  open redirect, path traversal, and unrestricted file upload.
+- **Data handling** includes unsafe deserialization, prototype pollution, and sensitive data in logs.
+
+**Code smells and poor practices** include building queries from untrusted strings, failing to
+enforce declared input rules on the server, returning stack traces from Next.js API handlers,
+and omitting security flags on cookies.
+
+Reports point to the relevant code and show the input, operation, and controls behind each result.
+Coverage varies by language, framework, and library. [Full detection coverage](docs/scan/detection-capabilities.md) · [See a sample report](docs/samples/README.md)
 
 ## Modules
 
 | Module | Purpose | User docs | Status |
 |---|---|---|---|
-| [**Code Scan**](scan/README.md) (`scan/`) | Analyzes JavaScript, TypeScript, Python and PHP source for vulnerabilities, evidence gaps, and code smells or poor coding practices that can impact security or performance. Combines source-backed traces with a decision-model judge to classify supported claims. Reports show the operation, input paths, controls and evidence gaps. | [Scan docs](docs/scan/README.md) | Available and in active development |
+| [**Code Scan**](scan/README.md) (`scan/`) | Source-code security analysis with a decision-model judge. | [Scan docs](docs/scan/README.md) | Available and in active development |
 | [**Fix**](fix/README.md) (`fix/`) | Agent skills, standards and playbooks for fixing findings from Zazzles modules or external scanners — including SAST, dependency audit, DAST, and endpoint probe / TLS and certificate scanners such as Nuclei. Guides agents from finding evidence through a repair and verification. | [Fix docs](docs/fix/README.md) | Planned |
 | [**Endpoint Probe**](probe/README.md) (`probe/`) | Checks externally observable security settings on authorized endpoints (similar to TLS and certificate scanners such as Nuclei). Initial coverage will include TLS versions and configuration, expired certificates and related issues, with evidence and remediation recommendations. | [Probe docs](docs/probe/README.md) | Planned |
 
@@ -103,27 +130,16 @@ may incur charges. A request cap leaves candidates outside it unassessed. [Scan 
 Omit `--judge` to inspect source traces or troubleshoot scanner behavior without model charges.
 These runs leave semantic assessments unrun. [Offline evidence inspection](docs/scan/running-scans.md#offline-development-and-troubleshooting)
 
-<a id="what-exists-today"></a>
-<a id="scan-current-implementation"></a>
-<a id="entry-use-cases-and-delivery-status"></a>
-
-## Current coverage
-
-The [coverage index](docs/scan/detection-capabilities.md) lists each weakness, the `--only-family`
-selector, supported entry points and known gaps. It also links to standalone field validation and
-framework practice checks. The [unsafe deserialization analyzer](docs/scan/detection-capabilities/unsafe-deserialization.md) covers Python, server-side JavaScript and TypeScript, and PHP.
-
 <a id="how-the-decision-model-judges-a-result"></a>
 
 <a id="how-it-works"></a>
 
 ## How Scan works
 
-Zazzles finds supported entry points, follows input to a sensitive operation and records guards
-and transformations along the path. It also flags code smells and poor coding practices that can
-impact security or performance. The judge answers bounded questions about whether the observed
-controls are effective for the claim. The scanner validates the answers against the evidence and
-keeps unresolved claims in Review.
+Zazzles finds supported entry points, follows data through transformations and helper calls, and
+identifies the guards on each path to a sensitive operation. The judge answers focused questions
+about those paths. For example, it can assess whether a guard rejects untrusted input before it
+reaches a sink. Missing evidence keeps the claim in Review.
 [Technical approach](docs/technical-approach.md) · [Decision models](docs/scan/decision-models.md)
 
 <a id="how-fast-is-a-scan"></a>

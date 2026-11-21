@@ -15,6 +15,37 @@
 - **Source** Owner review of write shapes D-9, the choice "a non-parameter start is read only
   for unflatten" ([section 11.1](pollution-write-shapes.md#111-owner-review-and-future-exploration)).
 
+## Address first: items carried over from PR #35
+
+These were open when the write shapes PR merged. Take them in this order before the walk-start
+work, each as its own small commit with a failing-first test where code changes.
+
+1. **False blockers on a real write (`PP-R06`).** A log call such as `console.log(req.body)`
+   before the write, or any undefined call on the same input after the write, adds
+   `input_helper_unresolved` and holds the record in Review. Neither can stop the write. Drop the
+   blocker for a call that follows the write in the same function, and for the global `console`
+   and the logger bindings the logging analyzer already verifies. A walk in the handler (D-4)
+   will meet this at once, so it comes first. Rescan the six samples and review any record
+   that becomes complete.
+2. **Deny-list held in a `Set` or an array (`PP-R11`).** `if (BAD.has(key)) continue` and
+   `LIST.includes(key)` on a constant are the most common way to write the guard and are
+   unread, so safe code stays in Review. Read membership in a constant `Set` or array of string
+   literals as a deny-list, with the usual incomplete listing when a name is missing.
+3. **Confirm the `set-in` 2.0.3 reading.** The scanner records 2.0.3 as raw against its advisory
+   range. That rests on the source and a transcription. Run the package in an isolated
+   directory with `["__proto__", "polluted"]` and record the result in
+   [the library section](../evaluation/pollution-write-shapes-results.md#real-advisory-libraries)
+   and in the D-3 row of the parent contract. Running a downloaded package needs the owner's word.
+4. **Juice Shop `JS-PP-R01`.** Four Review records at `lib/accuracy.ts:71`. Source review says a
+   finding would be false. Ask the owner whether the key row stays `review` or the records
+   should be suppressed by reading the `Map` lookup as a guard (`PP-R01`).
+5. **Coverage pages for the other vulnerability classes.** A separate session was writing one
+   page per class under `docs/detection-capabilities/`. Check what merged. If pages are missing,
+   that work continues on its own branch and is not part of this contract.
+
+Items 1 and 2 change which records can be Confirmed or Protected, so each needs the sample
+rescan of AC8. Items 3 to 5 need the owner.
+
 ## 1. Capability
 
 Record a path walk whatever object it starts from. Today a walk whose path is a parameter is a
@@ -264,3 +295,8 @@ committed, so a new session does not depend on files outside the repository. The
 target is the coverage page that replaced the capability page's gap table, and the contract names
 the identifiers it closes. Required reading lists the files added since the draft. The guard rules
 added by the review apply to the new starts, and AC11 covers the coverage page.
+
+### 2026-11-21 — Added the items carried over from PR #35
+
+At the owner's request, the open items from the write shapes PR are listed at the top, to be
+addressed before the walk-start work.

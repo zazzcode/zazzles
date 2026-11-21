@@ -250,14 +250,17 @@ func pollutionGlobal(m *sourceModule, n *sitter.Node, name string) bool {
 }
 
 // pollutionLocalDeclaration reports a function or class declared under the name
-// in a block that encloses the use.
+// in a block that encloses the use, or at the top of the module.
 func pollutionLocalDeclaration(m *sourceModule, n *sitter.Node, name string) bool {
 	for p := n.Parent(); p != nil; p = p.Parent() {
-		if p.Kind() != "statement_block" {
+		if p.Kind() != "statement_block" && p.Kind() != "program" {
 			continue
 		}
 		for i := uint(0); i < p.NamedChildCount(); i++ {
 			d := p.NamedChild(i)
+			if d.Kind() == "export_statement" && d.ChildByFieldName("declaration") != nil {
+				d = d.ChildByFieldName("declaration")
+			}
 			switch d.Kind() {
 			case "function_declaration", "generator_function_declaration", "class_declaration":
 				if id := d.ChildByFieldName("name"); id != nil && id.Utf8Text(m.src) == name {

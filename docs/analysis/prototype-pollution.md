@@ -122,6 +122,10 @@ These forms can pollute `Object.prototype` and have no record:
 - **Slot local replaced on a branch.** `let slot = target[key]; if (!slot) slot = {};` followed
   by a recursion on `slot`. Any other write to the local ends the alias, although an inherited
   slot would skip that branch.
+- **Built-ins replaced out of sight.** A key enumerator counts only where `Object` or `Reflect`
+  is the built-in. A variable, parameter, function or class of that name in the module, or a
+  write to the method in the module, ends the match. A replacement through `globalThis`, or a
+  method patched in another module, is not seen and the function keeps its record.
 - **Path normalised before the walk.** The only write a path parameter may receive is its own
   split, `path = path.split('.')`. A path converted another way has no record: a string
   conversion before the split, a conditional that yields the array or its split, or a helper

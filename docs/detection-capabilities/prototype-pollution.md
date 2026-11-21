@@ -47,7 +47,7 @@ Guards the scanner reads and credits:
 | ID | Form | Why it is Review | To close it |
 |---|---|---|---|
 | `PP-R01` | A test depends on a call taking the key: `if (!known.has(key)) return`, `known.has(key) && write(key)` | `key_guard_coverage_unknown`. What the call accepts is not read. Safe behind a `Map`; exploitable behind a helper around a plain object | Read `Map` and `Set` lookups as guards and plain-object helpers as none |
-| `PP-R02` | A key test in a helper that calls another function, or an assertion on the key before a recursive walk | `key_guard_coverage_unknown` | Read assertions and two-level helpers |
+| `PP-R02` | A key test in a helper with more than one statement, imported from another module, or calling another function; an assertion on the key before a recursive walk | `key_guard_coverage_unknown`. Only a one-line helper in the same module is read | Read assertions, imported helpers and longer helpers |
 | `PP-R03` | An array part compared with no type test: `if (part === '__proto__') return` | `key_guard_coverage_unknown`. `['__proto__']` passes the comparison. Exploitable, not Confirmed | Claim the nested-array bypass |
 | `PP-R04` | Array parts type-checked another way: `path.every(p => typeof p === 'string')` | `key_guard_coverage_unknown`. Only an exit on `typeof part !== 'string'` is credited. Safe, not Protected | Credit `every` and a positive `typeof` test |
 | `PP-R05` | A whole-path guard other than `includes` or `indexOf`: a regular-expression test, `parts.some(…)`, a deny array, `path.toLowerCase()` | Recorded raw without the guard. Review once the assessment relies on it | Read these as key guards |
@@ -56,6 +56,7 @@ Guards the scanner reads and credits:
 | `PP-R08` | A Lodash version range with no lockfile | `version_unresolved` | Needs a lockfile or an exact pin |
 | `PP-R09` | A deep write into an `Object.create(null)` root | `null_prototype_root`. Only the first lookup is covered | Track the nested containers |
 | `PP-R10` | The key is checked in route middleware: `app.post('/w', checkKey, handler)` | Not read as a guard. Raw unless another blocker applies | Read key tests in middleware |
+| `PP-R11` | A deny-list held in a `Set` or an array: `if (BAD.has(key)) continue`, `LIST.includes(key)` | `key_guard_coverage_unknown`. Safe, not Protected | Read membership in a constant `Set` or array as a deny-list |
 
 ## Not recorded
 

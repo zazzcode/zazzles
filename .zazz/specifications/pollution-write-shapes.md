@@ -1,7 +1,7 @@
 # Prototype pollution write shapes (exploration and tests)
 
-- **Status** Implemented and verified offline on 2026-11-20, committed on the assigned branch.
-  AC1 to AC12 pass. Owner review is pending.
+- **Status** Implemented, verified and reviewed by the owner on 2026-11-21, on the assigned
+  branch. AC1 to AC12 pass. Merge is pending.
 - **Worktree and branch** `prototype-polution-analyzer`, the worktree that holds the analyzer.
 - **Baseline** Branch tip `31380d5`, stage 1 of [prototype pollution](prototype-pollution.md).
 - **Prerequisite** Stage 1 of that contract, which is committed on this branch.
@@ -211,6 +211,7 @@ Out of scope:
     unread guard, so an asserted key is Review and not raw. Accepted by the owner on 2026-11-21
     (section 11.1);
   - key tests written as one-line helpers of the module, and `object.hasOwnProperty(key)`.
+    Accepted by the owner on 2026-11-21 (section 11.1).
 
   **Why.** They are what `minimist`, `set-in`, `object-path` and `merge-deep` use. Reaching
   those functions through each library's public API stays with phases 7 and 8.
@@ -292,7 +293,7 @@ contract.
 - [x] AC1 to AC12 verified, with evidence in the run log and the results record.
 - [x] The guide states every shape recognised and every limit found.
 - [x] `prototype-pollution.md` D-4 points to this contract for the added shapes.
-- [ ] Owner review, including the D-9 and D-10 decisions.
+- [x] Owner review of D-9, D-10 and D-11, 2026-11-21. All twelve choices accepted (section 11.1).
 
 ## 11. Open questions
 
@@ -333,6 +334,14 @@ identifiers refer to the user-facing list of every gap,
 | D-10, default exports (`PP-N12`) | Accepted 2026-11-21 | A helper imported by default is followed when it is declared as `export default function`, as a function or arrow bound to a name that is then exported by default, or in a default-exported object, under any local import name. The change is in the module index every family shares; no fixture or sample record moved, though an application that imports helpers by default can gain records in any family. Four forms are still not followed and the function has no record: `export { merge as default }`, a re-export from a barrel file (named, `default as`, or `export *`), and a dynamic `import()`. Checked with the scanner at `583eb70` | Follow re-exports through barrel files and literal dynamic imports. Barrel files are common in applications, so this is likely to matter for every vulnerability class, and it needs its own cross-family noise check |
 | D-11, `forEach` walk (`PP-N13`) | Accepted 2026-11-21 | A `forEach` over the parts or over `parts.slice(0, -1)`, with a function or arrow callback that steps a cursor or the target parameter itself, followed by the final write, is a path walk. Four neighbouring forms have no record: a `forEach` whose callback also makes the final write on the last index, `map` or `every` used for the step, and `for…of` over `parts.entries()`. An index loop with the final write inside it is recorded. Checked with the scanner at `28efcf9` | Read a final write guarded by the last index inside the callback, as the index loop already does, and treat `map`, `every`, `some` and `entries()` iteration as the same step |
 | D-11, recursive walk (`PP-N14`) | Accepted 2026-11-21 | A function that calls itself on `obj[key]`, with `key` taken as `path[i]` or `path[0]` and the path passed on unchanged or as `path.slice(1)`, and that writes `obj[key]`, is a path walk, also behind a public wrapper function. A comparison guard counts after a type test, and a call that takes the key before the recursion keeps the record in Review. Four forms have no record: the path destructured as `[head, ...rest]`, the path consumed with `shift()`, a string path re-split at each level, and two functions that call each other. `set-in` 2.0.3 is recorded as raw against its advisory range; that reading rests on the source and a transcription, not on running the package. Checked with the scanner at `7644e10` | Read the destructured and `shift()` forms, which are common in functional code, and mutual recursion. Confirm the `set-in` 2.0.3 reading by running the package in isolation before relying on it |
+| D-11, one-line helper key tests (`PP-R02`, `PP-R11`) | Accepted 2026-11-21 | A function or arrow helper of the same module whose body is one returned expression is read in place, as an allow test or a deny test, and `object.hasOwnProperty(key)` is an own-property test on the target only. A helper that blocks one name is listed as incomplete. A type-only helper is read as blocking nothing, so that write is confirmable where it was Review. Still unread, and Review: a helper with two statements, a helper imported from another module, and a deny-list held in a `Set` or an array, in a helper or in place. Checked with the scanner at `283586d` | Read membership in a constant `Set` or array as a deny-list, which is the most common way to write the guard, then helpers across modules and helpers with a local |
+
+The review ended on 2026-11-21 with all twelve choices accepted. It found and fixed two holes in
+the rules themselves: a class at the top of a module was not seen as shadowing a built-in, and a
+lookup gate written with `&&` or a conditional expression was not read. It corrected several
+limits that had been written without a check, and added identifiers `PP-N11` to `PP-N14`,
+`PP-R10` and `PP-R11`. One follow-on contract came out of it,
+[walk start](pollution-walk-start.md).
 
 ## 12. Run log protocol
 
@@ -424,3 +433,12 @@ detected through its public API; ten of eleven packages are still not reached th
 The check found that `set-in` 2.0.3, listed as patched, still writes before it checks. The AC8
 live check of the parent contract passed with the vuln-nextjs fixtures added to it, and the three
 reports are published.
+
+### 2026-11-21 — Owner review of D-9 to D-11
+
+The owner accepted all twelve choices, one at a time. Each was probed with the scanner first;
+section 11.1 lists the limit each one leaves and what to explore later. Two rules were fixed
+during the review, each with a failing-first test: module-level class shadowing and lookup gates
+written as expressions. The user-facing gap list moved to its own page under
+`docs/detection-capabilities/`, with an identifier per gap, and the capability page became an
+index by vulnerability class.

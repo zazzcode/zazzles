@@ -4,7 +4,7 @@
 
 ## Fix code correctly
 
-Scan exists to help developers and coding agents improve application security. Its useful output is
+Zazzles exists to help developers and coding agents improve application security. Its useful output is
 a concrete problem, source evidence, the protection already present, and an appropriate correction
 that preserves intended behavior. Agent-assisted hardening makes small, worthwhile improvements
 practical; do not discard them simply because a human might defer the work.
@@ -23,9 +23,9 @@ add regression checks appropriate to each change.
 
 ## Review is a question to resolve
 
-Review means zazzles cannot yet establish a problem or sufficient protection. A validator's unknown
+Review means Zazzles cannot yet establish a problem or sufficient protection. A validator's unknown
 effect, an unresolved library binding, or missing business requirements belongs here. The fact that
-zazzles did not model a check is not proof that the application has no check. Investigate the named
+Zazzles did not model a check is not proof that the application has no check. Investigate the named
 blocker and decide whether a fix is needed; avoid speculative edits that reject valid inputs or
 remove existing protection.
 

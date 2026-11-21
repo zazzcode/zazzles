@@ -186,10 +186,22 @@ func TestDeserializationPHPBinding(t *testing.T) {
 		{"function import", `namespace App; use function App\Reader\parse as unserialize; unserialize($_POST['x']);`, false},
 		{"group function import", `namespace App; use App\Reader\{function parse as unserialize}; unserialize($_POST['x']);`, false},
 		{"qualified builtin overrides import", `namespace App; use function App\Reader\parse as unserialize; \unserialize($_POST['x']);`, true},
+		{"fully qualified Yaml", `\Symfony\Component\Yaml\Yaml::parse($_POST['y'], \Symfony\Component\Yaml\Yaml::PARSE_OBJECT);`, true},
+		{"static method named unserialize", `Store::unserialize($_POST['x']);`, false},
 		{"constant options", `const OPTIONS = ['allowed_classes' => false]; unserialize($_POST['x'], OPTIONS);`, false},
 		{"named options before data", `unserialize(options: ['allowed_classes' => false], data: $_POST['x']);`, false},
 		{"named unsafe data", `unserialize(options: ['allowed_classes' => true], data: $_POST['x']);`, true},
 		{"changed options", `$o = ['allowed_classes' => false]; $o['allowed_classes'] = true; unserialize($_POST['x'], $o);`, true},
+		{"options rebound by foreach", `$o = ['allowed_classes' => false]; foreach ($_GET['all'] as $o) {} unserialize($_POST['x'], $o);`, true},
+		{"options passed by reference", `function tweak(&$v) { $v['allowed_classes'] = true; } $o = ['allowed_classes' => false]; tweak($o); unserialize($_POST['x'], $o);`, true},
+		{"options aliased by reference", `$o = ['allowed_classes' => false]; $r = &$o; $r['allowed_classes'] = true; unserialize($_POST['x'], $o);`, true},
+		{"options rebound by destructuring", `$o = ['allowed_classes' => false]; [$o, $z] = [$_GET['o'], 1]; unserialize($_POST['x'], $o);`, true},
+		{"options written by output argument", `$o = ['allowed_classes' => false]; preg_match('/(.*)/', $_GET['o'], $o); unserialize($_POST['x'], $o);`, true},
+		{"options written by extract", `$o = ['allowed_classes' => false]; extract($_GET); unserialize($_POST['x'], $o);`, true},
+		{"options captured by reference", `$o = ['allowed_classes' => false]; $f = function () use (&$o) { $o = []; }; $f(); unserialize($_POST['x'], $o);`, true},
+		{"options global written elsewhere", `$o = ['allowed_classes' => false]; function widen() { global $o; $o = []; } widen(); unserialize($_POST['x'], $o);`, true},
+		{"unrelated local of the same name", `$o = ['allowed_classes' => false]; function other($o) { return $o; } unserialize($_POST['x'], $o);`, false},
+		{"literal flags without object support", `use Symfony\Component\Yaml\Yaml; Yaml::parse($_POST['y'], Yaml::PARSE_CONSTANT | Yaml::PARSE_DATETIME);`, false},
 		{"conditional initialization", `if ($_POST['flag']) { $o = ['allowed_classes' => false]; } unserialize($_POST['x'], $o);`, true},
 	} {
 		t.Run(row.name, func(t *testing.T) {
@@ -206,5 +218,132 @@ func TestDeserializationPHPBinding(t *testing.T) {
 				t.Errorf("candidate = %v, want %v", got, row.candidate)
 			}
 		})
+	}
+}
+
+// Guard rows of D-7: presence and request-method tests are not guards, a
+// rejecting branch may throw or run statements before it leaves, and a guard
+// on a value survives decoding that value into another variable.
+func TestDeserializationPHPGuards(t *testing.T) {
+	const reject = `if (!hash_equals(hash_hmac('sha256', $d, KEY), $sig)) `
+	for _, row := range []struct {
+		name, source, protection, control string
+	}{
+		{"isset", `if (isset($_COOKIE['p'])) { unserialize($_COOKIE['p']); }`, "raw", ""},
+		{"empty reject", `$d = $_POST['d']; if (empty($d)) { exit; } unserialize($d);`, "raw", ""},
+		{"truthiness reject", `$d = $_POST['d']; if (!$d) { exit; } unserialize($d);`, "raw", ""},
+		{"null comparison", `$d = $_POST['d']; if ($d !== null && $d !== '') { unserialize($d); }`, "raw", ""},
+		{"request method and presence", `if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['d'])) { unserialize(base64_decode($_POST['d'])); }`, "raw", ""},
+		{"throwing reject", `$d = $_POST['d']; $sig = $_GET['s']; ` + reject + `{ throw new RuntimeException('bad'); } unserialize($d);`, "guarded", "integrity_check"},
+		{"multi-statement reject", `$d = $_POST['d']; $sig = $_GET['s']; ` + reject + `{ http_response_code(403); exit; } unserialize($d);`, "guarded", "integrity_check"},
+		{"non-terminating branch", `$d = $_POST['d']; $sig = $_GET['s']; ` + reject + `{ error_log('bad'); } unserialize($d);`, "raw", ""},
+		{"verify then decode", `$raw = $_COOKIE['p']; $sig = $_GET['s']; if (!hash_equals(hash_hmac('sha256', $raw, KEY), $sig)) { exit; } $d = base64_decode($raw); unserialize($d);`, "guarded", "integrity_check"},
+		{"operand replaced after the check", `$d = $_COOKIE['p']; $sig = $_GET['s']; ` + reject + `{ exit; } $d = $_POST['other']; unserialize($d);`, "raw", ""},
+		{"sodium verification", `$d = $_POST['d']; if (!sodium_crypto_auth_verify($_GET['s'], $d, KEY)) { exit; } unserialize($d);`, "guarded", "integrity_check"},
+		{"sha1", `$d = $_POST['d']; if (sha1($d) !== $_GET['s']) { exit; } unserialize($d);`, "guarded", "unkeyed_hash"},
+		{"hash", `$d = $_POST['d']; if (hash('sha256', $d) !== $_GET['s']) { exit; } unserialize($d);`, "guarded", "unkeyed_hash"},
+		{"crc32", `$d = $_POST['d']; if (crc32($d) != $_GET['s']) { exit; } unserialize($d);`, "guarded", "unkeyed_hash"},
+		{"format check", `$d = $_POST['d']; if (!preg_match('/^a:/', $d)) { exit; } unserialize($d);`, "guarded", "format_check"},
+	} {
+		t.Run(row.name, func(t *testing.T) {
+			root := t.TempDir()
+			if err := os.WriteFile(filepath.Join(root, "index.php"), []byte("<?php const KEY = 'fixture-key'; "+row.source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			r, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			i := slices.IndexFunc(r.Uses, func(u analysis.CandidateUse) bool { return u.Kind == analysis.DeserializationKind })
+			if i == -1 {
+				t.Fatal("missing candidate")
+			}
+			f := r.Uses[i].Deserialization
+			for _, p := range f.Paths {
+				if p.Protection != row.protection {
+					t.Errorf("protection = %s, want %s (controls %+v)", p.Protection, row.protection, f.Controls)
+				}
+			}
+			if row.control == "" && len(f.Controls) > 0 || row.control != "" && (len(f.Controls) != 1 || f.Controls[0].Kind != row.control) {
+				t.Errorf("controls = %+v, want %q", f.Controls, row.control)
+			}
+		})
+	}
+}
+
+// A declaration or import in another file of the project decides the binding
+// of an unqualified name, per namespace.
+func TestDeserializationPHPBindingAcrossFiles(t *testing.T) {
+	root := t.TempDir()
+	for name, source := range map[string]string{
+		"lib.php":    `namespace App; function unserialize($x) { return $x; } function helper() { return 1; }`,
+		"shadow.php": `namespace App; unserialize($_POST['x']);`,
+		"global.php": `function decode($x) { return $x; } unserialize(base64_decode($_POST['x']));`,
+		"other.php":  `namespace Other; unserialize($_POST['x']);`,
+		"import.php": `namespace Other; use function App\helper as unserialize; unserialize($_POST['x']);`,
+		"rooted.php": `namespace App; \unserialize($_POST['x']);`,
+	} {
+		if err := os.WriteFile(filepath.Join(root, name), []byte("<?php "+source), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r, err := Analyze(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, u := range r.Uses {
+		if u.Kind == analysis.DeserializationKind {
+			got = append(got, u.Sink.Span.File)
+		}
+	}
+	slices.Sort(got)
+	if want := []string{"global.php", "other.php", "rooted.php"}; !slices.Equal(slices.Compact(got), want) {
+		t.Errorf("candidates in %v, want %v", got, want)
+	}
+}
+
+// D-11: every listed magic method and Serializable qualifies; the evidence is
+// ordered by file then position and capped at 20.
+func TestDeserializationPHPMagicClasses(t *testing.T) {
+	root := t.TempDir()
+	write := func(name, source string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(root, name), []byte("<?php\n"+source), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var hooks strings.Builder
+	want := []string{}
+	for i, method := range []string{"__wakeup", "__unserialize", "__destruct", "__toString", "__call", "__get", "__set", "__invoke"} {
+		name := "Hook" + string(rune('A'+i))
+		hooks.WriteString("class " + name + " { function " + method + "() {} }\n")
+		want = append(want, name)
+	}
+	hooks.WriteString("class Stored implements Serializable { function serialize() {} function unserialize($d) {} }\nclass Plain { function run() {} }\n")
+	want = append(want, "Stored")
+	write("a_hooks.php", hooks.String())
+	var many strings.Builder
+	for i := 0; i < 15; i++ {
+		name := "Late" + string(rune('A'+i))
+		many.WriteString("class " + name + " { function __destruct() {} }\n")
+		want = append(want, name)
+	}
+	write("b_many.php", many.String())
+	write("index.php", `unserialize($_POST['x']);`)
+	r, err := Analyze(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	i := slices.IndexFunc(r.Uses, func(u analysis.CandidateUse) bool { return u.Kind == analysis.DeserializationKind })
+	if i == -1 {
+		t.Fatal("missing candidate")
+	}
+	var got []string
+	for _, e := range r.Uses[i].Completeness.Evidence["deserialization_magic_class"] {
+		got = append(got, e.Text)
+	}
+	if !slices.Equal(got, want[:20]) {
+		t.Errorf("magic classes = %v, want %v", got, want[:20])
 	}
 }

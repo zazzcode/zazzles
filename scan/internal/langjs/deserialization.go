@@ -11,22 +11,28 @@ import (
 )
 
 func (f *flow) deserializationCall(call, fn, args *sitter.Node, values []value) {
-	if f.client != nil || f.set == nil || len(values) == 0 || len(values[0].deps) == 0 {
+	if f.client != nil || f.set == nil {
 		return
 	}
+	// values parallels the named children, comments included.
+	index := jsArgumentIndex(args, 0)
+	if index < 0 || index >= len(values) || len(values[index].deps) == 0 {
+		return
+	}
+	data := values[index]
 	m := f.module
 	facts, importNode, ok := f.set.jsDeserializationFacts(m, call, fn, args)
 	if !ok {
 		return
 	}
 	fileOnly := true
-	for _, d := range values[0].deps {
+	for _, d := range data.deps {
 		fileOnly = fileOnly && d.Source.Kind == "file_read"
 	}
 	if fileOnly {
 		return
 	}
-	deps := append([]analysis.Dependency{}, values[0].deps...)
+	deps := append([]analysis.Dependency{}, data.deps...)
 	for i := range deps {
 		deps[i].SinkSlot = "data"
 		facts.Paths = append(facts.Paths, analysis.CommandPath{Dependency: i, Operand: "data"})
@@ -37,11 +43,38 @@ func (f *flow) deserializationCall(call, fn, args *sitter.Node, values []value) 
 		ID:      fmt.Sprintf("use:%s:%s:%d:deserialization", f.invocation.ID, m.file, call.StartByte()),
 		EntryID: f.entry.ID, EntryKind: f.entry.Kind, InvocationContextID: f.invocation.ID,
 		Kind: analysis.DeserializationKind, Sink: m.evidence(analysis.DeserializationKind, call),
-		Dependencies: deps, Context: context, Gaps: append(append([]analysis.Gap{}, f.gaps...), values[0].gaps...),
+		Dependencies: deps, Context: context, Gaps: append(append([]analysis.Gap{}, f.gaps...), data.gaps...),
 		Deserialization: &facts, Assessment: analysis.Assessment{Status: "not_run"},
 	}
 	u.NoteDeserializationOrigin()
 	f.uses = append(f.uses, u)
+}
+
+// jsArgumentIndex returns the named-child index of the argument at a
+// position, skipping the comments the grammar lists among the arguments, or
+// -1 when the call has no such argument.
+func jsArgumentIndex(args *sitter.Node, position int) int {
+	if args == nil {
+		return -1
+	}
+	for i := uint(0); i < args.NamedChildCount(); i++ {
+		if args.NamedChild(i).Kind() == "comment" {
+			continue
+		}
+		if position == 0 {
+			return int(i)
+		}
+		position--
+	}
+	return -1
+}
+
+// jsArgument returns the argument at a position, or nil.
+func jsArgument(args *sitter.Node, position int) *sitter.Node {
+	if i := jsArgumentIndex(args, position); i >= 0 {
+		return args.NamedChild(uint(i))
+	}
+	return nil
 }
 
 func (s *moduleSet) jsDeserializationFacts(m *sourceModule, call, fn, args *sitter.Node) (analysis.DeserializationFacts, *sitter.Node, bool) {
@@ -133,7 +166,8 @@ func deserializationJSShadowed(m *sourceModule, at *sitter.Node, name string) bo
 
 func (s *moduleSet) jsYAMLDeserialization(m *sourceModule, call, args *sitter.Node, op string, f *analysis.DeserializationFacts) bool {
 	schema, explicit, opaque := jsYAMLSchema(m, args, op)
-	if strings.HasPrefix(op, "safe") && !explicit {
+	// An options value the scanner cannot read may carry a schema.
+	if strings.HasPrefix(op, "safe") && !explicit && !opaque {
 		return false
 	}
 	if schema != nil {
@@ -174,10 +208,10 @@ func (s *moduleSet) jsYAMLDeserialization(m *sourceModule, call, args *sitter.No
 }
 
 func jsYAMLSchema(m *sourceModule, args *sitter.Node, op string) (schema *sitter.Node, explicit, opaque bool) {
-	option := unwrapTS(args.NamedChild(1))
+	option := unwrapTS(jsArgument(args, 1))
 	if containsString([]string{"loadAll", "safeLoadAll"}, op) {
-		if option == nil || isFunction(option) || args.NamedChildCount() > 2 {
-			option = unwrapTS(args.NamedChild(2))
+		if third := jsArgument(args, 2); option == nil || isFunction(option) || third != nil {
+			option = unwrapTS(third)
 		}
 	}
 	if option == nil || option.Kind() == "null" {
@@ -236,8 +270,8 @@ func (s *moduleSet) assembleDeserializationClaims(report *analysis.AnalysisRepor
 			c.Evidence["deserialization_operand"] = []analysis.Evidence{u.Sink}
 			if m := s.modules[u.Sink.Span.File]; m != nil {
 				if call := parse.NodeAt(m.tree.RootNode(), u.Sink.Span.StartByte, u.Sink.Span.EndByte); call != nil {
-					if args := call.ChildByFieldName("arguments"); args != nil && args.NamedChildCount() > 0 {
-						c.Evidence["deserialization_operand"] = []analysis.Evidence{m.evidence("deserialization_operand", args.NamedChild(0))}
+					if operand := jsArgument(call.ChildByFieldName("arguments"), 0); operand != nil {
+						c.Evidence["deserialization_operand"] = []analysis.Evidence{m.evidence("deserialization_operand", operand)}
 					}
 				}
 			}

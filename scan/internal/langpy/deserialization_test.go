@@ -42,6 +42,7 @@ func TestDeserializationPython(t *testing.T) {
 		"PY-11a": y,
 		"PY-11b": y,
 		"PY-13":  j,
+		"PY-I3":  j,
 		"PY-12":  r,
 		"PY-U1":  {contract: analysispacks.PythonYAML, capability: "unresolved", protection: "raw", gap: "loader_unresolved"},
 		"PY-V1":  {contract: analysispacks.PythonYAML, capability: "code_execution", protection: "raw", version: "3.13"},
@@ -230,6 +231,107 @@ def value():
 				return c.Kind == analysis.DeserializationIntegrity
 			}) {
 				t.Fatalf("signing guard not recorded: %+v", facts)
+			}
+		})
+	}
+}
+
+// Loader and version rows of D-3 beyond the fixture cases, including the
+// version boundaries, and calls whose argument list carries a comment.
+func TestDeserializationPythonOptions(t *testing.T) {
+	const none = "none"
+	for _, row := range []struct {
+		name, pin, call, capability, gap string
+	}{
+		{"CSafeLoader", "", "yaml.load(x, Loader=yaml.CSafeLoader)", none, ""},
+		{"BaseLoader", "", "yaml.load(x, yaml.BaseLoader)", none, ""},
+		{"CBaseLoader", "", "yaml.load(x, Loader=yaml.CBaseLoader)", none, ""},
+		{"CLoader", "", "yaml.load(x, Loader=yaml.CLoader)", "code_execution", ""},
+		{"CUnsafeLoader", "", "yaml.load_all(x, Loader=yaml.CUnsafeLoader)", "code_execution", ""},
+		{"FullLoader", "", "yaml.load(x, Loader=yaml.FullLoader)", "restricted_types", ""},
+		{"CFullLoader", "", "yaml.load(x, yaml.CFullLoader)", "restricted_types", ""},
+		{"unsafe_load_all", "", "yaml.unsafe_load_all(x)", "code_execution", ""},
+		{"full_load_all", "", "yaml.full_load_all(x)", "restricted_types", ""},
+		{"safe_load_all", "", "yaml.safe_load_all(x)", none, ""},
+		{"project loader", "", "yaml.load(x, Loader=make_loader())", "unresolved", "loader_unresolved"},
+		{"default at 5.0.2", "5.0.2", "yaml.load(x)", "code_execution", ""},
+		{"default at 5.1", "5.1", "yaml.load(x)", "restricted_types", ""},
+		{"default at 5.10", "5.10", "yaml.load_all(x)", "restricted_types", ""},
+		{"default at 6.0", "6.0", "yaml.load(x)", none, ""},
+		{"loader wins over version", "6.0", "yaml.load(x, Loader=yaml.UnsafeLoader)", "code_execution", ""},
+		{"comment before the operand", "", "pickle.loads(  # decode the payload\n        x\n    )", "code_execution", ""},
+		{"comment before a safe loader", "", "yaml.load(\n        x,  # stream\n        yaml.SafeLoader,\n    )", none, ""},
+		{"comment in the constructor", "", "pickle.Unpickler(  # stream\n        io.BytesIO(x)\n    ).load()", "code_execution", ""},
+	} {
+		t.Run(row.name, func(t *testing.T) {
+			root := t.TempDir()
+			if row.pin != "" {
+				writeSource(t, root, "requirements.txt", "PyYAML=="+row.pin)
+			}
+			writeSource(t, root, "app.py", `from flask import Flask, request
+import io, pickle, yaml
+app = Flask(__name__)
+def make_loader():
+    return yaml.SafeLoader
+@app.post('/value')
+def value():
+    x = request.data
+    return `+row.call+`
+`)
+			r, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := usesOf(r, analysis.DeserializationKind, "")
+			if row.capability == none {
+				if len(got) != 0 {
+					t.Fatalf("unexpected candidate: %+v", got[0].Deserialization)
+				}
+				return
+			}
+			if len(got) != 1 {
+				t.Fatalf("got %d candidates", len(got))
+			}
+			if f := got[0].Deserialization; f.Capability != row.capability || f.OptionGap != row.gap || f.Version != row.pin && row.call == "yaml.load(x)" {
+				t.Fatalf("incorrect facts: %+v", f)
+			}
+		})
+	}
+}
+
+// Control rows of D-7 beyond the fixture cases: the first matching row wins.
+func TestDeserializationPythonControlKinds(t *testing.T) {
+	for _, row := range []struct{ guard, control string }{
+		{"hmac.digest(KEY, data, 'sha256') != sig", "integrity_check"},
+		{"not hmac.compare_digest(hashlib.sha256(data).hexdigest(), sig)", "integrity_check"},
+		{"hashlib.md5(data).hexdigest() != sig", "unkeyed_hash"},
+		{"len(data) > 4096", "format_check"},
+	} {
+		t.Run(row.guard, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "app.py", `from flask import Flask, request, abort
+import hashlib, hmac, pickle
+KEY = b"fixture-key"
+app = Flask(__name__)
+@app.post('/value')
+def value():
+    data = request.data
+    sig = request.headers['X-Signature']
+    if `+row.guard+`:
+        abort(403)
+    return pickle.loads(data)
+`)
+			r, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := usesOf(r, analysis.DeserializationKind, "")
+			if len(got) != 1 {
+				t.Fatalf("got %d candidates", len(got))
+			}
+			f := got[0].Deserialization
+			if f.Paths[0].Protection != "guarded" || len(f.Controls) != 1 || f.Controls[0].Kind != row.control {
+				t.Fatalf("controls = %+v, paths = %+v, want one %s on a guarded path", f.Controls, f.Paths, row.control)
 			}
 		})
 	}

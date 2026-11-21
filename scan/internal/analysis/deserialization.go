@@ -6,8 +6,11 @@ import (
 	"strings"
 )
 
+// DeserializationKind is the claim kind of a verified deserializer call.
 const DeserializationKind = "deserialization_candidate"
 
+// Capabilities state what the verified operation's format can build. They are
+// contract facts read from the operation and its options.
 const (
 	DeserializationCodeExecution   = "code_execution"
 	DeserializationObjectInjection = "object_injection"
@@ -15,6 +18,8 @@ const (
 	DeserializationUnresolved      = "unresolved"
 )
 
+// Control kinds classify a recorded guard or restriction. The kind names what
+// the control is, never whether it is adequate.
 const (
 	DeserializationIntegrity   = "integrity_check"
 	DeserializationUnkeyedHash = "unkeyed_hash"
@@ -40,6 +45,8 @@ type DeserializationControl struct {
 	Context int    `json:"context"`
 }
 
+// Validate rejects a record whose operation, capability, option gap,
+// controls or operand paths are malformed.
 func (f *DeserializationFacts) Validate(deps, context int) error {
 	if f == nil || f.Operation == "" || f.ContractID == "" {
 		return fmt.Errorf("missing deserialization operation or contract")

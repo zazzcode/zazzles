@@ -122,7 +122,12 @@ def py_12():
 
 @app.post('/py-13')
 def py_13():
-    return jsonpickle.decode(string=request.data, safe=True)  # PY-13
+    return jsonpickle.decode(request.data)  # PY-13
+
+
+@app.post('/py-i3')
+def py_i3():
+    return jsonpickle.decode(string=request.data, safe=True)  # PY-I3
 
 
 @app.post('/py-n1')

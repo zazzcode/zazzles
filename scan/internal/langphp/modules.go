@@ -66,6 +66,11 @@ type phpSet struct {
 	classes *phpClassIndex
 	// objects numbers created objects.
 	objects int
+	// functions indexes function declarations and `use function` imports.
+	functions *phpFunctionBindings
+	// magicClasses caches the deserialization magic-method class evidence.
+	magicClasses      []analysis.Evidence
+	magicClassesReady bool
 }
 
 type phpWrite struct {

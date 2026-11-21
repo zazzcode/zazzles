@@ -244,3 +244,70 @@ export default function handler(req, res) {
 		t.Errorf("got %d deserialization candidates, want 2", count)
 	}
 }
+
+// Schema and version rows of D-5 beyond the paired fixture cases, including
+// the 4.0.0 boundary, and calls whose argument list carries a comment.
+func TestDeserializationJSOptions(t *testing.T) {
+	const none = "none"
+	for _, row := range []struct {
+		name, version, call, capability, gap string
+	}{
+		{"legacy default below the boundary", "3.99.99", "yaml.load(x)", "code_execution", ""},
+		{"default at the boundary", "4.0.0", "yaml.load(x)", none, ""},
+		{"safe schema on 3", "3.14.1", "yaml.load(x, { schema: yaml.DEFAULT_SAFE_SCHEMA })", none, ""},
+		{"core schema on 3", "3.14.1", "yaml.loadAll(x, { schema: yaml.CORE_SCHEMA })", none, ""},
+		{"failsafe schema on 4", "4.1.0", "yaml.load(x, { schema: yaml.FAILSAFE_SCHEMA })", none, ""},
+		{"default schema on 4", "4.1.0", "yaml.load(x, { schema: yaml.DEFAULT_SCHEMA })", none, ""},
+		{"default schema on 3", "3.14.1", "yaml.load(x, { schema: yaml.DEFAULT_SCHEMA })", "unresolved", "loader_unresolved"},
+		{"full schema on 4", "4.1.0", "yaml.load(x, { schema: yaml.DEFAULT_FULL_SCHEMA })", "unresolved", "loader_unresolved"},
+		{"full schema overrides safeLoadAll", "3.14.1", "yaml.safeLoadAll(x, { schema: yaml.DEFAULT_FULL_SCHEMA })", "code_execution", ""},
+		{"loadAll iterator before options", "3.14.1", "yaml.loadAll(x, () => {}, { schema: yaml.JSON_SCHEMA })", none, ""},
+		{"opaque options on load", "3.14.1", "yaml.load(x, opts)", "unresolved", "loader_unresolved"},
+		{"opaque options on safeLoad", "3.14.1", "yaml.safeLoad(x, opts)", "unresolved", "loader_unresolved"},
+		{"safeLoad with other options", "3.14.1", "yaml.safeLoad(x, { filename: 'body.yml' })", none, ""},
+		{"comment before the operand", "3.14.1", "serialize.unserialize(/* payload */ x)", "code_execution", ""},
+		{"comment after the operand", "4.1.0", "yaml.load(x /* trusted? */)", none, ""},
+		{"comment before a safe schema", "3.14.1", "yaml.load(x /* body */, { schema: yaml.JSON_SCHEMA })", none, ""},
+	} {
+		t.Run(row.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "package.json", `{"dependencies":{"js-yaml":"`+row.version+`"}}`)
+			writeSource(t, root, "app.js", `const express = require('express');
+const yaml = require('js-yaml');
+const serialize = require('node-serialize');
+const app = express();
+const opts = { schema: yaml.DEFAULT_FULL_SCHEMA };
+app.post('/value', (req, res) => {
+  const x = req.body.x;
+  res.json(`+row.call+`);
+});
+`)
+			r, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got []analysis.CandidateUse
+			for _, u := range r.Uses {
+				if u.Kind == analysis.DeserializationKind {
+					got = append(got, u)
+				}
+			}
+			if row.capability == none {
+				if len(got) != 0 {
+					t.Fatalf("unexpected candidate: %+v", got[0].Deserialization)
+				}
+				return
+			}
+			if len(got) != 1 {
+				t.Fatalf("got %d candidates", len(got))
+			}
+			f := got[0].Deserialization
+			if f.Capability != row.capability || f.OptionGap != row.gap {
+				t.Fatalf("incorrect facts: %+v", f)
+			}
+			if operand := got[0].Completeness.Evidence["deserialization_operand"]; len(operand) != 1 || operand[0].Text != "x" {
+				t.Errorf("operand evidence = %+v, want x", operand)
+			}
+		})
+	}
+}

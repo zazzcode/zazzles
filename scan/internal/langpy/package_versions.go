@@ -11,11 +11,29 @@ import (
 var pyYAMLRequirement = regexp.MustCompile(`(?i)^\s*py[-_]?yaml(?:\[[^\]]*\])?\s*==\s*([0-9]+\.[0-9]+(?:\.[0-9]+)?)\s*(?:[;#].*)?$`)
 var pythonExactVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+(?:\.[0-9]+)?$`)
 
+// pythonDirVersion is the PyYAML pin of one directory and whether the
+// directory has a manifest at all.
+type pythonDirVersion struct {
+	version string
+	found   bool
+}
+
+// pyYAMLVersion returns the exact PyYAML pin of the nearest directory that
+// has a manifest. Each directory is read once per source set.
 func (s *pythonSet) pyYAMLVersion(file string) string {
 	dir := filepath.Dir(filepath.FromSlash(file))
 	for {
-		if version, found := pythonPackageVersion(filepath.Join(s.root, dir)); found {
-			return version
+		abs := filepath.Join(s.root, dir)
+		pin, cached := s.packageVersions[abs]
+		if !cached {
+			pin.version, pin.found = pythonPackageVersion(abs)
+			if s.packageVersions == nil {
+				s.packageVersions = map[string]pythonDirVersion{}
+			}
+			s.packageVersions[abs] = pin
+		}
+		if pin.found {
+			return pin.version
 		}
 		if dir == "." {
 			return ""

@@ -12,6 +12,7 @@ import (
 
 func (f *pythonFlow) deserializationOperation(call, fn *sitter.Node, args []*sitter.Node, values []pythonValue) {
 	m := f.module
+	args, values = pyOperandArguments(args, values)
 	q := f.deserializationBinding(m, fn)
 	lib, method, _ := strings.Cut(q, ".")
 	facts := analysis.DeserializationFacts{Operation: q, Capability: analysis.DeserializationCodeExecution}
@@ -49,7 +50,7 @@ func (f *pythonFlow) deserializationOperation(call, fn *sitter.Node, args []*sit
 			}
 			name = className
 		}
-		ctorArgs := pyArgs(constructor)
+		ctorArgs, _ := pyOperandArguments(pyArgs(constructor), nil)
 		if len(ctorArgs) == 0 {
 			return
 		}
@@ -68,6 +69,23 @@ func (f *pythonFlow) deserializationOperation(call, fn *sitter.Node, args []*sit
 		return
 	}
 	f.recordDeserialization(call, fn, arg, operand, facts, restriction)
+}
+
+// pyOperandArguments drops the comments the grammar lists among a call's
+// arguments, so a position always names an argument.
+func pyOperandArguments(args []*sitter.Node, values []pythonValue) ([]*sitter.Node, []pythonValue) {
+	var nodes []*sitter.Node
+	var kept []pythonValue
+	for i, arg := range args {
+		if arg.Kind() == "comment" {
+			continue
+		}
+		nodes = append(nodes, arg)
+		if i < len(values) {
+			kept = append(kept, values[i])
+		}
+	}
+	return nodes, kept
 }
 
 func (f *pythonFlow) pickleSubclass(ctor *sitter.Node, name string) (analysis.Evidence, bool) {

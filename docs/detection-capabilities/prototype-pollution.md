@@ -1,9 +1,9 @@
 # Prototype pollution: coverage and known gaps
 
-[Analysis guidelines](README.md) · [Prototype pollution rules](prototype-pollution.md) · [Detection capabilities](../detection-capabilities.md)
+[Detection capabilities](../detection-capabilities.md) · [Prototype pollution rules](../analysis/prototype-pollution.md) · [Analysis guidelines](../analysis/README.md)
 
 This page lists what the `pollution` family finds, what it leaves in Review, and what it does not
-record at all. The [rules guide](prototype-pollution.md) explains how each form is read. Every
+record at all. The [rules guide](../analysis/prototype-pollution.md) explains how each form is read. Every
 row was checked with the scanner on a small application, a published library or a sample.
 
 A scan result for a write to `Object.prototype` (CWE-1321) is one of three things:

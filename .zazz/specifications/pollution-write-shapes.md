@@ -311,7 +311,7 @@ contract.
 The owner reviews D-9 to D-11 one choice at a time. Each accepted choice is listed with the
 limit it leaves, so the limit is known and can be taken up as a later capability. The
 identifiers refer to the user-facing list of every gap,
-[prototype pollution coverage](../../docs/analysis/prototype-pollution-coverage.md).
+[prototype pollution coverage](../../docs/detection-capabilities/prototype-pollution.md).
 
 | Choice | Owner decision | Limit accepted | To explore later |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 # Prototype pollution
 
-[Analysis guidelines](README.md) · [Coverage and known gaps](prototype-pollution-coverage.md) · [Detection capabilities](../detection-capabilities.md)
+[Analysis guidelines](README.md) · [Coverage and known gaps](../detection-capabilities/prototype-pollution.md) · [Detection capabilities](../detection-capabilities.md)
 
 The `pollution` family evaluates JavaScript and TypeScript application writes that can reach
 `Object.prototype`. Its evidence record is `prototype_write_candidate` and its finding type is
@@ -111,7 +111,7 @@ versions, controls, or input shape stay in Review.
 
 Recognition is bounded to the shapes above. A form outside them has no record, and no record is
 not a statement that the code is safe.
-[Coverage and known gaps](prototype-pollution-coverage.md) lists every form by outcome: recorded
+[Coverage and known gaps](../detection-capabilities/prototype-pollution.md) lists every form by outcome: recorded
 and decidable, recorded and left in Review, and not recorded. Each gap has an identifier and an
 example.
 

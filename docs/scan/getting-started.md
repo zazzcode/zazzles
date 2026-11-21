@@ -66,7 +66,16 @@ direnv allow                    # once per checkout, after reviewing .envrc
 
 Every worktree of this repository has its own `.env` and needs its own `direnv allow`.
 
+### Configure the judge and scan
 
-Build and run an offline scan to inspect source evidence. Enable `--judge` after configuring a
-provider if you want model assessment. [Running scans](running-scans.md#run) ·
-[Decision-model setup](decision-models.md#credentials-and-local-environment)
+Set the key and model for one provider in your local environment, then run with the matching
+`--judge` flag. For OpenAI Decisions, use `OPENAI_API_KEY` and
+`JUDGE_DECISION_MODEL=gpt-6-luna`.
+
+```bash
+./bin/scan --analyze --judge openai /path/to/app
+```
+
+Use the evidence-only workflow for development and troubleshooting without provider charges.
+[Provider setup for OpenAI, Gemini and Jev](decision-models.md#credentials-and-local-environment) ·
+[Running scans](running-scans.md#run)

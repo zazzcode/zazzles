@@ -8,17 +8,19 @@ application, install its dependencies, open its database, or make the outbound r
 the code. The acceptance corpus is DVWA at revision `a1978a2`; framework-specific entry discovery for Drupal and Symfony is planned. Verified Twig template-source
 operations are covered by the [template injection analyzer](detection-capabilities/template-injection.md).
 
+Configure a decision-model provider before running the security assessment.
+[Provider setup](decision-models.md#credentials-and-local-environment)
+
 ```sh
 go build -o bin/scan ./scan/cmd/scan
 ./bin/scan --routes --json /path/to/php-app
-./bin/scan --analyze --entry vulnerabilities/sqli/index.php --output-dir /path/to/findings /path/to/php-app
+./bin/scan --analyze --judge openai --entry vulnerabilities/sqli/index.php --output-dir /path/to/findings /path/to/php-app
 ```
 
 Omit `--entry` to discover all server-mapped `.php`/`.phtml` files, including mixed
 JS/TS/Python/PHP repositories. The output directory receives `<app>/run-<id>/findings.json`,
-`findings.html` and `findings.sarif`. Optional [decision assessment](decision-models.md)
-transmits bounded evidence only when requested. Structural findings remain useful without a
-model; neither mode certifies an application as safe.
+`findings.html` and `findings.sarif`. The judge assesses supported claims from bounded source evidence. For local development
+and troubleshooting, use [offline evidence inspection](running-scans.md#offline-development-and-troubleshooting).
 
 | Area | Implemented subset |
 | --- | --- |

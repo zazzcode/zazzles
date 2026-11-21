@@ -4,14 +4,15 @@
 
 **Code Scan** (`scan/`) analyzes JavaScript, TypeScript, Python, and PHP source for security
 vulnerabilities, evidence gaps, and code smells or poor coding practices that can impact security
-or performance.
+or performance. It uses a decision-model judge to assess source-backed claims and checks the
+answers against scanner evidence before classifying them.
 
 ## Run and read a scan
 
 | Guide | What it covers |
 |---|---|
 | [Getting started](getting-started.md) | Compiler requirements, building the scanner, and local configuration |
-| [Running scans](running-scans.md) | Offline and judged scans, entry and family selection, report output, and scan limits |
+| [Running scans](running-scans.md) | Judged scans, offline troubleshooting, scope, report output, and scan limits |
 | [Decision models](decision-models.md) | Providers, credentials, bounded request evidence, and rate controls |
 | [Interpreting results](interpreting-results.md) | Confirmed, poor-practice, Review, and Protected outcomes, evidence, counts, and remediation |
 | [CI/CD reports](ci.md) | Producing and retaining report artifacts in build pipelines |

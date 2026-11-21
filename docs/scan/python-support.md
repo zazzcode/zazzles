@@ -6,16 +6,19 @@ Zazzles analyzes a bounded Python subset through the same evidence, decision and
 as JavaScript/TypeScript. It reads source; it does not run the application, install its dependencies,
 open its database, or make the outbound requests found in the code.
 
+Configure a decision-model provider before running the security assessment.
+[Provider setup](decision-models.md#credentials-and-local-environment)
+
 ```sh
 go build -o bin/scan ./scan/cmd/scan
 ./bin/scan --routes --json /path/to/python-app
-./bin/scan --analyze --entry server/routes.py --output-dir /path/to/findings /path/to/python-app
+./bin/scan --analyze --judge openai --entry server/routes.py --output-dir /path/to/findings /path/to/python-app
 ```
 
 Omit `--entry` to discover all supported registration files, including mixed JS/TS/Python repositories.
 The output directory receives `<app>/run-<id>/findings.json`, `findings.html` and `findings.sarif`.
-Optional [decision assessment](decision-models.md) transmits bounded evidence only when requested.
-Structural findings remain useful without a model; neither mode certifies an application as safe.
+The judge assesses supported claims from bounded source evidence. For local development
+and troubleshooting, use [offline evidence inspection](running-scans.md#offline-development-and-troubleshooting).
 
 | Area | Implemented subset |
 | --- | --- |

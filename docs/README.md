@@ -9,7 +9,7 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 
 | Module | Documentation | What it covers |
 |---|---|---|
-| **Code Scan** | [Code Scan user documentation](scan/README.md) | Setup, running offline and judged scans, decision models, result interpretation, coverage, and analysis rules |
+| **Code Scan** | [Code Scan user documentation](scan/README.md) | Setup, decision-model judgment, result interpretation, coverage, and analysis rules |
 | **Fix** | [Fix user documentation](fix/README.md) | Planned agent skills, standards, and playbooks for remediating findings from Zazzles modules and external SAST, dependency audit, DAST, and endpoint probe / TLS & certificate scanners (such as Nuclei) |
 | **Endpoint Probe** | [Endpoint Probe user documentation](probe/README.md) | Planned authorized endpoint checks starting with TLS and certificates (similar to TLS & certificate scanners such as Nuclei), with remediation guidance |
 
@@ -18,7 +18,7 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 | Guide | What it covers |
 |---|---|
 | [Getting started](scan/getting-started.md) | Compiler requirements, building the scanner and local configuration |
-| [Running scans](scan/running-scans.md) | Offline and judged scans, entry and family selection, report output and scan limits |
+| [Running scans](scan/running-scans.md) | Judged scans, offline troubleshooting, scope, report output and scan limits |
 | [Decision models](scan/decision-models.md) | Providers, credentials, bounded request evidence and spending controls |
 | [Interpreting results](scan/interpreting-results.md) | Finding, poor-practice, Review and Protected outcomes, evidence, counts and remediation |
 | [Sample reports](samples/README.md) | Saved HTML, JSON and SARIF, target revisions and a verification walkthrough |
@@ -40,6 +40,5 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 
 ## First steps
 
-[Build the scanner](scan/getting-started.md#compile), [run a local scan](scan/running-scans.md#run), and open
-the printed HTML path. To assess supported claims with a decision model, follow the
-[provider setup](scan/decision-models.md#credentials-and-local-environment).
+[Build the scanner](scan/getting-started.md#compile), [configure a decision model](scan/decision-models.md#credentials-and-local-environment),
+and [run a judged scan](scan/running-scans.md#run). Open the printed HTML path to inspect results.

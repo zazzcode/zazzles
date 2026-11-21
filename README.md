@@ -4,13 +4,18 @@ Zazzles is a modular security project for analyzing application code, checking d
 endpoints, and remediating findings. **Code Scan** is available today. **Fix** and
 **Endpoint Probe** are planned modules.
 
+**Decision-model judgment is central to Code Scan.** Static analysis traces input to sensitive
+operations and records the controls on each path. A decision LLM evaluates that evidence to help
+distinguish vulnerabilities from protected or inconclusive paths and reduce false positives.
+Zazzles checks the answers against its source facts before assigning an outcome.
+
 [Modules](#modules) · [Run Scan](#quick-start) · [Detection capabilities](docs/scan/detection-capabilities.md) · [Sample reports](docs/samples/README.md) · [Documentation](docs/README.md)
 
 ## Modules
 
 | Module | Purpose | User docs | Status |
 |---|---|---|---|
-| [**Code Scan**](scan/README.md) (`scan/`) | Analyzes JavaScript, TypeScript, Python and PHP source for vulnerabilities, evidence gaps, and code smells or poor coding practices that can impact security or performance. Reports include the affected operation, input paths, observed controls and evidence gaps. Optional model assessment uses that evidence to judge supported claims. | [Scan docs](docs/scan/README.md) | Available and in active development |
+| [**Code Scan**](scan/README.md) (`scan/`) | Analyzes JavaScript, TypeScript, Python and PHP source for vulnerabilities, evidence gaps, and code smells or poor coding practices that can impact security or performance. Combines source-backed traces with a decision-model judge to classify supported claims. Reports show the operation, input paths, controls and evidence gaps. | [Scan docs](docs/scan/README.md) | Available and in active development |
 | [**Fix**](fix/README.md) (`fix/`) | Agent skills, standards and playbooks for fixing findings from Zazzles modules or external scanners — including SAST, dependency audit, DAST, and endpoint probe / TLS and certificate scanners such as Nuclei. Guides agents from finding evidence through a repair and verification. | [Fix docs](docs/fix/README.md) | Planned |
 | [**Endpoint Probe**](probe/README.md) (`probe/`) | Checks externally observable security settings on authorized endpoints (similar to TLS and certificate scanners such as Nuclei). Initial coverage will include TLS versions and configuration, expired certificates and related issues, with evidence and remediation recommendations. | [Probe docs](docs/probe/README.md) | Planned |
 
@@ -32,6 +37,8 @@ of `stage`, then point it at a local application checkout. [Setup guide](docs/sc
 
 <a id="1-build-the-scanner"></a>
 
+### 1. Build the scanner
+
 ```bash
 git clone --branch stage https://github.com/zazzcode/zazzles.git
 cd zazzles
@@ -40,26 +47,61 @@ go build -o bin/scan ./scan/cmd/scan
 
 The root compatibility entry point `go build -o bin/scan ./cmd/scan` builds the same executable.
 
-<a id="run"></a>
-<a id="3-scan-and-open-the-report"></a>
-
-Run a source-only scan and open the printed `findings.html` path. The same run folder contains
-JSON for tooling and SARIF for security platforms.
-
-```bash
-./bin/scan --analyze --output-dir "$HOME/zazzles-findings" /path/to/app
-```
-
 <a id="2-configure-openai-luna-decisions"></a>
 <a id="optional-use-google-gemini-decisions-instead"></a>
 
-To assess claims with a model, configure a provider and use `--judge`. The example caps the run
-at ten requests. Remaining candidates stay unassessed. [Decision-model setup](docs/scan/decision-models.md) · [Scan options](docs/scan/running-scans.md)
+### 2. Configure a decision model
+
+Choose OpenAI or Google Gemini for the standard workflow. Put the selected provider’s API key and
+one `JUDGE_DECISION_MODEL` assignment in your local, Git-ignored `.env`. Create it from
+[.env.sample](.env.sample) for a new setup. On an existing setup, edit the model line and keep your
+existing keys. Use a provider account with access to the selected Decisions model.
 
 ```bash
-./bin/scan --analyze --judge openai --judge-limit 10 \
-  --output-dir "$HOME/zazzles-findings" /path/to/app
+test -e .env || cp .env.sample .env
 ```
+
+| Provider | API key variable | `JUDGE_DECISION_MODEL` | Scan flag |
+| --- | --- | --- | --- |
+| [OpenAI Decisions](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` | `gpt-6-luna` | `--judge openai` |
+| [Google Gemini Decisions](https://aistudio.google.com/api-keys) | `GEMINI_API_KEY` | `gemini-decision-1` | `--judge gemini` |
+| [TypeSafe Jev](https://console.typesafe.ai/) | `TYPESAFE_API_KEY` | Explicit catalog ID, for example `jev-1.14.0` | `--judge jev` |
+
+Jev is verified against local stubs. The model ID comes from TypeSafe’s catalog. [Jev models](https://docs.typesafe.ai/models) · [Provider setup](docs/scan/decision-models.md#credentials-and-local-environment)
+
+Load your trusted `.env` in the shell that will run the scanner.
+
+```bash
+set -a
+. ./.env
+set +a
+```
+
+<a id="run"></a>
+<a id="3-scan-and-open-the-report"></a>
+
+### 3. Run a judged scan
+
+Run the command for the provider you configured.
+
+```bash
+# OpenAI
+./bin/scan --analyze --judge openai --output-dir "$HOME/zazzles-findings" /path/to/app
+
+# Google Gemini
+./bin/scan --analyze --judge gemini --output-dir "$HOME/zazzles-findings" /path/to/app
+
+# TypeSafe Jev
+./bin/scan --analyze --judge jev --output-dir "$HOME/zazzles-findings" /path/to/app
+```
+
+Open the printed `findings.html` path. The same folder contains JSON and SARIF. Provider requests
+may incur charges. A request cap leaves candidates outside it unassessed. [Scan options](docs/scan/running-scans.md)
+
+### Offline development and troubleshooting
+
+Omit `--judge` to inspect source traces or troubleshoot scanner behavior without model charges.
+These runs leave semantic assessments unrun. [Offline evidence inspection](docs/scan/running-scans.md#offline-development-and-troubleshooting)
 
 <a id="what-exists-today"></a>
 <a id="scan-current-implementation"></a>
@@ -79,8 +121,9 @@ framework practice checks. The [unsafe deserialization analyzer](docs/scan/detec
 
 Zazzles finds supported entry points, follows input to a sensitive operation and records guards
 and transformations along the path. It also flags code smells and poor coding practices that can
-impact security or performance. In a judged scan, the model answers bounded questions about
-that evidence. The scanner verifies the answers against its facts before classifying the claim.
+impact security or performance. The judge answers bounded questions about whether the observed
+controls are effective for the claim. The scanner validates the answers against the evidence and
+keeps unresolved claims in Review.
 [Technical approach](docs/technical-approach.md) · [Decision models](docs/scan/decision-models.md)
 
 <a id="how-fast-is-a-scan"></a>

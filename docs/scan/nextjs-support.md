@@ -10,12 +10,13 @@ decision questions then work exactly as they do for Express, Fastify and Hapi. E
 this page lists what Next.js adds and what to expect from a scan.
 
 Like the rest of zazzles, it reads source only. It does not install dependencies, build or start
-the app, generate the Prisma client, or make the requests it finds.
+the app, generate the Prisma client, or make the requests it finds. Configure a decision model
+for the security assessment. [Provider setup](decision-models.md#credentials-and-local-environment)
 
 ```sh
 go build -o bin/scan ./scan/cmd/scan
 ./bin/scan --routes /path/to/next-app
-./bin/scan --analyze --json --output-dir /path/to/findings /path/to/next-app
+./bin/scan --analyze --judge openai --json --output-dir /path/to/findings /path/to/next-app
 ```
 
 ## What is detected as a Next.js project

@@ -58,7 +58,7 @@ language or framework is not a claim that all its syntax, APIs, or vulnerable pa
 | **Node and Python input acquisition** | Shared transport-neutral acquisition/origin/type/transfer facts for Express/Fastify/Hapi ([PR #15](https://github.com/zazzcode/zazzles/pull/15)) and Python HTTP adapters ([PR #17](https://github.com/zazzcode/zazzles/pull/17)), plus opt-in provisional model-assisted route discovery | [Node input rules](../../docs/scan/analysis/node-inputs.md), [Python refactor results](../evaluation/python-input-refactor-results.md) |
 | **Architecture engine foundation (phases 0–4)** | Compatibility golden baseline, layered source index and bounded callable summaries ([PR #24](https://github.com/zazzcode/zazzles/pull/24)), single-walk concurrent language runners ([PR #25](https://github.com/zazzcode/zazzles/pull/25)), isolated `langjs`/`langpy`/`langphp` packages ([PR #26](https://github.com/zazzcode/zazzles/pull/26)), and parallel judge scheduling ([PR #27](https://github.com/zazzcode/zazzles/pull/27)) | [Architecture README](../architecture/README.md), [baseline measurements](../evaluation/architecture-baseline.md) |
 | **Model-assisted evidence resolution & noise reduction** | Verified citation follow-ups for resolvable scanner blockers ([PR #30](https://github.com/zazzcode/zazzles/pull/30)), undecidable-validation and unresolvable-blocker gates ([PR #29](https://github.com/zazzcode/zazzles/pull/29)), compact wire & request size reduction ([PR #14](https://github.com/zazzcode/zazzles/pull/14), [PR #33](https://github.com/zazzcode/zazzles/pull/33)), and exact-request offline replay | [Resolution results](../evaluation/model-resolution-results.md), [size reduction results](../evaluation/judge-request-size-reduction-results.md) |
-| **Decision-model controls, packs, and reports** | OpenAI (`gpt-6-luna`), optional Gemini (`gemini-decision-1`), and stub-tested Jev transports; `--only-family`/`--skip-family`, RPM/TPM pacing, context deduplication; embedded analysis packs & `facts.md`; canonical JSON, standalone HTML, SARIF, and saved-report export | [Decision models](../../docs/scan/decision-models.md), [running scans](../../docs/scan/running-scans.md), [catalog architecture](../architecture/analysis-packs.md) |
+| **Decision-model controls, packs, and reports** | OpenAI (`gpt-6-luna`) and Google Gemini (`gemini-decision-1`) for judged scans, plus a stub-tested Jev adapter; `--only-family`/`--skip-family`, RPM/TPM pacing, context deduplication; embedded analysis packs & `facts.md`; canonical JSON, standalone HTML, SARIF, and saved-report export | [Decision models](../../docs/scan/decision-models.md), [running scans](../../docs/scan/running-scans.md), [catalog architecture](../architecture/analysis-packs.md) |
 
 <a id="next-up"></a>
 
@@ -170,7 +170,7 @@ These anchors preserve older links; the completed and planned tables above own c
 
 <a id="active-delivery-shared-gemini-then-path-traversal"></a>
 <a id="delivered-foundation-optional-gemini-adapter-and-path-traversal"></a>
-**Provider/path foundation:** [optional Gemini verification](../evaluation/gemini-decisions-results.md),
+**Provider/path foundation:** [Gemini verification](../evaluation/gemini-decisions-results.md),
 [path results](../evaluation/path-traversal-results.md), and
 [Tier-1 hardening](../specifications/path-traversal-hardening.md).
 

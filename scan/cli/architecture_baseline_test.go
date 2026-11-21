@@ -127,7 +127,8 @@ func architectureFixtures(t *testing.T) []string {
 			}
 		}
 	}
-	out = append(out, "internal/langjs/testdata/express-login", "internal/langjs/testdata/string-flow",
+	out = append(out, "internal/langjs/testdata/deserialization/js", "internal/langjs/testdata/deserialization/ts",
+		"internal/langjs/testdata/express-login", "internal/langjs/testdata/string-flow",
 		"internal/langjs/testdata/pollution/lodash-old", "internal/langjs/testdata/pollution/source-writes")
 	// One fixture per added write shape; the probes repeat their vulnerable function.
 	for _, pattern := range []string{"shapes-*", "explore-*", "start-*"} {

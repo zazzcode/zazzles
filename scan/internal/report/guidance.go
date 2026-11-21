@@ -46,6 +46,8 @@ func guidance(use analysis.CandidateUse) Guidance {
 		g = Guidance{Title: "Restrict prototype traversal before writing keys", Actions: []string{"Use a patched version of the write library.", "Allow known keys or reject prototype-related names at every traversal level. Require own-property access for existing target containers."}}
 	case "code", "code_execution_candidate":
 		g = Guidance{Title: "Keep request text out of code", Actions: []string{"Replace eval/exec with data parsing or a restricted expression grammar.", "Do not rely on vm or a sandbox library as a security boundary; constrain every code operand."}}
+	case "deserialization", analysis.DeserializationKind:
+		g = Guidance{Title: "Parse untrusted bytes as plain data", Actions: []string{"Choose a data-only format or a verified safe loader or schema.", "When trusted serialized messages are required, enforce keyed integrity verification of the same bytes before deserializing."}}
 	case "upload", "file_upload_candidate":
 		g = Guidance{Title: "Restrict what an upload can become", Actions: []string{"Generate the stored file name and choose its extension on the server from an allow-list or the verified content type.", "Check the content (magic bytes, image decoding) or re-encode it, and store uploads outside the served document root."}}
 	case "redirect", "open_redirect_candidate":

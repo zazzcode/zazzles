@@ -15,7 +15,7 @@ func Enrich(r *analysis.AnalysisReport) {
 	r.FindingTypes = append([]analysis.FindingType(nil), findingTypes...)
 	for _, t := range interpreterFindingTypes {
 		for _, u := range r.Uses {
-			if u.Code != nil && u.Kind != "template_injection_candidate" && t.ID == "code-injection" || u.Kind == "template_injection_candidate" && t.ID == "template-injection" || u.Redirect != nil && t.ID == "open-redirect" || u.Upload != nil && t.ID == "unrestricted-upload" {
+			if u.Code != nil && u.Kind != "template_injection_candidate" && t.ID == "code-injection" || u.Kind == "template_injection_candidate" && t.ID == "template-injection" || u.Redirect != nil && t.ID == "open-redirect" || u.Upload != nil && t.ID == "unrestricted-upload" || u.Deserialization != nil && t.ID == "unsafe-deserialization" {
 				r.FindingTypes = append(r.FindingTypes, t)
 				break
 			}
@@ -286,6 +286,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if a.DeduplicatedFrom != "" {
 		f.Uncertainty += " Assessment derived from equivalent entry context " + a.DeduplicatedFrom + "; scanner policy was applied independently to this candidate."
+	}
+	if u.Deserialization != nil {
+		describeDeserialization(u, &f)
 	}
 	f.Recommendations = scopedGuidance(u, f)
 	if u.Code != nil || u.Redirect != nil {

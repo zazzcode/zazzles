@@ -69,3 +69,25 @@ func describeUpload(u analysis.CandidateUse, f *analysis.Finding) {
 	}
 	f.Protection = "Upload assessment: type restriction " + displayLabel(a.Answers["type_restriction"]) + ", exposure " + displayLabel(a.Answers["execution_exposure"]) + ", coverage " + displayLabel(a.Answers["protection_coverage"]) + ". Scanner policy: " + a.Reason
 }
+
+// describeDeserialization presents only the capability established by the contract.
+func describeDeserialization(u analysis.CandidateUse, f *analysis.Finding) {
+	f.Title = "Unsafe deserialization needs review"
+	f.Summary = "The data operand of " + u.Deserialization.Operation + " has a recorded dependency."
+	a := u.Assessment
+	if a.Status == "completed" && a.QuestionVersion == analysispacks.DeserializationProtocol && len(a.BlockingGaps) == 0 && a.FindingStatus == "confirmed_vulnerability" {
+		f.RecordType, f.Status = "finding", "confirmed_vulnerability"
+		f.Title = "Unsafe deserialization of request data"
+		impact := "code execution by format design"
+		if u.Deserialization.Capability == analysis.DeserializationObjectInjection {
+			impact = "object injection: effect depends on the classes available"
+		}
+		f.Summary = "Request-controlled bytes reach " + u.Deserialization.Operation + ", which supports " + impact + " (CWE-502)."
+	} else if f.Status == "protected_for_claim" {
+		f.Title = "Deserialization control covers the data operand"
+		f.Summary = "The assessment supports protection of every recorded path to " + u.Deserialization.Operation + "."
+	}
+	if u.Assessment.Reason != "" {
+		f.Protection = u.Assessment.Reason
+	}
+}

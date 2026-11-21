@@ -116,6 +116,8 @@ func constantDestination(u analysis.CandidateUse) bool {
 // claimFamily groups candidate kinds that are one claim family.
 func claimFamily(u analysis.CandidateUse) string {
 	switch {
+	case u.Kind == analysis.DeserializationKind:
+		return "deserialization"
 	case u.Redirect != nil:
 		return "redirect"
 	case u.Kind == "template_injection_candidate":

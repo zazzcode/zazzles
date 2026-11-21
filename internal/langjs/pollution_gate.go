@@ -16,7 +16,7 @@ import (
 //
 // A test on the operand itself and a plain `store[key]` existence test are not
 // gates: an inherited key passes both.
-func (f *flow) pollutionLookupGates(deps []analysis.Dependency, guard pollutionGuard) []analysis.Evidence {
+func (f *flow) pollutionLookupGates(sink *sitter.Node, deps []analysis.Dependency, guard pollutionGuard) []analysis.Evidence {
 	var gates []analysis.Evidence
 	add := func(m *sourceModule, cond *sitter.Node) {
 		e := m.evidence("key_guard", cond)
@@ -48,9 +48,43 @@ func (f *flow) pollutionLookupGates(deps []analysis.Dependency, guard pollutionG
 					add(m, branch.ChildByFieldName("condition"))
 				}
 			})
+		case e.Kind == "helper_call":
+			// The call that leads to the write may itself be the guarded operand
+			// of `test && call()` or `test ? call() : other`.
+			for _, cond := range pollutionExpressionGates(n) {
+				add(m, cond)
+			}
 		}
 	}
+	for _, cond := range pollutionExpressionGates(sink) {
+		add(f.module, cond)
+	}
 	return gates
+}
+
+// pollutionExpressionGates lists the tests that select an expression inside its
+// statement: the left side of `&&` or `||` when the expression is on the right,
+// and the condition of a conditional expression that holds it in an arm.
+func pollutionExpressionGates(n *sitter.Node) []*sitter.Node {
+	var conds []*sitter.Node
+	for child, parent := n, n.Parent(); parent != nil; child, parent = parent, parent.Parent() {
+		switch parent.Kind() {
+		case "binary_expression":
+			op, left := parent.ChildByFieldName("operator"), parent.ChildByFieldName("left")
+			if op != nil && left != nil && (op.Kind() == "&&" || op.Kind() == "||") && !sameNode(left, child) {
+				conds = append(conds, left)
+			}
+		case "ternary_expression":
+			if cond := parent.ChildByFieldName("condition"); cond != nil && !sameNode(cond, child) {
+				conds = append(conds, cond)
+			}
+		case "parenthesized_expression", "await_expression", "assignment_expression", "arguments", "call_expression",
+			"as_expression", "non_null_expression", "satisfies_expression":
+		default:
+			return conds
+		}
+	}
+	return conds
 }
 
 // pollutionLeaves reports a branch that ends by returning or throwing.

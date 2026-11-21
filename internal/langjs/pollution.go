@@ -116,7 +116,7 @@ func (f *flow) recordPollution(sink *sitter.Node, writeIndex int, operands []pol
 
 	// A test on this path that depends on a call taking the operand is a guard
 	// the scanner has not read. Its effect on the key is unknown.
-	if gates := f.pollutionLookupGates(deps, guard); len(gates) > 0 {
+	if gates := f.pollutionLookupGates(sink, deps, guard); len(gates) > 0 {
 		guard.unknown = true
 		if guard.kind == "" {
 			guard.kind = "unknown"

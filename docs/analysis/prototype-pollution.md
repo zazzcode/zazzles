@@ -96,8 +96,9 @@ by a fresh object has no record, and neither does one replaced after an own-prop
 replaces an inherited slot too.
 
 A test on the request path whose outcome depends on a call that takes the key operand is a guard
-the scanner has not read: `if (!known.has(key)) return`, or `const row = find(key)` followed by
-an exit when `row` is missing. A `Map` lookup rejects a prototype key and another function may
+the scanner has not read: `if (!known.has(key)) return`, `const row = find(key)` followed by
+an exit when `row` is missing, or the same test written as `known.has(key) && write(key)` or a
+conditional expression. A `Map` lookup rejects a prototype key and another function may
 accept it. The record carries the test as key-guard evidence and stays in Review with
 `key_guard_coverage_unknown`. A test on the operand itself and a plain `store[key]` existence
 test are not such guards, because an inherited key passes both.

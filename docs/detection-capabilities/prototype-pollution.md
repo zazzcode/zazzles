@@ -46,7 +46,7 @@ Guards the scanner reads and credits:
 
 | ID | Form | Example | Reason on the record |
 |---|---|---|---|
-| `PP-R01` | A test that depends on a call taking the key | `if (!known.has(key)) return`, or `const row = find(key); if (row == null) return` | `key_guard_coverage_unknown`. The scanner does not read what the call accepts |
+| `PP-R01` | A test that depends on a call taking the key | `if (!known.has(key)) return`; `const row = find(key); if (row == null) return`; `known.has(key) && write(key)`; `known.has(key) ? write(key) : null` | `key_guard_coverage_unknown`. The scanner does not read what the call accepts. A `Map` or `Set` lookup makes the write unreachable and is not Protected; a helper around a plain object lookup lets a prototype key through and is not Confirmed |
 | `PP-R02` | A key test in a helper that calls another function, or an assertion on the key before a recursive walk | `assert.ok(!BAD.includes(key))` | `key_guard_coverage_unknown` |
 | `PP-R03` | A comparison on the parts of a caller's array with no type test | `if (part === '__proto__') return; cursor = cursor[part]` | `key_guard_coverage_unknown`. A nested array such as `['__proto__']` passes the comparison. The code is exploitable and is not Confirmed |
 | `PP-R04` | Array parts type-checked another way | `path.every(p => typeof p === 'string')`, or `if (typeof part === 'string') { … } else return` | `key_guard_coverage_unknown`. Only an exit on `typeof part !== 'string'` is credited |
@@ -54,6 +54,7 @@ Guards the scanner reads and credits:
 | `PP-R06` | Another call with no definition in the scan receives the same input | `console.log(req.body)` before the write, or an unknown call after it | `input_helper_unresolved`, although neither can stop the write |
 | `PP-R07` | Keys from an input whose shape is not typed | `store[req.query.a][req.query.b] = v` | `key_control_unknown` |
 | `PP-R08` | A Lodash call with a version range and no lockfile | `"lodash": "^4.17.4"` | `version_unresolved` |
+| `PP-R10` | The key is checked in route middleware, not in the handler | `app.post('/w', checkKey, handler)` where `checkKey` tests `known.has(req.body.key)` | The check is not read as a guard of the write. The record is raw, and it is Review only when another blocker such as `input_helper_unresolved` happens to apply |
 | `PP-R09` | A deep write into a null-prototype root | `merge(Object.create(null), req.body)` | `null_prototype_root`. Only the first lookup is covered |
 
 ## Not recorded

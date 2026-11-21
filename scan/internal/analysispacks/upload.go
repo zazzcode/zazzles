@@ -21,7 +21,7 @@ var uploadContracts = []string{PHPMoveUploadedFile, NodeExpressFileupload, NodeM
 // operandFamily reports the operand-path families that share the
 // interpreter descriptor and selection shape.
 func operandFamily(name string) bool {
-	return name == "code" || name == "redirect" || name == "upload"
+	return name == "code" || name == "redirect" || name == "upload" || name == "deserialization"
 }
 
 // UploadContract returns the semantics of a verified upload write.

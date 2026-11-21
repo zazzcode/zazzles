@@ -110,7 +110,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		}
 		input := "source.node-input-v2"
 		switch family.Name {
-		case "code", "redirect", "upload", "pollution":
+		case "code", "redirect", "upload", "pollution", "deserialization":
 			input = "source.node-input-" + family.Name + "-v1"
 		case "path":
 			input = "source.node-input-path-v2"
@@ -131,8 +131,8 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}
 			input = "source.php-input-v1"
-			if family.Name == "upload" {
-				input = "source.php-input-upload-v1"
+			if family.Name == "upload" || family.Name == "deserialization" {
+				input = "source.php-input-" + family.Name + "-v1"
 			}
 			if use.Kind == TemplateKind {
 				input = "source.php-input-template-v1"

@@ -30,6 +30,8 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return interpreterComponentQuestions("code")
 		case "open_redirect_candidate":
 			return interpreterComponentQuestions("redirect")
+		case analysis.DeserializationKind:
+			return interpreterComponentQuestions("deserialization")
 		case "file_upload_candidate":
 			return interpreterComponentQuestions("upload")
 		case "ssrf_candidate":

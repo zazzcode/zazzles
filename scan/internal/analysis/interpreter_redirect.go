@@ -33,6 +33,9 @@ func (u CandidateUse) CodePaths() []CommandPath {
 	if u.Upload != nil {
 		return u.Upload.Paths
 	}
+	if u.Deserialization != nil {
+		return u.Deserialization.Paths
+	}
 	return nil
 }
 

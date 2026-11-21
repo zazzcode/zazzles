@@ -52,16 +52,17 @@ type ValueTransform struct {
 
 // CandidateUse is a security-sensitive value use needing claim-specific analysis.
 type CandidateUse struct {
-	InputFacts *InputFacts         `json:"input_facts,omitempty"`
-	Components *ComponentSelection `json:"analysis_components,omitempty"`
-	XSS        *XSSFacts           `json:"xss,omitempty"`
-	Command    *CommandFacts       `json:"command,omitempty"`
-	Path       *PathFacts          `json:"path,omitempty"`
-	Pollution  *PollutionFacts     `json:"pollution,omitempty"`
-	Code       *CodeFacts          `json:"code,omitempty"`
-	Redirect   *RedirectFacts      `json:"redirect,omitempty"`
-	Upload     *UploadFacts        `json:"upload,omitempty"`
-	Outbound   *OutboundFacts      `json:"outbound,omitempty"`
+	InputFacts      *InputFacts           `json:"input_facts,omitempty"`
+	Components      *ComponentSelection   `json:"analysis_components,omitempty"`
+	XSS             *XSSFacts             `json:"xss,omitempty"`
+	Command         *CommandFacts         `json:"command,omitempty"`
+	Path            *PathFacts            `json:"path,omitempty"`
+	Pollution       *PollutionFacts       `json:"pollution,omitempty"`
+	Code            *CodeFacts            `json:"code,omitempty"`
+	Redirect        *RedirectFacts        `json:"redirect,omitempty"`
+	Deserialization *DeserializationFacts `json:"deserialization,omitempty"`
+	Upload          *UploadFacts          `json:"upload,omitempty"`
+	Outbound        *OutboundFacts        `json:"outbound,omitempty"`
 	// StoredOrigin is write-set evidence for a record whose stored origin is
 	// unresolved (blocked by storage_origin_unresolved). It is evidence, not a
 	// verdict: the record stays Review.

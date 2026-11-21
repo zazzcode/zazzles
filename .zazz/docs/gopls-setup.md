@@ -47,7 +47,8 @@ install flow and troubleshooting.
 
 1. Install gopls as above.
 2. Install the plugin. In a terminal session enter
-   `/plugin install gopls-lsp@claude-plugins-official`. In the desktop app or the VS Code extension, install `gopls-lsp` from the app's plugin screen.
+   `/plugin install gopls-lsp@claude-plugins-official`. In the desktop app or the VS Code
+   extension, install `gopls-lsp` from the app's plugin screen.
 3. Start a new session in the assigned worktree.
 
 The plugin provides two things:

@@ -138,6 +138,9 @@ Out of scope:
   version with a verified fix for the operation has no record. An unresolved range or distribution
   stays Review with `version_unresolved`. The advisory lists affected standalone `lodash.set`
   3.7.0–4.3.2 and `lodash.setwith` through 4.3.2, with no patched release in those package rows.
+  The same advisory lists `lodash.update` and `lodash.updatewith` through 4.10.2 and `lodash.pick`
+  4.0.0–4.4.0, also with no patched release. `update`, `updateWith` and `pick` are outside
+  `lodash-set-v1` today (OQ-4).
   Use 4.17.19 as the patched main-bundle test and 4.17.20 as the patched per-method-file test.
   Keep an unresolved per-method import at the 4.17.19 boundary in Review when that distribution
   cannot be verified. Standalone controls include `lodash.merge` 4.6.1/4.6.2,
@@ -181,6 +184,11 @@ Out of scope:
   | `merge-deep` | `3.0.2` (CVE-2021-26707) | `3.0.3` | Recursive merge and incomplete key protection. [Advisory](https://github.com/advisories/GHSA-r6rj-9ch6-g264), [upstream fix](https://github.com/jonschlinkert/merge-deep/commit/11e5dd56de8a6aed0b1ed022089dbce6968d82a5) |
   | `json5` | `2.2.1` (CVE-2022-46175) | `2.2.2` | Returned-object prototype mutation. Scope control for the shared `Object.prototype` write claim at both pins. [Maintainer advisory](https://github.com/json5/json5/security/advisories/GHSA-9c47-m6qq-7p4h) |
   | `counterpart` | `0.18.6` per the advisory's structured npm range (CVE-2025-57354) | No patched release in the advisory. Review the source before promoting the row to a keyed positive | Translation-key processing. [Advisory](https://github.com/advisories/GHSA-2488-w585-72ch) |
+  | `minimist` | `>=1.0.0 <1.2.3` and `<0.2.1` (CVE-2020-7598) | `1.2.3` fixes that advisory only. `1.2.3`–`1.2.5` remain affected by CVE-2021-44906; `1.2.6` is the patched control | Argument-key path write. `1.2.3`–`1.2.5` is a published incomplete fix, a bypass-sibling range. [First advisory](https://github.com/advisories/GHSA-vh95-rmgr-6w4m), [second advisory](https://github.com/advisories/GHSA-xvch-5gv4-984h) |
+  | `yargs-parser` | `>=16.0.0 <18.1.1`, and the earlier ranges in the advisory (CVE-2020-7608) | `18.1.1`, `15.0.1`, `13.1.2`, `5.0.1` by release line | Argument-key path write. [Advisory](https://github.com/advisories/GHSA-p9pc-299p-vxgp) |
+  | `merge` | `<2.1.1` (CVE-2020-28499, `_recursiveMerge`) | `2.1.1` | Recursive merge. [Advisory](https://github.com/advisories/GHSA-7wpw-2hjm-89gp) |
+  | `set-in` | `<2.0.1` (CVE-2020-28273); `<2.0.3` (CVE-2022-25354) | `2.0.3` for those two. `2.0.5` for CVE-2026-26021 | Path write. `2.0.1`–`2.0.2` is a published incomplete fix. `2.0.3`–`2.0.4` is a control: the CVE-2026-26021 proof first replaces `Array.prototype.includes`, so the key check holds unless the runtime is already tampered with. [2020](https://github.com/advisories/GHSA-qr4p-c9wr-phr6), [2022](https://github.com/advisories/GHSA-6956-83fg-5wc5), [2026](https://github.com/advisories/GHSA-2c4m-g7rx-63q7) |
+  | `qs` | `<6.10.3` and the backport lines (CVE-2022-24999) | `6.10.3`, `6.9.7`, `6.8.3`, `6.7.3`, `6.6.1`, `6.5.3`, `6.4.1`, `6.3.3`, `6.2.4` | Process hang from a `__proto__` key. Scope control: the advisory reports no shared `Object.prototype` write. [Advisory](https://github.com/advisories/GHSA-hrpp-h998-j3pp) |
   | React Server Components | `react-server-dom-*` 19.2.0 (CVE-2025-55182) | 19.2.1 historical fix pin for this CVE | Decoder and access checkpoint owned by phase 7 AC2. [React advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components) |
 
 - **D-4. Source-visible writes.** Three shapes are recognized in scanned source, including
@@ -193,7 +201,12 @@ Out of scope:
     a single statement or block and then assigns through the last part.
   - **Nested computed write.** `a[k1][k2] = v` where `k1` is not a constant. Earlier
     conditional writes to the receiver lookup slot require heap-flow evidence and fall outside
-    the direct-write rule.
+    the direct-write rule, except a write that only fills an absent slot
+    ([write shapes](pollution-write-shapes.md) D-9).
+
+  [Write shapes](pollution-write-shapes.md) widens each shape: more key enumerators, recursion
+  through a local, array and regular-expression paths, `reduce` and `while` walks, unflatten, and
+  whole-path deny-lists.
 
   Anything else that might write through a dynamic key is not a candidate. The limit is stated in
   the guide, not hidden.
@@ -338,6 +351,17 @@ and corpus evidence.
   `set-value` and `minimist` have published pollution advisories. Add contracts in stage 1, or
   only when a sample or corpus row needs one? Recommendation: only when needed. Three of them
   enter as phase 7 controls and are then source-visible in library mode.
+- **OQ-4. Lodash `update`, `updateWith` and `pick`.** GHSA-p6mc-m468-83gw lists their standalone
+  packages as affected with no patched release. Add them to `lodash-set-v1`, or leave them out
+  until a sample uses one? Recommendation: add `update` and `updateWith`, which take the same
+  path argument as `set`; confirm the `pick` write path from the fix diff before adding it.
+- **OQ-5. Query strings as a key operand.** Express's default parser builds nested objects from
+  bracket syntax, so `req.query.x` is not always a scalar. `qs` drops any parameter whose key has
+  a segment naming an `Object.prototype` property unless `allowPrototypes` or `plainObjects` is
+  set ([`parse.js` at 6.10.3](https://github.com/ljharb/qs/blob/v6.10.3/lib/parse.js#L171-L193)).
+  Treat a query origin as unable to carry a prototype key under the default parser and as
+  `key_control_unknown` when the application sets a custom query parser? Recommendation: yes,
+  with the parser setting recorded as the evidence.
 
 ## 12. Run log protocol
 
@@ -394,3 +418,10 @@ arguments. D-3 records `object-path` and `merge-deep` as affected/patched librar
 A fixture exercises a recursive merge through an import alias and forwarding helper, a split-path
 write with an unbraced loop, a path write with an own-property guard, and a read-only traversal
 control. The test verifies the request operand and the write site in the imported module.
+
+### 2026-11-20 — Checked an owner-supplied library list against the advisory database
+
+The owner supplied a search list of seven packages. Each CVE was read from the GitHub Advisory
+Database. D-3 gains `minimist`, `yargs-parser`, `merge`, `set-in` and `qs` rows, with two published
+incomplete fixes marked as bypass-sibling ranges and two entries marked as controls. `lodash` and
+`counterpart` were already recorded. OQ-4 and OQ-5 are new. No code or analyzer behaviour changed.

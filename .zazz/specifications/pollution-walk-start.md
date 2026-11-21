@@ -1,10 +1,15 @@
 # Prototype pollution walk start (module-level, local and inline walks)
 
-- **Status** Proposal, drafted 2026-11-21 at the owner's request. No code is written.
-- **Worktree and branch** Assigned by the owner. The analyzer lives on
-  `prototype-polution-analyzer` until it merges; start from `stage` after that.
-- **Baseline** `prototype-polution-analyzer` at `ed94711`.
+- **Status** Proposal, drafted 2026-11-21 at the owner's request and updated the same day after
+  the owner's review of the write shapes. No code is written. Ready for a new session.
+- **Worktree and branch** A new sibling worktree and branch, assigned by the owner. The analyzer
+  is on `prototype-polution-analyzer` (draft PR #35) until it merges. Start from `stage` after
+  that merge, or from that branch on the owner's word.
+- **Baseline** `prototype-polution-analyzer` at `dafd25d`. Re-run the AC1 test on the starting
+  commit and record its SHA in the run log.
 - **Prerequisite** [Prototype pollution write shapes](pollution-write-shapes.md), merged.
+- **Closes** `PP-N01` and `PP-N02` of
+  [prototype pollution coverage](../../docs/detection-capabilities/prototype-pollution.md).
 - **Delivery** One draft PR into `stage`.
 - **Run log** `.zazz/ephemeral/pollution-walk-start-run-log.md`
 - **Source** Owner review of write shapes D-9, the choice "a non-parameter start is read only
@@ -34,8 +39,8 @@ existing scans. This contract makes the change with its own noise check.
 
 ### Baseline today
 
-Probe fixtures, one Express application each, scanned with the analyzer at `ed94711`. They are
-kept under the container's `_test-findings/pollution-walk-start/probes/`.
+Probe fixtures, one Express application each, scanned with the analyzer at `dafd25d`. They are
+committed under `internal/langjs/testdata/pollution/start-probes/`. No test reads them yet.
 
 | Probe | Walk starts from | Pollution records |
 |---|---|---|
@@ -57,12 +62,18 @@ through its first lookup and must not become a raw candidate.
   section 11.1. This contract changes the second choice of D-9 and nothing else there.
 - [Prototype pollution analyzer](prototype-pollution.md): D-5 to D-9 and AC4, the rule for a
   null-prototype root.
-- [Analysis guide](../../docs/analysis/prototype-pollution.md), the shapes and limits.
-- Code: `pollutionPathWrite`, `pollutionCursorStart` and `pollutionRootGuard` in
-  `internal/langjs/pollution_path_walk.go`; `pollutionCall` and `recordPollution` in
-  `internal/langjs/pollution.go`; `sourcePollutionWrites` in
-  `internal/langjs/pollution_writes.go`; `pollutionNullTarget` in
-  `internal/langjs/pollution_lodash.go`.
+- [Analysis guide](../../docs/analysis/prototype-pollution.md), how each shape and guard is read.
+- [Coverage and known gaps](../../docs/detection-capabilities/prototype-pollution.md), the page
+  this contract updates. Every gap there has an identifier.
+- Code in `internal/langjs`:
+  - `pollution_path_walk.go`: `pollutionPathWrite`, `pollutionCursorStart`, `pollutionRootGuard`
+    and `pollutionWalkGuard`. Every walk form resolves its start through `pollutionPathWrite`.
+  - `pollution_walk_forms.go`: the `forEach` walk and the recursive walk.
+  - `pollution_path_parts.go`: where the parts of a path come from.
+  - `pollution_writes.go`: `sourcePollutionWrites`, which reads a called function, and
+    `pollutionAssignment`, the one rule that reads the handler body directly.
+  - `pollution.go`: `pollutionCall` and `recordPollution`. `pollution_gate.go`: unread guards
+    on the request path. `pollution_lodash.go`: `pollutionNullTarget`.
 
 ## 3. Invariants
 
@@ -72,7 +83,10 @@ through its first lookup and must not become a raw candidate.
 - A start the scanner cannot identify produces no record. It is never recorded as raw on a guess.
 - A null-prototype start covers only the first lookup: Review with `null_prototype_root`, as today.
 - Every guard rule of the write shapes contract applies unchanged: the key-guard listing, the
-  type test for untyped array parts, whole-path deny-lists and unread guards on the key.
+  type test for untyped array parts, whole-path deny-lists, one-line helper key tests, and
+  unread guards on the key written as an `if`, with `&&`, or as a conditional expression.
+- A limit is written down only after it is checked with the scanner on a few-line application.
+  The owner's review of the write shapes found several unverified limits wrong in both directions.
 - Existing pollution tests pass unchanged. Request digests of every other family are unchanged,
   and `TestArchitectureBaseline` changes only by new fixture rows.
 - No paid call is made by this contract.
@@ -86,7 +100,7 @@ through its first lookup and must not become a raw candidate.
 | `internal/langjs/pollution_shapes_test.go`, `internal/langjs/testdata/pollution/start-*/` | Modified, new | Baseline test and one fixture set per start |
 | `internal/judge/pollution_shapes_test.go` | Modified | Stub-answer policy cases for the new fixture sets |
 | `cmd/scan/architecture_baseline_test.go`, `cmd/scan/testdata/architecture-baseline.json` | Modified | Fixture registration; new fixture rows only |
-| `docs/analysis/prototype-pollution.md`, `docs/detection-capabilities.md` | Modified | The accepted starts; the closed gap removed from the known gaps |
+| `docs/detection-capabilities/prototype-pollution.md`, `docs/analysis/prototype-pollution.md` | Modified | `PP-N01` and `PP-N02` move to the recorded forms; any limit found gets a new identifier. The guide states the accepted starts |
 | `.zazz/evaluation/pollution-walk-start-results.md` | New | Per-probe outcome and the noise check |
 | `pollution-write-shapes.md`, `.zazz/specifications/README.md`, `.zazz/evaluation/recall-gap-inventory/cases.json` | Modified | Section 11.1 row, index, key rows for new sample records |
 
@@ -95,7 +109,9 @@ Out of scope:
 - A recursive merge whose target is not a parameter. Its recursion needs the target as an
   argument, so the shape does not arise.
 - Reaching a library's core function through its public API (phases 7 and 8).
-- The other limits in section 11.1 of the write shapes contract. Each has its own row there.
+- The other gaps on the coverage page. In particular, a walk in the handler is likely to meet
+  `PP-N03` (a path normalised before the split), `PP-N13` (a `forEach` that also makes the final
+  write) and `PP-R06` (a log call on the same input). Record what is met; do not close them here.
 - New fixtures in the vuln-nextjs lab. The lab is a separate repository; add them only on the
   owner's word.
 
@@ -118,7 +134,9 @@ Out of scope:
   call returns one would hide real writes.
 - **D-4. A walk in the handler is a walk.** Today a walk is read only inside a function that the
   handler calls. A walk written in the handler body, with parts split from a request value, is
-  the same write and gets one candidate at its final assignment.
+  the same write and gets one candidate at its final assignment. The parts then come from a
+  request expression, not from a parameter, so the recogniser needs a second way to name the
+  source of the parts. The unread-guard rule reads the handler's own tests for such a walk.
   **Why.** `p5` is how a small application writes it, and the stage 1 nested-write rule already
   reads the handler body directly.
 - **D-5. Class fields are an exploration item.** `this.state` in a method needs the method call
@@ -135,8 +153,8 @@ a new record on a keyed control.
 
 ## 7. Acceptance criteria
 
-1. **AC1 (baseline).** The eight probes are committed as fixtures. Before any recogniser change,
-   a test records one pollution record for `p0` and none for `p1` to `p7`.
+1. **AC1 (baseline).** Before any recogniser change, a test over the eight committed probes
+   records one pollution record for `p0` and none for `p1` to `p7`.
 2. **AC2 (module-level start).** `p1` and `p4` each yield one `path_walk` candidate whose key
    operand is the path, with the declaration of the start object in its context.
 3. **AC3 (local start).** `p2` yields one candidate. The same function walking a constant path
@@ -160,6 +178,9 @@ a new record on a keyed control.
 10. **AC10 (isolation and gate).** Existing pollution tests pass unchanged. Other families'
     request digests are unchanged. `gofmt -l cmd internal` prints nothing; `go vet ./...`,
     `go build ./...` and `go test -race ./... -count=1` pass.
+11. **AC11 (coverage page).** `PP-N01` and `PP-N02` are removed from the "Not recorded" table and
+    their forms appear under "Recorded and decidable". Each limit found during the work has a
+    row with a new identifier, an example and one line on what would close it.
 
 ## 8. Test strategy
 
@@ -172,7 +193,7 @@ a new record on a keyed control.
 
 ## 9. Execution sequence
 
-1. Copy the probes into `internal/langjs/testdata/pollution/` and write the AC1 test.
+1. Write the AC1 test over `internal/langjs/testdata/pollution/start-probes/`.
 2. Module-level and local starts for the loop walks, then the `reduce`, `forEach`, `while` and
    recursive forms (AC2, AC3). The start resolution is shared, so the forms should follow from
    one change. Confirm each with a fixture.
@@ -184,8 +205,10 @@ a new record on a keyed control.
 ## 10. Definition of done
 
 - [ ] AC1 to AC10 verified, with evidence in the run log and the results record.
-- [ ] The guide lists the accepted starts, and the capability page drops the closed gap.
-- [ ] Section 11.1 of the write shapes contract marks the D-9 row as closed by this contract.
+- [ ] The guide lists the accepted starts, and the coverage page no longer lists `PP-N01` and
+  `PP-N02` as gaps (AC11).
+- [ ] Section 11.1 of the write shapes contract marks the D-9 non-parameter start row as closed
+  by this contract.
 - [ ] Owner review.
 
 ## 11. Open questions
@@ -199,7 +222,12 @@ a new record on a keyed control.
   owner above ten new records across the six samples.
 - **OQ-3. Lab fixtures.** Add module-level and handler walks to the vuln-nextjs lab's pollution
   fixtures and to its published sample? Recommendation: yes, after this contract passes its
-  noise check, in a separate change to the lab.
+  noise check, in a separate change to the lab. The lab's fixtures are text files exported by
+  `scripts/export-prototype-pollution-fixtures.mjs`, and its `--combined` export is what the
+  published sample scans, so new fixtures also mean a new judged run on the owner's word.
+- **OQ-4. A live check.** This contract is offline. Should the published samples be judged again
+  once it merges, since it adds records? Recommendation: ask the owner after AC8 shows how many
+  records are new.
 
 ## 12. Run log protocol
 
@@ -209,13 +237,14 @@ class-field attempt.
 
 ## 13. Agent implementation prompt
 
-> Work in the worktree and on the branch the owner assigns. Read AGENTS.md, the orientation
-> contents, `prototype-pollution.md`, `pollution-write-shapes.md` and this spec. Copy the probes
-> from the container's `_test-findings/pollution-walk-start/probes/` into
-> `internal/langjs/testdata/pollution/` and write the AC1 baseline test first. Then follow
-> section 9 one start at a time, test-first, each with its guarded, bypass-sibling and control
-> fixtures. Run the AC8 noise check before the class-field attempt and review every new record
-> against its source. Make no paid call, install nothing, and commit only when the owner asks.
+> Work in the worktree and on the branch the owner assigns; ask if none is stated. Read
+> AGENTS.md, the orientation contents, `prototype-pollution.md`, `pollution-write-shapes.md`
+> with its section 11.1, the coverage page and this spec. Write the AC1 baseline test over
+> `internal/langjs/testdata/pollution/start-probes/` first and record the starting commit. Then
+> follow section 9 one start at a time, test-first, each with its guarded, bypass-sibling and
+> control fixtures. Run the AC8 noise check before the class-field attempt and review every new
+> record against its source. Check every limit with the scanner before writing it down. Make no
+> paid call, install nothing, and commit only when the owner asks.
 > Verifier: a fresh-context subagent reruns the eight probes, runs each vulnerable fixture in
 > Node with a prototype payload, confirms no bypass-sibling fixture can be Protected, and
 > reports PASS or FAIL.
@@ -227,3 +256,11 @@ class-field attempt.
 Requested by the owner while reviewing the write shapes decisions. Written from that review,
 from the walk recognisers at `ed94711`, and from eight probe fixtures scanned at that revision.
 The handler-walk probe showed a second limit, recorded as D-4. No code changed.
+
+### 2026-11-21 — Updated after the owner's review of the write shapes
+
+The baseline moves to `dafd25d`; the eight probes give the same counts there. The probes are now
+committed, so a new session does not depend on files outside the repository. The documentation
+target is the coverage page that replaced the capability page's gap table, and the contract names
+the identifiers it closes. Required reading lists the files added since the draft. The guard rules
+added by the review apply to the new starts, and AC11 covers the coverage page.

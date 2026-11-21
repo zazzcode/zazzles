@@ -27,6 +27,52 @@
   },
   "cases": [
     {
+      "id": "TS-DESER-N01",
+      "app": "vulnerable-typescript-app",
+      "key": ".zazz/specifications/unsafe-deserialization.md",
+      "kind": "deserialization_candidate",
+      "file": "src/server.ts",
+      "expect": "no_record",
+      "line": 187
+    },
+    {
+      "id": "JS-DESER-N01",
+      "app": "juice-shop",
+      "key": ".zazz/specifications/unsafe-deserialization.md",
+      "kind": "deserialization_candidate",
+      "file": "routes/vulnCodeFixes.ts",
+      "expect": "no_record",
+      "line": 83
+    },
+    {
+      "id": "JS-DESER-N01b",
+      "app": "juice-shop",
+      "key": ".zazz/specifications/unsafe-deserialization.md",
+      "kind": "deserialization_candidate",
+      "file": "routes/vulnCodeSnippet.ts",
+      "expect": "no_record",
+      "line": 90
+    },
+    {
+      "id": "JS-DESER-N01c",
+      "app": "juice-shop",
+      "key": ".zazz/specifications/unsafe-deserialization.md",
+      "kind": "deserialization_candidate",
+      "file": "server.ts",
+      "expect": "no_record",
+      "line": 140
+    },
+    {
+      "id": "JS-DESER-X01",
+      "app": "juice-shop",
+      "key": ".zazz/specifications/unsafe-deserialization.md",
+      "kind": "deserialization_candidate",
+      "file": "routes/fileUpload.ts",
+      "expect": "excluded",
+      "line": 114,
+      "reason": "The call is text inside a constant program string."
+    },
+    {
       "id": "GOOF-PP-01",
       "app": "nodejs-goof",
       "key": "docs/samples/nodejs-goof/README.md",

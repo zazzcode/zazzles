@@ -941,8 +941,8 @@ criterion changed.
 
 Commits `619cea6` and `0220076` then changed the judged-scan wording in the README, the user
 guides, `.env.sample` and the `--analyze` and `--judge` flag help. That work is not part of this
-contract and has no §4 row. Whether it merges with this pull request or separately is the owner's
-decision at review.
+contract and has no §4 row. The owner decided at review, on 2026-11-21, that it merges with this
+pull request.
 
 ### 2026-11-21 — Pull request review fixes
 

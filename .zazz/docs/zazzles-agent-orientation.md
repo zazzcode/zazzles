@@ -1,46 +1,36 @@
 # zazzles — agent orientation
 
-This guide maps the code, worktrees and development process. Agent startup and context loading are
-managed by [AGENTS.md](../../AGENTS.md#start-here). The contents below provide section links and
-selection cues for the current task.
+This guide maps the code, worktrees, and development process. Agent startup and context loading are
+managed by [AGENTS.md](../../AGENTS.md#start-here). Current delivery status, roadmap ordering, and
+implemented capability lists live in the [implementation plan](../project/implementation-plan.md)
+and [detection capabilities](../../docs/scan/detection-capabilities.md), not here, so this guide
+stays stable.
+
+<a id="current-work"></a>
 
 ## Contents
 
 | Section | Consult for |
 | --- | --- |
-| [Current work](#current-work) | Integration status, active restrictions and current evidence pointers |
-| [Code structure](#code-structure) | Package ownership and focused architecture references |
+| [Code structure](#code-structure) | Module layout (`scan/`, `fix/`, `probe/`), package ownership, and architecture references |
 | [Portable workspace and DEV_ROOT](#portable-workspace-and-dev_root) | Resolving local checkout and sample paths |
-| [Branches and worktrees](#branches-and-worktrees) | Assigned checkout, `.bare/` layout and worktree operation references |
-| [Working protocol](#working-protocol) | Implementation, verification, execution records and PR preparation |
-| [Implemented features](#implemented-features) | Capability boundaries and acceptance records |
-| [Available vulnerable sample apps](#available-vulnerable-sample-apps) | Sample locations, source expectations and evaluation handling |
+| [Branches and worktrees](#branches-and-worktrees) | Assigned checkout, `.bare/` layout, and worktree operation references |
+| [Working protocol](#working-protocol) | Implementation, verification, execution records, and PR preparation |
+| [Available vulnerable sample apps](#available-vulnerable-sample-apps) | Sample handling rules and catalog pointers |
 | [Task reading paths](#task-reading-paths) | Focused references for specific engineering tasks |
-| [Documentation map](#documentation-map) | Finding the document that owns a topic |
-| [Commands and credentials](#commands-and-credentials) | Scan model selection, local configuration and live-call limits |
-
-## Current work
-
-E1–E4 are on `stage`: E1–E3 via [PR #14](https://github.com/zazzcode/zazzles/pull/14)
-(`6e815ec`); E4 (shared Node middleware-chain / URL/upload inputs, phase-2 file APIs, Node
-`http`/`https` SSRF) via [PR #15](https://github.com/zazzcode/zazzles/pull/15) (`eafabcc`).
-Contract and results:
-[shared-node-inputs-and-file-apis.md](../specifications/shared-node-inputs-and-file-apis.md),
-[results](../evaluation/shared-node-inputs-and-file-apis-results.md). Historical E3
-[v7 verification](../evaluation/wire-bundle-v7-results.md) remains the wire-format paid-run
-reference. Preserve concurrent user edits and local credentials; no live Jev evaluation or
-provider fallback is assigned.
+| [Documentation map](#documentation-map) | Finding the document that owns a topic (including current status and roadmap) |
+| [Commands and credentials](#commands-and-credentials) | Scan model selection, local configuration, and live-call limits |
 
 ## Code structure
 
-Zazzles is organized into three top-level module directories (`scan/`, `fix/`, `probe/`) under one
-root Go module (`go.mod` / `go.sum`). This keeps dependency management, root builds, CI, and shared
-documentation unified while giving each module a clean top-level home and using Go's `internal/`
-import rule (`scan/internal/`) to enforce the Scan package boundary. The canonical CLI binary builds
-from `scan/cmd/scan/`, while root `cmd/scan/` stays as a thin compatibility entry point; both wrap
-the shared `scan/cli` package (`cli.Run`). User documentation mirrors the modules under `docs/scan/`,
-`docs/fix/`, and `docs/probe/`, with shared project guides and curated sample reports kept in root
-`docs/`.
+Zazzles is organized into three top-level module directories — **Code Scan** (`scan/`), **Fix**
+(`fix/`), and **Endpoint Probe** (`probe/`) — under one root Go module (`go.mod` / `go.sum`). This
+keeps dependency management, root builds, CI, and shared documentation unified while giving each
+module a clean top-level home and using Go's `internal/` import rule (`scan/internal/`) to enforce
+the Code Scan package boundary. The canonical CLI binary builds from `scan/cmd/scan/`, while root
+`cmd/scan/` stays as a thin compatibility entry point; both wrap the shared `scan/cli` package
+(`cli.Run`). User documentation mirrors the modules under `docs/scan/`, `docs/fix/`, and
+`docs/probe/`, with shared project guides and curated sample reports kept in root `docs/`.
 
 | Path | Owns | Read more only when needed |
 | --- | --- | --- |
@@ -57,7 +47,7 @@ the shared `scan/cli` package (`cli.Run`). User documentation mirrors the module
 | `scan/internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture/README.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
 | `scan/internal/report/` | Findings, Review/Protected presentation, JSON/HTML/SARIF and bundles | [Reporting design](../architecture/reporting-and-sarif.md), [HTML design](../architecture/html-reporting.md) |
 | `scan/internal/langjs/testdata/`, `scan/internal/langpy/testdata/`, `scan/internal/langphp/testdata/`, `scan/internal/pipeline/testdata/mixed/` | Small JS/TS, Python, PHP and multi-language regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
-| `fix/`, `probe/` | Top-level landing directories for planned Fix and Probe modules | [Module boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries) |
+| `fix/`, `probe/` | Top-level landing directories for planned Fix and Endpoint Probe modules | [Module boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries) |
 | `docs/`, `.zazz/`, `.agents/skills/` | Shared user docs + module guides (`docs/scan/`, `docs/fix/`, `docs/probe/`) + `docs/samples/`; internal contracts/design/evaluation; development skills | [Document owners](#documentation-map) |
 
 Each [analyzer](../architecture/README.md#analyzer-terminology) spans the shared engine's activities.
@@ -119,25 +109,6 @@ and [provider setup](../../docs/scan/decision-models.md#credentials-and-local-en
 5. Follow [PR process](../standards/pr-process.md) when packaging: verify Git identity/profile,
    draft PR into `stage`, human review/merge. Never merge or push integration directly.
 
-## Implemented features
-
-The [capability matrix](../project/implementation-plan.md#supported-capability-checklist) owns current
-language coverage and limits; the [delivery checklist](../project/implementation-plan.md#complete-delivery-list)
-owns branch outcomes. Implemented foundations include bounded JS/TS/Python analysis, shared entry/
-dispatch and schema4 reports; analyzers cover validation, SQL, MongoDB-style NoSQL (JS/TS), logging,
-XSS, command injection and path traversal (verified Node `fs`/Python `open`/`pathlib` operands; see
-[results](../evaluation/path-traversal-results.md)). Outbound is observation-only except SSRF claims for verified clients with a request-derived destination. Inspect/Audit/Fix workflows remain planned.
-
-For exact acceptance read only the matching record:
-[command results](../evaluation/command-injection-results.md),
-[XSS hardening](../evaluation/xss-hardening-results.md),
-[Python limits](../evaluation/python-support-results.md),
-[entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05), or
-[component status](../architecture/analysis-packs.md#current-implementation-status).
-NoSQL is the extensible category; MongoDB-style models are its initial scope. Findings should name
-the actual engine/driver; [database rules](../../docs/scan/analysis/database-injection.md#database-specific-nosql-scope)
-distinguish MongoDB, MarsDB and future databases such as DynamoDB.
-
 ## Available vulnerable sample apps
 
 Local names below are expected checkout names under `<DEV_ROOT>`; verify existence and pinned revision
@@ -176,10 +147,10 @@ Write reports to the container's `_test-findings/<app>/run-<id>/` via `--output-
 
 | Owner | Start at |
 | --- | --- |
-| Product goals and roadmap | [Capability boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries), [complete delivery list](../project/implementation-plan.md#complete-delivery-list) |
+| Product goals, current status, and roadmap | [Capability boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries), [complete delivery list](../project/implementation-plan.md#complete-delivery-list), [detection capabilities](../../docs/scan/detection-capabilities.md) |
 | Architecture | [Request size and relevance](../architecture/request-size-and-evidence-relevance.md), [Pipeline](../architecture/README.md#2-pipeline), [package map](../architecture/README.md#11-implemented-package-boundaries), [judge boundary](../architecture/README.md#provider-neutral-judge-boundary) |
 | Product rules | [Analysis index](../../docs/scan/analysis/README.md), [database rules](../../docs/scan/analysis/database-injection.md), [input rules](../../docs/scan/analysis/input-validation.md), [XSS rules](../../docs/scan/analysis/xss.md) |
-| User setup/output | [Scan docs](../../docs/scan/README.md), [Setup](../../docs/scan/getting-started.md), [scan options](../../docs/scan/running-scans.md), [interpretation](../../docs/scan/interpreting-results.md), [Fix docs](../../docs/fix/README.md), [Probe docs](../../docs/probe/README.md) |
+| User setup/output | [Code Scan docs](../../docs/scan/README.md), [Setup](../../docs/scan/getting-started.md), [scan options](../../docs/scan/running-scans.md), [interpretation](../../docs/scan/interpreting-results.md), [Fix docs](../../docs/fix/README.md), [Endpoint Probe docs](../../docs/probe/README.md) |
 | Contracts and process | [Spec index](../specifications/README.md#specification-index), [execution records](agent-execution-discipline.md#execution-records), [standards index](../standards/index.yaml) |
 | Sample evidence | [Pinned apps](../project/vulnerable-sample-apps.md#applications), [sample provenance](../../docs/samples/reference-policy.md) |
 

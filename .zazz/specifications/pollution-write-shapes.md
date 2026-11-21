@@ -166,7 +166,8 @@ Out of scope:
     the module was not seen; it is now.
   - **A call that encloses the write consumes its result.** `res.json(unflatten(req.body))`
     carried an unresolved-helper blocker. The enclosing call runs after the write, so the
-    pollution claim no longer counts it. This also applies to stage 1 shapes.
+    pollution claim no longer counts it. This also applies to stage 1 shapes. Accepted by the
+    owner on 2026-11-21 (section 11.1).
   - **A whole-path deny-list needs an unchanged path.** A test followed by a decode or any other
     write to the path before the walk is not read as a guard.
   - **A caller's array has untyped parts.** The verifier showed that `[["__proto__"], "x"]`
@@ -314,6 +315,7 @@ limit it leaves, so the limit is known and can be taken up as a later capability
 | D-9, split in place | Accepted 2026-11-21 | Only `path = path.split(…)` keeps the match. A path normalised any other way has no record: `path = String(path).split('.')`, `path = toPath(path)`, a ternary such as `Array.isArray(path) ? path : path.split('.')`, or a helper result held in a new local. Checked with the scanner at `6006eaa` | Read a path normaliser: a string conversion before the split, a conditional that yields the path or its split, and a one-line helper that returns one of those. Each keeps the caller's content, so the walk stays a candidate |
 | D-9, non-parameter start | Accepted 2026-11-21 for this PR | A path walk whose path is a parameter has a record only when it starts from another parameter. A walk into a module-level object, a local object or a property such as `holder.state` has no record, and neither has a walk written in the handler with no helper. Seven of eight probes at `ed94711` are missed. This is the limit most likely to hide a real write in an application | [Walk start contract](pollution-walk-start.md), drafted 2026-11-21, with its own noise check because it adds records to existing scans |
 | D-9, shadowed built-ins | Accepted 2026-11-21 | A function or class declared under a built-in's name, in an enclosing block or at the top of the module, ends the match, as a variable, a parameter or a write to the method already did. Three replacements are not seen and the function keeps its record: `globalThis.Reflect = …` in the same module, the same in another module, and a method patched in another module (`Reflect.ownKeys = …`). Checked with the scanner | Track writes to `globalThis` members and to built-in methods across the modules a scan reads, and treat a replaced built-in as unknown for every module |
+| D-9, enclosing call | Accepted 2026-11-21 | A call that encloses the write, at any depth, no longer blocks the record. Other unresolved calls in the handler that receive the operand, or the whole body, still add `input_helper_unresolved`, and the record is then Review only. Probing showed two of those are false blockers: a call on a later statement, after the write, and a call that cannot test its argument, such as `console.log(req.body)` or a logger call. A call on another request field does not block. Checked with the scanner at `ab224f0` | Drop the blocker for a call that follows the write in the same function, and for the global `console` and the logger bindings the logging analyzer already verifies. Each lets a real write be Confirmed where a log line now holds it in Review |
 
 ## 12. Run log protocol
 

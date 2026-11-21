@@ -151,6 +151,11 @@ These forms can pollute `Object.prototype` and have no record:
 
 ### Left in Review
 
+- **Another unresolved call on the same input.** A call with no definition in the scan that
+  receives the operand, or the whole request body, keeps the record in Review
+  (`input_helper_unresolved`). That includes a call on a later statement and a log call such as
+  `console.log(req.body)`, although neither can stop the write. A call that encloses the write
+  and takes its result does not block.
 - **Lookup or validator call on the key.** A path test that depends on a call taking the key
   operand is `key_guard_coverage_unknown`. The scanner does not decide whether that call rejects
   a prototype key. A one-line helper that tests the key directly is read.

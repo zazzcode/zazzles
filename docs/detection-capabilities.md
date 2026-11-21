@@ -98,6 +98,7 @@ not reported as safe. The table lists the forms known to be missed or left in Re
 | Form | What a scan shows |
 |---|---|
 | Write reached only after a call that takes the key, such as `if (!known.has(key)) return` or `const row = find(key); if (row == null) return` | Review (`key_guard_coverage_unknown`). The scanner does not read what the call accepts, so the record is neither Confirmed nor Protected |
+| Another call with no definition in the scan receives the same input in the handler, including a log call such as `console.log(req.body)` or a call after the write | Review (`input_helper_unresolved`). A call that encloses the write and takes its result does not block |
 | Key test in a helper that calls another function, or an assertion on the key before a recursive walk | Review (`key_guard_coverage_unknown`). One-line helpers that test the key directly are read |
 | Literal comparison on the parts of an array the caller passes, with no `typeof` test first | Review (`key_guard_coverage_unknown`). A nested array such as `['__proto__']` passes the comparison |
 | Key guard written as a regular-expression test on the whole path | The record omits that control. An assessment that relies on it stays in Review |

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/zazzcode/zazzles/internal/analysis"
 	"github.com/zazzcode/zazzles/internal/analysispacks"
 )
 
@@ -89,6 +90,199 @@ func intersectPollutionGuards(a, b pollutionGuard) pollutionGuard {
 		guard.kind = "unknown"
 	}
 	return guard
+}
+
+// pollutionTypeofString returns the operator of `typeof key <op> 'string'`.
+func pollutionTypeofString(n *sitter.Node, key string, src []byte) string {
+	n = pollutionUnwrap(n)
+	if n == nil || n.Kind() != "binary_expression" {
+		return ""
+	}
+	left, right, op := pollutionUnwrap(n.ChildByFieldName("left")), n.ChildByFieldName("right"), n.ChildByFieldName("operator")
+	if left == nil || right == nil || op == nil || left.Kind() != "unary_expression" {
+		return ""
+	}
+	of, operand := left.ChildByFieldName("operator"), left.ChildByFieldName("argument")
+	if name, ok := stringLiteral(right, src); !ok || name != "string" || of == nil || of.Kind() != "typeof" || operand == nil || operand.Utf8Text(src) != key {
+		return ""
+	}
+	return op.Kind()
+}
+
+// pollutionStringChecked reports that a part which is not a string never
+// reaches the lookup: an earlier statement of an enclosing block exits when
+// `typeof key !== 'string'`, alone or as one alternative of an `||` test.
+func pollutionStringChecked(m *sourceModule, boundary *sitter.Node, key, target string, site *sitter.Node) bool {
+	var rejects func(*sitter.Node) bool
+	rejects = func(cond *sitter.Node) bool {
+		cond = pollutionUnwrap(cond)
+		if cond == nil {
+			return false
+		}
+		if op := pollutionTypeofString(cond, key, m.src); op != "" {
+			return op == "!==" || op == "!="
+		}
+		if cond.Kind() == "binary_expression" {
+			if op := cond.ChildByFieldName("operator"); op != nil && op.Kind() == "||" {
+				return rejects(cond.ChildByFieldName("left")) || rejects(cond.ChildByFieldName("right"))
+			}
+		}
+		return false
+	}
+	child := site
+	for parent := child.Parent(); parent != nil; child, parent = parent, parent.Parent() {
+		if parent.Kind() == "statement_block" {
+			for i := uint(0); i < parent.NamedChildCount(); i++ {
+				sibling := parent.NamedChild(i)
+				if sibling.StartByte() >= child.StartByte() {
+					break
+				}
+				if sibling.Kind() == "if_statement" && sibling.ChildByFieldName("alternative") == nil && pollutionGuardExit(sibling.ChildByFieldName("consequence")) {
+					if cond := sibling.ChildByFieldName("condition"); rejects(cond) && pollutionStableBetween(m, key, target, cond, site) {
+						return true
+					}
+				}
+			}
+		}
+		if boundary != nil && sameNode(parent, boundary) || isFunction(parent) || parent.Kind() == "function_declaration" {
+			break
+		}
+	}
+	return false
+}
+
+// unitePollutionGuards combines two guards that both stand before one lookup.
+// A name either of them blocks is blocked.
+func unitePollutionGuards(a, b pollutionGuard) pollutionGuard {
+	if b.kind == "" && len(b.evidence) == 0 {
+		return a
+	}
+	guard := pollutionGuard{unknown: a.unknown || b.unknown, evidence: append([]analysis.Evidence{}, a.evidence...)}
+	for _, e := range b.evidence {
+		if !slices.ContainsFunc(guard.evidence, func(prior analysis.Evidence) bool { return prior.Span == e.Span }) {
+			guard.evidence = append(guard.evidence, e)
+		}
+	}
+	guard.blocked = append(append(guard.blocked, a.blocked...), b.blocked...)
+	switch {
+	case a.kind == "own_property" || b.kind == "own_property":
+		guard.kind = "own_property"
+	case len(guard.blocked) > 0:
+		guard.kind = "deny_list"
+	case guard.unknown:
+		guard.kind = "unknown"
+	}
+	return guard
+}
+
+// pollutionPathNames lists the bindings that hold the whole path of a walk: the
+// array of parts and the string it was split from.
+func pollutionPathNames(parts string, w pollutionWrite, params []boundParam, keys *pollutionLoop) []string {
+	names := []string{parts}
+	if w.operand == "source_keys" && keys != nil {
+		names = append(names, keys.key)
+	} else if w.source >= 0 && w.source < len(params) && params[w.source].name != parts {
+		names = append(names, params[w.source].name)
+	}
+	return names
+}
+
+// pollutionWholePathGuard reads deny-list tests on the whole path that must
+// pass before the walk: `if (path.includes('__proto__')) return`. Such a test
+// rejects the name in every part. Other tests on the path are not key guards.
+func pollutionWholePathGuard(m *sourceModule, walk *sitter.Node, names []string) pollutionGuard {
+	var guard pollutionGuard
+	add := func(cond *sitter.Node, passes bool) {
+		var blocked []string
+		for _, name := range names {
+			if found := pollutionContainsTests(m, cond, name, passes); len(found) > 0 && pollutionStableBetween(m, name, "", cond, walk) {
+				blocked = append(blocked, found...)
+			}
+		}
+		if len(blocked) > 0 {
+			guard.kind = "deny_list"
+			guard.blocked = append(guard.blocked, blocked...)
+			guard.evidence = append(guard.evidence, m.evidence("key_guard", cond))
+		}
+	}
+	child := walk
+	for parent := child.Parent(); parent != nil; child, parent = parent, parent.Parent() {
+		switch parent.Kind() {
+		case "statement_block":
+			for i := uint(0); i < parent.NamedChildCount(); i++ {
+				sibling := parent.NamedChild(i)
+				if sibling.StartByte() >= child.StartByte() {
+					break
+				}
+				if sibling.Kind() == "if_statement" && sibling.ChildByFieldName("alternative") == nil && pollutionGuardExit(sibling.ChildByFieldName("consequence")) {
+					add(sibling.ChildByFieldName("condition"), false)
+				}
+			}
+		case "if_statement":
+			cond, consequence := parent.ChildByFieldName("condition"), parent.ChildByFieldName("consequence")
+			if cond != nil && consequence != nil && !sameNode(cond, child) {
+				add(cond, sameNode(consequence, child))
+			}
+		}
+		if isFunction(parent) || parent.Kind() == "function_declaration" || parent.Kind() == "method_definition" {
+			break
+		}
+	}
+	return guard
+}
+
+// pollutionContainsTests lists the prototype names that name cannot contain
+// once the condition has the given outcome.
+func pollutionContainsTests(m *sourceModule, n *sitter.Node, name string, passes bool) []string {
+	n = pollutionUnwrap(n)
+	if n == nil {
+		return nil
+	}
+	contains := func(call *sitter.Node, method string) string {
+		call = pollutionUnwrap(call)
+		if call == nil || call.Kind() != "call_expression" {
+			return ""
+		}
+		fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
+		if fn == nil || fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() != 1 {
+			return ""
+		}
+		prop := fn.ChildByFieldName("property")
+		literal, ok := stringLiteral(args.NamedChild(0), m.src)
+		if prop == nil || prop.Utf8Text(m.src) != method || !ok || pollutionIdentifier(fn.ChildByFieldName("object"), m.src) != name || !containsString(allPrototypeKeys(), literal) {
+			return ""
+		}
+		return literal
+	}
+	switch n.Kind() {
+	case "unary_expression":
+		if op := n.ChildByFieldName("operator"); op != nil && op.Kind() == "!" {
+			return pollutionContainsTests(m, n.ChildByFieldName("argument"), name, !passes)
+		}
+	case "call_expression":
+		if literal := contains(n, "includes"); literal != "" && !passes {
+			return []string{literal}
+		}
+	case "binary_expression":
+		left, right, op := n.ChildByFieldName("left"), n.ChildByFieldName("right"), n.ChildByFieldName("operator")
+		if left == nil || right == nil || op == nil {
+			return nil
+		}
+		if (op.Kind() == "||" && !passes) || (op.Kind() == "&&" && passes) {
+			return append(pollutionContainsTests(m, left, name, passes), pollutionContainsTests(m, right, name, passes)...)
+		}
+		// indexOf(name) compared with -1 or 0 states whether the name occurs.
+		literal, bound := contains(left, "indexOf"), compactPollutionText(right, m.src)
+		if literal == "" {
+			return nil
+		}
+		occurs := containsString([]string{"!==-1", "!=-1", ">-1", ">=0"}, op.Kind()+bound)
+		absent := containsString([]string{"===-1", "==-1", "<0"}, op.Kind()+bound)
+		if occurs && !passes || absent && passes {
+			return []string{literal}
+		}
+	}
+	return nil
 }
 
 func pollutionStableBetween(m *sourceModule, key, target string, cond, site *sitter.Node) bool {
@@ -181,6 +375,10 @@ func pollutionKeyBinary(m *sourceModule, n *sitter.Node, key, target string, pas
 		a, ownA, knownA := pollutionKeyPredicate(m, left, key, target, passes, stringKey)
 		b, ownB, knownB := pollutionKeyPredicate(m, right, key, target, passes, stringKey)
 		return append(a, b...), ownA || ownB, knownA && knownB
+	}
+	if pollutionTypeofString(n, key, m.src) != "" {
+		// A type test restricts the shape of the key and blocks no name.
+		return nil, false, true
 	}
 	if !stringKey || !containsString([]string{"===", "==", "!==", "!="}, op.Kind()) {
 		return nil, false, false

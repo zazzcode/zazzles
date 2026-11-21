@@ -15,6 +15,17 @@ type pollutionWrite struct {
 	source, target     int
 	sites              []*sitter.Node
 	guard              pollutionGuard
+	branches           []pollutionBranch
+	// root is the local object a walk starts from when no parameter is the target.
+	root *sitter.Node
+	// untyped marks a walk over an array the caller passes, whose parts need not be strings.
+	untyped bool
+}
+
+// pollutionBranch is a test that selects the write without restricting its key.
+type pollutionBranch struct {
+	condition *sitter.Node
+	holds     bool
 }
 
 type pollutionGuard struct {
@@ -51,7 +62,7 @@ func (f *flow) pollutionCall(call, fn, arguments *sitter.Node, values []value) {
 	}
 	args, values := pollutionArguments(arguments, values)
 	for index, w := range writes {
-		if w.source >= len(args) || w.target >= len(args) {
+		if w.source < 0 || w.source >= len(args) || w.target >= len(args) {
 			continue
 		}
 		// Anchor each operand at the call and retain all matching write sites.
@@ -62,7 +73,14 @@ func (f *flow) pollutionCall(call, fn, arguments *sitter.Node, values []value) {
 		for _, site := range w.sites {
 			binding = append(binding, m.evidence("prototype_write", site))
 		}
-		if w.guard.kind == "" && pollutionNullTarget(f.module, call, args[w.target]) {
+		for _, b := range w.branches {
+			kind := branchTruePrecondition
+			if !b.holds {
+				kind = branchFalsePrecondition
+			}
+			binding = append(binding, m.evidence(kind, b.condition))
+		}
+		if w.guard.kind == "" && w.target >= 0 && pollutionNullTarget(f.module, call, args[w.target]) {
 			w.guard = pollutionGuard{kind: "null_prototype_root", evidence: []analysis.Evidence{f.module.evidence("key_guard", args[w.target])}}
 		}
 		facts := &analysis.PollutionFacts{Operation: w.operation, KeyOperand: w.operand}
@@ -96,6 +114,15 @@ func (f *flow) recordPollution(sink *sitter.Node, writeIndex int, operands []pol
 		return
 	}
 
+	// A test on this path that depends on a call taking the operand is a guard
+	// the scanner has not read. Its effect on the key is unknown.
+	if gates := f.pollutionLookupGates(deps, guard); len(gates) > 0 {
+		guard.unknown = true
+		if guard.kind == "" {
+			guard.kind = "unknown"
+		}
+		guard.evidence = append(guard.evidence, gates...)
+	}
 	facts.Guard = guard.kind
 	facts.Blocked, facts.Open = analysispacks.ListPrototypeKeys(append(facts.Blocked, guard.blocked...))
 	routes := analysispacks.OpenPrototypeRoutes(facts.Open, facts.KeyLevels)
@@ -174,7 +201,7 @@ func (f *flow) pollutionKeyCapacity(d analysis.Dependency, operand string) strin
 			case pollutionJSONParse(m, n):
 				capacity = "key_bearing"
 			case n != nil && nativeStringOperation(m, n):
-				if operand == "source" {
+				if operand == "source" || operand == "source_keys" {
 					capacity = "scalar"
 				}
 			default:
@@ -219,7 +246,27 @@ func pollutionJSONParse(m *sourceModule, n *sitter.Node) bool {
 }
 
 func pollutionGlobal(m *sourceModule, n *sitter.Node, name string) bool {
-	return !m.cachedShadowed(n, name) && !topLevelBinding(m, name) && !bindingReassigned(m, name)
+	return !m.cachedShadowed(n, name) && !topLevelBinding(m, name) && !bindingReassigned(m, name) && !pollutionLocalDeclaration(m, n, name)
+}
+
+// pollutionLocalDeclaration reports a function or class declared under the name
+// in a block that encloses the use.
+func pollutionLocalDeclaration(m *sourceModule, n *sitter.Node, name string) bool {
+	for p := n.Parent(); p != nil; p = p.Parent() {
+		if p.Kind() != "statement_block" {
+			continue
+		}
+		for i := uint(0); i < p.NamedChildCount(); i++ {
+			d := p.NamedChild(i)
+			switch d.Kind() {
+			case "function_declaration", "generator_function_declaration", "class_declaration":
+				if id := d.ChildByFieldName("name"); id != nil && id.Utf8Text(m.src) == name {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func pollutionBuiltin(m *sourceModule, n *sitter.Node, root, member string) bool {
@@ -243,10 +290,10 @@ func (s *moduleSet) assemblePollutionClaims(report *analysis.AnalysisReport) {
 		fields:  commandFields, chainEvidence: s.interpreterChainEvidence,
 		guards: func(*analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) { return nil, nil },
 		chainGapCovered: func(u *analysis.CandidateUse, g analysis.Gap) bool {
-			return g.Kind == "input_helper_unresolved" && s.pollutionParseGap(g)
+			return g.Kind == "input_helper_unresolved" && (s.pollutionParseGap(g) || pollutionResultConsumer(u, g)) || s.pollutionAbsentFillGap(u, g)
 		},
 		gapCovered: func(u *analysis.CandidateUse, g analysis.Gap, complete bool, bodies, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
-			return g.Kind == "key_guard_incomplete" ||
+			return g.Kind == "key_guard_incomplete" || s.pollutionAbsentFillGap(u, g) ||
 				(g.Kind == "unknown_transfer" || g.Kind == "unknown_value") && s.pollutionParseGap(g) ||
 				s.commandGapCovered(u, g, complete, bodies, transforms, extra)
 		},
@@ -262,6 +309,36 @@ func (s *moduleSet) assemblePollutionClaims(report *analysis.AnalysisReport) {
 			return analysispacks.PollutionContract(u.Pollution.ContractID)
 		},
 	})
+}
+
+// A call that encloses the write receives its result. It runs after the write
+// and cannot stand between the request and the key operand.
+func pollutionResultConsumer(u *analysis.CandidateUse, g analysis.Gap) bool {
+	return g.At.File == u.Sink.Span.File && g.At != u.Sink.Span &&
+		g.At.StartByte <= u.Sink.Span.StartByte && g.At.EndByte >= u.Sink.Span.EndByte
+}
+
+// pollutionAbsentFillGap covers the heap write that fills the receiver slot of
+// a nested write only while it is absent. The direct-write rule has already
+// read that write: it leaves an inherited slot in place.
+func (s *moduleSet) pollutionAbsentFillGap(u *analysis.CandidateUse, g analysis.Gap) bool {
+	m := s.modules[g.At.File]
+	if g.Kind != "unsupported_write" || m == nil || u.Pollution == nil || u.Pollution.Operation != analysis.PollutionNested ||
+		g.At.File != u.Sink.Span.File || g.At.EndByte > u.Sink.Span.StartByte {
+		return false
+	}
+	root := m.tree.RootNode()
+	sink, write := parse.NodeAt(root, u.Sink.Span.StartByte, u.Sink.Span.EndByte), parse.NodeAt(root, g.At.StartByte, g.At.EndByte)
+	if sink == nil || write == nil {
+		return false
+	}
+	lookup := unwrapTS(sink.ChildByFieldName("left"))
+	if lookup != nil {
+		lookup = unwrapTS(lookup.ChildByFieldName("object"))
+	}
+	left := write.ChildByFieldName("left")
+	return lookup != nil && left != nil && compactPollutionText(left, m.src) == compactPollutionText(lookup, m.src) &&
+		pollutionFillsAbsentSlot(m, write, lookup)
 }
 
 func (s *moduleSet) pollutionParseGap(g analysis.Gap) bool {

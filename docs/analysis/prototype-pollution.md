@@ -13,8 +13,9 @@ depends on how the application uses inherited properties.
 |---|---|
 | Lodash `merge`, `mergeWith`, and `defaultsDeep` | Every source object after the destination. A verified `mergeWith` customizer is separate |
 | Lodash `set`, `setWith`, and `zipObjectDeep` | The path argument. Deep zip takes paths in the first argument |
-| Repository recursive merge | A parameter enumerated with `for…in`, `Object.keys`, or `Object.entries`, with a matching target write and recursion through the keys |
-| Repository path walk | A parameter split into parts, a loop that follows those parts, and a final indexed assignment |
+| Repository recursive merge | A parameter whose keys are enumerated, with a matching target write and recursion through the keys |
+| Repository path walk | A parameter that supplies the parts of a path, a walk that follows those parts, and a final indexed assignment |
+| Repository unflatten | The keys of a parameter, where each key is split and walked as a path |
 | Direct nested computed assignment | The request-derived key in the lookup before the final assignment |
 
 Source-visible detection follows resolved imports into scanned modules and matches the supported
@@ -28,21 +29,101 @@ headers, and cookies are excluded as raw key-bearing inputs. Indeterminate opera
 in Review. A request value supplied only as the assigned value cannot choose the lookup.
 [Supported inputs](node-inputs.md).
 
+## Source-visible shapes
+
+Each shape is read inside one function body, with one forwarding helper for a recursion.
+
+| Part of the shape | Accepted forms |
+|---|---|
+| Key enumeration | `for…in`, or `Object.keys`, `Object.entries`, `Object.getOwnPropertyNames`, or `Reflect.ownKeys` on the parameter, iterated by `for…of`, `forEach`, `map`, or a `reduce` whose callback always returns its accumulator. The built-in must be the global one |
+| Recursion | A call on `target[key]` and the source value, or on one local declared from each. A slot local may be assigned the same slot again, as in `t = target[key] = {}` |
+| Source value | `source[key]`, the value of an `Object.entries` pair, or `Object.getOwnPropertyDescriptor(source, key).value` |
+| Path parts | The parameter itself as an array, `split` by a non-empty string or a regular-expression literal, `match` with a global regular-expression literal, or matches pushed by one `exec` loop |
+| Walk | An index or `for…of` loop, a `while` loop that takes parts with `shift()` or `pop()` while parts remain, or `parts.reduce((cursor, part) => cursor[part], target)` |
+| Final write | An indexed assignment through the walk result, keyed by the last part |
+
+A test on another parameter that encloses the recursion, such as `options.deep`, is recorded as
+branch evidence. The caller sets that option and it places no restriction on the key. A walk
+that only reads or returns the value has no record.
+
 ## Controls and outcomes
 
 The scanner lists prototype-related names blocked by literal, enforcing key guards on the
 relevant lookup paths. A guard covers an operation only where the scanner can show that it
 applies across its modeled write sites. Own-property checks must apply at every recursive lookup. A fresh
 null-prototype object can protect one lookup. Deep traversal also needs evidence about nested
-containers.
+containers. A test that rejects the whole path, `path.includes('__proto__')` or the `indexOf`
+equivalent, blocks that name in every part while the path stays unchanged up to the walk.
+
+The parts of an array the caller passes need not be strings. A nested array such as
+`['__proto__']` is not equal to `'__proto__'` and still names that key in a lookup. For such a
+path a literal comparison counts only after a `typeof part !== 'string'` test that exits, and a
+test on the whole array is not read. Own-property checks apply unchanged. Keys from `for…in`,
+the key enumerators, `split` and `match` are strings.
+
+A direct nested write is read when its receiver slot is unchanged, or when an earlier statement
+only fills the slot while it is absent: `if (!store[k]) store[k] = {}`, the `=== undefined`,
+`typeof` and `!(k in store)` forms, `store[k] = store[k] || {}`, `||=` and `??=`. An inherited
+slot such as `__proto__` already has a value and stays in place. A slot that is always replaced
+by a fresh object has no record, and neither does one replaced after an own-property test, which
+replaces an inherited slot too.
+
+A test on the request path whose outcome depends on a call that takes the key operand is a guard
+the scanner has not read: `if (!known.has(key)) return`, or `const row = find(key)` followed by
+an exit when `row` is missing. A `Map` lookup rejects a prototype key and another function may
+accept it. The record carries the test as key-guard evidence and stays in Review with
+`key_guard_coverage_unknown`. A test on the operand itself and a plain `store[key]` existence
+test are not such guards, because an inherited key passes both.
 
 A consistent assessment can Confirm a complete raw request path to a verified write. Protected
 requires source-backed controls covering all recorded paths and consistent answers about coverage
 and guards. An incomplete guard keeps excluded and remaining key names visible. Unverified
 versions, controls, or input shape stay in Review.
 
+## Limits
+
+Recognition is bounded to the shapes above. A form outside them has no record, and no record is
+not a statement that the code is safe.
+
+### Missed writes
+
+These forms can pollute `Object.prototype` and have no record:
+
+- **Slot replaced on another branch before a nested write.** `if (reset) store[k] = {}` followed
+  by `store[k][name] = v`. The slot's identity then needs heap-flow evidence. Filling an absent
+  slot is read, as described above.
+- **Slot local replaced on a branch.** `let slot = target[key]; if (!slot) slot = {};` followed
+  by a recursion on `slot`. Any other write to the local ends the alias, although an inherited
+  slot would skip that branch.
+- **Path walk into a local or module-level object.** A walk whose path is a parameter must start
+  from another parameter. A start that is not a parameter is read only for the unflatten shape.
+- **More than one helper.** A recursion reached through more than one forwarding helper, or a
+  walk split across functions.
+- **Other dynamic writes.** A write through a non-constant key that matches no listed shape.
+- **Other write libraries.** `deepmerge`, `set-value`, `dot-prop` and similar packages called
+  from an application. `node_modules/` is not read and only Lodash has version contracts. Their
+  source is analyzed when it is part of the scanned repository.
+
+### Left in Review
+
+- **Lookup or validator call on the key.** A path test that depends on a call taking the key
+  operand is `key_guard_coverage_unknown`. The scanner does not decide whether that call rejects
+  a prototype key.
+- **Regular-expression path guard.** A whole-path test other than `includes` or `indexOf` is
+  left unread. The walk is recorded without that control, and an assessment that relies on it
+  is a contradiction.
+- **Comparison on untyped array parts.** A literal comparison on the parts of a caller's array
+  with no `typeof` test first is `key_guard_coverage_unknown`.
+- **Untyped key sources.** A query-string value or another input whose shape the input facts do
+  not type is `key_control_unknown`.
+- **Unresolved versions.** A Lodash call with a version range or an unverified distribution is
+  `version_unresolved`.
+
+### Outside this claim
+
 Shallow copies, JSON parsing without a write, single-level writes, and deletion APIs sit outside
-this assignment claim. The direct-write detector requires an unchanged receiver lookup. Earlier
-conditional reassignment of that slot requires heap-flow evidence. Standalone npm library exports,
-browser entries, inherited-property access and gadget chains have separate scope.
-[Implementation contract](../../.zazz/specifications/prototype-pollution.md).
+this assignment claim. Standalone npm library exports, browser entries, inherited-property
+access and gadget chains have separate scope. A finding states that `Object.prototype` can be
+written. It makes no statement about what reads the polluted property.
+[Implementation contract](../../.zazz/specifications/prototype-pollution.md),
+[write shapes contract](../../.zazz/specifications/pollution-write-shapes.md).

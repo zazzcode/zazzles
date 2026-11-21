@@ -55,7 +55,7 @@ table under [Which rules are generic](#which-rules-are-generic) shows the curren
 | Unrestricted upload (`upload`) | not implemented | Werkzeug `FileStorage.save` (PHP: `move_uploaded_file`) | Generated names, server-chosen or allow-listed extensions, content checks, unserved destinations | [File upload](analysis/file-upload.md) |
 | SSRF (`ssrf`) | global `fetch`, `axios`, Node `http`/`https` | `requests`, `httpx`, `urllib.request.urlopen` | Parsed host allow-lists and scheme-and-host checks on every path | [SSRF](analysis/ssrf.md) |
 | Code injection (`code`) | `eval`, `Function`, browser string timers, Node `vm`, sandbox evaluator libraries; template source in ejs, Handlebars, pug, nunjucks, lodash (CWE-1336) | `eval`, `exec`, `compile`; template source in Jinja2, Flask `render_template_string`, Mako (PHP: Twig `createTemplate`) | Grammar allow-lists, type conversions of the complete operand | [Code injection](analysis/code-injection.md) |
-| Prototype pollution (`pollution`) | Verified Lodash merges and path setters, source-visible recursive merges, split-path loops, and direct nested computed assignments | — | Literal key exclusions, own-property checks at each lookup, and a fresh null-prototype target for one lookup | [Prototype pollution](analysis/prototype-pollution.md) |
+| Prototype pollution (`pollution`) | Verified Lodash merges and path setters; source-visible recursive merges, path walks (split, array, `reduce` and `while` forms), unflatten, and direct nested computed assignments. [Known gaps](#prototype-pollution-known-gaps) | — | Literal key exclusions on string keys, whole-path `includes`/`indexOf` deny-lists, own-property checks at each lookup, and a fresh null-prototype target for one lookup | [Prototype pollution](analysis/prototype-pollution.md) |
 | Open redirect (`redirect`) | Express/Fastify/Hapi redirects, Location headers, Next.js redirects and router, browser navigation | Flask/Django redirects, Starlette/FastAPI `RedirectResponse`, aiohttp | Parsed-origin checks, host allow-lists, same-site relative paths that exclude `//` and `\` | [Open redirect](analysis/open-redirect.md) |
 | Sensitive-data logging (`logging`) | global `console`, pino, winston, morgan | supported `logging` bindings | Derived or masked values instead of content | [Logging](analysis/sensitive-data-logging.md) |
 | Input validation (`input-validation`) | Field requirements and enforcing checks (zod, validator.js and others) | Field requirements and enforcing checks | Enforced validation separate from destination protection | [Input validation](analysis/input-validation.md) |
@@ -87,6 +87,27 @@ example Mongoose, Sequelize, sql.js and Prisma fields. Then the stored path can 
 the read stays visible as Review: it is not treated as request input and not treated as safe. This
 includes in-memory session stores read by key. Tracking writers across requests through such stores
 (for example registration → login store → page) is not yet implemented.
+
+## Prototype pollution: known gaps
+
+The source-visible shapes are matched by syntax inside one function body. Code outside them is
+not reported as safe. The table lists the forms known to be missed or left in Review. The
+[guide](analysis/prototype-pollution.md#limits) owns the full rules.
+
+| Form | What a scan shows |
+|---|---|
+| Write reached only after a call that takes the key, such as `if (!known.has(key)) return` or `const row = find(key); if (row == null) return` | Review (`key_guard_coverage_unknown`). The scanner does not read what the call accepts, so the record is neither Confirmed nor Protected |
+| Nested write after the slot is replaced on a branch that does not test for its absence | No record. The slot's identity then needs heap-flow evidence |
+| Recursive merge through a local that a branch replaces: `if (!slot) slot = {}` then `merge(slot, value)` | No record. This can be a missed write for the same reason |
+| Path walk from a path parameter into a local or module-level object, as in `setPath(path, value)` writing to a module store | No record. Only the unflatten shape accepts a start that is not a parameter |
+| Recursion through more than one forwarding helper, or a walk split across functions | No record |
+| A dynamic-key write that matches none of the listed shapes | No record |
+| Merge and set-by-path libraries other than Lodash (`deepmerge`, `set-value`, `dot-prop` and others) called from an application | No record. `node_modules/` is not read, and only Lodash has version contracts. A library's source is read when it is in the scanned repository |
+| Key guard written as a regular-expression test on the whole path | The record omits that control. An assessment that relies on it stays in Review |
+| Literal comparison on the parts of an array the caller passes, with no `typeof` test first | Review (`key_guard_coverage_unknown`). A nested array such as `['__proto__']` passes the comparison |
+| Keys taken from a query string or another input whose shape is not typed | Review (`key_control_unknown`) |
+| The effect of a polluted property: readers, gadgets and code execution | Not claimed. A finding states the write only |
+| Browser entries, standalone npm library exports, deletion APIs (`unset`, `omit`) | Not covered by this family |
 
 ## Not covered
 

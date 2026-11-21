@@ -43,20 +43,104 @@ func (f *flow) pollutionAssignment(site, lhs *sitter.Node) {
 	f.recordPollution(site, 0, []pollutionOperand{{key, v}}, facts, []analysis.Evidence{f.module.evidence("sink_binding", lhs)}, guard)
 }
 
-// The direct-write rule has no heap model for a receiver slot reassigned on an
-// earlier branch. Its current identity must come from an unchanged lookup.
+// The direct-write rule has no heap model for a receiver slot that an earlier
+// statement replaced. Its current identity must come from an unchanged lookup.
+// A write that only fills an absent slot leaves an inherited one in place, so
+// the lookup can still yield the prototype and the rule applies.
 func (f *flow) pollutionLookupWritten(lookup *sitter.Node) bool {
-	for _, g := range f.gaps {
-		if g.Kind != "unsupported_write" || g.At.File != f.module.file || g.At.EndByte > int(lookup.StartByte()) {
-			continue
-		}
-		n := parse.NodeAt(f.module.tree.RootNode(), g.At.StartByte, g.At.EndByte)
-		if n != nil {
+	slot := compactPollutionText(lookup, f.module.src)
+	for _, writes := range [][]analysis.Gap{f.gaps, f.heapWrites} {
+		for _, g := range writes {
+			if g.Kind != "unsupported_write" || g.At.File != f.module.file || g.At.EndByte > int(lookup.StartByte()) {
+				continue
+			}
+			n := parse.NodeAt(f.module.tree.RootNode(), g.At.StartByte, g.At.EndByte)
+			if n == nil {
+				continue
+			}
 			left := n.ChildByFieldName("left")
-			if left != nil && compactPollutionText(left, f.module.src) == compactPollutionText(lookup, f.module.src) {
+			if left != nil && compactPollutionText(left, f.module.src) == slot && !pollutionFillsAbsentSlot(f.module, n, lookup) {
 				return true
 			}
 		}
+	}
+	return false
+}
+
+// pollutionFillsAbsentSlot reports a write that happens only while the slot
+// has no value: `slot = slot || {}`, `slot ||= {}`, `slot ??= {}`, or an
+// assignment that is the whole body of `if (!slot)` and its equivalents. An
+// inherited slot such as __proto__ already has a value and is left unchanged.
+// An own-property test is different: it replaces an inherited slot.
+func pollutionFillsAbsentSlot(m *sourceModule, write, lookup *sitter.Node) bool {
+	src := m.src
+	slot := compactPollutionText(lookup, src)
+	switch write.Kind() {
+	case "augmented_assignment_expression":
+		op := write.ChildByFieldName("operator")
+		return op != nil && (op.Utf8Text(src) == "||=" || op.Utf8Text(src) == "??=")
+	case "assignment_expression":
+		if right := pollutionUnwrap(write.ChildByFieldName("right")); right != nil && right.Kind() == "binary_expression" {
+			op := right.ChildByFieldName("operator")
+			if op != nil && (op.Kind() == "||" || op.Kind() == "??") && compactPollutionText(pollutionUnwrap(right.ChildByFieldName("left")), src) == slot {
+				return true
+			}
+		}
+	default:
+		return false
+	}
+	// The assignment is the only statement of an if without an else.
+	body := write.Parent()
+	if body == nil || body.Kind() != "expression_statement" {
+		return false
+	}
+	branch := body.Parent()
+	if branch != nil && branch.Kind() == "statement_block" {
+		for i := uint(0); i < branch.NamedChildCount(); i++ {
+			if c := branch.NamedChild(i); c.Kind() != "comment" && !sameNode(c, body) {
+				return false
+			}
+		}
+		body, branch = branch, branch.Parent()
+	}
+	if branch == nil || branch.Kind() != "if_statement" || branch.ChildByFieldName("alternative") != nil || !sameNode(branch.ChildByFieldName("consequence"), body) {
+		return false
+	}
+	return pollutionAbsentTest(pollutionUnwrap(branch.ChildByFieldName("condition")), lookup, src)
+}
+
+// pollutionAbsentTest matches a test that an inherited object fails: `!slot`,
+// a comparison of the slot with undefined or null, `typeof slot ===
+// 'undefined'`, and `!(key in object)`.
+func pollutionAbsentTest(cond, lookup *sitter.Node, src []byte) bool {
+	if cond == nil {
+		return false
+	}
+	slot := compactPollutionText(lookup, src)
+	switch cond.Kind() {
+	case "unary_expression":
+		op, arg := cond.ChildByFieldName("operator"), pollutionUnwrap(cond.ChildByFieldName("argument"))
+		if op == nil || op.Kind() != "!" || arg == nil {
+			return false
+		}
+		if compactPollutionText(arg, src) == slot {
+			return true
+		}
+		if in := arg.ChildByFieldName("operator"); arg.Kind() == "binary_expression" && in != nil && in.Kind() == "in" {
+			return compactPollutionText(arg.ChildByFieldName("left"), src) == compactPollutionText(lookup.ChildByFieldName("index"), src) &&
+				compactPollutionText(arg.ChildByFieldName("right"), src) == compactPollutionText(lookup.ChildByFieldName("object"), src)
+		}
+	case "binary_expression":
+		op := cond.ChildByFieldName("operator")
+		if op == nil || op.Kind() != "==" && op.Kind() != "===" {
+			return false
+		}
+		left, right := compactPollutionText(pollutionUnwrap(cond.ChildByFieldName("left")), src), compactPollutionText(cond.ChildByFieldName("right"), src)
+		if right == slot {
+			left, right = right, left
+		}
+		return left == slot && (right == "undefined" || right == "null") ||
+			left == "typeof"+slot && (right == "'undefined'" || right == "\"undefined\"")
 	}
 	return false
 }
@@ -86,17 +170,22 @@ func (s *moduleSet) sourcePollutionWrites(m *sourceModule, callee *sitter.Node) 
 	s.pollutionWrites[callee.Id()] = nil
 	params, ok := functionParameters(callee, m.src)
 	body := callee.ChildByFieldName("body")
-	if !ok || len(params) < 2 || body == nil || body.Kind() != "statement_block" {
+	if !ok || len(params) < 1 || body == nil || body.Kind() != "statement_block" {
 		return nil
 	}
 	var writes []pollutionWrite
 	collect := func(w pollutionWrite) {
 		for i := range writes {
 			prior := &writes[i]
-			if prior.operation != w.operation || prior.source != w.source || prior.target != w.target {
+			if prior.operation != w.operation || prior.operand != w.operand || prior.source != w.source || prior.target != w.target {
 				continue
 			}
 			prior.guard = intersectPollutionGuards(prior.guard, w.guard)
+			for _, b := range w.branches {
+				if !slices.ContainsFunc(prior.branches, func(prior pollutionBranch) bool { return prior.condition.Id() == b.condition.Id() }) {
+					prior.branches = append(prior.branches, b)
+				}
+			}
 			for _, site := range w.sites {
 				if !slices.ContainsFunc(prior.sites, func(prior *sitter.Node) bool { return prior.Id() == site.Id() }) {
 					prior.sites = append(prior.sites, site)
@@ -111,21 +200,49 @@ func (s *moduleSet) sourcePollutionWrites(m *sourceModule, callee *sitter.Node) 
 			for _, w := range s.pollutionMergeLoop(m, callee, params, loop) {
 				collect(w)
 			}
+			// Unflatten: each key of the source is itself a path that is walked.
+			pollutionWalk(loop.body, func(inner *sitter.Node) {
+				for _, w := range pollutionPathWalks(m, loop.body, inner, params, &loop) {
+					collect(w)
+				}
+			})
 		}
-		if n.Kind() == "for_statement" || n.Kind() == "for_in_statement" {
-			for _, w := range pollutionPathLoop(m, body, n, params) {
-				collect(w)
-			}
+		for _, w := range pollutionPathWalks(m, body, n, params, nil) {
+			collect(w)
 		}
 	})
 	s.pollutionWrites[callee.Id()] = writes
 	return writes
 }
 
+// pollutionPathWalks reads one node as a walk over path parts: a loop or a
+// reduce call. scope bounds the search for the final write.
+func pollutionPathWalks(m *sourceModule, scope, n *sitter.Node, params []boundParam, keys *pollutionLoop) []pollutionWrite {
+	switch n.Kind() {
+	case "for_statement", "for_in_statement", "while_statement":
+		return pollutionPathLoop(m, scope, n, params, keys)
+	case "call_expression":
+		return pollutionReduceWalk(m, scope, n, params, keys)
+	}
+	return nil
+}
+
 type pollutionLoop struct {
 	body        *sitter.Node
 	source, key string
 	value       string
+	// accumulator is the first callback parameter of a reduce over the keys and
+	// start the object it begins as. While every return hands the accumulator
+	// back, the two name one object.
+	accumulator, start string
+}
+
+// names lists the identifiers that denote a parameter inside the loop body.
+func (l pollutionLoop) names(parameter string) []string {
+	if l.accumulator != "" && l.start == parameter {
+		return []string{parameter, l.accumulator}
+	}
+	return []string{parameter}
 }
 
 func pollutionKeyLoop(m *sourceModule, n *sitter.Node) pollutionLoop {
@@ -146,19 +263,68 @@ func pollutionKeyLoop(m *sourceModule, n *sitter.Node) pollutionLoop {
 		return pollutionLoop{}
 	}
 	fn, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments")
-	if fn == nil || fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() != 1 {
+	if fn == nil || fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() < 1 {
 		return pollutionLoop{}
 	}
 	prop := fn.ChildByFieldName("property")
 	callback := args.NamedChild(0)
-	if prop == nil || prop.Utf8Text(src) != "forEach" || !isFunction(callback) {
+	if prop == nil || !isFunction(callback) {
 		return pollutionLoop{}
 	}
-	parameter := callback.ChildByFieldName("parameter")
-	if list := callback.ChildByFieldName("parameters"); list != nil && list.NamedChildCount() == 1 {
-		parameter = list.NamedChild(0)
+	list := callback.ChildByFieldName("parameters")
+	switch prop.Utf8Text(src) {
+	case "forEach", "map":
+		// The callback receives each key; a map used for its effects is a forEach.
+		if args.NamedChildCount() != 1 {
+			return pollutionLoop{}
+		}
+		parameter := callback.ChildByFieldName("parameter")
+		if list != nil && list.NamedChildCount() == 1 {
+			parameter = list.NamedChild(0)
+		}
+		return pollutionObjectKeyLoop(m, fn.ChildByFieldName("object"), parameter, callback.ChildByFieldName("body"))
+	case "reduce":
+		// reduce((accumulator, key) => { …; return accumulator }, start)
+		start := pollutionIdentifier(pollutionArg(args, 1), src)
+		if args.NamedChildCount() != 2 || list == nil || list.NamedChildCount() != 2 || start == "" {
+			return pollutionLoop{}
+		}
+		accumulator := pollutionIdentifier(list.NamedChild(0), src)
+		loop := pollutionObjectKeyLoop(m, fn.ChildByFieldName("object"), list.NamedChild(1), callback.ChildByFieldName("body"))
+		if loop.body == nil || accumulator == "" || !pollutionReturnsOnly(loop.body, accumulator, src) {
+			return pollutionLoop{}
+		}
+		loop.accumulator, loop.start = accumulator, start
+		return loop
 	}
-	return pollutionObjectKeyLoop(m, fn.ChildByFieldName("object"), parameter, callback.ChildByFieldName("body"))
+	return pollutionLoop{}
+}
+
+// pollutionReturnsOnly reports a block whose every return hands back name.
+func pollutionReturnsOnly(body *sitter.Node, name string, src []byte) bool {
+	if body.Kind() != "statement_block" {
+		return false
+	}
+	returns, only := 0, true
+	pollutionWalk(body, func(n *sitter.Node) {
+		if n.Kind() == "return_statement" {
+			returns++
+			only = only && n.NamedChildCount() == 1 && pollutionIdentifier(n.NamedChild(0), src) == name
+		}
+	})
+	return returns > 0 && only
+}
+
+// pollutionKeyEnumerators are the built-ins whose result lists the keys of their
+// single argument. Each is accepted only where the global is not shadowed.
+var pollutionKeyEnumerators = map[string]struct {
+	root, member string
+	entries      bool
+}{
+	"Object.keys":                {root: "Object", member: "keys"},
+	"Object.entries":             {root: "Object", member: "entries", entries: true},
+	"Object.getOwnPropertyNames": {root: "Object", member: "getOwnPropertyNames"},
+	"Reflect.ownKeys":            {root: "Reflect", member: "ownKeys"},
 }
 
 func pollutionObjectKeyLoop(m *sourceModule, iter, key, body *sitter.Node) pollutionLoop {
@@ -169,21 +335,16 @@ func pollutionObjectKeyLoop(m *sourceModule, iter, key, body *sitter.Node) pollu
 	if fn == nil || args == nil || args.NamedChildCount() != 1 || args.NamedChild(0).Kind() != "identifier" {
 		return pollutionLoop{}
 	}
+	enumerator, ok := pollutionKeyEnumerators[fn.Utf8Text(m.src)]
+	if !ok || !pollutionBuiltin(m, iter, enumerator.root, enumerator.member) {
+		return pollutionLoop{}
+	}
 	result := pollutionLoop{source: args.NamedChild(0).Utf8Text(m.src), body: body}
-	switch fn.Utf8Text(m.src) {
-	case "Object.keys":
-		if !pollutionBuiltin(m, iter, "Object", "keys") {
-			return pollutionLoop{}
-		}
+	if !enumerator.entries {
 		result.key = pollutionIdentifier(key, m.src)
-	case "Object.entries":
-		if !pollutionBuiltin(m, iter, "Object", "entries") {
-			return pollutionLoop{}
-		}
-		if key.Kind() == "array_pattern" && key.NamedChildCount() == 2 {
-			result.key = pollutionIdentifier(key.NamedChild(0), m.src)
-			result.value = pollutionIdentifier(key.NamedChild(1), m.src)
-		}
+	} else if key.Kind() == "array_pattern" && key.NamedChildCount() == 2 {
+		result.key = pollutionIdentifier(key.NamedChild(0), m.src)
+		result.value = pollutionIdentifier(key.NamedChild(1), m.src)
 	}
 	if result.key == "" {
 		return pollutionLoop{}
@@ -201,42 +362,59 @@ func (s *moduleSet) pollutionMergeLoop(m *sourceModule, callee *sitter.Node, par
 		recursions  []*sitter.Node
 	}
 	sites := make([]writeSite, len(params))
+	aliases := pollutionLoopAliases(m, loop)
 	pollutionWalk(loop.body, func(n *sitter.Node) {
 		switch n.Kind() {
 		case "assignment_expression":
 			lhs := n.ChildByFieldName("left")
 			for i, p := range params {
-				if i != source && pollutionSubscript(lhs, p.name, loop.key, m.src) {
-					sites[i].assignments = append(sites[i].assignments, n)
+				if i == source {
+					continue
+				}
+				for _, name := range loop.names(p.name) {
+					if pollutionSubscript(lhs, name, loop.key, m.src) {
+						sites[i].assignments = append(sites[i].assignments, n)
+					}
 				}
 			}
 		case "call_expression":
 			args := n.ChildByFieldName("arguments")
 			for i, p := range params {
-				if i != source && pollutionRecursiveOperands(args, i, source, p.name, loop, m.src) &&
-					s.pollutionRecurses(m, callee, n, i, source) {
-					sites[i].recursions = append(sites[i].recursions, n)
+				if i == source {
+					continue
+				}
+				for _, name := range loop.names(p.name) {
+					if aliases.recursiveOperands(m, n, args, i, source, name) && s.pollutionRecurses(m, callee, n, i, source) {
+						sites[i].recursions = append(sites[i].recursions, n)
+						break
+					}
 				}
 			}
 		}
 	})
+	// Each recursion is guarded by the tests on any name of its target object.
+	guardAt := func(call *sitter.Node, parameter string) pollutionGuard {
+		var guard pollutionGuard
+		for _, name := range loop.names(parameter) {
+			guard = unitePollutionGuards(guard, pollutionPartitionGuard(m, loop.body, loop.key, name, true, call))
+		}
+		return guard
+	}
 	var writes []pollutionWrite
 	for i, pair := range sites {
 		if len(pair.assignments) > 0 && len(pair.recursions) > 0 {
-			guard := pollutionPartitionGuard(m, loop.body, loop.key, params[i].name, true, pair.recursions[0])
+			guard := guardAt(pair.recursions[0], params[i].name)
 			for _, call := range pair.recursions[1:] {
-				guard = intersectPollutionGuards(guard, pollutionPartitionGuard(m, loop.body, loop.key, params[i].name, true, call))
+				guard = intersectPollutionGuards(guard, guardAt(call, params[i].name))
 			}
-			writes = append(writes, pollutionWrite{operation: analysis.PollutionMerge, operand: "source", source: source, target: i, sites: pair.assignments, guard: guard})
+			w := pollutionWrite{operation: analysis.PollutionMerge, operand: "source", source: source, target: i, sites: pair.assignments, guard: guard}
+			for _, call := range pair.recursions {
+				w.branches = append(w.branches, pollutionOptionGates(m, loop, call, params, source, i)...)
+			}
+			writes = append(writes, w)
 		}
 	}
 	return writes
-}
-
-func pollutionRecursiveOperands(args *sitter.Node, targetAt, sourceAt int, target string, loop pollutionLoop, src []byte) bool {
-	t, s := pollutionArg(args, targetAt), pollutionArg(args, sourceAt)
-	return pollutionSubscript(t, target, loop.key, src) &&
-		(pollutionSubscript(s, loop.source, loop.key, src) || loop.value != "" && pollutionIdentifier(s, src) == loop.value)
 }
 
 func (s *moduleSet) pollutionRecurses(m *sourceModule, original, call *sitter.Node, target, source int) bool {

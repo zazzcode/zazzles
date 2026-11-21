@@ -65,6 +65,15 @@
       "expect": "no_record"
     },
     {
+      "id": "JS-PP-R01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/pollution-write-shapes-results.md",
+      "kind": "prototype_write_candidate",
+      "file": "lib/accuracy.ts",
+      "line": 71,
+      "expect": "review"
+    },
+    {
       "id": "OSS-PP-N01",
       "app": "oss-oopssec-store",
       "key": ".zazz/specifications/prototype-pollution.md",

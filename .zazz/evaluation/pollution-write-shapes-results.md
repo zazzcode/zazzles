@@ -211,6 +211,48 @@ is byte-identical before and after this work.
 AC8 of the parent contract, the live judgment of Node.js Goof and the Vulnerable TypeScript app,
 is still open.
 
+## Real advisory libraries
+
+On the owner's approval, 22 published versions of 11 packages were downloaded from the npm
+registry as source and scanned with the scanner at `89a87da`: `lodash`, `minimist`,
+`yargs-parser`, `merge`, `set-in`, `dset`, `object-path`, `merge-deep`, `jsonpath`, `putil-merge`
+and `counterpart`. No library code was executed. The files are under the container's
+`_test-findings/prototype-pollution-library-check/` and are not committed.
+
+**Through the public API: nothing is detected.** Each library scanned alone has no application
+entry and no record. Each library copied into an Express application and called from a route
+through its public export also has no record, at the affected and the patched pin alike.
+
+**The core write function called directly from a route** separates shape from reach:
+
+| Package | Affected pin | Patched pin | Reading |
+|---|---|---|---|
+| `merge` (CVE-2020-28499) | 2.1.0: raw | 2.1.1: guarded, all three names blocked | Correct at both pins |
+| `merge-deep` (CVE-2021-26707) | 3.0.2: Review, `__proto__` blocked and `constructor` open | 3.0.3: Review | The key tests are one-line helpers the scanner does not read |
+| `minimist` (CVE-2020-7598) | 1.2.0: no record | 1.2.6: Review | The affected walk is a `forEach` over the parts |
+| `set-in` (CVE-2020-28273) | 2.0.0: no record | 2.0.3: no record | The walk recurses on the next object with the next index |
+| `object-path` (CVE-2021-23434) | 0.11.5: no record | 0.11.6: no record | The walk recurses with the rest of the path |
+| `dset` (CVE-2024-21529) | 3.1.3: no record | 3.1.4: no record | Step and write are one chained assignment in a `while` loop |
+| `putil-merge` (CVE-2021-25953) | 3.6.6: no record | 3.8.0: no record | Keys held in a local, writes through `Object.defineProperty`, slot local replaced on a branch |
+
+`lodash`, `yargs-parser`, `jsonpath` and `counterpart` were scanned only through their public
+API. Two readings confirm rules from this contract on real code. `dset` 3.1.3 already compares
+each part with the three names, and its fix is a string conversion of the part: the nested-array
+bypass. `merge-deep` 3.0.2 skips `__proto__` only: the bypass sibling.
+
+**Why the public API is not reached.** The exported function is a wrapper around the core
+function, and request data crosses forms the flow does not follow: `arguments[i]` in place of
+named parameters (`merge`, `merge-deep`), a function nested in the exported function
+(`minimist`), `module.exports = fn` with methods attached to it (`merge`), and a factory that
+returns the API object (`object-path`). The probes and fixtures of this contract were written
+from the paper's simplified listings and are easier than the published code. The paper's own
+motivating example, `putil-merge`, is not detected in its published form.
+
+Three recognisers were started for the forms above and are not in this change: a `forEach`
+walk, a recursive walk, and key tests written as one-line helpers. Their failing tests are
+parked in the run-log folder. Reaching a core function through a library's public API belongs
+to phases 7 and 8.
+
 ## Isolation and gate
 
 - The architecture baseline keeps all 48 earlier rows unchanged, including the two stage 1

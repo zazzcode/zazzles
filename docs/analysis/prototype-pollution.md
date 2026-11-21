@@ -125,6 +125,11 @@ These forms can pollute `Object.prototype` and have no record:
   source is analyzed when it is part of the scanned repository.
 - **Library source under `vendor/`.** The file walk skips that directory.
 - **A library repository with no application entry.** Its exported functions are not entries.
+- **Published libraries copied into the repository.** Eleven advisory packages were scanned as
+  source behind a route and none was detected through its public API. Wrapper functions that
+  read `arguments`, nested functions and factory exports stand between the route and the write.
+  Walks written with `forEach` or by recursion, and writes through `Object.defineProperty`,
+  are not recognised.
 
 ### Left in Review
 

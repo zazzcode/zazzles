@@ -358,3 +358,13 @@ known gaps.
 On the owner's word, one judged scan of the lab's combined pollution project: 19 requests, 14
 Confirmed, 2 Protected, 3 Review, no false positive and no false Protected against the lab's
 labels. Published as the `vuln-nextjs-prototype-pollution` sample.
+
+### 2026-11-20 — Checked against published advisory libraries
+
+On the owner's approval, 22 versions of 11 advisory packages were downloaded as source and
+scanned. None is detected through its public API. Called directly, the core function of `merge`
+is read correctly at both pins, `merge-deep` and patched `minimist` are Review, and four packages
+have no record. The results record lists each reading and the forms that stand in the way. This
+bounds what the contract claims: the shapes are found in application code written like the
+fixtures, not yet in published library code. Three further recognisers were started and are not
+in this change.

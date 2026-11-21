@@ -14,7 +14,7 @@ depends on how the application uses inherited properties.
 | Lodash `merge`, `mergeWith`, and `defaultsDeep` | Every source object after the destination. A verified `mergeWith` customizer is separate |
 | Lodash `set`, `setWith`, and `zipObjectDeep` | The path argument. Deep zip takes paths in the first argument |
 | Repository recursive merge | A parameter whose keys are enumerated, with a matching target write and recursion through the keys |
-| Repository path walk | A parameter that supplies the parts of a path, a walk that follows those parts, and a final indexed assignment |
+| Repository path walk | A parameter or inline request expression that supplies the parts of a path, followed by traversal and a final indexed assignment |
 | Repository unflatten | The keys of a parameter, where each key is split and walked as a path |
 | Direct nested computed assignment | The request-derived key in the lookup before the final assignment |
 
@@ -25,8 +25,8 @@ A version range or an unresolved distribution stays in Review. The detector read
 source and package files.
 
 JSON request data and values from a verified `JSON.parse` can carry keys. Scalar URL parameters,
-headers, and cookies are excluded as raw key-bearing inputs. Indeterminate operand shapes remain
-in Review. A request value supplied only as the assigned value cannot choose the lookup.
+headers, and cookies can supply keys when the scanner reads a split into path parts in the handler.
+Indeterminate operand shapes remain in Review. A request value supplied only as the assigned value cannot choose the lookup.
 [Supported inputs](node-inputs.md).
 
 ## Where the write can be
@@ -57,10 +57,16 @@ Each shape is read inside one function body, with one forwarding helper for a re
 | Source value | `source[key]`, the value of an `Object.entries` pair, or `Object.getOwnPropertyDescriptor(source, key).value` |
 | Path parts | The parameter itself as an array, `split` by a non-empty string or a regular-expression literal, `match` with a global regular-expression literal, or matches pushed by one `exec` loop |
 | Walk | An index or `for…of` loop, a `while` loop that takes parts with `shift()` or `pop()` while parts remain, a `forEach` over the parts whose callback steps the cursor, `parts.reduce((cursor, part) => cursor[part], target)`, or a function that calls itself on `obj[key]` with the next index or `path.slice(1)` |
+| Walk start | An unchanged parameter, local variable, module variable, import, or fixed property chain rooted at one of those bindings. For a non-parameter start the declaration is included as evidence |
 | Final write | An indexed assignment through the walk result, keyed by the last part. In a recursive walk, an assignment to `obj[key]` in the function or in a helper it calls |
 
 The shapes are read the same way in TypeScript: typed callback parameters, a cast around the key
 enumerator and a cast or non-null assertion on a path part do not change the match.
+
+A handler can split a request value directly and walk the parts in its own body. The candidate
+is anchored at the final assignment. A path made from constant parts produces no record.
+Calls to the global console or to a verified logger, and unresolved calls after the write in
+the same function, do not block the write claim.
 
 A test on another parameter that encloses the recursion, such as `options.deep`, is recorded as
 branch evidence. The caller sets that option and it places no restriction on the key. A walk
@@ -70,9 +76,12 @@ that only reads or returns the value has no record.
 
 The scanner lists prototype-related names blocked by literal, enforcing key guards on the
 relevant lookup paths. A guard covers an operation only where the scanner can show that it
-applies across its modeled write sites. Own-property checks must apply at every recursive lookup. A fresh
+applies across its modeled write sites. A constant `Set` or array of string literals supplies a
+deny-list through `.has(key)` or `.includes(key)` when the collection cannot escape or change.
+Own-property checks must apply at every recursive lookup. A fresh
 null-prototype object can protect one lookup. Deep traversal also needs evidence about nested
-containers. A test that rejects the whole path, `path.includes('__proto__')` or the `indexOf`
+containers. A start explicitly initialized with `Object.create(null)` carries
+`null_prototype_root` and stays in Review. A test that rejects the whole path, `path.includes('__proto__')` or the `indexOf`
 equivalent, blocks that name in every part while the path stays unchanged up to the walk.
 
 A key test may be written as a one-line helper of the same module, such as
@@ -95,13 +104,15 @@ slot such as `__proto__` already has a value and stays in place. A slot that is 
 by a fresh object has no record, and neither does one replaced after an own-property test, which
 replaces an inherited slot too.
 
-A test on the request path whose outcome depends on a call that takes the key operand is a guard
-the scanner has not read: `if (!known.has(key)) return`, `const row = find(key)` followed by
-an exit when `row` is missing, or the same test written as `known.has(key) && write(key)` or a
-conditional expression. A `Map` lookup rejects a prototype key and another function may
-accept it. The record carries the test as key-guard evidence and stays in Review with
-`key_guard_coverage_unknown`. A test on the operand itself and a plain `store[key]` existence
-test are not such guards, because an inherited key passes both.
+A direct `Map.has(key)` requirement protects a nested write when the unchanged Map has only
+literal string keys and excludes all three prototype names. The tested key must be the receiver
+lookup key. A null-result gate around a verified Map lookup also records `map_membership`.
+A Map populated at runtime leaves its key coverage unknown.
+
+Other calls that take the key operand can guard a write through an `if`, short circuit, or
+conditional expression. The record carries the test as key-guard evidence and stays in Review
+with `key_guard_coverage_unknown` when the call's effect is unresolved. Plain object existence
+checks allow inherited keys.
 
 A consistent assessment can Confirm a complete raw request path to a verified write. Protected
 requires source-backed controls covering all recorded paths and consistent answers about coverage
@@ -110,7 +121,10 @@ versions, controls, or input shape stay in Review.
 
 ## Limits
 
-Recognition is bounded to the shapes above. A form outside them has no record, and no record is
+Class instance fields such as `this.state` remain outside the walk-start matcher. A call
+such as `settings.set(path, value)` needs instance-to-method resolution before the scanner can
+identify the field. A dynamic member expression such as `holder[name]` also leaves the start
+unresolved. A form outside them has no record, and no record is
 not a statement that the code is safe.
 [Coverage and known gaps](../detection-capabilities/prototype-pollution.md) lists every form by outcome: recorded
 and decidable, recorded and left in Review, and not recorded. Each gap has an identifier and an
@@ -119,4 +133,5 @@ example.
 A finding states that `Object.prototype` can be written. It makes no statement about what reads
 the polluted property.
 [Implementation contract](../../.zazz/specifications/prototype-pollution.md),
-[write shapes contract](../../.zazz/specifications/pollution-write-shapes.md).
+[write shapes contract](../../.zazz/specifications/pollution-write-shapes.md),
+[walk start contract](../../.zazz/specifications/pollution-walk-start.md).

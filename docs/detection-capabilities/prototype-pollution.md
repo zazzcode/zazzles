@@ -25,6 +25,8 @@ Each gap has an identifier, so it can be taken up as a later capability.
 | Path walk over a split string | `parts = path.split('.')`, then `cursor = cursor[part]` | Split by a string or a regular expression, `match` with a global pattern, or matches collected by an `exec` loop |
 | Path walk over an array path | `setIn(obj, ['a', 'b'], v)` | Also when the function splits a string path in place first |
 | Walk forms | Index loop, `for…of`, consuming `while`, `forEach`, `reduce`, or a function that calls itself on the next object | The final assignment must go through the walk result |
+| Walk into module, local, or fixed-property state | `let cursor = store`, `let cursor = holder.state` | The declaration is included in the record. Reassignment of the start or a property in its chain prevents a match |
+| Walk inside the route handler | Split `req.body.path` and walk its parts in the handler | The final assignment is the sink. A constant path produces no record |
 | Unflatten | `{ "a.b": 1 }` expanded key by key | Dotted or bracketed keys. The walk may start from a local object |
 | Nested computed assignment | `store[a][b] = v` | Also after the slot is created only when absent: `if (!store[a]) store[a] = {}` |
 | Library source kept in the repository | `require('./lib/merge')` called from a route | CommonJS exports and ESM named, namespace or default imports, imported from the defining file. The write evidence is in the library file |
@@ -36,6 +38,8 @@ Guards the scanner reads and credits:
 |---|---|---|
 | Comparison of the key with all three names | `if (key === '__proto__' \|\| key === 'constructor' \|\| key === 'prototype') continue` | Guarded |
 | The same for only some names | `if (key === '__proto__') continue` | Raw, with the open names listed. It can never be Protected |
+| Literal Set or array deny-list | `if (BAD.has(key)) continue`, `if (LIST.includes(key)) continue` | Guarded when all three names are excluded and the collection cannot change. A partial list leaves the other names open |
+| Closed Map allow-list | `if (!known.has(key)) return` before `store[key][field] = value` | Guarded when the unchanged Map has literal keys excluding all three names and the test covers the same lookup key |
 | Own-property test on the target | `if (!Object.hasOwn(target, key)) continue` | Guarded |
 | Whole-path deny-list | `if (path.includes('__proto__') …) return` | Guarded, while the path is unchanged up to the walk |
 | One-line helper that tests the key | `function isValidKey(key) { return key !== '__proto__' && … }` | Read like the test written in place |
@@ -46,17 +50,15 @@ Guards the scanner reads and credits:
 
 | ID | Form | Why it is Review | To close it |
 |---|---|---|---|
-| `PP-R01` | A test depends on a call taking the key: `if (!known.has(key)) return`, `known.has(key) && write(key)` | `key_guard_coverage_unknown`. What the call accepts is not read. Safe behind a `Map`; exploitable behind a helper around a plain object | Read `Map` and `Set` lookups as guards and plain-object helpers as none |
+| `PP-R01` | A key gate relies on a Map populated at runtime or on a call whose effect is unresolved | `key_guard_coverage_unknown`. A verified Map records membership evidence, with its exact key set still unknown | Track the possible Map keys and resolve other key-taking guards |
 | `PP-R02` | A key test in a helper with more than one statement, imported from another module, or calling another function; an assertion on the key before a recursive walk | `key_guard_coverage_unknown`. Only a one-line helper in the same module is read | Read assertions, imported helpers and longer helpers |
 | `PP-R03` | An array part compared with no type test: `if (part === '__proto__') return` | `key_guard_coverage_unknown`. `['__proto__']` passes the comparison. Exploitable, not Confirmed | Claim the nested-array bypass |
 | `PP-R04` | Array parts type-checked another way: `path.every(p => typeof p === 'string')` | `key_guard_coverage_unknown`. Only an exit on `typeof part !== 'string'` is credited. Safe, not Protected | Credit `every` and a positive `typeof` test |
-| `PP-R05` | A whole-path guard other than `includes` or `indexOf`: a regular-expression test, `parts.some(…)`, a deny array, `path.toLowerCase()` | Recorded raw without the guard. Review once the assessment relies on it | Read these as key guards |
-| `PP-R06` | A call with no definition receives the same input: `console.log(req.body)`, or any call after the write | `input_helper_unresolved`, though neither can stop the write | Ignore log calls and calls after the write |
+| `PP-R05` | A whole-path guard other than `includes` or `indexOf`: a regular-expression test, `parts.some(part => LIST.includes(part))`, `path.toLowerCase()` | Recorded raw without the guard. Review once the assessment relies on it | Read these as key guards |
 | `PP-R07` | Keys from untyped input: `store[req.query.a][req.query.b] = v` | `key_control_unknown` | Model how the query parser treats keys |
 | `PP-R08` | A Lodash version range with no lockfile | `version_unresolved` | Needs a lockfile or an exact pin |
 | `PP-R09` | A deep write into an `Object.create(null)` root | `null_prototype_root`. Only the first lookup is covered | Track the nested containers |
 | `PP-R10` | The key is checked in route middleware: `app.post('/w', checkKey, handler)` | Not read as a guard. Raw unless another blocker applies | Read key tests in middleware |
-| `PP-R11` | A deny-list held in a `Set` or an array: `if (BAD.has(key)) continue`, `LIST.includes(key)` | `key_guard_coverage_unknown`. Safe, not Protected | Read membership in a constant `Set` or array as a deny-list |
 
 ## Not recorded
 
@@ -64,8 +66,6 @@ Each of these can hide a real write.
 
 | ID | Form | Example | To close it |
 |---|---|---|---|
-| `PP-N01` | A walk starts from a module-level, local or property object | `let cursor = store` | Planned walk-start work |
-| `PP-N02` | A walk written in the route handler, with no helper | `req.body.path.split('.')` walked inline | Planned walk-start work |
 | `PP-N03` | A path normalised other than by its own split | `String(path).split('.')`, `toPath(path)` | Read string conversions and one-line normalisers |
 | `PP-N04` | A path decoded at use, or into a new variable, after a check | `decodeURIComponent(path).split('.')` | Follow the path through transforms |
 | `PP-N05` | A merge whose slot local is replaced on a branch | `if (!slot) slot = {}; merge(slot, v)` | Decide which branches an object skips |
@@ -78,6 +78,9 @@ Each of these can hide a real write.
 | `PP-N13` | A walk in a callback form other than a plain `forEach` step | A `forEach` whose callback also makes the final write (`if (i === last) cursor[part] = v; else cursor = cursor[part]`); `map` or `every` used for the step; `for…of` over `parts.entries()` | Read the final write inside the callback, and the other iteration methods |
 | `PP-N14` | A recursive walk in a form other than `path[i]` or `path[0]` with `slice(1)` | `const [head, ...rest] = path`; `path.shift()`; a string path re-split at each level; two functions that call each other | Read destructured and consumed paths, and recursion across two functions |
 | `PP-N12` | The vulnerable function is reached through a re-export or a dynamic import | `export { merge } from './merge.js'`, `export * from …`, `export { merge as default }`, `await import('./merge.js')` | Follow re-exports and literal dynamic imports. This is shared by every vulnerability class |
+| `PP-N15` | A walk starts from an instance field in a class method | `settings.set(path, value)` uses `this.state` | Resolve the call to the class method and verify the instance field |
+| `PP-N16` | A walk starts from a computed property or a property that may be replaced | `let cursor = holder[name]` | Resolve the property name and the value held there on the write path |
+| `PP-N17` | An inline walk follows a request field from a container that was reassigned | The handler assigns `req.body` before splitting `req.body.path` | Track the assigned container and the operand captured by the split |
 
 Libraries and dependencies:
 

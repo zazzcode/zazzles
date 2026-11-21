@@ -40,7 +40,9 @@ supported practice findings. Each claim keeps its own evidence, policy and outco
 claims can share evidence while remaining separate for review.
 
 [Fix](../fix/README.md) will apply remediation skills and playbooks to findings from Zazzles or
-other tools. [Probe](../probe/README.md) will assess externally observable endpoint
+other tools. 
+
+[Probe](../probe/README.md) will assess externally observable endpoint
 configuration, starting with TLS and certificates. Each module has its own inputs and evidence.
 A team can use Scan or Probe to collect evidence, then apply Fix when the finding provides
 enough detail to repair and verify the issue.

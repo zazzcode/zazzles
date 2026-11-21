@@ -44,51 +44,51 @@ Guards the scanner reads and credits:
 
 ## Recorded, left in Review
 
-| ID | Form | Example | Reason on the record |
+| ID | Form | Why it is Review | To close it |
 |---|---|---|---|
-| `PP-R01` | A test that depends on a call taking the key | `if (!known.has(key)) return`; `const row = find(key); if (row == null) return`; `known.has(key) && write(key)`; `known.has(key) ? write(key) : null` | `key_guard_coverage_unknown`. The scanner does not read what the call accepts. A `Map` or `Set` lookup makes the write unreachable and is not Protected; a helper around a plain object lookup lets a prototype key through and is not Confirmed |
-| `PP-R02` | A key test in a helper that calls another function, or an assertion on the key before a recursive walk | `assert.ok(!BAD.includes(key))` | `key_guard_coverage_unknown` |
-| `PP-R03` | A comparison on the parts of a caller's array with no type test | `if (part === '__proto__') return; cursor = cursor[part]` | `key_guard_coverage_unknown`. A nested array such as `['__proto__']` passes the comparison. The code is exploitable and is not Confirmed |
-| `PP-R04` | Array parts type-checked another way | `path.every(p => typeof p === 'string')`, or `if (typeof part === 'string') { … } else return` | `key_guard_coverage_unknown`. Only an exit on `typeof part !== 'string'` is credited |
-| `PP-R05` | A whole-path guard other than `includes` or `indexOf` | A regular-expression test, `parts.some(…)`, a deny array, a test on `path.toLowerCase()` | The record is raw without that control. An assessment that relies on it is a contradiction |
-| `PP-R06` | Another call with no definition in the scan receives the same input | `console.log(req.body)` before the write, or an unknown call after it | `input_helper_unresolved`, although neither can stop the write |
-| `PP-R07` | Keys from an input whose shape is not typed | `store[req.query.a][req.query.b] = v` | `key_control_unknown` |
-| `PP-R08` | A Lodash call with a version range and no lockfile | `"lodash": "^4.17.4"` | `version_unresolved` |
-| `PP-R10` | The key is checked in route middleware, not in the handler | `app.post('/w', checkKey, handler)` where `checkKey` tests `known.has(req.body.key)` | The check is not read as a guard of the write. The record is raw, and it is Review only when another blocker such as `input_helper_unresolved` happens to apply |
-| `PP-R09` | A deep write into a null-prototype root | `merge(Object.create(null), req.body)` | `null_prototype_root`. Only the first lookup is covered |
+| `PP-R01` | A test depends on a call taking the key: `if (!known.has(key)) return`, `known.has(key) && write(key)` | `key_guard_coverage_unknown`. What the call accepts is not read. Safe behind a `Map`; exploitable behind a helper around a plain object | Read `Map` and `Set` lookups as guards and plain-object helpers as none |
+| `PP-R02` | A key test in a helper that calls another function, or an assertion on the key before a recursive walk | `key_guard_coverage_unknown` | Read assertions and two-level helpers |
+| `PP-R03` | An array part compared with no type test: `if (part === '__proto__') return` | `key_guard_coverage_unknown`. `['__proto__']` passes the comparison. Exploitable, not Confirmed | Claim the nested-array bypass |
+| `PP-R04` | Array parts type-checked another way: `path.every(p => typeof p === 'string')` | `key_guard_coverage_unknown`. Only an exit on `typeof part !== 'string'` is credited. Safe, not Protected | Credit `every` and a positive `typeof` test |
+| `PP-R05` | A whole-path guard other than `includes` or `indexOf`: a regular-expression test, `parts.some(…)`, a deny array, `path.toLowerCase()` | Recorded raw without the guard. Review once the assessment relies on it | Read these as key guards |
+| `PP-R06` | A call with no definition receives the same input: `console.log(req.body)`, or any call after the write | `input_helper_unresolved`, though neither can stop the write | Ignore log calls and calls after the write |
+| `PP-R07` | Keys from untyped input: `store[req.query.a][req.query.b] = v` | `key_control_unknown` | Model how the query parser treats keys |
+| `PP-R08` | A Lodash version range with no lockfile | `version_unresolved` | Needs a lockfile or an exact pin |
+| `PP-R09` | A deep write into an `Object.create(null)` root | `null_prototype_root`. Only the first lookup is covered | Track the nested containers |
+| `PP-R10` | The key is checked in route middleware: `app.post('/w', checkKey, handler)` | Not read as a guard. Raw unless another blocker applies | Read key tests in middleware |
 
 ## Not recorded
 
-Writes in application code that can pollute and have no record:
+Each of these can hide a real write.
 
-| ID | Form | Example |
-|---|---|---|
-| `PP-N01` | A path walk that starts from a module-level object, a local object or a property | `let cursor = store` in `setPath(path, value)` |
-| `PP-N02` | A path walk written in the route handler, with no helper function | `req.body.path.split('.')` walked in the handler |
-| `PP-N03` | A path normalised by anything but its own split | `String(path).split('.')`, `toPath(path)`, `Array.isArray(path) ? path : path.split('.')` |
-| `PP-N04` | A path decoded at the point of use or into a new variable, after a check on the undecoded path | `decodeURIComponent(path).split('.')` |
-| `PP-N05` | A merge whose slot local is replaced on a branch | `let slot = target[key]; if (!slot) slot = {}; merge(slot, value)` |
-| `PP-N06` | A nested write after the slot is filled or replaced in a form the scanner does not read | `store[k] = store[k] ? store[k] : {}`; `if (!store[k]) { store[k] = {}; count++; }`; `if (!store[k] \|\| reset) store[k] = {}`; `if (typeof store[k] !== 'object') store[k] = {}`; an `if (!store[k])` with an `else`; `if (reset) store[k] = {}`. An inherited slot survives each of the first five |
-| `PP-N07` | A merge reached through more than one forwarding helper, or a loop walk split across functions | |
-| `PP-N08` | A write through `Object.defineProperty` | `Object.defineProperty(target, key, descriptor)` |
-| `PP-N09` | A walk whose step and write are one chained assignment | `t = t[k] = (i === l) ? val : …` |
-| `PP-N10` | A dynamic-key write that matches none of the forms above | |
-| `PP-N11` | An array-path walk whose part is converted before use | `const part = String(path[i])` or `'' + path[i]`, then `cursor = cursor[part]`. With a deny-list this is safe. Without one it is exploitable, and neither has a record |
+| ID | Form | Example | To close it |
+|---|---|---|---|
+| `PP-N01` | A walk starts from a module-level, local or property object | `let cursor = store` | Planned walk-start work |
+| `PP-N02` | A walk written in the route handler, with no helper | `req.body.path.split('.')` walked inline | Planned walk-start work |
+| `PP-N03` | A path normalised other than by its own split | `String(path).split('.')`, `toPath(path)` | Read string conversions and one-line normalisers |
+| `PP-N04` | A path decoded at use, or into a new variable, after a check | `decodeURIComponent(path).split('.')` | Follow the path through transforms |
+| `PP-N05` | A merge whose slot local is replaced on a branch | `if (!slot) slot = {}; merge(slot, v)` | Decide which branches an object skips |
+| `PP-N06` | A slot filled in an unread form before a nested write | A ternary default; a branch with a second statement; `if (!s \|\| reset)`; `typeof s !== 'object'`; an `if` with an `else` | The same branch model |
+| `PP-N07` | A merge through more than one helper, or a loop walk split across functions | | Follow more than one helper |
+| `PP-N08` | A write through `Object.defineProperty` | `Object.defineProperty(target, key, d)` | Read it as an assignment |
+| `PP-N09` | Step and write in one chained assignment | `t = t[k] = …` | Read the chained form |
+| `PP-N10` | Any other dynamic-key write | | Emit a Review record for unmatched writes |
+| `PP-N11` | An array part converted before use | `const part = String(path[i])` | Read a converted part as a string part |
 
 Libraries and dependencies:
 
-| ID | Form | What a scan shows |
-|---|---|---|
-| `PP-L01` | A merge or set-by-path package other than Lodash called as an installed dependency (`dset`, `merge-deep`, `set-value`) | No record. `node_modules/` is not read and only Lodash has version contracts. A dependency audit reports published advisories |
-| `PP-L02` | A published library's source copied into the repository and called through its public API | Usually no record. Of eleven advisory packages checked, one (`set-in`) is detected this way. Wrapper functions that read `arguments`, functions nested in the export and factory exports stand between the route and the write |
-| `PP-L03` | Library source under `vendor/` | No record. The file walk skips that directory |
-| `PP-L04` | A library repository scanned on its own, with no application route | No record. Exported functions are not entries yet |
+| ID | Form | What a scan shows | To close it |
+|---|---|---|---|
+| `PP-L01` | A package other than Lodash called as an installed dependency: `dset`, `merge-deep`, `set-value` | No record. `node_modules/` is not read | Version contracts for more packages, or a dependency audit |
+| `PP-L02` | A published library's source in the repository, called through its public API | Usually no record: 1 of 11 advisory packages is detected. Wrappers that read `arguments`, nested functions and factory exports are not followed | Library mode |
+| `PP-L03` | Library source under `vendor/` | No record. The file walk skips it | An option to scan it |
+| `PP-L04` | A library repository with no application route | No record. Exported functions are not entries | Library mode |
 
 One assumption can keep a record that should be dropped:
 
-| ID | Form | What a scan shows |
-|---|---|---|
-| `PP-A01` | `Object` or `Reflect` replaced through `globalThis`, or a built-in method patched in another module | The record is kept as if the built-in were genuine. A same-named variable, parameter, function or class in the module is noticed |
+| ID | Form | What a scan shows | To close it |
+|---|---|---|---|
+| `PP-A01` | `Object` or `Reflect` replaced through `globalThis`, or a built-in method patched in another module | The record is kept as if the built-in were genuine | Track those writes across modules |
 
 ## Outside this claim
 

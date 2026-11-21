@@ -988,6 +988,7 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		return f.transfer(*mapped, "collection_map", n)
 	}
 	f.pollutionCall(n, fn, args, values)
+	f.deserializationCall(n, fn, args, values)
 	if f.responseCall(n, fn, args, values) {
 		return value{}
 	}

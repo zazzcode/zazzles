@@ -63,8 +63,9 @@ environment object is not yet recognised.
 ## Bounds
 
 This is bounded source analysis, without runtime execution. Arbitrary dynamic aliases, monkey
-patches, sandbox object factories and unmodeled control flow remain unresolved. Deserialization,
-module loading and WebAssembly are outside these interpreter claims. Server-to-client props are
+patches, sandbox object factories and unmodeled control flow remain unresolved. Module loading and
+WebAssembly are outside these interpreter claims. Verified deserializers use the
+[unsafe deserialization family](deserialization.md). Server-to-client props are
 followed one imported component hop; deeper component chains and state transitions remain bounded.
 
 A Sequelize stored value read by `findByPk`/finders can link back to its request writer

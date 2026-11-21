@@ -3,6 +3,13 @@
   "scope": "Source-reviewed case inventory, not an exhaustive vulnerability count. Labels are never detector or model inputs.",
   "cases": [
     {
+      "id": "VFA-DESER-01",
+      "file": "vulnerable-flask-app.py",
+      "line": 97,
+      "kind": "deserialization_candidate",
+      "expect": "absent"
+    },
+    {
       "id": "VF-SQL-01",
       "file": "vulnerable-flask-app.py",
       "line": 20,

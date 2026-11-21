@@ -36,6 +36,9 @@ type phpNamespaceScope struct {
 type phpClassIndex struct {
 	byName map[string][]*phpClassDecl // lower-cased FQN
 	scopes map[string][]phpNamespaceScope
+	// anonymous holds the declaration of each `new class {...}` by file and
+	// position, so every evaluation of one expression sees the same class.
+	anonymous map[string]*phpClassDecl
 }
 
 // phpClassDepth bounds the extends/trait chain walked for a method (D-9).
@@ -326,12 +329,44 @@ func (x *phpClassIndex) propertyDefault(d *phpClassDecl, name string) (*phpClass
 
 // Object flow (D-9, D-10).
 
-// phpNewArguments returns the argument nodes of `new C(...)`, whose
-// arguments child carries no field name.
-func phpNewArguments(n *sitter.Node) []*sitter.Node {
-	var args *sitter.Node
+// phpAnonymousClass returns the class node of `new class(...) {...}`, or nil
+// when the expression names its class.
+func phpAnonymousClass(n *sitter.Node) *sitter.Node {
 	for i := uint(0); i < n.NamedChildCount(); i++ {
-		if c := n.NamedChild(i); c.Kind() == "arguments" {
+		if c := n.NamedChild(i); c.Kind() == "anonymous_class" {
+			return c
+		}
+	}
+	return nil
+}
+
+// anonymousClass returns the declaration of an anonymous class. It has no
+// name to resolve, so it is reached only through the expression that creates
+// it; its parent, traits and methods resolve as a named class's do.
+func (x *phpClassIndex) anonymousClass(m *phpModule, node *sitter.Node) *phpClassDecl {
+	key := fmt.Sprintf("%s:%d", m.file, node.StartByte())
+	if d := x.anonymous[key]; d != nil {
+		return d
+	}
+	if x.anonymous == nil {
+		x.anonymous = map[string]*phpClassDecl{}
+	}
+	d := &phpClassDecl{fqn: fmt.Sprintf("class@anonymous:%s:%d", m.file, node.StartPosition().Row+1), kind: "class", module: m, node: node}
+	x.anonymous[key] = d
+	return d
+}
+
+// phpNewArguments returns the argument nodes of `new C(...)`, whose
+// arguments child carries no field name. An anonymous class carries them
+// inside its class node.
+func phpNewArguments(n *sitter.Node) []*sitter.Node {
+	owner := n
+	if anonymous := phpAnonymousClass(n); anonymous != nil {
+		owner = anonymous
+	}
+	var args *sitter.Node
+	for i := uint(0); i < owner.NamedChildCount(); i++ {
+		if c := owner.NamedChild(i); c.Kind() == "arguments" {
 			args = c
 		}
 	}
@@ -348,7 +383,8 @@ func phpNewArguments(n *sitter.Node) []*sitter.Node {
 
 // newObject binds `new C(args)` to its class across modules and expands
 // __construct through the bounded helper (D-9). ok is false when the class
-// does not resolve; reason then says why.
+// does not resolve; reason then says why. clsNode is nil when the class is
+// chosen at run time (`new $name`, `new (expr)`), which resolves to nothing.
 func (f *phpFlow) newObject(n, clsNode *sitter.Node, cls string) (phpValue, bool, string) {
 	m := f.module
 	idx := f.set.classIndex()
@@ -362,11 +398,21 @@ func (f *phpFlow) newObject(n, clsNode *sitter.Node, cls string) (phpValue, bool
 			decl, _ = idx.parentOf(f.class)
 		}
 	default:
+		if clsNode == nil {
+			return phpValue{}, false, ""
+		}
 		decl, reason = idx.resolve(m, cls, clsNode.StartByte())
 	}
 	if decl == nil || decl.kind != "class" {
 		return phpValue{}, false, reason
 	}
+	return f.instantiate(n, decl), true, ""
+}
+
+// instantiate creates an object of a resolved class and runs its constructor.
+func (f *phpFlow) instantiate(n *sitter.Node, decl *phpClassDecl) phpValue {
+	m := f.module
+	idx := f.set.classIndex()
 	f.set.objects++
 	v := phpValue{binding: "php_class", class: decl.fqn, classDecl: decl, objectID: f.set.objects, props: map[string]phpValue{}, evidence: []analysis.Evidence{m.evidence("object_creation", n)}}
 	nodes := phpNewArguments(n)
@@ -385,7 +431,7 @@ func (f *phpFlow) newObject(n, clsNode *sitter.Node, cls string) (phpValue, bool
 		// what it writes is not established.
 		v.propsUnknown = true
 	}
-	return v, true, ""
+	return v
 }
 
 // writeObject replaces every alias of an object with its updated value.

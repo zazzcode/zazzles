@@ -5,7 +5,8 @@
 **Code Scan** (`scan/`) analyzes JavaScript, TypeScript, Python and PHP application source for
 security vulnerabilities, evidence gaps, and code smells or poor coding practices that can impact
 security or performance. Its reports contain the operation, paths, controls and evidence gaps for
-each claim. Optional model assessment helps evaluate supported claims.
+each claim. A decision-model judge evaluates source-backed claims and helps distinguish vulnerable,
+protected and inconclusive paths. Use offline analysis for local development and troubleshooting.
 
 - [Setup and build](../docs/scan/getting-started.md)
 - [Running scans](../docs/scan/running-scans.md)

@@ -5,12 +5,12 @@
 ## Core security judgment
 
 Decision-model assessment is required and core to Zazzles' security-assessment workflow. The scanner
-builds source-backed traces and operation/guard evidence for the model to judge.
-OpenAI Luna Decisions (`gpt-6-luna`, `--judge openai`) is the primary model used for
-development and calibration. Google Gemini Decisions is an optional shared adapter; Jev has local
-stub coverage. Model answers cannot replace missing source facts or override claim blockers on
-confidence alone. A blocker closes only when the model answers a specific scanner question and
-the evidence it cites verifies against the request; see [model-resolved facts](#model-resolved-facts).
+builds source-backed traces and records guards for the judge. Evaluating whether the controls
+enforce the required protection helps reduce false positives and preserve inconclusive cases
+for review. OpenAI Luna Decisions and Google Gemini Decisions are the main providers.
+The Jev adapter is verified with local stubs. A blocker closes only when the model answers a
+specific scanner question and the cited evidence verifies against the request.
+[Model-resolved facts](#model-resolved-facts)
 
 Inventory, evidence extraction, deterministic practice checks, saved-report rendering and local tests
 can run without an API key. Those are useful inspection/development modes; they do not complete the
@@ -43,8 +43,12 @@ For the primary OpenAI setup, use your OpenAI API account key as `OPENAI_API_KEY
 `JUDGE_DECISION_MODEL=gpt-6-luna`. Manage spending in your API account. No local pricing or
 rate configuration is required to start scanning.
 
-For optional Gemini use, create a key in [Google AI Studio](https://aistudio.google.com/api-keys),
-set `GEMINI_API_KEY` and select `JUDGE_DECISION_MODEL=gemini-decision-1` with `--judge gemini`.
+For Google Gemini Decisions, set `GEMINI_API_KEY` and `JUDGE_DECISION_MODEL=gemini-decision-1`,
+then run with `--judge gemini`. Create the credential in [Google AI Studio](https://aistudio.google.com/api-keys).
+
+For Jev, set `TYPESAFE_API_KEY` and an explicit model such as `JUDGE_DECISION_MODEL=jev-1.14.0`,
+then run with `--judge jev`. Zazzles verifies the adapter through local stubs.
+[TypeSafe console](https://console.typesafe.ai/) · [TypeSafe model catalog](https://docs.typesafe.ai/models)
 
 To switch, edit the one model assignment and use the matching `--judge`. A fresh subshell avoids
 stale exported variables. Removing/commenting a key or model in `.env` does not unset an existing
@@ -225,10 +229,9 @@ separate candidate/entry IDs and exact request digests, record `deduplicated_fro
 policy independently, and have no billed usage assigned. `--trace-dir` saves a replayable exact
 trace for each sibling. There is no persistent answer cache or cross-analyzer batch.
 
-Use `--only-family path,command` to judge selected families, or `--skip-family outbound,xss`
-to exclude families. Names are `sql`, `nosql`, `xss`, `command`, `path`, `logging`,
-`input-validation`, and `outbound`. The flags are mutually exclusive; `JUDGE_ONLY_FAMILY` and
-`JUDGE_SKIP_FAMILY` provide defaults. Excluded model assessments remain unrun; existing deterministic practice findings are retained,
+Use `--only-family deserialization` to assess CWE-502 alone, or `--skip-family outbound,xss`
+to exclude families. The [coverage index](detection-capabilities.md) lists the available names.
+Use one flag per scan. `JUDGE_ONLY_FAMILY` and `JUDGE_SKIP_FAMILY` provide defaults. Excluded model assessments remain unrun; existing deterministic practice findings are retained,
 with scope and deduplication accounting in report limitations. All analyzers use the same scan-wide
 provider/model with no automatic fallback. Optional Google probability/confidence metadata never
 closes static blockers.

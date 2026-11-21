@@ -90,6 +90,19 @@ func (f *pythonFlow) pythonInterpreter(n *sitter.Node, q string, fn *sitter.Node
 		u.APIModel = analysispacks.RedirectContract(contract)
 	}
 	u.Context = append(u.Context, m.evidence("sink_binding", fn))
+	guards, guardIndex, derived, names := f.pythonOperandGuards(u, n)
+	f.completePythonOperandClaim(u, n, destination, guards, guardIndex, derived, names, func(u *analysis.CandidateUse, extra map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
+		c := parse.SSRFCompleteness(u, extra, blockers, coverage)
+		c.ClaimKind = family
+		c.Required = []string{"input_source", "sink_binding", "invoked_callable", "control_flow", family + "_operand"}
+		c.Evidence[family+"_operand"] = []analysis.Evidence{u.Sink}
+		c.Scope = family + " operand claim"
+		return c
+	}, u.CodePaths())
+}
+
+func (f *pythonFlow) pythonOperandGuards(u *analysis.CandidateUse, n *sitter.Node) ([]analysis.Evidence, []int, [][]string, map[string]bool) {
+	m := f.module
 	names := map[string]bool{}
 	for _, d := range u.Dependencies {
 		for _, name := range parse.CommandDepNames(d) {
@@ -147,12 +160,5 @@ func (f *pythonFlow) pythonInterpreter(n *sitter.Node, q string, fn *sitter.Node
 	}) {
 		u.Context = append(u.Context, m.evidence("allowlist_definition", decl))
 	}
-	f.completePythonOperandClaim(u, n, destination, guards, guardIndex, scan.Derived(u.Dependencies), names, func(u *analysis.CandidateUse, extra map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {
-		c := parse.SSRFCompleteness(u, extra, blockers, coverage)
-		c.ClaimKind = family
-		c.Required = []string{"input_source", "sink_binding", "invoked_callable", "control_flow", family + "_operand"}
-		c.Evidence[family+"_operand"] = []analysis.Evidence{u.Sink}
-		c.Scope = family + " operand claim"
-		return c
-	}, u.CodePaths())
+	return guards, guardIndex, scan.Derived(u.Dependencies), names
 }

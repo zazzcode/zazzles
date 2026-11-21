@@ -51,6 +51,8 @@ func interpreterComponentQuestions(family string) []question {
 	switch family {
 	case "redirect":
 		items = analysispacks.RedirectQuestions()
+	case "deserialization":
+		items = analysispacks.DeserializationQuestions()
 	case "upload":
 		items = analysispacks.UploadQuestions()
 	}

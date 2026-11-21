@@ -184,6 +184,7 @@ func descriptors() ([]Component, error) {
 	out = append(out, pollutionDescriptors()...)
 	out = append(out, interpreterDescriptors("redirect")...)
 	out = append(out, interpreterDescriptors("upload")...)
+	out = append(out, interpreterDescriptors("deserialization")...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
 	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent())

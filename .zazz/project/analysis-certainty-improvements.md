@@ -49,7 +49,7 @@ claim-specific blocker analysis. The additional messages do correspond to curren
 | Control flow unresolved | Branches and helper returns can merge possible values without proving path feasibility | Supported successor/termination edges, reaching definitions, and guard/value relationships |
 | Middleware unresolved | Extraction adds a conservative gap; some [middleware context](../../scan/internal/langjs/middleware_context.go) is available, but effective enforcement is incomplete | Applicable order, mount/path/method matching, rejection versus continuation, and relevant mutations |
 | No direct request-field dependency | The use has no resolved dependency; this does not prove its value is constant or trusted | Source origin and transfers, or positive evidence of a trusted constant; callback/tool inputs need explicit modeling |
-| Semantic assessment was not run | The saved run was offline | An optional scoped assessment after its required structural evidence is assembled; some deterministic rules need no model |
+| Semantic assessment was not run | The saved run was offline | Use the decision model to assess the source-backed claim. Deterministic practice evidence remains available offline. |
 
 The current [checked-mode implementation](../../scan/internal/langjs/checks.go) already separates some
 claim blockers from coverage gaps and resolves selected SQL bindings. Extend and validate that
@@ -127,8 +127,8 @@ Increasing traversal limits can be a measured experiment; it is not a substitute
 
 ### 6. Assessment and verification
 
-Assemble a compact evidence-ready claim before optionally asking the decision model about custom
-check adequacy or operation semantics. A semantic answer cannot prove an absent control-flow edge,
+Assemble a compact source-backed claim for the decision model to assess custom check adequacy
+or operation semantics. A semantic answer cannot prove an absent control-flow edge,
 identify an unresolved library by guessing, or turn missing source provenance into a trusted source.
 Keep the existing provider/model restrictions and small explicit request caps. This planning change
 makes no live calls and authorizes no target execution.

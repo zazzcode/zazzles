@@ -16,6 +16,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Path traversal](path-traversal.md) | Verified Node `fs` and Python `open`/`pathlib` operations, effective path operands, containment controls and outcomes |
 | [Prototype pollution](prototype-pollution.md) | Verified JS/TS prototype writes, key-bearing inputs, and per-level controls |
 | [Code and template injection](code-injection.md) | Verified interpreter and template-source operands and their restrictions |
+| [Unsafe deserialization](deserialization.md) | Verified data operands, loader and schema facts, and byte-level integrity and class restrictions |
 | [Open redirect](open-redirect.md) | Verified redirect destinations and effective origin restrictions |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |

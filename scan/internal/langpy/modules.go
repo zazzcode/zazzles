@@ -54,6 +54,8 @@ type pythonSet struct {
 	text          *parse.TextSources
 	writes        map[string][]pythonWrite
 	staticInvalid map[string]bool
+	// packageVersions caches the PyYAML pin read from each directory.
+	packageVersions map[string]pythonDirVersion
 	// tampered caches command-API shadowing and monkey-patch facts.
 	tampered map[string]bool
 	// dynamicMembers records setattr(module, name, value) registrations.

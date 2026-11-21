@@ -8,30 +8,33 @@ application, install its dependencies, open its database, or make the outbound r
 the code. The acceptance corpus is DVWA at revision `a1978a2`; framework-specific entry discovery for Drupal and Symfony is planned. Verified Twig template-source
 operations are covered by the [template injection analyzer](detection-capabilities/template-injection.md).
 
+Configure a decision-model provider before running the security assessment.
+[Provider setup](decision-models.md#credentials-and-local-environment)
+
 ```sh
 go build -o bin/scan ./scan/cmd/scan
 ./bin/scan --routes --json /path/to/php-app
-./bin/scan --analyze --entry vulnerabilities/sqli/index.php --output-dir /path/to/findings /path/to/php-app
+./bin/scan --analyze --judge openai --entry vulnerabilities/sqli/index.php --output-dir /path/to/findings /path/to/php-app
 ```
 
 Omit `--entry` to discover all server-mapped `.php`/`.phtml` files, including mixed
 JS/TS/Python/PHP repositories. The output directory receives `<app>/run-<id>/findings.json`,
-`findings.html` and `findings.sarif`. Optional [decision assessment](decision-models.md)
-transmits bounded evidence only when requested. Structural findings remain useful without a
-model; neither mode certifies an application as safe.
+`findings.html` and `findings.sarif`. The judge assesses supported claims from bounded source evidence. For local development
+and troubleshooting, use [offline evidence inspection](running-scans.md#offline-development-and-troubleshooting).
 
 | Area | Implemented subset |
 | --- | --- |
 | Entries | Server-mapped `.php`/`.phtml` file entries with deterministic identity and normalized path metadata |
 | Sources | `$_GET`/`$_POST`/`$_REQUEST`/`$_COOKIE`/`$_SERVER`/`$_FILES` superglobals (keyed and whole, e.g. `reset($_GET)`, `foreach ($_POST …)`), `php://input` body origin (and `json_decode` of that raw body, whose fields stay request values), `$_SESSION` as storage linked to writes from every entry, `$GLOBALS` idiom |
 | Flow | Assignments (including `=&`), string interpolation and concatenation with raw templates, `if`/`elseif`/`else` (braced, braceless and colon forms), `switch`, loops and `foreach` bindings, `die`/`exit` termination, helper expansion with global propagation, flow-scoped `define()` constants, `require`/`include` dispatch over finite switch alternatives with the selector narrowed per alternative, `__DIR__`/`dirname(__FILE__)` paths |
-| Classes | Every class, interface, trait and enum is indexed by the fully qualified name its file declares; a name resolves through the module's namespace, `use` clauses (aliases and group use) and leading-backslash form, and only when exactly one declaration exists (otherwise `php_class_unresolved` names the reason). `new C(...)` binds the object to its class across files and expands `__construct`; `$obj->m()`, `$this->m()`, `self::`, `static::` and `parent::` resolve through the class, its used traits and its in-repository `extends` chain to depth 4, regardless of visibility. Objects carry a property map written by `$this->p = v` and promoted constructor parameters and read by `$this->p`/`$obj->p`; a dynamic property name or an unexpanded method marks the map unknown. A `switch` on a finite literal set (for example a property set from a constant) enters only the matching cases |
+| Classes | Every class, interface, trait and enum is indexed by the fully qualified name its file declares; a name resolves through the module's namespace, `use` clauses (aliases and group use) and leading-backslash form, and only when exactly one declaration exists (otherwise `php_class_unresolved` names the reason). `new C(...)` binds the object to its class across files and expands `__construct`; an anonymous class (`new class(...) {...}`) is an unnamed class with the same constructor, method, trait and parent resolution, and a class chosen at run time (`new $name`, `new (expr)`) stays unresolved; `$obj->m()`, `$this->m()`, `self::`, `static::` and `parent::` resolve through the class, its used traits and its in-repository `extends` chain to depth 4, regardless of visibility. Objects carry a property map written by `$this->p = v` and promoted constructor parameters and read by `$this->p`/`$obj->p`; a dynamic property name or an unexpanded method marks the map unknown. A `switch` on a finite literal set (for example a property set from a constant) enters only the matching cases |
 | SQL | mysqli (OO and procedural, including the `$GLOBALS["___mysqli_ston"]` converter idiom), PDO and SQLite3 prepare/bind/execute with binding controls, interpolated-statement claims with storage attribution |
 | Command | `shell_exec`/`exec`/`system`/`passthru`/`popen`/`proc_open`/backticks with shell-operand facts; `escapeshellarg` is a control; a literal `str_replace` deny-list that leaves a shell metacharacter stays raw; `is_numeric` on `explode` elements constrains them; a `preg_match` capture group records a `regex_capture` transform ([command rules](analysis/command-injection.md#facets-and-outcomes)) |
 | XSS | `echo`/`print`/`<?= ?>` render values with the output context taken from the surrounding inline HTML (text, attribute, URL, script, style), reflected and stored claims, `php-sql:<table>.<column>` storage links from INSERT and UPDATE column attribution across branch joins (string and numeric `fetch_row` access), `htmlspecialchars`/`htmlentities` transforms, `urlencode` as a markup/URL-scoped control |
 | Path | `include`/`require` dynamic targets, `move_uploaded_file` upload moves, filesystem read/write calls; `basename`/allowlist restrictions are controls, not sink removals |
 | Upload | `move_uploaded_file` also yields a `file_upload_candidate` with stored-name, type-control and served-destination facts ([file upload rules](analysis/file-upload.md)) |
 | Code and templates | `eval`, string `assert` and `create_function` as interpreter operands. A `file_get_contents` return retains its path's dependencies. Verified Twig `createTemplate` and `template_from_string` take a template-source operand |
+| Deserialization | Global `unserialize` and Symfony `Yaml::parse` with source-backed options, request byte paths, and object-injection outcomes ([analysis rules](analysis/deserialization.md#php)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 

@@ -7,8 +7,9 @@ is for internal integration evidence and existing engineering links, not a secon
 
 ## Implemented boundary
 
-The Go scanner supports explicit OpenAI Decisions and Jev selection through provider-specific typed
-adapters. Offline extraction and tests do not require credentials; adapter tests use local HTTP stubs.
+The Go scanner runs decision-model assessment through typed adapters for OpenAI Decisions,
+Google Gemini Decisions and TypeSafe Jev. Offline evidence inspection and local stub tests need
+no credentials.
 Each provider has its own key and wire schema. Unknown/refused/invalid answers and provider errors
 remain failed assessments. No automatic provider/model fallback occurs.
 

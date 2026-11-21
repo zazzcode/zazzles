@@ -45,7 +45,7 @@ func TestFindingTypesPreserveImplementedScope(t *testing.T) {
 		})
 	}
 	ids := map[string]bool{}
-	for _, typ := range findingTypes {
+	for _, typ := range append(append([]analysis.FindingType{}, findingTypes...), interpreterFindingTypes...) {
 		if ids[typ.ID] || typ.ID == "" || typ.Label == "" || typ.Description == "" || typ.Interpretation == "" || typ.Remediation == "" || typ.Coverage == "" {
 			t.Fatalf("invalid glossary entry %+v", typ)
 		}

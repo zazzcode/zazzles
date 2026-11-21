@@ -120,9 +120,10 @@ func wireBundle(use analysis.CandidateUse) any {
 		Code            any                 `json:"code,omitempty"`
 		Redirect        any                 `json:"redirect,omitempty"`
 		StoredOrigin    any                 `json:"stored_origin,omitempty"`
+		Deserialization any                 `json:"deserialization,omitempty"`
 		Upload          any                 `json:"upload,omitempty"`
 		Pollution       any                 `json:"pollution,omitempty"`
-	}{invocation, 8, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin, wireUpload(use, context), wireContextFacts(use.Pollution, context, false)}
+	}{invocation, 8, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin, wireDeserialization(use.Deserialization, context), wireUpload(use, context), wireContextFacts(use.Pollution, context, false)}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {
@@ -210,4 +211,26 @@ func wireUpload(use analysis.CandidateUse, context []string) any {
 		return nil
 	}
 	return wireContextFacts(use.Upload, context, false)
+}
+
+// wireDeserialization projects structured controls and the path control indices.
+func wireDeserialization(f *analysis.DeserializationFacts, context []string) any {
+	if f == nil {
+		return nil
+	}
+	copyFacts := *f
+	copyFacts.Controls = nil
+	out := wireContextFacts(copyFacts, context, false).(map[string]any)
+	if len(f.Controls) > 0 {
+		controls := make([]map[string]string, 0, len(f.Controls))
+		for _, control := range f.Controls {
+			citation := fmt.Sprintf("invalid_context:%d", control.Context)
+			if control.Context >= 0 && control.Context < len(context) {
+				citation = context[control.Context]
+			}
+			controls = append(controls, map[string]string{"kind": control.Kind, "context": citation})
+		}
+		out["controls"] = controls
+	}
+	return out
 }

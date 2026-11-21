@@ -168,9 +168,10 @@ The XSS paths depend on `isChallengeEnabled` branches, which stay attached as pr
 | Command injection, 2 sinks | `trigger/cmdi.py:6`, `:10`, plus 5 app witnesses | Confirmed, 61 contexts |
 | SQL injection, 3 sinks | `trigger/sqli.py:37`, `:48`, `:59` | Each sink pattern has 21 confirmed contexts and 5 construction-only findings: 63/78 injection confirmations overall; injection remains unconfirmed for the other 15 |
 | Path traversal / file operands | Verified Python file and archive operations | 260 contexts assessed: 191 Confirmed, 69 Review |
-| XXE, deserialization, other unsupported triggers | [guide](../evaluation/vulnpy-detection-guide.md) | Not covered |
+| Unsafe deserialization | `src/vulnpy/trigger/deserialization.py:8,12,17,23` | Four offline sink groups, 30 contexts each. [Verification](../evaluation/deserialization-results.md) |
+| XXE and other unsupported triggers | [Guide](../evaluation/vulnpy-detection-guide.md) | Outside coverage |
 
-Contexts repeat a few shared sinks across adapters; they are not separate defects. The current
+Contexts repeat a few shared sinks across adapters; they are not separate defects. The published judged run’s
 source/coverage inventory passes 10/10 (six positive locations plus four registration-disposition
 controls), not an exhaustive recall score for every vulnerability family advertised by VulnPy.
 

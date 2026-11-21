@@ -41,6 +41,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 // argument evaluation differs between the two callers.
 func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpValue, all phpValue) phpValue {
 	name := f.callName(n)
+	f.deserializationCall(n, nodes, values)
 	if n.Kind() == "member_call_expression" {
 		return f.methodCall(n, nodes, values)
 	}
@@ -580,6 +581,9 @@ func (f *phpFlow) classOf(varName string) *sitter.Node {
 // and plain classes.
 func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	m := f.module
+	if anonymous := phpAnonymousClass(n); anonymous != nil {
+		return f.instantiate(n, f.set.classIndex().anonymousClass(m, anonymous))
+	}
 	// The class name may carry no field; fall back to the leading name child.
 	clsNode := phpField(n, "class")
 	if clsNode == nil {

@@ -20,6 +20,10 @@ assessment, evidence validation and reporting.
 
 ## Shared decision-model support
 
+Decision-model judgment is a core part of Code Scan. The scanner supplies source evidence and
+validates the judge's answers. Evidence-only runs support development and troubleshooting without
+provider cost.
+
 OpenAI Decisions (`gpt-6-luna`) and Google Gemini Decisions (`gemini-decision-1`) can assess every
 implemented analyzer through the same source/evidence gates. [User setup](../docs/scan/decision-models.md#credentials-and-local-environment)
 owns configuration; the [provider contract](specifications/gemini-decisions.md#capability-and-boundary)
@@ -214,9 +218,10 @@ complete CFG/interprocedural analysis, independent Findings Reviewer, or reviewe
 
 **Implemented 2026-10-31:** `--analyze` adds bounded route/handler resolution and request-value
 use witnesses with source hashes, candidate SQL/outbound HTTP call models, and explicit gaps.
-Optional `--judge openai|gemini|jev` sends bounded evidence through provider-specific typed adapters;
-bounded Luna integration/control evaluations are recorded in [results](evaluation/juice-shop/results.md). See the [current contract](specifications/route-string-validation.md)
-and [API setup](docs/openai-decisions-setup.md).
+`--judge openai|gemini|jev` selects the decision model that assesses bounded source evidence through provider-specific typed adapters.
+The [Luna integration results](evaluation/juice-shop/results.md) record scoped control evaluations.
+See the [assessment contract](specifications/route-string-validation.md) and the
+[provider setup guide](../docs/scan/decision-models.md).
 
 Phase 0's walker, language registry, and CI remain. Their historical record is the
 [Phase 0 specification](specifications/phase0-skeleton/README.md). Recognizing a language extension

@@ -44,19 +44,19 @@ func run(args []string, stdout, stderr io.Writer) int {
 		exportFile     = flags.String("export-sarif", "", "convert a saved canonical JSON report to SARIF without API calls")
 		list           = flags.Bool("list", false, "list the source files under the target path and exit")
 		routes         = flags.Bool("routes", false, "emit supported route inventories and exit")
-		analyzeMode    = flags.Bool("analyze", false, "analyze bounded route/browser security evidence; add --judge for model assessment")
+		analyzeMode    = flags.Bool("analyze", false, "analyze bounded route/browser security evidence; select --judge for the security assessment")
 		entryKind      = flags.String("entry-kind", "", "select http, browser, graphql or grpc entries for --analyze")
 		entryID        = flags.String("entry-id", "", "select an exact snapshot entry ID for --analyze")
 		routeFilter    = flags.String("route", "", "optional exact route path pattern for --analyze")
 		checksFile     = flags.String("checks", "", "JSON file declaring route/method/field security requirements for --analyze")
 		entry          = flags.String("entry", "", "relative JS/TS/Python/PHP registration file for --analyze")
-		judgeProvider  = flags.String("judge", "", "optional semantic judge: openai, gemini or jev (transmits bounded source evidence)")
+		judgeProvider  = flags.String("judge", "", "decision-model judge: openai, gemini or jev (transmits bounded source evidence)")
 		judgeModel     = flags.String("judge-model", "", "judge model; defaults to JUDGE_DECISION_MODEL, gpt-6-luna for openai or gemini-decision-1 for gemini; required for jev")
 		discoverRoutes = flags.Bool("discover-routes", false, "opt-in model-assisted Node route proposals; unverified bindings remain provisional")
 		discoveryLimit = flags.Int("discovery-limit", 3, "maximum additional model discovery requests with --discover-routes; transient failures are retried up to 3 times")
 		judgeLimit     = flags.Int("judge-limit", 0, "optional cap on candidates sent to the judge per run (default: no cap, every candidate is judged); transient failures are retried up to 3 times")
 		asSARIF        = flags.Bool("sarif", false, "emit SARIF 2.1.0 findings for --analyze")
-		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families to exclude: sql,nosql,xss,command,path,ssrf,code,redirect,upload,logging,input-validation,outbound")
+		skipFamily     = flags.String("skip-family", "", "comma-separated analyzer families to exclude: sql,nosql,xss,command,path,ssrf,code,redirect,upload,deserialization,logging,input-validation,outbound")
 		onlyFamily     = flags.String("only-family", "", "comma-separated analyzer families to judge exclusively")
 		traceDir       = flags.String("trace-dir", "", "with --judge, save each exact request/response trace (contains transmitted source) as JSON under this directory for offline replay")
 		asJSON         = flags.Bool("json", false, "emit machine-readable JSON instead of text")
@@ -143,7 +143,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	skipped, err := parseSkipFamilies(*skipFamily)
 	only, onlyErr := parseSkipFamilies(*onlyFamily)
 	if err != nil || onlyErr != nil || len(skipped) > 0 && len(only) > 0 || (len(skipped) > 0 || len(only) > 0) && (!*analyzeMode || *judgeProvider == "") {
-		fmt.Fprintln(stderr, "scan: family filters require --analyze with --judge; --only-family and --skip-family are mutually exclusive and accept sql,nosql,xss,command,path,ssrf,code,pollution,redirect,logging,input-validation,outbound")
+		fmt.Fprintln(stderr, "scan: family filters require --analyze with --judge; --only-family and --skip-family are mutually exclusive and accept sql,nosql,xss,command,path,ssrf,code,pollution,redirect,upload,deserialization,logging,input-validation,outbound")
 		return exitUsage
 	}
 

@@ -3,6 +3,34 @@
   "scope": "Independent pinned-source expectations: six positive sink locations and four explicit registration-disposition controls. A registration must have source-backed resolved dispatch or an explicit gap. Historical source anchors/dispositions are retained as corrections; labels never enter detector/model input.",
   "cases": [
     {
+      "id": "VP-DESER-01",
+      "file": "src/vulnpy/trigger/deserialization.py",
+      "line": 8,
+      "kind": "deserialization_candidate",
+      "expect": "candidate"
+    },
+    {
+      "id": "VP-DESER-02",
+      "file": "src/vulnpy/trigger/deserialization.py",
+      "line": 12,
+      "kind": "deserialization_candidate",
+      "expect": "candidate"
+    },
+    {
+      "id": "VP-DESER-03",
+      "file": "src/vulnpy/trigger/deserialization.py",
+      "line": 17,
+      "kind": "deserialization_candidate",
+      "expect": "candidate"
+    },
+    {
+      "id": "VP-DESER-04",
+      "file": "src/vulnpy/trigger/deserialization.py",
+      "line": 23,
+      "kind": "deserialization_candidate",
+      "expect": "candidate"
+    },
+    {
       "id": "VP-SQL-EXECUTE",
       "file": "src/vulnpy/trigger/sqli.py",
       "line": 37,

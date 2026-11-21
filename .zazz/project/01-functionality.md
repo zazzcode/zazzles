@@ -114,7 +114,8 @@ safe/vulnerable pairs and unsupported constructs.
 | Command Injection Analyzer | Shell command construction and execution mode | Shell interpolation versus argument-vector execution; executable/option control |
 | Path Traversal Analyzer | Untrusted path parts reaching filesystem operations | Normalization versus enforced base-directory containment |
 | SSRF Analyzer | Untrusted input affecting an outbound request target | Host/scheme restrictions, redirects, unresolved runtime/network behavior |
-| Unsafe deserialization / HTML injection | Input reaching a relevant API or output context | Type- and context-specific protection |
+| Unsafe deserialization | Request bytes reaching a verified object- or code-capable deserializer | Data-only loader or schema, keyed integrity and adequate class restriction. [Rules](../../docs/scan/analysis/deserialization.md) |
+| HTML injection | Input reaching an HTML output context | Context-specific escaping and sanitization |
 | Pattern-only configuration / crypto | Explicit risky API/configuration use | Precisely documented rule preconditions and counterexamples |
 
 Not every occurrence of `exec.Command`, SQL construction, a regex, or a validation API is a

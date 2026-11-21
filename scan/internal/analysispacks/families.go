@@ -111,6 +111,7 @@ func Families() []Family {
 		{Name: "code", Label: "code", Kinds: []string{"code_execution_candidate", "template_injection_candidate"}, QuestionNames: codeQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc", "entry.browser"}, RequiresAPI: true, Pack: "pack.code", Claim: "claim.code", Evidence: "evidence.code", PolicyOwner: "internal/judge/code_redirect.go"},
 		{Name: "pollution", Label: "Prototype pollution", Kinds: []string{analysis.PollutionKind}, QuestionNames: pollutionQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc"}, Pack: "pack.pollution", Claim: "claim.pollution", Evidence: "evidence.pollution", PolicyOwner: "internal/judge/pollution.go"},
 		{Name: "redirect", Label: "redirect", Kinds: []string{"open_redirect_candidate"}, QuestionNames: redirectQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc", "entry.browser"}, RequiresAPI: true, Pack: "pack.redirect", Claim: "claim.redirect", Evidence: "evidence.redirect", PolicyOwner: "internal/judge/code_redirect.go"},
+		{Name: "deserialization", Label: "Unsafe deserialization", Kinds: []string{analysis.DeserializationKind}, QuestionNames: deserializationQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc"}, RequiresAPI: true, PythonHTTPOnly: true, PHPHTTPOnly: true, Pack: "pack.deserialization", Claim: "claim.deserialization", Evidence: "evidence.deserialization", PolicyOwner: "internal/judge/deserialization.go"},
 		{Name: "upload", Label: "upload", Kinds: []string{"file_upload_candidate"}, QuestionNames: uploadQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, Pack: "pack.upload", Claim: "claim.upload", Evidence: "evidence.upload", PolicyOwner: "internal/judge/upload.go"},
 		{Name: "logging", Label: "Sensitive-data logging", Kinds: []string{"log_sink_candidate"}, QuestionNames: loggingQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.logging", Claim: "claim.logging", Evidence: "evidence.logging", PolicyOwner: "internal/judge/logging.go"},
 		{Name: "outbound", Label: "Outbound observation", ObservationOnly: true, Kinds: []string{"outbound_http_candidate"}, Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.outbound", Claim: "observation.outbound", Evidence: "evidence.outbound", PolicyOwner: "internal/parse/flow.go + internal/parse/python_frameworks.go"},
@@ -202,6 +203,8 @@ func familyProtocol(name string) string {
 		return CodeProtocol
 	case "redirect":
 		return RedirectProtocol
+	case "deserialization":
+		return DeserializationProtocol
 	case "upload":
 		return UploadProtocol
 	case "logging":
@@ -234,6 +237,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return CodeContract(id)
 	case "redirect":
 		return RedirectContract(id)
+	case "deserialization":
+		return DeserializationContract(id)
 	case "upload":
 		return UploadContract(id)
 	case "sql":
@@ -258,6 +263,8 @@ func contractIDs(f *Family) []string {
 		return codeContracts
 	case "redirect":
 		return redirectContracts
+	case "deserialization":
+		return deserializationContracts
 	case "upload":
 		return uploadContracts
 	case "sql":

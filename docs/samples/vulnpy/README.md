@@ -44,9 +44,10 @@ output at `apps/templates/jinja/xss.html:30` and explicit registration-dispositi
 | XSS | Generated raw responses plus the separate Jinja `safe` output | All 31 contexts confirmed, including Jinja |
 | Path traversal | Supported file/archive destination operands | 191 confirmed; 69 remain Review |
 | Standalone input validation | Applicable business field requirements | All 2,830 assessed; Review where no business policy is established |
-| XXE, deserialization and other unsupported trigger families | Broader advertised corpus | Not covered; this scan does not claim those vulnerabilities are absent |
+| Unsafe deserialization | Four Pickle and PyYAML sinks in `src/vulnpy/trigger/deserialization.py` | The current offline analyzer finds four groups with 30 contexts each. The published judged report predates this analyzer. |
+| XXE and other unsupported trigger families | Broader advertised corpus | Outside this scan’s coverage |
 
-The 10/10 source checks cover six positive source locations and four registration-disposition
+The published run’s 10/10 source checks cover six positive source locations and four registration-disposition
 controls. They are not ten vulnerability categories or an exhaustive recall score. Contexts repeat
 shared defects across registrations/adapters; 61 command contexts do not mean 61 distinct defects.
 
@@ -55,6 +56,7 @@ shared defects across registrations/adapters; 61 command contexts do not mean 61
 The normal HTML contains the entire result. Full canonical JSON and SARIF are stored as lossless gzip
 because their uncompressed sizes exceed GitHub's per-file limit. Decompress before using tools that
 require plain SARIF/JSON; the sample evaluator and refresh helper accept the compressed canonical file.
+The four deserialization case keys require a fresh offline report from a scanner with CWE-502 support.
 
 ```sh
 python3 docs/samples/evaluate-python.py vulnpy docs/samples/vulnpy/findings.json.gz

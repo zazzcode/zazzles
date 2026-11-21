@@ -7,16 +7,15 @@ it is not cloned, installed, or started by zazzles.
 
 ## Run
 
-After [building the scanner](getting-started.md#compile), run an offline scan to inspect source
-evidence:
+Build the scanner and configure a decision model. Run the security assessment with the matching
+`--judge` flag. [Build instructions](getting-started.md#compile) · [Provider setup](decision-models.md#credentials-and-local-environment)
 
 ```bash
-./bin/scan --analyze --output-dir "$HOME/zazzles-findings" /path/to/app
+./bin/scan --analyze --judge openai --output-dir "$HOME/zazzles-findings" /path/to/app
 ```
 
-Configure a [decision provider](decision-models.md#credentials-and-local-environment) to assess
-supported security claims. These judged examples set a request cap and write reports outside the
-worktree:
+For a scoped calibration run, use `--entry` and a request cap. These examples write reports
+outside the worktree.
 
 ```bash
 export SCAN_FINDINGS_DIR="$HOME/zazzles-findings"
@@ -77,7 +76,11 @@ or external assets are required; without JavaScript the default findings-first v
 the standard interchange format for security-tool integrations. Generated reports contain source
 excerpts, so keep them with the same access controls as that source.
 
-Without an output root, stdout modes still work. For evidence-only inspection and offline rendering:
+## Offline development and troubleshooting
+
+Omit `--judge` to inspect evidence while developing or troubleshooting without paid requests.
+The scanner marks semantic assessments `not_run`. You can write a local report bundle or use
+stdout for JSON and render the saved evidence separately.
 
 ```bash
 ./bin/scan --analyze --json --output-dir "" --entry server.ts /path/to/app > findings.json
@@ -148,7 +151,7 @@ trace.
 ## Route-to-string-use analysis
 
 ```bash
-go run ./scan/cmd/scan --analyze --json --entry server.ts <target-root>
+go run ./scan/cmd/scan --analyze --judge openai --json --entry server.ts <target-root>
 ```
 
 Entry paths are relative to the target repository. Use `server.ts` for Juice Shop and
@@ -174,8 +177,8 @@ caps how many run at once (default 4; `1` is serial). Manage spending in your AP
 report with its reason and a stderr warning, and the scan exits 0. Only a stopped judge (account failure or unresponsive model) exits 1; see [judged-scan reliability](decision-models.md#judged-scan-reliability). Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
 
-Use `--only-family path,command` or `--skip-family input-validation,outbound` to scope model
-assessment with `--analyze --judge`. Use one of these flags per run. The
+Use `--only-family deserialization` to assess CWE-502 alone, or `--skip-family input-validation,outbound`
+to exclude those families with `--analyze --judge`. Use one of these flags per run. The
 [coverage index](detection-capabilities.md) lists the family names. Set defaults with
 `JUDGE_ONLY_FAMILY` or `JUDGE_SKIP_FAMILY`.
 Excluded model assessments remain unrun without an incompleteness warning. Existing deterministic practice
@@ -190,14 +193,14 @@ additional usage. Report limitations show the scope and distinct/derived counts.
 
 Use a requirements file to declare the method, path, fields and separate validation/protection
 constraints. This avoids guessing business requirements from a helper's name or a missing regex.
-Two known target cases are tracked in `.zazz/evaluation/juice-shop/validation-checks.json`:
+This capped calibration example uses two checked-in Juice Shop cases.
 
 ```bash
-go run ./scan/cmd/scan --analyze --json --entry server.ts \
+go run ./scan/cmd/scan --analyze --judge openai --judge-limit 2 --json --entry server.ts \
   --checks .zazz/evaluation/juice-shop/validation-checks.json <target-root>
 ```
 
-Add `--judge openai --judge-model gpt-6-luna --judge-limit 2` for a capped live run. Checked output adds
+Checked output adds
 relevant middleware/helpers/model context, local registration control edges, required evidence roles,
 blocking vs coverage gaps, and a scoped finding status. `supported_potential` is an advisory finding
 under the declared models, not runtime confirmation or completed independent review. See the
@@ -207,7 +210,7 @@ novel repositories remains incomplete; see [discovery design](../../.zazz/archit
 ## SARIF output
 
 ```bash
-go run ./scan/cmd/scan --analyze --sarif --entry server.ts <target-root> > findings.sarif
+go run ./scan/cmd/scan --analyze --judge openai --sarif --entry server.ts <target-root> > findings.sarif
 go run ./scan/cmd/scan --export-sarif saved-evidence.json > findings.sarif
 ```
 
@@ -249,6 +252,7 @@ answers as judgments of a new scan. Consumers reading fresh JSON should use `ana
 Use `--entry-kind http|browser|graphql|grpc` and `--entry-id <exact-snapshot-id>` with
 `--analyze`; filters intersect and an empty selection exits 1. An invalid kind exits 2.
 IDs identify this source snapshot; portable requirements should use typed identities.
+These evidence-only examples let you check entry selection before making paid requests.
 
 ```bash
 ./bin/scan --analyze --entry-kind browser --json --output-dir "" /path/to/app
@@ -292,8 +296,8 @@ other versions are unverified compatibility assumptions. No package installation
 
 Only declared argument projections have external input provenance. Parent, context and info remain
 independent unknown origins; a schema edge does not prove a parent-result transfer. Existing SQL
-library contracts, actual value transfers, completeness and optional judge policy determine each
-claim. SDL type/scalar/directive names establish neither SQL protection nor business validation.
+library contracts, actual value transfers and completeness establish the evidence for each
+claim. The judge assesses that evidence, and scanner policy validates the answers. SDL type/scalar/directive names establish neither SQL protection nor business validation.
 Offline discovery is unassessed; a local-stub test result is not model accuracy or runtime validation.
 
 Unsupported composition, SDL extensions/directives/default values/descriptions/custom roots,

@@ -88,6 +88,8 @@ After this contract each probe yields one candidate. [Results](../evaluation/pol
 | `internal/langjs/pollution_guard.go` | Modified | Whole-path deny-lists, and guards united across the names of one object |
 | `internal/langjs/pollution_gate.go` | New | Path tests that depend on a call taking the key operand (D-10) |
 | `internal/langjs/modules.go` | Modified | ESM default exports in the module index (D-10) |
+| `internal/langjs/pollution_walk_forms.go` | New | The `forEach` walk and the recursive walk (D-11) |
+| `docs/samples/nodejs-goof/`, `vulnerable-typescript-app/`, `vuln-nextjs-prototype-pollution/` | Modified, new | The reports of the AC8 live check |
 | `.zazz/evaluation/recall-gap-inventory/cases.json` | Modified | Key row `JS-PP-R01`, expectation `review` |
 | `docs/detection-capabilities.md` | Modified | The family row and the known gaps, at the owner's request |
 | `internal/langjs/pollution.go` | Modified | Branch evidence, local walk roots, the `source_keys` operand, local declarations that shadow a built-in, and the result-consumer gap |
@@ -188,6 +190,17 @@ Out of scope:
   **Why.** Juice Shop `lib/accuracy.ts:71` is the first form and was silent. With only the first
   rule it became a confirmable candidate, although both routes reject a prototype key before the
   write. [Review](../evaluation/pollution-write-shapes-results.md#juice-shop-libaccuracyts71).
+
+- **D-11. Three forms taken from published libraries.** Added after the library check, each
+  with one attempt and tests written in the shape of the library code:
+  - a walk whose step is the body of a `forEach` over the parts;
+  - a walk that recurses on `obj[key]` with the next index or `path.slice(1)`, with the write in
+    the function or in a helper it calls. A call that takes the key before the recursion is an
+    unread guard, so an asserted key is Review and not raw;
+  - key tests written as one-line helpers of the module, and `object.hasOwnProperty(key)`.
+
+  **Why.** They are what `minimist`, `set-in`, `object-path` and `merge-deep` use. Reaching
+  those functions through each library's public API stays with phases 7 and 8.
 
 ## 6. Agent implementation rules
 
@@ -368,3 +381,12 @@ have no record. The results record lists each reading and the forms that stand i
 bounds what the contract claims: the shapes are found in application code written like the
 fixtures, not yet in published library code. Three further recognisers were started and are not
 in this change.
+
+### 2026-11-21 — Library forms, AC8 and the published reports
+
+D-11 adds three forms found in published libraries. With them the core functions of `merge`,
+`merge-deep`, `minimist` and `set-in` are read correctly at their affected pins and `set-in` is
+detected through its public API; ten of eleven packages are still not reached through theirs.
+The check found that `set-in` 2.0.3, listed as patched, still writes before it checks. The AC8
+live check of the parent contract passed with the vuln-nextjs fixtures added to it, and the three
+reports are published.

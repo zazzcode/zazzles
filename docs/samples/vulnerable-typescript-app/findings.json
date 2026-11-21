@@ -127,6 +127,14 @@
       "interpretation": "Destination control and enforcing same-origin restrictions are assessed independently.",
       "remediation": "Select a destination from trusted constants or enforce parsed same-origin and host restrictions.",
       "coverage": "bounded redirect destination analysis"
+    },
+    {
+      "id": "prototype-pollution",
+      "label": "Prototype Pollution",
+      "description": "Request-derived keys reach a write that can pollute Object.prototype.",
+      "interpretation": "The write and its controls are evaluated for each recorded key operand path.",
+      "remediation": "Use a patched library and restrict key traversal at every level.",
+      "coverage": "bounded JS/TS prototype writes"
     }
   ],
   "presentation_version": 7,
@@ -1473,6 +1481,33 @@
           }
         }
       ]
+    },
+    {
+      "type_ids": [
+        "prototype-pollution"
+      ],
+      "id": "finding:candidate:v1:b9941b6d4440dbec742c8f0b4a3b901fddd77f7f8dc27c8aacbf11e32e99a403",
+      "use_id": "candidate:v1:b9941b6d4440dbec742c8f0b4a3b901fddd77f7f8dc27c8aacbf11e32e99a403",
+      "entry_id": "entry:v1:b09f0e06a06ccbc214dfb0929f4c8233285a9a09ac4526e1b2a68556001caa51",
+      "invocation_context_id": "invocation:v1:d4355daeed5e332c6f4b4d29271e35ded5c4e9e802fe33492e568af96897422c",
+      "record_type": "finding",
+      "status": "confirmed_vulnerability",
+      "title": "Request-controlled prototype pollution",
+      "summary": "The request-derived key operand can make this write pollute Object.prototype. Its effect depends on what reads the polluted property.",
+      "input_validation": "Not established from the supplied evidence.",
+      "use_protection": "Assessed injection/use protection: insufficient. Request-derived keys reach a complete write path that can pollute Object.prototype.",
+      "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
+      "recommendations": {
+        "title": "Restrict prototype traversal before writing keys",
+        "actions": [
+          "Change the observed operation at src/server.ts:246: _.merge(target, source)",
+          "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+          "Use a patched version of the write library.",
+          "Allow known keys or reject prototype-related names at every traversal level. Require own-property access for existing target containers."
+        ],
+        "example_status": ""
+      },
+      "assessment_state": "completed"
     },
     {
       "type_ids": [
@@ -5573,67 +5608,67 @@
         }
       ],
       "assessment": {
-        "request_digest": "17504b4320bfcabfe73480eaceee07d620baa7340fcb40aeb0699993901fff0b",
+        "request_digest": "6495deeaa2a552a7cad45a4712058482cd2c6162a3b12e4c09fafa6d90e9f0b0",
         "answer_details": {
           "content_exposure": {
             "choice": "yes",
-            "confidence": 0.64,
+            "confidence": 0.7,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.76
+                "probability": 0.8
               },
               {
                 "value": "no",
-                "probability": 0.08
+                "probability": 0.1
               },
               {
                 "value": "unknown",
-                "probability": 0.16
+                "probability": 0.1
               }
             ]
           },
           "data_class": {
             "choice": "credential",
-            "confidence": 0.44,
+            "confidence": 0.64,
             "probabilities": [
               {
                 "value": "credential",
-                "probability": 0.58
+                "probability": 0.73
               },
               {
                 "value": "personal_data",
-                "probability": 0.03
+                "probability": 0.04
               },
               {
                 "value": "other",
-                "probability": 0.01
+                "probability": 0.03
               },
               {
                 "value": "unknown",
-                "probability": 0.38
+                "probability": 0.2
               }
             ]
           },
           "log_exposure": {
             "choice": "vulnerable",
-            "confidence": 0.65,
+            "confidence": 0.56,
             "probabilities": [
               {
                 "value": "vulnerable",
-                "probability": 0.74
+                "probability": 0.67
               },
               {
                 "value": "protected",
-                "probability": 0.01
+                "probability": 0.04
               },
               {
                 "value": "unknown",
-                "probability": 0.25
+                "probability": 0.28
               },
               {
                 "value": "not_applicable",
-                "probability": 0
+                "probability": 0.01
               }
             ]
           },
@@ -5668,7 +5703,7 @@
           "redaction": "no"
         },
         "usage": {
-          "input_tokens": 3355,
+          "input_tokens": 3024,
           "output_tokens": 0
         },
         "status": "completed",
@@ -6011,18 +6046,18 @@
         "pack": {
           "id": "pack.command",
           "version": "1",
-          "digest": "397811f665c6e933047815a7363db66f825d82d33488763540ccb55153cbabe0"
+          "digest": "591df1751016a81a74f2dc9aab2c697e2ff00f22820e23eef2ea3f517e408496"
         },
         "components": [
           {
             "id": "api.node-child-process-shell-v1",
             "version": "1",
-            "digest": "43a92f215a5c48d32c3e17299b500ed2af9b038f6d81eb21111576e2dd96a7e5"
+            "digest": "df13d91fc599e1c7b96d1611288d8f8e309b0c39aa58177fcb2751503994da95"
           },
           {
             "id": "claim.command",
             "version": "1",
-            "digest": "3cd2d94e1dd8583c518b5aa700a96f2b7ecd3bd3e39dd3898d6a2d9e949399d4"
+            "digest": "416d838d7588522148772cf3c76e2ee83c38db1c07b729c0b8a447ac9593eb5d"
           },
           {
             "id": "entry.http",
@@ -6032,30 +6067,30 @@
           {
             "id": "evidence.command",
             "version": "1",
-            "digest": "afffdfa3b8555ab5736cb1d9b91c8daddf9ea1c58ee2733b76760a43a5583a8a"
+            "digest": "50f6a90b0528b6a2b986cb6b9d36a93e864f681d8bb44d5cd566245a7086ea97"
           },
           {
             "id": "flow.command",
             "version": "1",
-            "digest": "d669d745ee22b57eea6c86df55b4aec65e8095534bf2e656fef9910c980f1db6"
+            "digest": "1076e8d524e4bcddc9e123b58df8a4aa194fb1f49a830cccb5f6b465872490ea"
           },
           {
             "id": "language.command.javascript",
             "version": "1",
-            "digest": "e8565515512ec0721618a5d3aaf7b6e55e3566120337deca5bd420a7ee85c9a9"
+            "digest": "b667191e308bcf13f0192424f8ceeebc349c0a3e908252b7e7eab5da0ffc0fff"
           },
           {
             "id": "pack.command",
             "version": "1",
-            "digest": "397811f665c6e933047815a7363db66f825d82d33488763540ccb55153cbabe0"
+            "digest": "591df1751016a81a74f2dc9aab2c697e2ff00f22820e23eef2ea3f517e408496"
           },
           {
             "id": "source.node-input-v2",
             "version": "1",
-            "digest": "ffbb0eca2e7448ee0466c7efdb2083583470d5fe6c6c663d560dbcc8b2d68e51"
+            "digest": "29cc3ec0e7cc443789bd49fa387144b83b1a8cf521642f9489356d4059b912c7"
           }
         ],
-        "digest": "7f8d72fa2a267a5cf87f7b93ea738c8bef3b48e8a030b38f0490cee56b9c01cc",
+        "digest": "377fe05df0bd26c454cdd3cee44c4758e6570647dad0445c7e77ba907d07f8a2",
         "required": [
           "command_operands",
           "control_flow",
@@ -6722,15 +6757,15 @@
         }
       ],
       "assessment": {
-        "request_digest": "382eb97438c3281c862d23507bfd79ed9c7bd79f925686b53bcb0dae3d1c102b",
+        "request_digest": "3f505fa298ba998233ffc2de66b693b729ef8662d6293556245e4d53deae50fc",
         "answer_details": {
           "argument_control": {
             "choice": "not_applicable",
-            "confidence": 0.85,
+            "confidence": 0.97,
             "probabilities": [
               {
                 "value": "unsafe",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "constrained",
@@ -6738,21 +6773,21 @@
               },
               {
                 "value": "not_applicable",
-                "probability": 0.89
+                "probability": 0.98
               },
               {
                 "value": "unknown",
-                "probability": 0.1
+                "probability": 0.02
               }
             ]
           },
           "executable_control": {
             "choice": "not_applicable",
-            "confidence": 0.84,
+            "confidence": 0.81,
             "probabilities": [
               {
                 "value": "unsafe",
-                "probability": 0.02
+                "probability": 0.04
               },
               {
                 "value": "constrained",
@@ -6760,7 +6795,7 @@
               },
               {
                 "value": "not_applicable",
-                "probability": 0.88
+                "probability": 0.86
               },
               {
                 "value": "unknown",
@@ -6770,15 +6805,15 @@
           },
           "guard_bypass": {
             "choice": "not_applicable",
-            "confidence": 0.96,
+            "confidence": 0.93,
             "probabilities": [
               {
                 "value": "bypass_identified",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "no_bypass",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "guard_semantics_unknown",
@@ -6786,7 +6821,7 @@
               },
               {
                 "value": "not_applicable",
-                "probability": 0.97
+                "probability": 0.95
               }
             ]
           },
@@ -6818,7 +6853,7 @@
               },
               {
                 "value": "protected",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "not_applicable",
@@ -6826,7 +6861,7 @@
               },
               {
                 "value": "unknown",
-                "probability": 0.01
+                "probability": 0
               }
             ]
           }
@@ -6840,13 +6875,13 @@
           "shell_syntax_protection": "vulnerable"
         },
         "usage": {
-          "input_tokens": 5161,
+          "input_tokens": 4912,
           "output_tokens": 0
         },
         "status": "completed",
         "provider": "openai",
         "model": "gpt-6-luna",
-        "question_version": "command-components-v4",
+        "question_version": "command-components-v5",
         "protection": "insufficient",
         "reason": "A consistent shell syntax (CWE-78) answer is supported by an independent source-to-operand path with a verified child_process.exec binding under the declared posix assumption. Unresolved sibling paths remain visible. This is a static judgment, not runtime exploitation or independent Findings Review."
       }
@@ -8024,7 +8059,7 @@
         }
       ],
       "assessment": {
-        "request_digest": "f150310acd90dd8cba2dcfae1c9b034c24371f9516e0c3458b2e9f5fda746f12",
+        "request_digest": "83e347ddff61e8d3fb5b773af360964621b2417c423135efce0d847949dd38dc",
         "answer_details": {
           "containment_control": {
             "choice": "none",
@@ -8054,11 +8089,11 @@
           },
           "path_traversal": {
             "choice": "vulnerable",
-            "confidence": 0.72,
+            "confidence": 0.8,
             "probabilities": [
               {
                 "value": "vulnerable",
-                "probability": 0.79
+                "probability": 0.85
               },
               {
                 "value": "protected",
@@ -8070,25 +8105,25 @@
               },
               {
                 "value": "unknown",
-                "probability": 0.19
+                "probability": 0.13
               }
             ]
           },
           "protection_coverage": {
             "choice": "incomplete",
-            "confidence": 0.97,
+            "confidence": 0.88,
             "probabilities": [
               {
                 "value": "complete",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "incomplete",
-                "probability": 0.98
+                "probability": 0.92
               },
               {
                 "value": "unknown",
-                "probability": 0.02
+                "probability": 0.07
               }
             ]
           }
@@ -8100,7 +8135,7 @@
           "protection_coverage": "incomplete"
         },
         "usage": {
-          "input_tokens": 5687,
+          "input_tokens": 5357,
           "output_tokens": 0
         },
         "status": "completed",
@@ -8178,61 +8213,61 @@
         "pack": {
           "id": "pack.xss",
           "version": "1",
-          "digest": "c7edf17d8cbea6d0a3d5488b3f1a70e07cebe8416cf64b4dfe8df8a6cc0dafae"
+          "digest": "e1a0836bb3ddf0de4ba038a07255167c288786d4d918fdddaa66dd373b2980ad"
         },
         "components": [
           {
             "id": "claim.xss",
             "version": "1",
-            "digest": "3ef4a062ab89af3090f44a139110e550a0b6ed31b648c84796ae84a3d5d3d019"
+            "digest": "f669171003745f3641279d346937235cc3daa06c934649040b63b89885d1a1c1"
           },
           {
             "id": "context.xss",
             "version": "1",
-            "digest": "21903558a8540e2dfa04fc605fd77eaaedf55fb30b27382296d220b35dcbdeb7"
+            "digest": "c1c97fd88df5210feb15cedc47f7def8e83c1d6b4a0b2fefe05c0f59dca0f7d3"
           },
           {
             "id": "evidence.xss",
             "version": "1",
-            "digest": "20b707528c2aa6638f8fd5a5d904a51c88ef0aab2a2c553852490511be343e3c"
+            "digest": "fcb9f2e2413a93777d0c4101b319b0e3d39a128eb7d912ba63a424b1f9a1fe64"
           },
           {
             "id": "flow.xss",
             "version": "1",
-            "digest": "0c92263963f50102e952b8430b1bd6f7e907bbf61121d1aca442353bafa5504b"
+            "digest": "f65d1c52b2542148e08517334b4792caad8e6e1a44eb17094db72100e4585746"
           },
           {
             "id": "language.xss.javascript",
             "version": "5",
-            "digest": "d355ff330ac82577de38c3092caef45cb162aad8cb8e8cab1b05d5d761affe53"
+            "digest": "b247987d821e2950bd3e11ca2310f550682da030768c7dc30013331f7b897079"
           },
           {
             "id": "pack.xss",
             "version": "1",
-            "digest": "c7edf17d8cbea6d0a3d5488b3f1a70e07cebe8416cf64b4dfe8df8a6cc0dafae"
+            "digest": "e1a0836bb3ddf0de4ba038a07255167c288786d4d918fdddaa66dd373b2980ad"
           },
           {
             "id": "protection.xss",
             "version": "1",
-            "digest": "4881262a0337842ff3d2fb9edf2c318e9ac1fce0318a6a65e3c2cda3bbf0f27f"
+            "digest": "1b273b0eaeb9d88f3f9292bfe378b9912e8f3101bd760d118e950f9ceacc2a69"
           },
           {
             "id": "render.html-output-v1",
             "version": "1",
-            "digest": "fb17d2bc3aa7516372e273470ff55fc4d78f93347330c4559fa606051506bfb6"
+            "digest": "ef79f7cee0444b3d5a8d2eaa2ebfe4ecc19df651f090a288b5cef2d2a4d9b5e6"
           },
           {
             "id": "source.node-input-v2",
             "version": "1",
-            "digest": "67bee5fd5f38fa6c84302e2cde8778e5d4c39c64b00ef73ba923d829c998ad48"
+            "digest": "fe9d23afc68217c60fcb2ca5941ffd5a1c4a66b8d68aed3e551d653a64fa0d64"
           },
           {
             "id": "storage.xss",
             "version": "1",
-            "digest": "619022aad279ef69e08db8924cdad18225ff34fa04b096e1234d7e00fd264594"
+            "digest": "641afd149a335a2fa6fa299cf9e0e72dc024d726b97e36aa0d462856f0c975e2"
           }
         ],
-        "digest": "f6be71ff72c7767fe661b55d2e3a58744c3a394ece6a0eea66b7e0187f256e14",
+        "digest": "ad22eb8b3db071b7124d8f57b8b3a05e5841b18828eb63e5ebeb145031375c1a",
         "required": [
           "dispatch_binding",
           "entry_registration",
@@ -8924,56 +8959,56 @@
         "pack": {
           "id": "pack.xss",
           "version": "1",
-          "digest": "c7edf17d8cbea6d0a3d5488b3f1a70e07cebe8416cf64b4dfe8df8a6cc0dafae"
+          "digest": "e1a0836bb3ddf0de4ba038a07255167c288786d4d918fdddaa66dd373b2980ad"
         },
         "components": [
           {
             "id": "claim.xss",
             "version": "1",
-            "digest": "3ef4a062ab89af3090f44a139110e550a0b6ed31b648c84796ae84a3d5d3d019"
+            "digest": "f669171003745f3641279d346937235cc3daa06c934649040b63b89885d1a1c1"
           },
           {
             "id": "context.xss",
             "version": "1",
-            "digest": "21903558a8540e2dfa04fc605fd77eaaedf55fb30b27382296d220b35dcbdeb7"
+            "digest": "c1c97fd88df5210feb15cedc47f7def8e83c1d6b4a0b2fefe05c0f59dca0f7d3"
           },
           {
             "id": "evidence.xss",
             "version": "1",
-            "digest": "20b707528c2aa6638f8fd5a5d904a51c88ef0aab2a2c553852490511be343e3c"
+            "digest": "fcb9f2e2413a93777d0c4101b319b0e3d39a128eb7d912ba63a424b1f9a1fe64"
           },
           {
             "id": "flow.xss",
             "version": "1",
-            "digest": "0c92263963f50102e952b8430b1bd6f7e907bbf61121d1aca442353bafa5504b"
+            "digest": "f65d1c52b2542148e08517334b4792caad8e6e1a44eb17094db72100e4585746"
           },
           {
             "id": "language.xss.javascript",
             "version": "5",
-            "digest": "d355ff330ac82577de38c3092caef45cb162aad8cb8e8cab1b05d5d761affe53"
+            "digest": "b247987d821e2950bd3e11ca2310f550682da030768c7dc30013331f7b897079"
           },
           {
             "id": "pack.xss",
             "version": "1",
-            "digest": "c7edf17d8cbea6d0a3d5488b3f1a70e07cebe8416cf64b4dfe8df8a6cc0dafae"
+            "digest": "e1a0836bb3ddf0de4ba038a07255167c288786d4d918fdddaa66dd373b2980ad"
           },
           {
             "id": "protection.xss",
             "version": "1",
-            "digest": "4881262a0337842ff3d2fb9edf2c318e9ac1fce0318a6a65e3c2cda3bbf0f27f"
+            "digest": "1b273b0eaeb9d88f3f9292bfe378b9912e8f3101bd760d118e950f9ceacc2a69"
           },
           {
             "id": "render.html-output-v1",
             "version": "1",
-            "digest": "fb17d2bc3aa7516372e273470ff55fc4d78f93347330c4559fa606051506bfb6"
+            "digest": "ef79f7cee0444b3d5a8d2eaa2ebfe4ecc19df651f090a288b5cef2d2a4d9b5e6"
           },
           {
             "id": "source.node-input-v2",
             "version": "1",
-            "digest": "67bee5fd5f38fa6c84302e2cde8778e5d4c39c64b00ef73ba923d829c998ad48"
+            "digest": "fe9d23afc68217c60fcb2ca5941ffd5a1c4a66b8d68aed3e551d653a64fa0d64"
           }
         ],
-        "digest": "8ac0bd928a4eab44e9d14c39332280c2ef6e02fd01752ab26091e23bc509b6ba",
+        "digest": "7d0303324dbbb08ed41bbc797b4d24a77704b3bfc66846f2ee53b09791170b5b",
         "required": [
           "dispatch_binding",
           "entry_registration",
@@ -9318,11 +9353,11 @@
         }
       ],
       "assessment": {
-        "request_digest": "5f6300f09aa29c69155b71262e983590395b4ee24499bcec253b00d685d58832",
+        "request_digest": "444f0cb00a5451c346ad5b95360332704443b1f10b324f924ae57608c6af9773",
         "answer_details": {
           "encoding_adequacy": {
             "choice": "not_present",
-            "confidence": 0.96,
+            "confidence": 1,
             "probabilities": [
               {
                 "value": "adequate",
@@ -9330,29 +9365,29 @@
               },
               {
                 "value": "inadequate",
-                "probability": 0.02
+                "probability": 0
               },
               {
                 "value": "not_present",
-                "probability": 0.97
+                "probability": 1
               },
               {
                 "value": "unknown",
-                "probability": 0.01
+                "probability": 0
               }
             ]
           },
           "output_context": {
             "choice": "html_text",
-            "confidence": 1,
+            "confidence": 0.99,
             "probabilities": [
               {
                 "value": "html_text",
-                "probability": 1
+                "probability": 0.99
               },
               {
                 "value": "html_attribute",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "url",
@@ -9390,7 +9425,7 @@
           },
           "sanitizer_effectiveness": {
             "choice": "absent",
-            "confidence": 0.99,
+            "confidence": 1,
             "probabilities": [
               {
                 "value": "effective",
@@ -9398,11 +9433,11 @@
               },
               {
                 "value": "ineffective",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "absent",
-                "probability": 0.99
+                "probability": 1
               },
               {
                 "value": "unknown",
@@ -9412,37 +9447,37 @@
           },
           "xss_all_paths_protected": {
             "choice": "no",
-            "confidence": 0.77,
+            "confidence": 1,
             "probabilities": [
               {
                 "value": "yes",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "no",
-                "probability": 0.85
+                "probability": 1
               },
               {
                 "value": "unknown",
-                "probability": 0.14
+                "probability": 0
               }
             ]
           },
           "xss_exposure": {
             "choice": "vulnerable",
-            "confidence": 0.81,
+            "confidence": 0.93,
             "probabilities": [
               {
                 "value": "vulnerable",
-                "probability": 0.86
+                "probability": 0.95
               },
               {
                 "value": "protected",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "unknown",
-                "probability": 0.14
+                "probability": 0.04
               },
               {
                 "value": "not_applicable",
@@ -9460,13 +9495,13 @@
           "xss_exposure": "vulnerable"
         },
         "usage": {
-          "input_tokens": 3861,
+          "input_tokens": 3294,
           "output_tokens": 0
         },
         "status": "completed",
         "provider": "openai",
         "model": "gpt-6-luna",
-        "question_version": "xss-components-v3",
+        "question_version": "xss-components-v4",
         "protection": "insufficient",
         "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
       }
@@ -10557,15 +10592,15 @@
         }
       ],
       "assessment": {
-        "request_digest": "3c965b80f21386b092ff3c892e8185934511e17e83e5c673f373ad0eafd2633a",
+        "request_digest": "b94001f5a11b82ef99514b1ef03b0dd76613a750b56bb248222a4aac48245371",
         "answer_details": {
           "destination_control": {
             "choice": "full_url",
-            "confidence": 0.96,
+            "confidence": 0.98,
             "probabilities": [
               {
                 "value": "full_url",
-                "probability": 0.97
+                "probability": 0.98
               },
               {
                 "value": "host",
@@ -10573,7 +10608,7 @@
               },
               {
                 "value": "path_or_query",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "none",
@@ -10613,19 +10648,19 @@
           },
           "protection_coverage": {
             "choice": "incomplete",
-            "confidence": 0.48,
+            "confidence": 0.97,
             "probabilities": [
               {
                 "value": "complete",
-                "probability": 0.1
+                "probability": 0.02
               },
               {
                 "value": "incomplete",
-                "probability": 0.65
+                "probability": 0.98
               },
               {
                 "value": "unknown",
-                "probability": 0.25
+                "probability": 0
               }
             ]
           }
@@ -10637,7 +10672,7 @@
           "protection_coverage": "incomplete"
         },
         "usage": {
-          "input_tokens": 4755,
+          "input_tokens": 4423,
           "output_tokens": 0
         },
         "status": "completed",
@@ -10719,18 +10754,18 @@
         "pack": {
           "id": "pack.code",
           "version": "1",
-          "digest": "d00fd6eaaac8adfac0b757b2a0b2451fbcb89b249983298301f7cb7726f77b5f"
+          "digest": "ab2533572f1c66070585006babb4af64d32620282ffcd3ce5a42bacdbf7794f4"
         },
         "components": [
           {
             "id": "api.js-eval-v1",
             "version": "1",
-            "digest": "6a081f177e4265ea33aeb07511206d7ff51d9d2b68fc32aedc170b57ab119060"
+            "digest": "788652fd658ab5c3e5ffe40e14cfd5b697df6b1110ef69e0cd7fbc9278fc4a50"
           },
           {
             "id": "claim.code",
             "version": "1",
-            "digest": "16dd5e12539a0e187c05f250d30c020dbd477b98b47daeb37c07648034c3f7da"
+            "digest": "727e458d9b89b15d4159ccff65dd0a9a7b5d7040fcc1e3866b34580255f6f53d"
           },
           {
             "id": "entry.http",
@@ -10740,30 +10775,30 @@
           {
             "id": "evidence.code",
             "version": "1",
-            "digest": "1bad0882e2bb7396590cd6952d8b0001cc9f29c5b450936056e22635c3cb9b11"
+            "digest": "e304f6cf02ebb87b574b7acbe243602121e3bf0cf9ba1585f7693d2b970ddc5b"
           },
           {
             "id": "flow.code",
             "version": "1",
-            "digest": "d1ca17e388fe250665870e5b1885f41b131e17e9332b7bdcc20282748f5967fd"
+            "digest": "8783b6c711b9bc92c03173858adc90cf87e9b494bc8b39d246aa0c1bc8609a9a"
           },
           {
             "id": "language.code.javascript",
             "version": "1",
-            "digest": "5d66a71ff2b5fa7bbd604f5ad5ae02db501796cfe9903f93b8e44875ac55a270"
+            "digest": "8e9709c5d9903793a4845c995b6ab52ec7959324c2bd197f094da27ad159fd7e"
           },
           {
             "id": "pack.code",
             "version": "1",
-            "digest": "d00fd6eaaac8adfac0b757b2a0b2451fbcb89b249983298301f7cb7726f77b5f"
+            "digest": "ab2533572f1c66070585006babb4af64d32620282ffcd3ce5a42bacdbf7794f4"
           },
           {
             "id": "source.node-input-code-v1",
             "version": "1",
-            "digest": "0661b9e0b9f1178ab426288e6d03b699fe10d3c0a9996571811704d5c6b28117"
+            "digest": "1881c1d1a176b853802070d25a537a7f9da40a9b2b2a3e97cdd82e367132dbdc"
           }
         ],
-        "digest": "cf5c72507a9fac14f819409ed287ca39cab898d4f049fee833563908ce25cc75",
+        "digest": "5506641581af9503a00aa2b78c61b75fbf433983c3ec1f5a2d19895bed3f15a3",
         "required": [
           "code_operand",
           "control_flow",
@@ -11417,23 +11452,23 @@
         }
       ],
       "assessment": {
-        "request_digest": "62a601ebc564641ee69224b9a313fe88c5dfcf4093e6929e2725f5384d52724c",
+        "request_digest": "e8e95bf48a4a43b8fe3829fa3545fe98c95f9923d9c4b756ae0f3598119a43fc",
         "answer_details": {
           "code_control": {
             "choice": "whole_program",
-            "confidence": 0.74,
+            "confidence": 0.86,
             "probabilities": [
               {
                 "value": "whole_program",
-                "probability": 0.79
+                "probability": 0.89
               },
               {
                 "value": "inside_string_literal",
-                "probability": 0.02
+                "probability": 0.01
               },
               {
                 "value": "data_only",
-                "probability": 0.02
+                "probability": 0.01
               },
               {
                 "value": "none",
@@ -11441,13 +11476,13 @@
               },
               {
                 "value": "unknown",
-                "probability": 0.16
+                "probability": 0.08
               }
             ]
           },
           "code_restriction": {
             "choice": "none",
-            "confidence": 0.4,
+            "confidence": 0.69,
             "probabilities": [
               {
                 "value": "allowlist_grammar",
@@ -11467,29 +11502,29 @@
               },
               {
                 "value": "none",
-                "probability": 0.5
+                "probability": 0.74
               },
               {
                 "value": "unknown",
-                "probability": 0.48
+                "probability": 0.24
               }
             ]
           },
           "protection_coverage": {
             "choice": "incomplete",
-            "confidence": 0.64,
+            "confidence": 0.67,
             "probabilities": [
               {
                 "value": "complete",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "incomplete",
-                "probability": 0.76
+                "probability": 0.78
               },
               {
                 "value": "unknown",
-                "probability": 0.24
+                "probability": 0.21
               }
             ]
           }
@@ -11501,13 +11536,13 @@
           "protection_coverage": "incomplete"
         },
         "usage": {
-          "input_tokens": 3525,
+          "input_tokens": 3198,
           "output_tokens": 0
         },
         "status": "completed",
         "provider": "openai",
         "model": "gpt-6-luna",
-        "question_version": "code-components-v1",
+        "question_version": "code-components-v2",
         "protection": "insufficient",
         "reason": "A request-derived operand reaches a verified code operation on a complete raw path without an effective restriction."
       }
@@ -14681,27 +14716,27 @@
         }
       ],
       "assessment": {
-        "request_digest": "3bd5a4b99cf5136631fa763822f8a1b3541da255aacc5661328c1e8b8d9ebf4f",
+        "request_digest": "77219b8462627bfb28f609d9d3541f8c5eeb5ff2dc9e8a9348ef2e308232746c",
         "answer_details": {
           "destination_control": {
             "choice": "full_url",
-            "confidence": 0.92,
+            "confidence": 0.88,
             "probabilities": [
               {
                 "value": "full_url",
-                "probability": 0.93
+                "probability": 0.9
               },
               {
                 "value": "host",
-                "probability": 0.01
-              },
-              {
-                "value": "path_only",
                 "probability": 0.02
               },
               {
+                "value": "path_only",
+                "probability": 0.01
+              },
+              {
                 "value": "fixed_origin",
-                "probability": 0
+                "probability": 0.01
               },
               {
                 "value": "none",
@@ -14709,21 +14744,21 @@
               },
               {
                 "value": "unknown",
-                "probability": 0.03
+                "probability": 0.05
               }
             ]
           },
           "destination_restriction": {
             "choice": "none",
-            "confidence": 0.82,
+            "confidence": 0.92,
             "probabilities": [
               {
                 "value": "same_site_relative",
-                "probability": 0.02
+                "probability": 0.01
               },
               {
                 "value": "parsed_origin_check",
-                "probability": 0.01
+                "probability": 0
               },
               {
                 "value": "host_allowlist",
@@ -14735,17 +14770,17 @@
               },
               {
                 "value": "none",
-                "probability": 0.85
+                "probability": 0.93
               },
               {
                 "value": "unknown",
-                "probability": 0.1
+                "probability": 0.04
               }
             ]
           },
           "protection_coverage": {
             "choice": "incomplete",
-            "confidence": 0.99,
+            "confidence": 0.96,
             "probabilities": [
               {
                 "value": "complete",
@@ -14753,11 +14788,11 @@
               },
               {
                 "value": "incomplete",
-                "probability": 0.99
+                "probability": 0.97
               },
               {
                 "value": "unknown",
-                "probability": 0.01
+                "probability": 0.03
               }
             ]
           }
@@ -14769,7 +14804,7 @@
           "protection_coverage": "incomplete"
         },
         "usage": {
-          "input_tokens": 3554,
+          "input_tokens": 3220,
           "output_tokens": 0
         },
         "status": "completed",
@@ -15003,6 +15038,844 @@
         ],
         "status": "not_run",
         "reason": "validation_evidence_missing: the policy gate needs input_source, field_policy, invoked_callable, control_flow; no model answer could change this outcome, so no request was sent"
+      }
+    },
+    {
+      "input_facts": {
+        "version": 1,
+        "acquisition": "http",
+        "framework": "express",
+        "binding": {
+          "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+          "kind": "entry_registration",
+          "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 243,
+            "end_line": 248,
+            "start_byte": 8210,
+            "end_byte": 8447
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        "values": [
+          {
+            "dependency": 0,
+            "origin": "unknown",
+            "initial_type": "unknown",
+            "sink_type": "unknown",
+            "source": {
+              "kind": "input_source",
+              "text": "req.body",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 244,
+                "end_line": 244,
+                "start_byte": 8297,
+                "end_byte": 8305
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            "transfers": [
+              {
+                "kind": "field_projection",
+                "text": "source",
+                "span": {
+                  "file": "src/server.ts",
+                  "start_line": 244,
+                  "end_line": 244,
+                  "start_byte": 8286,
+                  "end_byte": 8292
+                },
+                "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+              }
+            ]
+          }
+        ],
+        "controls": [
+          {
+            "kind": "middleware_handler",
+            "text": "{\n  res.header('Access-Control-Allow-Origin', '*');\n  res.header('Access-Control-Allow-Credentials', 'true');\n  res.header('Access-Control-Allow-Headers', '*');\n  next();\n}",
+            "span": {
+              "file": "src/server.ts",
+              "start_line": 47,
+              "end_line": 52,
+              "start_byte": 1511,
+              "end_byte": 1683
+            },
+            "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+          }
+        ]
+      },
+      "analysis_components": {
+        "pack": {
+          "id": "pack.pollution",
+          "version": "1",
+          "digest": "bd82f6a688f5cec827d2a119dbed8ac4adc9bd2f5a0357fc84384abf494fe078"
+        },
+        "components": [
+          {
+            "id": "api.lodash-merge-v1",
+            "version": "1",
+            "digest": "0fbc65b88eca40d8c176f0806cca3103c5b74c7eed0a329cef0f0f5f3922e257"
+          },
+          {
+            "id": "claim.pollution",
+            "version": "1",
+            "digest": "df3a3a4deab24810159f8d9e841fd91588842d17d3cae8fda05b537bff2fac72"
+          },
+          {
+            "id": "entry.pollution.http",
+            "version": "1",
+            "digest": "a3bb89027bedffc69293c5de9d62e6d650d3bdb662f2efec49ffced7b59b9612"
+          },
+          {
+            "id": "evidence.pollution",
+            "version": "1",
+            "digest": "b81d49cae7ec6c476ac46c54c66b0f2de1991a9dcae15a8488ec34b6c5e331a4"
+          },
+          {
+            "id": "flow.pollution",
+            "version": "1",
+            "digest": "762651173f4200d96c1af5ff3326e570b3e303da43eef3a74ca480c518548a78"
+          },
+          {
+            "id": "language.pollution.javascript",
+            "version": "1",
+            "digest": "3753c5f6f7c11ae50fcb43c2e6af62eb6e603409cd5ff6e2c7dad1a0c3ee3dda"
+          },
+          {
+            "id": "pack.pollution",
+            "version": "1",
+            "digest": "bd82f6a688f5cec827d2a119dbed8ac4adc9bd2f5a0357fc84384abf494fe078"
+          },
+          {
+            "id": "source.node-input-pollution-v1",
+            "version": "1",
+            "digest": "a8f3a23883936e5227f79ccc0e7a893f51e374a4bb8c888482d1c26039f26919"
+          }
+        ],
+        "digest": "c91f180e94ef26645e933141e052362fbce6005b56cd6a5510a5f29d38038b4e",
+        "required": [
+          "control_flow",
+          "dispatch_binding",
+          "entry_registration",
+          "input_source",
+          "invocation_binding",
+          "invoked_callable",
+          "key_operand",
+          "sink_binding"
+        ],
+        "limits": [
+          "server-side application entries and bounded source-visible writes",
+          "transport-neutral source facts including URL/upload origins; bounded Node acquisition adapters; missing hooks and dynamic dispatch remain gaps"
+        ]
+      },
+      "pollution": {
+        "operation": "lodash.merge",
+        "contract_id": "lodash-merge-v1",
+        "package": "lodash",
+        "version": "4.17.4",
+        "key_operand": "source",
+        "open": [
+          "__proto__",
+          "constructor",
+          "prototype"
+        ],
+        "paths": [
+          {
+            "dependency": 0,
+            "operand": "source",
+            "protection": "raw"
+          }
+        ]
+      },
+      "api_model": {
+        "id": "lodash-merge-v1",
+        "library": "lodash",
+        "semantics": "Reviewed 2026-11-20. merge, mergeWith and defaultsDeep traverse keys in each source object after the target. The mergeWith customizer is separate from the sources. CVE-2018-3721, CVE-2018-16487 and CVE-2019-10744 have operation- and version-specific reach. Use the recorded key listing for the resolved package.",
+        "reference": "https://github.com/lodash/lodash/wiki/Changelog#v41712"
+      },
+      "control_edges": [
+        {
+          "from": {
+            "kind": "statement",
+            "text": "const merged = _.merge(target, source);",
+            "span": {
+              "file": "src/server.ts",
+              "start_line": 246,
+              "end_line": 246,
+              "start_byte": 8373,
+              "end_byte": 8412
+            },
+            "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+          },
+          "to": {
+            "kind": "statement",
+            "text": "res.json({ result: merged });",
+            "span": {
+              "file": "src/server.ts",
+              "start_line": 247,
+              "end_line": 247,
+              "start_byte": 8415,
+              "end_byte": 8444
+            },
+            "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+          },
+          "kind": "NEXT"
+        },
+        {
+          "from": {
+            "kind": "statement",
+            "text": "const { target, source } = req.body;",
+            "span": {
+              "file": "src/server.ts",
+              "start_line": 244,
+              "end_line": 244,
+              "start_byte": 8270,
+              "end_byte": 8306
+            },
+            "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+          },
+          "to": {
+            "kind": "statement",
+            "text": "const merged = _.merge(target, source);",
+            "span": {
+              "file": "src/server.ts",
+              "start_line": 246,
+              "end_line": 246,
+              "start_byte": 8373,
+              "end_byte": 8412
+            },
+            "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+          },
+          "kind": "NEXT"
+        }
+      ],
+      "completeness": {
+        "resolved_gaps": [
+          {
+            "kind": "middleware_unresolved",
+            "detail": "effective middleware/guard chain is not modeled",
+            "at": {
+              "file": "src/server.ts",
+              "start_line": 243,
+              "end_line": 248,
+              "start_byte": 8210,
+              "end_byte": 8447
+            }
+          }
+        ],
+        "claim_kind": "pollution",
+        "required": [
+          "input_source",
+          "sink_binding",
+          "invoked_callable",
+          "control_flow",
+          "key_operand",
+          "entry_registration",
+          "dispatch_binding",
+          "invocation_binding"
+        ],
+        "evidence": {
+          "control_flow": [
+            {
+              "model_text": "{\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+              "kind": "handler",
+              "text": "{\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8266,
+                "end_byte": 8446
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "dependency_version": [
+            {
+              "kind": "dependency_version",
+              "text": "\"node_modules/lodash\": {\n      \"version\": \"4.17.4\"",
+              "span": {
+                "file": "package-lock.json",
+                "start_line": 15269,
+                "end_line": 15270,
+                "start_byte": 580430,
+                "end_byte": 580480
+              },
+              "sha256": "7cb12a53e1882f2c51f9ba5501b4ee6cb5f06004e7ac9f4068ed5e6eaca55963"
+            }
+          ],
+          "dispatch_binding": [
+            {
+              "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "kind": "entry_registration",
+              "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8210,
+                "end_byte": 8447
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "entry_registration": [
+            {
+              "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "kind": "entry_registration",
+              "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8210,
+                "end_byte": 8447
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "handler": [
+            {
+              "model_text": "{\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+              "kind": "handler",
+              "text": "{\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8266,
+                "end_byte": 8446
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "input_source": [
+            {
+              "kind": "input_source",
+              "text": "req.body",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 244,
+                "end_line": 244,
+                "start_byte": 8297,
+                "end_byte": 8305
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "invocation_binding": [
+            {
+              "kind": "input_binding",
+              "text": "req: Request",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 243,
+                "start_byte": 8234,
+                "end_byte": 8246
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            {
+              "kind": "input_binding",
+              "text": "res: Response",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 243,
+                "start_byte": 8248,
+                "end_byte": 8261
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "invoked_callable": [
+            {
+              "model_text": "{\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+              "kind": "ssrf_invoked_callable",
+              "text": "{\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8266,
+                "end_byte": 8446
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "key_operand": [
+            {
+              "kind": "key_operand",
+              "text": "source",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 246,
+                "end_line": 246,
+                "start_byte": 8404,
+                "end_byte": 8410
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "middleware_handler": [
+            {
+              "kind": "middleware_handler",
+              "text": "{\n  res.header('Access-Control-Allow-Origin', '*');\n  res.header('Access-Control-Allow-Credentials', 'true');\n  res.header('Access-Control-Allow-Headers', '*');\n  next();\n}",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 47,
+                "end_line": 52,
+                "start_byte": 1511,
+                "end_byte": 1683
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "middleware_registration": [
+            {
+              "kind": "middleware_registration",
+              "text": "app.use(bodyParser.json())",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 30,
+                "end_line": 30,
+                "start_byte": 948,
+                "end_byte": 974
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            {
+              "kind": "middleware_registration",
+              "text": "app.use(bodyParser.urlencoded({ extended: true }))",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 31,
+                "end_line": 31,
+                "start_byte": 976,
+                "end_byte": 1026
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            {
+              "kind": "middleware_registration",
+              "text": "app.use(cookieParser())",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 32,
+                "end_line": 32,
+                "start_byte": 1028,
+                "end_byte": 1051
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            {
+              "model_text": "app.use(session({\n  secret: 'insecure-typescript-session-secret',\n  resave: true,\n  saveUninitialized: true,\n  cookie: {\n    secure: false,                           \n    httpOnly: false,                     \n    maxAge: 365 * 24 * 60 * 60 * 1000                     \n  }\n}))",
+              "kind": "middleware_registration",
+              "text": "app.use(session({\n  secret: 'insecure-typescript-session-secret',\n  resave: true,\n  saveUninitialized: true,\n  cookie: {\n    secure: false, // Should be true in HTTPS\n    httpOnly: false, // Vulnerable to XSS\n    maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year - too long\n  }\n}))",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 35,
+                "end_line": 44,
+                "start_byte": 1114,
+                "end_byte": 1389
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            {
+              "kind": "middleware_registration",
+              "text": "app.use((req: Request, res: Response, next: express.NextFunction) => {\n  res.header('Access-Control-Allow-Origin', '*');\n  res.header('Access-Control-Allow-Credentials', 'true');\n  res.header('Access-Control-Allow-Headers', '*');\n  next();\n})",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 47,
+                "end_line": 52,
+                "start_byte": 1442,
+                "end_byte": 1684
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "registration": [
+            {
+              "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "kind": "registration",
+              "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8210,
+                "end_byte": 8447
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "route_registration": [
+            {
+              "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "kind": "route_registration",
+              "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 243,
+                "end_line": 248,
+                "start_byte": 8210,
+                "end_byte": 8447
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ],
+          "sink_binding": [
+            {
+              "kind": "sink_binding",
+              "text": "_.merge",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 246,
+                "end_line": 246,
+                "start_byte": 8388,
+                "end_byte": 8395
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            },
+            {
+              "kind": "sink_binding",
+              "text": "import * as _ from 'lodash';",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 15,
+                "end_line": 15,
+                "start_byte": 516,
+                "end_byte": 544
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ]
+        },
+        "blockers": [],
+        "coverage": [],
+        "scope": "prototype write over the key-bearing operand in this application invocation"
+      },
+      "id": "candidate:v1:b9941b6d4440dbec742c8f0b4a3b901fddd77f7f8dc27c8aacbf11e32e99a403",
+      "entry_id": "entry:v1:b09f0e06a06ccbc214dfb0929f4c8233285a9a09ac4526e1b2a68556001caa51",
+      "invocation_context_id": "invocation:v1:d4355daeed5e332c6f4b4d29271e35ded5c4e9e802fe33492e568af96897422c",
+      "kind": "prototype_write_candidate",
+      "sink": {
+        "kind": "prototype_write_candidate",
+        "text": "_.merge(target, source)",
+        "span": {
+          "file": "src/server.ts",
+          "start_line": 246,
+          "end_line": 246,
+          "start_byte": 8388,
+          "end_byte": 8411
+        },
+        "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+      },
+      "dependencies": [
+        {
+          "sink_slot": "source",
+          "source": {
+            "kind": "input_source",
+            "text": "req.body",
+            "span": {
+              "file": "src/server.ts",
+              "start_line": 244,
+              "end_line": 244,
+              "start_byte": 8297,
+              "end_byte": 8305
+            },
+            "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+          },
+          "transfers": [
+            {
+              "kind": "field_projection",
+              "text": "source",
+              "span": {
+                "file": "src/server.ts",
+                "start_line": 244,
+                "end_line": 244,
+                "start_byte": 8286,
+                "end_byte": 8292
+              },
+              "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+            }
+          ]
+        }
+      ],
+      "context": [
+        {
+          "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+          "kind": "registration",
+          "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 243,
+            "end_line": 248,
+            "start_byte": 8210,
+            "end_byte": 8447
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "model_text": "{\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+          "kind": "handler",
+          "text": "{\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 243,
+            "end_line": 248,
+            "start_byte": 8266,
+            "end_byte": 8446
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "sink_binding",
+          "text": "_.merge",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 246,
+            "end_line": 246,
+            "start_byte": 8388,
+            "end_byte": 8395
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "sink_binding",
+          "text": "import * as _ from 'lodash';",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 15,
+            "end_line": 15,
+            "start_byte": 516,
+            "end_byte": 544
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "dependency_version",
+          "text": "\"node_modules/lodash\": {\n      \"version\": \"4.17.4\"",
+          "span": {
+            "file": "package-lock.json",
+            "start_line": 15269,
+            "end_line": 15270,
+            "start_byte": 580430,
+            "end_byte": 580480
+          },
+          "sha256": "7cb12a53e1882f2c51f9ba5501b4ee6cb5f06004e7ac9f4068ed5e6eaca55963"
+        },
+        {
+          "kind": "key_operand",
+          "text": "source",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 246,
+            "end_line": 246,
+            "start_byte": 8404,
+            "end_byte": 8410
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "middleware_registration",
+          "text": "app.use(bodyParser.json())",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 30,
+            "end_line": 30,
+            "start_byte": 948,
+            "end_byte": 974
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "middleware_registration",
+          "text": "app.use(bodyParser.urlencoded({ extended: true }))",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 31,
+            "end_line": 31,
+            "start_byte": 976,
+            "end_byte": 1026
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "middleware_registration",
+          "text": "app.use(cookieParser())",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 32,
+            "end_line": 32,
+            "start_byte": 1028,
+            "end_byte": 1051
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "model_text": "app.use(session({\n  secret: 'insecure-typescript-session-secret',\n  resave: true,\n  saveUninitialized: true,\n  cookie: {\n    secure: false,                           \n    httpOnly: false,                     \n    maxAge: 365 * 24 * 60 * 60 * 1000                     \n  }\n}))",
+          "kind": "middleware_registration",
+          "text": "app.use(session({\n  secret: 'insecure-typescript-session-secret',\n  resave: true,\n  saveUninitialized: true,\n  cookie: {\n    secure: false, // Should be true in HTTPS\n    httpOnly: false, // Vulnerable to XSS\n    maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year - too long\n  }\n}))",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 35,
+            "end_line": 44,
+            "start_byte": 1114,
+            "end_byte": 1389
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "middleware_registration",
+          "text": "app.use((req: Request, res: Response, next: express.NextFunction) => {\n  res.header('Access-Control-Allow-Origin', '*');\n  res.header('Access-Control-Allow-Credentials', 'true');\n  res.header('Access-Control-Allow-Headers', '*');\n  next();\n})",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 47,
+            "end_line": 52,
+            "start_byte": 1442,
+            "end_byte": 1684
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "kind": "middleware_handler",
+          "text": "{\n  res.header('Access-Control-Allow-Origin', '*');\n  res.header('Access-Control-Allow-Credentials', 'true');\n  res.header('Access-Control-Allow-Headers', '*');\n  next();\n}",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 47,
+            "end_line": 52,
+            "start_byte": 1511,
+            "end_byte": 1683
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "model_text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+          "kind": "route_registration",
+          "text": "app.post('/api/merge', (req: Request, res: Response) => {\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n})",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 243,
+            "end_line": 248,
+            "start_byte": 8210,
+            "end_byte": 8447
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        },
+        {
+          "model_text": "{\n  const { target, source } = req.body;\n                                                               \n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+          "kind": "ssrf_invoked_callable",
+          "text": "{\n  const { target, source } = req.body;\n  // Vulnerable: Using lodash merge without proper sanitization\n  const merged = _.merge(target, source);\n  res.json({ result: merged });\n}",
+          "span": {
+            "file": "src/server.ts",
+            "start_line": 243,
+            "end_line": 248,
+            "start_byte": 8266,
+            "end_byte": 8446
+          },
+          "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+        }
+      ],
+      "gaps": [
+        {
+          "kind": "middleware_unresolved",
+          "detail": "effective middleware/guard chain is not modeled",
+          "at": {
+            "file": "src/server.ts",
+            "start_line": 243,
+            "end_line": 248,
+            "start_byte": 8210,
+            "end_byte": 8447
+          }
+        }
+      ],
+      "assessment": {
+        "request_digest": "e6e46680af4ebab3b4264094b6d6983eb3f89f6cfd2e200bc7cb7699a6703a7e",
+        "answer_details": {
+          "key_guard_bypass": {
+            "choice": "not_applicable",
+            "confidence": 1,
+            "probabilities": [
+              {
+                "value": "bypass_identified",
+                "probability": 0
+              },
+              {
+                "value": "no_bypass",
+                "probability": 0
+              },
+              {
+                "value": "guard_semantics_unknown",
+                "probability": 0
+              },
+              {
+                "value": "not_applicable",
+                "probability": 1
+              }
+            ]
+          },
+          "protection_coverage": {
+            "choice": "incomplete",
+            "confidence": 0.96,
+            "probabilities": [
+              {
+                "value": "complete",
+                "probability": 0
+              },
+              {
+                "value": "incomplete",
+                "probability": 0.97
+              },
+              {
+                "value": "unknown",
+                "probability": 0.03
+              }
+            ]
+          },
+          "prototype_key_control": {
+            "choice": "vulnerable",
+            "confidence": 0.72,
+            "probabilities": [
+              {
+                "value": "vulnerable",
+                "probability": 0.79
+              },
+              {
+                "value": "protected",
+                "probability": 0.02
+              },
+              {
+                "value": "not_applicable",
+                "probability": 0.03
+              },
+              {
+                "value": "unknown",
+                "probability": 0.16
+              }
+            ]
+          }
+        },
+        "finding_status": "confirmed_vulnerability",
+        "answers": {
+          "key_guard_bypass": "not_applicable",
+          "protection_coverage": "incomplete",
+          "prototype_key_control": "vulnerable"
+        },
+        "usage": {
+          "input_tokens": 3026,
+          "output_tokens": 0
+        },
+        "status": "completed",
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "question_version": "pollution-components-v1",
+        "protection": "insufficient",
+        "reason": "Request-derived keys reach a complete write path that can pollute Object.prototype."
       }
     },
     {
@@ -15616,6 +16489,30 @@
         "end_byte": 10901
       },
       "sha256": "14c7e1e0189e4688edaa48ad1d777943d667d9d8040c74baafd7b7c2b81ac9bb"
+    },
+    {
+      "kind": "file",
+      "text": "",
+      "span": {
+        "file": "package-lock.json",
+        "start_line": 1,
+        "end_line": 30273,
+        "start_byte": 0,
+        "end_byte": 1148904
+      },
+      "sha256": "7cb12a53e1882f2c51f9ba5501b4ee6cb5f06004e7ac9f4068ed5e6eaca55963"
+    },
+    {
+      "kind": "file",
+      "text": "",
+      "span": {
+        "file": "package.json",
+        "start_line": 1,
+        "end_line": 215,
+        "start_byte": 0,
+        "end_byte": 5589
+      },
+      "sha256": "654c071947aa9212caef62134222cce0de48a4fdf66423c58fd4b08b67e3d791"
     }
   ],
   "limitations": [
@@ -15625,8 +16522,8 @@
     "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
     "13 validation records were not sent to the judge: their field-policy gate lacks required evidence, so no answer could change their Review outcome (validation_evidence_missing).",
     "1 records were not sent to the judge: a scanner blocker fixes their Review outcome and has no resolution question, so no answer could change it (blocker_unresolvable).",
-    "Judged 7 distinct candidate signatures across 7 total entry contexts (0 derived across equivalent entry contexts).",
-    "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 7; reported input tokens 29898; unknown-usage attempts 0. "
+    "Judged 8 distinct candidate signatures across 8 total entry contexts (0 derived across equivalent entry contexts).",
+    "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 8; reported input tokens 30454; unknown-usage attempts 0. "
   ],
   "analysis_guidelines": [
     {

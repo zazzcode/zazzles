@@ -5,11 +5,12 @@
 [Analysis rules](../../analysis/prototype-pollution.md) ·
 [Lab guide](https://github.com/zazzcode/vuln-nextjs/blob/8d26f52/docs/vulnerabilities/prototype-pollution.md)
 
-## Current report (2026-11-20)
+## Current report (2026-11-21)
 
 One judged scan of the prototype pollution (CWE-1321) fixtures in the owner-maintained
 [zazzcode/vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) lab at `8d26f52`, with OpenAI
-`gpt-6-luna` and the scanner at `d68fec6`. The fixtures are TypeScript text files in the lab.
+`gpt-6-luna` and the scanner at `6006eaa`. The same scan on 2026-11-20 at `d68fec6` produced a
+byte-identical report. The fixtures are TypeScript text files in the lab.
 Its export command writes them as one Next.js 13 project with a lockfile that pins Lodash 4.17.4,
 `dset` 3.1.3 and `merge-deep` 3.0.2:
 
@@ -22,7 +23,7 @@ it in Node with its payload.
 
 - 24 entries, 63 analysis records: **14 Confirmed, 47 Review, 2 Protected**.
 - 19 prototype pollution records, all assessed: 19 requests, 48,693 input tokens, no provider
-  failures. The 37 input-validation and 7 rendering-flow records are observations with no claim
+  failures. All 19 saved traces replay with the same request digest and outcome. The 37 input-validation and 7 rendering-flow records are observations with no claim
   to send, and stay in Review.
 - No false positive and no false Protected against the lab's ground truth.
 
@@ -72,7 +73,6 @@ because one lockfile resolves one version. Their Lodash calls have no record in 
 
 ## Limits
 
-Request traces were not saved, so exact replay was not checked for this run. The report shows
-the affected pins only. The [known gaps](../../detection-capabilities.md#prototype-pollution-known-gaps)
+The report shows the affected pins only. The [known gaps](../../detection-capabilities.md#prototype-pollution-known-gaps)
 apply. Source excerpts belong to the lab; its license is preserved in
 [UPSTREAM-LICENSE.txt](UPSTREAM-LICENSE.txt).

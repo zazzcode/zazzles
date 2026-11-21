@@ -55,6 +55,7 @@ the imported module. The architecture baseline is unchanged.
 
 ## Remaining verification
 
-AC8 awaits an owner-authorized live judgment. AC9 follows phase 7 corpus keys and phase 8
+AC8 was verified on 2026-11-21: both positives are Confirmed, no control is a finding, and every
+saved trace replays exactly. [Live judgment](pollution-write-shapes-results.md#ac8-live-judgment). AC9 follows phase 7 corpus keys and phase 8
 library entries. The newer Lodash deletion advisories and additional npm packages are documented
 for source-only corpus follow-up. [Version and corpus cases](../specifications/prototype-pollution.md#5-decisions).

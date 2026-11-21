@@ -56,8 +56,8 @@ Each shape is read inside one function body, with one forwarding helper for a re
 | Recursion | A call on `target[key]` and the source value, or on one local declared from each. A slot local may be assigned the same slot again, as in `t = target[key] = {}` |
 | Source value | `source[key]`, the value of an `Object.entries` pair, or `Object.getOwnPropertyDescriptor(source, key).value` |
 | Path parts | The parameter itself as an array, `split` by a non-empty string or a regular-expression literal, `match` with a global regular-expression literal, or matches pushed by one `exec` loop |
-| Walk | An index or `for…of` loop, a `while` loop that takes parts with `shift()` or `pop()` while parts remain, or `parts.reduce((cursor, part) => cursor[part], target)` |
-| Final write | An indexed assignment through the walk result, keyed by the last part |
+| Walk | An index or `for…of` loop, a `while` loop that takes parts with `shift()` or `pop()` while parts remain, a `forEach` over the parts whose callback steps the cursor, `parts.reduce((cursor, part) => cursor[part], target)`, or a function that calls itself on `obj[key]` with the next index or `path.slice(1)` |
+| Final write | An indexed assignment through the walk result, keyed by the last part. In a recursive walk, an assignment to `obj[key]` in the function or in a helper it calls |
 
 The shapes are read the same way in TypeScript: typed callback parameters, a cast around the key
 enumerator and a cast or non-null assertion on a path part do not change the match.
@@ -74,6 +74,13 @@ applies across its modeled write sites. Own-property checks must apply at every 
 null-prototype object can protect one lookup. Deep traversal also needs evidence about nested
 containers. A test that rejects the whole path, `path.includes('__proto__')` or the `indexOf`
 equivalent, blocks that name in every part while the path stays unchanged up to the walk.
+
+A key test may be written as a one-line helper of the same module, such as
+`function isValidKey(key) { return key !== '__proto__' && … }` or a wrapper around
+`hasOwnProperty`. The helper's single returned expression is read with the call's arguments. A
+helper that calls another function is not read. `object.hasOwnProperty(key)` is an own-property
+test on the target and says nothing about the lookup on any other object. In a recursive walk, a
+call that takes the key before the recursion, such as an assertion, is an unread guard.
 
 The parts of an array the caller passes need not be strings. A nested array such as
 `['__proto__']` is not equal to `'__proto__'` and still names that key in a lookup. For such a
@@ -117,8 +124,10 @@ These forms can pollute `Object.prototype` and have no record:
   slot would skip that branch.
 - **Path walk into a local or module-level object.** A walk whose path is a parameter must start
   from another parameter. A start that is not a parameter is read only for the unflatten shape.
-- **More than one helper.** A recursion reached through more than one forwarding helper, or a
+- **More than one helper.** A merge reached through more than one forwarding helper, or a loop
   walk split across functions.
+- **Other write forms.** A write through `Object.defineProperty`, and a walk whose step and
+  write are one chained assignment, `t = t[k] = …`.
 - **Other dynamic writes.** A write through a non-constant key that matches no listed shape.
 - **Other write libraries.** `deepmerge`, `set-value`, `dot-prop` and similar packages called
   from an application. `node_modules/` is not read and only Lodash has version contracts. Their
@@ -126,16 +135,16 @@ These forms can pollute `Object.prototype` and have no record:
 - **Library source under `vendor/`.** The file walk skips that directory.
 - **A library repository with no application entry.** Its exported functions are not entries.
 - **Published libraries copied into the repository.** Eleven advisory packages were scanned as
-  source behind a route and none was detected through its public API. Wrapper functions that
-  read `arguments`, nested functions and factory exports stand between the route and the write.
-  Walks written with `forEach` or by recursion, and writes through `Object.defineProperty`,
-  are not recognised.
+  source behind a route. One, `set-in`, is detected through its public API. For the others,
+  wrapper functions that read `arguments`, nested functions and factory exports stand between
+  the route and the write, although the core function of several is read correctly when it is
+  called directly.
 
 ### Left in Review
 
 - **Lookup or validator call on the key.** A path test that depends on a call taking the key
   operand is `key_guard_coverage_unknown`. The scanner does not decide whether that call rejects
-  a prototype key.
+  a prototype key. A one-line helper that tests the key directly is read.
 - **Regular-expression path guard.** A whole-path test other than `includes` or `indexOf` is
   left unread. The walk is recorded without that control, and an assessment that relies on it
   is a contradiction.

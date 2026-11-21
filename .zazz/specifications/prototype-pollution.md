@@ -1,6 +1,6 @@
 # Prototype pollution analyzer (CWE-1321)
 
-- **Status** Stage 1 implemented and verified offline on the assigned feature branch. Merge and AC8 are pending.
+- **Status** Stage 1 implemented and verified on the assigned feature branch, including the AC8 live check. Merge is pending.
 - **Worktree and branch** `prototype-polution-analyzer`, assigned by the owner.
 - **Implementation baseline** `stage` at `ec29e49`. The original sample baseline used `6e7fa1c`.
 - **Prerequisite** None for stage 1 (application write claim). Stage 2 (library write claim) needs
@@ -187,7 +187,7 @@ Out of scope:
   | `minimist` | `>=1.0.0 <1.2.3` and `<0.2.1` (CVE-2020-7598) | `1.2.3` fixes that advisory only. `1.2.3`–`1.2.5` remain affected by CVE-2021-44906; `1.2.6` is the patched control | Argument-key path write. `1.2.3`–`1.2.5` is a published incomplete fix, a bypass-sibling range. [First advisory](https://github.com/advisories/GHSA-vh95-rmgr-6w4m), [second advisory](https://github.com/advisories/GHSA-xvch-5gv4-984h) |
   | `yargs-parser` | `>=16.0.0 <18.1.1`, and the earlier ranges in the advisory (CVE-2020-7608) | `18.1.1`, `15.0.1`, `13.1.2`, `5.0.1` by release line | Argument-key path write. [Advisory](https://github.com/advisories/GHSA-p9pc-299p-vxgp) |
   | `merge` | `<2.1.1` (CVE-2020-28499, `_recursiveMerge`) | `2.1.1` | Recursive merge. [Advisory](https://github.com/advisories/GHSA-7wpw-2hjm-89gp) |
-  | `set-in` | `<2.0.1` (CVE-2020-28273); `<2.0.3` (CVE-2022-25354) | `2.0.3` for those two. `2.0.5` for CVE-2026-26021 | Path write. `2.0.1`–`2.0.2` is a published incomplete fix. `2.0.3`–`2.0.4` is a control: the CVE-2026-26021 proof first replaces `Array.prototype.includes`, so the key check holds unless the runtime is already tampered with. [2020](https://github.com/advisories/GHSA-qr4p-c9wr-phr6), [2022](https://github.com/advisories/GHSA-6956-83fg-5wc5), [2026](https://github.com/advisories/GHSA-2c4m-g7rx-63q7) |
+  | `set-in` | `<2.0.1` (CVE-2020-28273); `<2.0.3` (CVE-2022-25354) | `2.0.3` for those two. `2.0.5` for CVE-2026-26021 | Path write. `2.0.1`–`2.0.2` is a published incomplete fix. `2.0.3`–`2.0.4` is a control: the CVE-2026-26021 proof first replaces `Array.prototype.includes`, so the key check holds unless the runtime is already tampered with. [2020](https://github.com/advisories/GHSA-qr4p-c9wr-phr6), [2022](https://github.com/advisories/GHSA-6956-83fg-5wc5), [2026](https://github.com/advisories/GHSA-2c4m-g7rx-63q7). Source reading on 2026-11-21 differs for 2.0.3: its key check runs after the recursive write, a transcription of its logic still pollutes, and 2.0.4 is the first version that checks before the recursion. 2.0.2 was never published. [Reading](../evaluation/pollution-write-shapes-results.md#real-advisory-libraries) |
   | `qs` | `<6.10.3` and the backport lines (CVE-2022-24999) | `6.10.3`, `6.9.7`, `6.8.3`, `6.7.3`, `6.6.1`, `6.5.3`, `6.4.1`, `6.3.3`, `6.2.4` | Process hang from a `__proto__` key. Scope control: the advisory reports no shared `Object.prototype` write. [Advisory](https://github.com/advisories/GHSA-hrpp-h998-j3pp) |
   | React Server Components | `react-server-dom-*` 19.2.0 (CVE-2025-55182) | 19.2.1 historical fix pin for this CVE | Decoder and access checkpoint owned by phase 7 AC2. [React advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components) |
 
@@ -289,6 +289,8 @@ advisory or changelog, with the review date.
    baseline changes only by new fixture rows, and `check.py` output moves only by the new rows.
 8. **AC8 (live, on the owner's word).** Node.js Goof and the Vulnerable TypeScript app are judged:
    both positives are Confirmed, no control is a finding, and every assessment replays exactly.
+   The vuln-nextjs prototype pollution fixtures are judged in the same check: no exploitable
+   fixture is Protected and no safe fixture is a finding.
 9. **AC9 (stage 2).** On the phase 7 pins, each write row (`superjson`, `express-fileupload`,
    `parse-server`, `ajv`) is a conditional weakness or Review at its key anchor on the vulnerable
    pin and is not a conditional weakness there on the fixed pin. No bypass sibling is Protected.
@@ -332,7 +334,9 @@ type PollutionFacts struct {
 - [x] Record the OQ-1 to OQ-3 implementation decisions and evidence in the run log.
 - [x] Record the reviewed D-3 ranges and unresolved package boundaries with advisory references.
 - [x] Verify AC1–AC7 and AC10 for stage 1. [Results](../evaluation/prototype-pollution-results.md).
-- [ ] Verify AC8 when the owner authorizes a live check. AC9 closes stage 2.
+- [x] Verify AC8 when the owner authorizes a live check.
+  [Evidence](../evaluation/pollution-write-shapes-results.md#ac8-live-judgment).
+- [ ] AC9 closes stage 2.
 - [x] Scope the feature diff to the analyzer, its integration, tests, and documentation in §4.
 
 ## 11. Review decisions
@@ -425,3 +429,9 @@ The owner supplied a search list of seven packages. Each CVE was read from the G
 Database. D-3 gains `minimist`, `yargs-parser`, `merge`, `set-in` and `qs` rows, with two published
 incomplete fixes marked as bypass-sibling ranges and two entries marked as controls. `lodash` and
 `counterpart` were already recorded. OQ-4 and OQ-5 are new. No code or analyzer behaviour changed.
+
+### 2026-11-21 — Verified AC8 and checked the library table against source
+
+The owner authorized the live check and added the vuln-nextjs fixtures to it. Both keyed
+positives are Confirmed, no control is a finding, and all 39 saved traces replay exactly. The
+`set-in` row of D-3 gains a source reading that differs from its advisory range for 2.0.3.

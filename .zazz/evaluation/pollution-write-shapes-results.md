@@ -203,55 +203,94 @@ No false positive and no false Protected. The exploitable source in Review is th
 compared without a type test, which the scanner leaves unread by design. One safe source,
 `pages/api/guarded.ts`, is in Review because the model answered that coverage was incomplete at
 0.49 confidence against the recorded guard. Two exploitable sources, the `dset` and `merge-deep`
-calls, have no record: the documented dependency gap. Request traces were not saved, so exact
-replay was not checked. The lab's application scan was not repeated, because its offline report
-is byte-identical before and after this work.
+calls, have no record: the documented dependency gap. The run was repeated with traces on
+2026-11-21 ([AC8](#ac8-live-judgment)). The lab's application scan was not repeated, because
+its records are identical before and after this work.
 [Published sample](../../docs/samples/vuln-nextjs-prototype-pollution/README.md).
-
-AC8 of the parent contract, the live judgment of Node.js Goof and the Vulnerable TypeScript app,
-is still open.
 
 ## Real advisory libraries
 
-On the owner's approval, 22 published versions of 11 packages were downloaded from the npm
-registry as source and scanned with the scanner at `89a87da`: `lodash`, `minimist`,
-`yargs-parser`, `merge`, `set-in`, `dset`, `object-path`, `merge-deep`, `jsonpath`, `putil-merge`
-and `counterpart`. No library code was executed. The files are under the container's
+On the owner's approval, 25 published versions of 11 packages were downloaded from the npm
+registry as source and scanned: `lodash`, `minimist`, `yargs-parser`, `merge`, `set-in`, `dset`,
+`object-path`, `merge-deep`, `jsonpath`, `putil-merge` and `counterpart`. No library code was
+executed. The files are under the container's
 `_test-findings/prototype-pollution-library-check/` and are not committed.
 
-**Through the public API: nothing is detected.** Each library scanned alone has no application
-entry and no record. Each library copied into an Express application and called from a route
-through its public export also has no record, at the affected and the patched pin alike.
+The first scan, at `89a87da`, detected none of them through a public API. Three forms found in
+that code were then added (`6006eaa`): a `forEach` walk, a walk that recurses on the next
+object, and key tests written as one-line helpers. `TestPollutionLibraryShapes` pins thirteen
+cases written in the shape of the library code; ten failed before. The readings below are from
+the scanner at `6006eaa`.
 
-**The core write function called directly from a route** separates shape from reach:
+**The core write function called directly from a route:**
 
 | Package | Affected pin | Patched pin | Reading |
 |---|---|---|---|
 | `merge` (CVE-2020-28499) | 2.1.0: raw | 2.1.1: guarded, all three names blocked | Correct at both pins |
-| `merge-deep` (CVE-2021-26707) | 3.0.2: Review, `__proto__` blocked and `constructor` open | 3.0.3: Review | The key tests are one-line helpers the scanner does not read |
-| `minimist` (CVE-2020-7598) | 1.2.0: no record | 1.2.6: Review | The affected walk is a `forEach` over the parts |
-| `set-in` (CVE-2020-28273) | 2.0.0: no record | 2.0.3: no record | The walk recurses on the next object with the next index |
-| `object-path` (CVE-2021-23434) | 0.11.5: no record | 0.11.6: no record | The walk recurses with the rest of the path |
+| `merge-deep` (CVE-2021-26707) | 3.0.2: raw, `__proto__` blocked and `constructor` open | 3.0.3: guarded | Correct at both pins. 3.0.2 is the bypass sibling |
+| `minimist` (CVE-2020-7598) | 1.2.0: raw | 1.2.6: Review | Correct at the affected pin. The fix tests the key in a helper that is not a plain key test |
+| `set-in` (CVE-2020-28273) | 2.0.0: raw | 2.0.4 and 2.0.5: Review | Correct at the affected pin. See the note on 2.0.3 below |
+| `object-path` (CVE-2021-23434) | 0.11.5: Review | 0.11.6: Review | Recorded, not separated. The parts are untyped and the guard is not credited |
 | `dset` (CVE-2024-21529) | 3.1.3: no record | 3.1.4: no record | Step and write are one chained assignment in a `while` loop |
 | `putil-merge` (CVE-2021-25953) | 3.6.6: no record | 3.8.0: no record | Keys held in a local, writes through `Object.defineProperty`, slot local replaced on a branch |
 
-`lodash`, `yargs-parser`, `jsonpath` and `counterpart` were scanned only through their public
-API. Two readings confirm rules from this contract on real code. `dset` 3.1.3 already compares
-each part with the three names, and its fix is a string conversion of the part: the nested-array
-bypass. `merge-deep` 3.0.2 skips `__proto__` only: the bypass sibling.
+**Through the public API,** with the library copied into an Express application: `set-in` is
+detected at every version, with the same readings as above. The other ten packages have no
+record. Each library scanned alone has no application entry and no record.
 
-**Why the public API is not reached.** The exported function is a wrapper around the core
+**`set-in` 2.0.3.** The parent contract listed 2.0.3 as the fix for CVE-2020-28273 and
+CVE-2022-25354. The scanner records it as raw. Reading the source agrees with the scanner: 2.0.3
+checks the key in the write helper, after the recursive call has already written one level
+down, so the deepest write to the prototype happens before the outer level throws. A
+transcription of that logic, run in Node, pollutes `Object.prototype` for
+`["__proto__", "polluted"]` and for `["constructor", "prototype", "polluted"]`. Version 2.0.4
+moves the check before the recursion and 2.0.5 replaces `includes` with comparisons. The
+package itself was not executed, so this rests on the transcription. Version 2.0.2 was never
+published. 2.0.1 is also recorded as raw.
+
+Two more readings confirm rules from this contract on real code. `dset` 3.1.3 already compares
+each part with the three names, and its fix is a string conversion of the part: the nested-array
+bypass. `merge-deep` 3.0.2 skips `__proto__` only.
+
+**Why most public APIs are not reached.** The exported function is a wrapper around the core
 function, and request data crosses forms the flow does not follow: `arguments[i]` in place of
 named parameters (`merge`, `merge-deep`), a function nested in the exported function
 (`minimist`), `module.exports = fn` with methods attached to it (`merge`), and a factory that
-returns the API object (`object-path`). The probes and fixtures of this contract were written
-from the paper's simplified listings and are easier than the published code. The paper's own
-motivating example, `putil-merge`, is not detected in its published form.
+returns the API object (`object-path`). The paper's own motivating example, `putil-merge`, is
+not detected in its published form. Reaching a core function through a library's public API
+belongs to phases 7 and 8.
 
-Three recognisers were started for the forms above and are not in this change: a `forEach`
-walk, a recursive walk, and key tests written as one-line helpers. Their failing tests are
-parked in the run-log folder. Reaching a core function through a library's public API belongs
-to phases 7 and 8.
+The architecture baseline and the six sample reports are unchanged by the three added forms. A
+one-line type validator on a key is now read as blocking no name, where it was unknown before.
+
+## AC8 live judgment
+
+On the owner's word, three judged scans on 2026-11-21 with `--judge openai --judge-model
+gpt-6-luna`, the default limit, and the scanner at `6006eaa`. Request traces were saved, and
+each was replayed offline against a fresh analysis of the same source.
+
+| Target | Pin | Requests | Input tokens | Failures | Traces replayed exactly | Pollution outcome |
+|---|---|---|---|---|---|---|
+| Node.js Goof | `add14ba59e98` | 12 | 63,118 | 0 | 12 of 12 | `GOOF-PP-01`, `routes/index.js:360`: Confirmed |
+| Vulnerable TypeScript app | `7f8b240a2f02` | 8 | 30,454 | 0 | 8 of 8 | `TS-PP-01`, `src/server.ts:246`: Confirmed |
+| vuln-nextjs pollution fixtures | lab `8d26f52` | 19 | 48,693 | 0 | 19 of 19 | 14 Confirmed, 2 Protected, 3 Review |
+
+Planned 39 requests, sent 39. Both sample checkouts were clean before and after.
+
+- **Both keyed positives are Confirmed.** Each is a complete raw path to Lodash 4.17.4 `merge`,
+  answered `vulnerable`, `not_applicable`, `incomplete`.
+- **No control is a finding.** The pollution controls have no record. Against every answer key,
+  Goof has 8 of 8 expected positives found and the TypeScript app 7 of 7, with no keyed safe
+  case and no unkeyed record reported as a finding.
+- **The vuln-nextjs report is byte-identical** to the run of 2026-11-20 at `d68fec6`: 14 of 15
+  exploitable sources with a record Confirmed and 1 Review, 2 of 4 safe sources Protected and 2
+  Review, no false positive and no false Protected.
+- **One difference from the previous Goof report.** The two escaped outputs in `views/edit.ejs`
+  are keyed safe and were Protected in the report of 2026-11-19. In this run the model answered
+  that they were exposed, against the recorded encoding, and they are Review. This work did not
+  change those records: the offline Goof report is byte-identical before and after it.
+
+All three reports are published under `docs/samples/`.
 
 ## Isolation and gate
 

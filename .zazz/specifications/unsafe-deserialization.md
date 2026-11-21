@@ -125,9 +125,9 @@ Read these before step 1 of §9. Nothing else is required.
 | `scan/internal/analysis/deserialization.go`, `analysis.go`, `interpreter_redirect.go`, tests | New, modified | `DeserializationFacts`, the `Deserialization` field on `CandidateUse`, `CodePaths` |
 | `scan/internal/analysispacks/deserialization.go`, `upload.go`, `families.go`, `code_redirect.go`, `select.go`, `descriptors.go`, tests | New, modified | Contracts, questions, protocol, family registration, descriptors, input component identities |
 | `scan/internal/judge/deserialization.go`, `policy.go`, `injection.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, tests | New, modified | Policy, question wiring, facts on the wire |
-| `scan/internal/langpy/deserialization.go`, `package_versions.go`, `calls.go`, `code_redirect.go`, tests, `testdata/deserialization/` | New, modified | Python operations, loader facts, transfers, exact-pin version reader (D-17) |
+| `scan/internal/langpy/deserialization.go`, `package_versions.go`, `calls.go`, `code_redirect.go`, `modules.go`, tests, `testdata/deserialization/` | New, modified | Python operations, loader facts, transfers, exact-pin version reader (D-17) |
 | `scan/internal/langjs/deserialization.go`, `code_redirect.go`, `flow.go`, tests, `testdata/deserialization/` | New, modified | JS and TS operations, schema and version facts, claim assembly |
-| `scan/internal/langphp/deserialization.go`, `calls.go`, tests, `testdata/deserialization/` | New, modified | `unserialize` options, `Yaml::parse` flags, transfers, magic-method evidence |
+| `scan/internal/langphp/deserialization.go`, `deserialization_binding.go`, `deserialization_options.go`, `deserialization_guards.go`, `calls.go`, `modules.go`, tests, `testdata/deserialization/` | New, modified | `unserialize` options, `Yaml::parse` flags, transfers, magic-method evidence |
 | `scan/internal/report/code_redirect.go`, `findings.go`, `finding_types.go`, `sarif.go`, `guidance.go`, `p5_explain.go`, tests | Modified | Finding, label, SARIF rule for CWE-502, guidance |
 | `scan/internal/langjs/nextjs_lab_test.go`, `.zazz/evaluation/recall-gap-inventory/check.py` | Modified | Map `CWE-502` to `deserialization_candidate` |
 | `scan/cli/main.go`, `scan/cli/architecture_baseline_test.go`, `scan/cli/testdata/architecture-baseline.json` | Modified | Family name in the flag help; baseline additions only |
@@ -930,3 +930,56 @@ Corrections to the earlier text:
   live evidence (D-22).
 
 No code changed.
+
+### 2026-11-21 — Scope recorded during implementation
+
+Source: the implementation commits through `d85d942`. §4 gained `langpy/code_redirect.go` (the
+guard collection the family shares with the code family, extracted without changing it),
+`langjs/flow.go` (the dispatch call), `scan/cli/architecture_baseline_test.go`, the row for this
+contract and its index, and the row for companion user and project documentation. No acceptance
+criterion changed.
+
+Commits `619cea6` and `0220076` then changed the judged-scan wording in the README, the user
+guides, `.env.sample` and the `--analyze` and `--judge` flag help. That work is not part of this
+contract and has no §4 row. Whether it merges with this pull request or separately is the owner's
+decision at review.
+
+### 2026-11-21 — Pull request review fixes
+
+Source: the two-axis `pr-review` pass on pull request 38, requested by the owner. Each change has
+a test named below. No acceptance case changed outcome, and the pinned sample reports are
+byte-identical before and after.
+
+- **D-4, immutable options (PHP).** A second write through `foreach`, a reference, destructuring,
+  an output argument, `extract` or `global` left the variable counted as written once, so
+  `allowed_classes => false` from its initializer suppressed the record. The initializer now
+  counts only when the variable is assigned by one statement that precedes the call and is used
+  nowhere else in its variable scope. `TestDeserializationPHPBinding`.
+- **D-7, presence tests (PHP).** A condition that only tests presence, emptiness, type or the
+  request method is no longer recorded as a guard, as in Python and JS/TS, so
+  `if (isset($_COOKIE['p'])) unserialize($_COOKIE['p'])` has a raw path and can be Confirmed. This
+  narrows D-7's "every other guard" row for PHP. A rejecting branch now counts when its last
+  statement exits, returns or throws, and a guard on a value survives decoding that value into
+  another variable. `TestDeserializationPHPGuards`.
+- **Arguments (Python, JS/TS).** A comment inside the argument list was read as the operand, the
+  loader or the options. Positions now skip comments. `TestDeserializationPythonOptions`,
+  `TestDeserializationJSOptions`.
+- **D-5, opaque options (JS/TS).** `safeLoad` with an options value that is not an object literal
+  is `unresolved` with `loader_unresolved`, as `load` already was.
+- **D-2, contract text.** The `js-yaml-v1` text states the 4.0.0 boundary, not "version 3" and
+  "version 4".
+- **Compute once (PHP).** Function declarations and `use function` imports are indexed once per
+  source set, and the magic-method class evidence of D-11 is built once. A 400-file project that
+  took 29 s now takes under 1 s with the same records. `langphp/deserialization.go` is split by
+  concern into binding, options and guards files.
+- **Python version reader.** Each directory's manifests are read once per source set.
+- **Report.** The finding type has an interpretation text, and the catalog test covers the
+  operand-family types.
+- **Evidence.** `PY-13` uses the positional form its row states; the keyword form with `safe=True`
+  is `PY-I3`. New table tests pin the D-3 loader rows and the 5.0, 5.1 and 6.0 boundaries, the D-5
+  schema rows and the 4.0.0 boundary, the D-7 control rows, both remaining D-15 PHP binding forms,
+  cross-file function bindings, and the D-11 method list, order and cap.
+
+Not changed: a comparator alone (`hash_equals`, `hmac.compare_digest`, `crypto.timingSafeEqual`)
+over an unkeyed hash is still `integrity_check` by D-7's first-match rule; the model judges its
+adequacy. The D-21 lab scenarios and AC9 remain open.

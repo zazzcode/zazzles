@@ -38,7 +38,7 @@ The adapter uses supported HTTP, Next.js server, GraphQL and unary gRPC input pa
 | Global `unserialize` | Deserialized objects can instantiate data-selected classes. A literal `['allowed_classes' => false]` option suppresses the record. An explicit class list is recorded as a restriction. The scanner cites up to 20 in-project class declarations with supported magic methods or `Serializable` implementations. |
 | Symfony `Yaml::parse` | `PARSE_OBJECT` enables object injection. A verified flag set without it emits no record. Unresolved flags stay Review. |
 | Transfers | Base64, URL, hex and gzip-family decoding, `stripslashes`, `trim` and string casts retain origin. |
-| Controls | A branch can cite a keyed comparison, HMAC or Sodium verification. MD5, SHA-1, `hash` and CRC checks supply unkeyed-hash evidence. |
+| Controls | A branch can cite a keyed comparison, HMAC or Sodium verification. MD5, SHA-1, `hash` and CRC checks supply unkeyed-hash evidence. A rejecting branch counts when its last statement exits, returns or throws. A test that only checks presence, emptiness, type or the request method (`isset`, `empty`, `is_string`, a comparison with `null`) is not a control, so the path stays raw. |
 
 ## Outcomes and limits
 
@@ -53,5 +53,16 @@ file-only reads, unmodeled sockets and data-only parsing are excluded. Version r
 package versions provide no exact version facts. Browser operations, dynamic callable dispatch,
 phar metadata, unspecified libraries and gadget-chain analysis are out of scope. The PHP adapter
 uses server-mapped entries. Symfony controller dispatch and service wiring are separate coverage.
+
+Further limits of the supported subset:
+
+- Python: an `Unpickler` subclass with more than one base class, or one that defines its own
+  `load`, emits no record. A loader imported from a PyYAML submodule (`from yaml.loader import
+  SafeLoader`) is an unresolved loader and stays Review.
+- JavaScript and TypeScript: an options value that is not an object literal can carry a schema,
+  so `load` and `safeLoad` with such a value stay Review.
+- PHP: an options variable suppresses the record only when it is assigned once, by a statement
+  that precedes the call, and is used nowhere else. Any other use leaves the options unresolved
+  and the record is emitted.
 
 See [coverage and remediation](../detection-capabilities/unsafe-deserialization.md).

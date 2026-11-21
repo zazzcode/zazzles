@@ -1,7 +1,7 @@
 # Unsafe deserialization analyzer verification
 
-The scanner implementation was verified at `47513617e694c36e41144ecfc0a324daa997effe`.
-The pre-implementation baseline was `04399c6`. The [contract](../specifications/unsafe-deserialization.md)
+The scanner implementation was verified at `47513617e694c36e41144ecfc0a324daa997effe` and, after
+the pull request review fixes, at `9e252c2`. The pre-implementation baseline was `04399c6`. The [contract](../specifications/unsafe-deserialization.md)
 defines the acceptance cases.
 
 | Criterion | Evidence |
@@ -16,6 +16,22 @@ defines the acceptance cases.
 | AC8 Isolation | Repository build, vet, full Go tests and race tests pass. The architecture golden adds four fixture roots. The recall comparison preserves the outcomes of 186 other rows at the catalog pins. Both CLI family filters accept `deserialization` with a judge and reject an unknown name. |
 | AC9 Live evaluation | Pending the AC7 lab scenario gate. Zero paid requests were made. |
 | AC10 Documentation | Capability, rules, CLI, language and results guides list support and limits. A fresh verifier independently passed the available scanner checks. |
+
+## Review fixes
+
+The two-axis review of the pull request led to the fixes listed in the contract's
+[change log](../specifications/unsafe-deserialization.md#14-implementation-and-review-change-log).
+At `9e252c2`:
+
+- `gofmt -l cmd scan`, `go build ./...`, `go vet ./...`, `go test ./... -count=1` and
+  `go test -race ./... -count=1` pass.
+- `architecture-baseline.json` changes only under the four deserialization fixture roots. Every
+  entry present at the `stage` base `e608c86` is unchanged.
+- Offline reports of VulnPy, Vulnerable Flask App, the Vulnerable TypeScript App, Node.js Goof, DVWA
+  and Juice Shop, each clean at its pin, are identical record for record to the reports saved
+  before the fixes. The sample results below therefore stand.
+- A generated 400-file PHP project that took 29.3 s scans in 0.9 s, and a 2,000-class project with
+  300 entry files went from 8.5 s to 0.2 s, with the same records.
 
 ## Pinned offline sample results
 
@@ -46,7 +62,7 @@ checks and its draft PR remain open.
 | --- | ---: | ---: |
 | VulnPy | 120 | 0 |
 | Next.js lab scenarios | Pending | 0 |
-| Python fixture app | 31 | 0 |
+| Python fixture app | 32 | 0 |
 | JavaScript fixture app | 13 | 0 |
 | TypeScript fixture app | 13 | 0 |
 | PHP fixture app | 15 | 0 |

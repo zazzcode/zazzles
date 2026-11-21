@@ -59,6 +59,9 @@ Each shape is read inside one function body, with one forwarding helper for a re
 | Walk | An index or `for…of` loop, a `while` loop that takes parts with `shift()` or `pop()` while parts remain, or `parts.reduce((cursor, part) => cursor[part], target)` |
 | Final write | An indexed assignment through the walk result, keyed by the last part |
 
+The shapes are read the same way in TypeScript: typed callback parameters, a cast around the key
+enumerator and a cast or non-null assertion on a path part do not change the match.
+
 A test on another parameter that encloses the recursion, such as `options.deep`, is recorded as
 branch evidence. The caller sets that option and it places no restriction on the key. A walk
 that only reads or returns the value has no record.

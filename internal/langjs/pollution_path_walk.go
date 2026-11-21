@@ -264,8 +264,9 @@ func pollutionLastPart(m *sourceModule, index *sitter.Node, parts string, consum
 	if index == nil {
 		return false
 	}
-	if index.Kind() == "identifier" {
-		index = localInitializer(m, index, index.Utf8Text(m.src))
+	// A TypeScript cast or non-null assertion does not change which part it is.
+	if index = unwrapTS(index); index.Kind() == "identifier" {
+		index = unwrapTS(localInitializer(m, index, index.Utf8Text(m.src)))
 	}
 	text := compactPollutionText(index, m.src)
 	return text == parts+"["+parts+".length-1]" || text == parts+".pop()" ||

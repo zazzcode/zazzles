@@ -387,3 +387,44 @@ func TestPollutionLibrarySourceInRepository(t *testing.T) {
 		})
 	}
 }
+
+// TestPollutionTypeScriptShapes repeats shapes in TypeScript, where callback
+// parameters are wrapped nodes and casts surround the enumerator and the last
+// path part.
+func TestPollutionTypeScriptShapes(t *testing.T) {
+	for _, tt := range []struct{ name, helper, call, operation, operand string }{
+		{"typed forEach callback", "function write(target: Record<string, any>, source: Record<string, any>) {\nObject.keys(source).forEach((key: string) => {\nif (source[key] && typeof source[key] === 'object') write(target[key], source[key]); else target[key] = source[key];\n});\nreturn target;\n}",
+			"write({}, req.body.settings)", analysis.PollutionMerge, "source"},
+		{"untyped callback in a TypeScript file", "function write(target: Record<string, any>, source: Record<string, any>) {\nObject.keys(source).forEach((key) => {\nif (source[key] && typeof source[key] === 'object') write(target[key], source[key]); else target[key] = source[key];\n});\n}",
+			"write({}, req.body.settings)", analysis.PollutionMerge, "source"},
+		{"cast around the key enumerator", "function write(target: Record<string, any>, source: Record<string, any>) {\n(Reflect.ownKeys(source) as string[]).forEach((key) => {\nif (source[key] && typeof source[key] === 'object') write(target[key], source[key]); else target[key] = source[key];\n});\n}",
+			"write({}, req.body.settings)", analysis.PollutionMerge, "source"},
+		{"typed entries callback", "function write(target: Record<string, any>, source: Record<string, any>) {\nObject.entries(source).forEach(([key, child]: [string, any]) => {\nif (child && typeof child === 'object') write(target[key], child); else target[key] = child;\n});\n}",
+			"write({}, req.body.settings)", analysis.PollutionMerge, "source"},
+		{"typed reduce over the keys", "function write(target: Record<string, any>, source: Record<string, any>) {\nreturn Object.keys(source).reduce((acc: Record<string, any>, key: string) => {\nif (source[key] && typeof source[key] === 'object') write(acc[key], source[key]); else acc[key] = source[key];\nreturn acc;\n}, target);\n}",
+			"write({}, req.body.settings)", analysis.PollutionMerge, "source"},
+		{"cast on the last array part", "function write(target: Record<string, any>, path: unknown[], value: unknown) {\nlet cursor = target;\nfor (let i = 0; i < path.length - 1; i++) {\nconst part = path[i];\nif (typeof part !== 'string') return;\ncursor = cursor[part];\n}\ncursor[path[path.length - 1] as string] = value;\n}",
+			"write({}, req.body.path, req.body.value)", analysis.PollutionWalk, "path"},
+		{"cast on the popped last part", "function write(target: Record<string, any>, path: string, value: unknown) {\nconst parts = path.split('.');\nconst last = parts.pop() as string;\nconst holder = parts.reduce((cursor: Record<string, any>, part: string) => cursor[part], target);\nholder[last] = value;\n}",
+			"write({}, req.body.path, req.body.value)", analysis.PollutionWalk, "path"},
+		{"non-null assertion on the shifted part", "function write(target: Record<string, any>, path: string, value: unknown) {\nconst parts = path.split('.');\nlet cursor = target;\nwhile (parts.length > 1) {\nconst part = parts.shift()!;\ncursor = cursor[part];\n}\ncursor[parts[0]] = value;\n}",
+			"write({}, req.body.path, req.body.value)", analysis.PollutionWalk, "path"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "server.ts", "import express from 'express';\nconst app = express();\napp.use(express.json());\n"+tt.helper+
+				"\napp.post('/write', (req, res) => { "+tt.call+"; res.end(); });\n")
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			uses := usesOf(report, analysis.PollutionKind, "server.ts")
+			if len(uses) != 1 {
+				t.Fatalf("pollution candidates = %d, want 1", len(uses))
+			}
+			if p := uses[0].Pollution; p.Operation != tt.operation || p.KeyOperand != tt.operand {
+				t.Fatalf("unexpected facts: %+v", p)
+			}
+		})
+	}
+}

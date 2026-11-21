@@ -343,3 +343,12 @@ source, library source kept in the repository, `vendor/` and `node_modules/`, in
 dependencies and a library repository scanned alone. A test pins the in-repository cases. ESM
 default exports were not followed and now are (D-10). Scanning a package's own exports stays
 with phases 7 and 8.
+
+### 2026-11-20 — TypeScript spellings and the vuln-nextjs fixtures
+
+The owner asked for more prototype pollution examples in the vuln-nextjs lab. Writing them in
+TypeScript showed three spellings the recognisers missed: wrapped callback parameters, a cast
+around the key enumerator, and a cast on the last path part. All three are read now and pinned
+by `TestPollutionTypeScriptShapes`. The lab gained 21 fixtures, including Lodash `set`,
+`defaultsDeep` and `zipObjectDeep` by version and two non-Lodash advisory libraries recorded as
+known gaps.

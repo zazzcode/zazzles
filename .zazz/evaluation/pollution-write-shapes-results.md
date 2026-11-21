@@ -174,6 +174,19 @@ no record because the walker skips that directory, and an import by package name
 contract's D-3 table is present on this machine, and none was downloaded, so those packages
 were not scanned.
 
+## TypeScript
+
+Scanning new TypeScript fixtures in the vuln-nextjs lab showed that a key loop written with
+`forEach`, `map` or `reduce` had no record in a `.ts` file, because a TypeScript callback
+parameter is a wrapper node. That affected the stage 1 `forEach` merge too. A cast around the
+key enumerator and a cast on the last path part also broke the match.
+`TestPollutionTypeScriptShapes` pins eight TypeScript spellings; seven failed before the change.
+The architecture baseline and the six sample reports are unchanged by it.
+
+The lab now holds 25 pollution fixtures in seven projects. Its ten offline scanner tests pass
+with the final scanner, and each fixture's label was confirmed by running it in Node with its
+payload. [Lab guide](https://github.com/zazzcode/vuln-nextjs/blob/main/docs/vulnerabilities/prototype-pollution.md).
+
 ## Isolation and gate
 
 - The architecture baseline keeps all 48 earlier rows unchanged, including the two stage 1

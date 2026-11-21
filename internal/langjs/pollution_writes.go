@@ -256,7 +256,7 @@ func pollutionKeyLoop(m *sourceModule, n *sitter.Node) pollutionLoop {
 			return pollutionLoop{body: n.ChildByFieldName("body"), source: rhs.Utf8Text(src), key: lhs.Utf8Text(src)}
 		}
 		if op.Kind() == "of" {
-			return pollutionObjectKeyLoop(m, rhs, lhs, n.ChildByFieldName("body"))
+			return pollutionObjectKeyLoop(m, unwrapTS(rhs), lhs, n.ChildByFieldName("body"))
 		}
 	}
 	if n.Kind() != "call_expression" {
@@ -271,26 +271,22 @@ func pollutionKeyLoop(m *sourceModule, n *sitter.Node) pollutionLoop {
 	if prop == nil || !isFunction(callback) {
 		return pollutionLoop{}
 	}
-	list := callback.ChildByFieldName("parameters")
+	keys, list := unwrapTS(fn.ChildByFieldName("object")), pollutionCallbackParameters(callback)
 	switch prop.Utf8Text(src) {
 	case "forEach", "map":
 		// The callback receives each key; a map used for its effects is a forEach.
-		if args.NamedChildCount() != 1 {
+		if args.NamedChildCount() != 1 || len(list) != 1 {
 			return pollutionLoop{}
 		}
-		parameter := callback.ChildByFieldName("parameter")
-		if list != nil && list.NamedChildCount() == 1 {
-			parameter = list.NamedChild(0)
-		}
-		return pollutionObjectKeyLoop(m, fn.ChildByFieldName("object"), parameter, callback.ChildByFieldName("body"))
+		return pollutionObjectKeyLoop(m, keys, list[0], callback.ChildByFieldName("body"))
 	case "reduce":
 		// reduce((accumulator, key) => { …; return accumulator }, start)
 		start := pollutionIdentifier(pollutionArg(args, 1), src)
-		if args.NamedChildCount() != 2 || list == nil || list.NamedChildCount() != 2 || start == "" {
+		if args.NamedChildCount() != 2 || len(list) != 2 || start == "" {
 			return pollutionLoop{}
 		}
-		accumulator := pollutionIdentifier(list.NamedChild(0), src)
-		loop := pollutionObjectKeyLoop(m, fn.ChildByFieldName("object"), list.NamedChild(1), callback.ChildByFieldName("body"))
+		accumulator := pollutionIdentifier(list[0], src)
+		loop := pollutionObjectKeyLoop(m, keys, list[1], callback.ChildByFieldName("body"))
 		if loop.body == nil || accumulator == "" || !pollutionReturnsOnly(loop.body, accumulator, src) {
 			return pollutionLoop{}
 		}
@@ -298,6 +294,27 @@ func pollutionKeyLoop(m *sourceModule, n *sitter.Node) pollutionLoop {
 		return loop
 	}
 	return pollutionLoop{}
+}
+
+// pollutionCallbackParameters lists the binding patterns of a callback. A
+// TypeScript parameter is a wrapper around its pattern, typed or not.
+func pollutionCallbackParameters(callback *sitter.Node) []*sitter.Node {
+	if single := callback.ChildByFieldName("parameter"); single != nil {
+		return []*sitter.Node{single}
+	}
+	list := callback.ChildByFieldName("parameters")
+	var out []*sitter.Node
+	for i := uint(0); list != nil && i < list.NamedChildCount(); i++ {
+		p := list.NamedChild(i)
+		if p.Kind() == "required_parameter" || p.Kind() == "optional_parameter" {
+			p = p.ChildByFieldName("pattern")
+		}
+		if p == nil {
+			return nil
+		}
+		out = append(out, p)
+	}
+	return out
 }
 
 // pollutionReturnsOnly reports a block whose every return hands back name.

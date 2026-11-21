@@ -1,6 +1,6 @@
 # Server-side request forgery (SSRF)
 
-[Analysis index](README.md) · [Result interpretation](../interpreting-results.md)
+[Analysis index](README.md) · [Result interpretation](../interpreting-results.md) · [Coverage and known gaps](../detection-capabilities/server-side-request-forgery.md)
 
 An SSRF claim exists when a request value reaches the **destination operand** of a verified outbound
 HTTP client. Request data sent as a body, header or query parameter to a fixed destination is not
@@ -12,6 +12,7 @@ destination control.
 |---|---|---|
 | `fetch-url-v1` | global `fetch`, not imported, declared, reassigned or shadowed in scope | argument 0 |
 | `axios-url-v1` | `axios` (or `axios.default`) imported or required from `axios` | argument 0 of `axios(url)` and `get/delete/head/options/post/put/patch`; a config object stays an observation |
+| `node-http-url-v1` | verified Node `http` or `https` `get` and `request` bindings | first URL argument or recognized destination fields in a literal options object |
 | `python-http-url-v1` | existing `requests`, `httpx` or `urllib.request.urlopen` binding | `url` argument or keyword (`requests.request` argument 1) |
 
 ## Destination origin

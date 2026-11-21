@@ -82,6 +82,8 @@ func intersectPollutionGuards(a, b pollutionGuard) pollutionGuard {
 		}
 	}
 	switch {
+	case a.kind == "null_prototype_root" && b.kind == "null_prototype_root":
+		guard.kind = "null_prototype_root"
 	case a.kind == "own_property" && b.kind == "own_property":
 		guard.kind = "own_property"
 	case len(guard.blocked) > 0:
@@ -177,9 +179,11 @@ func unitePollutionGuards(a, b pollutionGuard) pollutionGuard {
 
 // pollutionPathNames lists the bindings that hold the whole path of a walk: the
 // array of parts and the string it was split from.
-func pollutionPathNames(parts string, w pollutionWrite, params []boundParam, keys *pollutionLoop) []string {
+func pollutionPathNames(m *sourceModule, parts string, w pollutionWrite, params []boundParam, keys *pollutionLoop) []string {
 	names := []string{parts}
-	if w.operand == "source_keys" && keys != nil {
+	if w.pathOrigin != nil {
+		names = append(names, compactPollutionText(w.pathOrigin, m.src))
+	} else if w.operand == "source_keys" && keys != nil {
 		names = append(names, keys.key)
 	} else if w.source >= 0 && w.source < len(params) && params[w.source].name != parts {
 		names = append(names, params[w.source].name)
@@ -249,7 +253,7 @@ func pollutionContainsTests(m *sourceModule, n *sitter.Node, name string, passes
 		}
 		prop := fn.ChildByFieldName("property")
 		literal, ok := stringLiteral(args.NamedChild(0), m.src)
-		if prop == nil || prop.Utf8Text(m.src) != method || !ok || pollutionIdentifier(fn.ChildByFieldName("object"), m.src) != name || !containsString(allPrototypeKeys(), literal) {
+		if prop == nil || prop.Utf8Text(m.src) != method || !ok || compactPollutionText(pollutionUnwrap(fn.ChildByFieldName("object")), m.src) != name || !containsString(allPrototypeKeys(), literal) {
 			return ""
 		}
 		return literal
@@ -364,6 +368,9 @@ func pollutionKeyPredicate(m *sourceModule, n *sitter.Node, key, target string, 
 		}
 	}
 	if n.Kind() == "call_expression" {
+		if blocked, ok := pollutionMembershipGuard(m, n, key, passes, stringKey); ok {
+			return blocked, false, true
+		}
 		if own, ok := pollutionOwnMethod(m, n, key, target); ok && (passes || !own) {
 			return nil, own, true
 		}

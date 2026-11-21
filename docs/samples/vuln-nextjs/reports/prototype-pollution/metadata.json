@@ -23,7 +23,7 @@
   "exact_replay": "19 of 19 saved traces replay with the same request digest and outcome",
   "runtime_confirmation": "none in this report; the lab confirms each fixture label by running it in Node",
   "target_status_before_and_after": "clean (lab HEAD at pin; fixtures exported to a folder outside every checkout)",
-  "results": "../../../.zazz/evaluation/pollution-write-shapes-results.md",
+  "results": "../../../../../.zazz/evaluation/pollution-write-shapes-results.md",
   "upstream": "https://github.com/zazzcode/vuln-nextjs",
   "target_export": "node scripts/export-prototype-pollution-fixtures.mjs --combined",
   "ground_truth": {

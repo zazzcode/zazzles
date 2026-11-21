@@ -16,63 +16,46 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
 | [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
 | [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
-| [vuln-nextjs (Pages Router lab)](vuln-nextjs/README.md) | [findings.html](vuln-nextjs/findings.html) | [findings.json](vuln-nextjs/findings.json) | [findings.sarif](vuln-nextjs/findings.sarif) |
-| [vuln-nextjs prototype pollution fixtures](vuln-nextjs-prototype-pollution/README.md) | [findings.html](vuln-nextjs-prototype-pollution/findings.html) | [findings.json](vuln-nextjs-prototype-pollution/findings.json) | [findings.sarif](vuln-nextjs-prototype-pollution/findings.sarif) |
+| [vuln-nextjs JavaScript and TypeScript lab](vuln-nextjs/README.md) | [Full app](vuln-nextjs/findings.html) · [Prototype pollution fixtures](vuln-nextjs/reports/prototype-pollution/findings.html) | [Full app](vuln-nextjs/findings.json) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.json) | [Full app](vuln-nextjs/findings.sarif) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.sarif) |
 | [DVWA (PHP)](dvwa/README.md) | [findings.html](dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
 
-Node.js Goof, the Vulnerable TypeScript app and the vuln-nextjs prototype pollution fixtures were
-judged on 2026-11-21 with the prototype pollution analyzer: 39 requests, no provider failure,
-and every saved trace replays exactly. Both applications' Lodash merges are Confirmed (CWE-1321).
-The fixture sample has 14 Confirmed, 2 Protected and 3 Review prototype-write records, with no
-false positive against the lab's ground truth. Each README lists its counts.
+Each sample represents one application. An application’s notes list its published scans with
+the target revision, scanner revision, assessment scope and observed outcomes. Use those notes when comparing a report with its
+[source-reviewed expectations](../../.zazz/project/vulnerable-sample-apps.md).
+The [reference policy](reference-policy.md) explains how the project evaluates keyed cases and
+keeps source baselines reproducible. Dated cross-sample measures live in the
+[evidence-resolution evaluation](../../.zazz/evaluation/model-resolution-results.md#accuracy-against-the-answer-keys)
+and the [prototype pollution evaluation](../../.zazz/evaluation/pollution-write-shapes-results.md#ac8-live-judgment).
+The [Semgrep comparison](../../.zazz/evaluation/semgrep-results.md) and
+[Goof Bearer baseline](nodejs-goof/bearer/20261101-goof-baseline-02/SUMMARY.md) record external baselines.
 
-The preceding 2026-11-19 evaluation rescanned every sample with model-assisted evidence resolution
-([results](../../.zazz/evaluation/model-resolution-results.md)), with zero provider failures.
-Undecidable validation records and records whose outcome a scanner fact already fixes are no
-longer sent (Juice Shop went from 153 requests to 28 across this and the previous accuracy
-contract). Against the answer keys, 88 of 91 expected positives are found, 3 are Review and none
-is missed. No keyed safe case is a finding, and DVWA has one model-resolved finding,
-source-reviewed as true. Each sample's **Current report** section has its counts. The paragraphs below describe the earlier rebuilds.
-
-The Next.js samples published on 2026-11-16 use fresh full `gpt-6-luna` scans, including
-standalone input validation: 149 paid assessments and exact replays, zero failures or mismatches.
-OopsSec Store displays 15 Confirmed, 99 Review and 0 Protected (two grouped observations remain in JSON);
-the vuln-nextjs lab has 10 Confirmed, 33 Review and 7 Protected. Practice observations are separate.
-The lab report is pinned to `ea10efb`; its living source may contain newer scenarios.
-
-The three Node.js reports (Juice Shop, Node.js Goof, Vulnerable TypeScript app) were rebuilt on
-2026-11-15 with OpenAI Luna Decisions: every analyzer, including Express middleware-chain stages,
-URL and upload inputs, broader file/archive operations, and Node `http`/`https` SSRF. On that rebuild,
-every source-reviewed required positive for those analyzers was confirmed (see the
-[expected-vs-actual tables](../../.zazz/project/vulnerable-sample-apps.md)); defects outside those
-analyzers remain not covered. All four Python samples were fully reassessed on 2026-11-15 with shared Python input facts,
-including every standalone input-validation context: 3,354 completed assessments and exact replays.
-The complete VulnPy JSON/SARIF are losslessly gzip-compressed; its HTML contains all 3,260 records.
-Existing Node/TypeScript report files were not changed by this Python update. Unsupported records
-remain explicitly bounded by the documented coverage limits. Path traversal and Zip Slip results appear inside each report. Each sample's README has a
-**Current report** section with its counts and notable results.
-
-The reports include XSS discovery and the **Hide protected results** remediation
-filter. Server/API routes and browser/client-side sources have separate sections and headings.
-[Source-reviewed answer keys and remediation-copy policy](reference-policy.md) explain why specific
-baseline flows are vulnerable, protected or unresolved, independently of detector output. Goof's
-[Bearer baseline](nodejs-goof/bearer/20261101-goof-baseline-02/SUMMARY.md) and
-[five-case Decisions evaluation](nodejs-goof/decisions/20261101-five-case-01/README.md) are saved
-separately from the canonical zazzles results. Semgrep CE comparison runs follow the
-[Semgrep CE cheat sheet](../semgrep-ce-cheat-sheet.md). Normalized Semgrep CE baselines for all three apps are
-under `<app>/semgrep/20261101-baseline-01/` (JSON, SARIF, text), compared in the
-[Semgrep results](../../.zazz/evaluation/semgrep-results.md).
-
-Reports start with the grouped Findings → Review → Protected sort, highest counts first, then route
-path A–Z; blank rows appear last. Click that grouped header or Route signature to change the order.
-Expand a row for evidence and remediation. Type pills open the glossary. HTML is standalone, with
-no external resources or model calls. JSON preserves richer analysis context.
+Open an HTML report and expand an entry to see the finding location, evidence and remediation.
+The **Hide protected results** filter changes the report view. JSON preserves the full evidence.
+[Interpreting results](../interpreting-results.md)
 
 These are evolving examples, not a complete benchmark or independent accuracy claim. Sample READMEs
 record target versions, actual assessment coverage, and current limitations. Inconclusive and
 unassessed records remain visible. The target root is replaced with its public project name; relative
 source locations, hashes, use IDs, and provider judgments are preserved. Source excerpts belong to
 the upstream projects; vulnerable fixture values are training data, not scan provider credentials.
+
+## Verify a sample finding
+
+Use the target revision and scan scope in a sample’s notes. For the TypeScript command finding,
+use a checkout of the sample pinned to `7f8b240a2f02beba099da3632d1ba679ff8bc32f`.
+From the scanner checkout, run this scoped scan after
+[configuring the decision provider](../decision-models.md#credentials-and-local-environment).
+
+```bash
+./bin/scan --analyze --entry src/server.ts --route /api/ping \
+  --only-family command --judge openai --judge-limit 1 \
+  --output-dir "$HOME/zazzles-findings" /path/to/vulnerable-typescript-app
+```
+
+In the HTML report, expand `GET /api/ping` and compare the command call, input path and
+judgment with the saved report. For evidence inspection without paid requests, omit the judge
+flags. [Sample notes](vulnerable-typescript-app/README.md) ·
+[Reference policy](reference-policy.md)
 
 ## Refresh as zazzles improves
 
@@ -83,7 +66,9 @@ go build -o bin/scan ./cmd/scan
 python3 docs/samples/refresh.py --scan ./bin/scan
 ```
 
-Use `--sample ThreatByte` (repeatable) to refresh only selected reports. This updates presentation only, offline. To publish improved analysis, run a fresh target scan into
+Use `--sample ThreatByte` (repeatable) to refresh selected applications. Selecting an application
+refreshes its main report and any scoped reports under `reports/<scope>/`. Add new scoped reports
+to the same application directory with their own metadata and a link from the app’s README. This updates presentation only, offline. To publish improved analysis, run a fresh target scan into
 your external findings directory (`<DEV_ROOT>/zazzcode/zazzles/_test-findings/`), replace the corresponding sample `findings.json` with that
 run's canonical JSON, update its README's target revision/date/assessment coverage, then run the
 refresh command. The script normalizes the public root label and exports matching HTML/SARIF.
@@ -91,7 +76,6 @@ refresh command. The script normalizes the public root label and exports matchin
 Saved model judgments may be carried into a fresh scan only for a use whose whole evidence is
 byte-identical to the judged use. A use whose evidence changed is published as not assessed until it
 is judged again; never copy an old answer onto changed evidence.
-Do not copy old judgments onto changed source evidence or invent missing model assessments.
 Review the diff and preserve upstream attribution before committing the refreshed samples.
 
 Routine scans continue to write outside the worktree. Only these deliberately curated samples are
@@ -108,26 +92,13 @@ The **Publish sample findings** GitHub Actions workflow can instead publish only
 site root (`https://zazzcode.github.io/zazzles/<app>/findings.html`). To use it, a maintainer selects
 **GitHub Actions** under Settings → Pages; the README links must then drop the `docs/samples/` segment.
 
-The [Python evaluation](../../.zazz/evaluation/python-support-results.md) records 22 scoped case
-checks, nine reviewed SQL/XSS discovery cases, 78 live Luna requests and the retained Review boundaries.
-Python NoSQL is out of this corpus; no sample contains a MongoDB driver.
+<a id="vulnpy-coverage-corpus"></a>
 
-The [PHP evaluation](../../.zazz/evaluation/php-support-results.md) records the offline DVWA
-`a1978a2` structural pass and the paid AC14 closeout. The curated
-[DVWA sample](dvwa/README.md) now publishes the 2026-11-20
-[command bypass support](../../.zazz/evaluation/command-bypass-support-results.md) run. All 11
-keyed positives are Confirmed, no protected control is a finding, and all 190 completed
-assessments replayed exactly.
+### Evaluation records
 
-## VulnPy coverage corpus
+- [Python support](../../.zazz/evaluation/python-support-results.md) records offline discovery and live judgment at its sample pins.
+- [VulnPy coverage](../../.zazz/evaluation/vulnpy-detection-guide.md) records generated routes, source-backed expectations and registration controls.
+- [PHP support](../../.zazz/evaluation/php-support-results.md) and [command bypass support](../../.zazz/evaluation/command-bypass-support-results.md) record the DVWA evaluations.
 
-[VulnPy](vulnpy/README.md) adds dynamically generated Python route/trigger coverage and source-backed
-SQL/XSS expectations. All six positive source-location checks and four source-backed
-registration-or-gap controls pass; historical anchors/dispositions remain in the reference corrections. [Living guide](../../.zazz/evaluation/vulnpy-detection-guide.md).
-
-
-For future routine Python comparisons, use `--skip-family input-validation`; the full assessment
-published here includes that family. With the current four-app corpus, that scope uses 496 contexts
-instead of 3,354. Presentation refreshes are offline and need no new model calls.
 For oversized reports, `refresh.py --compress` stores complete JSON/SARIF as gzip; existing gzip
 samples retain that format on subsequent refreshes, including when fresh plain canonical JSON is copied in.

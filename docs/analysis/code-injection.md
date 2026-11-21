@@ -1,9 +1,9 @@
 # Code injection
 
-[Analysis rules](README.md) · [Open redirect](open-redirect.md) · [Next.js](nextjs.md)
+[Analysis rules](README.md) · [Open redirect](open-redirect.md) · [Next.js](nextjs.md) · [Code injection coverage](../detection-capabilities/code-injection.md) · [Template injection coverage](../detection-capabilities/template-injection.md)
 
 The `code` family asks whether request-derived text reaches the code operand of a verified
-interpreter API. It uses `code_execution_candidate`, protocol `code-components-v2`, and CWE-94/95.
+interpreter API. It uses `code_execution_candidate` and protocol `code-components-v2`. Reports map this claim to CWE-95.
 Server-side template injection (CWE-1336) is a second kind in the same family, described below.
 Browser eval is a code-injection claim with browser execution context; it does not produce a duplicate
 XSS claim.
@@ -63,8 +63,8 @@ environment object is not yet recognised.
 ## Bounds
 
 This is bounded source analysis, without runtime execution. Arbitrary dynamic aliases, monkey
-patches, sandbox object factories and unmodeled control flow remain unresolved. Template injection,
-deserialization, module loading and WebAssembly are separate concerns. Server-to-client props are
+patches, sandbox object factories and unmodeled control flow remain unresolved. Deserialization,
+module loading and WebAssembly are outside these interpreter claims. Server-to-client props are
 followed one imported component hop; deeper component chains and state transitions remain bounded.
 
 A Sequelize stored value read by `findByPk`/finders can link back to its request writer

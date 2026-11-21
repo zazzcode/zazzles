@@ -158,8 +158,8 @@ The recall floor over the published reports holds: 91 `candidate_with_witness`, 
 ## Accuracy against the answer keys
 
 Scored on 2026-11-19 with [`accuracy.py`](recall-gap-inventory/accuracy.py) over the published
-sample reports, plus vuln-demo-app's run above. Counts for each sample are in the
-[README accuracy table](../../README.md). Across 11 samples there are 91 keyed positives: 88 found
+sample reports, plus vuln-demo-app's run above. The [sample reports](../../docs/samples/README.md) describe the published runs. This evaluation
+covered 91 keyed positives across 11 samples: 88 found
 (85 Confirmed and 3 practice findings where the key expects construction practice), 3 Review and
 0 missed. None of the 55 keyed and protected controls shows as a finding.
 

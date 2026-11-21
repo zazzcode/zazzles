@@ -16,8 +16,8 @@ func pollutionPartsSource(m *sourceModule, at *sitter.Node, parts string, params
 		}
 		return i, "path"
 	}
-	split := unwrapTS(localInitializer(m, at, parts))
-	if split == nil || split.EndByte() > at.StartByte() || bindingReassigned(m, parts) {
+	split := pollutionPartsInitializer(m, at, parts)
+	if split == nil {
 		return -1, ""
 	}
 	path := pollutionSplit(m, split)
@@ -33,35 +33,47 @@ func pollutionPartsSource(m *sourceModule, at *sitter.Node, parts string, params
 	return pollutionParameter(params, path), "path"
 }
 
-// pollutionSplit returns the identifier split by a non-empty string literal or
+func pollutionPartsInitializer(m *sourceModule, at *sitter.Node, parts string) *sitter.Node {
+	init := unwrapTS(localInitializer(m, at, parts))
+	if init == nil || init.EndByte() > at.StartByte() || bindingReassigned(m, parts) {
+		return nil
+	}
+	return init
+}
+
+func pollutionSplit(m *sourceModule, split *sitter.Node) string {
+	return pollutionIdentifier(pollutionSplitReceiver(m, split), m.src)
+}
+
+// pollutionSplitReceiver returns the expression split by a non-empty string literal or
 // a regular-expression literal, or matched as a whole by a global
 // regular-expression literal. Each result is an array of substrings of it.
-func pollutionSplit(m *sourceModule, split *sitter.Node) string {
+func pollutionSplitReceiver(m *sourceModule, split *sitter.Node) *sitter.Node {
 	if split == nil || split.Kind() != "call_expression" {
-		return ""
+		return nil
 	}
 	fn, args := split.ChildByFieldName("function"), split.ChildByFieldName("arguments")
 	if fn == nil || fn.Kind() != "member_expression" || args == nil || args.NamedChildCount() != 1 {
-		return ""
+		return nil
 	}
 	prop, separator := fn.ChildByFieldName("property"), args.NamedChild(0)
 	if prop == nil {
-		return ""
+		return nil
 	}
 	switch prop.Utf8Text(m.src) {
 	case "split":
 		if sep, literal := stringLiteral(separator, m.src); !(literal && sep != "" || separator.Kind() == "regex") {
-			return ""
+			return nil
 		}
 	case "match":
 		flags := separator.ChildByFieldName("flags")
 		if separator.Kind() != "regex" || flags == nil || !strings.Contains(flags.Utf8Text(m.src), "g") {
-			return ""
+			return nil
 		}
 	default:
-		return ""
+		return nil
 	}
-	return pollutionIdentifier(fn.ChildByFieldName("object"), m.src)
+	return pollutionUnwrap(fn.ChildByFieldName("object"))
 }
 
 // pollutionPathParameter accepts a parameter walked as the array of parts. The

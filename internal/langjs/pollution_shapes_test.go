@@ -165,7 +165,7 @@ func TestPollutionShapeVariants(t *testing.T) {
 		{name: "unflatten with a reduce walk", helper: "function write(source) {\nconst out = {};\nfor (const flat of Object.keys(source)) {\nconst parts = flat.split('.');\nconst last = parts.pop();\nconst holder = parts.reduce((cursor, part) => cursor[part], out);\nholder[last] = source[flat];\n}\nreturn out;\n}",
 			call: "write(req.body)", operation: analysis.PollutionWalk, operand: "source_keys", protection: "raw"},
 		{name: "path walk into a local object", helper: "function write(path, value) {\nconst out = {};\nconst parts = path.split('.');\nlet cursor = out;\nfor (let i = 0; i < parts.length - 1; i++) cursor = cursor[parts[i]];\ncursor[parts[parts.length - 1]] = value;\nreturn out;\n}",
-			call: "write(req.body.path, req.body.value)"},
+			call: "write(req.body.path, req.body.value)", operation: analysis.PollutionWalk, operand: "path", protection: "raw"},
 		{name: "reduce result indexed in place", helper: "function write(target, path, value) {\nconst parts = path.split('.');\nparts.slice(0, -1).reduce((cursor, part) => cursor[part], target)[parts[parts.length - 1]] = value;\n}",
 			call: "write({}, req.body.path, req.body.value)", operation: analysis.PollutionWalk, operand: "path", protection: "raw"},
 		{name: "reduce that creates each slot", helper: "function write(target, path, value) {\nconst parts = path.split('.');\nconst last = parts.pop();\nconst holder = parts.reduce((cursor, part) => (cursor[part] = cursor[part] || {}), target);\nholder[last] = value;\n}",

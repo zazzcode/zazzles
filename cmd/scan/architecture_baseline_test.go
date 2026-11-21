@@ -127,12 +127,15 @@ func architectureFixtures(t *testing.T) []string {
 	out = append(out, "internal/langjs/testdata/express-login", "internal/langjs/testdata/string-flow",
 		"internal/langjs/testdata/pollution/lodash-old", "internal/langjs/testdata/pollution/source-writes")
 	// One fixture per added write shape; the probes repeat their vulnerable function.
-	for _, pattern := range []string{"shapes-*", "explore-*"} {
+	for _, pattern := range []string{"shapes-*", "explore-*", "start-*"} {
 		shapes, err := filepath.Glob(filepath.Join(repositoryRoot, "internal/langjs/testdata/pollution", pattern))
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, shape := range shapes {
+			if filepath.Base(shape) == "start-probes" {
+				continue
+			}
 			out = append(out, "internal/langjs/testdata/pollution/"+filepath.Base(shape))
 		}
 	}

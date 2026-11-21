@@ -206,7 +206,7 @@ compared without a type test, which the scanner leaves unread by design. One saf
 calls, have no record: the documented dependency gap. The run was repeated with traces on
 2026-11-21 ([AC8](#ac8-live-judgment)). The lab's application scan was not repeated, because
 its records are identical before and after this work.
-[Published sample](../../docs/samples/vuln-nextjs-prototype-pollution/README.md).
+[Published sample](../../docs/samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan).
 
 ## Real advisory libraries
 

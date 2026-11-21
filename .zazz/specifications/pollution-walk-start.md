@@ -1,12 +1,10 @@
 # Prototype pollution walk start (module-level, local and inline walks)
 
-- **Status** Proposal, drafted 2026-11-21 at the owner's request and updated the same day after
-  the owner's review of the write shapes. No code is written. Ready for a new session.
-- **Worktree and branch** A new sibling worktree and branch, assigned by the owner. The analyzer
-  is on `prototype-polution-analyzer` (draft PR #35) until it merges. Start from `stage` after
-  that merge, or from that branch on the owner's word.
-- **Baseline** `prototype-polution-analyzer` at `dafd25d`. Re-run the AC1 test on the starting
-  commit and record its SHA in the run log.
+- **Status** Implemented and verified offline on `pollution-walk-start`. Owner review is pending.
+- **Worktree and branch** `pollution-walk-start`, assigned by the owner from `stage` after PR #35.
+- **Baseline** `c7d7816`, the PR #35 merge with `dafd25d` in its ancestry. AC1 passed at that
+  starting revision.
+- **Results** [Offline acceptance record](../evaluation/pollution-walk-start-results.md).
 - **Prerequisite** [Prototype pollution write shapes](pollution-write-shapes.md), merged.
 - **Closes** `PP-N01` and `PP-N02` of
   [prototype pollution coverage](../../docs/detection-capabilities/prototype-pollution.md).
@@ -39,12 +37,18 @@ work, each as its own small commit with a failing-first test where code changes.
 4. **Juice Shop `JS-PP-R01`.** Four Review records at `lib/accuracy.ts:71`. Source review says a
    finding would be false. Ask the owner whether the key row stays `review` or the records
    should be suppressed by reading the `Map` lookup as a guard (`PP-R01`).
-5. **Coverage pages for the other vulnerability classes.** A separate session was writing one
-   page per class under `docs/detection-capabilities/`. Check what merged. If pages are missing,
-   that work continues on its own branch and is not part of this contract.
+5. **Coverage pages for the other vulnerability classes.** The owner assigned this
+   documentation follow-up to the same branch. Organize user documentation by weakness class
+   using the prototype pollution coverage page as the model. Keep analyzer selectors and
+   mapped OWASP editions in the coverage index, and move detailed usage and sample evaluation
+   out of the project README to their owning user guides.
 
-Items 1 and 2 change which records can be Confirmed or Protected, so each needs the sample
-rescan of AC8. Items 3 to 5 need the owner.
+Items 1 and 2 passed their six-sample rescans. The owner selected Map guard recognition
+for item 4. The two verdict paths now carry Map membership evidence and remain in Review
+with a runtime key set. The two fixes paths use an object cache and remain in Review.
+Item 3 remains unverified at runtime. The [coverage index](../../docs/detection-capabilities.md)
+links the pages delivered for item 5. See the
+[carryover closeout](../evaluation/pollution-walk-start-results.md#carryover-closeout).
 
 ## 1. Capability
 
@@ -118,8 +122,9 @@ through its first lookup and must not become a raw candidate.
   unread guards on the key written as an `if`, with `&&`, or as a conditional expression.
 - A limit is written down only after it is checked with the scanner on a few-line application.
   The owner's review of the write shapes found several unverified limits wrong in both directions.
-- Existing pollution tests pass unchanged. Request digests of every other family are unchanged,
-  and `TestArchitectureBaseline` changes only by new fixture rows.
+- Existing pollution tests pass. The owner approved updating the single zero-record expectation
+  contradicted by AC3. Request digests of every other family are unchanged, and
+  `TestArchitectureBaseline` changes only by new fixture rows.
 - No paid call is made by this contract.
 
 ## 4. Scope and review shape
@@ -140,9 +145,8 @@ Out of scope:
 - A recursive merge whose target is not a parameter. Its recursion needs the target as an
   argument, so the shape does not arise.
 - Reaching a library's core function through its public API (phases 7 and 8).
-- The other gaps on the coverage page. In particular, a walk in the handler is likely to meet
-  `PP-N03` (a path normalised before the split), `PP-N13` (a `forEach` that also makes the final
-  write) and `PP-R06` (a log call on the same input). Record what is met; do not close them here.
+- The other gaps on the coverage page. `PP-N03` (a path normalised before the split) and
+  `PP-N13` (a `forEach` that also makes the final write) remain outside this contract.
 - New fixtures in the vuln-nextjs lab. The lab is a separate repository; add them only on the
   owner's word.
 
@@ -206,8 +210,8 @@ a new record on a keyed control.
    record, and `GOOF-PP-01` and `TS-PP-01` keep exactly one candidate each.
 9. **AC9 (class field).** `p6` has a fixture and a recorded outcome: implemented with its tests,
    or a limit with the reason, stated in the guide.
-10. **AC10 (isolation and gate).** Existing pollution tests pass unchanged. Other families'
-    request digests are unchanged. `gofmt -l cmd internal` prints nothing; `go vet ./...`,
+10. **AC10 (isolation and gate).** Existing pollution tests pass with the owner-approved AC3
+    expectation update. Other families' request digests are unchanged. `gofmt -l cmd internal` prints nothing; `go vet ./...`,
     `go build ./...` and `go test -race ./... -count=1` pass.
 11. **AC11 (coverage page).** `PP-N01` and `PP-N02` are removed from the "Not recorded" table and
     their forms appear under "Recorded and decidable". Each limit found during the work has a
@@ -235,11 +239,12 @@ a new record on a keyed control.
 
 ## 10. Definition of done
 
-- [ ] AC1 to AC10 verified, with evidence in the run log and the results record.
-- [ ] The guide lists the accepted starts, and the coverage page no longer lists `PP-N01` and
-  `PP-N02` as gaps (AC11).
-- [ ] Section 11.1 of the write shapes contract marks the D-9 non-parameter start row as closed
+- [x] AC1 to AC10 verified, with evidence in the run log and the results record.
+- [x] The guide lists the accepted starts and records the `PP-N01` and `PP-N02` forms (AC11).
+- [x] Section 11.1 of the write shapes contract marks the D-9 non-parameter start row as closed
   by this contract.
+- [x] The coverage index links a page for every reported weakness class and the standalone
+  validation check. The README links to user guides and sample reports.
 - [ ] Owner review.
 
 ## 11. Open questions
@@ -247,10 +252,11 @@ a new record on a keyed control.
 - **OQ-1. A start returned by a call.** `const store = getStore()` or an imported object is
   treated as an ordinary object under D-3. Keep that, or record it as Review because the object
   is not visible? Recommendation: keep it raw. A null-prototype object is the rare case and is
-  explicit where it is used.
+  explicit where it is used. Applied. Stable call-result and import bindings are accepted.
 - **OQ-2. How many new sample records are acceptable.** AC8 reviews each one. Should a number
   above some bound stop the change for a second look at D-1? Recommendation: stop and ask the
-  owner above ten new records across the six samples.
+  owner above ten new records across the six samples. The check found zero new write sites or
+  entry paths.
 - **OQ-3. Lab fixtures.** Add module-level and handler walks to the vuln-nextjs lab's pollution
   fixtures and to its published sample? Recommendation: yes, after this contract passes its
   noise check, in a separate change to the lab. The lab's fixtures are text files exported by
@@ -300,3 +306,23 @@ added by the review apply to the new starts, and AC11 covers the coverage page.
 
 At the owner's request, the open items from the write shapes PR are listed at the top, to be
 addressed before the walk-start work.
+
+### 2026-11-21 — Owner decisions during implementation
+
+The owner approved changing the single existing test that expected no local walk record.
+AC3 now covers that fixture and the rest of the prior pollution suite keeps its expectations.
+The owner also chose to recognize the Juice Shop Map lookup. The source and six-sample
+rescan supported membership evidence for the two verdict paths, with Review retained for the
+runtime key set and for the two object-cache paths.
+
+### 2026-11-21 — Added the user documentation closeout
+
+The owner assigned the class coverage pages to this branch and chose the existing prototype
+pollution page as the pattern. The coverage index separates reported weaknesses, analyzer
+selectors and versioned OWASP risk references. User guides and sample notes own setup,
+interpretation and historical evidence. Acceptance is a coverage inventory, validated links
+and anchors, and a documented offline scan smoke check.
+
+The owner clarified that each application has one sample. The vuln-nextjs application page
+now links its full scan and scoped fixture reports. The sample index and offline refresh
+workflow follow that organization.

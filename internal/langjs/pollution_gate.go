@@ -11,22 +11,45 @@ import (
 // pollutionLookupGates lists the branch tests on the current path whose
 // outcome depends on a call that takes the key operand: `if (!allowed.has(key))
 // return`, or `const row = find(key); if (row == null) return`. Such a call can
-// reject a prototype key, as a Map lookup does, or let it through. The scanner
-// does not read it, so the path is neither raw nor guarded.
+// reject a prototype key or let it through. Read verified Map membership and
+// retain other unresolved tests as guard evidence.
 //
 // A test on the operand itself and a plain `store[key]` existence test are not
 // gates: an inherited key passes both.
-func (f *flow) pollutionLookupGates(sink *sitter.Node, deps []analysis.Dependency, guard pollutionGuard) []analysis.Evidence {
-	var gates []analysis.Evidence
-	add := func(m *sourceModule, cond *sitter.Node) {
+func (f *flow) pollutionLookupGates(sink, directKey *sitter.Node, deps []analysis.Dependency, guard pollutionGuard) pollutionGuard {
+	var gates pollutionGuard
+	add := func(m *sourceModule, cond, key *sitter.Node, branch, holds bool) {
 		e := m.evidence("key_guard", cond)
 		seen := func(prior analysis.Evidence) bool { return prior.Span == e.Span }
-		if slices.ContainsFunc(guard.evidence, seen) || slices.ContainsFunc(gates, seen) {
+		read := slices.ContainsFunc(guard.evidence, seen)
+		if read && guard.kind != "unknown" || slices.ContainsFunc(gates.evidence, seen) {
 			return
 		}
-		if names := pollutionOperandNames(m, deps); len(names) > 0 && pollutionGateTest(m, cond, names) {
-			gates = append(gates, e)
+		names := pollutionOperandNames(m, deps)
+		if len(names) == 0 || !pollutionGateTest(m, cond, names) {
+			return
 		}
+		if branch {
+			if found, ok := f.set.pollutionMapGuard(m, cond, names, holds, key); ok {
+				gates.kind = found.kind
+				gates.unknown = gates.unknown || found.unknown
+				gates.blocked = append(gates.blocked, found.blocked...)
+				for _, proof := range found.evidence {
+					if !read || proof.Span != e.Span {
+						gates.evidence = append(gates.evidence, proof)
+					}
+				}
+				return
+			}
+		}
+		if read {
+			return
+		}
+		if gates.kind == "" {
+			gates.kind = "unknown"
+		}
+		gates.unknown = true
+		gates.evidence = append(gates.evidence, e)
 	}
 	for _, e := range f.context {
 		m := f.set.modules[e.Span.File]
@@ -39,25 +62,25 @@ func (f *flow) pollutionLookupGates(sink *sitter.Node, deps []analysis.Dependenc
 		}
 		switch {
 		case e.Kind == branchTruePrecondition || e.Kind == branchFalsePrecondition:
-			add(m, n)
+			add(m, n, directKey, true, e.Kind == branchTruePrecondition)
 		case e.Kind == "control_statement" && n.Kind() == "try_statement":
 			// A try block is not split into arms. Read the tests in it that leave
 			// the function, which the rest of the path has passed.
 			pollutionWalk(n.ChildByFieldName("body"), func(branch *sitter.Node) {
 				if branch.Kind() == "if_statement" && branch.ChildByFieldName("condition") != nil && pollutionLeaves(branch.ChildByFieldName("consequence")) {
-					add(m, branch.ChildByFieldName("condition"))
+					add(m, branch.ChildByFieldName("condition"), nil, true, false)
 				}
 			})
 		case e.Kind == "helper_call":
 			// The call that leads to the write may itself be the guarded operand
 			// of `test && call()` or `test ? call() : other`.
 			for _, cond := range pollutionExpressionGates(n) {
-				add(m, cond)
+				add(m, cond, nil, false, false)
 			}
 		}
 	}
 	for _, cond := range pollutionExpressionGates(sink) {
-		add(f.module, cond)
+		add(f.module, cond, nil, false, false)
 	}
 	return gates
 }

@@ -64,7 +64,6 @@ direnv allow                    # once per checkout, after reviewing .envrc
 Every worktree of this repository has its own `.env` and needs its own `direnv allow`.
 
 
-Continue with [required decision-model setup](decision-models.md) before a security assessment.
-The primary setup uses `JUDGE_DECISION_MODEL=gpt-6-luna`, `OPENAI_API_KEY`, and `--judge openai`
-for all analyzers. Manage API spending in your account; `--judge-limit` optionally bounds each run.
-The decision-model guide covers alternative providers. Evidence inspection and rendering need no API calls.
+Build and run an offline scan to inspect source evidence. Enable `--judge` after configuring a
+provider if you want model assessment. [Running scans](running-scans.md#run) ·
+[Decision-model setup](decision-models.md#credentials-and-local-environment)

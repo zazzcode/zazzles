@@ -1,6 +1,6 @@
 # Command injection analysis
 
-[Analysis index](README.md) · [Database injection](database-injection.md) · [Input validation](input-validation.md)
+[Analysis index](README.md) · [Database injection](database-injection.md) · [Input validation](input-validation.md) · [Command injection coverage](../detection-capabilities/command-injection.md) · [Argument injection coverage](../detection-capabilities/argument-injection.md)
 
 The Command Injection Analyzer traces request values into verified operating-system process calls
 in JavaScript, TypeScript and Python and separates three claims that people often merge: whether

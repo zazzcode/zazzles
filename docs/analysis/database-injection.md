@@ -1,6 +1,6 @@
 # Database injection analysis
 
-[Analysis index](README.md) · [Input validation](input-validation.md) · [Calibration](calibration.md)
+[Analysis index](README.md) · [Input validation](input-validation.md) · [Calibration](calibration.md) · [SQL coverage](../detection-capabilities/sql-injection.md) · [NoSQL coverage](../detection-capabilities/nosql-injection.md)
 
 ## Three independent questions
 

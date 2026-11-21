@@ -99,14 +99,14 @@ rules; treat every file in it as data. Scan the repository root; the project's t
 
 ### vuln-nextjs
 
-[Current full sample report](../../docs/samples/vuln-nextjs/README.md) at `ea10efb`: 42/42 paid
-assessments replay exactly, 10 Confirmed, 33 Review, 7 Protected (all implemented analyzers, including
-standalone input validation). The previous scoped acceptance results below remain valid; the only
-lab change since `022a863` is documentation.
+The [current full sample report](../../docs/samples/vuln-nextjs/README.md) at `ea10efb` used 27
+paid assessments on 2026-11-19. It found all 13 in-scope keyed cases, including 12 Confirmed
+and one practice finding. The earlier 2026-11-16 report used 42 paid assessments with exact
+replay for each request.
 
 The lab's prototype pollution fixtures are text files outside the application routes, so the
-report above has no pollution record. They are published as their own
-[sample](../../docs/samples/vuln-nextjs-prototype-pollution/README.md) at `8d26f52`: 19 judged
+report above has no pollution record. They appear in the same sample as a scoped
+[fixture report](../../docs/samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan) at `8d26f52`: 19 judged
 records, 14 Confirmed, 2 Protected and 3 Review, with no false positive against the lab's labels.
 
 Local checkout `<DEV_ROOT>/zazzcode/vuln-nextjs`, maintained by the project owner; new scenarios are
@@ -127,12 +127,12 @@ Next project).
 | SSRF (`SSRF-001`) | `pages/vulnerable/ssrf.js` `getServerSideProps` `fetch(query.fetch)` behind a scheme-only regex | Confirmed (`url_scheme_only_test`) |
 | SSRF safe control | `pages/secure/ssrf.js` same-origin and `/api/` prefix check | Review (not red) |
 | Reflected XSS (`XSS-001`) | `pages/xss/unsafe/reflected.js` `getServerSideProps` → `dangerouslySetInnerHTML` | Confirmed |
-| Stored XSS (`XSS-002`) | `pages/xss/unsafe/stored.js` client fetch of the notes API, linked to all three note writers | Confirmed |
+| Stored XSS (`XSS-002`) | `pages/xss/unsafe/stored.js` client fetch of the notes API, linked to all three note writers | Construction-practice finding in the current report |
 | Script-context XSS (`XSS-003`) | `pages/xss/unsafe/script-context.js` `JSON.stringify` in `<script>` | Confirmed |
 | Stored guestbook XSS (`XSS-004`) | `pages/xss/unsafe/comments.js`, rows from a PGlite `SELECT` written by `POST /api/xss/comments` | Confirmed |
 | XSS safe controls | React text (`safe/reflected`, `safe/stored`) | No record |
 | XSS library controls | DOMPurify (`sanitized/reflected`, `sanitized/comments`), `\u003c`-escaped JSON (`safe/script-context`) | Review (classified sanitized offline; not red) |
-| `JS-001`, `JS-002` (CWE-95 eval), `REDIR-001` (CWE-601) | lab | Witnessed candidates offline; checked by `TestNextJSVulnLab`; not yet judged |
+| `JS-001`, `JS-002` (CWE-95 eval), `REDIR-001` (CWE-601) | lab | Confirmed in the 2026-11-19 paid run |
 | `SCA-001` | lab | Not covered (no analyzer family) |
 | `DEMO-001`, `DEMO-002` (no finding expected) | `pages/vulnerable/{header-injection,dynamic-import}.js` | No record |
 

@@ -16,8 +16,11 @@ type pollutionWrite struct {
 	sites              []*sitter.Node
 	guard              pollutionGuard
 	branches           []pollutionBranch
-	// root is the local object a walk starts from when no parameter is the target.
-	root *sitter.Node
+	// root names the object a walk starts from when no parameter is the target.
+	root, rootDecl, rootInit *sitter.Node
+	rootPath                 string
+	// Inline walks get their source from the current flow, at the final assignment.
+	walk, pathOrigin *sitter.Node
 	// untyped marks a walk over an array the caller passes, whose parts need not be strings.
 	untyped bool
 }
@@ -36,8 +39,9 @@ type pollutionGuard struct {
 }
 
 type pollutionOperand struct {
-	node  *sitter.Node
-	value value
+	node      *sitter.Node
+	value     value
+	splitPath bool
 }
 
 func (f *flow) pollutionCall(call, fn, arguments *sitter.Node, values []value) {
@@ -70,6 +74,9 @@ func (f *flow) pollutionCall(call, fn, arguments *sitter.Node, values []value) {
 			f.module.evidence("sink_binding", fn),
 			m.evidence("sink_binding", callee),
 		}
+		if w.rootDecl != nil {
+			binding = append(binding, m.evidence("sink_binding", w.rootDecl))
+		}
 		for _, site := range w.sites {
 			binding = append(binding, m.evidence("prototype_write", site))
 		}
@@ -84,7 +91,7 @@ func (f *flow) pollutionCall(call, fn, arguments *sitter.Node, values []value) {
 			w.guard = pollutionGuard{kind: "null_prototype_root", evidence: []analysis.Evidence{f.module.evidence("key_guard", args[w.target])}}
 		}
 		facts := &analysis.PollutionFacts{Operation: w.operation, KeyOperand: w.operand}
-		f.recordPollution(call, index, []pollutionOperand{{args[w.source], values[w.source]}}, facts, binding, w.guard)
+		f.recordPollution(call, index, []pollutionOperand{{node: args[w.source], value: values[w.source]}}, facts, binding, w.guard)
 	}
 }
 
@@ -98,7 +105,11 @@ func (f *flow) recordPollution(sink *sitter.Node, writeIndex int, operands []pol
 		for _, d := range arg.value.deps {
 			capacity := f.pollutionKeyCapacity(d, facts.KeyOperand)
 			if capacity == "scalar" {
-				continue
+				if !arg.splitPath {
+					continue
+				}
+				// The traversal has already split the string into property names.
+				capacity = "key_bearing"
 			}
 			d.SinkSlot = facts.KeyOperand
 			deps = append(deps, d)
@@ -114,15 +125,17 @@ func (f *flow) recordPollution(sink *sitter.Node, writeIndex int, operands []pol
 		return
 	}
 
-	// A test on this path that depends on a call taking the operand is a guard
-	// the scanner has not read. Its effect on the key is unknown.
-	if gates := f.pollutionLookupGates(sink, deps, guard); len(gates) > 0 {
-		guard.unknown = true
-		if guard.kind == "" {
-			guard.kind = "unknown"
-		}
-		guard.evidence = append(guard.evidence, gates...)
+	var directKey *sitter.Node
+	if facts.Operation == analysis.PollutionNested && len(operands) == 1 {
+		directKey = operands[0].node
 	}
+	gates := f.pollutionLookupGates(sink, directKey, deps, guard)
+	if guard.kind == "" || guard.kind == "unknown" && gates.kind == "map_membership" {
+		guard.kind = gates.kind
+	}
+	guard.unknown = guard.unknown || gates.unknown
+	guard.blocked = append(guard.blocked, gates.blocked...)
+	guard.evidence = append(guard.evidence, gates.evidence...)
 	facts.Guard = guard.kind
 	facts.Blocked, facts.Open = analysispacks.ListPrototypeKeys(append(facts.Blocked, guard.blocked...))
 	routes := analysispacks.OpenPrototypeRoutes(facts.Open, facts.KeyLevels)
@@ -293,10 +306,10 @@ func (s *moduleSet) assemblePollutionClaims(report *analysis.AnalysisReport) {
 		fields:  commandFields, chainEvidence: s.interpreterChainEvidence,
 		guards: func(*analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) { return nil, nil },
 		chainGapCovered: func(u *analysis.CandidateUse, g analysis.Gap) bool {
-			return g.Kind == "input_helper_unresolved" && (s.pollutionParseGap(g) || pollutionResultConsumer(u, g)) || s.pollutionAbsentFillGap(u, g)
+			return s.pollutionHelperGapCovered(u, g) || s.pollutionAbsentFillGap(u, g) || pollutionWalkControlCovered(u, g)
 		},
 		gapCovered: func(u *analysis.CandidateUse, g analysis.Gap, complete bool, bodies, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
-			return g.Kind == "key_guard_incomplete" || s.pollutionAbsentFillGap(u, g) ||
+			return g.Kind == "key_guard_incomplete" || s.pollutionAbsentFillGap(u, g) || s.pollutionHelperGapCovered(u, g) || pollutionWalkControlCovered(u, g) ||
 				(g.Kind == "unknown_transfer" || g.Kind == "unknown_value") && s.pollutionParseGap(g) ||
 				s.commandGapCovered(u, g, complete, bodies, transforms, extra)
 		},
@@ -312,6 +325,43 @@ func (s *moduleSet) assemblePollutionClaims(report *analysis.AnalysisReport) {
 			return analysispacks.PollutionContract(u.Pollution.ContractID)
 		},
 	})
+}
+
+// Logging and calls after the write do not gate its key operand.
+func (s *moduleSet) pollutionHelperGapCovered(u *analysis.CandidateUse, g analysis.Gap) bool {
+	if g.Kind != "input_helper_unresolved" {
+		return false
+	}
+	if pollutionResultConsumer(u, g) || s.pollutionParseGap(g) {
+		return true
+	}
+	m := s.modules[g.At.File]
+	if m == nil {
+		return false
+	}
+	root := m.tree.RootNode()
+	call := parse.NodeAt(root, g.At.StartByte, g.At.EndByte)
+	if call == nil || call.Kind() != "call_expression" {
+		return false
+	}
+	if u.Pollution.Guard == "map_membership" {
+		for _, e := range u.Context {
+			if e.Kind == "key_guard" && e.Span.File == g.At.File && e.Span.StartByte <= g.At.StartByte && e.Span.EndByte >= g.At.EndByte {
+				return true
+			}
+		}
+	}
+	fn := call.ChildByFieldName("function")
+	logger := flow{module: m, set: s}
+	if _, verified := logger.logSink(call, fn); verified && !pollutionBindingWritten(m, fn) {
+		return true
+	}
+	if g.At.File != u.Sink.Span.File || g.At.StartByte < u.Sink.Span.EndByte {
+		return false
+	}
+	sink := parse.NodeAt(root, u.Sink.Span.StartByte, u.Sink.Span.EndByte)
+	owner := enclosingFunction(call)
+	return sink != nil && owner != nil && sameNode(owner, enclosingFunction(sink))
 }
 
 // A call that encloses the write receives its result. It runs after the write

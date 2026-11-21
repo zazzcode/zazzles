@@ -1,6 +1,6 @@
 # Open redirect
 
-[Analysis rules](README.md) · [Code injection](code-injection.md) · [Next.js](nextjs.md)
+[Analysis rules](README.md) · [Code injection](code-injection.md) · [Next.js](nextjs.md) · [Coverage and known gaps](../detection-capabilities/open-redirect.md)
 
 The `redirect` family asks whether request data chooses an off-site redirect or navigation
 destination. It uses `open_redirect_candidate`, protocol `redirect-components-v1` and CWE-601.

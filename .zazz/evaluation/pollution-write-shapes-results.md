@@ -151,6 +151,24 @@ are unchanged: one complete raw candidate each.
 The same search found a read-only walk in browser code,
 `frontend/src/hacking-instructor/helpers/helpers.ts:49`, which is not a write.
 
+## Where the write lives
+
+`TestPollutionLibrarySourceInRepository` pins the answer for a recursive merge kept as library
+source in the scanned repository:
+
+| Case | Records |
+|---|---|
+| Called from a route through CommonJS `module.exports = fn`, `module.exports = { fn }` or `exports.fn` | 1 each, sink in the application, write evidence in the library file |
+| Called through an ESM named or namespace import | 1 each |
+| Called through an ESM default export | 0. The shared import resolver does not index default exports; fixing it changes helper resolution for every family and is left to its own change |
+| The library alone, with no application entry | 0 |
+
+Checked with the built scanner and not pinned by a test: the same library under `vendor/` has
+no record because the walker skips that directory, and an import by package name from
+`node_modules/` has no record. No pinned source of the advisory libraries in the parent
+contract's D-3 table is present on this machine, and none was downloaded, so those packages
+were not scanned.
+
 ## Isolation and gate
 
 - The architecture baseline keeps all 48 earlier rows unchanged, including the two stage 1

@@ -103,11 +103,13 @@ not reported as safe. The table lists the forms known to be missed or left in Re
 | Recursion through more than one forwarding helper, or a walk split across functions | No record |
 | A dynamic-key write that matches none of the listed shapes | No record |
 | Merge and set-by-path libraries other than Lodash (`deepmerge`, `set-value`, `dot-prop` and others) called from an application | No record. `node_modules/` is not read, and only Lodash has version contracts. A library's source is read when it is in the scanned repository |
+| Library source in the repository that a route imports as an ESM default export, or that sits under `vendor/` | No record. CommonJS exports and ESM named or namespace imports are followed |
+| A library repository scanned on its own, with no application route | No record. Exported functions are not entries yet |
 | Key guard written as a regular-expression test on the whole path | The record omits that control. An assessment that relies on it stays in Review |
 | Literal comparison on the parts of an array the caller passes, with no `typeof` test first | Review (`key_guard_coverage_unknown`). A nested array such as `['__proto__']` passes the comparison |
 | Keys taken from a query string or another input whose shape is not typed | Review (`key_control_unknown`) |
 | The effect of a polluted property: readers, gadgets and code execution | Not claimed. A finding states the write only |
-| Browser entries, standalone npm library exports, deletion APIs (`unset`, `omit`) | Not covered by this family |
+| Browser entries, deletion APIs (`unset`, `omit`) | Not covered by this family |
 
 ## Not covered
 

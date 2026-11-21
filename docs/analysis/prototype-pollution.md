@@ -29,6 +29,24 @@ headers, and cookies are excluded as raw key-bearing inputs. Indeterminate opera
 in Review. A request value supplied only as the assigned value cannot choose the lookup.
 [Supported inputs](node-inputs.md).
 
+## Where the write can be
+
+A record always starts at an application entry, such as an Express route, and follows request
+data to the write. What is found depends on where the vulnerable function lives:
+
+| Location of the vulnerable write | Result |
+|---|---|
+| The application's own source: the handler or a function it calls | Detected by the source-visible shapes below |
+| A library's source kept in the scanned repository, for example under `lib/`, and called from a route | Detected by the same shapes. The call must resolve through a relative import: CommonJS `module.exports = fn`, `module.exports = { fn }` or `exports.fn`, or an ESM named or namespace import. The record's sink is the call in the application and its write evidence is in the library file |
+| The same, imported as an ESM default export | No record. The import resolver does not follow default exports yet |
+| Code under `vendor/` or `node_modules/` | Not read |
+| An installed dependency called from a route | Lodash merge and set-by-path calls are judged by the resolved version. Other packages have no record. A dependency audit covers published advisories for installed packages |
+| A library repository scanned on its own, with no application entry | No record. Scanning a package's exported functions is planned work |
+
+A finding in application source is a statement about that source. It is not a CVE lookup: the
+scanner reports no advisory for the application's dependencies except through the Lodash
+version contracts.
+
 ## Source-visible shapes
 
 Each shape is read inside one function body, with one forwarding helper for a recursion.
@@ -103,6 +121,8 @@ These forms can pollute `Object.prototype` and have no record:
 - **Other write libraries.** `deepmerge`, `set-value`, `dot-prop` and similar packages called
   from an application. `node_modules/` is not read and only Lodash has version contracts. Their
   source is analyzed when it is part of the scanned repository.
+- **Library source behind an ESM default export**, and any code under `vendor/`.
+- **A library repository with no application entry.** Its exported functions are not entries.
 
 ### Left in Review
 

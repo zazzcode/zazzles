@@ -1,6 +1,7 @@
 package langjs
 
 import (
+	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -328,6 +329,58 @@ func TestPollutionShapeExploration(t *testing.T) {
 			for name := range tt.want {
 				if !seen[name] {
 					t.Errorf("%s has no record", name)
+				}
+			}
+		})
+	}
+}
+
+// TestPollutionLibrarySourceInRepository pins where a vulnerable function may
+// live. A library's source kept in the scanned repository is read when a route
+// reaches it through a resolved import. A repository with no application entry,
+// and an import the resolver does not follow, have no record; the guide lists
+// both as limits.
+func TestPollutionLibrarySourceInRepository(t *testing.T) {
+	merge := `function merge(target, source) {
+  for (const key in source) {
+    if (source[key] && typeof source[key] === 'object') merge(target[key], source[key]);
+    else target[key] = source[key];
+  }
+  return target;
+}
+`
+	commonJS := "const express = require('express');\n%s\nconst app = express();\napp.use(express.json());\napp.post('/settings', (req, res) => { %s; res.end(); });\n"
+	esm := "import express from 'express';\n%s\nconst app = express();\napp.use(express.json());\napp.post('/settings', (req, res) => { %s; res.end(); });\n"
+	for _, tt := range []struct {
+		name, library, server, binding, call string
+		want                                 int
+	}{
+		{"CommonJS function export", merge + "module.exports = merge;", commonJS, "const merge = require('./lib/tiny');", "merge({}, req.body)", 1},
+		{"CommonJS object export", merge + "module.exports = { merge };", commonJS, "const { merge } = require('./lib/tiny');", "merge({}, req.body)", 1},
+		{"CommonJS named export", merge + "exports.merge = merge;", commonJS, "const { merge } = require('./lib/tiny');", "merge({}, req.body)", 1},
+		{"ESM named export", "export " + merge, esm, "import { merge } from './lib/tiny.js';", "merge({}, req.body)", 1},
+		{"ESM namespace import", "export " + merge, esm, "import * as tiny from './lib/tiny.js';", "tiny.merge({}, req.body)", 1},
+		{"limit: ESM default export", "export default " + merge, esm, "import merge from './lib/tiny.js';", "merge({}, req.body)", 0},
+		{"limit: library with no application entry", merge + "module.exports = merge;", "", "", "", 0},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "lib/tiny.js", tt.library)
+			if tt.server != "" {
+				writeSource(t, root, "server.js", fmt.Sprintf(tt.server, tt.binding, tt.call))
+			}
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			uses := usesOf(report, analysis.PollutionKind, "")
+			if len(uses) != tt.want {
+				t.Fatalf("pollution candidates = %d, want %d", len(uses), tt.want)
+			}
+			for _, u := range uses {
+				writes := u.Completeness.Evidence["prototype_write"]
+				if u.Sink.Span.File != "server.js" || len(writes) != 1 || writes[0].Span.File != "lib/tiny.js" || u.Pollution.Paths[0].Protection != "raw" {
+					t.Errorf("unexpected record: sink %s writes %+v paths %+v", u.Sink.Span.File, writes, u.Pollution.Paths)
 				}
 			}
 		})

@@ -143,7 +143,7 @@ The useful metric is not “every bug in every sample app.” It is: for each an
 confirm the source-reviewed required positives on pinned vulnerable apps, and keep known protected
 or inconclusive cases in Review/Protected instead of inventing reds?
 
-**Accuracy against the answer keys** (every sample report rescanned 2026-11-19; Node.js Goof, DVWA and the Python insecure app judged again on 2026-11-19 after the [findings-gaps work](.zazz/evaluation/close-findings-gaps-results.md); DVWA judged again on 2026-11-20 after [command bypass support](.zazz/evaluation/command-bypass-support-results.md)). *Expected* counts the source-reviewed vulnerable cases keyed for our
+**Accuracy against the answer keys** (every sample report rescanned 2026-11-19; Node.js Goof, the Vulnerable TypeScript app and the vuln-nextjs prototype pollution fixtures judged on 2026-11-21 with the [prototype pollution analyzer](.zazz/evaluation/pollution-write-shapes-results.md#ac8-live-judgment); Node.js Goof, DVWA and the Python insecure app judged again on 2026-11-19 after the [findings-gaps work](.zazz/evaluation/close-findings-gaps-results.md); DVWA judged again on 2026-11-20 after [command bypass support](.zazz/evaluation/command-bypass-support-results.md)). *Expected* counts the source-reviewed vulnerable cases keyed for our
 implemented analyzers. *Found* means Zazzles reports the case as a finding: Confirmed, or a
 construction-practice finding where the key expects one. *False positives* counts the known-safe
 cases (keyed controls) that Zazzles reports as a finding, plus any finding source review showed
@@ -154,9 +154,10 @@ to be false.
 | Juice Shop | 15 | 15 | 0 | 0 | 0 | 3 safe cases checked. 8 findings outside the key match known challenge routes |
 | OSS OopsSec Store | 13 | 13 | 0 | 0 | 0 | 5 safe cases checked. 8 findings outside the key, unreviewed |
 | DVWA | 11 | 11 | 0 | 0 | 0 | Includes the API health command (`HealthController.php:88`), unrestricted upload (CWE-434, its path claim not a finding) and stored XSS judged in path groups. Two false positives on impossible-level controls were found and fixed: a bound PDO statement (`brute/impossible.php:90`) and the `is_numeric`-guarded ping (`exec/impossible.php:26`), which is now Protected with a note that the check still admits a line break. 154 findings outside the key in this run, unreviewed |
-| Node.js Goof | 7 | 7 | 0 | 0 | 0 | Command injection (`routes/index.js:174`) Confirmed: its regex capture admits any character. Open redirect (`routes/index.js:74`) now keyed |
-| Vulnerable TypeScript app | 6 | 6 | 0 | 0 | 0 | Includes `eval` and open redirect |
+| Node.js Goof | 8 | 8 | 0 | 0 | 0 | Command injection (`routes/index.js:174`) Confirmed: its regex capture admits any character. Open redirect (`routes/index.js:74`) now keyed. Prototype pollution through Lodash 4.17.4 `merge` (`routes/index.js:360`) Confirmed on 2026-11-21 |
+| Vulnerable TypeScript app | 7 | 7 | 0 | 0 | 0 | Includes `eval`, open redirect and prototype pollution through Lodash 4.17.4 `merge` (`src/server.ts:246`) |
 | vuln-nextjs lab | 13 | 13 | 0 | 0 | 0 | 23 safe cases checked, none red. Includes code execution and open redirect |
+| vuln-nextjs prototype pollution fixtures | 15 | 14 | 1 | 0 | 0 | 4 safe cases checked, none red. The Review case is an array-path guard without a type test. Two dependency cases (`dset`, `merge-deep`) are outside source analysis and have no record |
 | vuln-demo-app | 11 | 11 | 0 | 0 | 0 | 7 safe cases checked. No published sample report |
 | ThreatByte | 5 | 5 | 0 | 0 | 0 | 6 safe cases checked. Dashboard XSS found as a construction-practice finding |
 | Vulnerable Flask App | 4 | 4 | 0 | 0 | 0 | 4 findings outside the key, unreviewed |
@@ -192,8 +193,12 @@ Code injection (`eval`, CWE-94/95) and open redirect (CWE-601) are implemented; 
 [combined implementation contract](.zazz/specifications/nextjs-phase-2-and-code-redirect.md) and
 [verification results](.zazz/evaluation/nextjs-phase-2-results.md).
 
+The JavaScript and TypeScript prototype pollution analyzer follows request-derived keys to verified
+Lodash and source-visible writes. It reports CWE-1321 when the write and its paths meet the claim's
+evidence requirements. [Prototype pollution rules](docs/analysis/prototype-pollution.md).
+
 The [implementation plan](.zazz/project/implementation-plan.md#next-up) records further analyzer,
-language and workflow work, including prototype pollution, PHP, agent workflows and external
+language and workflow work, including npm library scanning, PHP, agent workflows and external
 finding imports. XXE and dependency auditing (SCA) remain deferred.
 The [capability checklist](.zazz/project/implementation-plan.md#supported-capability-checklist) records
 exactly which languages, frameworks and operations each analyzer supports, with its limits.
@@ -415,14 +420,15 @@ Explore existing reports without installing Zazzles or making API calls:
 | Application | Examples | Reports and source expectations |
 |---|---|---|
 | OWASP Juice Shop | Browser/server XSS and database operations | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/juice-shop/findings.html) · [Sample notes](docs/samples/juice-shop/README.md) |
-| Node.js Goof | Command injection, XSS, and database review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [Sample notes](docs/samples/nodejs-goof/README.md) |
-| Vulnerable TypeScript app | Command injection at `/api/ping`, reflected XSS, and logging | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [Sample notes](docs/samples/vulnerable-typescript-app/README.md) |
+| Node.js Goof | Command injection, XSS, prototype pollution and database review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/nodejs-goof/findings.html) · [Sample notes](docs/samples/nodejs-goof/README.md) |
+| Vulnerable TypeScript app | Command injection at `/api/ping`, reflected XSS, prototype pollution and logging | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-typescript-app/findings.html) · [Sample notes](docs/samples/vulnerable-typescript-app/README.md) |
 | VulnPy | Full all-family Python scan: 3,350 records across the supported adapters, 520 judged | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnpy/findings.html) · [Sample notes and full JSON/SARIF downloads](docs/samples/vulnpy/README.md) |
 | ThreatByte (Python) | Flask/RESTX SQL, reflected/stored XSS, SSRF and protected controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/ThreatByte/findings.html) · [Sample notes](docs/samples/ThreatByte/README.md) |
 | Python insecure app | FastAPI HTML/template construction | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/python-insecure-app/findings.html) · [Sample notes](docs/samples/python-insecure-app/README.md) |
 | Vulnerable Flask App | Command, SQL, path and response findings with unresolved-flow review | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vulnerable-flask-app/findings.html) · [Sample notes](docs/samples/vulnerable-flask-app/README.md) |
 | OSS OopsSec Store | Next.js App Router: SQL, path, SSRF, logging and client XSS | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/oss-oopssec-store/findings.html) · [Sample notes](docs/samples/oss-oopssec-store/README.md) |
 | vuln-nextjs lab | Pages Router: PGlite, command, path, SSRF and XSS with safe controls | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Sample notes](docs/samples/vuln-nextjs/README.md) |
+| vuln-nextjs prototype pollution | CWE-1321: Lodash merge and set-by-path by version, recursive merges, path walks, unflatten, complete and incomplete key guards | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs-prototype-pollution/findings.html) · [Sample notes](docs/samples/vuln-nextjs-prototype-pollution/README.md) |
 | DVWA (PHP) | Plain-PHP SQL, command, XSS, path, code and redirect families across all security levels | [Browse HTML](https://zazzcode.github.io/zazzles/docs/samples/dvwa/findings.html) · [Sample notes](docs/samples/dvwa/README.md) |
 
 The [sample index](docs/samples/README.md) links downloadable HTML, JSON, and SARIF. VulnPy’s complete JSON/SARIF downloads are gzip-compressed to retain every record. Hosted previews update after changes merge into `stage`. Compare counts

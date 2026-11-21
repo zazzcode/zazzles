@@ -2,7 +2,20 @@
 
 
 
-## Current report (rebuilt 2026-11-19)
+## Current report (rebuilt 2026-11-21)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the prototype pollution scanner
+(`6006eaa`, [results](../../../.zazz/evaluation/pollution-write-shapes-results.md#ac8-live-judgment)). The reference checkout stayed clean. These are static source judgments, not
+runtime exploit confirmation.
+
+- 19 entries, 27 analysis records: **8 Confirmed, 19 Review, 0 Protected**.
+- 8 requests, 8 completed assessments, 30,454 input tokens. No provider failures. All 8 saved
+  traces replay with the same request digest and outcome.
+- **Answer key:** 7 of 7 expected positives found; no keyed control is a finding.
+- New: the Lodash 4.17.4 merge at `src/server.ts:246` is Confirmed prototype pollution
+  (CWE-1321). The seven other outcomes match the previous report.
+
+## Previous report (rebuilt 2026-11-19)
 
 Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
 scanner (`df540c3`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static

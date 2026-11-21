@@ -51,6 +51,7 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
+	pollutionWrites map[uintptr][]pollutionWrite
 	witnessPlans    map[string]*jsWitnessPlan
 	prismaSchemas   map[string]map[string]map[string]string
 	browserStates   map[string]*browserEvents
@@ -143,6 +144,7 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 		funcs: map[string]*sitter.Node{}, exports: map[string]*sitter.Node{}, imports: map[string]importBinding{}, express: map[string]bool{}, receivers: map[string]bool{}, commandNames: map[string]importBinding{}, fsNames: map[string]importBinding{}}
 	s.modules[file] = m
 	top := tree.RootNode()
+	defaultName := ""
 	for i := uint(0); i < top.NamedChildCount(); i++ {
 		n := top.NamedChild(i)
 		if n.Kind() == "import_statement" {
@@ -152,12 +154,26 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 		m.readCommonJSExport(n)
 		exported := n.Kind() == "export_statement"
 		if exported {
-			if v := n.ChildByFieldName("value"); v != nil && isFunction(v) {
-				m.exports["default"] = v // export default () => ...
+			byDefault := false
+			for j := uint(0); j < n.ChildCount(); j++ {
+				byDefault = byDefault || n.Child(j).Kind() == "default"
+			}
+			if v := n.ChildByFieldName("value"); v != nil {
+				switch {
+				case isFunction(v):
+					m.exports["default"] = v // export default () => ...
+				case byDefault && v.Kind() == "object":
+					m.exports["default"] = v // export default { merge }
+				case byDefault && v.Kind() == "identifier":
+					defaultName = v.Utf8Text(src) // export default merge
+				}
 			}
 			n = n.ChildByFieldName("declaration")
 			if n == nil {
 				continue
+			}
+			if byDefault && n.Kind() == "function_declaration" {
+				m.exports["default"] = n // export default function merge() {}
 			}
 		}
 		if n.Kind() == "function_declaration" {
@@ -198,6 +214,10 @@ func (s *moduleSet) load(file string) (*sourceModule, error) {
 				}
 			}
 		}
+	}
+	// `export default name` refers to a function declared in this module.
+	if fn := m.funcs[defaultName]; fn != nil && m.exports["default"] == nil {
+		m.exports["default"] = fn
 	}
 	return m, nil
 }

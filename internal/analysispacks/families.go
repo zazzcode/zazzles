@@ -66,7 +66,9 @@ func (f Family) rootIDs() []string {
 		ids = append(ids, languageID(&f, language))
 	}
 	for _, entry := range f.Entries {
-		if entry == "entry.browser" && operandFamily(f.Name) {
+		if f.Name == "pollution" {
+			entry = "entry.pollution." + entry[len("entry."):]
+		} else if entry == "entry.browser" && operandFamily(f.Name) {
 			entry = "entry." + f.Name + ".browser"
 		}
 		ids = append(ids, entry)
@@ -74,7 +76,7 @@ func (f Family) rootIDs() []string {
 	if f.Name == "xss" {
 		ids = append(ids, "render.html-output-v1", "render.browser-output-v1", "render.python-html-output-v1", "render.php-html-output-v1", "context.xss", "protection.xss", "browser.xss", "storage.xss", "response.xss")
 	}
-	if f.RequiresAPI {
+	if f.RequiresAPI || f.Name == "pollution" {
 		for _, id := range contractIDs(&f) {
 			ids = append(ids, "api."+id)
 		}
@@ -107,6 +109,7 @@ func languageID(f *Family, language lang.Language) string {
 func Families() []Family {
 	return []Family{
 		{Name: "code", Label: "code", Kinds: []string{"code_execution_candidate", "template_injection_candidate"}, QuestionNames: codeQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc", "entry.browser"}, RequiresAPI: true, Pack: "pack.code", Claim: "claim.code", Evidence: "evidence.code", PolicyOwner: "internal/judge/code_redirect.go"},
+		{Name: "pollution", Label: "Prototype pollution", Kinds: []string{analysis.PollutionKind}, QuestionNames: pollutionQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc"}, Pack: "pack.pollution", Claim: "claim.pollution", Evidence: "evidence.pollution", PolicyOwner: "internal/judge/pollution.go"},
 		{Name: "redirect", Label: "redirect", Kinds: []string{"open_redirect_candidate"}, QuestionNames: redirectQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http", "entry.graphql", "entry.grpc", "entry.browser"}, RequiresAPI: true, Pack: "pack.redirect", Claim: "claim.redirect", Evidence: "evidence.redirect", PolicyOwner: "internal/judge/code_redirect.go"},
 		{Name: "upload", Label: "upload", Kinds: []string{"file_upload_candidate"}, QuestionNames: uploadQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, Pack: "pack.upload", Claim: "claim.upload", Evidence: "evidence.upload", PolicyOwner: "internal/judge/upload.go"},
 		{Name: "logging", Label: "Sensitive-data logging", Kinds: []string{"log_sink_candidate"}, QuestionNames: loggingQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python}, Pack: "pack.logging", Claim: "claim.logging", Evidence: "evidence.logging", PolicyOwner: "internal/judge/logging.go"},
@@ -193,6 +196,8 @@ func ProtocolFor(kind string) string {
 
 func familyProtocol(name string) string {
 	switch name {
+	case "pollution":
+		return PollutionProtocol
 	case "code":
 		return CodeProtocol
 	case "redirect":
@@ -223,6 +228,8 @@ func familyProtocol(name string) string {
 
 func familyContract(f *Family, id string) *analysis.APIModel {
 	switch f.Name {
+	case "pollution":
+		return PollutionContract(id)
 	case "code":
 		return CodeContract(id)
 	case "redirect":
@@ -245,6 +252,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 
 func contractIDs(f *Family) []string {
 	switch f.Name {
+	case "pollution":
+		return pollutionContracts
 	case "code":
 		return codeContracts
 	case "redirect":
@@ -293,7 +302,7 @@ func (c *catalog) claimQuestions(f *Family) ([]Question, map[string][]map[string
 }
 
 func flowID(f *Family) string {
-	if operandFamily(f.Name) {
+	if f.Name == "pollution" || operandFamily(f.Name) {
 		return "flow." + f.Name
 	}
 	if f.ObservationOnly {

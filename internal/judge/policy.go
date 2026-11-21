@@ -16,6 +16,10 @@ func finderRawSQL(text string) bool {
 // applyPolicy uses claim-scoped completeness when supplied. Legacy candidates
 // remain conservative until their dependency and binding evidence is assembled.
 func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
+	if use.Kind == analysis.PollutionKind {
+		applyPollutionPolicy(use, a)
+		return
+	}
 	if use.Kind == "code_execution_candidate" || use.Kind == "open_redirect_candidate" || use.Kind == analysispacks.TemplateKind {
 		applyInterpreterPolicy(use, a)
 		return

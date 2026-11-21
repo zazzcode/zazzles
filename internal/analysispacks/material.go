@@ -42,7 +42,7 @@ func ForUse(use analysis.CandidateUse) (*Material, error) {
 	if err != nil {
 		return nil, err
 	}
-	if family.RequiresAPI {
+	if family.RequiresAPI || family.Name == "pollution" {
 		if !reflect.DeepEqual(m.Contract, use.APIModel) {
 			return nil, fmt.Errorf("selected %s contract conflicts with verified operation model", family.Label)
 		}
@@ -116,7 +116,7 @@ func (c *catalog) material(family *Family, s *analysis.ComponentSelection) (*Mat
 	if m.Guidelines.Body == "" || len(m.Questions) != len(family.QuestionNames) {
 		return nil, fmt.Errorf("%s required material missing", family.Label)
 	}
-	if !family.RequiresAPI && m.Contract != nil {
+	if !family.RequiresAPI && family.Name != "pollution" && m.Contract != nil {
 		return nil, fmt.Errorf("%s material must not include an API contract", family.Label)
 	}
 	if family.RequiresAPI && m.Contract == nil {

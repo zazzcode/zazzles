@@ -4,7 +4,23 @@
 [Capability inventory](../../../.zazz/evaluation/nodejs-goof-capabilities.md) ·
 [Independent XSS answer key](xss-answer-key.md)
 
-## Current report (rebuilt 2026-11-19)
+## Current report (rebuilt 2026-11-21)
+
+Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the prototype pollution scanner
+(`6006eaa`, [results](../../../.zazz/evaluation/pollution-write-shapes-results.md#ac8-live-judgment)). The reference checkout stayed clean. These are static source judgments, not
+runtime exploit confirmation.
+
+- 19 entries, 36 analysis records: **7 Confirmed, 27 Review, 2 Protected**.
+- 12 requests, 12 completed assessments, 63,118 input tokens. No provider failures. All 12 saved
+  traces replay with the same request digest and outcome.
+- **Answer key:** 8 of 8 expected positives found (two share one record); no keyed control is a finding.
+- New: the Lodash 4.17.4 merge at `routes/index.js:360` is Confirmed prototype pollution
+  (CWE-1321). The command injection at `routes/index.js:174` is Confirmed.
+- The two escaped outputs in `views/edit.ejs` are keyed safe and were Protected in the previous
+  report. In this run the model answered that they were exposed, against the recorded encoding,
+  so they are Review: not a finding and not Protected.
+
+## Previous report (rebuilt 2026-11-19)
 
 Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
 scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
@@ -38,6 +54,13 @@ The checkout was clean when inspected. Its README, package manifest, route regis
 handlers and templates supplied the initial case inventory.
 
 
+
+## Prototype pollution source key
+
+`GOOF-PP-01` expects one prototype-write candidate at `routes/index.js:360` on the pinned sample.
+The request message supplies the keys to a Lodash merge and the lockfile resolves Lodash to
+`4.17.4`. The offline candidate carries a complete raw path. The published judged counts above
+predate this analyzer. [Offline verification](../../../.zazz/evaluation/prototype-pollution-results.md).
 
 ## Command-injection acceptance scan (2026-11-07)
 

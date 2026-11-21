@@ -135,12 +135,13 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	s.assemblePathClaims(out)
 	s.assembleSSRFClaims(out)
 	s.assembleInterpreterClaims(out)
+	s.assemblePollutionClaims(out)
 	// Check assembly rebuilds the use list for its own claim families; the
 	// command and path claims are independent of explicit check files and are kept whole.
 	var commandUses []analysis.CandidateUse
 	rest := out.Uses[:0:0]
 	for _, u := range out.Uses {
-		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" || u.Kind == "ssrf_candidate" || u.Code != nil || u.Redirect != nil {
+		if u.Kind == "command_execution_candidate" || u.Kind == "path_traversal_candidate" || u.Kind == "ssrf_candidate" || u.Code != nil || u.Redirect != nil || u.Pollution != nil {
 			commandUses = append(commandUses, u)
 		} else {
 			rest = append(rest, u)

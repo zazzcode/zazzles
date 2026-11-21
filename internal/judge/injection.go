@@ -20,6 +20,12 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return componentQuestions(analysispacks.CommandQuestions())
 		case "path_traversal_candidate":
 			return componentQuestions(analysispacks.PathQuestions())
+		case analysis.PollutionKind:
+			items := componentQuestions(analysispacks.PollutionQuestions())
+			for i := range items {
+				items[i].choices = analysispacks.PollutionChoices(items[i].name)
+			}
+			return items
 		case "code_execution_candidate", "template_injection_candidate":
 			return interpreterComponentQuestions("code")
 		case "open_redirect_candidate":

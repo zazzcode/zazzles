@@ -121,7 +121,8 @@ func wireBundle(use analysis.CandidateUse) any {
 		Redirect        any                 `json:"redirect,omitempty"`
 		StoredOrigin    any                 `json:"stored_origin,omitempty"`
 		Upload          any                 `json:"upload,omitempty"`
-	}{invocation, 8, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin, wireUpload(use, context)}
+		Pollution       any                 `json:"pollution,omitempty"`
+	}{invocation, 8, buildTraceGraph(use, ref), coverageLedger(required, roles), claimKind(use), use.ID, use.Kind, use.Check, sink, context, dependencies, required, blockers, coverage, scope, wireTable, excerpts, edges, modelFacts(use), resolvedGaps(use), use.APIModel, use.XSS, wireContextFacts(use.Command, context, false), wireContextFacts(use.Path, context, true), inputFacts, wireContextFacts(wireOutbound(use), context, false), wireContextFacts(use.Code, context, false), wireContextFacts(wireRedirect(use), context, false), storedOrigin, wireUpload(use, context), wireContextFacts(use.Pollution, context, false)}
 }
 
 func modelFacts(use analysis.CandidateUse) []string {

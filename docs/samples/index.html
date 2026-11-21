@@ -4,13 +4,14 @@
 <p>Expand routes for source evidence and remediation. These evolving examples include incomplete analysis; they are not complete security assessments.</p>
 <ul>
 <li><a href="juice-shop/findings.html">OWASP Juice Shop report</a> — full judged scan: server/API and browser/client sections, XSS, query and logging findings; no direct command-injection positive (source-reviewed).</li>
-<li><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app report</a> — full judged scan: the <code>/api/ping</code> command injection, reflected XSS and logging, plus validation and outbound review.</li>
+<li><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app report</a> — full judged scan: the <code>/api/ping</code> command injection, reflected XSS, Lodash prototype pollution and logging, plus validation and outbound review.</li>
 <li><a href="vulnpy/findings.html">VulnPy report</a> — full all-family Python assessment: 3,260 completed contexts, including 61 command, 78 SQL, 31 XSS, 260 path and 2,830 input-validation contexts; no records omitted.</li>
-<li><a href="nodejs-goof/findings.html">Node.js Goof report</a> — full judged scan: the <code>POST /create</code> regex-capture command injection, XSS, NoSQL, validation and logging.</li>
+<li><a href="nodejs-goof/findings.html">Node.js Goof report</a> — full judged scan: the <code>POST /create</code> regex-capture command injection, XSS, NoSQL, Lodash prototype pollution, validation and logging.</li>
 <li><a href="ThreatByte/findings.html">ThreatByte Python report</a> — Flask/RESTX, SQL, reflected/stored/DOM XSS and protected controls.</li>
 <li><a href="python-insecure-app/findings.html">Python insecure app report</a> — FastAPI HTML/template construction.</li>
 <li><a href="vulnerable-flask-app/findings.html">Erlik 2 Flask report</a> — SQL and raw responses, with logging and unknown-flow review.</li>
 <li><a href="oss-oopssec-store/findings.html">OSS OopsSec Store report</a> — Next.js App Router: 15 Confirmed, 99 Review (two grouped observations retained in JSON); SQL, path, SSRF, logging and client XSS.</li>
+<li><a href="vuln-nextjs-prototype-pollution/findings.html">vuln-nextjs prototype pollution report</a> — CWE-1321 fixtures at <code>8d26f52</code>: 14 Confirmed, 2 Protected and 3 Review prototype-write records; Lodash by version and source-visible write shapes.</li>
 <li><a href="vuln-nextjs/findings.html">vuln-nextjs lab report</a> — Pages Router at <code>ea10efb</code>: 10 Confirmed, 33 Review, 7 Protected; PGlite and cross-tier XSS.</li>
 <li><a href="dvwa/findings.html">DVWA PHP report</a> — 11 keyed positives confirmed and no protected control reported as a finding.</li>
 </ul>

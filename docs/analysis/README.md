@@ -14,6 +14,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Server-side request forgery](ssrf.md) | Verified `fetch`/`axios`/Python HTTP clients, destination-operand origin, restrictions, grouped outbound observations and outcomes |
 | [Unrestricted file upload](file-upload.md) | Verified PHP and Werkzeug upload writes, stored-name origin, server-side type controls, served destinations and outcomes |
 | [Path traversal](path-traversal.md) | Verified Node `fs` and Python `open`/`pathlib` operations, effective path operands, containment controls and outcomes |
+| [Prototype pollution](prototype-pollution.md) | Verified JS/TS prototype writes, key-bearing inputs, and per-level controls |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |
 | [Cross-site scripting](xss.md) | Source-to-rendering evidence, HTML contexts, template escaping, sanitization and XSS outcomes |

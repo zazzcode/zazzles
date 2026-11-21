@@ -75,6 +75,7 @@ Each of these can hide a real write.
 | `PP-N10` | Any other dynamic-key write | | Emit a Review record for unmatched writes |
 | `PP-N11` | An array part converted before use | `const part = String(path[i])` | Read a converted part as a string part |
 | `PP-N13` | A walk in a callback form other than a plain `forEach` step | A `forEach` whose callback also makes the final write (`if (i === last) cursor[part] = v; else cursor = cursor[part]`); `map` or `every` used for the step; `for…of` over `parts.entries()` | Read the final write inside the callback, and the other iteration methods |
+| `PP-N14` | A recursive walk in a form other than `path[i]` or `path[0]` with `slice(1)` | `const [head, ...rest] = path`; `path.shift()`; a string path re-split at each level; two functions that call each other | Read destructured and consumed paths, and recursion across two functions |
 | `PP-N12` | The vulnerable function is reached through a re-export or a dynamic import | `export { merge } from './merge.js'`, `export * from …`, `export { merge as default }`, `await import('./merge.js')` | Follow re-exports and literal dynamic imports. This is shared by every vulnerability class |
 
 Libraries and dependencies:

@@ -36,6 +36,7 @@ before editing and MUST preserve unrelated user changes.
 | Author or refine a spec | Relevant [plan](.zazz/project/implementation-plan.md) and contract, `spec-builder`, and [spec hygiene](.zazz/standards/spec-hygiene.md) |
 | Implement, test, resume, or verify work | Assigned contract and local run log, [execution discipline](.zazz/docs/agent-execution-discipline.md), `spec-driven`, and matched [standards](.zazz/standards/index.yaml) |
 | Create or manage a worktree | [Worktree setup](.zazz/docs/worktree-setup.md); [Worktrunk cheat sheet](.zazz/docs/wt-cheat-sheet.md) only when using Worktrunk |
+| Set up or troubleshoot gopls for Claude Code or Codex | [gopls setup](.zazz/docs/gopls-setup.md) |
 | Refine SDLC or ownership/process rules | [Zazz methodology](.zazz/docs/zazz-methodology.md) |
 | Edit documentation or standards | Matched [standards](.zazz/standards/index.yaml) and `doc-check` |
 | Prepare or review a PR | [PR process](.zazz/standards/pr-process.md) and matching `pr-builder`/`pr-review` skill; [human-review guide](.zazz/docs/human-in-loop-pr-review-strategy.md) only for review policy |

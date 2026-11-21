@@ -12,6 +12,7 @@ func (f *flow) pollutionAssignment(site, lhs *sitter.Node) {
 	if f.client != nil || f.pollutionRead || f.set == nil || lhs == nil || lhs.Kind() != "subscript_expression" {
 		return
 	}
+	f.pollutionInlineAssignment(site, lhs)
 	lookup := unwrapTS(lhs.ChildByFieldName("object"))
 	if lookup == nil || lookup.Kind() != "subscript_expression" {
 		return
@@ -20,14 +21,7 @@ func (f *flow) pollutionAssignment(site, lhs *sitter.Node) {
 	if key == nil || target == nil || target.Kind() == "subscript_expression" || pollutionLiteral(key) || f.pollutionLookupWritten(lookup) {
 		return
 	}
-	// A computed lhs is not otherwise evaluated as a new value by the shared
-	// flow. Evaluate it in isolation so observing its key changes no other claim.
-	probe := *f
-	probe.pollutionRead = true
-	probe.env = copyValues(f.env)
-	probe.facts, probe.helpers, probe.conditions = nil, nil, nil
-	probe.context, probe.gaps, probe.uses, probe.returns, probe.heapWrites = nil, nil, nil, nil, nil
-	v := probe.eval(key)
+	v := f.pollutionReadValue(key)
 	if !pollutionRequest([]value{v}) {
 		return
 	}
@@ -40,7 +34,18 @@ func (f *flow) pollutionAssignment(site, lhs *sitter.Node) {
 		guard.evidence = append(guard.evidence, f.module.evidence("key_guard", target))
 	}
 	facts := &analysis.PollutionFacts{Operation: analysis.PollutionNested, KeyOperand: "computed_keys", KeyLevels: 2}
-	f.recordPollution(site, 0, []pollutionOperand{{key, v}}, facts, []analysis.Evidence{f.module.evidence("sink_binding", lhs)}, guard)
+	f.recordPollution(site, 0, []pollutionOperand{{node: key, value: v}}, facts, []analysis.Evidence{f.module.evidence("sink_binding", lhs)}, guard)
+}
+
+func (f *flow) pollutionReadValue(n *sitter.Node) value {
+	// A computed lhs is not otherwise evaluated as a new value by the shared
+	// flow. Evaluate it in isolation so observing its key changes no other claim.
+	probe := *f
+	probe.pollutionRead = true
+	probe.env = copyValues(f.env)
+	probe.facts, probe.helpers, probe.conditions = nil, nil, nil
+	probe.context, probe.gaps, probe.uses, probe.returns, probe.heapWrites = nil, nil, nil, nil, nil
+	return probe.eval(n)
 }
 
 // The direct-write rule has no heap model for a receiver slot that an earlier
@@ -177,7 +182,8 @@ func (s *moduleSet) sourcePollutionWrites(m *sourceModule, callee *sitter.Node) 
 	collect := func(w pollutionWrite) {
 		for i := range writes {
 			prior := &writes[i]
-			if prior.operation != w.operation || prior.operand != w.operand || prior.source != w.source || prior.target != w.target {
+			if prior.operation != w.operation || prior.operand != w.operand || prior.source != w.source || prior.target != w.target ||
+				prior.rootPath != w.rootPath || !sameNode(prior.rootDecl, w.rootDecl) {
 				continue
 			}
 			prior.guard = intersectPollutionGuards(prior.guard, w.guard)

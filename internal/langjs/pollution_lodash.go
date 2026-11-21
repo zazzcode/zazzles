@@ -53,7 +53,7 @@ func (f *flow) lodashPollutionCall(call, fn *sitter.Node, args []*sitter.Node, v
 	}
 	operands := make([]pollutionOperand, 0, last-first)
 	for i := first; i < last; i++ {
-		operands = append(operands, pollutionOperand{args[i], values[i]})
+		operands = append(operands, pollutionOperand{node: args[i], value: values[i]})
 	}
 	f.recordPollution(call, 0, operands, facts, binding, guard)
 }

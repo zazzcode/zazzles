@@ -28,19 +28,32 @@ func TestPollutionShapePolicy(t *testing.T) {
 		t.Fatal(err)
 	}
 	shapes := 0
+	starts := 0
 	for _, e := range entries {
-		if !e.IsDir() || !strings.HasPrefix(e.Name(), "shapes-") && !strings.HasPrefix(e.Name(), "explore-") {
+		start := strings.HasPrefix(e.Name(), "start-") && e.Name() != "start-probes"
+		if !e.IsDir() || !start && !strings.HasPrefix(e.Name(), "shapes-") && !strings.HasPrefix(e.Name(), "explore-") {
 			continue
 		}
-		shapes++
+		if start {
+			starts++
+		} else {
+			shapes++
+		}
 		r, err := pipeline.Analyze(filepath.Join(fixture, e.Name()), "")
 		if err != nil {
 			t.Fatal(err)
+		}
+		routes := map[string]string{}
+		for _, entry := range r.Entries {
+			routes[entry.ID] = strings.TrimPrefix(entry.HTTPRoute().PathPattern, "/")
 		}
 		uses := map[string]analysis.CandidateUse{}
 		for _, u := range r.Uses {
 			if u.Kind == analysis.PollutionKind {
 				name, _, _ := strings.Cut(u.Sink.Text, "(")
+				if start {
+					name = routes[u.EntryID]
+				}
 				uses[name] = u
 			}
 		}
@@ -91,8 +104,8 @@ func TestPollutionShapePolicy(t *testing.T) {
 			})
 		}
 	}
-	if shapes != 11 {
-		t.Fatalf("checked %d shape fixtures, want 11", shapes)
+	if shapes != 11 || starts != 7 {
+		t.Fatalf("checked %d shape and %d start fixtures, want 11 and 7", shapes, starts)
 	}
 }
 

@@ -55,11 +55,11 @@ func pollutionForEachWalk(m *sourceModule, scope, call *sitter.Node, params []bo
 		if cursor == "" || !pollutionSubscript(n.ChildByFieldName("right"), cursor, part, m.src) {
 			return
 		}
-		w, ok := pollutionPathWrite(m, call, parts, pollutionCursorStart(m, call, left, params), params, keys)
+		w, ok := pollutionPathWrite(m, call, parts, pollutionCursorStart(m, left, params), left, params, keys)
 		if !ok {
 			return
 		}
-		if final := pollutionPathFinal(m, scope, call, cursor, part, parts); final != nil {
+		if final := pollutionPathFinal(m, scope, call, cursor, part, parts); final != nil && pollutionCursorStable(m, call, n, final) {
 			w.sites = []*sitter.Node{final}
 			w.guard = pollutionRootGuard(m, call, w, pollutionWalkGuard(m, call, body, part, cursor, parts, w, params, keys, n))
 			writes = append(writes, w)

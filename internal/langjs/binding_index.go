@@ -24,6 +24,7 @@ type bindingIndex struct {
 	written  map[string]bool
 	aliased  map[string]bool
 	escapes  map[string][]byteSpan
+	targets  []*sitter.Node // exact assignment, update and delete targets for walk starts
 }
 
 type byteSpan struct{ start, end uint }
@@ -48,10 +49,21 @@ func buildBindingIndex(root *sitter.Node, src []byte) *bindingIndex {
 					idx.assigned[left.Utf8Text(src)] = true
 				}
 				idx.addWrite(left.Utf8Text(src))
+				idx.targets = append(idx.targets, left)
 			}
 		case "update_expression":
 			if arg := n.ChildByFieldName("argument"); arg != nil {
 				idx.addWrite(arg.Utf8Text(src))
+				idx.targets = append(idx.targets, arg)
+			}
+		case "for_in_statement":
+			if left := n.ChildByFieldName("left"); left != nil && n.ChildByFieldName("kind") == nil {
+				idx.targets = append(idx.targets, left)
+			}
+		case "unary_expression":
+			op, arg := n.ChildByFieldName("operator"), n.ChildByFieldName("argument")
+			if op != nil && op.Kind() == "delete" && arg != nil {
+				idx.targets = append(idx.targets, arg)
 			}
 		case "identifier":
 			if p := n.Parent(); p != nil {

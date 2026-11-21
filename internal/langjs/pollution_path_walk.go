@@ -30,11 +30,11 @@ func pollutionPathLoop(m *sourceModule, body, loop *sitter.Node, params []boundP
 		if parts == "" {
 			return
 		}
-		w, ok := pollutionPathWrite(m, loop, parts, pollutionCursorStart(m, loop, left, params), params, keys)
+		w, ok := pollutionPathWrite(m, loop, parts, pollutionCursorStart(m, left, params), left, params, keys)
 		if !ok {
 			return
 		}
-		if final := pollutionPathFinal(m, body, loop, cursor, key, parts); final != nil {
+		if final := pollutionPathFinal(m, body, loop, cursor, key, parts); final != nil && pollutionCursorStable(m, loop, n, final) {
 			w.sites = []*sitter.Node{final}
 			guard := pollutionWalkGuard(m, loop, loopBody, key, cursor, parts, w, params, keys, n)
 			w.guard = pollutionRootGuard(m, loop, w, guard)
@@ -44,31 +44,57 @@ func pollutionPathLoop(m *sourceModule, body, loop *sitter.Node, params []boundP
 	return writes
 }
 
-// pollutionPathWrite resolves the operand that supplies the parts and the object
-// the walk starts from. start is that object's identifier. A walk over a
-// parameter's own path needs a parameter target. A walk over the keys of a
-// source may also start from a local object.
-func pollutionPathWrite(m *sourceModule, at *sitter.Node, parts string, start *sitter.Node, params []boundParam, keys *pollutionLoop) (pollutionWrite, bool) {
+// pollutionPathWrite resolves the parts operand and the object at the start of the walk.
+func pollutionPathWrite(m *sourceModule, at *sitter.Node, parts string, start, stepTarget *sitter.Node, params []boundParam, keys *pollutionLoop) (pollutionWrite, bool) {
 	source, operand := pollutionPartsSource(m, at, parts, params, keys)
 	w := pollutionWrite{operation: analysis.PollutionWalk, operand: operand, source: source, target: -1}
 	w.untyped = pollutionParameter(params, parts) >= 0
-	if (keys != nil) != (operand == "source_keys") || source < 0 || start == nil || start.Kind() != "identifier" {
+	if start == nil || (keys != nil) != (operand == "source_keys") {
 		return w, false
 	}
-	name := start.Utf8Text(m.src)
-	if w.target = pollutionParameter(params, name); w.target < 0 && keys != nil && localInitializer(m, at, name) != nil {
+	if params == nil {
+		w.pathOrigin = pollutionSplitReceiver(m, pollutionPartsInitializer(m, at, parts))
+		if base, _ := pollutionStartPath(w.pathOrigin, m.src); base == nil {
+			return w, false
+		}
+		w.operand = "path"
+		if fn := enclosingFunction(at); fn != nil {
+			params, _ = functionParameters(fn, m.src)
+		}
+	} else if source < 0 {
+		return w, false
+	}
+	w.walk = at
+	name := pollutionIdentifier(start, m.src)
+	if w.target = pollutionParameter(params, name); w.target >= 0 && w.pathOrigin == nil {
+		decl, _ := pollutionStartBinding(m, start)
+		if sameNode(decl, params[w.target].node) {
+			return w, w.target != source && !pollutionStartReassigned(m, start, decl, nil, stepTarget)
+		}
+	}
+	w.target = -1
+	if keys != nil {
+		// Retain the established unflatten resolution and evidence.
+		if name != "" && localInitializer(m, at, name) != nil {
+			w.root = start
+		}
+		return w, w.root != nil
+	}
+	w.rootDecl, w.rootInit, w.rootPath = pollutionWalkStart(m, at, start)
+	if w.rootDecl != nil {
 		w.root = start
 	}
-	return w, w.target != source && (w.target >= 0 || w.root != nil)
+	return w, w.root != nil
 }
 
 // pollutionCursorStart names the object a loop cursor starts from: the cursor
 // itself when it is a parameter, otherwise the identifier it is declared with.
-func pollutionCursorStart(m *sourceModule, loop, cursor *sitter.Node, params []boundParam) *sitter.Node {
-	if pollutionParameter(params, cursor.Utf8Text(m.src)) >= 0 {
+func pollutionCursorStart(m *sourceModule, cursor *sitter.Node, params []boundParam) *sitter.Node {
+	binding, init := pollutionStartBinding(m, cursor)
+	if i := pollutionParameter(params, cursor.Utf8Text(m.src)); i >= 0 && sameNode(binding, params[i].node) {
 		return cursor
 	}
-	return unwrapTS(localInitializer(m, loop, cursor.Utf8Text(m.src)))
+	return unwrapTS(init)
 }
 
 // pollutionWalkGuard reads the key guards before one lookup of a walk: the
@@ -79,15 +105,28 @@ func pollutionCursorStart(m *sourceModule, loop, cursor *sitter.Node, params []b
 // and a test on the whole array is not read.
 func pollutionWalkGuard(m *sourceModule, walk, step *sitter.Node, key, cursor, parts string, w pollutionWrite, params []boundParam, keys *pollutionLoop, site *sitter.Node) pollutionGuard {
 	guard := pollutionPartitionGuard(m, step, key, cursor, !w.untyped || pollutionStringChecked(m, step, key, cursor, site), site)
+	names := pollutionPathNames(m, parts, w, params, keys)
+	if key != "" {
+		names = append(names, compactText(key))
+	}
+	for _, cond := range pollutionExpressionGates(site) {
+		if pollutionGateTest(m, cond, names) {
+			guard = unitePollutionGuards(guard, pollutionGuard{kind: "unknown", unknown: true,
+				evidence: []analysis.Evidence{m.evidence("key_guard", cond)}})
+		}
+	}
 	if w.untyped {
 		return guard
 	}
-	return unitePollutionGuards(guard, pollutionWholePathGuard(m, walk, pollutionPathNames(parts, w, params, keys)))
+	return unitePollutionGuards(guard, pollutionWholePathGuard(m, walk, pollutionPathNames(m, parts, w, params, keys)))
 }
 
 // A local root made by Object.create(null) covers only the first lookup.
 func pollutionRootGuard(m *sourceModule, at *sitter.Node, w pollutionWrite, guard pollutionGuard) pollutionGuard {
-	if w.root != nil && guard.kind == "" && pollutionNullTarget(m, at, w.root) {
+	if w.rootDecl != nil && w.rootInit != nil && w.rootInit.Kind() == "call_expression" && pollutionNullTarget(m, w.rootInit, w.rootInit) {
+		return pollutionGuard{kind: "null_prototype_root", evidence: []analysis.Evidence{m.evidence("key_guard", w.rootInit)}}
+	}
+	if w.root != nil && w.rootDecl == nil && guard.kind == "" && pollutionNullTarget(m, at, w.root) {
 		return pollutionGuard{kind: "null_prototype_root", evidence: []analysis.Evidence{m.evidence("key_guard", w.root)}}
 	}
 	return guard
@@ -150,7 +189,7 @@ func pollutionReduceWalk(m *sourceModule, scope, call *sitter.Node, params []bou
 		return nil
 	}
 	prop, callback, start := fn.ChildByFieldName("property"), args.NamedChild(0), unwrapTS(args.NamedChild(1))
-	if prop == nil || prop.Utf8Text(m.src) != "reduce" || !isFunction(callback) || start.Kind() != "identifier" {
+	if prop == nil || prop.Utf8Text(m.src) != "reduce" || !isFunction(callback) || start == nil {
 		return nil
 	}
 	steps, ok := functionParameters(callback, m.src)
@@ -172,7 +211,7 @@ func pollutionReduceWalk(m *sourceModule, scope, call *sitter.Node, params []bou
 	if p := call.Parent(); p != nil && p.Kind() == "variable_declarator" && sameNode(p.ChildByFieldName("value"), call) {
 		holder, statement = pollutionIdentifier(p.ChildByFieldName("name"), m.src), p
 	}
-	w, ok := pollutionPathWrite(m, call, parts, start, params, keys)
+	w, ok := pollutionPathWrite(m, call, parts, start, nil, params, keys)
 	if !ok {
 		return nil
 	}

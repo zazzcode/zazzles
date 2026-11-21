@@ -293,10 +293,10 @@ func (s *moduleSet) assemblePollutionClaims(report *analysis.AnalysisReport) {
 		fields:  commandFields, chainEvidence: s.interpreterChainEvidence,
 		guards: func(*analysis.CandidateUse) ([]analysis.Evidence, []analysis.Evidence) { return nil, nil },
 		chainGapCovered: func(u *analysis.CandidateUse, g analysis.Gap) bool {
-			return g.Kind == "input_helper_unresolved" && (s.pollutionParseGap(g) || pollutionResultConsumer(u, g)) || s.pollutionAbsentFillGap(u, g)
+			return s.pollutionHelperGapCovered(u, g) || s.pollutionAbsentFillGap(u, g)
 		},
 		gapCovered: func(u *analysis.CandidateUse, g analysis.Gap, complete bool, bodies, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
-			return g.Kind == "key_guard_incomplete" || s.pollutionAbsentFillGap(u, g) ||
+			return g.Kind == "key_guard_incomplete" || s.pollutionAbsentFillGap(u, g) || s.pollutionHelperGapCovered(u, g) ||
 				(g.Kind == "unknown_transfer" || g.Kind == "unknown_value") && s.pollutionParseGap(g) ||
 				s.commandGapCovered(u, g, complete, bodies, transforms, extra)
 		},
@@ -312,6 +312,36 @@ func (s *moduleSet) assemblePollutionClaims(report *analysis.AnalysisReport) {
 			return analysispacks.PollutionContract(u.Pollution.ContractID)
 		},
 	})
+}
+
+// Logging and calls after the write do not gate its key operand.
+func (s *moduleSet) pollutionHelperGapCovered(u *analysis.CandidateUse, g analysis.Gap) bool {
+	if g.Kind != "input_helper_unresolved" {
+		return false
+	}
+	if pollutionResultConsumer(u, g) || s.pollutionParseGap(g) {
+		return true
+	}
+	m := s.modules[g.At.File]
+	if m == nil {
+		return false
+	}
+	root := m.tree.RootNode()
+	call := parse.NodeAt(root, g.At.StartByte, g.At.EndByte)
+	if call == nil || call.Kind() != "call_expression" {
+		return false
+	}
+	fn := call.ChildByFieldName("function")
+	logger := flow{module: m, set: s}
+	if _, verified := logger.logSink(call, fn); verified && !pollutionBindingWritten(m, fn) {
+		return true
+	}
+	if g.At.File != u.Sink.Span.File || g.At.StartByte < u.Sink.Span.EndByte {
+		return false
+	}
+	sink := parse.NodeAt(root, u.Sink.Span.StartByte, u.Sink.Span.EndByte)
+	owner := enclosingFunction(call)
+	return sink != nil && owner != nil && sameNode(owner, enclosingFunction(sink))
 }
 
 // A call that encloses the write receives its result. It runs after the write

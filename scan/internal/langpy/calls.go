@@ -22,6 +22,7 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 	}
 	nodes, values, all := f.callArguments(n)
 	f.interpreterOperation(n, fn, nodes, values)
+	f.deserializationOperation(n, fn, nodes, values)
 	if v, ok := f.regexMatch(n, q, nodes, values); ok {
 		return v
 	}

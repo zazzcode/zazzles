@@ -289,6 +289,7 @@ func (f *flow) fixedLiteralPrefixRedirect(n *sitter.Node) bool {
 }
 
 func (s *moduleSet) assembleInterpreterClaims(report *analysis.AnalysisReport) {
+	s.assembleDeserializationClaims(report)
 	for _, kind := range []string{"code_execution_candidate", "open_redirect_candidate", analysispacks.TemplateKind} {
 		family := "code"
 		if kind == "open_redirect_candidate" {

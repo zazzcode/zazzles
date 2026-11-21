@@ -21,7 +21,8 @@ WITNESS = {'input_source', 'storage_read', 'storage_source', 'browser_source', '
 PYTHON_APPS = ('ThreatByte', 'python-insecure-app', 'vulnerable-flask-app', 'vulnpy')
 LAB_FAMILIES = {'CWE-22': 'path_traversal_candidate', 'CWE-78': 'command_execution_candidate',
                 'CWE-89': 'sql_query_candidate', 'CWE-918': 'ssrf_candidate', 'CWE-79': 'xss_candidate',
-                'CWE-95': 'code_execution_candidate', 'CWE-601': 'open_redirect_candidate'}
+                'CWE-95': 'code_execution_candidate', 'CWE-601': 'open_redirect_candidate',
+                'CWE-502': 'deserialization_candidate'}
 PY_EXPECT = {'construction': 'positive', 'raw_xss': 'positive', 'candidate': 'positive',
              'validation_defect': 'present', 'not_confirmed': 'present', 'validation_enforced': 'present',
              'form_policy': 'present', 'encoded': 'encoded', 'bound': 'bound', 'absent': 'no_record',

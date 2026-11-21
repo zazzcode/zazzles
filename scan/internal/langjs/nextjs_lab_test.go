@@ -23,6 +23,7 @@ var labFamilies = map[string]string{
 	"CWE-79":  "xss_candidate",
 	"CWE-95":  "code_execution_candidate",
 	"CWE-601": "open_redirect_candidate",
+	"CWE-502": "deserialization_candidate",
 }
 
 // TestNextJSVulnLab is the offline integration test against the owner-maintained

@@ -9,7 +9,7 @@ acceptance evidence. This roadmap does not authorize implementation or live mode
 
 | Module | Function | State |
 |---|---|---|
-| **Scan** | Assess source-code vulnerabilities, controls and supported validation and construction practices | Implemented for bounded JavaScript, TypeScript, Python and PHP cases |
+| [**Scan**](../../scan/README.md) | Assess source-code vulnerabilities, controls and supported validation and construction practices | Implemented for bounded JavaScript, TypeScript, Python and PHP cases |
 | [**Fix**](../../fix/README.md) | Provide agent skills, remediation standards and playbooks for findings from Zazzles and external SAST, dependency audit and DAST tools | Planned, expected before Probe |
 | [**Probe**](../../probe/README.md) | Check authorized endpoints for externally observable issues, starting with TLS and certificates, and provide remediation guidance | Planned |
 

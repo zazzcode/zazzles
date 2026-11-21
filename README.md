@@ -10,7 +10,7 @@ planned modules.
 
 | Module | Purpose | Status |
 |---|---|---|
-| **Scan** | Analyzes JavaScript, TypeScript, Python and PHP source for vulnerabilities and practices worth fixing. Reports include the affected operation, input paths, observed controls and evidence gaps. Optional model assessment uses that evidence to judge supported claims. | Available and in active development |
+| [**Scan**](scan/README.md) | Analyzes JavaScript, TypeScript, Python and PHP source for vulnerabilities and practices worth fixing. Reports include the affected operation, input paths, observed controls and evidence gaps. Optional model assessment uses that evidence to judge supported claims. | Available and in active development |
 | [**Fix**](fix/README.md) | Gives coding agents skills, standards and playbooks for fixing findings from Zazzles or other SAST, dependency audit and DAST tools. Guides agents from the finding evidence through a repair and verification. | Planned |
 | [**Probe**](probe/README.md) | Checks externally observable security settings on authorized endpoints. Initial coverage will include TLS versions and configuration, expired certificates and related issues, with evidence and remediation recommendations. | Planned |
 

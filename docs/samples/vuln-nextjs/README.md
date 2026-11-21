@@ -12,8 +12,9 @@ source judgments, not runtime exploit confirmation.
 
 - 37 entries, 54 analysis records: **12 Confirmed, 35 Review, 7 Protected**.
 - 27 requests, 27 completed assessments, 132,645 input tokens. No provider failures.
-- **Answer key:** 13 of 13 expected positives found; no keyed control is a finding.
-- All 13 lab positives are found, including the code-execution and open-redirect rows the previous report could not score; no safe control is red.
+- All 13 expected in-scope cases were found. Twelve were Confirmed, including the two code
+  injection cases and open redirect. The stored XSS case `XSS-002` was a practice finding.
+- None of the 16 scored controls produced a finding.
 
 ## Previous report (published 2026-11-16)
 
@@ -42,11 +43,9 @@ The source of truth is the lab's
 generated from `lib/catalog.json`. Re-pin and re-evaluate changed source before publishing new results.
 A safe control is scoped to its listed CWE; unrelated issues are separate claims.
 
-The command safe control, zod notes SQL, safe SSRF, DOMPurify outputs and escaped script JSON remain
-Review. React-text controls produce no XSS record. Code injection (`JS-001/002`), open redirect
-(`REDIR-001`) and dependency/SCA (`SCA-001`) have no implemented analyzer family. The nested
-React2Shell App Router target is a separate project. Try/catch flow, child-component props and some
-other entry forms remain bounded; see [Next.js support](../../nextjs-support.md).
+Dependency auditing for `SCA-001` is outside the scored cases. The nested React2Shell App Router
+target is a separate project. Try/catch flow, child-component props and some other entry forms
+remain bounded. [Next.js support](../../nextjs-support.md)
 
 These are static source judgments, not runtime exploit confirmation or exhaustive recall. Follow the
 [reference policy](../reference-policy.md); repair an independent copy, leaving references unchanged.

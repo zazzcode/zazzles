@@ -11,8 +11,8 @@
 <li><a href="python-insecure-app/findings.html">Python insecure app report</a> — FastAPI HTML/template construction.</li>
 <li><a href="vulnerable-flask-app/findings.html">Erlik 2 Flask report</a> — SQL and raw responses, with logging and unknown-flow review.</li>
 <li><a href="oss-oopssec-store/findings.html">OSS OopsSec Store report</a> — Next.js App Router: 15 Confirmed, 99 Review (two grouped observations retained in JSON); SQL, path, SSRF, logging and client XSS.</li>
-<li><a href="vuln-nextjs-prototype-pollution/findings.html">vuln-nextjs prototype pollution report</a> — CWE-1321 fixtures at <code>8d26f52</code>: 14 Confirmed, 2 Protected and 3 Review prototype-write records; Lodash by version and source-visible write shapes.</li>
-<li><a href="vuln-nextjs/findings.html">vuln-nextjs lab report</a> — Pages Router at <code>ea10efb</code>: 10 Confirmed, 33 Review, 7 Protected; PGlite and cross-tier XSS.</li>
+<li><a href="vuln-nextjs/findings.html">vuln-nextjs Pages Router report</a>. The 2026-11-19 paid scan at <code>ea10efb</code> found all 13 expected in-scope cases (12 Confirmed and one practice finding) in 27 requests. Examples include PGlite SQL injection, cross-tier XSS, code injection and open redirect. <a href="vuln-nextjs/findings.json">JSON</a> · <a href="vuln-nextjs/findings.sarif">SARIF</a></li>
+<li><a href="vuln-nextjs-prototype-pollution/findings.html">vuln-nextjs prototype pollution report</a>. The 2026-11-21 paid scan at <code>8d26f52</code> Confirmed 14 of 15 in-scope cases in 19 requests. One in-scope case stayed in Review, and two dependency-only cases had no record. Examples include Lodash by version and source-visible prototype writes. <a href="vuln-nextjs-prototype-pollution/findings.json">JSON</a> · <a href="vuln-nextjs-prototype-pollution/findings.sarif">SARIF</a></li>
 <li><a href="dvwa/findings.html">DVWA PHP report</a> — 11 keyed positives confirmed and no protected control reported as a finding.</li>
 </ul>
 <p>Each report is standalone. No model calls are made when viewing it.</p>

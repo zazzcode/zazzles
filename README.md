@@ -78,6 +78,18 @@ and Protected claims. Protection applies to the specific operation and paths sho
 Browse saved HTML reports or download their JSON and SARIF evidence. Each sample lists its target
 revision and the scanner’s assessment scope. [Hosted reports](https://zazzcode.github.io/zazzles/docs/samples/) · [Sample index](docs/samples/README.md) · [Verify a sample finding](docs/samples/README.md#verify-a-sample-finding)
 
+### Paid scans of the vuln-nextjs lab
+
+Both reports used OpenAI `gpt-6-luna` and were scored against the lab’s expected cases.
+
+| Saved report | Run date and lab pin | Paid requests | Expected positives | Detected |
+|---|---|---:|---|---|
+| [Full Pages Router app](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs/findings.html) · [Sample notes](docs/samples/vuln-nextjs/README.md) | 2026-11-19 · `ea10efb` | 27 | 13 in scope | 13 found (12 Confirmed and 1 practice finding) |
+| [Prototype pollution fixtures](https://zazzcode.github.io/zazzles/docs/samples/vuln-nextjs-prototype-pollution/findings.html) · [Sample notes](docs/samples/vuln-nextjs-prototype-pollution/README.md) | 2026-11-21 · `8d26f52` | 19 | 17 in the key, 15 in scope | 14 Confirmed, 1 Review, 2 dependency cases with no record |
+
+Both runs had zero findings on the keyed safe controls. The walk-start branch was verified
+separately with an [offline rescan](.zazz/evaluation/pollution-walk-start-results.md#six-sample-noise-check).
+
 <a id="project-goals-scan-inspect-audit-and-fix"></a>
 <a id="project-goals-scan-audit-and-fix"></a>
 <a id="project-goals-scan-quality-audit-and-fix"></a>

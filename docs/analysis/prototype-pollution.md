@@ -126,6 +126,10 @@ These forms can pollute `Object.prototype` and have no record:
   is the built-in. A variable, parameter, function or class of that name in the module, or a
   write to the method in the module, ends the match. A replacement through `globalThis`, or a
   method patched in another module, is not seen and the function keeps its record.
+- **Path decoded between the check and the split.** A decode into the same variable is seen and
+  the earlier check is not credited. A decode at the point of use,
+  `decodeURIComponent(path).split('.')`, or into a new variable is not read as a walk, so that
+  bypass has no record.
 - **Path normalised before the walk.** The only write a path parameter may receive is its own
   split, `path = path.split('.')`. A path converted another way has no record: a string
   conversion before the split, a conditional that yields the array or its split, or a helper
@@ -159,9 +163,10 @@ These forms can pollute `Object.prototype` and have no record:
 - **Lookup or validator call on the key.** A path test that depends on a call taking the key
   operand is `key_guard_coverage_unknown`. The scanner does not decide whether that call rejects
   a prototype key. A one-line helper that tests the key directly is read.
-- **Regular-expression path guard.** A whole-path test other than `includes` or `indexOf` is
-  left unread. The walk is recorded without that control, and an assessment that relies on it
-  is a contradiction.
+- **Other whole-path guards.** A whole-path test other than `includes` or `indexOf` is left
+  unread: a regular-expression test, `parts.some(…)`, a deny array checked with `some`, or a test
+  on `path.toLowerCase()`. The walk is recorded without that control, and an assessment that
+  relies on it is a contradiction.
 - **Comparison on untyped array parts.** A literal comparison on the parts of a caller's array
   with no `typeof` test first is `key_guard_coverage_unknown`.
 - **Untyped key sources.** A query-string value or another input whose shape the input facts do

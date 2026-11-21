@@ -4,10 +4,11 @@ Zazzles is a modular security project for analyzing application code, checking d
 endpoints, and remediating findings. **Code Scan** is available today. **Fix** and
 **Endpoint Probe** are planned modules.
 
-**Decision-model judgment is central to Code Scan.** Static analysis traces input to sensitive
-operations and records the controls on each path. A decision LLM evaluates that evidence to help
-distinguish vulnerabilities from protected or inconclusive paths and reduce false positives.
-Zazzles checks the answers against its source facts before assigning an outcome.
+**Decision-model judgment is central to Code Scan.** Code Scan is not another rule-based SAST
+scanner. Static analysis establishes the source facts: it traces input to sensitive operations and
+records the controls on each path. A decision LLM then judges that evidence as vulnerable,
+protected, poor practice, weak input validation, or inconclusive. Zazzles checks the answers
+against its source facts before assigning an outcome.
 
 [Current coverage](#current-coverage) · [Run Scan](#quick-start) · [Sample reports](docs/samples/README.md) · [Modules](#modules) · [Documentation](docs/README.md)
 

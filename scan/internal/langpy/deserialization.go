@@ -313,15 +313,71 @@ func (f *pythonFlow) deserializationGuard(e analysis.Evidence) string {
 		if child.Kind() != "call" || kind == analysis.DeserializationIntegrity {
 			return
 		}
-		q := f.deserializationBinding(m, pyField(child, "function"))
+		fn := pyField(child, "function")
+		q := f.deserializationBinding(m, fn)
 		switch q {
 		case "hmac.compare_digest", "hmac.new", "hmac.digest", "django.core.signing.loads", "django.core.signing.unsign", "itsdangerous.loads", "itsdangerous.unsign":
 			kind = analysis.DeserializationIntegrity
 		default:
-			if strings.HasPrefix(q, "hashlib.") {
+			if f.itsdangerousControl(m, fn) {
+				kind = analysis.DeserializationIntegrity
+			} else if strings.HasPrefix(q, "hashlib.") {
 				kind = analysis.DeserializationUnkeyedHash
 			}
 		}
 	})
 	return kind
+}
+
+// itsdangerous exposes signing methods on instances. Require an import-bound
+// constructor, either inline or in a single dominating assignment.
+func (f *pythonFlow) itsdangerousControl(m *pythonModule, fn *sitter.Node) bool {
+	method := pyText(m, pyField(fn, "attribute"))
+	if method != "loads" && method != "unsign" {
+		return false
+	}
+	receiver := pyField(fn, "object")
+	if receiver == nil {
+		return false
+	}
+	if receiver.Kind() == "identifier" {
+		receiver = pySigningInitializer(m, receiver)
+	}
+	if receiver == nil || receiver.Kind() != "call" {
+		return false
+	}
+	switch f.deserializationBinding(m, pyField(receiver, "function")) {
+	case "itsdangerous.Signer", "itsdangerous.TimestampSigner",
+		"itsdangerous.Serializer", "itsdangerous.TimedSerializer",
+		"itsdangerous.URLSafeSerializer", "itsdangerous.URLSafeTimedSerializer":
+		return true
+	}
+	return false
+}
+
+func pySigningInitializer(m *pythonModule, ref *sitter.Node) *sitter.Node {
+	name := pyText(m, ref)
+	idx := m.bindingIndex()
+	if idx.writes[name] != 1 || idx.aliased[name] || idx.dynamic {
+		return nil
+	}
+	for child, scope := ref, ref.Parent(); scope != nil; child, scope = scope, scope.Parent() {
+		if scope.Kind() != "block" && scope.Kind() != "module" {
+			continue
+		}
+		for i := uint(0); i < scope.NamedChildCount(); i++ {
+			stmt := scope.NamedChild(i)
+			if stmt.StartByte() >= child.StartByte() {
+				break
+			}
+			if stmt.Kind() != "expression_statement" || stmt.NamedChildCount() != 1 {
+				continue
+			}
+			assign := stmt.NamedChild(0)
+			if assign.Kind() == "assignment" && pyText(m, pyField(assign, "left")) == name {
+				return pyField(assign, "right")
+			}
+		}
+	}
+	return nil
 }

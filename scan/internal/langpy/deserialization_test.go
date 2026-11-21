@@ -194,3 +194,43 @@ def value():
 		})
 	}
 }
+
+func TestDeserializationPythonSigningControls(t *testing.T) {
+	for _, guard := range []string{
+		"signing.loads(data)",
+		"Signer(KEY).unsign(data)",
+		"signer.unsign(data)",
+	} {
+		t.Run(guard, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "app.py", `from flask import Flask, request, abort
+from django.core import signing
+from itsdangerous import Signer
+import pickle
+KEY = "fixture-key"
+app = Flask(__name__)
+@app.post('/value')
+def value():
+    signer = Signer(KEY)
+    data = request.data
+    if not `+guard+`:
+        abort(403)
+    return pickle.loads(data)
+`)
+			r, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := usesOf(r, analysis.DeserializationKind, "")
+			if len(got) != 1 {
+				t.Fatalf("got %d candidates", len(got))
+			}
+			facts := got[0].Deserialization
+			if facts.Paths[0].Protection != "guarded" || !slices.ContainsFunc(facts.Controls, func(c analysis.DeserializationControl) bool {
+				return c.Kind == analysis.DeserializationIntegrity
+			}) {
+				t.Fatalf("signing guard not recorded: %+v", facts)
+			}
+		})
+	}
+}

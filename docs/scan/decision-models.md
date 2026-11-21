@@ -225,10 +225,9 @@ separate candidate/entry IDs and exact request digests, record `deduplicated_fro
 policy independently, and have no billed usage assigned. `--trace-dir` saves a replayable exact
 trace for each sibling. There is no persistent answer cache or cross-analyzer batch.
 
-Use `--only-family path,command` to judge selected families, or `--skip-family outbound,xss`
-to exclude families. Names are `sql`, `nosql`, `xss`, `command`, `path`, `logging`,
-`input-validation`, and `outbound`. The flags are mutually exclusive; `JUDGE_ONLY_FAMILY` and
-`JUDGE_SKIP_FAMILY` provide defaults. Excluded model assessments remain unrun; existing deterministic practice findings are retained,
+Use `--only-family deserialization` to assess CWE-502 alone, or `--skip-family outbound,xss`
+to exclude families. The [coverage index](detection-capabilities.md) lists the available names.
+Use one flag per scan. `JUDGE_ONLY_FAMILY` and `JUDGE_SKIP_FAMILY` provide defaults. Excluded model assessments remain unrun; existing deterministic practice findings are retained,
 with scope and deduplication accounting in report limitations. All analyzers use the same scan-wide
 provider/model with no automatic fallback. Optional Google probability/confidence metadata never
 closes static blockers.

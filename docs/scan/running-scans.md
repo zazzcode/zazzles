@@ -174,8 +174,8 @@ caps how many run at once (default 4; `1` is serial). Manage spending in your AP
 report with its reason and a stderr warning, and the scan exits 0. Only a stopped judge (account failure or unresponsive model) exits 1; see [judged-scan reliability](decision-models.md#judged-scan-reliability). Neither a successful judge call nor offline exit 0 certifies the target.
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
 
-Use `--only-family path,command` or `--skip-family input-validation,outbound` to scope model
-assessment with `--analyze --judge`. Use one of these flags per run. The
+Use `--only-family deserialization` to assess CWE-502 alone, or `--skip-family input-validation,outbound`
+to exclude those families with `--analyze --judge`. Use one of these flags per run. The
 [coverage index](detection-capabilities.md) lists the family names. Set defaults with
 `JUDGE_ONLY_FAMILY` or `JUDGE_SKIP_FAMILY`.
 Excluded model assessments remain unrun without an incompleteness warning. Existing deterministic practice

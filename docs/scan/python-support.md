@@ -27,6 +27,7 @@ Structural findings remain useful without a model; neither mode certifies an app
 | Logging | Unshadowed print/logging bindings, credential/personal field hints, HTTP credentials, literal email and verified database-result candidates; length/presence/comparison controls |
 | XSS | Flask HTML string returns, render_template/render_template_string, Jinja template variables and source construction, safe/Markup/escape/forceescape, autoescape blocks, explicit FastAPI HTML, `jinja2.Environment` file templates, Django and Pyramid responses, aiohttp and Falcon responses with a literal HTML content type, Quart and Bottle string returns, WSGI appends under a dispatch test for a literal HTML response, bounded sqlite table/field stored-origin links |
 | Browser XSS | Literal inline scripts in resolved templates reuse the browser adapter. Canonical versioned code.jquery.com script tags establish bounded jQuery bindings; input val() → append()/html() and nested callbacks are modeled. Native DOM append(string) is text. |
+| Deserialization | Verified Pickle, PyYAML and jsonpickle calls, with exact-version loader defaults, data paths and controls ([analysis rules](analysis/deserialization.md#python)) |
 | Outbound | Request-influenced URL slots for requests/httpx functions and urllib.request.urlopen; method/body/response slots stay separate |
 
 SQL construction is a practice finding independently of an injection judgment. Bound parameters

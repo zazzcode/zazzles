@@ -1,7 +1,7 @@
 # Unsafe deserialization analyzer (CWE-502)
 
-- **Status** Ready for unattended implementation, revised 2026-11-21. No code is written. Every
-  question is decided in §5 and §11; the implementing agent asks nothing before starting.
+- **Status** Scanner implementation and offline verification in the feature worktree.
+  [Verification results](../evaluation/deserialization-results.md) record the open lab and live checks.
 - **Worktree and branch** `analyzer-unsafe-deserialization`, a sibling worktree cut from `stage`.
 - **Baseline** The sample table below was measured at `stage` `58e94e7`. The worktree was cut at
   `e608c86`, after the repository moved to `scan/`, `fix/` and `probe/`. Step 1 of §9 re-records
@@ -122,17 +122,19 @@ Read these before step 1 of §9. Nothing else is required.
 
 | Path | Change | Purpose |
 |---|---|---|
-| `scan/internal/analysis/deserialization.go`, `analysis.go`, `interpreter_redirect.go` | New, modified | `DeserializationFacts`, the `Deserialization` field on `CandidateUse`, `CodePaths` |
-| `scan/internal/analysispacks/deserialization.go`, `upload.go`, `families.go`, `code_redirect.go`, `select.go`, `descriptors.go` | New, modified | Contracts, questions, protocol, family registration, descriptors, input component identities |
+| `scan/internal/analysis/deserialization.go`, `analysis.go`, `interpreter_redirect.go`, tests | New, modified | `DeserializationFacts`, the `Deserialization` field on `CandidateUse`, `CodePaths` |
+| `scan/internal/analysispacks/deserialization.go`, `upload.go`, `families.go`, `code_redirect.go`, `select.go`, `descriptors.go`, tests | New, modified | Contracts, questions, protocol, family registration, descriptors, input component identities |
 | `scan/internal/judge/deserialization.go`, `policy.go`, `injection.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, tests | New, modified | Policy, question wiring, facts on the wire |
-| `scan/internal/langpy/deserialization.go`, `package_versions.go`, `calls.go` or the file that dispatches calls, tests, `testdata/deserialization/` | New, modified | Python operations, loader facts, transfers, exact-pin version reader (D-17) |
-| `scan/internal/langjs/deserialization.go`, `code_redirect.go`, tests, `testdata/deserialization/` | New, modified | JS and TS operations, schema and version facts, claim assembly |
+| `scan/internal/langpy/deserialization.go`, `package_versions.go`, `calls.go`, `code_redirect.go`, tests, `testdata/deserialization/` | New, modified | Python operations, loader facts, transfers, exact-pin version reader (D-17) |
+| `scan/internal/langjs/deserialization.go`, `code_redirect.go`, `flow.go`, tests, `testdata/deserialization/` | New, modified | JS and TS operations, schema and version facts, claim assembly |
 | `scan/internal/langphp/deserialization.go`, `calls.go`, tests, `testdata/deserialization/` | New, modified | `unserialize` options, `Yaml::parse` flags, transfers, magic-method evidence |
 | `scan/internal/report/code_redirect.go`, `findings.go`, `finding_types.go`, `sarif.go`, `guidance.go`, `p5_explain.go`, tests | Modified | Finding, label, SARIF rule for CWE-502, guidance |
 | `scan/internal/langjs/nextjs_lab_test.go`, `.zazz/evaluation/recall-gap-inventory/check.py` | Modified | Map `CWE-502` to `deserialization_candidate` |
-| `scan/cli/main.go`, `scan/cli/testdata/architecture-baseline.json` | Modified | Family name in the flag help; baseline additions only |
+| `scan/cli/main.go`, `scan/cli/architecture_baseline_test.go`, `scan/cli/testdata/architecture-baseline.json` | Modified | Family name in the flag help; baseline additions only |
 | `docs/scan/analysis/deserialization.md` (new), `docs/scan/analysis/README.md`, `docs/scan/detection-capabilities.md`, `docs/scan/detection-capabilities/unsafe-deserialization.md` (new), `docs/scan/python-support.md`, `docs/scan/php-support.md`, `README.md` | New, modified | Rules, supported subset per language, limits |
 | `.zazz/evaluation/deserialization-results.md` (new), `recall-gap-inventory/cases.json`, `docs/samples/vulnpy/cases.json`, `docs/samples/vulnerable-flask-app/cases.json`, the VulnPy and TypeScript app guides, `.zazz/project/implementation-plan.md` | New, modified | Key rows, results, capability checklist |
+| This contract and its index | Modified | Scope, feature status, and verification links |
+| Companion user and project documentation | New, modified | Compatibility capability page, CLI and results guides, Next.js support, project capability and sample indexes, analyzer architecture |
 | In the lab checkout `<DEV_ROOT>/zazzcode/vuln-nextjs`: the files D-21 names | New, modified | Two scenarios with safe controls |
 
 ### Wiring checklist

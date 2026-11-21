@@ -27,6 +27,7 @@ that evidence to classify a supported security claim. [How to read a report](int
 | [Server-side request forgery](detection-capabilities/server-side-request-forgery.md) | [CWE-918](https://cwe.mitre.org/data/definitions/918.html) | `ssrf` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) · [API7:2023 SSRF](https://api-security.owasp.org/editions/2023/en/0xa7-server-side-request-forgery/) |
 | [Code injection](detection-capabilities/code-injection.md) | [CWE-95](https://cwe.mitre.org/data/definitions/95.html) | `code` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
 | [Server-side template injection](detection-capabilities/template-injection.md) | [CWE-1336](https://cwe.mitre.org/data/definitions/1336.html) | `code` | — |
+| [Unsafe deserialization](detection-capabilities/unsafe-deserialization.md) | [CWE-502](https://cwe.mitre.org/data/definitions/502.html) | `deserialization` | — |
 | [Prototype pollution](detection-capabilities/prototype-pollution.md) | [CWE-1321](https://cwe.mitre.org/data/definitions/1321.html) | `pollution` | — |
 | [Open redirect](detection-capabilities/open-redirect.md) | [CWE-601](https://cwe.mitre.org/data/definitions/601.html) | `redirect` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) |
 | [Sensitive data in logs](detection-capabilities/sensitive-data-logging.md) | [CWE-532](https://cwe.mitre.org/data/definitions/532.html) | `logging` | [A09:2025 Security Logging and Alerting Failures](https://top10.owasp.org/2025/A09_2025-Security_Logging_and_Alerting_Failures/) |
@@ -79,6 +80,6 @@ the supported walk starts, inline handler walks and their current limits.
 ## Coverage boundaries
 
 Scans read source and do not install dependencies, execute the target or make its outbound
-requests. Dependency-wide vulnerability auditing, deserialization and findings that require
+requests. Dependency-wide vulnerability auditing and findings that require
 runtime environment or deployment behavior are outside the current scan coverage. See each
 class page for its language, framework and library boundaries.

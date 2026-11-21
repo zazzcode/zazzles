@@ -226,7 +226,10 @@ coverage work within existing families, not evidence the app is safe.
 
 ## Future vulnerability-family branches
 
-Beyond the command-injection examples reviewed above, trigger modules cover deserialization, weak hashing/randomness, parameter
+The unsafe-deserialization analyzer now keys four Pickle and PyYAML sinks. The offline scan
+records 30 contexts for each sink. [Verification](deserialization-results.md)
+
+Other trigger modules cover weak hashing/randomness, parameter
 pollution, traversal, ReDoS, SSRF, unsafe code execution, XXE and XPath injection. Preserve these as
 future answer-key work. The comparison tools' broader results can guide source review, but do not
 replace an independent expected result and protected counterpart for each new class.

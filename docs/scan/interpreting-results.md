@@ -19,6 +19,11 @@ question. It is a result within Review, not a safe verdict. The human view uses 
 `unknown`, `uncertain`, and `needs_evidence` values. JSON preserves those machine values for
 compatibility and audit; `not_run` remains **Not assessed** and `failed` remains **Assessment failed**.
 
+A CWE-502 finding describes the impact of the verified deserializer. A code-capable format
+supports code execution by design. PHP object injection depends on the classes available to the
+application. Unresolved loaders, schemas or required versions leave the record in Review.
+[Unsafe deserialization coverage](detection-capabilities/unsafe-deserialization.md)
+
 ## Status colors
 
 The HTML uses soft fills with readable text and explicit labels:

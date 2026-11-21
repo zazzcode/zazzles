@@ -32,6 +32,7 @@ model; neither mode certifies an application as safe.
 | Path | `include`/`require` dynamic targets, `move_uploaded_file` upload moves, filesystem read/write calls; `basename`/allowlist restrictions are controls, not sink removals |
 | Upload | `move_uploaded_file` also yields a `file_upload_candidate` with stored-name, type-control and served-destination facts ([file upload rules](analysis/file-upload.md)) |
 | Code and templates | `eval`, string `assert` and `create_function` as interpreter operands. A `file_get_contents` return retains its path's dependencies. Verified Twig `createTemplate` and `template_from_string` take a template-source operand |
+| Deserialization | Global `unserialize` and Symfony `Yaml::parse` with source-backed options, request byte paths, and object-injection outcomes ([analysis rules](analysis/deserialization.md#php)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 

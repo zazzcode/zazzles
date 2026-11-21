@@ -46,7 +46,7 @@ cases MUST NOT be forced into confirmed findings merely to match the author's vu
 | --- | --- | --- |
 | TS-SQL-N01 — Simulated SQL injection | `src/server.ts:73–76` | SQL-shaped text is constructed/logged but never passed to a database. users.find is an array lookup. Negative for executed SQL injection; preserve the separate authentication/logging defects |
 | TS-XXE-REVIEW — XML parsing | `src/server.ts:173` | xml2js.parseString with strict:false alone does not establish external-entity resolution. Requires verified parser/version behavior before a positive XXE expectation |
-| TS-YAML-REVIEW — YAML deserialization | `src/server.ts:187` | Actual API is js-yaml.safeLoad, not unrestricted load. Do not infer arbitrary code execution from the comment; verify pinned version/schema/advisory semantics separately |
+| TS-DESER-N01 — YAML deserialization control | `src/server.ts:187` | The pinned js-yaml 3.10.0 call uses `safeLoad` without a schema override. The offline scan emits no CWE-502 candidate. |
 | TS-REDOS-REVIEW — Regex DoS | `src/server.ts:223–224` | Request text reaches a regex with nested/overlapping repetition and no local input bound. Review algorithmic complexity; no timing/runtime exploit was executed |
 | TS-RANDOM-REVIEW — Insecure randomness | `src/server.ts:231` | Math.random creates a value returned as a token. Non-cryptographic construction is established; actual security-token use/policy must be established for a security claim |
 | TS-CORS-REVIEW — Wildcard plus credentials | `src/server.ts:48–50` | Wildcard origin and credentials:true are emitted, but this does not by itself prove credentialed browser access; that combination is not a valid credentialed allow-origin response |

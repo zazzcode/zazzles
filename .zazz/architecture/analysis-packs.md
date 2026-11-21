@@ -174,6 +174,7 @@ transport and mandatory claim gates in `scan/internal/judge`, and presentation i
 | Standalone validation | `scan/internal/analysispacks/validation.go` (questions/choices); policy assembly stays in parse; gates in `scan/internal/judge/validation.go` | Migrated: requirement/enforcement questions are catalog components; established/absent policies, enforced/bypassed/missing guards and API-less field claims preserved |
 | Logging | Logger/source extraction in parse; `scan/internal/analysispacks/logging.go`, `scan/internal/judge/logging.go` | Catalog-owned questions and selected guidance; sensitive content, emission and redaction gates retained |
 | Outbound requests | Destination/source extraction in parse; `scan/internal/analysispacks/outbound.go` owns Python contract and observation descriptors | Migrated: JS/TS shapes remain unverified, Python URL/body/response roles preserved; no security questionnaire, model request or SSRF verdict |
+| Unsafe deserialization | `scan/internal/analysispacks/deserialization.go` owns contracts and questions | Language adapters establish binding, option and byte-path facts. The judge applies one CWE-502 policy across the four languages. [Analysis rules](../../docs/scan/analysis/deserialization.md) |
 | Findings and exports | `scan/internal/report/`, `scan/cli/` | Existing presentation counts/statuses remain; canonical JSON carries detailed selection provenance |
 
 A material item has one runtime owner. Family integration reuses selected shared language sections

@@ -69,7 +69,7 @@ at ten requests. Remaining candidates stay unassessed. [Decision-model setup](do
 
 The [coverage index](docs/scan/detection-capabilities.md) lists each weakness, the `--only-family`
 selector, supported entry points and known gaps. It also links to standalone field validation and
-framework practice checks.
+framework practice checks. The [unsafe deserialization analyzer](docs/scan/detection-capabilities/unsafe-deserialization.md) covers Python, server-side JavaScript and TypeScript, and PHP.
 
 <a id="how-the-decision-model-judges-a-result"></a>
 

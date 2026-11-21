@@ -74,7 +74,7 @@ These list categories, not every expected location. The retained source is pinne
 | Information disclosure | General family out of scope; sensitive log contents have separate evidence gates |
 | Command injection | Planned for future branches |
 | Brute force | Planned for future branches |
-| Deserialization | Planned for future branches |
+| Deserialization | The pickle call receives socket bytes. The current analyzer emits no request-derived candidate for this sample. [Coverage](../scan/detection-capabilities/unsafe-deserialization.md) |
 | Broken authentication | Planned for future branches |
 | DoS | Planned for future branches |
 | File upload | Planned for future branches |

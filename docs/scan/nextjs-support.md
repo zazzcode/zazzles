@@ -227,8 +227,8 @@ analyzers and standalone input validation. At the acceptance pin:
 | SSRF | Confirmed: `fetch(query.fetch)` in `getServerSideProps` behind a scheme-only regex | Same-origin and `/api/` check: Review |
 | XSS | Confirmed: reflected, client stored notes, script-context JSON, server-rendered stored guestbook | React text: no record. DOMPurify and `\u003c`-escaped JSON: Review |
 
-Eval injection (CWE-95), open redirect (CWE-601) and the React2Shell dependency row are in the lab
-but have no Zazzles analyzer yet.
+The phase 1 results above predate the code injection and open redirect analyzers. The
+React2Shell dependency row is evaluated as a dependency advisory.
 
 ## Phase 2 coverage
 
@@ -236,6 +236,10 @@ The [phase 2 evaluation](../../.zazz/evaluation/nextjs-phase-2-results.md) recor
 including the source correction for the lab redirect control. Code injection and open redirect are
 now independent [code](analysis/code-injection.md) and [redirect](analysis/open-redirect.md) families.
 The published sample reports above retain their original scanner pins and outcomes.
+
+Supported Next.js server handlers also supply request data paths for the
+[unsafe deserialization analyzer](detection-capabilities/unsafe-deserialization.md).
+Static fixtures verify Pages API cookie and body inputs. The analyzer excludes browser-side deserialization.
 
 - Verified Prisma awaits resolve to row data; Next Pages try/catch/finally keeps normal and exceptional
   bindings separate. Literal SQL INSERT/UPDATE writes link to Prisma reads through schema table/column

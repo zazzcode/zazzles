@@ -17,6 +17,7 @@ import (
 
 func TestNodeDiscoveryCLI(t *testing.T) {
 	t.Setenv("SCAN_FINDINGS_DIR", "")
+	t.Setenv("JUDGE_DECISION_MODEL", "")
 	t.Setenv("OPENAI_API_KEY", "synthetic-key")
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, "server.js"), []byte(`function handler(req,res){res.send('ok')};exposeHTTP('/one',handler);exposeHTTP('/two',handler);`), 0600); err != nil {

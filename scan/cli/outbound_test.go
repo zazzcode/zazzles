@@ -139,6 +139,7 @@ def validation():
 				t.Setenv("OPENAI_API_KEY", "offline-key")
 				t.Setenv("TYPESAFE_API_KEY", "offline-key")
 				t.Setenv("SCAN_FINDINGS_DIR", "")
+				t.Setenv("JUDGE_DECISION_MODEL", "")
 				var out, stderr bytes.Buffer
 				code := run([]string{"--analyze", "--json", "--judge", provider, "--judge-model", "fixture-model", "--judge-limit", fmt.Sprint(limit), root}, &out, &stderr)
 				if code != exitOK || !strings.Contains(stderr.String(), "scan: warning: some assessments are incomplete") {
@@ -206,6 +207,7 @@ func TestOutboundObservationCLI(t *testing.T) {
 		t.Setenv("OPENAI_API_KEY", "offline-key")
 		t.Setenv("TYPESAFE_API_KEY", "offline-key")
 		t.Setenv("SCAN_FINDINGS_DIR", "")
+		t.Setenv("JUDGE_DECISION_MODEL", "")
 		previous := http.DefaultTransport
 		var calls atomic.Int64
 		stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1); w.WriteHeader(400) })) // non-retried

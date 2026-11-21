@@ -21,7 +21,7 @@ assessment, evidence validation and reporting.
 ## Shared decision-model support
 
 OpenAI Decisions (`gpt-6-luna`) and Google Gemini Decisions (`gemini-decision-1`) can assess every
-implemented analyzer through the same source/evidence gates. [User setup](../docs/decision-models.md#credentials-and-local-environment)
+implemented analyzer through the same source/evidence gates. [User setup](../docs/scan/decision-models.md#credentials-and-local-environment)
 owns configuration; the [provider contract](specifications/gemini-decisions.md#capability-and-boundary)
 owns this delivery. A two-request Gemini scan of the pinned TypeScript sample's `/api/ping` confirmed
 command injection and preserved Review for unknown field policy. See [verification evidence](evaluation/gemini-decisions-results.md).

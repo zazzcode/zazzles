@@ -22,7 +22,7 @@ controls with consistent complete judgments can support the bounded generic Obje
 Model-proposed acquisition bindings are separate `discovery_proposals`. The engine rechecks selected
 manifest paths, source spans/hashes and canonical source projections. Only a match to an independently
 established registration/callable binding is verified-existing. Provisional proposals MUST NOT create
-entries, input bindings, flow edges or Protected claims. See [Node guidance](../../docs/analysis/node-inputs.md).
+entries, input bindings, flow edges or Protected claims. See [Node guidance](../../docs/scan/analysis/node-inputs.md).
 
 ## Product objective
 

@@ -1,6 +1,6 @@
 # Agent-first security and remediation
 
-[Documentation index](README.md) · [Interpreting results](interpreting-results.md)
+[Documentation index](README.md) · [Interpreting results](scan/interpreting-results.md)
 
 ## Fix code correctly
 

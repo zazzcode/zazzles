@@ -23,7 +23,7 @@ Historical responses remain bound to their exact old request; fresh Node input f
 
 ## Implemented evidence contract
 
-`internal/judge/bundle.go` emits `evidence_version: 6` for every language adapter. The
+`scan/internal/judge/bundle.go` emits `evidence_version: 6` for every language adapter. The
 wire format contains a deduplicated source-evidence table, candidate/entry identity,
 explicit invocation identity, typed entry/dispatch metadata, actual input/control bindings,
 ordered dependency witnesses, an explicit trace graph, control edges, evidence-role
@@ -48,7 +48,7 @@ in adapter evidence. **Supplied means present, not semantically complete or prot
 Indexing never changes canonical completeness or resolves a blocker. This distinction
 prevents richer context from becoming an unsupported claim of proof.
 
-The model envelope supplies language Analysis Guidelines from `internal/guidelines` under
+The model envelope supplies language Analysis Guidelines from `scan/internal/guidelines` under
 `analysis_guidelines`. This scanner-authored guidance is separate from source data and API contracts.
 Guideline versions and full text participate in exact-request identity; historical reports remain
 readable without making their old answers reusable for changed inputs. See
@@ -133,7 +133,7 @@ The rules that bound it:
 
 - **Citations are checked, not trusted.** The decision APIs accept choice questions only, so each
   resolution question has a `_cite` companion whose choices are ordered `eN`/`gN` chains built
-  from the request. One verifier (`internal/judge/citation.go`) checks that every cited ID was in
+  from the request. One verifier (`scan/internal/judge/citation.go`) checks that every cited ID was in
   the request, the chain runs from a dependency source to the sink, and each hop is a scanner
   edge or a bridge through the asked gap within a dependency that gap overlaps. A rejected,
   missing or off-list citation changes nothing and is recorded.
@@ -168,7 +168,7 @@ retained locally during calibration. Replay requires byte-equivalent compact JSO
 matching protocol; changed source, roles, questions or trace evidence needs a new judgment.
 Expected labels stay in independent evaluation files and never enter model bundles.
 
-Assessment scheduling (`internal/judge/schedule.go`) has three passes. The plan pass is offline and
+Assessment scheduling (`scan/internal/judge/schedule.go`) has three passes. The plan pass is offline and
 sequential. It groups candidates by equivalence signature, runs `Preview` and the size and TPM
 preflight, and assigns `--judge-limit` slots to group leaders in priority order. Dispatch sends
 leaders through at most `--judge-concurrency` workers, in waves. After a wave, a group whose leader

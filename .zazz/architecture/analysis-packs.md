@@ -8,14 +8,14 @@ The [architecture terminology](README.md#analyzer-terminology) distinguishes an 
 related candidate kinds and protocols; they do not require separate engines or packages.
 
 This document owns the implemented component responsibilities, source inventory, compatibility,
-migration status and verification evidence. `internal/analysispacks` provides the shared catalog used
+migration status and verification evidence. `scan/internal/analysispacks` provides the shared catalog used
 by static evidence assembly and model judgment. Entry/dispatch records describe the application's
 wiring; analysis components describe the scanner knowledge applicable to a particular candidate.
 
 The [original design](../project/analysis-pack-mvp.md) records rationale; the
 [implementation plan](../project/implementation-plan.md#analysis-pack-mvp-initiative) owns remaining
-work. The [database guide](../../docs/analysis/database-injection.md#query-component-selection) and
-[XSS guide](../../docs/analysis/xss.md) own product interpretation rules.
+work. The [database guide](../../docs/scan/analysis/database-injection.md#query-component-selection) and
+[XSS guide](../../docs/scan/analysis/xss.md) own product interpretation rules.
 
 ## Node input interpretation and generic sink contracts
 
@@ -32,7 +32,7 @@ separate `node-route-discovery-v1` protocol selects source-backed binding propos
 additional cap. It is not a security pack or an alternate vulnerability pipeline. The engine checks
 source snapshots and dispatch; unknown suggestions remain provisional coverage. See the
 [Node input contract](../specifications/node-http-input-refactor.md) and
-[public guidance](../../docs/analysis/node-inputs.md).
+[public guidance](../../docs/scan/analysis/node-inputs.md).
 
 ## Current implementation status
 
@@ -154,27 +154,27 @@ Logging migration and complete SSRF/exfiltration/browser-security assessment rem
 
 ## Boundary and ownership
 
-`internal/analysispacks` owns scanner-authored component descriptors, dependency validation,
+`scan/internal/analysispacks` owns scanner-authored component descriptors, dependency validation,
 deterministic selection and bounded interpretation material. Components describe existing compiled
 capabilities; they do not load or execute adapters. The package does not import parse, judge or report.
-Shared serializable references live in `internal/analysis`; extraction remains in `internal/parse`,
-transport and mandatory claim gates in `internal/judge`, and presentation in `internal/report`.
+Shared serializable references live in `scan/internal/analysis`; extraction remains in `scan/internal/parse`,
+transport and mandatory claim gates in `scan/internal/judge`, and presentation in `scan/internal/report`.
 
 | Knowledge | Baseline owner | Component responsibility and remaining owner |
 | --- | --- | --- |
-| JS/TS syntax, Express, dynamic HTTP, GraphQL, unary gRPC, browser entry/flow | `internal/parse/` adapter and flow files | Reference supported compiled subsets and their limits; extraction remains in parse |
-| Python Flask/Blueprint, RESTX, FastAPI, DB-API flow | `internal/parse/python_*.go` | Reference supported compiled subsets; no new Python framework/heap/async support |
-| Language interpretation | `internal/guidelines/javascript.md`, `python.md`, `go.md` | Registered families select validated existing sections; unmigrated families retain full language documents; Go guidance does not establish Go support |
-| Sequelize raw SQL | `internal/parse/checks.go` | Catalog owns the verified operation contract; parse still proves receiver/import/slot bindings |
-| Python SQL drivers | `internal/parse/python_dbapi.go` | Catalog owns sqlite3, Psycopg 2/3, PyMySQL and MySQL Connector operation contracts; parse still proves connection/cursor provenance |
-| SQL questions and choices | `internal/judge/client.go`, `injection.go` | SQL components own the selected question/answer material; judge encodes, decodes and applies evidence validation |
-| Required SQL evidence | `internal/parse/checks.go`, `python_sql.go`; `internal/judge/policy.go` | Components declare obligations; core input-source, sink-binding, invoked-callable and control-flow roles remain mandatory |
-| NoSQL contracts | `internal/analysispacks/nosql.go` (catalog owner); parse proves collection/model bindings | Migrated: MarsDB collection and Mongoose query/casting contracts are catalog components; selector, `$where`, schema/version and all-path semantics preserved |
-| XSS contracts/questions | `internal/analysispacks/xss.go` and `xss_selection.go`; validated guideline projections | Migrated: catalog owns primary rendering contracts, five questions and supplementary context/protection/storage/browser/response material; parse retains source facts and judge retains mandatory gates |
-| Standalone validation | `internal/analysispacks/validation.go` (questions/choices); policy assembly stays in parse; gates in `internal/judge/validation.go` | Migrated: requirement/enforcement questions are catalog components; established/absent policies, enforced/bypassed/missing guards and API-less field claims preserved |
-| Logging | Logger/source extraction in parse; `internal/analysispacks/logging.go`, `internal/judge/logging.go` | Catalog-owned questions and selected guidance; sensitive content, emission and redaction gates retained |
-| Outbound requests | Destination/source extraction in parse; `internal/analysispacks/outbound.go` owns Python contract and observation descriptors | Migrated: JS/TS shapes remain unverified, Python URL/body/response roles preserved; no security questionnaire, model request or SSRF verdict |
-| Findings and exports | `internal/report/`, `cmd/scan/` | Existing presentation counts/statuses remain; canonical JSON carries detailed selection provenance |
+| JS/TS syntax, Express, dynamic HTTP, GraphQL, unary gRPC, browser entry/flow | `scan/internal/parse/` adapter and flow files | Reference supported compiled subsets and their limits; extraction remains in parse |
+| Python Flask/Blueprint, RESTX, FastAPI, DB-API flow | `scan/internal/parse/python_*.go` | Reference supported compiled subsets; no new Python framework/heap/async support |
+| Language interpretation | `scan/internal/guidelines/javascript.md`, `python.md`, `go.md` | Registered families select validated existing sections; unmigrated families retain full language documents; Go guidance does not establish Go support |
+| Sequelize raw SQL | `scan/internal/parse/checks.go` | Catalog owns the verified operation contract; parse still proves receiver/import/slot bindings |
+| Python SQL drivers | `scan/internal/parse/python_dbapi.go` | Catalog owns sqlite3, Psycopg 2/3, PyMySQL and MySQL Connector operation contracts; parse still proves connection/cursor provenance |
+| SQL questions and choices | `scan/internal/judge/client.go`, `injection.go` | SQL components own the selected question/answer material; judge encodes, decodes and applies evidence validation |
+| Required SQL evidence | `scan/internal/parse/checks.go`, `python_sql.go`; `scan/internal/judge/policy.go` | Components declare obligations; core input-source, sink-binding, invoked-callable and control-flow roles remain mandatory |
+| NoSQL contracts | `scan/internal/analysispacks/nosql.go` (catalog owner); parse proves collection/model bindings | Migrated: MarsDB collection and Mongoose query/casting contracts are catalog components; selector, `$where`, schema/version and all-path semantics preserved |
+| XSS contracts/questions | `scan/internal/analysispacks/xss.go` and `xss_selection.go`; validated guideline projections | Migrated: catalog owns primary rendering contracts, five questions and supplementary context/protection/storage/browser/response material; parse retains source facts and judge retains mandatory gates |
+| Standalone validation | `scan/internal/analysispacks/validation.go` (questions/choices); policy assembly stays in parse; gates in `scan/internal/judge/validation.go` | Migrated: requirement/enforcement questions are catalog components; established/absent policies, enforced/bypassed/missing guards and API-less field claims preserved |
+| Logging | Logger/source extraction in parse; `scan/internal/analysispacks/logging.go`, `scan/internal/judge/logging.go` | Catalog-owned questions and selected guidance; sensitive content, emission and redaction gates retained |
+| Outbound requests | Destination/source extraction in parse; `scan/internal/analysispacks/outbound.go` owns Python contract and observation descriptors | Migrated: JS/TS shapes remain unverified, Python URL/body/response roles preserved; no security questionnaire, model request or SSRF verdict |
+| Findings and exports | `scan/internal/report/`, `scan/cli/` | Existing presentation counts/statuses remain; canonical JSON carries detailed selection provenance |
 
 A material item has one runtime owner. Family integration reuses selected shared language sections
 and moves operation/question knowledge rather than creating alternative legacy policy paths.
@@ -300,7 +300,7 @@ actual future sequencing; the Command Injection Analyzer is delivered and Harden
   methods and Request objects keep a gap and cannot select a guessed server producer. The separate
   before/after table below records the only authorized detection correction. No runtime exploit or
   corpus-wide accuracy claim is made.
-- [JS/TS outbound discovery](../../internal/parse/flow.go) uses fetch/axios-shaped names and retains
+- [JS/TS outbound discovery](../../scan/internal/langjs/flow.go) uses fetch/axios-shaped names and retains
   unverified-binding/response gaps. It combines argument dependencies without the same destination
   precision as the existing Python adapter. Session 03 retains these limits, confers no trusted
   API contract by name, and keeps URL/body/response and browser/server evidence separate.
@@ -594,18 +594,18 @@ remain pending; all outbound migration criteria remain met.
 ## Command execution components (2026-11-07)
 
 The command family adds components without touching existing descriptors: command-only embedded guidance
-(`internal/guidelines/command*.go`, never in default language selection), the catalog-owned operation contracts
+(`scan/internal/guidelines/command*.go`, never in default language selection), the catalog-owned operation contracts
 (Node shell and argv, Python `os`, Python `subprocess`) selected only after a verified binding, and reused
 `entry.http/graphql/grpc` descriptors. Parse attaches the same selection the judge revalidates with `ForUse`;
 `CommandFacts` (operation, shell modes, ordered operands, per-path protection and controls, with index-validated
 references into the deduplicated evidence table) travel in the wire bundle. Control-kind evidence in a command use is
 namespaced so invocation identity, and therefore every existing candidate ID, is unchanged. Limits: POSIX assumption,
-bounded transfers, adapter-specific entry models (see the [public guide](../../docs/analysis/command-injection.md)).
+bounded transfers, adapter-specific entry models (see the [public guide](../../docs/scan/analysis/command-injection.md)).
 
 **Guard reach (2026-11-20, `command-components-v5`).** A model answer about a guarded path is
 checked against that path's own facts ([contract](../specifications/command-bypass-support.md)):
 
-- **One listing, two readers.** `internal/analysispacks/guard_reach.go` holds every character a
+- **One listing, two readers.** `scan/internal/analysispacks/guard_reach.go` holds every character a
   guarded value can hold where the scanner knows it exactly: a PHP `is_numeric`, `ctype_digit` or
   number-conversion path, or a regex capture with a complete explicit alphabet. The path reason
   sent to the model and the policy check both read it.
@@ -620,14 +620,14 @@ checked against that path's own facts ([contract](../specifications/command-bypa
 
 ## Path traversal components (2026-11-14)
 
-The path family follows the command pattern: path-only embedded guidance (`internal/guidelines/path*.go`, never in
+The path family follows the command pattern: path-only embedded guidance (`scan/internal/guidelines/path*.go`, never in
 default language selection), catalog-owned contracts selected only after a verified `fs`/`open`/`pathlib` binding,
 reused `entry.http/graphql/grpc` descriptors, and `PathFacts` (operation, role, operand slots, per-flow protection,
 transformations, base, classified guards) in the wire bundle. Two decisions are architectural. First, the shared
 `source.node-input-v1` component is not widened: adding the path kind to its applicability would change its digest and
 therefore every existing Node family's selected request, so a path-only twin `source.node-input-path-v1` shares the
 same material constant. Second, claim assembly (entry scoping, supplied route/middleware context, handler control flow,
-guards, completeness) is now one hook-driven routine (`internal/parse/claim_assembly.go`) used by the command and path
+guards, completeness) is now one hook-driven routine (`scan/internal/langjs/claim_assembly.go`) used by the command and path
 families; the command tests, including the source cases on the pinned targets, are unchanged by the refactor. Only request
 `input_source` dependencies are path flows; stored, file, API and browser values are not. Path-scoped second-pass URL/file
 members (`req.path`/`url`/`originalUrl`/`file(s)`), non-final Express route-chain handlers, explicit local export lists and

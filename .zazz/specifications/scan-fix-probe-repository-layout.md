@@ -1,8 +1,8 @@
 # Scan, Fix, and Probe repository layout
 
-- **Status:** Proposed for a separate implementation session
+- **Status:** Implemented on `update-repository-layout` (pending human review)
 - **Project and Deliverable Owner:** Zazzles maintainers
-- **Worktree / branch:** Owner-assigned for implementation
+- **Worktree / branch:** `update-repository-layout`
 - **Milestone:** Repository organization
 - **Review shape:** One draft implementation PR into `stage` with human review and merge
 - **Execution tracking:** Local run log at `.zazz/ephemeral/scan-fix-probe-repository-layout-run-log.md`
@@ -25,8 +25,9 @@ Fix and Probe landing pages for their planned capabilities.
 - Check [the standards index](../standards/index.yaml) against the final paths. Apply the
   [testing standard](../standards/testing.md#9-evidence-expected-on-a-pr) and
   [draft PR process](../standards/pr-process.md#draft-first-human-merge).
-- Inspect the current [command](../../cmd/scan/main.go) and
-  [architecture baseline test](../../cmd/scan/architecture_baseline_test.go), the [setup guide](../../docs/getting-started.md),
+- Inspect the [canonical command](../../scan/cmd/scan/main.go), [CLI package](../../scan/cli/main.go),
+  [compatibility command](../../cmd/scan/main.go), and
+  [architecture baseline test](../../scan/cli/architecture_baseline_test.go), the [setup guide](../../docs/scan/getting-started.md),
   the [contributor guide](../../docs/contributing.md), and the [sample publishing and refresh guide](../../docs/samples/README.md).
 
 ## 2. Invariants
@@ -91,7 +92,7 @@ A fresh verifier should reproduce each acceptance check after the lead's checks 
 | AC2 | Both build paths produce a working `scan` executable. Their offline behavior matches the predecessor for representative invocations. | Compare stderr, stdout and status for help, a usage error, `--list`, analysis, and export. Check JSON, HTML, and SARIF against baseline for a fixed fixture, with identical cwd and inputs and any output path normalization recorded. |
 | AC3 | The architecture baseline passes with the existing expected fixture identities, counts, candidate ordering, judge-request and equivalence hashes, and report/SARIF digests. Existing replay tests pass. | Run `TestArchitectureBaseline` and moved replay tests. Record the baseline file hash before and after. Tests may map relocated repository fixture paths to existing logical IDs. Preserve evidence and expected digests. |
 | AC4 | **All tracked documentation is reviewed for the layout change.** Navigation leads to canonical pages and compatibility links resolve. Current instructions, command examples, diagrams, repo links, and anchors use valid paths. | Audit all tracked documentation, including root/module READMEs, `docs/`, `AGENTS.md`, `.zazz/` and `.agents/` guides and active specs, and sample docs. Record the file inventory, checks for links and stale path references, intentional legacy references, and any pre-existing unrelated broken links. |
-| AC5 | **Setup and contributor instructions work when followed from a clean checkout root.** Readers can find the Go prerequisite, root `.env.sample`, CLI path, offline usage, repository layout, verification commands, sample refresh instructions, and doc ownership. | Follow the [setup](../../docs/getting-started.md) and [contributor](../../docs/contributing.md) guides literally after the move. Record toolchain, cwd, commands and exit status. Build both commands and generate/open a local fixture report without a provider key. |
+| AC5 | **Setup and contributor instructions work when followed from a clean checkout root.** Readers can find the Go prerequisite, root `.env.sample`, CLI path, offline usage, repository layout, verification commands, sample refresh instructions, and doc ownership. | Follow the [setup](../../docs/scan/getting-started.md) and [contributor](../../docs/contributing.md) guides literally after the move. Record toolchain, cwd, commands and exit status. Build both commands and generate/open a local fixture report without a provider key. |
 | AC6 | The published sample catalog and direct report paths still resolve, including both scopes of the single vuln-nextjs sample and its compatibility redirect. The refresh tooling works with the canonical binary. | Verify the sample index, local asset links and redirect target through the existing publishing layouts. Run an offline sample refresh in scratch output for the two vuln-nextjs scopes using the canonical binary. Preserve tracked reports and metadata byte for byte. |
 | AC7 | Root format, vet, build, race tests, CI and whitespace gates still work, and the draft PR contains the migration and its evidence. | Run the verification commands in §7. Check workflow paths and inputs, and attach per-AC results and scope to the draft PR. |
 

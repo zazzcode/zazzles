@@ -33,21 +33,32 @@ provider fallback is assigned.
 
 ## Code structure
 
+Zazzles is organized into three top-level module directories (`scan/`, `fix/`, `probe/`) under one
+root Go module (`go.mod` / `go.sum`). This keeps dependency management, root builds, CI, and shared
+documentation unified while giving each module a clean top-level home and using Go's `internal/`
+import rule (`scan/internal/`) to enforce the Scan package boundary. The canonical CLI binary builds
+from `scan/cmd/scan/`, while root `cmd/scan/` stays as a thin compatibility entry point; both wrap
+the shared `scan/cli` package (`cli.Run`). User documentation mirrors the modules under `docs/scan/`,
+`docs/fix/`, and `docs/probe/`, with shared project guides and curated sample reports kept in root
+`docs/`.
+
 | Path | Owns | Read more only when needed |
 | --- | --- | --- |
-| `cmd/scan/` | CLI flags, configuration, limits, output wiring and exit codes | [CLI use](../../docs/running-scans.md), [contributor checks](../../docs/contributing.md#contributing) |
-| `internal/walk/`, `internal/lang/` | File inventory and supported-language detection | [Parsing](../architecture/README.md#3-parsing-and-language-adapters) |
-| `internal/pipeline/` | One walk, language-runner selection and concurrency, fixed-order assembly, check/pack attachment, route inventory (`pipeline.Routes`) | [Pipeline](../architecture/README.md#2-pipeline) |
-| `internal/parse/` | Language core: inventory and runner selection, `Assemble`, entry finalization, shared claim/completeness/guard engines, spans, model and text sources; core API index (`core_api.go`) | [Parsing and language adapters](../architecture/README.md#3-parsing-and-language-adapters), [package boundary](../architecture/README.md#11-implemented-package-boundaries) |
-| `internal/langjs/` | JS/TS adapter (`Run`, `Routes`): Node/Express, Next.js, browser, GraphQL/gRPC, bounded flow, source-backed candidate assembly; the inline-script bridge | [Parsing and language adapters](../architecture/README.md#3-parsing-and-language-adapters) |
-| `internal/langpy/` | Python adapter (`Run`, `Routes`) on the `parse` core API | [Python support contract](../specifications/python-support.md) |
-| `internal/langphp/` | PHP adapter (`Run`, `Routes`) on the `parse` core API | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
-| `internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture/README.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
-| `internal/analysispacks/`, `internal/guidelines/` | Embedded contracts, selected guidance, questions and versions | [Selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) |
-| `internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture/README.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
-| `internal/report/` | Findings, Review/Protected presentation, JSON/HTML/SARIF and bundles | [Reporting design](../architecture/reporting-and-sarif.md), [HTML design](../architecture/html-reporting.md) |
-| `internal/langjs/testdata/`, `internal/langpy/testdata/`, `internal/langphp/testdata/`, `internal/pipeline/testdata/mixed/` | Small JS/TS, Python, PHP and multi-language regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
-| `docs/`, `.zazz/`, `.agents/skills/` | User docs; internal contracts/design/evaluation; development skills | [Document owners](#documentation-map) |
+| `scan/cmd/scan/`, `cmd/scan/` | Canonical (`scan/cmd/scan/`) and root compatibility (`cmd/scan/`) CLI entry points calling `scan/cli.Run` | [Setup](../../docs/scan/getting-started.md#compile), [contributor checks](../../docs/contributing.md#contributing) |
+| `scan/cli/` | CLI flags, configuration, limits, output wiring, exit codes, and CLI/baseline tests (`TestArchitectureBaseline`) | [CLI use](../../docs/scan/running-scans.md), [contributor checks](../../docs/contributing.md#contributing) |
+| `scan/internal/walk/`, `scan/internal/lang/` | File inventory and supported-language detection | [Parsing](../architecture/README.md#3-parsing-and-language-adapters) |
+| `scan/internal/pipeline/` | One walk, language-runner selection and concurrency, fixed-order assembly, check/pack attachment, route inventory (`pipeline.Routes`) | [Pipeline](../architecture/README.md#2-pipeline) |
+| `scan/internal/parse/` | Language core: inventory and runner selection, `Assemble`, entry finalization, shared claim/completeness/guard engines, spans, model and text sources; core API index (`core_api.go`) | [Parsing and language adapters](../architecture/README.md#3-parsing-and-language-adapters), [package boundary](../architecture/README.md#11-implemented-package-boundaries) |
+| `scan/internal/langjs/` | JS/TS adapter (`Run`, `Routes`): Node/Express, Next.js, browser, GraphQL/gRPC, bounded flow, source-backed candidate assembly; the inline-script bridge | [Parsing and language adapters](../architecture/README.md#3-parsing-and-language-adapters) |
+| `scan/internal/langpy/` | Python adapter (`Run`, `Routes`) on the `parse` core API | [Python support contract](../specifications/python-support.md) |
+| `scan/internal/langphp/` | PHP adapter (`Run`, `Routes`) on the `parse` core API | [Acquisition facts](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence), [graph boundary](../architecture/repository-graph.md) |
+| `scan/internal/analysis/` | Shared candidate/report/entry records, facts, provenance and compatibility | [Package boundary](../architecture/README.md#11-implemented-package-boundaries), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) |
+| `scan/internal/analysispacks/`, `scan/internal/guidelines/` | Embedded contracts, selected guidance, questions and versions | [Selection](../architecture/analysis-packs.md#descriptor-and-selection-contract), [bounds](../architecture/analysis-packs.md#bounds-and-compatibility) |
+| `scan/internal/judge/` | Provider requests, decoding, replay, evidence validation and findings classification | [Judge boundary](../architecture/README.md#provider-neutral-judge-boundary), [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates) |
+| `scan/internal/report/` | Findings, Review/Protected presentation, JSON/HTML/SARIF and bundles | [Reporting design](../architecture/reporting-and-sarif.md), [HTML design](../architecture/html-reporting.md) |
+| `scan/internal/langjs/testdata/`, `scan/internal/langpy/testdata/`, `scan/internal/langphp/testdata/`, `scan/internal/pipeline/testdata/mixed/` | Small JS/TS, Python, PHP and multi-language regression repositories | [Test conventions](../standards/testing.md#2-test-kinds) |
+| `fix/`, `probe/` | Top-level landing directories for planned Fix and Probe modules | [Module boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries) |
+| `docs/`, `.zazz/`, `.agents/skills/` | Shared user docs + module guides (`docs/scan/`, `docs/fix/`, `docs/probe/`) + `docs/samples/`; internal contracts/design/evaluation; development skills | [Document owners](#documentation-map) |
 
 Each [analyzer](../architecture/README.md#analyzer-terminology) spans the shared engine's activities.
 Use the architecture's [evidence validation terminology](../architecture/README.md#evidence-validation)
@@ -91,8 +102,8 @@ Related design, documentation, implementation and tests stay there. Native devel
 version in `go.mod` and a C compiler; [contributing](../../docs/contributing.md) owns check commands.
 
 Ignored `.env` files are local to each checkout. Never print credentials or overwrite the user's
-local file. For configuration tasks, consult [environment loading](../../docs/getting-started.md#local-environment-file)
-and [provider setup](../../docs/decision-models.md#credentials-and-local-environment) as needed.
+local file. For configuration tasks, consult [environment loading](../../docs/scan/getting-started.md#local-environment-file)
+and [provider setup](../../docs/scan/decision-models.md#credentials-and-local-environment) as needed.
 
 ## Working protocol
 
@@ -124,7 +135,7 @@ For exact acceptance read only the matching record:
 [entry acceptance](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05), or
 [component status](../architecture/analysis-packs.md#current-implementation-status).
 NoSQL is the extensible category; MongoDB-style models are its initial scope. Findings should name
-the actual engine/driver; [database rules](../../docs/analysis/database-injection.md#database-specific-nosql-scope)
+the actual engine/driver; [database rules](../../docs/scan/analysis/database-injection.md#database-specific-nosql-scope)
 distinguish MongoDB, MarsDB and future databases such as DynamoDB.
 
 ## Available vulnerable sample apps
@@ -153,9 +164,9 @@ Write reports to the container's `_test-findings/<app>/run-<id>/` via `--output-
 
 | Task | Load these sections first | Expand only for |
 | --- | --- | --- |
-| Configure/run a judge | [Credentials](../../docs/decision-models.md#credentials-and-local-environment), [live scope](../../docs/decision-models.md#scope-a-live-run) | API-specific diagnosis; never load/print secrets |
-| Add an analyzer | Assigned contract, [component ownership](../architecture/analysis-packs.md#boundary-and-ownership), matching [analysis guide](../../docs/analysis/README.md) | Exact operand/flow/parser models required by its tests |
-| Change evidence or gates | [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes), [calibration pairs](../../docs/analysis/calibration.md#regression-pairs) | Relevant graph/trace/API sections |
+| Configure/run a judge | [Credentials](../../docs/scan/decision-models.md#credentials-and-local-environment), [live scope](../../docs/scan/decision-models.md#scope-a-live-run) | API-specific diagnosis; never load/print secrets |
+| Add an analyzer | Assigned contract, [component ownership](../architecture/analysis-packs.md#boundary-and-ownership), matching [analysis guide](../../docs/scan/analysis/README.md) | Exact operand/flow/parser models required by its tests |
+| Change evidence or gates | [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes), [calibration pairs](../../docs/scan/analysis/calibration.md#regression-pairs) | Relevant graph/trace/API sections |
 | Change entries/dispatch | [Entry model](../project/common-entry-dispatch.md), [graph design](../architecture/repository-graph.md) | Specific HTTP/browser/GraphQL/gRPC contract |
 | Write/refine a spec | [Delivery checklist](../project/implementation-plan.md#complete-delivery-list), [spec index](../specifications/README.md#specification-index), `spec-builder` | Relevant architecture decisions, not all historical contracts |
 | Implement/resume | Assigned contract, local run log, [execution verification](agent-execution-discipline.md#verification-discipline), `spec-driven` | Matched standards and focused code |
@@ -167,8 +178,8 @@ Write reports to the container's `_test-findings/<app>/run-<id>/` via `--output-
 | --- | --- |
 | Product goals and roadmap | [Capability boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries), [complete delivery list](../project/implementation-plan.md#complete-delivery-list) |
 | Architecture | [Request size and relevance](../architecture/request-size-and-evidence-relevance.md), [Pipeline](../architecture/README.md#2-pipeline), [package map](../architecture/README.md#11-implemented-package-boundaries), [judge boundary](../architecture/README.md#provider-neutral-judge-boundary) |
-| Product rules | [Analysis index](../../docs/analysis/README.md), [database rules](../../docs/analysis/database-injection.md), [input rules](../../docs/analysis/input-validation.md), [XSS rules](../../docs/analysis/xss.md) |
-| User setup/output | [Setup](../../docs/getting-started.md), [scan options](../../docs/running-scans.md), [interpretation](../../docs/interpreting-results.md) |
+| Product rules | [Analysis index](../../docs/scan/analysis/README.md), [database rules](../../docs/scan/analysis/database-injection.md), [input rules](../../docs/scan/analysis/input-validation.md), [XSS rules](../../docs/scan/analysis/xss.md) |
+| User setup/output | [Scan docs](../../docs/scan/README.md), [Setup](../../docs/scan/getting-started.md), [scan options](../../docs/scan/running-scans.md), [interpretation](../../docs/scan/interpreting-results.md), [Fix docs](../../docs/fix/README.md), [Probe docs](../../docs/probe/README.md) |
 | Contracts and process | [Spec index](../specifications/README.md#specification-index), [execution records](agent-execution-discipline.md#execution-records), [standards index](../standards/index.yaml) |
 | Sample evidence | [Pinned apps](../project/vulnerable-sample-apps.md#applications), [sample provenance](../../docs/samples/reference-policy.md) |
 
@@ -178,4 +189,4 @@ Write reports to the container's `_test-findings/<app>/run-<id>/` via `--output-
 must match its provider. Keys may coexist, but only the selected provider's key goes to the client.
 The scanner does not auto-load `.env`. Live calls transmit source and need an explicitly scoped
 request count; a key alone is not authorization. No fallback or live Jev testing is assigned.
-See [user setup](../../docs/decision-models.md#credentials-and-local-environment).
+See [user setup](../../docs/scan/decision-models.md#credentials-and-local-environment).

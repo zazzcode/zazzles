@@ -70,7 +70,7 @@ use OpenAI Decisions with `gpt-6-luna`; transport support does not establish equ
 accuracy. Gemini uses only `gemini-decision-1` on v1beta Decisions; one
 `JUDGE_DECISION_MODEL` applies to every analyzer. Jev has stub coverage but no live evaluation
 in this delivery. Credentials do not select a provider or authorize a paid request. No provider/model
-fallback occurs. See [decision-model setup](../../docs/decision-models.md).
+fallback occurs. See [decision-model setup](../../docs/scan/decision-models.md).
 
 Decision-model judgment is core to a completed security assessment. Offline inventory, evidence
 inspection, deterministic construction findings and saved-report export remain available.
@@ -102,10 +102,13 @@ novel-repository generalization remain hypotheses until matched independent eval
 
 ## Product boundaries and shared engine
 
-The [project goals](../project.md#four-product-capabilities) distinguish Scan, Inspect, Audit and Fix.
-The architecture below describes the current bounded Scan engine. It also emits existing validation
-and construction-practice findings. Inspect as a distinct capability, dependency Audit and automated
-Fix are planned. The goals do not imply separate implemented commands or engines.
+The [project goals](../project.md#four-product-capabilities) and
+[module boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries)
+organize Zazzles into three top-level modules under one Go module: **Scan** (`scan/`), **Fix**
+(`fix/`), and **Probe** (`probe/`). The architecture below describes the current bounded Scan engine.
+Scan analyzes source for vulnerabilities, evidence gaps, and code smells or poor coding practices
+that can impact security or performance. Fix and Probe are planned modules with landing directories
+and user docs under `docs/fix/` and `docs/probe/`.
 
 Scan and future Inspect can share static models, source evidence, semantic judgment and completeness
 policy while retaining claim-specific requirements. Audit retains independent dependency/advisory
@@ -170,7 +173,8 @@ flowchart TD
 ```
 
 Each analyzer uses these stages through the shared engine; the diagram shows processing responsibilities,
-not a sequence of separate analyzers. `cmd/scan` wires these stages and calls `internal/pipeline` for
+not a sequence of separate analyzers. `scan/cmd/scan` (and the root compatibility wrapper `cmd/scan`)
+delegate to `scan/cli.Run`, which wires these stages and calls `scan/internal/pipeline` for
 analysis. The pipeline walks the target once and passes that inventory to each language runner. A full
 scan always runs the JS/TS runner, which owns the base report, and runs Python or PHP only when the
 inventory has files of that language. A language with no files opens no grammar. Runners run
@@ -192,7 +196,7 @@ The entry/dispatch model describes how application code is exposed and invoked. 
 catalog describes which scanner knowledge applies to each potential issue. These responsibilities
 remain separate: a component declaration cannot establish a source binding or value transfer.
 
-`internal/analysispacks` composes language guidance, compiled capability references, verified API
+`scan/internal/analysispacks` composes language guidance, compiled capability references, verified API
 contracts, claim questions and evidence obligations. Parse records a deterministic selection;
 judge validates that selection and supplies the applicable material alongside source evidence.
 SQL, NoSQL, standalone validation and XSS use it for assessment. Outbound uses it for observations
@@ -230,35 +234,35 @@ keeps its existing behavior; migration to the shared input-fact model remains de
 Model-assisted discovery is a separate opt-in acquisition phase with its own protocol/cap/traces.
 The model selects snapshot-bound alternatives; source and dispatch validation belongs to the engine.
 Only independently established bindings are trusted. Unverified proposals remain provisional coverage,
-never synthetic entry/flow edges or vulnerability findings. See [Node input guidance](../../docs/analysis/node-inputs.md)
+never synthetic entry/flow edges or vulnerability findings. See [Node input guidance](../../docs/scan/analysis/node-inputs.md)
 and the [implementation contract](../specifications/node-http-input-refactor.md).
 
 ## 3. Parsing and language adapters
 
-Each language has its own adapter package; `internal/parse` is the **language core** they share
+Each language has its own adapter package; `scan/internal/parse` is the **language core** they share
 (its name reflects its origin, not syntax parsing alone). The core holds only what at least two
 adapters, `Assemble` or `pipeline` use: the walked `Inventory` and runner selection, `Assemble`,
 entry registration and finalization, the shared claim, completeness and guard engines, spans, model
 source and bounded text sources. Its **language core API** is indexed with one-line contracts in
-`internal/parse/core_api.go`. The core imports no adapter and references no adapter's flow model.
+`scan/internal/parse/core_api.go`. The core imports no adapter and references no adapter's flow model.
 Shared records do not depend on Tree-sitter nodes or HTTP clients.
 
-- `internal/langjs` (JS/TS) owns Tree-sitter module sets, Express/CommonJS/ESM routes, Next.js,
+- `scan/internal/langjs` (JS/TS) owns Tree-sitter module sets, Express/CommonJS/ESM routes, Next.js,
   helpers, browser entries, GraphQL and unary gRPC, database/logging/outbound operations, templates
   and selected stored/cross-tier XSS relationships. Its runner builds the base report that
   `Assemble` requires for a full scan.
-- `internal/langpy` (Python) owns local modules, Flask/Blueprint, RESTX and FastAPI routes,
+- `scan/internal/langpy` (Python) owns local modules, Flask/Blueprint, RESTX and FastAPI routes,
   value/control flow, DB-API, validation, logging, HTTP and template semantics. Supported inline
   template scripts reuse browser analysis through one bridge, `langjs.AnalyzeInlineScripts`; template
-  text comes from the core `TextSources`. See [Python coverage](../../docs/python-support.md).
-- `internal/langphp` (PHP) owns server-mapped PHP entries and bounded value, control and include flow.
+  text comes from the core `TextSources`. See [Python coverage](../../docs/scan/python-support.md).
+- `scan/internal/langphp` (PHP) owns server-mapped PHP entries and bounded value, control and include flow.
 - Import direction: `langjs`, `langpy` and `langphp` import `parse`; `langpy` also imports `langjs`
   for the inline-script bridge only; no adapter imports `pipeline`.
 - `pipeline.Analyze` discovers supported registration files across languages when `--entry` is
   omitted; `pipeline.AnalyzeWithChecks` additionally accepts explicitly declared security
   requirements. Each language runner receives the pipeline's single inventory and owns its parsers
   and module sets.
-- File-extension recognition in `internal/lang` does not imply an implemented language analyzer.
+- File-extension recognition in `scan/internal/lang` does not imply an implemented language analyzer.
 
 An API name alone is not proof of binding, source control or protection. Unknown calls, dynamic
 registration, helper limits and unsupported control/heap behavior retain explicit uncertainty.
@@ -310,7 +314,7 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   finite-value proofs are invocation-specific and separate from taint/protection; ordinary branches
   are not folded from those proofs. Shadowed, mutated, escaped, deleted, nonfinite or mismatched
   import bindings remain unresolved. This closes the measured 64 vulnpy helper-limit gaps.
-- **Implemented (PHP resolution inputs):** `internal/langphp` `call_index.go` and `project_resolution.go`
+- **Implemented (PHP resolution inputs):** `scan/internal/langphp` `call_index.go` and `project_resolution.go`
   provide exact Composer PSR-4 FQCN/method lookup and bounded Symfony/Drupal service maps, with
   `psr4`, `container_service` and explicit unresolved reasons. Symfony block-map autowiring resources
   and explicit class/alias maps, and Drupal `*.services.yml` classes carry config/definition spans.
@@ -345,7 +349,7 @@ Next.js is an entry adapter over the JS/TS layer, not a separate analyzer. A JS/
 rule therefore applies to Express and Next.js alike, unless it depends on a framework construct (for
 example a Next.js catch-all `[...path]` parameter). Python shares only the claim, policy and reporting layer; a JS/TS flow
 rule has no Python effect until the Python adapter gets an equivalent with its own paired fixtures.
-The user-facing summary is [detection capabilities](../../docs/detection-capabilities.md).
+The user-facing summary is [detection capabilities](../../docs/scan/detection-capabilities.md).
 
 ### Multiple entry and dispatch mechanisms
 
@@ -382,7 +386,7 @@ policy or sink protection. Unknown runtime composition, dispatch, applicable gua
 remain explicit gaps, including entries with no candidate. Transport relationships are metadata and
 do not multiply resolver uses. No entry-wide safety label or runtime execution claim is produced.
 
-The [implemented subsets and limits](../../docs/running-scans.md#common-entry-selection-and-tagged-checks)
+The [implemented subsets and limits](../../docs/scan/running-scans.md#common-entry-selection-and-tagged-checks)
 and [design](common-entry-dispatch.md) own the bounded contracts. The
 [acceptance results](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05)
 record actual adapter-to-claim/report checks and unchanged HTTP/browser evidence. Automated acceptance and bounded localhost rendered interaction/narrow-layout review pass. The
@@ -393,14 +397,14 @@ full repository IR remain separate work.
 
 ## 4. Normalized representation and graph views
 
-`internal/analysis` is the shared record model. It contains `RouteInventory`, `AnalysisReport`,
+`scan/internal/analysis` is the shared record model. It contains `RouteInventory`, `AnalysisReport`,
 `CandidateUse`, `Evidence`, `Dependency`, `Completeness`, `Assessment` and presentation records.
 
 Three structures MUST remain distinct:
 
 - **Route inventory:** `RouteInventory` lists syntactic route registrations and handler/call steps.
   Its schema-1 JSON is not a whole-program control/dataflow graph.
-- **Evidence trace graph:** `internal/judge` projects supplied dependencies/control edges into a
+- **Evidence trace graph:** `scan/internal/judge` projects supplied dependencies/control edges into a
   request-local graph with evidence references, operand roles and a coverage ledger. It discovers
   no additional calls from surrounding text.
 - **Repository graph:** the broader [repository graph design](repository-graph.md)
@@ -456,7 +460,7 @@ under its stated conditions. Missing requirements remain uncertain rather than i
 ## 6. Detection and candidate selection
 
 Deterministic Go logic recognizes supported operations and construction defects. The semantic judge
-answers claim-specific questions about the supplied evidence. `internal/guidelines` holds Markdown
+answers claim-specific questions about the supplied evidence. `scan/internal/guidelines` holds Markdown
 Analysis Guidelines, not an executable pattern/rule engine. Current poor-practice findings and model
 verdicts are reconciled by evidence validation and reporting code, not by a separate rules-engine package.
 
@@ -465,7 +469,7 @@ They are embedded with `go:embed` and selected by language. Report metadata reta
 unmigrated-family model inputs include the full applicable document. SQL, NoSQL, standalone
 validation and XSS select validated sections
 through the component catalog and record their digests. The Go document is preparatory guidance and does
-not imply implemented Go source analysis. Root [analysis guides](../../docs/analysis/README.md) describe
+not imply implemented Go source analysis. Scan [analysis guides](../../docs/scan/analysis/README.md) describe
 product behavior; `.zazz/standards/` governs development. Neither is loaded dynamically by the binary.
 
 ## 7. Evidence bundle contract
@@ -501,7 +505,7 @@ Raw answers are retained separately from the final finding status.
 
 ### Provider-neutral judge boundary
 
-`internal/judge.Client` supports explicit OpenAI/TypeSafe transport selection using `net/http` and
+`scan/internal/judge.Client` supports explicit OpenAI/TypeSafe transport selection using `net/http` and
 `encoding/json`; no speculative provider interface is required. Provider keys stay out of evidence
 and saved traces. Requests are bounded to 64 KiB and responses to 1 MiB, with deadlines and no automatic
 retry/fallback. Local HTTP stubs test both transports; live calibration is separate evidence.
@@ -540,21 +544,26 @@ incremental invalidation. There is no automatic runtime cache implied by saved e
 
 ## 11. Implemented package boundaries
 
+Root retains one Go module (`go.mod` / `go.sum`). Scan packages live under `scan/`; Go's
+`internal` import rule establishes the Scan package boundary under `scan/internal/`.
+
 | Package | Current responsibility |
 |---|---|
-| `cmd/scan` | CLI arguments, pipeline wiring, request caps and export modes |
-| `internal/walk` | Target file selection and manifest |
-| `internal/lang` | File-extension language registry |
-| `internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment; route inventory (`Routes`, with its own walk and sort) |
-| `internal/parse` | Language core: `Inventory` (with `Runners` selection and `NormalizeEntry`), `Assemble`, entry finalization, the shared claim/completeness/guard engines, spans, model source and `TextSources`; the language core API is indexed in `core_api.go`. Imports no language package |
-| `internal/langjs` | JS/TS adapter: `Run` (base report plus JS/TS evidence), `Routes` (route-inventory part), `NewDiscoveryVerifier` and the inline-script bridge `AnalyzeInlineScripts`; imports `parse`, never `pipeline` |
-| `internal/langpy` | Python adapter: `Run` and `Routes`; imports `parse`, and `langjs` only for the inline-script bridge |
-| `internal/langphp` | PHP adapter: `Run` (report) and `Routes` (route-inventory part); imports `parse`'s core API, never another adapter's flow internals, `pipeline` or another language package |
-| `internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
-| `internal/guidelines` | Embedded versioned language Analysis Guidelines |
-| `internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |
-| `internal/judge` | Evidence requests, provider transports, typed answers, evidence validation and explicit replay |
-| `internal/report` | Presentation classification, guidance and JSON/HTML/SARIF bundles |
+| `scan/cmd/scan` | Canonical `scan` executable wrapper calling `scan/cli.Run` |
+| `cmd/scan` | Root compatibility `scan` executable wrapper calling `scan/cli.Run` |
+| `scan/cli` | CLI arguments, pipeline wiring, request caps, export modes, and architecture baseline tests |
+| `scan/internal/walk` | Target file selection and manifest |
+| `scan/internal/lang` | File-extension language registry |
+| `scan/internal/pipeline` | Repository analysis orchestration: one walk, runner selection and concurrency, fixed-order assembly, check and pack attachment; route inventory (`Routes`, with its own walk and sort) |
+| `scan/internal/parse` | Language core: `Inventory` (with `Runners` selection and `NormalizeEntry`), `Assemble`, entry finalization, the shared claim/completeness/guard engines, spans, model source and `TextSources`; the language core API is indexed in `core_api.go`. Imports no language package |
+| `scan/internal/langjs` | JS/TS adapter: `Run` (base report plus JS/TS evidence), `Routes` (route-inventory part), `NewDiscoveryVerifier` and the inline-script bridge `AnalyzeInlineScripts`; imports `parse`, never `pipeline` |
+| `scan/internal/langpy` | Python adapter: `Run` and `Routes`; imports `parse`, and `langjs` only for the inline-script bridge |
+| `scan/internal/langphp` | PHP adapter: `Run` (report) and `Routes` (route-inventory part); imports `parse`'s core API, never another adapter's flow internals, `pipeline` or another language package |
+| `scan/internal/analysis` | Shared route, candidate, evidence, claim, assessment and report records |
+| `scan/internal/guidelines` | Embedded versioned language Analysis Guidelines |
+| `scan/internal/analysispacks` | Embedded family component catalog, deterministic selection and bounded material |
+| `scan/internal/judge` | Evidence requests, provider transports, typed answers, evidence validation and explicit replay |
+| `scan/internal/report` | Presentation classification, guidance and JSON/HTML/SARIF bundles |
 
 The diagram names responsibilities, not additional packages to scaffold. Future `ir`, `flow`, `trace`,
 `context`, `policy`, `findings` or reviewer packages require real consumers and an approved contract.

@@ -39,19 +39,19 @@ and manual confirmation overrides are not substitutes for the required evidence.
 
 ## What the current message actually means
 
-The generic paragraph in [report interpretation](../../internal/report/findings.go) is appended to
+The generic paragraph in [report interpretation](../../scan/internal/report/findings.go) is appended to
 all records. Its mention of missing library behavior, control flow, and middleware is not a
 claim-specific blocker analysis. The additional messages do correspond to current report state:
 
 | Message | Current cause | Evidence needed to resolve it |
 |---|---|---|
-| Missing library behavior | Calls are classified partly by shape; [flow extraction](../../internal/parse/flow.go) adds `sink_binding_unverified` | Resolve actual import/receiver, package/API semantics, argument role, and binding behavior |
+| Missing library behavior | Calls are classified partly by shape; [flow extraction](../../scan/internal/langjs/flow.go) adds `sink_binding_unverified` | Resolve actual import/receiver, package/API semantics, argument role, and binding behavior |
 | Control flow unresolved | Branches and helper returns can merge possible values without proving path feasibility | Supported successor/termination edges, reaching definitions, and guard/value relationships |
-| Middleware unresolved | Extraction adds a conservative gap; some [middleware context](../../internal/parse/middleware_context.go) is available, but effective enforcement is incomplete | Applicable order, mount/path/method matching, rejection versus continuation, and relevant mutations |
+| Middleware unresolved | Extraction adds a conservative gap; some [middleware context](../../scan/internal/langjs/middleware_context.go) is available, but effective enforcement is incomplete | Applicable order, mount/path/method matching, rejection versus continuation, and relevant mutations |
 | No direct request-field dependency | The use has no resolved dependency; this does not prove its value is constant or trusted | Source origin and transfers, or positive evidence of a trusted constant; callback/tool inputs need explicit modeling |
 | Semantic assessment was not run | The saved run was offline | An optional scoped assessment after its required structural evidence is assembled; some deterministic rules need no model |
 
-The current [checked-mode implementation](../../internal/parse/checks.go) already separates some
+The current [checked-mode implementation](../../scan/internal/langjs/checks.go) already separates some
 claim blockers from coverage gaps and resolves selected SQL bindings. Extend and validate that
 mechanism for automatic claims and additional operations instead of discarding the existing work.
 

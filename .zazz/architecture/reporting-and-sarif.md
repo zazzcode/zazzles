@@ -54,10 +54,10 @@ one result record per use. A record includes `id`, `use_id`, `entry_id`, `invoca
 `summary`, separate `input_validation` and `use_protection` explanations, `uncertainty`, and
 `recommendations`. Presentation version 2 adds `type_ids` and the report-level `finding_types`
 [glossary](finding-types.md); risk families remain separate from assessment status. Evidence stays in the referenced use; it is not replaced by generated prose.
-`internal/report/findings.go` owns interpretation; `guidance.go` owns reviewable remediation.
+`scan/internal/report/findings.go` owns interpretation; `guidance.go` owns reviewable remediation.
 
 The public semantics live in [philosophy](../../docs/philosophy.md) and
-[result interpretation](../../docs/interpreting-results.md). Presentation version 3 uses `record_type`
+[result interpretation](../../docs/scan/interpreting-results.md). Presentation version 3 uses `record_type`
 `finding` for evidence-gated static vulnerabilities and established poor practice, `analysis` for unresolved behavior/potential model claims,
 and `protection` for an assessed protected claim. The Findings column is not limited to demonstrated
 exploits: an established practice violation is a remediation/refactoring task. `poor_practice`
@@ -139,7 +139,7 @@ integration. This bounded adapter does not complete that phase. Neither JSON nor
 finding eligibility, runtime-confirmation state or independent-review policy.
 
 The [query judgment design](query-judgment.md) owns automatic injection evidence and evidence validation.
-Public [analysis rules](../../docs/analysis/README.md) describe SQL/NoSQL and validation semantics.
+Public [analysis rules](../../docs/scan/analysis/README.md) describe SQL/NoSQL and validation semantics.
 
 Current analysis JSON uses schema4 and `analysis_guidelines`; schemas1–4 remain readable
 through private compatibility decoding, retaining original source/schema/answer provenance.
@@ -157,7 +157,7 @@ separate parsed-source integration, synthetic policy controls and completed boun
 
 ## Typed entry projection and selectors
 
-`internal/report/entries.go` owns typed identity and detail projection for HTTP, browser,
+`scan/internal/report/entries.go` owns typed identity and detail projection for HTTP, browser,
 GraphQL, gRPC and unknown entries. Text/HTML/SARIF reuse it; `findings.go` remains the
 single status interpretation. Presentation version 6 preserves contextual counts and
 zero-use coverage without an entry-wide protection assertion.
@@ -168,13 +168,13 @@ schema/proto and invoked-callable related locations. Results retain `scan.entryI
 properties. Non-HTTP entries have no manufactured `scan.route`. Invocation properties
 preserve zero-use inventory and gaps; these do not generate security results.
 
-`internal/analysis/selectors.go` owns kind-specific selector validation/matching and common
+`scan/internal/analysis/selectors.go` owns kind-specific selector validation/matching and common
 CLI filter intersection. Check input normalizes legacy HTTP method/path at decoding;
 context-scoped requirement assembly retains existing analysis semantics. Canonical JSON
 includes `selected_scope` and `check_matches` with per-context use counts. See the
-[CLI contract and examples](../../docs/running-scans.md#common-entry-selection-and-tagged-checks).
+[CLI contract and examples](../../docs/scan/running-scans.md#common-entry-selection-and-tagged-checks).
 
 SQL/NoSQL model answers that conflict with bounded hex-only SQL or relevant selector type-guard
 evidence retain explicit `injection_constraint_review` and remain Review. Raw answers and construction
 practice stay visible; the gate never fabricates a Protected result. See the
-[database analysis rules](../../docs/analysis/database-injection.md).
+[database analysis rules](../../docs/scan/analysis/database-injection.md).

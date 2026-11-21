@@ -18,9 +18,10 @@ routine edits or builds in an already verified checkout do not require either gu
 in this file apply regardless of which reference sections are loaded.
 
 The [README](README.md) introduces the project; root [user documentation](docs/README.md) owns
-philosophy, user setup, CLI usage, result interpretation, and contributor guides.
-Product analysis rules and guidelines belong in root [docs/analysis](docs/analysis/README.md), not
-`.zazz/`. Agents MUST load the matching analysis guide when changing scanner evidence or judgment.
+shared guides (`contributing.md`, `technical-approach.md`, `philosophy.md`, `samples/`) and module
+user guides (`docs/scan/`, `docs/fix/`, `docs/probe/`). Product analysis rules and guidelines belong
+in [docs/scan/analysis](docs/scan/analysis/README.md), not `.zazz/`. Agents MUST load the matching
+analysis guide when changing scanner evidence or judgment.
 Current assignments, progress, evaluation results, and session restrictions belong in the project
 docs or local handoff, not this file. Agents MUST verify the actual worktree path, branch, and changes
 before editing and MUST preserve unrelated user changes.
@@ -29,7 +30,7 @@ before editing and MUST preserve unrelated user changes.
 
 | Task | Load |
 |---|---|
-| Run zazzles or configure a decision provider | [README](README.md), then [decision-model user guide](docs/decision-models.md) when needed |
+| Run zazzles or configure a decision provider | [README](README.md), then [decision-model user guide](docs/scan/decision-models.md) when needed |
 | Product, scope, or architecture decisions | Orientation's [documentation map](.zazz/docs/zazzles-agent-orientation.md#documentation-map); select the document that owns the topic |
 | Graph structure or outbound service paths | [Repository graph design](.zazz/architecture/repository-graph.md), then relevant architecture sections |
 | Author or refine a spec | Relevant [plan](.zazz/project/implementation-plan.md) and contract, `spec-builder`, and [spec hygiene](.zazz/standards/spec-hygiene.md) |

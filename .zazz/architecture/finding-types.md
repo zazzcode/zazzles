@@ -3,7 +3,7 @@
 ## Purpose
 
 The public philosophy and result meanings live in [root user documentation](../../docs/README.md),
-with [category guidance](../../docs/glossary.md) and [remediation philosophy](../../docs/philosophy.md).
+with [category guidance](../../docs/scan/glossary.md) and [remediation philosophy](../../docs/philosophy.md).
 This document owns the internal taxonomy contract.
 
 Use one project vocabulary across canonical JSON, standalone HTML, and SARIF. A type describes the
@@ -12,7 +12,7 @@ must not independently promote an observation or unresolved analysis item to a v
 This taxonomy is zazzles's terminology contract, not a claim that every listed detector is implemented.
 
 The authoritative definition registry is
-[`internal/report/finding_types.go`](../../internal/report/finding_types.go). Each definition has a
+[`scan/internal/report/finding_types.go`](../../scan/internal/report/finding_types.go). Each definition has a
 stable `id`, display `label`, plain-English `description`, `interpretation`, `remediation` approach,
 and `coverage`. Human findings reference it through `type_ids`. Presentation version 2 introduced the
 registry as `finding_types`; schema-v1 raw evidence remains unchanged and compatible.

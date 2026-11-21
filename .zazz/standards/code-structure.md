@@ -1,23 +1,26 @@
 # Code Structure
 
 Structure rules for authored Go source and for the durable documents and skills in this repo. Applies
-to `cmd/`, `internal/`, `.zazz/`, and `.agents/skills/`.
+to `cmd/`, `scan/`, `.zazz/`, and `.agents/skills/`.
 
 ## 1. Package layout
 
 The [architecture package map](../architecture/README.md#11-implemented-package-boundaries) owns package
 responsibilities; new boundaries are finalized in greenlit specs. The map is not an instruction to
-scaffold packages. Keep the CLI under `cmd/scan` and implementation under `internal/`.
+scaffold packages. Keep the canonical CLI entrypoint under `scan/cmd/scan` (with the thin root
+compatibility wrapper at `cmd/scan`), shared CLI orchestration in `scan/cli`, and Scan
+implementation under `scan/internal/`.
 
 Rules:
 
-- Everything lives under `internal/` until there is a demonstrated external consumer. Do not create
-  `pkg/` speculatively.
-- `cmd/` packages contain only argument handling, dependency wiring, and exit codes. If `main` needs
-  branching logic longer than a line or two, that logic belongs in `internal/`.
+- Everything lives under `scan/internal/` (or a future module's `internal/`) until there is a
+  demonstrated external consumer. Do not create `pkg/` speculatively.
+- `scan/cmd/` and `cmd/` packages contain only thin `main` wrappers calling `scan/cli.Run`.
+  `scan/cli/` owns argument handling, dependency wiring, and exit codes; analysis logic belongs
+  in `scan/internal/`.
 - A package owns one concern. If describing a package needs the word "and", split it.
-- Shared analysis records and provenance MUST live in `internal/analysis`, independent of
-  Tree-sitter and HTTP. `parse` is the language core shared by the `internal/lang*` adapters
+- Shared analysis records and provenance MUST live in `scan/internal/analysis`, independent of
+  Tree-sitter and HTTP. `parse` is the language core shared by the `scan/internal/lang*` adapters
   (code at least two adapters, `Assemble` or `pipeline` use; code one language uses lives in
   that language's package); the adapters own bounded flow/evidence assembly; `judge` owns
   model transport and claim gates. `walk` MUST remain independent of those stages. Future
@@ -45,7 +48,7 @@ so in a comment so the next reader does not try to split it.
 Split by **concern**, not by line count. A split is good when each resulting file can be read and
 understood on its own:
 
-- one pipeline stage per file group inside `internal/langjs`, `internal/trace`, and so on
+- one pipeline stage per file group inside `scan/internal/langjs`, `scan/internal/judge`, and so on
 - one standard per concern in `.zazz/standards/`
 - one deliverable per specification directory in `.zazz/specifications/`
 
@@ -58,8 +61,8 @@ Prefer moving a function to the package that actually owns its concern over spli
 - No speculative abstraction: no interface, option struct, or generic type without a present caller.
 - No duplicated logic. If two rules or two stages need the same walk, extract it once.
 - No placeholder files. A file that exists but does nothing is worse than no file.
-- Every exported identifier in `internal/` is exported only because another package in the same module
-  needs it. `internal/` is not a public API.
+- Every exported identifier in `scan/internal/` is exported only because another package in the same
+  module needs it. `scan/internal/` is not a public API.
 
 ## 5. Compute once
 

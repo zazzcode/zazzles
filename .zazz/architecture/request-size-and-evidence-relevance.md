@@ -14,7 +14,7 @@ Size is a cost, a hard limit and an accuracy problem.
 
 - **Cost.** Input tokens are paid for on every request. A typical request is 15–45 KB.
 - **Hard limit.** The scanner refuses to send a request over `requestLimit` (65,536 bytes,
-  `internal/judge/budget.go`). This is the scanner's own constant, not a confirmed provider limit.
+  `scan/internal/judge/budget.go`). This is the scanner's own constant, not a confirmed provider limit.
 - **Accuracy.** Irrelevant evidence changes answers. A correctly guarded JavaScript command route was
   answered `vulnerable` at low confidence because repeated, unrelated control-flow gaps reached the
   model; the same guard in Python was answered `protected_for_claim` (recorded in the assessment-coverage
@@ -117,22 +117,22 @@ Status values: `implemented`, `planned`, `proposed`, `rejected`.
 
 ### Hard tier: role-based shedding and the floor — implemented
 
-- **Where:** `internal/judge/budget.go` (`budgetUse`, `withoutContext`, `omissionGap`), called from
-  `budgetedPayload` in `internal/judge/client.go`. The report wording is in `internal/report/findings.go`.
+- **Where:** `scan/internal/judge/budget.go` (`budgetUse`, `withoutContext`, `omissionGap`), called from
+  `budgetedPayload` in `scan/internal/judge/client.go`. The report wording is in `scan/internal/report/findings.go`.
 - **Behavior:** it runs only when the compact form is still over the limit. Context evidence is shed in
   this order: items whose text is contained in another supplied item (lossless), then other-file context
   (largest first), then same-file context (furthest from the sink first). Context indices held by
   Command, Path and outbound facts are remapped. An `evidence_omitted_for_size` coverage gap names every
   omitted span. If what remains is still over the limit, nothing is sent; the reason starts with
   `evidence_too_large:` and lists the bytes by section, and the record stays Review.
-- **Tests:** `TestRequestBudget*` in `internal/judge/budget_test.go`, including 40 synthetic growth
+- **Tests:** `TestRequestBudget*` in `scan/internal/judge/budget_test.go`, including 40 synthetic growth
   shapes across six families in JS and Python.
 
 ### Path-group requests over the floor — implemented (XSS)
 
-- **Where:** `planPathGroups`, `packPathGroups`, `groupUse` in `internal/judge/budget.go`;
-  `groupAssessment` in `internal/judge/client.go`; `combinePathGroups` in `internal/judge/xss.go`;
-  slot costs in `internal/judge/schedule.go`. Contract: [close-findings-gaps](../specifications/close-findings-gaps.md) W4.
+- **Where:** `planPathGroups`, `packPathGroups`, `groupUse` in `scan/internal/judge/budget.go`;
+  `groupAssessment` in `scan/internal/judge/client.go`; `combinePathGroups` in `scan/internal/judge/xss.go`;
+  slot costs in `scan/internal/judge/schedule.go`. Contract: [close-findings-gaps](../specifications/close-findings-gaps.md) W4.
 - **Behavior:** an XSS record still over the limit after shedding is sent as ordinary requests for
   the same claim, one per path group. A group is the dependencies whose source sits in one file (the
   dispatch alternative), split by storage key only when that file alone is over the limit; whole
@@ -148,7 +148,7 @@ Status values: `implemented`, `planned`, `proposed`, `rejected`.
   (~18–20 KB) and fixed sections are repeated in every group, which meets S2's re-open condition.
   Measured offline, only 3.0–5.0 KB per group request is off the dependency chains (12.6–18.6 KB
   are on them), so S2 could save at most about 7% and is not adopted.
-- **Tests:** `TestPathGroup*` in `internal/judge/path_groups_test.go`; `TestDVWARequestSizes` with
+- **Tests:** `TestPathGroup*` in `scan/internal/judge/path_groups_test.go`; `TestDVWARequestSizes` with
   `ZAZZLES_DVWA`.
 
 ### W1–W5: Wire Bundle v7 representation — implemented
@@ -156,7 +156,7 @@ Status values: `implemented`, `planned`, `proposed`, `rejected`.
 Owned by the E3 contract; summarized here so the size design is in one place. See the
 [proposal §4.3](../project/analyzer-hardening-and-wire-efficiency-proposal.md#43-wire-bundle-v7-t2-2--all-analyzers).
 
-- **W1.** Always apply the lossless compact form (`compactBundle`, `internal/judge/compact_bundle.go`).
+- **W1.** Always apply the lossless compact form (`compactBundle`, `scan/internal/judge/compact_bundle.go`).
   It now applies before the budget on every assessed request.
 - **W2.** Drop `evidence_roles`; keep `evidence_coverage`, with the union of adapter and selected catalog obligations.
 - **W3.** Send component IDs in model-facing `analysis_components`; keep versions and digests on
@@ -171,7 +171,7 @@ Owned by the E3 contract; summarized here so the size design is in one place. Se
 The implemented scope removes Command/Path/SSRF interpretation already carried by structured
 platform/operand fields and selected guidance, with shared index/path interpretation in the static
 instruction. Candidate-specific transformation facts remain. The E3 continuation moved the query/middleware
-sentences to 14 fact codes owned by `internal/guidelines/facts.md`. A request carries the code with
+sentences to 14 fact codes owned by `scan/internal/guidelines/facts.md`. A request carries the code with
 its exact expression and file, plus only the notes for the codes it names; an unknown code fails the
 request. Measured byte effect is neutral (about +90 to +340 bytes on affected requests, −127 on Juice
 Shop SQL), because each sentence appeared once per request before. Its value is one owner per
@@ -181,20 +181,20 @@ interpretation.
   `order.ts:164`, much of it constant text such as the Express middleware scope explanation). Move
   sentences that do not depend on the candidate into the family's component prose (static, and cached
   through the provider prefix); keep only candidate-specific facts per request.
-- **Where:** fact producers in `internal/parse` (for example `claim_assembly.go` and the family
-  completeness builders); prose in `internal/analysispacks` and `internal/guidelines`.
+- **Where:** fact producers in `scan/internal/parse` (for example `claim_assembly.go` and the family
+  completeness builders); prose in `scan/internal/analysispacks` and `scan/internal/guidelines`.
 - **Risk:** prose drift between component text and the facts the gates assume. Keep one owner per
   sentence and test that each moved sentence still appears in the selected material.
 - **Measure:** `model_facts` bytes per family, before and after.
 
 ### W7: Condense masked comments and whitespace — implemented
 
-- **Today:** `modelSource` (`internal/parse/model_source.go`) replaces every comment character with a
+- **Today:** `modelSource` (`scan/internal/parse/model_source.go`) replaces every comment character with a
   space, keeping newlines and tabs. That hides comment text from the model but saves no bytes; a license
   header or JSDoc block is still sent as spaces.
 - **What:** in model-facing excerpt text only, collapse only runs of spaces proven by comparison with original source to come from comment/docstring masking. Keep every newline and all unchanged whitespace, including multiline literal content. General blank-line/indentation trimming was rejected because it can change literal values.
 - **Constraints:** the request instruction currently says masked source keeps byte positions, and
-  `sharedSourceExcerpts` (`internal/judge/source_excerpts.go`) merges excerpts by requiring text length
+  `sharedSourceExcerpts` (`scan/internal/judge/source_excerpts.go`) merges excerpts by requiring text length
   to equal span length. Both must change together; excerpt merging must then work on original
   coordinates and condense afterwards. This moves bytes for every request: protocol bump.
 - **Measure first:** extend the digest tool to report the masked-whitespace share per section and sample.
@@ -210,7 +210,7 @@ interpretation.
   and fall back to the whole handler when any statement on the path is unsupported, which the existing
   gaps already identify.
 - **Prerequisites:** precise JavaScript `if` modeling (S4) and the shared guard engine
-  (`internal/parse/guard_climb.go`), so that dominating controls are known.
+  (`scan/internal/parse/guard_climb.go`), so that dominating controls are known.
 - **Acceptance shape:** saved-answer stability on calibration pairs, guarded and unguarded variants per
   family, and a digest delta list.
 - **Status:** deferred after measurement; see the [S1 contract](../specifications/data-path-slicing.md).
@@ -218,7 +218,7 @@ interpretation.
 ### S2: Relevance filter for helpers and models — not adopted (soft tier)
 
 - **What:** include a helper or model definition only when a value on the dependency path, or a control
-  on that path, passes through it. Today `includeHelpers` (`internal/parse/check_context.go`) includes
+  on that path, passes through it. Today `includeHelpers` (`scan/internal/parse/check_context.go`) includes
   helpers for any pre-use call that may validate or mutate the request, and storage-model bindings are
   attached for every model the handler touches.
 - **Why:** on `order.ts:164` this is exactly the set the hard-tier budget shed.
@@ -238,8 +238,8 @@ source and gaps; serving files is not summarized by this implementation.
 - **What:** replace the bodies of registrations that cannot write `req.body` or `req.query` and do not
   authorize with one summary line listing them, for example "12 registrations that only set headers or
   serve files: …".
-- **Where:** `middlewareContext` (`internal/parse/middleware_context.go`). The existing
-  `transportMiddleware` list and `commandTransportMiddleware` (`internal/parse/command_claims.go`) are
+- **Where:** `middlewareContext` (`scan/internal/parse/middleware_context.go`). The existing
+  `transportMiddleware` list and `commandTransportMiddleware` (`scan/internal/parse/command_claims.go`) are
   name-based.
 - **Constraint (principle 4):** deciding that middleware is harmless must come from its source (it never
   writes the request fields the claim depends on and never terminates the request), or from a verified
@@ -249,7 +249,7 @@ source and gaps; serving files is not summarized by this implementation.
 ### S4: Remove repeated gaps at the source — implemented
 
 - **What:** model JavaScript `if` statements precisely, as the Python `conditional` does
-  (`internal/parse/python_control.go`), instead of falling to `branches` in `internal/parse/flow.go`,
+  (`scan/internal/parse/python_control.go`), instead of falling to `branches` in `scan/internal/parse/flow.go`,
   which records `unsupported_control_flow`, `branch_exit` and `unknown_control_effect` at every `if`.
 - **Why:** this is both noise (it repeats in coverage and entry gaps) and an accuracy problem (see
   "Why size matters").
@@ -300,14 +300,14 @@ merging (`sharedSourceExcerpts`) keeps using byte offsets internally.
 ### W9: One representation of the dependency path — implemented
 
 `trace_graph` is built from `dependencies` and `control_edges` (`buildTraceGraph`,
-`internal/judge/evidence_trace.go`), and all three are sent. Keep `dependencies` and `control_edges`, removing their derived `trace_graph`. Unit tests across family fixtures prove that the retained form preserves every fact: sink slot, storage key, transfer order
+`scan/internal/judge/evidence_trace.go`), and all three are sent. Keep `dependencies` and `control_edges`, removing their derived `trace_graph`. Unit tests across family fixtures prove that the retained form preserves every fact: sink slot, storage key, transfer order
 and edge kinds.
 
 ### W10: Guideline sections by claim — implemented
 
 Send only the guideline sections the selected claim and contract use. The catalog already selects
 components per family; extend the selection to sections for the language documents that are still sent
-whole (logging). Gate on the section-validation tests in `internal/guidelines`.
+whole (logging). Gate on the section-validation tests in `scan/internal/guidelines`.
 
 ### W11: Reference instead of repeat — implemented for exact duplicates
 
@@ -318,7 +318,7 @@ indices. This is lossless, and it also removes the entry-gap channel through whi
 
 ### W12: Static-first request envelope — rejected as outer-key reordering
 
-Provider requests are built from Go maps (`payloadForm`, `internal/judge/client.go`), so keys are sorted
+Provider requests are built from Go maps (`payloadForm`, `scan/internal/judge/client.go`), so keys are sorted
 and the envelope is `input`, `model`, `questions`. The static question and choice text therefore follows
 the per-candidate evidence, and provider prompt caching, which matches on a prefix, may not reuse it.
 The verified [Decisions caching contract](https://developers.openai.com/api/docs/guides/decisions#reuse-shared-input-with-prompt-caching)
@@ -376,7 +376,7 @@ improve accuracy (see "Why size matters"). It needs the ablation protocol before
 A lossy change is adopted only with evidence that answers stay correct.
 
 1. **Fixed calibration set.** Use the existing calibration pairs
-   ([calibration](../../docs/analysis/calibration.md#regression-pairs)): for each family and language, at
+   ([calibration](../../docs/scan/analysis/calibration.md#regression-pairs)): for each family and language, at
    least one guarded or protected case and one vulnerable case, plus the largest real records per sample
    (for example `routes/order.ts:164`, the VulnPy path routes and `updateProductReviews.ts:17`).
 2. **Arms.** The current request, then the request with one change. Same model, provider and question

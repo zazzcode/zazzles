@@ -12,15 +12,15 @@ the [deliverable contracts](../specifications/common-entry-dispatch.md) own exec
 The scanner already separates source evidence, semantic judgment, policy, and reporting.
 The pre-migration boundary coupled analysis starts and invocation identity to HTTP:
 
-- `internal/analysis/analysis.go`: `Entry.Route`, `CandidateUse.RouteID` / `ClientID`,
+- `scan/internal/analysis/analysis.go`: `Entry.Route`, `CandidateUse.RouteID` / `ClientID`,
   `Check.Method` / `Path`, and separate `AnalysisReport.ClientEntries`.
-- `internal/parse/analysis.go` and `route_analysis.go`: registration discovery selects
+- `scan/internal/parse/analysis.go` and `route_analysis.go`: registration discovery selects
   HTTP handlers and initializes request/response-specific flow.
-- `internal/parse/flow.go` and `python_flow.go`: flow state and parameter initialization
+- `scan/internal/parse/flow.go` and `python_flow.go`: flow state and parameter initialization
   carry route assumptions. Renaming records cannot supply resolver/message inputs.
-- `internal/judge/evidence_coverage.go`: required roles include `route_handler` and
+- `scan/internal/judge/evidence_coverage.go`: required roles include `route_handler` and
   request-specific sources. Evidence presence is distinct from semantic completeness.
-- `internal/report`: HTML grouping, finding associations, and SARIF labels depend on
+- `scan/internal/report`: HTML grouping, finding associations, and SARIF labels depend on
   route/browser identity. Saved-report export accepts schemas 1/2.
 
 The implementation MUST preserve existing bounded flow, sink models, raw assessments,
@@ -76,7 +76,7 @@ No global protected bit or entry-agnostic security summary is introduced.
 Desired: two registrations of one function have one callable and separate input/control
 contexts, yielding separate use records when applicable.
 Existing shape to replace: `Entry{Route: r, Handler: ...}` plus `RouteID` / `ClientID`
-associations in `internal/analysis/analysis.go`.
+associations in `scan/internal/analysis/analysis.go`.
 
 ### Implemented schema-3 shape
 
@@ -172,7 +172,7 @@ raw historical answers remain auditable. Policy does not let the model invent bi
 
 ## 6. Entry-specific reporting
 
-`internal/report` owns one shared finding interpretation and entry-specific presentation.
+`scan/internal/report` owns one shared finding interpretation and entry-specific presentation.
 Use a small switch/presenter function over typed metadata; no runtime plugin system or
 speculative interface is required. Presenters supply labels and details, never detection,
 claim completeness, trust, or status decisions.

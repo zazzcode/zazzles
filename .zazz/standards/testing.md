@@ -1,6 +1,6 @@
 # Testing
 
-Testing conventions for `zazzles`. Applies to `cmd/`, `internal/`, `testdata/`, and CI workflow changes.
+Testing conventions for `zazzles`. Applies to `cmd/`, `scan/`, `testdata/`, and CI workflow changes.
 
 ## 1. Principles
 
@@ -38,8 +38,8 @@ Prefer one table over many near-identical test functions:
 
 Parsing and resolution are golden-file tested because the output is large and structural:
 
-- fixtures live under the owning package's `testdata/` (for example `internal/langjs/testdata/<language>/<case>/`,
-  `internal/langpy/testdata/<case>/`; multi-language fixtures in `internal/pipeline/testdata/mixed/`) as real source files
+- fixtures live under the owning package's `testdata/` (for example `scan/internal/langjs/testdata/<language>/<case>/`,
+  `scan/internal/langpy/testdata/<case>/`; multi-language fixtures in `scan/internal/pipeline/testdata/mixed/`) as real source files
 - expected output lives beside them as a descriptive `.json` golden file
 - update goldens with an explicit `-update` flag, never by hand-editing
 - always review the golden diff in the PR — an unexplained golden change is the whole review
@@ -67,7 +67,7 @@ Parallel stages are tested for equivalence, not just for absence of races:
 
 ## 7. Semantic adapter stubbing
 
-Current semantic judge adapters (`internal/judge`) MUST be tested against a local `httptest`
+Current semantic judge adapters (`scan/internal/judge`) MUST be tested against a local `httptest`
 server, never a live endpoint. The same requirement applies to a future independent reviewer:
 
 - the stub returns fixed, schema-valid responses
@@ -83,8 +83,8 @@ server, never a live endpoint. The same requirement applies to a future independ
 ```bash
 go test ./...                    # all tests
 go test -race ./...              # race detector
-go test ./internal/langjs/...    # one package while iterating
-go test ./internal/pipeline/... -run TestExpressLoginGolden -update   # refresh goldens
+go test ./scan/internal/langjs/...    # one package while iterating
+go test ./scan/internal/pipeline/... -run TestExpressLoginGolden -update   # refresh goldens
 go vet ./...                     # static checks
 gofmt -l .                       # must print nothing
 ```

@@ -33,6 +33,10 @@ At `9e252c2`:
 - A generated 400-file PHP project that took 29.3 s scans in 0.9 s, and a 2,000-class project with
   300 entry files went from 8.5 s to 0.2 s, with the same records.
 
+The same review found a scanner stop on PHP object creation without a class name (an anonymous
+class, or a class chosen at run time). It is fixed in this pull request. The DVWA report at its pin
+is identical record for record before and after that fix, and the gates above pass with it.
+
 ## Pinned offline sample results
 
 VulnPy at `b81885e58283a3449b578d20c20557aff637e5ea` produces four sink groups with

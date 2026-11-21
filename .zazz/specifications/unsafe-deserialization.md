@@ -127,7 +127,7 @@ Read these before step 1 of §9. Nothing else is required.
 | `scan/internal/judge/deserialization.go`, `policy.go`, `injection.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, tests | New, modified | Policy, question wiring, facts on the wire |
 | `scan/internal/langpy/deserialization.go`, `package_versions.go`, `calls.go`, `code_redirect.go`, `modules.go`, tests, `testdata/deserialization/` | New, modified | Python operations, loader facts, transfers, exact-pin version reader (D-17) |
 | `scan/internal/langjs/deserialization.go`, `code_redirect.go`, `flow.go`, tests, `testdata/deserialization/` | New, modified | JS and TS operations, schema and version facts, claim assembly |
-| `scan/internal/langphp/deserialization.go`, `deserialization_binding.go`, `deserialization_options.go`, `deserialization_guards.go`, `calls.go`, `modules.go`, tests, `testdata/deserialization/` | New, modified | `unserialize` options, `Yaml::parse` flags, transfers, magic-method evidence |
+| `scan/internal/langphp/deserialization.go`, `deserialization_binding.go`, `deserialization_options.go`, `deserialization_guards.go`, `calls.go`, `class_index.go`, `modules.go`, tests, `testdata/deserialization/` | New, modified | `unserialize` options, `Yaml::parse` flags, transfers, magic-method evidence |
 | `scan/internal/report/code_redirect.go`, `findings.go`, `finding_types.go`, `sarif.go`, `guidance.go`, `p5_explain.go`, tests | Modified | Finding, label, SARIF rule for CWE-502, guidance |
 | `scan/internal/langjs/nextjs_lab_test.go`, `.zazz/evaluation/recall-gap-inventory/check.py` | Modified | Map `CWE-502` to `deserialization_candidate` |
 | `scan/cli/main.go`, `scan/cli/architecture_baseline_test.go`, `scan/cli/testdata/architecture-baseline.json` | Modified | Family name in the flag help; baseline additions only |
@@ -979,6 +979,15 @@ byte-identical before and after.
   is `PY-I3`. New table tests pin the D-3 loader rows and the 5.0, 5.1 and 6.0 boundaries, the D-5
   schema rows and the 4.0.0 boundary, the D-7 control rows, both remaining D-15 PHP binding forms,
   cross-file function bindings, and the D-11 method list, order and cap.
+
+- **Object creation without a class name (PHP), by owner direction.** The review found that
+  `new class {...}`, `new $name` and `new (expr)` stopped the scan with a nil dereference in
+  `class_index.go`. The defect predates this family and is on `stage`; the owner directed the fix
+  into this pull request. An anonymous class is now an unnamed project class whose constructor,
+  methods, traits and parent resolve as a named class's do, and a class chosen at run time is
+  unresolved. It is not cited as `deserialization_magic_class` evidence, since serialized data
+  cannot name it. `TestObjectCreationWithoutClassName`,
+  `TestDeserializationPHPIgnoresAnonymousMagicClass`.
 
 Not changed: a comparator alone (`hash_equals`, `hmac.compare_digest`, `crypto.timingSafeEqual`)
 over an unkeyed hash is still `integrity_check` by D-7's first-match rule; the model judges its

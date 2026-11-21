@@ -1,6 +1,6 @@
 # Input validation analysis
 
-[Analysis index](README.md) · [Database injection](database-injection.md)
+[Analysis index](README.md) · [Database injection](database-injection.md) · [Coverage and known gaps](../detection-capabilities/input-validation.md)
 
 A missing validator call is evidence about the analyzed slice, not proof that every execution path
 accepts invalid input. Analysis MUST distinguish an absent observed check, an unresolved check, and

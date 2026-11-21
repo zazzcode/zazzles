@@ -8,21 +8,15 @@ Categories group related concerns. **Findings**, **Review**, and **Protected** d
 and required action. A finding can be an established vulnerability or a poor practice worth fixing
 without a demonstrated exploit. A Review category is a question, not an established defect.
 
-| Category | Meaning | Current scope |
-|---|---|---|
-| **SQL Injection** | Input can affect SQL structure; review executable text separately from bound values | Bounded SQL construction/binding analysis; string-built query practice can merit refactoring without an established exploit |
-| **NoSQL Injection** | Input can affect operators, selectors, or executable expressions | Initially bounded MongoDB/Mongoose and MarsDB-compatible `$where`/document analysis; other engines need separate models; executable string construction is a practice finding, unknown document constraints are Review |
-| **Input Validation** | A server-side field policy governs presence, runtime type, format, range, or length | Bounded validation evidence; absent modeled checks alone are Review |
-| **Account Creation Validation** | Required fields and guards must hold before persistence | Declared account-creation cases; general bypass discovery is incomplete |
-| **Outbound Request Safety** | Destination, headers, or request values need appropriate constraints | Bounded use evidence; not complete SSRF detection |
-| **Reflected XSS** | Request content executes as script when reflected into a browser response | Planned; not assigned by the current detectors |
-| **Sensitive Data Logging** | Logs expose secrets or other sensitive values | Bounded: verified console/winston calls in route handlers and morgan access logs of query credentials; see [logging rules](analysis/sensitive-data-logging.md). A constant startup message is not a leak |
-| **Sensitive Operation Review** | A possible operation does not map to a more specific supported family | Review fallback |
+The [coverage index](detection-capabilities.md) links each weakness to its CWE, analyzer family
+and class-specific coverage. Four report terms also describe how a record is presented:
 
-XSS means cross-site scripting. NoSQL is one word. **Poor Input Validation** is a conclusion requiring
-an applicable business requirement and evidence of inadequate enforcement. The neutral Input
-Validation category can also accompany unresolved checks or protection; it should not imply that
-valid free text must reject punctuation.
+| Label | Meaning |
+|---|---|
+| **Input Validation** | A field policy or its enforcement is being assessed. Poor Input Validation requires an applicable requirement and evidence of inadequate enforcement |
+| **Account Creation Validation** | A field policy applies to account creation before persistence |
+| **Outbound Request Safety** | An outbound call carries destination-origin evidence. A verified SSRF claim has its own outcome |
+| **Sensitive Operation Review** | A possible operation needs review when no more specific supported category applies |
 
 ## Other terms
 

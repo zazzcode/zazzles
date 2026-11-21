@@ -5,8 +5,8 @@
 Zazzles analyzes a bounded plain-PHP subset through the same evidence, decision and reporting
 pipeline as JavaScript/TypeScript and Python. It reads source; it does not execute the
 application, install its dependencies, open its database, or make the outbound requests found in
-the code. The acceptance corpus is DVWA at revision `a1978a2`; framework-specific PHP (Drupal,
-Symfony, Twig) is separate future work.
+the code. The acceptance corpus is DVWA at revision `a1978a2`; framework-specific entry discovery for Drupal and Symfony is planned. Verified Twig template-source
+operations are covered by the [template injection analyzer](detection-capabilities/template-injection.md).
 
 ```sh
 go build -o bin/scan ./cmd/scan
@@ -31,7 +31,7 @@ model; neither mode certifies an application as safe.
 | XSS | `echo`/`print`/`<?= ?>` render values with the output context taken from the surrounding inline HTML (text, attribute, URL, script, style), reflected and stored claims, `php-sql:<table>.<column>` storage links from INSERT and UPDATE column attribution across branch joins (string and numeric `fetch_row` access), `htmlspecialchars`/`htmlentities` transforms, `urlencode` as a markup/URL-scoped control |
 | Path | `include`/`require` dynamic targets, `move_uploaded_file` upload moves, filesystem read/write calls; `basename`/allowlist restrictions are controls, not sink removals |
 | Upload | `move_uploaded_file` also yields a `file_upload_candidate` with stored-name, type-control and served-destination facts ([file upload rules](analysis/file-upload.md)) |
-| Code | `eval`, string `assert`, `create_function` as whole-program interpreter operands; `file_get_contents` returns carry their path's dependency paths (path control is content control) |
+| Code and templates | `eval`, string `assert` and `create_function` as interpreter operands. A `file_get_contents` return retains its path's dependencies. Verified Twig `createTemplate` and `template_from_string` take a template-source operand |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 

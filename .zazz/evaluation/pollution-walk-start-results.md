@@ -79,7 +79,16 @@ checks covered changed relative links and anchors, JSON syntax and `git diff --c
   the write and mutable or escaped collections have negative controls.
 - The `set-in` 2.0.3 advisory reading still rests on source and the earlier transcription.
   The downloaded package's runtime reproduction remains unverified. [Prior library evaluation](pollution-write-shapes-results.md#real-advisory-libraries)
-- The prototype-pollution coverage page is present on the starting revision. Coverage pages
-  for the other classes belong to the separate documentation work.
+- The prototype-pollution coverage page is present on the starting revision. The owner assigned
+  the remaining [class coverage pages](../../docs/detection-capabilities.md) to this branch as a
+  documentation follow-up.
 - Independent verification used static probes and offline judgment stubs. The sample
   applications and Node payload checks were not executed.
+
+## User documentation closeout
+
+The index links 14 coverage pages with 70 unique gap IDs. The docs check validated 539
+local links, including 206 links from untouched Markdown files. An offline CLI run created
+HTML, JSON and SARIF. All 13 documented family selectors passed CLI parsing with a judged
+scan configuration and stopped at the missing-key check. The CLI family selection and
+offline-environment tests passed.

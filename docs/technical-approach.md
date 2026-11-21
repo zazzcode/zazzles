@@ -325,9 +325,9 @@ handlers with local proto3 declarations and request-field inputs. Dynamic-route 
 real VulnPy traces/findings and Juice Shop regressions. GraphQL and gRPC acceptance uses source
 fixtures; real-application evaluation remains deferred. Dynamic schema composition, subscriptions,
 generated gRPC stubs, interceptors and streaming flow remain unsupported.
-The [README use-case matrix](../README.md#entry-use-cases-and-delivery-status) summarizes supported
-and planned scenarios; the [common-entry design](../.zazz/architecture/common-entry-dispatch.md)
-and [delivery contracts](../.zazz/specifications/common-entry-dispatch.md) own the detailed boundaries.
+The [coverage index](detection-capabilities.md#languages-and-entry-points) lists supported entry
+points. The [common-entry design](../.zazz/architecture/common-entry-dispatch.md) and
+[delivery contract](../.zazz/specifications/common-entry-dispatch.md) describe the detailed boundaries.
 
 The architectural benefit is a common evidence and invocation contract rather than a separate
 security interpretation for every framework. It does not automatically yield deeper analysis,

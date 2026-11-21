@@ -1,9 +1,9 @@
 # Path traversal analysis
 
-[Analysis index](README.md) · [Command injection](command-injection.md) · [Input validation](input-validation.md)
+[Analysis index](README.md) · [Command injection](command-injection.md) · [Input validation](input-validation.md) · [Coverage and known gaps](../detection-capabilities/path-traversal.md)
 
 The Path Traversal Analyzer traces request values into the file-path argument of verified
-filesystem reads and writes in JavaScript, TypeScript and Python. It separates three claims: whether
+filesystem reads and writes in JavaScript, TypeScript, Python and plain PHP. It separates three claims: whether
 request text can select a file outside the intended location, what enforced **containment** (if any)
 prevents that, and whether every request-derived path and branch is covered. Field validation is a
 different claim with its own record. Reports state a static source judgment (CWE-22) under a declared
@@ -15,6 +15,8 @@ or independent Findings Review.
 | Language | Verified operations (actual binding required) | Effective path operand |
 |---|---|---|
 | JS/TS | `fs.readFile`, `readFileSync`, `writeFile`, `writeFileSync`, `appendFile`, `appendFileSync`, `createReadStream`, `createWriteStream`, `unlink`, `unlinkSync`, `rm`, `rmSync`; `fs/promises` and `fs.promises` forms | first argument; the data argument of a write is not a path |
+| JS/TS | Node `fs.open`, `readdir`, `stat`, `lstat` and their supported synchronous variants | first path argument |
+| JS/TS | Node `fs.copyFile`, `fs.rename` and their supported synchronous variants | source and destination are independent paths |
 | JS/TS | Express `res.sendFile`, `res.download` (a parameter of the enclosing handler, module imports `express`) | first argument; a constant `root` option adds library-enforced containment |
 | JS | `adm-zip` `extractAllTo` on an `AdmZip(...)` instance | the request-supplied archive (entry names), see below |
 | JS/TS | Caller writes from verified `unzipper.Open.buffer(...).files` entry names; `hbs` `res.render` with verified view-engine registration | archive `entry.path`, or the effective `options.layout` after spreads/overrides |
@@ -23,6 +25,9 @@ or independent Findings Review.
 | Python | `tarfile.open`, `TarFile`, `TarFile.open`, `bz2.open`, `BZ2File`, `gzip.open`, `GzipFile`, `lzma.open`, `LZMAFile` | the file name argument |
 | Python | `os.remove`, `os.unlink` | first argument |
 | Python | Flask `send_file`, `send_from_directory` | `send_file`: first argument; `send_from_directory`: its `path` argument (library `safe_join` against a directory that is not request-derived) |
+| Python | Starlette or FastAPI `FileResponse` | response file path |
+| Python | `shutil.copy`, `copy2`, `copyfile`, `move` | source and destination are independent paths |
+| Python | `TarFile.extractall` | archive member provenance and extraction destination. Missing or dynamic filters leave a runtime-policy gap |
 | Python | werkzeug `FileStorage.save` on a value from `request.files` | the destination argument; `secure_filename` is a verified control |
 
 Bindings come from ESM default, namespace and named imports, CommonJS `require` and destructuring (including
@@ -119,12 +124,9 @@ For PHP, [server-mapped file entries](../php-support.md) cover dynamic `include`
 renaming are controls the judge weighs, never sink removals; an unresolvable dynamic include
 yields a `php_dynamic_include` gap with no invented edge.
 
-Not covered, and reported as such rather than as safe: `copyFile`, `rename`, `readdir`, `stat`,
-`existsSync`, `express.static`/`serve-index`, multer disk storage, `shutil`, Python `zipfile`/`tarfile`
-extraction, archive libraries other than `adm-zip` and `unzipper.Open.buffer` entry writes, template
-engines other than `hbs` layout reads, second-order flows through storage, Windows path semantics, and
-symbolic-link or race behavior. Unmodeled middleware (including custom upload `fileFilter` callbacks),
-helpers, mutation through unmodeled calls, cross-module guards and whole-program flow stay Review.
+The [coverage page](../detection-capabilities/path-traversal.md) lists unsupported operations
+and the gaps that leave a recognized path in Review. Unmodeled upload filters, helpers, mutations
+and cross-module guards can leave the effective path or its containment unresolved.
 
 A Next.js catch-all parameter joined with a literal separator (`params.path.join('/')`) is a modeled
 transfer of the request array when the receiver is read once in its function and never reassigned,

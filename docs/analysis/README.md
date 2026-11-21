@@ -1,6 +1,6 @@
 # Analysis rules and guidelines
 
-[Documentation index](../README.md) · [Result interpretation](../interpreting-results.md)
+[Documentation index](../README.md) · [Coverage by weakness](../detection-capabilities.md) · [Result interpretation](../interpreting-results.md)
 
 These product documents explain how zazzles evaluates code and how contributors and coding agents
 should improve its analysis. They belong outside `.zazz/`, alongside user documentation.
@@ -15,6 +15,8 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Unrestricted file upload](file-upload.md) | Verified PHP and Werkzeug upload writes, stored-name origin, server-side type controls, served destinations and outcomes |
 | [Path traversal](path-traversal.md) | Verified Node `fs` and Python `open`/`pathlib` operations, effective path operands, containment controls and outcomes |
 | [Prototype pollution](prototype-pollution.md) | Verified JS/TS prototype writes, key-bearing inputs, and per-level controls |
+| [Code and template injection](code-injection.md) | Verified interpreter and template-source operands and their restrictions |
+| [Open redirect](open-redirect.md) | Verified redirect destinations and effective origin restrictions |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |
 | [Cross-site scripting](xss.md) | Source-to-rendering evidence, HTML contexts, template escaping, sanitization and XSS outcomes |
@@ -95,6 +97,3 @@ The [cross-entry acceptance record](../../.zazz/evaluation/common-entry-dispatch
 checks these same claim policies across actual parsed entry adapters. Synthetic local-stub answers
 cannot override unknown guards/transforms, transfer protection between invocations, or turn coverage
 gaps into protection. This verification changes no analysis rule or historical model answer.
-
-- [Code injection](code-injection.md): verified JavaScript/Python interpreter operands and browser execution.
-- [Open redirect](open-redirect.md): redirect/navigation destination control and same-origin restrictions.

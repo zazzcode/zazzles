@@ -1,6 +1,6 @@
 # Unrestricted file upload
 
-[Analysis rules](README.md) · [Path traversal](path-traversal.md) · [Detection capabilities](../detection-capabilities.md)
+[Analysis rules](README.md) · [Path traversal](path-traversal.md) · [Detection capabilities](../detection-capabilities.md) · [Coverage and known gaps](../detection-capabilities/file-upload.md)
 
 The `upload` family asks one question about a verified upload write: can the client choose what the
 stored file becomes where it is served (CWE-434)? Path containment is a different question, asked by

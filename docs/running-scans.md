@@ -7,8 +7,16 @@ it is not cloned, installed, or started by zazzles.
 
 ## Run
 
-After compiling and [configuring required model assessment](decision-models.md), set a results root
-outside the worktree and run a model-assessed scan:
+After [building the scanner](getting-started.md#compile), run an offline scan to inspect source
+evidence:
+
+```bash
+./bin/scan --analyze --output-dir "$HOME/zazzles-findings" /path/to/app
+```
+
+Configure a [decision provider](decision-models.md#credentials-and-local-environment) to assess
+supported security claims. These judged examples set a request cap and write reports outside the
+worktree:
 
 ```bash
 export SCAN_FINDINGS_DIR="$HOME/zazzles-findings"
@@ -167,8 +175,9 @@ report with its reason and a stderr warning, and the scan exits 0. Only a stoppe
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
 
 Use `--only-family path,command` or `--skip-family input-validation,outbound` to scope model
-assessment. The flags are mutually exclusive and accept `sql`, `nosql`, `xss`, `command`, `path`,
-`logging`, `input-validation`, `outbound`, and `ssrf`; `JUDGE_ONLY_FAMILY` / `JUDGE_SKIP_FAMILY` supply defaults.
+assessment with `--analyze --judge`. Use one of these flags per run. The
+[coverage index](detection-capabilities.md) lists the family names. Set defaults with
+`JUDGE_ONLY_FAMILY` or `JUDGE_SKIP_FAMILY`.
 Excluded model assessments remain unrun without an incompleteness warning. Existing deterministic practice
 findings are retained.
 Primary security sinks, including XSS and logging, run before standalone validation. Zero-call
@@ -347,10 +356,10 @@ establish exhaustive accuracy or runtime exploitability. Mandatory rendered repo
 complete through bounded inspection of the user-opened localhost HTTP tab; human review/merge remains pending.
 
 
-A verified `fetch`, `axios` or Python `requests`/`httpx`/`urllib` call whose destination a request value reaches is an SSRF claim (`ssrf_candidate`) and is assessed. Every other outbound use is an observation, not a security verdict. A requested model scan keeps them `not_run`
-and in Review, makes no model calls for them, and saves the incomplete report with a stderr warning. The existing
-candidate-position request cap remains conservative. Structural-only scanning completes normally;
-exporting a saved report preserves its historical answers. See [decision-model scope](decision-models.md#outbound-observations).
+Verified request-controlled outbound destinations may produce an SSRF claim. Grouped outbound
+observations retain origin evidence and remain unassessed. Exporting a saved report preserves
+its assessment state. [SSRF coverage](detection-capabilities/server-side-request-forgery.md) ·
+[Decision-model scope](decision-models.md#outbound-observations)
 
 ## Scan speed
 

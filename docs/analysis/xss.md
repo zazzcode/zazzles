@@ -1,6 +1,6 @@
 # Cross-site scripting analysis
 
-[Analysis index](README.md) · [Result interpretation](../interpreting-results.md)
+[Analysis index](README.md) · [Result interpretation](../interpreting-results.md) · [Coverage and known gaps](../detection-capabilities/cross-site-scripting.md)
 
 XSS is a source-to-rendering claim in a specific browser output context. Runtime input types and
 validation do not replace context-appropriate encoding or HTML sanitization. The same value may

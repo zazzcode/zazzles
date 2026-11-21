@@ -37,15 +37,17 @@ work, each as its own small commit with a failing-first test where code changes.
 4. **Juice Shop `JS-PP-R01`.** Four Review records at `lib/accuracy.ts:71`. Source review says a
    finding would be false. Ask the owner whether the key row stays `review` or the records
    should be suppressed by reading the `Map` lookup as a guard (`PP-R01`).
-5. **Coverage pages for the other vulnerability classes.** A separate session was writing one
-   page per class under `docs/detection-capabilities/`. Check what merged. If pages are missing,
-   that work continues on its own branch and is not part of this contract.
+5. **Coverage pages for the other vulnerability classes.** The owner assigned this
+   documentation follow-up to the same branch. Organize user documentation by weakness class
+   using the prototype pollution coverage page as the model. Keep analyzer selectors and
+   mapped OWASP editions in the coverage index, and move detailed usage and sample evaluation
+   out of the project README to their owning user guides.
 
 Items 1 and 2 passed their six-sample rescans. The owner selected Map guard recognition
 for item 4. The two verdict paths now carry Map membership evidence and remain in Review
 with a runtime key set. The two fixes paths use an object cache and remain in Review.
-Item 3 remains unverified at runtime. For item 5, the baseline includes the prototype-pollution
-coverage page. The other pages remain separate. See the
+Item 3 remains unverified at runtime. The [coverage index](../../docs/detection-capabilities.md)
+links the pages delivered for item 5. See the
 [carryover closeout](../evaluation/pollution-walk-start-results.md#carryover-closeout).
 
 ## 1. Capability
@@ -241,6 +243,8 @@ a new record on a keyed control.
 - [x] The guide lists the accepted starts and records the `PP-N01` and `PP-N02` forms (AC11).
 - [x] Section 11.1 of the write shapes contract marks the D-9 non-parameter start row as closed
   by this contract.
+- [x] The coverage index links a page for every reported weakness class and the standalone
+  validation check. The README links to user guides and sample reports.
 - [ ] Owner review.
 
 ## 11. Open questions
@@ -310,3 +314,11 @@ AC3 now covers that fixture and the rest of the prior pollution suite keeps its 
 The owner also chose to recognize the Juice Shop Map lookup. The source and six-sample
 rescan supported membership evidence for the two verdict paths, with Review retained for the
 runtime key set and for the two object-cache paths.
+
+### 2026-11-21 — Added the user documentation closeout
+
+The owner assigned the class coverage pages to this branch and chose the existing prototype
+pollution page as the pattern. The coverage index separates reported weaknesses, analyzer
+selectors and versioned OWASP risk references. User guides and sample notes own setup,
+interpretation and historical evidence. Acceptance is a coverage inventory, validated links
+and anchors, and a documented offline scan smoke check.

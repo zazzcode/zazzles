@@ -5,7 +5,7 @@ data) and its revealing transfer into a verified log call. Whole-container loggi
 observed operation for Review, not an established leak. Evidence MUST distinguish the logging fact
 from missing data classification; field names remain hints until their meaning is established.
 
-[Analysis index](README.md) · [Input validation](input-validation.md) · [Calibration](calibration.md)
+[Analysis index](README.md) · [Input validation](input-validation.md) · [Calibration](calibration.md) · [Coverage and known gaps](../detection-capabilities/sensitive-data-logging.md)
 
 ## What the claim means
 

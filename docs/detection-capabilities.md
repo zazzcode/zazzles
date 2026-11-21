@@ -1,134 +1,84 @@
 # Detection capabilities
 
-[Documentation](README.md) · [Interpreting results](interpreting-results.md) · [Analysis rules](analysis/README.md)
+[Documentation](README.md) · [Analysis rules](analysis/README.md) · [Interpreting results](interpreting-results.md)
 
-This page summarizes what `zazzles` can currently detect, in which languages and frameworks, and what
-it can recognize as protection. Each family's guide owns the exact rules; this page is the map.
+Find the weakness you are investigating, then open its coverage page for supported operations,
+recognized controls, records that need Review, and gaps. Use the analyzer family with
+`--only-family` to scope model assessment in a judged scan. Some families assess more than one
+weakness. [Selecting families](running-scans.md#route-to-string-use-analysis)
 
-A result is a **claim about one operand of one verified operation**. It is never a certificate that a
-route or application is safe. Outcomes are Confirmed, Poor practice, Protected (for that claim only),
-or Review when evidence is incomplete; see [interpreting results](interpreting-results.md). Without
-`--judge`, scans are offline: they establish candidates, per-path protection facts and blockers, and
-every record says `assessment_state: not_run`.
+Each record concerns one declared claim at a supported operation or input. Protected applies
+to that claim and its analyzed paths. Offline scans build evidence, and judged scans can use
+that evidence to classify a supported security claim. [How to read a report](interpreting-results.md)
+
+<a id="vulnerability-families"></a>
 
 ## Vulnerability classes
 
-Coverage is described per vulnerability class. Each class has a rules page, and a page or
-section that states what is found, what is left in Review and what is not recorded. Coverage
-pages live in the [detection-capabilities](detection-capabilities/) folder, one per class. The CWE is
-the one the scanner reports. The family name selects the analyzer with `--only-family`.
+| Class and coverage | Reported CWE | Analyzer family | OWASP risk references |
+|---|---|---|---|
+| [SQL injection](detection-capabilities/sql-injection.md) | [CWE-89](https://cwe.mitre.org/data/definitions/89.html) | `sql` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
+| [NoSQL injection](detection-capabilities/nosql-injection.md) | [CWE-943](https://cwe.mitre.org/data/definitions/943.html) | `nosql` | — |
+| [Cross-site scripting](detection-capabilities/cross-site-scripting.md) | [CWE-79](https://cwe.mitre.org/data/definitions/79.html) | `xss` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
+| [OS command injection](detection-capabilities/command-injection.md) | [CWE-78](https://cwe.mitre.org/data/definitions/78.html) | `command` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
+| [Argument injection](detection-capabilities/argument-injection.md) | [CWE-88](https://cwe.mitre.org/data/definitions/88.html) | `command` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
+| [Path traversal](detection-capabilities/path-traversal.md) | [CWE-22](https://cwe.mitre.org/data/definitions/22.html) | `path` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) |
+| [Unrestricted file upload](detection-capabilities/file-upload.md) | [CWE-434](https://cwe.mitre.org/data/definitions/434.html) | `upload` | [A06:2025 Insecure Design](https://top10.owasp.org/2025/A06_2025-Insecure_Design/) |
+| [Server-side request forgery](detection-capabilities/server-side-request-forgery.md) | [CWE-918](https://cwe.mitre.org/data/definitions/918.html) | `ssrf` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) · [API7:2023 SSRF](https://api-security.owasp.org/editions/2023/en/0xa7-server-side-request-forgery/) |
+| [Code injection](detection-capabilities/code-injection.md) | [CWE-95](https://cwe.mitre.org/data/definitions/95.html) | `code` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
+| [Server-side template injection](detection-capabilities/template-injection.md) | [CWE-1336](https://cwe.mitre.org/data/definitions/1336.html) | `code` | — |
+| [Prototype pollution](detection-capabilities/prototype-pollution.md) | [CWE-1321](https://cwe.mitre.org/data/definitions/1321.html) | `pollution` | — |
+| [Open redirect](detection-capabilities/open-redirect.md) | [CWE-601](https://cwe.mitre.org/data/definitions/601.html) | `redirect` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) |
+| [Sensitive data in logs](detection-capabilities/sensitive-data-logging.md) | [CWE-532](https://cwe.mitre.org/data/definitions/532.html) | `logging` | [A09:2025 Security Logging and Alerting Failures](https://top10.owasp.org/2025/A09_2025-Security_Logging_and_Alerting_Failures/) |
 
-| Vulnerability class | CWE | Family | Rules | Coverage and limits |
-|---|---|---|---|---|
-| SQL injection | CWE-89 | `sql` | [Database injection](analysis/database-injection.md) | No separate section yet |
-| NoSQL injection | CWE-943 | `nosql` | [Database injection](analysis/database-injection.md) | No separate section yet |
-| Cross-site scripting | CWE-79 | `xss` | [XSS](analysis/xss.md) | [Outcomes and limits](analysis/xss.md#outcomes-and-limits) |
-| OS command and argument injection | CWE-78, CWE-88 | `command` | [Command injection](analysis/command-injection.md) | [Limits](analysis/command-injection.md#limits) |
-| Path traversal, including archive extraction | CWE-22 | `path` | [Path traversal](analysis/path-traversal.md) | [Coverage and limits](analysis/path-traversal.md#coverage-and-limits) |
-| Unrestricted file upload | CWE-434 | `upload` | [File upload](analysis/file-upload.md) | No separate section yet |
-| Server-side request forgery | CWE-918 | `ssrf` | [SSRF](analysis/ssrf.md) | No separate section yet |
-| Code injection | CWE-95 | `code` | [Code injection](analysis/code-injection.md) | [Bounds](analysis/code-injection.md#bounds) |
-| Template injection | CWE-1336 | `code` | [Code injection](analysis/code-injection.md) | [Bounds](analysis/code-injection.md#bounds) |
-| Prototype pollution | CWE-1321 | `pollution` | [Prototype pollution](analysis/prototype-pollution.md) | [Coverage and known gaps](detection-capabilities/prototype-pollution.md), every form by outcome with an identifier per gap |
-| Open redirect | CWE-601 | `redirect` | [Open redirect](analysis/open-redirect.md) | [Bounds](analysis/open-redirect.md#bounds) |
-| Sensitive data in logs | CWE-532 | `logging` | [Logging](analysis/sensitive-data-logging.md) | No separate section yet |
-| Missing or weak input validation | CWE-20 | `input-validation` | [Input validation](analysis/input-validation.md) | No separate section yet |
+CWE identifies the weakness. OWASP Top 10 references use the indicated edition and group
+weaknesses into broader risks. An analyzer’s coverage is the set of operations and paths listed
+on its class pages. [OWASP Web Top 10](https://top10.owasp.org/) · [OWASP API Top 10](https://api-security.owasp.org/)
 
-Languages and frameworks cut across these classes. Their own bounds are in the
-[Next.js](nextjs-support.md#limits), [Python](python-support.md) and [PHP](php-support.md)
-guides.
+## Practice checks and observations
 
-## Languages, frameworks and entries
-
-| Language | Entry adapters | Guide |
+| Check or observation | Selector | Coverage |
 |---|---|---|
-| JavaScript / TypeScript (Node.js) | Express (including route chains and mounts), Fastify, Hapi, Next.js (App Router, Pages Router, Server Actions, pages), browser sources, Apollo GraphQL resolvers, unary gRPC | [Node inputs](analysis/node-inputs.md), [Next.js](nextjs-support.md) |
-| Python | Flask, FastAPI, Quart, Django, Falcon, Bottle, Pyramid, aiohttp and WSGI dispatch | [Python analysis](python-support.md) |
+| Standalone input validation | `input-validation` | [Declared field policy, enforcement and Review](detection-capabilities/input-validation.md) |
+| Outbound calls | `outbound` | [Destination origins and grouped observations](analysis/ssrf.md#destination-origin). A verified request-controlled destination can also have a separate `ssrf` claim |
+| Next.js practice checks | Framework observations | [NX-BP checks and their bounds](nextjs-support.md#framework-practice-observations) |
 
-Source is read only: no dependency installation, build, execution or network requests to the target.
+<a id="languages-frameworks-and-entries"></a>
 
-### How frameworks and languages share analysis
+## Languages and entry points
 
-**Next.js is not a separate scanner.** It is an entry adapter on top of the same JavaScript/TypeScript
-analysis that Express, Fastify and Hapi use. All of them share the value-flow engine, the library
-contracts (Sequelize, Prisma, Mongoose, `fetch`/axios, `fs`, `child_process`, `eval` and others),
-every vulnerability family and the same verdict rules. What differs is how entries and inputs are
-found:
-
-| | Express, Fastify, Hapi | Next.js |
+| Language | Supported entry points | Guide |
 |---|---|---|
-| Entries | `app.get`/router registrations, middleware chains, mounts | File-system routes, App and Pages Router, Server Actions, pages |
-| Request inputs | `req.body`, `query`, `params`, `headers`, `cookies` | Web Request API, route params, `searchParams`, Server Action arguments |
-| Rendering | `res.send`/`write`, EJS, Pug, Handlebars | Server pages, Client Components, React props, context and stores |
-| Additional | — | Framework practice observations (NX-BP), Next.js redirect APIs |
+| JavaScript and TypeScript | Supported HTTP handlers in Express, Fastify and Hapi, Next.js routes, pages and Server Actions, browser entry points, Apollo GraphQL resolvers and unary gRPC | [Node inputs](analysis/node-inputs.md) · [Next.js](nextjs-support.md) · [Entry selection](running-scans.md#common-entry-selection-and-tagged-checks) |
+| Python | Supported HTTP dispatch in Flask, FastAPI, Quart, Django, Falcon, Bottle, Pyramid, aiohttp and WSGI | [Python analysis](python-support.md) |
+| PHP | Server-mapped `.php` and `.phtml` files with bounded includes and in-repository dispatch | [PHP analysis](php-support.md) |
 
-A JavaScript/TypeScript flow or library improvement therefore helps Express and Next.js applications
-alike, unless it depends on a framework construct (for example a Next.js catch-all `[...path]` route).
+Entry adapters acquire input and establish context for the same claim and verdict model. Each
+language adapter establishes its own supported value flow and protection facts. [Technical approach](technical-approach.md#common-entry-and-dispatch-architecture)
 
-**Python** has its own adapters for entries and its own flow analysis. It shares the vulnerability
-families, verdict rules, report fields and stored-value rule with JavaScript/TypeScript, but a
-JavaScript/TypeScript flow rule does not apply to Python until Python gets its own equivalent. The
-table under [Which rules are generic](#which-rules-are-generic) shows the current split.
+<a id="which-rules-are-generic"></a>
 
-## Vulnerability families
+<a id="second-order-and-stored-values"></a>
 
-| Family (`--only-family`) | JavaScript / TypeScript | Python | Protection it can recognize | Guide |
-|---|---|---|---|---|
-| SQL injection (`sql`) | Sequelize raw and finders, sql.js, Prisma raw, better-sqlite3, sqlite3 | sqlite3, Psycopg 2/3, PyMySQL, MySQL Connector | Bound parameters; verified numeric/hex conversions; per-operand SQLite/PostgreSQL quote doubling | [Database injection](analysis/database-injection.md) |
-| NoSQL injection (`nosql`) | Mongoose/MongoDB, MarsDB | not implemented | Enforced type guards, ObjectId casts, scalar selector facts | [Database injection](analysis/database-injection.md) |
-| Cross-site scripting (`xss`) | Express HTML responses, EJS, Pug, Handlebars/hbs, React/Vue rendering, browser DOM sinks, stored paths through Mongoose, Sequelize, sql.js and Prisma | HTML responses and supported templates | Context-appropriate escaping, verified sanitizers (for example DOMPurify defaults) | [XSS](analysis/xss.md) |
-| Command injection (`command`) | `child_process` `exec`/`execFile`/`spawn` families | `os.system`, `os.popen`, `subprocess` | Fixed executables, argument arrays without shell, verified guards | [Command injection](analysis/command-injection.md) |
-| Path traversal (`path`) | `fs` and `fs/promises`, Express `sendFile`/`download`, `adm-zip`, `unzipper`, `hbs` layouts | `open`, `pathlib`, archive modules, `os.remove`, Flask `send_file`/`send_from_directory`, werkzeug `save` | Containment checks, `..`/separator reject guards on the final operand, library roots, `secure_filename` | [Path traversal](analysis/path-traversal.md) |
-| Unrestricted upload (`upload`) | not implemented | Werkzeug `FileStorage.save` (PHP: `move_uploaded_file`) | Generated names, server-chosen or allow-listed extensions, content checks, unserved destinations | [File upload](analysis/file-upload.md) |
-| SSRF (`ssrf`) | global `fetch`, `axios`, Node `http`/`https` | `requests`, `httpx`, `urllib.request.urlopen` | Parsed host allow-lists and scheme-and-host checks on every path | [SSRF](analysis/ssrf.md) |
-| Code injection (`code`) | `eval`, `Function`, browser string timers, Node `vm`, sandbox evaluator libraries; template source in ejs, Handlebars, pug, nunjucks, lodash (CWE-1336) | `eval`, `exec`, `compile`; template source in Jinja2, Flask `render_template_string`, Mako (PHP: Twig `createTemplate`) | Grammar allow-lists, type conversions of the complete operand | [Code injection](analysis/code-injection.md) |
-| Prototype pollution (`pollution`) | Verified Lodash `merge`, `mergeWith`, `defaultsDeep`, `set`, `setWith` and `zipObjectDeep` by resolved version; source-visible recursive merges, path walks (index, `for…of`, `while`, `forEach`, `reduce` and recursive forms over split, matched or array paths), unflatten, and direct nested computed assignments, in JavaScript and TypeScript, in application source and in library source kept in the repository. [Coverage and known gaps](detection-capabilities/prototype-pollution.md) | — | Literal key exclusions on string keys, written in place or as a one-line helper; whole-path `includes`/`indexOf` deny-lists; own-property checks at each lookup; a fresh null-prototype target for one lookup. An incomplete exclusion is listed with the names it leaves open | [Prototype pollution](analysis/prototype-pollution.md) |
-| Open redirect (`redirect`) | Express/Fastify/Hapi redirects, Location headers, Next.js redirects and router, browser navigation | Flask/Django redirects, Starlette/FastAPI `RedirectResponse`, aiohttp | Parsed-origin checks, host allow-lists, same-site relative paths that exclude `//` and `\` | [Open redirect](analysis/open-redirect.md) |
-| Sensitive-data logging (`logging`) | global `console`, pino, winston, morgan | supported `logging` bindings | Derived or masked values instead of content | [Logging](analysis/sensitive-data-logging.md) |
-| Input validation (`input-validation`) | Field requirements and enforcing checks (zod, validator.js and others) | Field requirements and enforcing checks | Enforced validation separate from destination protection | [Input validation](analysis/input-validation.md) |
-| Outbound observations (`outbound`) | Every verified outbound call, classified by destination origin | same | Observation only; not an SSRF claim | [SSRF](analysis/ssrf.md#destination-origin) |
+## Shared evidence and stored values
 
-Next.js framework practice checks (NX-BP codes) are separate observations; see
-[Next.js analysis](nextjs-support.md#framework-practice-observations).
+Supported reads and writes can link a stored value back to an originating request. When no
+writer is linked, the claim can stay in Review with `storage_origin_unresolved`. A request key
+that selects a stored record does not establish the origin of its contents.
+[Stored and browser analysis](analysis/xss.md#stored-and-browser-analysis)
 
-## Which rules are generic
+<a id="prototype-pollution-known-gaps"></a>
 
-The verdict gates, report fields and stored-origin rule apply to every language. Most flow and
-protection recognition is implemented per language adapter:
+## Prototype pollution coverage
 
-| Capability | Scope |
-|---|---|
-| Verdict gates, Protected/Confirmed policy, judged/unjudged state, blocking evidence, linked claims | All languages |
-| Stored values with no linked writer stay Review (`storage_origin_unresolved`) in every family | All languages |
-| Redirect bypass forms (`\`, `/\`, `//`, origin prefix, decode after check) blocking Protected | Policy for all; predicate facts JS/TS only |
-| Non-enforcing URL checks, module-constant destination folding, loops that cannot affect the sink | JS/TS |
-| Keyed server-store reads (`store[key]` yields stored state, not the key) | JS/TS |
-| Prototype-write shapes, the listing of what a key guard blocks, and unread guards on the key kept in Review | JS/TS |
-| zod `safeParse` field evidence, Next.js catch-all `join` modeling | JS/TS |
-| Prisma quote-doubling facts, Sequelize stored value into code operands | JS/TS |
-| Percent-decoders and query parsers keep request provenance | Python |
+The [prototype pollution coverage page](detection-capabilities/prototype-pollution.md) includes
+the supported walk starts, inline handler walks and their current limits.
 
-## Second-order and stored values
+<a id="not-covered"></a>
 
-A value read from storage is linked to its request writer when the write and read are modeled, for
-example Mongoose, Sequelize, sql.js and Prisma fields. Then the stored path can reach Confirmed. When no writer is linked,
-the read stays visible as Review: it is not treated as request input and not treated as safe. This
-includes in-memory session stores read by key. Tracking writers across requests through such stores
-(for example registration → login store → page) is not yet implemented.
+## Coverage boundaries
 
-## Prototype pollution: known gaps
-
-The forms this analyzer records, leaves in Review, or does not record are listed, each with an
-example and an identifier, in
-[prototype pollution coverage and known gaps](detection-capabilities/prototype-pollution.md).
-In short: Lodash calls by version and the common hand-written merge, path-walk, unflatten and
-nested-write forms are found in application source and in library source kept in the
-repository. A path walk into a module-level object, dependencies other than Lodash, and most
-published libraries reached through their public API are not.
-
-## Not covered
-
-Dependency vulnerabilities, runtime behavior (DNS, proxies, deployment policy), template injection,
-deserialization, Windows path semantics, Python NoSQL, Python equivalents of the JS/TS-only rules
-above, and frameworks or libraries not named in the family guides. Unsupported code stays Review or
-produces no candidate; it is never reported as safe. Each guide lists its own bounds.
+Scans read source and do not install dependencies, execute the target or make its outbound
+requests. Dependency-wide vulnerability auditing, deserialization and findings that require
+runtime environment or deployment behavior are outside the current scan coverage. See each
+class page for its language, framework and library boundaries.

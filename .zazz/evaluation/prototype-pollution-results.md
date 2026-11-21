@@ -45,6 +45,14 @@ write sites. Separate request-derived arguments produce separate candidates. The
 exercises the application analyzer through its Pages and App Router source fixtures.
 [Next.js scanner regressions](https://github.com/zazzcode/vuln-nextjs/tree/main/tests/scanner)
 
+## Imported helper coverage
+
+A source-only regression verifies three distinct records from an imported module. An aliased
+recursive merge reached through a forwarding helper and an unbraced split-path loop each yield
+a raw candidate. An own-property check yields a guarded path. A read-only traversal produces
+no prototype-write candidate. The records carry the request operand and the write location in
+the imported module. The architecture baseline is unchanged.
+
 ## Remaining verification
 
 AC8 awaits an owner-authorized live judgment. AC9 follows phase 7 corpus keys and phase 8

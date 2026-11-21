@@ -61,7 +61,7 @@ func pollutionPartitionGuard(m *sourceModule, boundary *sitter.Node, key, target
 				}
 			}
 		}
-		if parent.Kind() == "statement_block" && boundary != nil && parent.Id() == boundary.Id() {
+		if boundary != nil && parent.Id() == boundary.Id() {
 			break
 		}
 		if isFunction(parent) || parent.Kind() == "function_declaration" {

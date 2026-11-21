@@ -212,3 +212,84 @@ app.post('/settings', (req, res) => { merge(`+tt.args+`); res.end(); });
 		})
 	}
 }
+
+func TestPollutionLocalModuleWrites(t *testing.T) {
+	root := t.TempDir()
+	writeSource(t, root, "server.js", `
+import express from 'express';
+import { mergeSettings as update, setPath, setOwnedPath, readPath } from './settings.js';
+const app = express();
+app.use(express.json());
+app.post('/merge', (req, res) => { update({}, req.body.settings); res.end(); });
+app.post('/set', (req, res) => { setPath({}, req.body.path, req.body.value); res.end(); });
+app.post('/owned', (req, res) => { setOwnedPath({}, req.body.path, req.body.value); res.end(); });
+app.post('/read', (req, res) => { res.json(readPath({}, req.body.path)); });
+`)
+	writeSource(t, root, "settings.js", `
+export function mergeSettings(target, source) {
+  Object.keys(source).forEach((key) => {
+    if (source[key] && typeof source[key] === 'object') mergeChild(target[key], source[key]);
+    else target[key] = source[key];
+  });
+}
+function mergeChild(target, source) {
+  return mergeSettings(target, source);
+}
+
+export function setPath(target, path, value) {
+  const parts = path.split('.');
+  let cursor = target;
+  for (const segment of parts.slice(0, -1)) cursor = cursor[segment];
+  cursor[parts[parts.length - 1]] = value;
+}
+export function setOwnedPath(target, path, value) {
+  const parts = path.split('.');
+  let cursor = target;
+  for (const segment of parts.slice(0, -1)) {
+    if (!Object.hasOwn(cursor, segment)) return;
+    cursor = cursor[segment];
+  }
+  cursor[parts[parts.length - 1]] = value;
+}
+export function readPath(target, path) {
+  const parts = path.split('.');
+  let cursor = target;
+  for (const segment of parts) cursor = cursor[segment];
+  return cursor;
+}
+`)
+	report, err := Analyze(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	uses := usesOf(report, analysis.PollutionKind, "")
+	cases := map[string]struct{ operation, operand, path, protection string }{
+		"update":       {analysis.PollutionMerge, "source", "req.body.settings", "raw"},
+		"setPath":      {analysis.PollutionWalk, "path", "req.body.path", "raw"},
+		"setOwnedPath": {analysis.PollutionWalk, "path", "req.body.path", "guarded"},
+	}
+	if len(uses) != len(cases) {
+		for _, u := range uses {
+			t.Logf("%s: %+v", u.Sink.Text, u.Pollution)
+		}
+		t.Fatalf("got %d pollution candidates, want %d", len(uses), len(cases))
+	}
+	for _, u := range uses {
+		name, _, _ := strings.Cut(u.Sink.Text, "(")
+		want, ok := cases[name]
+		if !ok {
+			t.Fatalf("unexpected or duplicate candidate %s", u.Sink.Text)
+		}
+		delete(cases, name)
+		p := u.Pollution
+		if u.Sink.Span.File != "server.js" || p.ContractID != "" || p.Operation != want.operation ||
+			p.KeyOperand != want.operand || len(p.Paths) != 1 || p.Paths[0].Protection != want.protection ||
+			u.Dependencies[0].Source.Text != want.path || len(u.Completeness.Blockers) > 0 {
+			t.Errorf("unexpected facts for %s: %+v; blockers: %+v", name, p, u.Completeness.Blockers)
+		}
+		writes := u.Completeness.Evidence["prototype_write"]
+		if len(writes) != 1 || writes[0].Span.File != "settings.js" {
+			t.Errorf("expected a source write in the imported module for %s: %+v", name, writes)
+		}
+	}
+}

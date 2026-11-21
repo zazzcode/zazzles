@@ -30,9 +30,11 @@ The scanner establishes four facts and the model judges only what is left:
 4. **What stands in between, stated exactly.** Which of `__proto__`, `constructor` and `prototype`
    a deny-list blocks, an own-property check, a null-prototype target, or a patched library version.
 
-The write claim is built once and used in both modes. Stage 1 delivers it for applications.
-Stage 2 runs the same source-visible detection on library exports. The proposal's access and
-gadget claims are named in D-10 and are not specified here.
+Stage 1 analyzes writes reachable from application entries. It recognizes source-visible write
+shapes in the scanned repository, including through resolved imports. Those checks apply by
+syntax and flow across package names. The verified npm API contracts in this stage cover Lodash.
+Stage 2 reuses the source-visible checks from library exports, with affected and patched package
+pairs for validation. D-10 tracks the separate access and gadget claims.
 
 ### Baseline today
 
@@ -110,8 +112,9 @@ Out of scope:
   questions and policy, and reuses the operand-path record (`CommandPath`).
   **Why.** The operand is a key, not code or command text, and its controls (a key deny-list, an
   own-property check, a null-prototype target) mean nothing to the other families.
-- **D-2. Verified library writes.** Calls resolve through imports and aliases, as the code
-  family's do. Shadowed or reassigned bindings are excluded.
+- **D-2. Verified library writes.** Stage 1 verifies the listed Lodash APIs through imports and
+  aliases. Shadowed or reassigned bindings are excluded. Other package names can be analyzed
+  through source-visible operations within the application scan boundary under D-4.
 
   | Contract | Operations | Key operand |
   |---|---|---|
@@ -180,13 +183,14 @@ Out of scope:
   | `counterpart` | `0.18.6` per the advisory's structured npm range (CVE-2025-57354) | No patched release in the advisory. Review the source before promoting the row to a keyed positive | Translation-key processing. [Advisory](https://github.com/advisories/GHSA-2488-w585-72ch) |
   | React Server Components | `react-server-dom-*` 19.2.0 (CVE-2025-55182) | 19.2.1 historical fix pin for this CVE | Decoder and access checkpoint owned by phase 7 AC2. [React advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components) |
 
-- **D-4. Source-visible writes.** Three shapes are recognised from syntax, in a function whose
-  source is scanned:
+- **D-4. Source-visible writes.** Three shapes are recognized in scanned source, including
+  helpers reached through resolved imports. Syntax and data flow determine whether a write
+  matches:
   - **Recursive merge.** A function that iterates the keys of one parameter (`for…in`,
     `Object.keys`, `Object.entries`), assigns `target[key]`, and calls itself, directly or through
     one helper, on `target[key]`.
-  - **Path walk.** A loop over the parts of a split path that steps `obj = obj[part]` and then
-    assigns through the last part.
+  - **Path walk.** A loop over the parts of a split path that steps `obj = obj[part]` in
+    a single statement or block and then assigns through the last part.
   - **Nested computed write.** `a[k1][k2] = v` where `k1` is not a constant. Earlier
     conditional writes to the receiver lookup slot require heap-flow evidence and fall outside
     the direct-write rule.
@@ -384,3 +388,9 @@ The application analyzer now collects all modeled write sites for the same helpe
 Regression tests cover a later incomplete guard, two fully guarded loops, and independent source
 arguments. D-3 records `object-path` and `merge-deep` as affected/patched library candidates and
 `json5` and the later `object-path` deletion advisory as scope controls. Library-export verification remains in phase 7 and phase 8.
+
+### 2026-11-20 — Verified source-visible writes beyond the Lodash contracts
+
+A fixture exercises a recursive merge through an import alias and forwarding helper, a split-path
+write with an unbraced loop, a path write with an own-property guard, and a read-only traversal
+control. The test verifies the request operand and the write site in the imported module.

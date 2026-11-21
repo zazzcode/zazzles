@@ -17,8 +17,9 @@ depends on how the application uses inherited properties.
 | Repository path walk | A parameter split into parts, a loop that follows those parts, and a final indexed assignment |
 | Direct nested computed assignment | The request-derived key in the lookup before the final assignment |
 
-Lodash behavior is scoped to the verified import, operation, and package version. The scanner uses
-the source package's lockfile or an exact manifest pin. Resolved patched operations are excluded.
+Source-visible detection follows resolved imports into scanned modules and matches the supported
+write shapes by syntax and data flow. The built-in npm API contracts cover Lodash. The scanner
+uses the source package's lockfile or an exact manifest pin for those contracts. Resolved patched operations are excluded.
 A version range or an unresolved distribution stays in Review. The detector reads repository
 source and package files.
 

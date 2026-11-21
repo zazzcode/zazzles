@@ -9,7 +9,7 @@ import (
 
 func pollutionPathLoop(m *sourceModule, body, loop *sitter.Node, params []boundParam) []pollutionWrite {
 	loopBody := loop.ChildByFieldName("body")
-	if loopBody == nil || loopBody.Kind() != "statement_block" {
+	if loopBody == nil {
 		return nil
 	}
 	var writes []pollutionWrite

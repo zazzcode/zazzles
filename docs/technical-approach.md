@@ -9,7 +9,7 @@ to evaluate whether the demonstrated controls satisfy a specific security requir
 validation checks completeness and consistency before classification. The intended output helps a
 developer or coding agent decide what to repair, what protection to preserve and what uncertainty to investigate.
 
-The Go scanner reads application source, resolves supported language/framework bindings and follows
+The code scanner reads application source, resolves supported language/framework bindings and follows
 values into security-sensitive operations. Each candidate carries source spans and hashes, relevant
 helpers, branch conditions, operation operand roles, library contracts and unresolved facts. The
 semantic judge receives this evidence together with versioned language **Analysis Guidelines**.

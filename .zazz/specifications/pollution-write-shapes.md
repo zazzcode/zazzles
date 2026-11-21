@@ -159,6 +159,7 @@ Out of scope:
     Accepted by the owner on 2026-11-21 (section 11.1).
   - **A non-parameter start is read only for unflatten.** `p6` builds its result in a local
     object. A walk from a path parameter still needs a parameter target, as in stage 1.
+    Accepted by the owner on 2026-11-21 for this PR, with a follow-on contract (section 11.1).
   - **A local function or class shadows a built-in.** AC4 needs it for `Reflect` and `Object`.
     The check now applies to every built-in the pollution family verifies.
   - **A call that encloses the write consumes its result.** `res.json(unflatten(req.body))`
@@ -309,6 +310,7 @@ limit it leaves, so the limit is known and can be taken up as a later capability
 | Choice | Owner decision | Limit accepted | To explore later |
 |---|---|---|---|
 | D-9, split in place | Accepted 2026-11-21 | Only `path = path.split(…)` keeps the match. A path normalised any other way has no record: `path = String(path).split('.')`, `path = toPath(path)`, a ternary such as `Array.isArray(path) ? path : path.split('.')`, or a helper result held in a new local. Checked with the scanner at `6006eaa` | Read a path normaliser: a string conversion before the split, a conditional that yields the path or its split, and a one-line helper that returns one of those. Each keeps the caller's content, so the walk stays a candidate |
+| D-9, non-parameter start | Accepted 2026-11-21 for this PR | A path walk whose path is a parameter has a record only when it starts from another parameter. A walk into a module-level object, a local object or a property such as `holder.state` has no record, and neither has a walk written in the handler with no helper. Seven of eight probes at `ed94711` are missed. This is the limit most likely to hide a real write in an application | [Walk start contract](pollution-walk-start.md), drafted 2026-11-21, with its own noise check because it adds records to existing scans |
 
 ## 12. Run log protocol
 

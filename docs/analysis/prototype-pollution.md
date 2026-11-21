@@ -128,6 +128,7 @@ These forms can pollute `Object.prototype` and have no record:
   such as `toPath(path)`.
 - **Path walk into a local or module-level object.** A walk whose path is a parameter must start
   from another parameter. A start that is not a parameter is read only for the unflatten shape.
+  A walk written directly in a route handler, with no helper function, is not read either.
 - **More than one helper.** A merge reached through more than one forwarding helper, or a loop
   walk split across functions.
 - **Other write forms.** A write through `Object.defineProperty`, and a walk whose step and

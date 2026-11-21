@@ -11,25 +11,31 @@ or Review when evidence is incomplete; see [interpreting results](interpreting-r
 `--judge`, scans are offline: they establish candidates, per-path protection facts and blockers, and
 every record says `assessment_state: not_run`.
 
-## Analyzer index
+## Vulnerability classes
 
-Each analyzer has a rules guide. Where a guide has a section on coverage and limits, it is linked
-here, so this page stays a map and the detail lives with its analyzer.
+Coverage is described per vulnerability class. Each class has a rules page, and a page or
+section that states what is found, what is left in Review and what is not recorded. The CWE is
+the one the scanner reports. The family name selects the analyzer with `--only-family`.
 
-| Analyzer | Rules | Coverage and limits |
-|---|---|---|
-| SQL and NoSQL injection | [Database injection](analysis/database-injection.md) | No separate section yet |
-| Cross-site scripting | [XSS](analysis/xss.md) | [Outcomes and limits](analysis/xss.md#outcomes-and-limits) |
-| Command injection | [Command injection](analysis/command-injection.md) | [Limits](analysis/command-injection.md#limits) |
-| Path traversal | [Path traversal](analysis/path-traversal.md) | [Coverage and limits](analysis/path-traversal.md#coverage-and-limits) |
-| Unrestricted file upload | [File upload](analysis/file-upload.md) | No separate section yet |
-| Server-side request forgery | [SSRF](analysis/ssrf.md) | No separate section yet |
-| Code injection | [Code injection](analysis/code-injection.md) | [Bounds](analysis/code-injection.md#bounds) |
-| Prototype pollution | [Prototype pollution](analysis/prototype-pollution.md) | [Coverage and known gaps](analysis/prototype-pollution-coverage.md), every form by outcome with an identifier per gap |
-| Open redirect | [Open redirect](analysis/open-redirect.md) | [Bounds](analysis/open-redirect.md#bounds) |
-| Sensitive-data logging | [Logging](analysis/sensitive-data-logging.md) | No separate section yet |
-| Input validation | [Input validation](analysis/input-validation.md) | No separate section yet |
-| Next.js entries and flow | [Next.js analysis](nextjs-support.md) | [Limits](nextjs-support.md#limits) |
+| Vulnerability class | CWE | Family | Rules | Coverage and limits |
+|---|---|---|---|---|
+| SQL injection | CWE-89 | `sql` | [Database injection](analysis/database-injection.md) | No separate section yet |
+| NoSQL injection | CWE-943 | `nosql` | [Database injection](analysis/database-injection.md) | No separate section yet |
+| Cross-site scripting | CWE-79 | `xss` | [XSS](analysis/xss.md) | [Outcomes and limits](analysis/xss.md#outcomes-and-limits) |
+| OS command and argument injection | CWE-78, CWE-88 | `command` | [Command injection](analysis/command-injection.md) | [Limits](analysis/command-injection.md#limits) |
+| Path traversal, including archive extraction | CWE-22 | `path` | [Path traversal](analysis/path-traversal.md) | [Coverage and limits](analysis/path-traversal.md#coverage-and-limits) |
+| Unrestricted file upload | CWE-434 | `upload` | [File upload](analysis/file-upload.md) | No separate section yet |
+| Server-side request forgery | CWE-918 | `ssrf` | [SSRF](analysis/ssrf.md) | No separate section yet |
+| Code injection | CWE-95 | `code` | [Code injection](analysis/code-injection.md) | [Bounds](analysis/code-injection.md#bounds) |
+| Template injection | CWE-1336 | `code` | [Code injection](analysis/code-injection.md) | [Bounds](analysis/code-injection.md#bounds) |
+| Prototype pollution | CWE-1321 | `pollution` | [Prototype pollution](analysis/prototype-pollution.md) | [Coverage and known gaps](analysis/prototype-pollution-coverage.md), every form by outcome with an identifier per gap |
+| Open redirect | CWE-601 | `redirect` | [Open redirect](analysis/open-redirect.md) | [Bounds](analysis/open-redirect.md#bounds) |
+| Sensitive data in logs | CWE-532 | `logging` | [Logging](analysis/sensitive-data-logging.md) | No separate section yet |
+| Missing or weak input validation | CWE-20 | `input-validation` | [Input validation](analysis/input-validation.md) | No separate section yet |
+
+Languages and frameworks cut across these classes. Their own bounds are in the
+[Next.js](nextjs-support.md#limits), [Python](python-support.md) and [PHP](php-support.md)
+guides.
 
 ## Languages, frameworks and entries
 

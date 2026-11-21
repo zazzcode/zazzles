@@ -41,6 +41,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 // argument evaluation differs between the two callers.
 func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpValue, all phpValue) phpValue {
 	name := f.callName(n)
+	f.deserializationCall(n, nodes, values)
 	if n.Kind() == "member_call_expression" {
 		return f.methodCall(n, nodes, values)
 	}

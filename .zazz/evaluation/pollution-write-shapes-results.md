@@ -160,8 +160,13 @@ source in the scanned repository:
 |---|---|
 | Called from a route through CommonJS `module.exports = fn`, `module.exports = { fn }` or `exports.fn` | 1 each, sink in the application, write evidence in the library file |
 | Called through an ESM named or namespace import | 1 each |
-| Called through an ESM default export | 0. The shared import resolver does not index default exports; fixing it changes helper resolution for every family and is left to its own change |
+| Called through an ESM default export: `export default function`, `export default name` or `export default { fn }` | 1 each. These had no record until the module index learned default exports |
 | The library alone, with no application entry | 0 |
+
+The default-export index is shared by every family's helper resolution. After the change the
+architecture baseline still has its 59 rows unchanged, the six sample reports are byte-identical
+to the reports from just before it, and the vuln-nextjs lab's four offline pollution regressions
+pass with the final scanner.
 
 Checked with the built scanner and not pinned by a test: the same library under `vendor/` has
 no record because the walker skips that directory, and an import by package name from

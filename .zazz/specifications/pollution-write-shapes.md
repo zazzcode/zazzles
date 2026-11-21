@@ -87,6 +87,7 @@ After this contract each probe yields one candidate. [Results](../evaluation/pol
 | `internal/langjs/pollution_alias.go`, `internal/langjs/pollution_path_parts.go` | New | Contextual splits of the two files above: slot and value locals; where the parts of a path come from |
 | `internal/langjs/pollution_guard.go` | Modified | Whole-path deny-lists, and guards united across the names of one object |
 | `internal/langjs/pollution_gate.go` | New | Path tests that depend on a call taking the key operand (D-10) |
+| `internal/langjs/modules.go` | Modified | ESM default exports in the module index (D-10) |
 | `.zazz/evaluation/recall-gap-inventory/cases.json` | Modified | Key row `JS-PP-R01`, expectation `review` |
 | `docs/detection-capabilities.md` | Modified | The family row and the known gaps, at the owner's request |
 | `internal/langjs/pollution.go` | Modified | Branch evidence, local walk roots, the `source_keys` operand, local declarations that shadow a built-in, and the result-consumer gap |
@@ -178,6 +179,11 @@ Out of scope:
   - **A call that takes the key is an unread guard.** A path test whose outcome depends on such a
     call marks the path `key_guard_coverage_unknown`, Review. A test on the operand itself or a
     plain `store[key]` existence test does not.
+
+  - **Default exports are indexed.** `export default function`, `export default name` and
+    `export default { fn }` resolve like the CommonJS forms, so library source kept in the
+    repository is followed through a default import. The index is shared by every family. The
+    architecture baseline and all six sample reports are unchanged by it.
 
   **Why.** Juice Shop `lib/accuracy.ts:71` is the first form and was silent. With only the first
   rule it became a confirmable candidate, although both routes reject a prototype key before the
@@ -328,3 +334,12 @@ absent-slot rule and the lookup-gate rule. The Juice Shop write is application s
 advisory, and cannot be reached with a prototype key on either route, so its four records are
 kept in Review and keyed as `JS-PP-R01`. The five other sample reports are byte-identical to the
 baseline and the architecture baseline is unchanged. Committed and pushed at the owner's request.
+
+### 2026-11-20 — Owner review: where a write is found
+
+The owner asked for the user guide to state where a vulnerable write is detected and for writes
+in repository source to be found. The guide and the capability page now distinguish application
+source, library source kept in the repository, `vendor/` and `node_modules/`, installed
+dependencies and a library repository scanned alone. A test pins the in-repository cases. ESM
+default exports were not followed and now are (D-10). Scanning a package's own exports stays
+with phases 7 and 8.

@@ -103,7 +103,7 @@ not reported as safe. The table lists the forms known to be missed or left in Re
 | Recursion through more than one forwarding helper, or a walk split across functions | No record |
 | A dynamic-key write that matches none of the listed shapes | No record |
 | Merge and set-by-path libraries other than Lodash (`deepmerge`, `set-value`, `dot-prop` and others) called from an application | No record. `node_modules/` is not read, and only Lodash has version contracts. A library's source is read when it is in the scanned repository |
-| Library source in the repository that a route imports as an ESM default export, or that sits under `vendor/` | No record. CommonJS exports and ESM named or namespace imports are followed |
+| Library source kept under `vendor/` | No record. The file walk skips that directory. Library source elsewhere in the repository is read when a route imports it |
 | A library repository scanned on its own, with no application route | No record. Exported functions are not entries yet |
 | Key guard written as a regular-expression test on the whole path | The record omits that control. An assessment that relies on it stays in Review |
 | Literal comparison on the parts of an array the caller passes, with no `typeof` test first | Review (`key_guard_coverage_unknown`). A nested array such as `['__proto__']` passes the comparison |

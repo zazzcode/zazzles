@@ -337,9 +337,8 @@ func TestPollutionShapeExploration(t *testing.T) {
 
 // TestPollutionLibrarySourceInRepository pins where a vulnerable function may
 // live. A library's source kept in the scanned repository is read when a route
-// reaches it through a resolved import. A repository with no application entry,
-// and an import the resolver does not follow, have no record; the guide lists
-// both as limits.
+// reaches it through a resolved import. A repository with no application entry
+// has no record; the guide lists that as a limit.
 func TestPollutionLibrarySourceInRepository(t *testing.T) {
 	merge := `function merge(target, source) {
   for (const key in source) {
@@ -360,7 +359,9 @@ func TestPollutionLibrarySourceInRepository(t *testing.T) {
 		{"CommonJS named export", merge + "exports.merge = merge;", commonJS, "const { merge } = require('./lib/tiny');", "merge({}, req.body)", 1},
 		{"ESM named export", "export " + merge, esm, "import { merge } from './lib/tiny.js';", "merge({}, req.body)", 1},
 		{"ESM namespace import", "export " + merge, esm, "import * as tiny from './lib/tiny.js';", "tiny.merge({}, req.body)", 1},
-		{"limit: ESM default export", "export default " + merge, esm, "import merge from './lib/tiny.js';", "merge({}, req.body)", 0},
+		{"ESM default function export", "export default " + merge, esm, "import merge from './lib/tiny.js';", "merge({}, req.body)", 1},
+		{"ESM default export of a declared function", merge + "export default merge;", esm, "import merge from './lib/tiny.js';", "merge({}, req.body)", 1},
+		{"ESM default object export", merge + "export default { merge };", esm, "import tiny from './lib/tiny.js';", "tiny.merge({}, req.body)", 1},
 		{"limit: library with no application entry", merge + "module.exports = merge;", "", "", "", 0},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

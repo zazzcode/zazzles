@@ -11,6 +11,26 @@ or Review when evidence is incomplete; see [interpreting results](interpreting-r
 `--judge`, scans are offline: they establish candidates, per-path protection facts and blockers, and
 every record says `assessment_state: not_run`.
 
+## Analyzer index
+
+Each analyzer has a rules guide. Where a guide has a section on coverage and limits, it is linked
+here, so this page stays a map and the detail lives with its analyzer.
+
+| Analyzer | Rules | Coverage and limits |
+|---|---|---|
+| SQL and NoSQL injection | [Database injection](analysis/database-injection.md) | No separate section yet |
+| Cross-site scripting | [XSS](analysis/xss.md) | [Outcomes and limits](analysis/xss.md#outcomes-and-limits) |
+| Command injection | [Command injection](analysis/command-injection.md) | [Limits](analysis/command-injection.md#limits) |
+| Path traversal | [Path traversal](analysis/path-traversal.md) | [Coverage and limits](analysis/path-traversal.md#coverage-and-limits) |
+| Unrestricted file upload | [File upload](analysis/file-upload.md) | No separate section yet |
+| Server-side request forgery | [SSRF](analysis/ssrf.md) | No separate section yet |
+| Code injection | [Code injection](analysis/code-injection.md) | [Bounds](analysis/code-injection.md#bounds) |
+| Prototype pollution | [Prototype pollution](analysis/prototype-pollution.md) | [Coverage and known gaps](analysis/prototype-pollution-coverage.md), every form by outcome with an identifier per gap |
+| Open redirect | [Open redirect](analysis/open-redirect.md) | [Bounds](analysis/open-redirect.md#bounds) |
+| Sensitive-data logging | [Logging](analysis/sensitive-data-logging.md) | No separate section yet |
+| Input validation | [Input validation](analysis/input-validation.md) | No separate section yet |
+| Next.js entries and flow | [Next.js analysis](nextjs-support.md) | [Limits](nextjs-support.md#limits) |
+
 ## Languages, frameworks and entries
 
 | Language | Entry adapters | Guide |
@@ -55,7 +75,7 @@ table under [Which rules are generic](#which-rules-are-generic) shows the curren
 | Unrestricted upload (`upload`) | not implemented | Werkzeug `FileStorage.save` (PHP: `move_uploaded_file`) | Generated names, server-chosen or allow-listed extensions, content checks, unserved destinations | [File upload](analysis/file-upload.md) |
 | SSRF (`ssrf`) | global `fetch`, `axios`, Node `http`/`https` | `requests`, `httpx`, `urllib.request.urlopen` | Parsed host allow-lists and scheme-and-host checks on every path | [SSRF](analysis/ssrf.md) |
 | Code injection (`code`) | `eval`, `Function`, browser string timers, Node `vm`, sandbox evaluator libraries; template source in ejs, Handlebars, pug, nunjucks, lodash (CWE-1336) | `eval`, `exec`, `compile`; template source in Jinja2, Flask `render_template_string`, Mako (PHP: Twig `createTemplate`) | Grammar allow-lists, type conversions of the complete operand | [Code injection](analysis/code-injection.md) |
-| Prototype pollution (`pollution`) | Verified Lodash `merge`, `mergeWith`, `defaultsDeep`, `set`, `setWith` and `zipObjectDeep` by resolved version; source-visible recursive merges, path walks (index, `for…of`, `while`, `forEach`, `reduce` and recursive forms over split, matched or array paths), unflatten, and direct nested computed assignments, in JavaScript and TypeScript, in application source and in library source kept in the repository. [Known gaps](#prototype-pollution-known-gaps) | — | Literal key exclusions on string keys, written in place or as a one-line helper; whole-path `includes`/`indexOf` deny-lists; own-property checks at each lookup; a fresh null-prototype target for one lookup. An incomplete exclusion is listed with the names it leaves open | [Prototype pollution](analysis/prototype-pollution.md) |
+| Prototype pollution (`pollution`) | Verified Lodash `merge`, `mergeWith`, `defaultsDeep`, `set`, `setWith` and `zipObjectDeep` by resolved version; source-visible recursive merges, path walks (index, `for…of`, `while`, `forEach`, `reduce` and recursive forms over split, matched or array paths), unflatten, and direct nested computed assignments, in JavaScript and TypeScript, in application source and in library source kept in the repository. [Coverage and known gaps](analysis/prototype-pollution-coverage.md) | — | Literal key exclusions on string keys, written in place or as a one-line helper; whole-path `includes`/`indexOf` deny-lists; own-property checks at each lookup; a fresh null-prototype target for one lookup. An incomplete exclusion is listed with the names it leaves open | [Prototype pollution](analysis/prototype-pollution.md) |
 | Open redirect (`redirect`) | Express/Fastify/Hapi redirects, Location headers, Next.js redirects and router, browser navigation | Flask/Django redirects, Starlette/FastAPI `RedirectResponse`, aiohttp | Parsed-origin checks, host allow-lists, same-site relative paths that exclude `//` and `\` | [Open redirect](analysis/open-redirect.md) |
 | Sensitive-data logging (`logging`) | global `console`, pino, winston, morgan | supported `logging` bindings | Derived or masked values instead of content | [Logging](analysis/sensitive-data-logging.md) |
 | Input validation (`input-validation`) | Field requirements and enforcing checks (zod, validator.js and others) | Field requirements and enforcing checks | Enforced validation separate from destination protection | [Input validation](analysis/input-validation.md) |
@@ -91,33 +111,13 @@ includes in-memory session stores read by key. Tracking writers across requests 
 
 ## Prototype pollution: known gaps
 
-The source-visible shapes are matched by syntax inside one function body. Code outside them is
-not reported as safe. The table lists the forms known to be missed or left in Review. The
-[guide](analysis/prototype-pollution.md#limits) owns the full rules.
-
-| Form | What a scan shows |
-|---|---|
-| Write reached only after a call that takes the key, such as `if (!known.has(key)) return` or `const row = find(key); if (row == null) return` | Review (`key_guard_coverage_unknown`). The scanner does not read what the call accepts, so the record is neither Confirmed nor Protected |
-| Another call with no definition in the scan receives the same input in the handler, including a log call such as `console.log(req.body)` or a call after the write | Review (`input_helper_unresolved`). A call that encloses the write and takes its result does not block |
-| Key test in a helper that calls another function, or an assertion on the key before a recursive walk | Review (`key_guard_coverage_unknown`). One-line helpers that test the key directly are read |
-| Literal comparison on the parts of an array the caller passes, with no `typeof` test first | Review (`key_guard_coverage_unknown`). A nested array such as `['__proto__']` passes the comparison |
-| Key guard on the whole path written as a regular-expression test, `parts.some(…)`, a deny array, or a test on `path.toLowerCase()` | The record omits that control. An assessment that relies on it stays in Review |
-| Path decoded at the point of use, `decodeURIComponent(path).split('.')`, or into a new variable, after a check on the undecoded path | No record. A decode into the same variable is seen, and the check is then not credited |
-| Keys taken from a query string or another input whose shape is not typed | Review (`key_control_unknown`) |
-| Nested write after the slot is replaced on a branch that does not test for its absence | No record. The slot's identity then needs heap-flow evidence |
-| Recursive merge through a local that a branch replaces: `if (!slot) slot = {}` then `merge(slot, value)` | No record. This can be a missed write |
-| `Object` or `Reflect` replaced through `globalThis`, or a built-in method patched in another module | The record is kept as if the built-in were genuine. A same-named variable, parameter, function or class in the module is noticed |
-| Path normalised before the walk by anything but its own split: `String(path).split('.')`, a conditional, or a helper such as `toPath(path)` | No record. `path = path.split('.')` in place is read |
-| Path walk from a path parameter into a local or module-level object, as in `setPath(path, value)` writing to a module store | No record. Only the unflatten shape accepts a start that is not a parameter. A walk written directly in the route handler, with no helper function, is not read either |
-| A merge reached through more than one forwarding helper, a walk split across functions, or a write through `Object.defineProperty` | No record |
-| A walk whose step and write are one chained assignment, `t = t[k] = …` | No record |
-| A dynamic-key write that matches none of the listed shapes | No record |
-| Merge and set-by-path libraries other than Lodash (`dset`, `merge-deep`, `set-value` and others) called as installed dependencies | No record. `node_modules/` is not read, and only Lodash has version contracts. A dependency audit reports published advisories |
-| A published library's source copied into the repository and called through its public API | Usually no record. In a check of eleven advisory packages one, `set-in`, is detected this way. Wrapper functions that read `arguments`, functions nested in the export and factory exports stand between the route and the write |
-| Library source kept under `vendor/` | No record. The file walk skips that directory. Library source elsewhere in the repository is read when a route imports it |
-| A library repository scanned on its own, with no application route | No record. Exported functions are not entries yet |
-| The effect of a polluted property: readers, gadgets and code execution | Not claimed. A finding states the write only |
-| Browser entries, deletion APIs (`unset`, `omit`) | Not covered by this family |
+The forms this analyzer records, leaves in Review, or does not record are listed, each with an
+example and an identifier, in
+[prototype pollution coverage and known gaps](analysis/prototype-pollution-coverage.md).
+In short: Lodash calls by version and the common hand-written merge, path-walk, unflatten and
+nested-write forms are found in application source and in library source kept in the
+repository. A path walk into a module-level object, dependencies other than Lodash, and most
+published libraries reached through their public API are not.
 
 ## Not covered
 

@@ -1,6 +1,6 @@
 # Prototype pollution
 
-[Analysis guidelines](README.md) · [Detection capabilities](../detection-capabilities.md)
+[Analysis guidelines](README.md) · [Coverage and known gaps](prototype-pollution-coverage.md) · [Detection capabilities](../detection-capabilities.md)
 
 The `pollution` family evaluates JavaScript and TypeScript application writes that can reach
 `Object.prototype`. Its evidence record is `prototype_write_candidate` and its finding type is
@@ -111,74 +111,11 @@ versions, controls, or input shape stay in Review.
 
 Recognition is bounded to the shapes above. A form outside them has no record, and no record is
 not a statement that the code is safe.
+[Coverage and known gaps](prototype-pollution-coverage.md) lists every form by outcome: recorded
+and decidable, recorded and left in Review, and not recorded. Each gap has an identifier and an
+example.
 
-### Missed writes
-
-These forms can pollute `Object.prototype` and have no record:
-
-- **Slot replaced on another branch before a nested write.** `if (reset) store[k] = {}` followed
-  by `store[k][name] = v`. The slot's identity then needs heap-flow evidence. Filling an absent
-  slot is read, as described above.
-- **Slot local replaced on a branch.** `let slot = target[key]; if (!slot) slot = {};` followed
-  by a recursion on `slot`. Any other write to the local ends the alias, although an inherited
-  slot would skip that branch.
-- **Built-ins replaced out of sight.** A key enumerator counts only where `Object` or `Reflect`
-  is the built-in. A variable, parameter, function or class of that name in the module, or a
-  write to the method in the module, ends the match. A replacement through `globalThis`, or a
-  method patched in another module, is not seen and the function keeps its record.
-- **Path decoded between the check and the split.** A decode into the same variable is seen and
-  the earlier check is not credited. A decode at the point of use,
-  `decodeURIComponent(path).split('.')`, or into a new variable is not read as a walk, so that
-  bypass has no record.
-- **Path normalised before the walk.** The only write a path parameter may receive is its own
-  split, `path = path.split('.')`. A path converted another way has no record: a string
-  conversion before the split, a conditional that yields the array or its split, or a helper
-  such as `toPath(path)`.
-- **Path walk into a local or module-level object.** A walk whose path is a parameter must start
-  from another parameter. A start that is not a parameter is read only for the unflatten shape.
-  A walk written directly in a route handler, with no helper function, is not read either.
-- **More than one helper.** A merge reached through more than one forwarding helper, or a loop
-  walk split across functions.
-- **Other write forms.** A write through `Object.defineProperty`, and a walk whose step and
-  write are one chained assignment, `t = t[k] = …`.
-- **Other dynamic writes.** A write through a non-constant key that matches no listed shape.
-- **Other write libraries.** `deepmerge`, `set-value`, `dot-prop` and similar packages called
-  from an application. `node_modules/` is not read and only Lodash has version contracts. Their
-  source is analyzed when it is part of the scanned repository.
-- **Library source under `vendor/`.** The file walk skips that directory.
-- **A library repository with no application entry.** Its exported functions are not entries.
-- **Published libraries copied into the repository.** Eleven advisory packages were scanned as
-  source behind a route. One, `set-in`, is detected through its public API. For the others,
-  wrapper functions that read `arguments`, nested functions and factory exports stand between
-  the route and the write, although the core function of several is read correctly when it is
-  called directly.
-
-### Left in Review
-
-- **Another unresolved call on the same input.** A call with no definition in the scan that
-  receives the operand, or the whole request body, keeps the record in Review
-  (`input_helper_unresolved`). That includes a call on a later statement and a log call such as
-  `console.log(req.body)`, although neither can stop the write. A call that encloses the write
-  and takes its result does not block.
-- **Lookup or validator call on the key.** A path test that depends on a call taking the key
-  operand is `key_guard_coverage_unknown`. The scanner does not decide whether that call rejects
-  a prototype key. A one-line helper that tests the key directly is read.
-- **Other whole-path guards.** A whole-path test other than `includes` or `indexOf` is left
-  unread: a regular-expression test, `parts.some(…)`, a deny array checked with `some`, or a test
-  on `path.toLowerCase()`. The walk is recorded without that control, and an assessment that
-  relies on it is a contradiction.
-- **Comparison on untyped array parts.** A literal comparison on the parts of a caller's array
-  with no `typeof` test first is `key_guard_coverage_unknown`.
-- **Untyped key sources.** A query-string value or another input whose shape the input facts do
-  not type is `key_control_unknown`.
-- **Unresolved versions.** A Lodash call with a version range or an unverified distribution is
-  `version_unresolved`.
-
-### Outside this claim
-
-Shallow copies, JSON parsing without a write, single-level writes, and deletion APIs sit outside
-this assignment claim. Standalone npm library exports, browser entries, inherited-property
-access and gadget chains have separate scope. A finding states that `Object.prototype` can be
-written. It makes no statement about what reads the polluted property.
+A finding states that `Object.prototype` can be written. It makes no statement about what reads
+the polluted property.
 [Implementation contract](../../.zazz/specifications/prototype-pollution.md),
 [write shapes contract](../../.zazz/specifications/pollution-write-shapes.md).

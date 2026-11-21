@@ -73,6 +73,6 @@ because one lockfile resolves one version. Their Lodash calls have no record in 
 
 ## Limits
 
-The report shows the affected pins only. The [known gaps](../../detection-capabilities.md#prototype-pollution-known-gaps)
+The report shows the affected pins only. The [known gaps](../../analysis/prototype-pollution-coverage.md)
 apply. Source excerpts belong to the lab; its license is preserved in
 [UPSTREAM-LICENSE.txt](UPSTREAM-LICENSE.txt).

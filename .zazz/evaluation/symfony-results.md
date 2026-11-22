@@ -353,6 +353,18 @@ runs. The lane acceptance run is the last one.
 | 6 | `b4-j6-ssrf` (`run-594135459`) | `--only-family ssrf` | 3 | — | `SYM-SSRF-01` and both `SYM-SSRF-02` anchors Confirmed. `UserController.php:195` has no `ssrf_candidate` |
 | 7 | `b4-j7-full` (`run-348970572`) | Full scan, no family, entry or route scope | 84 | 334,571 | `30 of 30 positives confirmed, 0 control findings` |
 
+### Follow-on — recovery secret bits
+
+After the rebase onto `97a16e3`, one judged scan of the whole sample: `b4-entropy-judge`
+(`run-3873252071`). OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`,
+`JUDGE_TPM=1800000`. 84 requests, 334,593 input tokens. Protocol
+`account-components-v2`. `SYM-RESET-01` is `confirmed_vulnerability` with
+`secret_bits` 128 (`PasswordResetController.php:40`, `bin2hex(random_bytes(16))`,
+`secret_quality` adequate). `check.py --judged`: `30 of 30 positives confirmed, 0 control
+findings`. Every keyed outcome matches `b4-j7-full`. Other families keep their protocols.
+Enumeration and password-hash request digests in the architecture fixtures do not move;
+their stored component digests do, because the report carries the account protocol id.
+
 The URL-format filter stays on the shell-client candidate as evidence. The path stays raw,
 because a format check is not a destination restriction. Existing URL-open requests are
 unchanged. `services-ops` gains two `ssrf_candidate` records for `shell_exec('curl ' . $origin)`.

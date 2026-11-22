@@ -135,7 +135,7 @@ func phpSideChannel(v phpValue) bool {
 
 // phpJoinSide joins two values with join after setting their side facts aside,
 // then restores the union of the side facts on the result.
-func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
+func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue, concat bool) phpValue {
 	d := a.diagnostic
 	if d == nil {
 		d = b.diagnostic
@@ -151,10 +151,7 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
 	if az == nil {
 		az = b.authz
 	}
-	sec := a.secret
-	if sec == nil {
-		sec = b.secret
-	}
+	sec := mergedSecret(a.secret, b.secret, concat)
 	dg := a.digest
 	if dg == nil {
 		dg = b.digest
@@ -180,6 +177,26 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
 	return out
 }
 
+// mergedSecret keeps one secret pointer when only one side has one.
+// Concatenating two secrets allocates a new one and adds the bit counts.
+func mergedSecret(a, b *phpSecret, concat bool) *phpSecret {
+	if a == nil {
+		return b
+	}
+	if b == nil || !concat {
+		return a
+	}
+	bits := -1.0
+	if a.bits >= 0 && b.bits >= 0 {
+		bits = a.bits + b.bits
+	}
+	strength := a.strength
+	if a.strength == analysis.SecretWeak || b.strength == analysis.SecretWeak {
+		strength = analysis.SecretWeak
+	}
+	return &phpSecret{source: a.source, strength: strength, bits: bits}
+}
+
 // phpSQLWrite is one write-statement template with its interpolated deps.
 type phpSQLWrite struct {
 	template string
@@ -192,7 +209,7 @@ func phpEmpty(v phpValue) bool {
 
 func phpCombine(a, b phpValue) phpValue {
 	if phpSideChannel(a) || phpSideChannel(b) {
-		return phpJoinSide(a, b, phpCombine)
+		return phpJoinSide(a, b, phpCombine, true)
 	}
 	if phpEmpty(a) {
 		return b
@@ -262,7 +279,7 @@ func phpJoinProps(a, b map[string]phpValue) map[string]phpValue {
 // separate dependency paths; literal candidate sets union with their conditions.
 func phpJoin(a, b phpValue) phpValue {
 	if phpSideChannel(a) || phpSideChannel(b) {
-		return phpJoinSide(a, b, phpJoin)
+		return phpJoinSide(a, b, phpJoin, false)
 	}
 	if phpEmpty(a) {
 		return b

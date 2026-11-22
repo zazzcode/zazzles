@@ -663,6 +663,9 @@ func symfonyAccountEvidence(id string, u analysis.CandidateUse) (string, bool) {
 		if f == nil || f.SecretSource.Span.File != "src/Controller/PasswordResetController.php" || f.SecretSource.Span.StartLine != 40 || f.SecretStrength != analysis.SecretCSPRNG {
 			return "missing csprng secret at PasswordResetController.php:40", true
 		}
+		if !f.SecretBits.Known || f.SecretBits.Bits != 128 {
+			return "secret_bits is not 128", true
+		}
 		if f.RecipientValidated != analysis.RecipientPartial || f.RecipientCount != analysis.RecipientCountRequest || len(f.ShapeUses) != 2 {
 			return fmt.Sprintf("recipient facts %s %s %d", f.RecipientValidated, f.RecipientCount, len(f.ShapeUses)), true
 		}

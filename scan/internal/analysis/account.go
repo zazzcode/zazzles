@@ -1,6 +1,11 @@
 package analysis
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"math"
+	"strconv"
+)
 
 // Account-family claim kinds: account enumeration (CWE-204),
 // recovery-secret delivery (CWE-640, CWE-1287) and weak password hashing
@@ -94,6 +99,7 @@ const (
 type RecoveryFacts struct {
 	SecretSource       Evidence            `json:"secret_source"`
 	SecretStrength     string              `json:"secret_strength"` // csprng | weak
+	SecretBits         SecretBits          `json:"secret_bits"`     // integer, one decimal, or "unknown"
 	StoredField        string              `json:"stored_field,omitempty"`
 	StoredAt           *Evidence           `json:"stored_at,omitempty"`
 	Recipient          Evidence            `json:"recipient"`
@@ -134,6 +140,38 @@ func (f *RecoveryFacts) Validate() error {
 	if f.RecipientValidated == RecipientPartial && len(f.ShapeUses) < 2 {
 		return fmt.Errorf("partial validation needs both use sites")
 	}
+	return nil
+}
+
+// SecretBits is the entropy of a recovery secret, computed from literal
+// arguments. The zero value is unknown.
+type SecretBits struct {
+	Known bool
+	Bits  float64
+}
+
+// MarshalJSON emits an integer, one decimal place, or "unknown".
+func (b SecretBits) MarshalJSON() ([]byte, error) {
+	if !b.Known {
+		return []byte(`"unknown"`), nil
+	}
+	if b.Bits == math.Trunc(b.Bits) {
+		return json.Marshal(int(b.Bits))
+	}
+	return []byte(strconv.FormatFloat(b.Bits, 'f', 1, 64)), nil
+}
+
+// UnmarshalJSON accepts a number or "unknown".
+func (b *SecretBits) UnmarshalJSON(data []byte) error {
+	if string(data) == `"unknown"` {
+		*b = SecretBits{}
+		return nil
+	}
+	var n float64
+	if err := json.Unmarshal(data, &n); err != nil {
+		return err
+	}
+	*b = SecretBits{Known: true, Bits: n}
 	return nil
 }
 

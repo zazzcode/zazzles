@@ -93,6 +93,23 @@ func TestAccountPolicy(t *testing.T) {
 			return u
 		}, nil, "protected_for_claim", ""},
 		{"recovery confirmed partial", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "partial", "secret_quality": "adequate"}, nil, nil, "confirmed_vulnerability", ""},
+		{"recovery adequate below 64 bits", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "partial", "secret_quality": "adequate"}, func(u analysis.CandidateUse) analysis.CandidateUse {
+			u.Recovery.SecretBits = analysis.SecretBits{Known: true, Bits: 32}
+			return u
+		}, nil, "needs_evidence", "account_answers_inconsistent"},
+		{"recovery adequate with 128 bits", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "partial", "secret_quality": "adequate"}, func(u analysis.CandidateUse) analysis.CandidateUse {
+			u.Recovery.SecretBits = analysis.SecretBits{Known: true, Bits: 128}
+			return u
+		}, nil, "confirmed_vulnerability", ""},
+		{"recovery adequate with unknown bits", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "partial", "secret_quality": "adequate"}, func(u analysis.CandidateUse) analysis.CandidateUse {
+			u.Recovery.SecretBits = analysis.SecretBits{}
+			return u
+		}, nil, "confirmed_vulnerability", ""},
+		{"recovery protected with 128 bits", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "complete", "secret_quality": "adequate"}, func(u analysis.CandidateUse) analysis.CandidateUse {
+			u.Recovery.RecipientValidated, u.Recovery.RecipientCount, u.Recovery.ShapeUses = analysis.RecipientFull, analysis.RecipientCountOne, nil
+			u.Recovery.SecretBits = analysis.SecretBits{Known: true, Bits: 128}
+			return u
+		}, nil, "protected_for_claim", ""},
 		{"recovery confirmed none", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "none", "secret_quality": "adequate"}, nil, nil, "confirmed_vulnerability", ""},
 		{"recovery confirmed weak secret", rec, "", map[string]string{"recipient_control": "account_bound", "validation_coverage": "complete", "secret_quality": "weak"}, func(u analysis.CandidateUse) analysis.CandidateUse {
 			u.Recovery.SecretStrength, u.Recovery.RecipientOrigin, u.Recovery.RecipientValidated = analysis.SecretWeak, analysis.RecipientStoredField, analysis.RecipientFull

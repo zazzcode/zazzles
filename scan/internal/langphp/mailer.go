@@ -97,7 +97,7 @@ func (f *phpFlow) mailerCall(n *sitter.Node, receiver phpValue, method string, v
 		return phpValue{}, true
 	}
 	if lower == "generatetoken" && strings.EqualFold(class, `Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface`) {
-		return phpValue{secret: &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG}, unknown: true}, true
+		return phpValue{secret: &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG, bits: -1}, unknown: true}, true
 	}
 	generate := lower == "generate" && strings.EqualFold(class, urlGeneratorClass) ||
 		lower == "generateurl" && phpText(f.module, phpField(n, "object")) == "$this"

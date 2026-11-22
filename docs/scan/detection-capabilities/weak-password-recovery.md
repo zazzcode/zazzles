@@ -20,11 +20,22 @@ A confirmed record is `weak-password-recovery`.
 | A request value with no lookup on the path | `none` | Yes |
 | The stored address, with a weak secret compared by a `secret_check` | `full` | Yes |
 
-| Secret source | `secret_strength` |
-| --- | --- |
-| `random_bytes`, `random_int`, `openssl_random_pseudo_bytes`, `Uuid::v4`, `ByteString::fromRandom`, `TokenGeneratorInterface::generateToken` | `csprng` |
-| `uniqid`, `mt_rand`, `rand`, `lcg_value`, `microtime`, `time` | `weak` |
-| A value computed from one of them, such as `bin2hex`, `base64_encode`, `md5`, `sha1`, `hash` or a string function | The source's strength |
+| Secret source | `secret_strength` | `secret_bits` |
+| --- | --- | --- |
+| `random_bytes(n)`, `openssl_random_pseudo_bytes(n)` | `csprng` | `8n` when `n` is a literal, otherwise `unknown` |
+| `random_int(a, b)` | `csprng` | `log2(b - a + 1)`, rounded down to one decimal, when both bounds are literals |
+| `Uuid::v4` | `csprng` | `122` |
+| `ByteString::fromRandom(len[, alphabet])` | `csprng` | `len * log2(alphabet size)`, default alphabet size 62, when the arguments are literals |
+| `TokenGeneratorInterface::generateToken` | `csprng` | `unknown` |
+| `uniqid`, `mt_rand`, `rand`, `lcg_value`, `microtime`, `time` | `weak` | `unknown` |
+
+`bin2hex` and `base64_encode` keep the bits. `md5` and `sha1` cap them at 128 and 160.
+`hash` and `hash_hmac` with a literal `sha256`, `sha384` or `sha512` cap them at 256, 384
+or 512; any other literal algorithm leaves the bits as they are. `substr` with a literal
+length over a `bin2hex` or `base64_encode` value caps them at `len*4` or `len*6`.
+Concatenating two secrets adds the counts. A secret joined with a non-secret keeps its
+count. Any other call leaves the bits `unknown` unless the secret is returned unchanged.
+The source's strength is kept through all of these.
 
 Mail sinks are Symfony Mailer (`to`, `addTo`, `cc`, `addCc`, `bcc`, `addBcc` recipients;
 `html`, `text`, `subject`, `context` content; `MailerInterface::send` and
@@ -33,7 +44,7 @@ Mail sinks are Symfony Mailer (`to`, `addTo`, `cc`, `addCc`, `bcc`, `addBcc` rec
 
 ## Recorded and decidable
 
-The secret and its strength, the stored field (census role `recovery_secret` when a
+The secret, its strength and `secret_bits`, the stored field (census role `recovery_secret` when a
 `secret_check` compares it), the recipient and content operands, the recipient's origin,
 `recipient_validated`, `recipient_count` and the use sites.
 

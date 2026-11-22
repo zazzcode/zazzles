@@ -14,10 +14,11 @@ import (
 // to decide whether an accepted value can still alter the protected operation.
 // It states what the guard accepts, never whether that is adequate.
 type GuardContract struct {
-	Guard   string `json:"guard"`
-	At      string `json:"at"`
-	Text    string `json:"text"`
-	Accepts string `json:"accepts"`
+	Guard     string `json:"guard"`
+	At        string `json:"at"`
+	Text      string `json:"text"`
+	Accepts   string `json:"accepts"`
+	Reference string `json:"reference,omitempty"`
 }
 
 // guardSemantics are the recognised guards and what each accepts. Semantics
@@ -42,6 +43,17 @@ var guardSemantics = []struct {
 		"Allow-list membership accepts only values equal to a listed member. PHP in_array without strict=true compares loosely (since PHP 8.0 a numeric string compares numerically, so '1.0' equals 1); Python 'in' on a literal tuple/list/set and JavaScript Array.prototype.includes compare exactly (includes uses SameValueZero). The accepted set is the listed literals under that comparison."},
 }
 
+const phpFilterReference = "https://www.php.net/manual/en/filter.constants.validation.php"
+
+var phpFilterAccepts = map[string]string{
+	"filter_validate_url":     "Checks ASCII URL structure. The allowed scheme is not restricted to HTTP or HTTPS and the check does not enforce a trusted host. Valid URL components can still hold shell metacharacters such as semicolon, ampersand, dollar sign, single quote, parentheses, asterisk, and question mark.",
+	"filter_validate_email":   "Accepts the supported RFC 822 addr-spec forms. Comments, folding whitespace, and dotless domains are excluded. The default excludes Unicode in the local part.",
+	"filter_validate_int":     "Trims input strings and accepts integer values in the supported decimal syntax and machine integer range. The default has no octal or hexadecimal allowance. A successful filter returns an int; an acceptance check leaves the original input unchanged.",
+	"filter_validate_ip":      "Accepts syntactically valid IPv4 or IPv6 address strings. With no additional flags it does not exclude private or reserved addresses.",
+	"filter_validate_boolean": "Recognizes true, on, yes, and one and recognizes false, off, no, zero, and the empty string as false. String comparisons ignore case. With default options an input the filter does not recognize also returns false.",
+	"filter_validate_domain":  "Checks the total domain length and the length of its dot-delimited labels. With no hostname flag it does not enforce hostname character rules.",
+}
+
 // guardEvidenceKinds are the context roles that carry a dominating or
 // enclosing control on a command path.
 var guardEvidenceKinds = map[string]bool{"branch_precondition": true, "branch_true_precondition": true, "branch_false_precondition": true, "guard": true, "control": true, "control_statement": true, "path_guard": true}
@@ -53,7 +65,8 @@ var guardEvidenceKinds = map[string]bool{"branch_precondition": true, "branch_tr
 func GuardContracts(use analysis.CandidateUse) []GuardContract {
 	candidates := map[int]bool{}
 	for i, e := range use.Context {
-		if guardEvidenceKinds[e.Kind] {
+		filter, verified := strings.CutPrefix(e.Kind, "php_filter_")
+		if guardEvidenceKinds[e.Kind] || verified && phpFilterAccepts[filter] != "" {
 			candidates[i] = true
 		}
 	}
@@ -75,6 +88,13 @@ func GuardContracts(use analysis.CandidateUse) []GuardContract {
 	var out []GuardContract
 	for _, i := range indexes {
 		e := use.Context[i]
+		if filter, ok := strings.CutPrefix(e.Kind, "php_filter_"); ok && phpFilterAccepts[filter] != "" {
+			at := fmt.Sprintf("%s:%d", e.Span.File, e.Span.StartLine)
+			if !seen[filter+"|"+at] {
+				out = append(out, GuardContract{Guard: filter, At: at, Text: compactGuardText(e.Text), Accepts: phpFilterAccepts[filter], Reference: phpFilterReference})
+				seen[filter+"|"+at] = true
+			}
+		}
 		for _, g := range guardSemantics {
 			if !g.pattern.MatchString(e.Text) {
 				continue
@@ -144,6 +164,9 @@ func GuardContractMember(use analysis.CandidateUse, symbol string) string {
 		call = "." + call
 	}
 	for _, c := range GuardContracts(use) {
+		if member == "filter_var" && phpFilterAccepts[c.Guard] != "" {
+			return c.Guard
+		}
 		for _, g := range guardSemantics {
 			if g.name == c.Guard && g.pattern.MatchString(call) {
 				return c.Guard
@@ -175,7 +198,11 @@ func GuardContractText(use analysis.CandidateUse) string {
 	}
 	var parts []string
 	for _, c := range contracts {
-		parts = append(parts, fmt.Sprintf("%s at %s (%s): %s", c.Guard, c.At, c.Text, c.Accepts))
+		part := fmt.Sprintf("%s at %s (%s): %s", c.Guard, c.At, c.Text, c.Accepts)
+		if c.Reference != "" {
+			part += " Reference: " + c.Reference
+		}
+		parts = append(parts, part)
 	}
 	return " Recognised guard contracts on this record: " + strings.Join(parts, " | ")
 }

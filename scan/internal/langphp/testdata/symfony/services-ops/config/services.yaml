@@ -1,0 +1,3 @@
+services:
+  App\Reader:
+    arguments: {$enabled: '%env(bool:READER_ENABLED)%'}

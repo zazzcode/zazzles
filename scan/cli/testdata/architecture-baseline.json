@@ -4744,6 +4744,115 @@
     "uses_count": 3,
     "gaps": 0
   },
+  "internal/langphp/testdata/symfony/services-ops": {
+    "uses": [
+      {
+        "id": "candidate:v1:4ddcf95990ad9cb544c6e85298f5ce28302bb9329cf5a3a390c3776065a4e88d",
+        "kind": "command_execution_candidate",
+        "request_sha256": "5dc5081b966200b5333e66cf725da172de1ca29b0d738f7c3d13a67d0dbfa7ff",
+        "signature_sha256": "e5a74694e733f78bd551386a6c56cdfec41a8d56f83af6aafe476ae3205a0d7b"
+      },
+      {
+        "id": "candidate:v1:fb442c8bac56b0c6d9386fb38abde277f65e73ba5da7a076004fb8207ce1f5ed",
+        "kind": "command_execution_candidate",
+        "request_sha256": "7be2b05dbb062c271127d75e1dc110c8dbf5728b8229dab7be38b7626b8eab29",
+        "signature_sha256": "49cee6dc125f0f6209c1dfbbfc976ab0df883e40e06d5cc17b0ceb58e4053f44"
+      },
+      {
+        "id": "candidate:v1:71f56febb95d10f05402d9aec3a6bb786e865652a4c14785ec69abf82dbd0a6e",
+        "kind": "command_execution_candidate",
+        "request_sha256": "864c6ae2bfd0bf1bbabcaddc28b98fee1fa9f6f267c41f28c82ddf735e70c37f",
+        "signature_sha256": "80895864875a48ab52164ede815bf17c257a527fa31ad6300a442bd47c2f0427"
+      },
+      {
+        "id": "candidate:v1:fd5cdf4f2310cce44447df0fce2e27a292b8a4922dfc854b87d7b4704e17d5c3",
+        "kind": "command_execution_candidate",
+        "request_sha256": "89774cd1a81f8932caa88c1fbecabd119587c121a4dbc42ab65734d1ff8c51f8",
+        "signature_sha256": "7db2a184a7f9051baed707e7cf1a701bb4935769aa737dbb33cc64bd6d47dda7"
+      },
+      {
+        "id": "candidate:v1:0fa1a1efe46e714c8388e5cea066b30fb3f8841132fcd7daa50b0544097f23f4",
+        "kind": "command_execution_candidate",
+        "request_sha256": "980dcc68ca0bbc3a1a2949cc96fc78cbfac37a8ad12a2a37ce22bd20447d8f43",
+        "signature_sha256": "0eff0829cd6eaa44a7de0fa7f75b202c21a2eb673215e5554752900b0cb089a8"
+      },
+      {
+        "id": "candidate:v1:c3c28a2ddaa0cd1746c8ab1c5ff9e7760c1ee7ad61c676ebcc1608fe1759a8d2",
+        "kind": "ssrf_candidate",
+        "request_sha256": "92c61c20527acad528492d0c397500b468fe28ae92956cd06590be0a24599470",
+        "signature_sha256": "0c39a775c8902701b5531f4ec98b1fe379813ad73a22c9b15a6cf3392886610e"
+      },
+      {
+        "id": "candidate:v1:4b569fd1d772e2f54e03a14973101c91c92b8487eb775b585ec3eae77099a515",
+        "kind": "path_traversal_candidate",
+        "request_sha256": "4c6fd470a20a9c1367fa6b12272198ee7358f65759dab863ba4d663d3af3f1f2",
+        "signature_sha256": "887e4b865fb737d26b26bc75ed839753c54e1975a3d61f459fc2912e3063925a"
+      },
+      {
+        "id": "candidate:v1:d03d386c9c0ddf092e2342b38ddd4e5b81e381b07897c36d3c914be39a416708",
+        "kind": "ssrf_candidate",
+        "request_sha256": "2bc472c42168df6664bfb63851748381e46d32363a48d098749570d82a35063c",
+        "signature_sha256": "fab530bca98d4cabe805fb29805b635d2638ee75ddbd19669ca632a18cdc537c"
+      },
+      {
+        "id": "candidate:v1:a439795ece61705c453934bcd00c3eec7ff38b1eac1f11160ebd4d33147eb7c4",
+        "kind": "ssrf_candidate",
+        "request_sha256": "3176001920a61d526eb0b5c90b8d8e0e1d4a034c4829e39e494179068f2f30c5",
+        "signature_sha256": "833df2a9bc7f773b7027c50877ba8a280f53061fd65e44149328e06762ec20fb"
+      },
+      {
+        "id": "candidate:v1:8d1a45c1029332680b14ff9c4b5b954a998574487ed381835ad51153fdb1e14b",
+        "kind": "ssrf_candidate",
+        "request_sha256": "d2e4b755c447e7ed4e5e876ce899512e97166afb8a4af62e7cfe37f95b9a7296",
+        "signature_sha256": "23d559dd7fa85fee7439ef67d205e8f1c23b7788091e2d347029ee94c9ce6ca3"
+      },
+      {
+        "id": "candidate:v1:561c3607faf282b6e9936f2e70079db5732e1bc50d8c6342cc269a4253102ea2",
+        "kind": "outbound_http_candidate",
+        "preview_error": "Outbound security assessment is not implemented; this is an observation only.",
+        "signature_sha256": "bab906192080365f1c350cd0ebc5a3d2d3af5aa3af48f8edb331f2619e58e003"
+      },
+      {
+        "id": "candidate:v1:a8a8ddd0d9b8241a4b360ea50326c07739bee3e2f89008244468e5b3eeef1444",
+        "kind": "path_traversal_candidate",
+        "request_sha256": "73c872b6b33395ec6f7ea7fd701cdb15d9eaa1d03ae4823dddf341ae7a6dd499",
+        "signature_sha256": "04c7eaf60ff51b8c9214d58d592327721b750ef86fcc660f3d40e339bf8c556f"
+      },
+      {
+        "id": "candidate:v1:246f8c64ca3e46924f2bdf93588394fb6f60bbfc58b4eb3c2f9df32292004c46",
+        "kind": "path_traversal_candidate",
+        "request_sha256": "f9c23a6dc4d12783e3db888f551f242e05234394f751a937cd56c3b533aeb1c1",
+        "signature_sha256": "12c9914488f533a8abb6d391dbf21f478c52889322cb0a10c1b37e6e620e3bb7"
+      },
+      {
+        "id": "candidate:v1:44ed06f4c2e02e67519cc1b2f640ee2b333a353d57c054af548fb78b42a2f5ce",
+        "kind": "path_traversal_candidate",
+        "request_sha256": "2da85c86d6ba1699b9a912b411370578764928bd85dec32a23a7f75b2c5f6073",
+        "signature_sha256": "368d482bd2588b4cafa2666b80b41d4c8a4739846532d53d804c225c7a93daf2"
+      },
+      {
+        "id": "candidate:v1:48d5c1475cca93b2d511bda1683121fdf07cc4de079477d4a909dbc666fad801",
+        "kind": "ssrf_candidate",
+        "request_sha256": "af594f81af5c1acf0e4928f6e5a0979294a17f38d0f7b02fd31856659287b58f",
+        "signature_sha256": "95c845adfda1478e547f2afa1f0840b67a0eca9973248a1fa3f52801b42c7aa5"
+      },
+      {
+        "id": "candidate:v1:135417244eec59c3c8ca6e4be7032a34225a91055dac98e56a4840fa3d6ca08f",
+        "kind": "ssrf_candidate",
+        "request_sha256": "2cee6e2593a5105b6d571a9f9ef53dc43fcc865b0f2eacb4dbed386341122457",
+        "signature_sha256": "12beff2fcacd4e814c3814b7f019f1cc9a4ff9c3700b1c005ba56a64f1989f59"
+      }
+    ],
+    "report_sha256": "cff6be5f24ef91bca4ba4625313fb4f21f65f455c46c9a8112af989562307036",
+    "sarif_sha256": "629003d928aa730677665062ff205be8265c91342fe044450c6114b570440977",
+    "entries": 14,
+    "registrations": 14,
+    "dispatch_bindings": 14,
+    "callables": 14,
+    "invocation_contexts": 14,
+    "uses_count": 16,
+    "gaps": 0
+  },
   "internal/langphp/testdata/symfony/twig": {
     "uses": [
       {

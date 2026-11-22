@@ -12,13 +12,15 @@ const SSRFProtocol = "ssrf-components-v2"
 // Operation-contract identifiers. Each is selected only after the parser verified
 // the client binding and that a request value reaches the destination operand.
 const (
-	FetchURLContract      = "fetch-url-v1"
-	AxiosURLContract      = "axios-url-v1"
-	PythonHTTPURLContract = "python-http-url-v1"
-	NodeHTTPURLContract   = "node-http-url-v1"
+	FetchURLContract          = "fetch-url-v1"
+	AxiosURLContract          = "axios-url-v1"
+	PythonHTTPURLContract     = "python-http-url-v1"
+	NodeHTTPURLContract       = "node-http-url-v1"
+	PHPURLOpenContract        = "php-url-open-v1"
+	SymfonyHTTPClientContract = "symfony-http-client-v1"
 )
 
-var ssrfContractIDs = []string{FetchURLContract, AxiosURLContract, PythonHTTPURLContract, NodeHTTPURLContract}
+var ssrfContractIDs = []string{FetchURLContract, AxiosURLContract, PythonHTTPURLContract, NodeHTTPURLContract, PHPURLOpenContract, SymfonyHTTPClientContract}
 
 // SSRFContract returns a copy of the supported operation contract by verified ID.
 func SSRFContract(id string) *analysis.APIModel {
@@ -33,6 +35,12 @@ func SSRFContract(id string) *analysis.APIModel {
 	case PythonHTTPURLContract:
 		return &analysis.APIModel{ID: id, Library: "python-http", Reference: "https://requests.readthedocs.io/en/latest/api/#requests.request",
 			Semantics: "requests.get/post/put/patch/delete/head/options(url, ...), requests.request(method, url, ...), the same httpx functions, and urllib.request.urlopen(url) request the URL given by the url argument; data, json, params and headers do not change the destination host. requests and urllib follow redirects by default (httpx does not unless follow_redirects=True), so a permitted first host can redirect elsewhere. urllib.request.urlopen also opens file: and ftp: URLs." + common}
+	case PHPURLOpenContract:
+		return &analysis.APIModel{ID: id, Library: "php/streams-curl", Reference: "https://www.php.net/manual/en/wrappers.php",
+			Semantics: "For file_get_contents, fopen, readfile, file and the source operand of copy, argument 0 is a path or stream-wrapper URL. A local path does not choose a network destination, and an enabled URL wrapper can open a remote destination. curl_init uses argument 0 as the URL, curl_setopt with CURLOPT_URL uses argument 2, and curl_setopt_array takes the CURLOPT_URL value of argument 1. cURL URL configuration establishes the destination selection; it does not prove a later transfer executes. Wrapper registration, redirect configuration and enabled protocols need their own runtime evidence." + common}
+	case SymfonyHTTPClientContract:
+		return &analysis.APIModel{ID: id, Library: "symfony/http-client", Reference: "https://symfony.com/doc/6.4/http_client.html#making-requests",
+			Semantics: "HttpClientInterface::request uses argument 0 for the HTTP method and argument 1 for the URL. The client can supply a base URI for a relative destination and follows redirects according to its max_redirects setting. Request options carry body and headers separately from the destination URL." + common}
 	case NodeHTTPURLContract:
 		return &analysis.APIModel{ID: id, Library: "http", Reference: "https://nodejs.org/api/http.html#httpgeturl-options-callback",
 			Semantics: "Node.js http.get/request and https.get/request (including node:http / node:https) request the destination given by a URL string, a WHATWG URL object, or options.href/url/host/hostname/path/port/protocol. Forms: get/request(url[, options][, callback]) and get/request(options[, callback]). Method, headers and body/Agent options do not change the destination host by themselves. An options object spread or dynamic Agent is unresolved. Absolute URL strings choose scheme and host; relative URLs are not valid for these APIs without a host in options. Redirects are not followed by default." + common}
@@ -79,10 +87,12 @@ func SSRFChoices(name string) []map[string]string {
 }
 
 var ssrfOwners = map[string]string{
-	FetchURLContract:      "internal/parse/outbound_ssrf.go",
-	AxiosURLContract:      "internal/parse/outbound_ssrf.go",
-	PythonHTTPURLContract: "internal/parse/python_frameworks.go",
-	NodeHTTPURLContract:   "internal/parse/outbound_ssrf.go",
+	FetchURLContract:          "internal/parse/outbound_ssrf.go",
+	AxiosURLContract:          "internal/parse/outbound_ssrf.go",
+	PythonHTTPURLContract:     "internal/parse/python_frameworks.go",
+	NodeHTTPURLContract:       "internal/parse/outbound_ssrf.go",
+	PHPURLOpenContract:        "internal/langphp/php_url_open.go",
+	SymfonyHTTPClientContract: "internal/langphp/php_url_open.go",
 }
 
 // ssrfDescriptors creates every SSRF component. They are separate from the
@@ -124,6 +134,9 @@ func ssrfDescriptors() ([]Component, error) {
 		model := SSRFContract(id)
 		v := base("api."+id, "api_contract", "internal/analysispacks/ssrf.go", []string{model.Library}, encoded(model))
 		v.CompiledOwner = ssrfOwners[id]
+		if id == PHPURLOpenContract || id == SymfonyHTTPClientContract {
+			v.Compatibility = append(append([]string{}, protocols...), familyProtocol("outbound"))
+		}
 		v.Limits = append(v.Limits, "client version not inferred; only the verified destination operand contract applies")
 		out = append(out, v)
 	}

@@ -212,7 +212,11 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			} else {
 				for j := uint(0); j < pair.NamedChildCount(); j++ {
 					c := pair.NamedChild(j)
-					if text, ok := phpStringLiteral(m, c); ok && key == "" && valueNode == nil {
+					text, literal := phpStringLiteral(m, c)
+					if f.symfony != nil && j == 0 && phpCurlURLKey(m, c) {
+						text, literal = phpCurlURLField, true
+					}
+					if literal && key == "" && valueNode == nil {
 						key = text
 					} else {
 						valueNode = c

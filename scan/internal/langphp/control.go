@@ -261,6 +261,7 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 		yes.context = append(yes.context, f.module.evidence("configuration_precondition", test))
 	}
 	yes.applyProtections(yesProt, holds)
+	yes.applySymfonyFilters(test, true)
 	yes.narrowSuperglobals(test, yesProt, holds)
 	yt := false
 	if walkYes {
@@ -282,6 +283,7 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 		// everything after the conditional.
 		no.applyProtections(noProt, fails)
 	}
+	no.applySymfonyFilters(test, false)
 	no.narrowSuperglobals(test, noProt, fails)
 	no.context = append(no.context, fails)
 	if condition.configuration {
@@ -303,6 +305,9 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	}
 	if len(branches) > 0 {
 		f.merge(branches...)
+		if f.symfony != nil && len(branches) == 1 {
+			f.context = branches[0].context
+		}
 	}
 	switch {
 	case !walkYes:

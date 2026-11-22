@@ -55,6 +55,8 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return all
 	}
 
+	suppressSymfonyPath := f.symfonyURLBuiltin(n, qname, nodes, values)
+
 	// Procedural SQL operations.
 	switch qname {
 	case "mysqli_connect":
@@ -214,7 +216,9 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			if text, ok := phpStringLiteral(f.module, nodes[0]); ok && text == "php://input" {
 				return f.source(n, "INPUT", "http.body", "")
 			}
-			f.pathUse(n, "file_get_contents", nodes, values, "php-filesystem-v1", "read")
+			if !suppressSymfonyPath {
+				f.pathUse(n, "file_get_contents", nodes, values, "php-filesystem-v1", "read")
+			}
 			// The returned content derives from the file the path selects:
 			// path control is content control for downstream sinks (eval,
 			// render). Keep the path's dependency paths with a read transfer
@@ -234,7 +238,9 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			case "file_put_contents", "unlink":
 				role = "write"
 			}
-			f.pathUse(n, qname, nodes, values, "php-filesystem-v1", role)
+			if !suppressSymfonyPath {
+				f.pathUse(n, qname, nodes, values, "php-filesystem-v1", role)
+			}
 			return phpValue{unknown: true}
 		}
 	case "move_uploaded_file":
@@ -415,6 +421,9 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return sliceFrom(values, 0)
 	}
 	receiver := f.eval(obj)
+	if v, ok := f.symfonyOperationMethod(n, receiver, method, nodes, values); ok {
+		return v
+	}
 	if v, ok := f.requestCall(n, receiver, method, values); ok {
 		return v
 	}
@@ -532,6 +541,9 @@ func (f *phpFlow) staticCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	method := phpText(m, fn)
 	scope := phpField(n, "scope")
 	clsName := phpText(m, scope)
+	if v, ok := f.symfonyProcessStatic(n, clsName, scope, method, nodes, values); ok {
+		return v
+	}
 	idx := f.set.classIndex()
 	var decl *phpClassDecl
 	relative := false
@@ -607,6 +619,9 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		}
 	}
 	cls := phpText(m, clsNode)
+	if v, ok := f.symfonyOperationObject(n, clsNode, cls); ok {
+		return v
+	}
 	if v, ok := f.symfonyObjectCreation(n, clsNode, cls); ok {
 		return v
 	}

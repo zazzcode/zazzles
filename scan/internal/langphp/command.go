@@ -22,10 +22,14 @@ var phpCommandOps = map[string]string{
 // commandUse records a command_execution_candidate for a verified process
 // operation. slots lists operand slot names in call order.
 func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values []phpValue, nodes []*sitter.Node) phpValue {
+	return f.phpProcessUse(n, op, analysispacks.PHPProgramContract, "enabled", "none", slots, values, nodes)
+}
+
+func (f *phpFlow) phpProcessUse(n *sitter.Node, op, contract, shellMode, argvShape string, slots []string, values []phpValue, nodes []*sitter.Node) phpValue {
 	m := f.module
-	facts := &analysis.CommandFacts{Operation: op, ContractID: analysispacks.PHPProgramContract, Platform: "posix", APIShellMode: "enabled", EffectiveShellMode: "enabled", ArgvShape: "none", Operands: []analysis.CommandOperand{}, Paths: []analysis.CommandPath{}}
+	facts := &analysis.CommandFacts{Operation: op, ContractID: contract, Platform: "posix", APIShellMode: shellMode, EffectiveShellMode: shellMode, ArgvShape: argvShape, Operands: []analysis.CommandOperand{}, Paths: []analysis.CommandPath{}}
 	var all phpValue
-	var context []analysis.Evidence
+	var context, filterGuards []analysis.Evidence
 	var deps []phpDep
 	// guardOperand maps a guarded path to the control it cites: a local
 	// context index, or -1-i for entry i of the flow context the use starts
@@ -47,6 +51,8 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 		}
 		o := analysis.CommandOperand{Slot: slot}
 		if text, ok := phpStringLiteral(m, node); ok {
+			o.Constant = text
+		} else if text, ok := phpSQLText(v); contract != analysispacks.PHPProgramContract && ok {
 			o.Constant = text
 		} else {
 			o.Dynamic = true
@@ -82,6 +88,14 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 				// The deny-list leaves a shell metacharacter usable.
 				protection = "raw"
 			}
+			if guard, ok := phpFilterEvidence(d); ok {
+				if protection == "raw" {
+					protection, reason = "guarded", "The cited PHP filter limits the accepted values; its adequacy is assessed for this operand."
+					control = len(context)
+				}
+				context = append(context, guard)
+				filterGuards = append(filterGuards, guard)
+			}
 			if d.protection == phpRegexCapture {
 				// D-6: a capture that admits any character is raw for the
 				// shell; any other capture is guarded by its preg_match.
@@ -109,7 +123,7 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 	}
 	u := f.addUse("command_execution_candidate", n, phpValue{deps: deps, gaps: all.gaps})
 	u.Command = facts
-	u.APIModel = analysispacks.CommandContract(analysispacks.PHPProgramContract)
+	u.APIModel = analysispacks.CommandContract(contract)
 	base := len(u.Context)
 	for i, local := range guardOperand {
 		if local < 0 {
@@ -135,6 +149,12 @@ func (f *phpFlow) commandUse(n *sitter.Node, op string, slots []string, values [
 		case "php_parameter_unresolved", "php_value_unresolved", "php_call_unresolved", "php_loop_unresolved", "php_expression_unresolved", "php_global_unresolved", "work_limit", "dependency_limit", "transfer_limit":
 			c.Blockers = append(c.Blockers, g)
 		}
+	}
+	if len(filterGuards) != 0 {
+		c.Evidence["control_flow"] = phpMergeEvidence(c.Evidence["control_flow"], filterGuards)
+	}
+	if contract == analysispacks.SymfonyProcessContract {
+		c.Scope = "Bounded PHP source-to-process flow over Symfony Process shell text or separate argv operands."
 	}
 	for _, d := range deps {
 		if d.dep.Source.Kind == "input_source" || d.dep.Source.Kind == "storage_source" {
@@ -204,6 +224,9 @@ func phpDenylistProtect(v phpValue, protection string) phpValue {
 // phpNonShellProtection maps the command-only deny-list label to unknown for
 // every non-command family.
 func phpNonShellProtection(p string) string {
+	if strings.HasPrefix(p, "php_filter_") {
+		return "raw"
+	}
 	if p == phpShellDenylist || p == phpRegexCapture {
 		return "unknown"
 	}

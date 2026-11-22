@@ -20,6 +20,7 @@ func TestSSRFComponentSelection(t *testing.T) {
 		{"server.js", FetchURLContract, "language.ssrf.javascript"},
 		{"server.ts", AxiosURLContract, "language.ssrf.javascript"},
 		{"app.py", PythonHTTPURLContract, "language.ssrf.python"},
+		{"index.php", "php-url-open-v1", "language.ssrf.php"},
 	} {
 		s, err := Select(ssrfSelectionUse(tt.file, tt.contract))
 		if err != nil {

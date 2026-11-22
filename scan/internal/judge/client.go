@@ -279,7 +279,7 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 	}
 	if use.Authorization != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
-		instruction = common + "Apply only the three authorization questions to this protected operation. The request may choose the record, a recorded guard may or may not be enough, and the entry's access may or may not be enough for the fields and the other writers of the same field. A role name is a string with no special meaning. An address check is a property of the connection, not of the user. Do not treat a guard as sufficient merely because it is recorded. Do not invent guards, roles or bindings."
+		instruction = common + "Apply only the three authorization questions to this protected operation. Judge the recorded guards by kind: an ownership comparison with the session user, a role check, an authenticated check, or a secret comparison can be adequate when it covers this operation and this record. An address check is a property of the connection, not of the user. Judge the entry's recorded authentication and roles against the operation and the other writers of the same field. A role name means only what the recorded configuration says. Do not invent guards, roles or bindings."
 	}
 	if use.MassAssignment != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")

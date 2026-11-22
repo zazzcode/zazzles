@@ -171,7 +171,7 @@ func resultTest(m *phpModule, c *sitter.Node, name string) (bool, bool) {
 		args := phpArgs(c)
 		if len(args) == 1 && phpText(m, args[0]) == name {
 			switch fn {
-			case "count":
+			case "count", "mysqli_num_rows":
 				return true, true
 			}
 		}

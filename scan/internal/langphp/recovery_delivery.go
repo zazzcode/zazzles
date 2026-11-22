@@ -42,6 +42,7 @@ type phpAccountState struct {
 	lookups   map[string][]phpAccountLookup           // entry -> lookups
 	shapeUses map[string]map[string]analysis.Evidence // entry -> request source -> first array use
 	stores    []phpSecretStore
+	plain     *plainAccountSQL
 }
 
 // accountFinishHook observes the set after the account post-pass in tests.
@@ -94,7 +95,11 @@ func (f *phpFlow) accountCall(n *sitter.Node, nodes []*sitter.Node, values []php
 		case name == "mail":
 			f.phpMailCall(n, nodes, values)
 		}
+		f.plainAccountCall(n, values)
+		f.plainDigest(n)
 		v = f.digestCall(n, name, nodes, v)
+	case "member_call_expression":
+		f.plainAccountCall(n, values)
 	case "scoped_call_expression":
 		class := strings.TrimPrefix(f.set.classIndex().qualify(f.module, phpText(f.module, phpField(n, "scope")), n.StartByte()), `\`)
 		method := strings.ToLower(phpText(f.module, phpField(n, "name")))
@@ -125,6 +130,15 @@ func (f *phpFlow) noteArrayUse(at *sitter.Node, v phpValue) {
 // noteAccountLookup records a finder's request criteria for the recipient
 // check of D-7, with the first criterion read through a literal index.
 func (f *phpFlow) noteAccountLookup(n *sitter.Node, deps []phpDep) {
+	if args := phpArgs(n); len(args) > 0 {
+		f.noteAccountLookupAt(args[0], deps)
+		return
+	}
+	f.noteAccountLookupAt(nil, deps)
+}
+
+// noteAccountLookupAt records a lookup whose criteria are the given node.
+func (f *phpFlow) noteAccountLookupAt(criteria *sitter.Node, deps []phpDep) {
 	if f.entry.ID == "" || len(deps) == 0 {
 		return
 	}
@@ -132,8 +146,8 @@ func (f *phpFlow) noteAccountLookup(n *sitter.Node, deps []phpDep) {
 	for _, d := range deps {
 		l.sources[depKey(d)] = true
 	}
-	if args := phpArgs(n); len(args) > 0 {
-		phpWalk(args[0], func(c *sitter.Node) {
+	if criteria != nil {
+		phpWalk(criteria, func(c *sitter.Node) {
 			if l.element != nil || c.Kind() != "subscript_expression" {
 				return
 			}

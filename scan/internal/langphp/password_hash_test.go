@@ -27,6 +27,9 @@ func TestPasswordHash(t *testing.T) {
 		{"PH-07", "testdata/symfony/account", nil, []string{"POST /profile/adaptive"}},
 		{"PH-08", "testdata/symfony/account", nil, []string{"POST /profile/operator"}},
 		{"PH-09", "testdata/symfony/account", nil, []string{"POST /profile/names"}},
+		{"PH-10", "testdata/symfony/account-transfer", []want{{"src/Crypto/ShaHasher.php", "sha1", analysis.BasisHasherClass, "no", `App\Crypto\ShaHasher`, "", 10},
+			{"config/packages/security.yaml", "sha1", analysis.BasisConfiguration, "no", `App\Crypto\ShaHasher`, "", 4}}, nil},
+		{"PH-11", "testdata/account-plain", []want{{"register.php", "md5", analysis.BasisSQLCredentialColumn, "no", "", "", 4}}, []string{"FILE /signin.php"}},
 		{"PH-12", "testdata/symfony/account", []want{{"src/Controller/ProfileController.php", "crypt", analysis.BasisCredentialField, "no", "", analysis.PasswordDigestUnmodeled, 80}}, nil},
 	} {
 		t.Run(tt.id, func(t *testing.T) {

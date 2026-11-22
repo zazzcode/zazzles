@@ -1,0 +1,14 @@
+security:
+  password_hashers:
+    member_hasher:
+      id: App\Crypto\ShaHasher
+  providers:
+    members:
+      entity:
+        class: App\Model\Member
+        property: handle
+  firewalls:
+    api:
+      provider: members
+      json_login:
+        check_path: api_login

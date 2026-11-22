@@ -78,6 +78,10 @@ func TestAccountEnumeration(t *testing.T) {
 		{"EN-08", "testdata/symfony/account", "POST /product/check", nil},
 		{"EN-09", "testdata/symfony/account", "POST /join/relay", []want{{101, "response_unresolved:", "redirect:home", analysis.ResponseUnresolved}}},
 		{"EN-10", "testdata/symfony/account", "POST /sign/check", nil},
+		{"EN-11", "testdata/symfony/account-transfer", "POST /api/members", []want{{31, "body:['error' => 'handle exists']|status:409", "body:['created' => true]|status:201", ""}}},
+		{"EN-12", "testdata/symfony/account-transfer", "POST /api/members/probe", nil},
+		{"EN-13", "testdata/account-plain", "FILE /join.php", []want{{4, "body:That address has an account", "body:Choose a password", ""}}},
+		{"EN-14", "testdata/account-plain", "FILE /stock.php", nil},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
 			r := phpAnalyze(t, tt.root, "")

@@ -161,3 +161,40 @@ func TestRecoveryDelivery(t *testing.T) {
 		}
 	})
 }
+
+// Cases RC-09 (transfer) and RC-10 (plain PHP).
+func TestRecoveryDeliveryTransfer(t *testing.T) {
+	for _, tt := range []struct {
+		id, root, entry, file string
+		line                  int
+		validated, contract   string
+		uses                  []string
+	}{
+		{"RC-09", "testdata/symfony/account-transfer", "POST /api/members/recover", "src/Api/MemberApi.php", 62, analysis.RecipientPartial, "api.symfony-mailer-v1",
+			[]string{"src/Api/MemberApi.php:56", "src/Api/MemberApi.php:61"}},
+		{"RC-10", "testdata/account-plain", "FILE /forgot.php", "forgot.php", 8, analysis.RecipientFull, "api.php-mail-v1", nil},
+	} {
+		t.Run(tt.id, func(t *testing.T) {
+			r := phpAnalyze(t, tt.root, "")
+			uses := accountUses(r, analysis.RecoveryDeliveryKind, tt.entry)
+			if len(uses) != 1 {
+				t.Fatalf("%d records, want 1:\n%s", len(uses), accountSummary(r, analysis.RecoveryDeliveryKind))
+			}
+			u := uses[0]
+			f := u.Recovery
+			if u.Sink.Span.File != tt.file || u.Sink.Span.StartLine != tt.line || f.RecipientValidated != tt.validated || f.MailContract != tt.contract || f.SecretStrength != analysis.SecretCSPRNG {
+				t.Fatalf("record %s:%d %+v", u.Sink.Span.File, u.Sink.Span.StartLine, f)
+			}
+			var got []string
+			for _, e := range f.ShapeUses {
+				got = append(got, e.Span.File+":"+strconv.Itoa(e.Span.StartLine))
+			}
+			if !slices.Equal(got, tt.uses) {
+				t.Fatalf("shape uses %v, want %v", got, tt.uses)
+			}
+			if !hasInputDependency(u) {
+				t.Fatal("no request dependency")
+			}
+		})
+	}
+}

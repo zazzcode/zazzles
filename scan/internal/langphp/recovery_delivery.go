@@ -94,6 +94,7 @@ func (f *phpFlow) accountCall(n *sitter.Node, nodes []*sitter.Node, values []php
 		case name == "mail":
 			f.phpMailCall(n, nodes, values)
 		}
+		v = f.digestCall(n, name, nodes, v)
 	case "scoped_call_expression":
 		class := strings.TrimPrefix(f.set.classIndex().qualify(f.module, phpText(f.module, phpField(n, "scope")), n.StartByte()), `\`)
 		method := strings.ToLower(phpText(f.module, phpField(n, "name")))
@@ -300,6 +301,7 @@ func (s *phpSet) finishAccount(out *analysis.AnalysisReport) {
 		kept = append(kept, u)
 	}
 	out.Uses = kept
+	s.finishPasswordHashers(out)
 	if accountFinishHook != nil {
 		accountFinishHook(s)
 	}

@@ -123,12 +123,14 @@ type phpValue struct {
 	// secret marks a value derived from a generated secret (branch 3 D-5).
 	// Only the recovery adapter reads it.
 	secret *phpSecret
+	// digest marks a value computed by one fast digest (branch 3 D-8).
+	digest *phpDigest
 }
 
 // phpSideChannel reports a value carrying claim-specific side facts that the
 // generic join must preserve but never treats as content.
 func phpSideChannel(v phpValue) bool {
-	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0 || v.authz != nil || v.secret != nil
+	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0 || v.authz != nil || v.secret != nil || v.digest != nil
 }
 
 // phpJoinSide joins two values with join after setting their side facts aside,
@@ -153,12 +155,17 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
 	if sec == nil {
 		sec = b.secret
 	}
+	dg := a.digest
+	if dg == nil {
+		dg = b.digest
+	}
 	for _, v := range []*phpValue{&a, &b} {
-		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag, v.authz, v.secret = nil, nil, nil, nil, nil, nil, nil
+		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag, v.authz, v.secret, v.digest = nil, nil, nil, nil, nil, nil, nil, nil
 	}
 	out := join(a, b)
 	out.authz = az
 	out.secret = sec
+	out.digest = dg
 	out.diagnostic = d
 	out.reflection = r
 	if len(sources) > 0 {

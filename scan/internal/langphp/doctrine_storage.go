@@ -161,6 +161,7 @@ func (f *phpFlow) doctrinePropertyWrite(object phpValue, left, name *sitter.Node
 			f.doctrineWrite(obj, key, v, f.module.evidence("storage_write", left))
 			f.noteAuthzProperty(object, key, v, left)
 			f.noteSecretStore(object, key, v, left)
+			f.noteDigestStore(key, v, left)
 		}
 		return
 	}

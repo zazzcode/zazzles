@@ -1,4 +1,9 @@
 security:
+  password_hashers:
+    App\Entity\Account: { algorithm: sha1 }
+    App\Entity\Operator: { algorithm: auto }
+    legacy_digest:
+      id: 'App\Security\LegacyDigest'
   providers:
     accounts:
       entity: { class: App\Entity\Account, property: mail }

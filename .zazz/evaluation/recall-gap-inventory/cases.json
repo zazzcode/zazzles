@@ -23,9 +23,600 @@
     "ThreatByte": "ede28f27e7e5061866a67b19b6088df4dd11c569",
     "python-insecure-app": "b188493768ca2c1ef003e08148fb2e4577219c36",
     "vulnerable-flask-app": "a67cbe590698dc4a0422f28e2495a40af559e257",
-    "dvwa": "a1978a2fed195acd093010af6395f86a281537ca"
+    "dvwa": "a1978a2fed195acd093010af6395f86a281537ca",
+    "vuln-symfony": "086f81f941501bd1170b249e01107ba99beb2962"
   },
   "cases": [
+    {
+      "id": "SYM-SQL-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "positive",
+      "file": "src/Repository/PostRepository.php",
+      "line": 67,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/BlogController.php",
+        70
+      ]
+    },
+    {
+      "id": "SYM-SQL-02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "positive",
+      "file": "src/Repository/UserRepository.php",
+      "line": 77,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/LoginController.php",
+        22
+      ]
+    },
+    {
+      "id": "SYM-XSS-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "positive",
+      "file": "templates/blog/index.html.twig",
+      "line": 11,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/BlogController.php",
+        70
+      ]
+    },
+    {
+      "id": "SYM-XSS-02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "positive",
+      "file": "templates/blog/post.html.twig",
+      "line": 40,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-XSS-03",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "positive",
+      "file": "templates/blog/post.html.twig",
+      "line": 37,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-CMD-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "command_execution_candidate",
+      "expect": "positive",
+      "file": "src/Services/Analytics.php",
+      "line": 32,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Services/Analytics.php",
+        25
+      ]
+    },
+    {
+      "id": "SYM-CMD-02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "command_execution_candidate",
+      "expect": "positive",
+      "file": "src/Controller/UserController.php",
+      "line": 195,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-PATH-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "positive",
+      "file": "src/Controller/BlogController.php",
+      "line": 95,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/BlogController.php",
+        91
+      ]
+    },
+    {
+      "id": "SYM-PATH-02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "positive",
+      "file": "src/Controller/UserController.php",
+      "line": 159,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-PATH-03",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "positive",
+      "file": "src/Services/Avatar.php",
+      "line": 18,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/UserController.php",
+        123
+      ]
+    },
+    {
+      "id": "SYM-SSRF-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "expect": "positive",
+      "file": "src/Services/Avatar.php",
+      "line": 18,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/UserController.php",
+        123
+      ]
+    },
+    {
+      "id": "SYM-UPLOAD-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "file_upload_candidate",
+      "expect": "positive",
+      "file": "src/Controller/UserController.php",
+      "line": 99,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/UserController.php",
+        85
+      ]
+    },
+    {
+      "id": "SYM-SSTI-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "template_injection_candidate",
+      "expect": "positive",
+      "file": "src/Twig/TemplateFromStringExtension.php",
+      "line": 22,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-DESER-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "deserialization_candidate",
+      "expect": "positive",
+      "file": "src/Services/UserPref.php",
+      "line": 36,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Services/UserPref.php",
+        30
+      ]
+    },
+    {
+      "id": "SYM-SQL-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "bound",
+      "anchors": {
+        "src/Repository/CommentRepository.php": [
+          52,
+          53,
+          54,
+          55,
+          56,
+          57
+        ]
+      }
+    },
+    {
+      "id": "SYM-SQL-N02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "bound",
+      "anchors": {
+        "src/Repository/CommentRepository.php": [
+          62,
+          63,
+          64,
+          65,
+          66,
+          67
+        ]
+      }
+    },
+    {
+      "id": "SYM-SQL-N03",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "bound",
+      "anchors": {
+        "src/Repository/PostRepository.php": [
+          72,
+          73,
+          74,
+          75,
+          76,
+          77
+        ]
+      }
+    },
+    {
+      "id": "SYM-SQL-N04",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "no_record",
+      "anchors": {
+        "src/Controller/LoginController.php": [
+          32,
+          76,
+          83
+        ],
+        "src/Controller/PasswordResetController.php": [
+          34,
+          64
+        ],
+        "src/Controller/AdminController.php": [
+          79,
+          86
+        ]
+      }
+    },
+    {
+      "id": "SYM-SQL-N05",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "no_record",
+      "file": "src/Repository/PostRepository.php",
+      "lines": [
+        53,
+        54,
+        55,
+        56
+      ]
+    },
+    {
+      "id": "SYM-XSS-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_raw",
+      "anchors": {
+        "templates/blog/post.html.twig": [
+          12,
+          13,
+          35
+        ],
+        "templates/user/index.html.twig": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          28
+        ]
+      }
+    },
+    {
+      "id": "SYM-XSS-N02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_raw",
+      "anchors": {
+        "templates/user/edit.html.twig": [
+          14,
+          16
+        ]
+      }
+    },
+    {
+      "id": "SYM-XSS-N03",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_raw",
+      "file": "templates/blog/post.html.twig",
+      "line": 20
+    },
+    {
+      "id": "SYM-XSS-N04",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_raw",
+      "file": "templates/blog/index.html.twig",
+      "line": 32
+    },
+    {
+      "id": "SYM-XSS-N05",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "encoded",
+      "file": "public/js/script.js",
+      "line": 6
+    },
+    {
+      "id": "SYM-XSS-N06",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_decisive",
+      "anchors": {
+        "templates/commons/messages.html.twig": [
+          6,
+          13
+        ],
+        "templates/user/index.html.twig": [
+          45
+        ]
+      }
+    },
+    {
+      "id": "SYM-XSS-N07",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_decisive",
+      "anchors": {
+        "templates/blog/index.html.twig": [
+          28
+        ],
+        "templates/blog/post.html.twig": [
+          17
+        ]
+      }
+    },
+    {
+      "id": "SYM-XSS-N08",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "not_raw",
+      "anchors": {
+        "templates/blog/post.html.twig": [
+          33
+        ],
+        "templates/user/index.html.twig": [
+          64
+        ]
+      }
+    },
+    {
+      "id": "SYM-XSS-N09",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "no_record",
+      "anchors": {
+        "templates/admin/index.html.twig": [
+          14,
+          46,
+          59
+        ],
+        "templates/base.html.twig": [
+          29,
+          31,
+          34,
+          35,
+          37,
+          38,
+          53
+        ],
+        "templates/blog/index.html.twig": [
+          27,
+          34
+        ],
+        "templates/blog/post.html.twig": [
+          25,
+          50
+        ],
+        "templates/commons/search.html.twig": [
+          1
+        ],
+        "templates/login/index.html.twig": [
+          7,
+          15
+        ],
+        "templates/login/register.html.twig": [
+          9
+        ],
+        "templates/login/reset.html.twig": [
+          7
+        ],
+        "templates/login/reset_password.html.twig": [
+          7
+        ],
+        "templates/user/edit.html.twig": [
+          12
+        ],
+        "templates/user/index.html.twig": [
+          19,
+          26,
+          35,
+          53,
+          65,
+          66,
+          70,
+          77
+        ]
+      }
+    },
+    {
+      "id": "SYM-REDIR-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "open_redirect_candidate",
+      "expect": "no_record",
+      "anchors": {
+        "src/Controller/AdminController.php": [
+          36,
+          58,
+          75,
+          82,
+          89,
+          95,
+          110
+        ],
+        "src/Controller/BlogController.php": [
+          50,
+          60
+        ],
+        "src/Controller/LoginController.php": [
+          38,
+          72,
+          79,
+          86,
+          92,
+          98,
+          110
+        ],
+        "src/Controller/PasswordResetController.php": [
+          31,
+          37,
+          67,
+          75,
+          83
+        ],
+        "src/Controller/UserController.php": [
+          38,
+          46,
+          59,
+          66,
+          77,
+          89,
+          105,
+          120,
+          127,
+          134,
+          145,
+          156,
+          165,
+          182,
+          189,
+          198,
+          218,
+          244
+        ]
+      }
+    },
+    {
+      "id": "SYM-PATH-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "not_decisive",
+      "file": "src/Controller/UserController.php",
+      "line": 139
+    },
+    {
+      "id": "SYM-SSRF-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/BlogController.php",
+      "line": 95
+    },
+    {
+      "id": "SYM-PATH-N02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/UserController.php",
+      "lines": [
+        94,
+        95
+      ]
+    },
+    {
+      "id": "SYM-LOG-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "log_sink_candidate",
+      "expect": "no_record",
+      "anchors": {
+        "src/Services/Analytics.php": [
+          35
+        ],
+        "src/Services/Avatar.php": [
+          20
+        ]
+      }
+    },
+    {
+      "id": "SYM-CODE-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "code_execution_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-XSS-R01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "present",
+      "file": "src/Controller/LocalController.php",
+      "line": 63
+    },
+    {
+      "id": "SYM-XSS-R02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "xss_candidate",
+      "expect": "present",
+      "file": "src/Controller/BlogController.php",
+      "line": 95
+    },
+    {
+      "id": "SYM-VAL-R01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "sql_query_candidate",
+      "expect": "present",
+      "anchors": {
+        "src/Repository/PostRepository.php": [
+          67
+        ],
+        "src/Repository/UserRepository.php": [
+          77
+        ]
+      },
+      "required_checks": [
+        [
+          "src/Repository/PostRepository.php",
+          67,
+          "automatic-php-query",
+          "s"
+        ],
+        [
+          "src/Repository/UserRepository.php",
+          77,
+          "automatic-php-query",
+          "email"
+        ]
+      ]
+    },
     {
       "id": "TS-DESER-N01",
       "app": "vulnerable-typescript-app",

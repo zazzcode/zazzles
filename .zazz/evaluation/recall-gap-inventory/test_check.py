@@ -25,6 +25,31 @@ def finding(uid, status='poor_practice'):
     return {'use_id': uid, 'record_type': 'finding' if status in ('poor_practice', 'confirmed_vulnerability') else 'analysis', 'status': status}
 
 
+class FrozenKeyTest(unittest.TestCase):
+    def test_multiple_anchors_and_whole_sample_control(self):
+        report = {'uses': [use('a', 'xss_candidate', 'a.twig', 3),
+                           use('b', 'xss_candidate', 'b.twig', 5),
+                           use('c', 'xss_candidate', 'b.twig', 6)]}
+        row = {'kind': 'xss_candidate', 'expect': 'no_record',
+               'anchors': {'a.twig': [3], 'b.twig': [5]}}
+        self.assertEqual([u['id'] for u in check.select(row, report, {})], ['a', 'b'])
+        del row['anchors']
+        self.assertEqual([u['id'] for u in check.select(row, report, {})], ['a', 'b', 'c'])
+
+    def test_automatic_check_on_both_sink_records(self):
+        report = {'uses': [use('a', 'sql_query_candidate', 'a.php', 3,
+                               check={'id': 'automatic-php-query', 'fields': ['s']}),
+                           use('b', 'sql_query_candidate', 'b.php', 5,
+                               check={'id': 'automatic-php-query', 'fields': ['email']})]}
+        row = {'kind': 'sql_query_candidate', 'expect': 'present',
+               'anchors': {'a.php': [3], 'b.php': [5]},
+               'required_checks': [['a.php', 3, 'automatic-php-query', 's'],
+                                   ['b.php', 5, 'automatic-php-query', 'email']]}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_present')
+        report['uses'][1]['check']['fields'] = ['other']
+        self.assertEqual(check.classify(row, report)['outcome'], 'missing_candidate')
+
+
 class PrecisionTest(unittest.TestCase):
     def setUp(self):
         uses = [

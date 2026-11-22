@@ -55,7 +55,9 @@ def select(row, report, entries):
         if u['kind'] != row['kind']:
             continue
         sink = u['sink']['span']
-        if sink['file'] != row['file']:
+        if 'file' in row and sink['file'] != row['file']:
+            continue
+        if 'anchors' in row and sink['start_line'] not in row['anchors'].get(sink['file'], []):
             continue
         if 'line' in row and sink['start_line'] != row['line']:
             continue
@@ -91,7 +93,9 @@ def classify(row, report):
     counted = [u for u in uses if 'source' not in row or witnessed(u, row)] if expect == 'positive' else uses
     res = {'uses': len(counted), 'entries': len({u.get('entry_id') for u in counted})}
     if expect in ('positive', 'review', 'present'):
-        if len(uses) < row.get('min_uses', 1):
+        checks = {(u['sink']['span']['file'], u['sink']['span']['start_line'], c['id'], field)
+                  for u in uses if (c := u.get('check')) for field in c.get('fields', [])}
+        if len(uses) < row.get('min_uses', 1) or not all(tuple(c) in checks for c in row.get('required_checks', [])):
             res['outcome'] = 'missing_candidate'
         elif expect == 'positive' and any(witnessed(u, row) and not blockers(u) for u in uses):
             res['outcome'] = 'candidate_with_witness'
@@ -331,7 +335,7 @@ def precision(reports, keyed, noise_rows, controls):
         entries = {e['id']: e for e in report.get('entries', [])}
         role = {}
         for row in keyed:
-            if row.get('app') != app or 'kind' not in row or 'file' not in row:
+            if row.get('app') != app or 'kind' not in row:
                 continue
             pol = 'positive' if row['expect'] == 'positive' else 'control' if row['expect'] in CONTROL_EXPECT else 'assessment'
             sel = dict(row)
@@ -436,11 +440,14 @@ def main():
     ev = evaluator()
     rows = []
     for c in frozen['cases']:
+        if c['app'] not in reports:
+            continue
         c.setdefault('tag', 'independent')
         res = {'outcome': 'excluded'} if c['expect'] == 'excluded' else classify(c, reports[c['app']])
         rows.append((c, res))
     for app in PYTHON_APPS:
-        rows.extend(python_rows(app, reports[app], ev))
+        if app in reports:
+            rows.extend(python_rows(app, reports[app], ev))
     if a.lab:
         rows.extend(lab_rows(a.lab, reports['vuln-nextjs']))
     out = [{**{k: v for k, v in r.items() if k in ('id', 'app', 'kind', 'file', 'line', 'expect', 'key_expect', 'tag', 'reason', 'key')}, **res} for r, res in rows]
@@ -465,6 +472,11 @@ def main():
     for app, fams in prec.items():
         for f, d in fams.items():
             print('precision', app, f, json.dumps(d, sort_keys=True))
+    for app in reports:
+        positives = [row for row in out if row['app'] == app and row['expect'] == 'positive']
+        if positives:
+            witnessed_count = sum(row['outcome'] == 'candidate_with_witness' for row in positives)
+            print(f'{app}: {witnessed_count} of {len(positives)} positives witnessed')
     print(json.dumps(summary, sort_keys=True), 'total', len(out))
 
 

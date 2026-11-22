@@ -36,8 +36,11 @@ This skill adapts the [Zazz upstream gh-stack skill](https://github.com/zazzcode
    that creates drafts by default. Verify the actual remote base of every PR and
    record a compact stack map and slice evidence.
 4. Verify `sync` effects before running it on shared state. It can rebase and push
-   stack branches. Surface unexpected remote divergence or a scope change without
-   discarding work. The owner controls review readiness and merges.
+   stack branches. When multiple remotes are configured, name the intended remote
+   on commands that support it. Check `gh stack view --json` after synchronization
+   because a successful exit alone does not establish that the stack was updated.
+   Surface unexpected divergence without discarding work. The owner controls
+   review readiness and merges.
 
 If the extension or GitHub support is unavailable, follow the guide's explicit
 base-branch workflow with the same draft dependency chain.

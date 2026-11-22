@@ -280,7 +280,11 @@ Install the extension from GitHub:
 gh extension install github/gh-stack
 ```
 
-Official reference: [GitHub Stacked PRs CLI Commands](https://docs.github.com/en/pull-requests/reference/stacked-prs-cli-commands). The page includes installation, stack management, remote operations, navigation, utilities, and exit codes.
+Use the [official gh-stack repository](https://github.com/github/gh-stack) for releases and issue
+tracking, the [GitHub CLI reference](https://docs.github.com/en/pull-requests/reference/stacked-prs-cli-commands)
+for command semantics, and the [official gh-stack skill](https://github.com/github/gh-stack/tree/main/skills/gh-stack)
+for agent command patterns and troubleshooting. This guide defines the Zazzles worktree and
+`stage` integration workflow.
 
 Check preview availability before publishing. For the explicit-base fallback, use `gh pr create --draft --base stage` for the bottom layer and `gh pr create --draft --base <parent-branch>` for each higher layer.
 
@@ -298,6 +302,10 @@ gh stack <command> --help
   default with non-interactive `submit --auto`.
 
 Use the installed command help rather than copying an example from a different version.
+When several Git remotes are configured, set the intended remote explicitly on commands that
+accept `--remote`. Check `gh stack view --json` after synchronization. Some versions report a
+divergence as an aborted sync with a successful exit status, so verify the actual branch chain
+and PR bases before proceeding.
 
 ### Repository skill
 

@@ -13,7 +13,7 @@ CWE-200 and CWE-215.
 | Operation | `exposure.operation`: `phpinfo`, `debug_print_backtrace`, `var_dump`, `var_export`, `print_r`, `debug_zval_refcount`, `getenv`, `php_uname`, `phpversion`, `ini_get_all`, `dump`, `dd` |
 | Subject | `exposure.subject`: `configuration` (`phpinfo`, `ini_get_all`, `get_defined_constants`), `environment` (`$_SERVER`, `$_ENV`, `getenv()`), `runtime_state` (`$GLOBALS`, `get_defined_vars()`, `php_uname`, `phpversion`, framework dumps), `stack` (`debug_print_backtrace`) |
 | Flag | `exposure.flag`: a literal `INFO_*` argument of `phpinfo` |
-| Output | A returning `print_r`/`var_export` or a value function is recorded at the `echo`, `print`, `Response` body or `setContent` that outputs it, and nowhere else |
+| Output | A returning `print_r`/`var_export` or a value function is recorded at the `echo`, `print`, `Response` body, `setContent` or Twig interpolation that outputs it, and nowhere else. A Twig record carries the conditions that dominate the `render` call |
 | Entry | `exposure.entry_served` is `yes` for a server-mapped file or a route. An operation with no HTTP entry records nothing |
 | Guards | `exposure.guards` lists dominating `branch_precondition`, `branch_false_precondition` and `configuration_precondition` evidence, including an earlier `if` whose only branch ends in `throw` |
 | Records | One candidate per operation per entry |

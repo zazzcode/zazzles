@@ -93,11 +93,13 @@ Beyond the lane contract's §1:
 | `scan/internal/langphp/security_fields.go`, `symfony_security.go` | New | The census; the `providers` reader for `security.yaml` |
 | `scan/internal/langphp/mass_assignment.go` | New | Key-controlled write shapes and candidate assembly |
 | `scan/internal/langphp/calls.go`, `doctrine_storage.go`, `flow.go`, `modules.go`, `symfony_project.go`, `symfony_request.go` | Modified | One dispatch line per contract, the wildcard write feeding the claim, the census cached on the set, key-origin tracking on whole-bag values |
-| `scan/internal/langphp/*_test.go`, `testdata/exposure/`, `testdata/symfony/mass-assignment/`, `testdata/symfony/mass-assignment-transfer/`, `testdata/mass-assignment-plain/` | New | Fixtures and tests of §8 |
-| `scan/internal/analysispacks/exposure.go`, `mass_assignment.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Families, protocols `exposure-components-v1` and `mass-assignment-components-v1`, questions, descriptors, contracts |
+| `scan/internal/langphp/class_index.go`, `control.go`, `values.go`, `twig.go` | Modified | The dynamic property write (`class_index.go`), the key-origin binding of a `foreach` key (`control.go`), side facts (`diagnostic`, key origin, reflection target) that joins preserve; the diagnostic read at a Twig interpolation |
+| `scan/internal/langphp/symfony_controller.go`, `symfony_entry.go` | Modified | The diagnostic read at a `Response` body or `setContent`; the `#[MapRequestPayload]` argument record of D-8 |
+| `scan/internal/langphp/*_test.go`, `testdata/exposure/`, `testdata/symfony/exposure/`, `testdata/symfony/security-fields/`, `testdata/symfony/mass-assignment/`, `testdata/symfony/mass-assignment-transfer/`, `testdata/mass-assignment-plain/` | New | Fixtures and tests of §8 |
+| `scan/internal/analysispacks/exposure.go`, `mass_assignment.go`, `families.go`, `descriptors.go`, `select.go`, `xss_selection.go`, `contracts.go`, tests | New, modified | Families, protocols `exposure-components-v1` and `mass-assignment-components-v1`, questions, descriptors, contracts |
 | `scan/internal/guidelines/` (only if a family needs language material) | Modified | PHP guidance for the two families |
-| `scan/internal/judge/exposure.go`, `mass_assignment.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, tests | New, modified | Policy, question wiring, facts on the wire |
-| `scan/internal/report/finding_types.go`, `findings.go`, `sarif.go`, `guidance.go`, `p5_explain.go`, tests | Modified | Finding types, SARIF rules for CWE-200 and CWE-915, guidance |
+| `scan/internal/judge/exposure.go`, `mass_assignment.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, `injection.go`, tests | New, modified | Policy, question wiring (including the two families' questions in the shared question builder), facts on the wire |
+| `scan/internal/report/finding_types.go`, `findings.go`, `application_findings.go`, `sarif.go`, `guidance.go`, `p5_explain.go`, tests | New, modified | Finding types, titles and summaries for the two families, SARIF rules for CWE-200 and CWE-915, guidance |
 | `scan/cli/main.go`, `architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Family names in flag help; baseline rows for new fixtures only |
 | `scan/internal/pipeline/symfony_test.go` | Modified | `TestSymfonySourceKey` asserts this branch's rows |
 | `.zazz/architecture/application-security-analyzers.md` | New | Design and approach (AC10) |
@@ -416,6 +418,7 @@ and annotation routes where the first uses attributes.
 | `EX-10` | Plain PHP: `echo php_uname();` | Candidate, `subject: runtime_state` |
 | `EX-11` | Plain PHP: `phpinfo()` in a file that only a console script includes | No record |
 | `EX-12` | Symfony `dump($request)` | Candidate with gap `diagnostic_output_environment_dependent` |
+| `EX-13` | Symfony `render('t.html.twig', ['u' => php_uname()])` with `{{ u }}` | Candidate at the template interpolation, `subject: runtime_state` |
 
 ### Census (`testdata/symfony/security-fields/`)
 
@@ -451,6 +454,9 @@ and annotation routes where the first uses attributes.
 | `MA-14` | Transfer project: named setters only | No record |
 | `MA-15` | Plain PHP: `foreach ($_POST as $k => $v) { $user->$k = $v; }` then a `mysqli` update | Candidate, `shape: dynamic_property_write`, census gap `security_fields_unresolved` and `name_hint` roles |
 | `MA-16` | Plain PHP: `$user->name = $_POST['name'];` | No record |
+| `MA-17` | `$rp = new \ReflectionProperty($account, $field); $rp->setValue($account, $value);` in a loop over `$request->request->all()`, beside an unused construction | One candidate, at the `setValue` call, `shape: reflection_property_write` |
+| `MA-18` | `$rc = new \ReflectionClass($account);` then `$rc->getProperty($field)` in the loop | Candidate at the `getProperty` call |
+| `MA-19` | The `ReflectionProperty` construction alone in the loop | No record |
 
 ### Sample and regression
 
@@ -609,6 +615,19 @@ its request count.
 > Report PASS or FAIL for each item with the command output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — PR review fixes
+
+- **D-1 Twig output.** A diagnostic value interpolated in a Twig template is now recorded at the
+  interpolation, as D-1 row 4 already said. Component selection treats an exposure record on a
+  `.twig` sink as the PHP adapter's. New case `EX-13`.
+- **D-6 reflection.** A reflection construction now only tags its value. The record is at
+  `ReflectionProperty::setValue` or `ReflectionClass::getProperty` ("The call"), including through
+  a variable receiver. New cases `MA-17` to `MA-19`.
+- **§4.** Rows for the wired files and fixture directories the first table missed, and
+  `xss_selection.go`, where an exposure record on a `.twig` sink selects the PHP adapter.
+- **Verification impact.** The Symfony sample's offline report is byte-identical before and after
+  these fixes, so the branch's judged evidence stands.
 
 ### 2026-11-22 — Second pass and unattended execution
 

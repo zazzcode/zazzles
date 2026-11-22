@@ -17,7 +17,7 @@ that flows from a request.
 | [`phpinfo()`](https://www.php.net/manual/en/function.phpinfo.php) | Always. A literal `INFO_*` flag is recorded |
 | `debug_print_backtrace()` | Always |
 | `var_dump`, `debug_zval_refcount`, and `var_export` or `print_r` that print | An argument is `$_SERVER`, `$_ENV`, `$GLOBALS`, `getenv()` with no argument, `get_defined_vars()`, `ini_get_all()` or `get_defined_constants()` |
-| `echo`, `print`, a Symfony `Response` body or `setContent` | The value comes from `getenv()` with no argument, `php_uname()`, `phpversion()`, `ini_get_all()`, or a returning `print_r` or `var_export` over one of the arrays above |
+| `echo`, `print`, a Symfony `Response` body or `setContent`, or a Twig output | The value comes from `getenv()` with no argument, `php_uname()`, `phpversion()`, `ini_get_all()`, or a returning `print_r` or `var_export` over one of the arrays above |
 | Symfony `dump()` and `dd()` | Always, in Review (below) |
 
 Plain PHP files under the scanned root and Symfony routes are both entries. An operation

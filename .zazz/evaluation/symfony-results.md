@@ -191,6 +191,14 @@ witnessed** and every control passing. `public/info.php:2` is the only
 `POST /register` and `POST /user/about/` have no mass-assignment record. The 48 records the
 sample produced before this branch are byte-identical, including their component selections.
 
+After the judged runs, the branch added review fixes: a Twig output sink for diagnostic values and
+reflection records at the `setValue` or `getProperty` call. Both scanners, `fd18dd9` and the
+review-fix head, were run offline on the pinned, clean sample. Their `findings.json` files are
+byte-identical, because the sample has no diagnostic value in a template and no reflection write.
+The judged run at `fd18dd9` therefore stands for the submitted head. The commits between `fd18dd9`
+and the review fixes (`56ab26b` to `e6f001b`) change only evaluation records, the baseline, test
+fixtures, tests and specifications.
+
 ### Judged runs
 
 OpenAI `gpt-6-luna`, the default candidate limit, 4,500 RPM and 1,800,000 TPM, with only the

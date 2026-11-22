@@ -13,7 +13,7 @@ request should not choose, such as a role source, a credential or the login iden
 | Dynamic property write | `foreach ($data as $k => $v) { $obj->$k = $v; }` or `$obj->{$k}` | Judged |
 | Dynamic setter call | `$obj->{'set' . ucfirst($k)}($v)`, `$obj->$setter($v)`, `call_user_func([$obj, 'set' . …], $v)` | Judged |
 | Property accessor | `PropertyAccessorInterface::setValue($obj, $k, $v)` | Judged |
-| Reflection | `new ReflectionProperty($obj, $k)`, `(new ReflectionClass($obj))->getProperty($k)` | Judged |
+| Reflection | `$rp = new ReflectionProperty($obj, $k); $rp->setValue($obj, $v)` and `$rc = new ReflectionClass($obj); $rc->getProperty($k)`, recorded at the `setValue` or `getProperty` call. Constructing a `ReflectionProperty` alone records nothing | Judged |
 | Plain PHP | The same loops over `$_POST`, `$_GET` or `$_REQUEST` | Judged |
 | Symfony Form | `$form->handleRequest($request)` or `submit()` for a form created with an entity | Review |
 | Serializer | `SerializerInterface::deserialize` or `DenormalizerInterface::denormalize` into an entity class | Review |

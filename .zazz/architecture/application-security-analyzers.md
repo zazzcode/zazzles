@@ -100,7 +100,9 @@ operation per entry. Required roles: `diagnostic_operation`, `entry`, `control_f
 
 Direct-output operations are recorded at the call. A value-returning operation marks its value,
 and the candidate is recorded at the output sink that emits it (`echo`, `print`, a `Response`
-body). A marked value never output records nothing.
+body, a Twig interpolation). A Twig record is anchored at the interpolation in the template, and its
+guards are the conditions that dominate the `render` call. A marked value never output records
+nothing.
 
 Guards are the guard engine's dominating conditions. The shared engine does not treat `throw` as
 terminating; changing that would change existing requests, so the exposure record also cites an

@@ -58,7 +58,7 @@ func descriptors() ([]Component, error) {
 		}},
 	}
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" || f.Name == "pollution" || operandFamily(f.Name) || applicationFamily(f.Name) {
+		if ownsComponents(f) {
 			continue
 		}
 		protocol := familyProtocol(f.Name)
@@ -85,7 +85,7 @@ func descriptors() ([]Component, error) {
 	flow := makeComponent("flow.local", "compiled_capability", "internal/parse/query_evidence.go + internal/parse/python_sql.go", allKinds, []string{SQLProtocol, NoSQLProtocol, ValidationProtocol, LoggingProtocol}, "")
 	out = append(out, flow)
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" || f.Name == "pollution" || operandFamily(f.Name) || applicationFamily(f.Name) {
+		if ownsComponents(f) {
 			continue
 		}
 		seen := map[string]bool{}
@@ -142,7 +142,7 @@ func descriptors() ([]Component, error) {
 		contractOwners[id] = "internal/parse/checks.go + internal/parse/mongoose_query_context.go"
 	}
 	for _, f := range Families() {
-		if f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" || f.Name == "pollution" || operandFamily(f.Name) || applicationFamily(f.Name) {
+		if ownsComponents(f) {
 			continue
 		}
 		if !f.RequiresAPI {
@@ -195,6 +195,13 @@ func descriptors() ([]Component, error) {
 	out = append(out, outboundDescriptors()...)
 	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent(), symfonyInputComponent())
 	return out, nil
+}
+
+// ownsComponents reports a family that builds its own descriptors, so the
+// shared interpreter loops skip it: observation-only families, the operand
+// and application families, and command, path, SSRF and pollution.
+func ownsComponents(f Family) bool {
+	return f.ObservationOnly || f.Name == "command" || f.Name == "path" || f.Name == "ssrf" || f.Name == "pollution" || operandFamily(f.Name) || applicationFamily(f.Name)
 }
 
 // applicationFamily reports the operation-centered application-security

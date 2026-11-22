@@ -223,8 +223,9 @@ lookup.
 
 | Source | `secret_strength` |
 |---|---|
-| `random_bytes`, `random_int`, `openssl_random_pseudo_bytes`, `Symfony\Component\Uid\Uuid::v4`, `ByteString::fromRandom`, `TokenGeneratorInterface::generateToken`, and `bin2hex` or `base64_encode` over one of them | `csprng` |
-| `uniqid`, `mt_rand`, `rand`, `lcg_value`, `microtime`, `time`, and `md5` or `sha1` over one of them | `weak` |
+| `random_bytes`, `random_int`, `openssl_random_pseudo_bytes`, `Symfony\Component\Uid\Uuid::v4`, `ByteString::fromRandom`, `TokenGeneratorInterface::generateToken` | `csprng` |
+| `uniqid`, `mt_rand`, `rand`, `lcg_value`, `microtime`, `time` | `weak` |
+| A value computed from one of them: an encoding (`bin2hex`, `base64_encode`), a digest (`md5`, `sha1`, `hash`), a string function, concatenation | The source's strength. A digest does not make a weak source strong or a CSPRNG source weak |
 
 **D-6. Mail sinks.**
 
@@ -448,6 +449,9 @@ prove.
 | `RC-08` | A request value mailed in content, with no generated secret | No record |
 | `RC-09` | Transfer: `TemplatedEmail`, `Uuid::v4()`, recipients from `$request->toArray()['mail']` iterated, lookup on element zero | Candidate, `partial` |
 | `RC-10` | Plain PHP: `$_POST['mail']` checked by a `SELECT`, then `mail($_POST['mail'], …)` with a `random_bytes` token | Candidate, `full` |
+| `RC-12` | Secret `md5(random_bytes(16))`, stored, mailed to the scalar lookup criterion | Candidate, `full`, `secret_strength: csprng` |
+| `RC-13` | `hash('sha256', random_bytes(32))` in content, mailed to the lookup criterion | Candidate, `full`, `csprng` |
+| `RC-14` | `hash('sha256', uniqid())` mailed to a request value with no lookup | Candidate, `none`, `weak` |
 | `RC-11` | Lookup on `$v[0]`; `$v` passed to a service method's `array` parameter, which mails `implode(',', $v)` | Candidate, `partial`, `request_controlled`, the element and the parameter as use sites |
 
 ### Password hashing
@@ -683,6 +687,12 @@ resolves), AC8 and AC11 (the §11.1 exception), §8 (`EN-15` to `EN-17`, `RC-11`
   ready for review; weak secret sources stay as they are; D-5 gains `md5`/`sha1`/`hash` over a
   CSPRNG in a follow-up; D-9 gains the symmetric rule above (`weak` contradicts `csprng`);
   AC7's request test reads as "unchanged by the account family".
+- D-5 (owner decision): a value computed from a secret keeps its source's strength through
+  any encoding, digest or string function. The code already did this through the generic value
+  join; the review's premise that `md5(random_bytes(16))` loses the secret did not hold. The
+  table now states the rule, the redundant `bin2hex`/`base64_encode`/`md5`/`sha1` cases are
+  removed from `accountCall`, and `RC-12` to `RC-14` pin it. The baseline and the sample's
+  records are byte-identical with and without the removed cases.
 
 **Verification Impact.** New cases fail first and pass. Baseline rows `account-plain`,
 `symfony/account` and `account-transfer` change, and `symfony/account-defaults` is new. On the

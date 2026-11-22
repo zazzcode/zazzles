@@ -92,7 +92,8 @@ func TestPHPMailer(t *testing.T) {
 	})
 }
 
-// Recovery cases: each recipient origin and the stored-secret census role.
+// Recovery cases: each recipient origin, secret provenance through digests and
+// the stored-secret census role.
 func TestRecoveryDelivery(t *testing.T) {
 	r, _, census := observeAccount(t, "testdata/symfony/account")
 	const resetKey = "php-sql:Account.resetCode"
@@ -118,6 +119,9 @@ func TestRecoveryDelivery(t *testing.T) {
 		{"RC-06", "POST /recover/weak", &want{"src/Controller/RecoveryController.php", 87, analysis.RecipientFull, analysis.RecipientCountOne, analysis.SecretWeak, analysis.RecipientStoredField, nil, resetKey}},
 		{"RC-07", "POST /recover/stored", nil},
 		{"RC-08", "POST /recover/echo", nil},
+		{"RC-12", "POST /recover/digest", &want{"src/Controller/DigestRecoveryController.php", 24, analysis.RecipientFull, analysis.RecipientCountOne, analysis.SecretCSPRNG, analysis.RecipientRequestValue, nil, "php-sql:Account.resetCode"}},
+		{"RC-13", "POST /recover/sha", &want{"src/Controller/DigestRecoveryController.php", 35, analysis.RecipientFull, analysis.RecipientCountOne, analysis.SecretCSPRNG, analysis.RecipientRequestValue, nil, ""}},
+		{"RC-14", "POST /recover/sha-weak", &want{"src/Controller/DigestRecoveryController.php", 43, analysis.RecipientNone, analysis.RecipientCountOne, analysis.SecretWeak, analysis.RecipientRequestValue, nil, ""}},
 		{"RC-11", "POST /recover/typed", &want{"src/Service/ResetNotifier.php", 8, analysis.RecipientPartial, analysis.RecipientCountRequest, analysis.SecretCSPRNG, analysis.RecipientRequestValue,
 			[]string{"src/Controller/NotifyController.php:17", "src/Service/ResetNotifier.php:6"}, ""}},
 	} {

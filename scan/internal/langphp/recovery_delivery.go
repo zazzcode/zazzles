@@ -61,7 +61,9 @@ func depKey(d phpDep) string {
 	return spanKey(d.dep.Source.Span)
 }
 
-// Secret sources: a CSPRNG, or a predictable value.
+// Secret sources: a CSPRNG, or a predictable value. A value computed from a
+// secret (an encoding, a digest, a string function) keeps its source and
+// strength through the generic value join, so no call needs a case here.
 var (
 	csprngFunctions = map[string]bool{"random_bytes": true, "random_int": true, "openssl_random_pseudo_bytes": true}
 	weakFunctions   = map[string]bool{"uniqid": true, "mt_rand": true, "rand": true, "lcg_value": true, "microtime": true, "time": true}
@@ -86,14 +88,6 @@ func (f *phpFlow) accountCall(n *sitter.Node, nodes []*sitter.Node, values []php
 			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG}
 		case weakFunctions[name]:
 			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretWeak}
-		case name == "bin2hex" || name == "base64_encode":
-			if len(values) > 0 && values[0].secret != nil {
-				v.secret = values[0].secret
-			}
-		case name == "md5" || name == "sha1":
-			if len(values) > 0 && values[0].secret != nil && values[0].secret.strength == analysis.SecretWeak {
-				v.secret = values[0].secret
-			}
 		case name == "mail":
 			f.phpMailCall(n, nodes, values)
 		}

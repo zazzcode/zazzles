@@ -22,8 +22,9 @@ A confirmed record is `weak-password-recovery`.
 
 | Secret source | `secret_strength` |
 | --- | --- |
-| `random_bytes`, `random_int`, `openssl_random_pseudo_bytes`, `Uuid::v4`, `ByteString::fromRandom`, `TokenGeneratorInterface::generateToken`, and `bin2hex` or `base64_encode` over one of them | `csprng` |
-| `uniqid`, `mt_rand`, `rand`, `lcg_value`, `microtime`, `time`, and `md5` or `sha1` over one of them | `weak` |
+| `random_bytes`, `random_int`, `openssl_random_pseudo_bytes`, `Uuid::v4`, `ByteString::fromRandom`, `TokenGeneratorInterface::generateToken` | `csprng` |
+| `uniqid`, `mt_rand`, `rand`, `lcg_value`, `microtime`, `time` | `weak` |
+| A value computed from one of them, such as `bin2hex`, `base64_encode`, `md5`, `sha1`, `hash` or a string function | The source's strength |
 
 Mail sinks are Symfony Mailer (`to`, `addTo`, `cc`, `addCc`, `bcc`, `addBcc` recipients;
 `html`, `text`, `subject`, `context` content; `MailerInterface::send` and

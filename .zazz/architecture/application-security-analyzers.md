@@ -164,8 +164,8 @@ includes the `credential` field is a login and is out of scope; in plain PHP the
 fields are the columns a statement writes from a password hash or digest.
 
 **Secret-to-mail model** (`langphp/mailer.go`, `recovery_delivery.go`). A D-5 source marks
-its value with a secret side fact that survives encoding, URL generation and concatenation
-and changes no other claim's value. Message objects record recipient and content operands
+its value with a secret side fact that survives encoding, digests, string functions, URL
+generation and concatenation, keeps the source's strength, and changes no other claim's value. Message objects record recipient and content operands
 (`api.symfony-mailer-v1`, `api.php-mail-v1`); a send whose content carries a secret records
 the recipient's origin:
 

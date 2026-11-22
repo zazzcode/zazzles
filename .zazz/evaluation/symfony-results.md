@@ -225,5 +225,5 @@ provider key passed to the scanner.
 - **Pre-existing fixture with a mass-assignment shape.** `scan/internal/langphp/testdata/symfony/doctrine-storage`
   contains a whole-bag `fill()` loop. It now also yields a `mass_assignment_candidate`, which
   changes that fixture's architecture-baseline row. The owner accepted the row update.
-- **AC6 vocabulary grep.** Pre-existing files outside this branch's work match the grep
-  (`doctrine-storage/src/Note.php`, `langjs/conditional_flow_test.go`). Awaiting the owner.
+- **AC6 vocabulary grep.** Pre-existing files matched the grep. With the owner's approval the
+  identifiers were renamed (`Note::$abstract`, `isStaff`); the grep prints nothing.

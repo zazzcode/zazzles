@@ -859,6 +859,88 @@
       "line": 38
     },
     {
+      "id": "SYM-ENUM-01",
+      "entry_names": ["POST /register"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "account_enumeration_candidate",
+      "expect": "positive",
+      "anchors": {"src/Controller/LoginController.php": [76, 83]},
+      "each_anchor": true,
+      "min_uses": 2,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-ENUM-02",
+      "entry_names": ["ANY /reset"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "account_enumeration_candidate",
+      "expect": "positive",
+      "file": "src/Controller/PasswordResetController.php",
+      "line": 34,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-RESET-01",
+      "entry_names": ["ANY /reset"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "recovery_delivery_candidate",
+      "expect": "positive",
+      "file": "src/Services/Mail.php",
+      "line": 35,
+      "source": ["src/Controller/PasswordResetController.php", 28],
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-HASH-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "password_hash_candidate",
+      "expect": "positive",
+      "anchors": {"src/Security/Hasher/Md5Hasher.php": [15], "src/Controller/UserController.php": [41], "src/Controller/LoginController.php": [106], "src/Controller/AdminController.php": [105], "src/Controller/PasswordResetController.php": [78]},
+      "each_anchor": true,
+      "min_uses": 5,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-ENUM-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "account_enumeration_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/LoginController.php",
+      "lines": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
+    },
+    {
+      "id": "SYM-ENUM-N02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "account_enumeration_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/AdminController.php",
+      "lines": [79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90]
+    },
+    {
+      "id": "SYM-RESET-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "recovery_delivery_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/PasswordResetController.php",
+      "lines": [63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84]
+    },
+    {
+      "id": "SYM-HASH-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "password_hash_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/UserController.php",
+      "lines": [98, 138]
+    },
+    {
       "id": "TS-DESER-N01",
       "app": "vulnerable-typescript-app",
       "key": ".zazz/specifications/unsafe-deserialization.md",

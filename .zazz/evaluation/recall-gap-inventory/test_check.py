@@ -190,5 +190,37 @@ class PrecisionTest(unittest.TestCase):
         self.assertFalse(check.validation_decidable(u))
 
 
+
+class AccountKindsTest(unittest.TestCase):
+    """Branch 3: the account kinds and positives whose every anchor needs a candidate."""
+
+    def test_each_anchor_positive_needs_every_anchor(self):
+        report = {'entries': [{'id': 'e1', 'name': 'POST /join'}],
+                  'uses': [use('a', 'account_enumeration_candidate', 'Join.php', 10, deps=['input_source'])]}
+        row = {'kind': 'account_enumeration_candidate', 'expect': 'positive', 'entry_names': ['POST /join'],
+               'anchors': {'Join.php': [10, 17]}, 'each_anchor': True}
+        self.assertEqual(check.classify(row, report)['outcome'], 'missing_candidate')
+        report['uses'].append(use('b', 'account_enumeration_candidate', 'Join.php', 17, deps=['input_source']))
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_with_witness')
+        report['findings'] = [finding('a', 'confirmed_vulnerability'), finding('b', 'needs_review')]
+        self.assertEqual(check.judged_outcome(row, report), 'review')
+        report['findings'][1] = finding('b', 'confirmed_vulnerability')
+        self.assertEqual(check.judged_outcome(row, report), 'confirmed')
+
+    def test_password_hash_is_sourceless(self):
+        report = {'entries': [], 'uses': [use('h', 'password_hash_candidate', 'Hasher.php', 15)]}
+        row = {'kind': 'password_hash_candidate', 'expect': 'positive', 'anchors': {'Hasher.php': [15]}, 'each_anchor': True}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_with_witness')
+        report['uses'][0]['completeness'] = {'blockers': [{'kind': 'password_digest_unmodeled'}]}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_evidence_gap')
+
+    def test_recovery_delivery_positive_needs_source(self):
+        report = {'entries': [{'id': 'e1', 'name': 'ANY /forgot'}],
+                  'uses': [use('r', 'recovery_delivery_candidate', 'Mailer.php', 35, deps=['storage_read'])]}
+        row = {'kind': 'recovery_delivery_candidate', 'expect': 'positive', 'entry_names': ['ANY /forgot'],
+               'file': 'Mailer.php', 'line': 35}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_with_witness')
+        self.assertEqual(check.family('recovery_delivery_candidate'), 'recovery_delivery')
+
 if __name__ == '__main__':
     unittest.main()

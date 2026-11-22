@@ -605,8 +605,49 @@ func (f *phpFlow) shellURLClient(n *sitter.Node, command phpValue, argv []phpVal
 
 ## 11. Open questions
 
-None. The owner's decisions are in the lane contract §5: configuration scanning is in scope and
-bounded, the CSRF and session-cookie checks are in scope, and committed secrets are out.
+None from this branch's own scope. The owner's decisions are in the lane contract §5:
+configuration scanning is in scope and bounded, the CSRF and session-cookie checks are in
+scope, and committed secrets are out.
+
+### 11.1 Follow-on from branch 3
+
+Branch 3 records `recovery.secret_strength` from the function that produced the secret, so
+`sha1(random_int(1, 9))` is `csprng` even though the value has nine possibilities. This
+branch records `recovery.secret_bits` beside that strength. The owner approved the follow-on
+after branch 3 merged.
+
+**Fact.** `phpSecret` carries `bits`, negative when the entropy cannot be computed. The
+record emits `recovery.secret_bits` as an integer, one decimal place, or `"unknown"`. Bits
+are computed only from literal arguments:
+
+- `random_bytes(n)` and `openssl_random_pseudo_bytes(n)`: `8n`
+- `random_int(a, b)`: `log2(b − a + 1)`, rounded down to one decimal
+- `Symfony\Component\Uid\Uuid::v4`: 122
+- `ByteString::fromRandom(len[, alphabet])`: `len * log2(alphabet size)`, default alphabet size 62
+- `TokenGeneratorInterface::generateToken`: unknown
+- weak sources: unknown, and `secret_strength` stays `weak`
+
+**Transforms.** Applied in `accountCall` after the generic join. That join already carries
+the secret pointer, so a transform copies the secret before writing bits and never mutates a
+shared `phpSecret`.
+
+- `bin2hex` and `base64_encode` leave the bits unchanged
+- `md5`, `sha1`, and `hash` or `hash_hmac` with a literal algorithm take `min(in, output bits)`:
+  `md5` 128, `sha1` 160, `sha256` 256, `sha384` 384, `sha512` 512. Any other algorithm leaves
+  the bits unchanged
+- `substr(x, start, len)` with a literal length over a `bin2hex` or `base64_encode` value takes
+  `min(in, len*4)` or `min(in, len*6)`. Otherwise the bits are unknown
+- concatenating two secrets adds the counts. A secret joined with a non-secret keeps the
+  secret's bits
+- any other call sets the bits unknown, unless the result is the secret unchanged
+
+**Judge.** Protocol `account-components-v1` becomes `account-components-v2`. The
+`secret_quality` question names `recovery.secret_bits`. `secret_quality` `adequate` with a
+known `secret_bits` below 64 is `account_answers_inconsistent`. 64 is the OWASP session
+identifier entropy minimum
+([Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-id-entropy)).
+`weak` answered against `secret_strength` `csprng` stays inconsistent, as on branch 3.
+Unknown bits add no new gap.
 
 ## 12. Run log protocol
 
@@ -680,6 +721,12 @@ every file the two allow-lists opened on the sample.
 > Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Recovery secret bits
+
+- **§11.1.** `recovery.secret_bits` and protocol `account-components-v2`. `adequate` with a
+  known bit count below 64 is inconsistent. The threshold is the OWASP session-identifier
+  minimum.
 
 ### 2026-11-22 — Second pass and unattended execution
 

@@ -54,6 +54,9 @@ Load operational guides only when needed:
 
 - [Worktree setup](worktree-setup.md) — `.bare/` sibling-worktree layout, creation, repair, and
   [linked-computer toolchain](worktree-setup.md#linked-computer-agent-toolchain).
+- [Using gh-stack](using-gh-stack.md) and the [gh-stack skill](../../.agents/skills/gh-stack/SKILL.md) —
+  optional reading when the specification assigns multiple dependent PRs to one worktree. The
+  bottom PR targets `stage` and every higher PR targets its immediate parent.
 - [Worktrunk cheat sheet](wt-cheat-sheet.md) — only when using `wt` or configuring its hooks.
 - [Getting started](../../docs/scan/getting-started.md#local-environment-file) &
   [decision models](../../docs/scan/decision-models.md#credentials-and-local-environment) — local

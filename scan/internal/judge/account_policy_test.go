@@ -86,6 +86,7 @@ func TestAccountPolicy(t *testing.T) {
 			u.Recovery.SecretStrength = analysis.SecretWeak
 			return u
 		}, nil, "needs_evidence", "account_answers_inconsistent"},
+		{"recovery weak with csprng", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "partial", "secret_quality": "weak"}, nil, nil, "needs_evidence", "account_answers_inconsistent"},
 		{"recovery account_bound with request origin", rec, "", map[string]string{"recipient_control": "account_bound", "validation_coverage": "partial", "secret_quality": "adequate"}, nil, nil, "needs_evidence", "account_answers_inconsistent"},
 		{"recovery protected", rec, "", map[string]string{"recipient_control": "request_controlled", "validation_coverage": "complete", "secret_quality": "adequate"}, func(u analysis.CandidateUse) analysis.CandidateUse {
 			u.Recovery.RecipientValidated, u.Recovery.RecipientCount, u.Recovery.ShapeUses = analysis.RecipientFull, analysis.RecipientCountOne, nil

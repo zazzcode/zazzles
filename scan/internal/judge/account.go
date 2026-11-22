@@ -156,6 +156,9 @@ func recoveryPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap func(
 	case quality == "adequate" && f.SecretStrength == analysis.SecretWeak:
 		gap("answers_inconsistent", "secret_quality adequate contradicts secret_strength weak.")
 		return
+	case quality == "weak" && f.SecretStrength == analysis.SecretCSPRNG:
+		gap("answers_inconsistent", "secret_quality weak contradicts secret_strength csprng.")
+		return
 	case control == "account_bound" && f.RecipientOrigin == analysis.RecipientRequestValue:
 		gap("answers_inconsistent", "account_bound contradicts a recipient that is a request value.")
 		return

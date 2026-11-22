@@ -171,7 +171,7 @@ lane contract §2.7. Each kind has its own claim kind, evidence roles, questions
 
 | Rule | Condition |
 |---|---|
-| Inconsistent | `complete` when `recipient_validated` is `partial` or `none`. `adequate` when `secret_strength` is `weak`. `account_bound` when the recipient origin is a request value |
+| Inconsistent | `complete` when `recipient_validated` is `partial` or `none`. `adequate` when `secret_strength` is `weak`, and `weak` when it is `csprng`. `account_bound` when the recipient origin is a request value |
 | Blocking gap | None specific. A mail call through an unmodeled client makes no candidate |
 | Protected | `validation_coverage: complete` and `secret_quality: adequate` |
 | Confirmed | `request_controlled` with `validation_coverage` of `none` or `partial`. Or `secret_quality: weak` |
@@ -673,7 +673,16 @@ resolves), AC8 and AC11 (the §11.1 exception), §8 (`EN-15` to `EN-17`, `RC-11`
   and configuration records for `form_login: ~`, custom authenticators and `http_basic`.
 - D-9: the "adaptive contradicts a fast digest" rule covers every recorded algorithm except
   `crypt` and `pbkdf2`, from one definition in `analysispacks/account.go`.
+- D-9: recovery adds the inconsistent rule `secret_quality: weak` with `secret_strength:
+  csprng` (owner decision). In the judged `b3-j7` report the sample's recovery record was
+  answered `adequate`, so the rule does not change its outcome.
 - Determinism: a digest written to several columns keeps every column in column order.
+
+- Owner decisions on the review's challenges (recorded on the PR): the spec split is deferred
+  to one lane-wide pass after branch 4; the `check.py` comment moves on branch 4; the PR stays
+  ready for review; weak secret sources stay as they are; D-5 gains `md5`/`sha1`/`hash` over a
+  CSPRNG in a follow-up; D-9 gains the symmetric rule above (`weak` contradicts `csprng`);
+  AC7's request test reads as "unchanged by the account family".
 
 **Verification Impact.** New cases fail first and pass. Baseline rows `account-plain`,
 `symfony/account` and `account-transfer` change, and `symfony/account-defaults` is new. On the

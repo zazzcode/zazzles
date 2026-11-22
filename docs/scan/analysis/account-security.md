@@ -38,7 +38,8 @@ block it.
 Recovery is confirmed for `request_controlled` with coverage `none` or `partial`, or for
 `weak`; protected for `complete` with `adequate`. `complete` contradicts
 `recipient_validated` `partial` or `none`, `adequate` contradicts `secret_strength` `weak`,
-and `account_bound` contradicts a request-value recipient.
+`weak` contradicts `secret_strength` `csprng`, and `account_bound` contradicts a
+request-value recipient.
 
 Hashing is confirmed for `password` and `fast_digest`, protected for `not_password`.
 `adaptive` contradicts one call of a fast digest. `password_digest_unmodeled` blocks it.

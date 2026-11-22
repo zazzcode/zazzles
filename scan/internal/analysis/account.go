@@ -2,7 +2,7 @@ package analysis
 
 import "fmt"
 
-// Account-family claim kinds (branch 3 D-1): account enumeration (CWE-204),
+// Account-family claim kinds: account enumeration (CWE-204),
 // recovery-secret delivery (CWE-640, CWE-1287) and weak password hashing
 // (CWE-916).
 const (
@@ -12,7 +12,7 @@ const (
 )
 
 // RoleRecoverySecret is the census role of a stored field written from a
-// random-secret source and compared with a request value (lane section 2.3).
+// random-secret source and compared with a request value.
 const RoleRecoverySecret = "recovery_secret"
 
 // Account gaps.
@@ -21,7 +21,7 @@ const (
 	PasswordDigestUnmodeled = "password_digest_unmodeled"
 )
 
-// Branch response kinds of D-2.
+// Branch response kinds: how one side of a lookup branch answers.
 const (
 	ResponseFlash     = "flash"
 	ResponseBody      = "body"
@@ -76,7 +76,7 @@ func (f *EnumerationFacts) Validate() error {
 	return nil
 }
 
-// Recovery values of D-5 and D-7.
+// Recovery values: secret strength and the recipient facts.
 const (
 	SecretCSPRNG          = "csprng"
 	SecretWeak            = "weak"
@@ -137,7 +137,7 @@ func (f *RecoveryFacts) Validate() error {
 	return nil
 }
 
-// Password-hash bases of D-8.
+// Password-hash bases: the evidence that a digest input is a password.
 const (
 	BasisCredentialField     = "credential_field"
 	BasisHasherClass         = "hasher_class"

@@ -17,7 +17,7 @@ func accountUse(kind, file, contract string) analysis.CandidateUse {
 }
 
 // The account family selects per kind: its own pack, an optional operation
-// contract, and the question subset of the kind (D-1, D-9).
+// contract, and the question subset of the kind.
 func TestAccountFamilySelect(t *testing.T) {
 	family := FamilyForName("account")
 	if family == nil || !ValidCLIFamily("account") {
@@ -71,7 +71,7 @@ func TestAccountFamilySelect(t *testing.T) {
 			t.Fatalf("%s questions %v, want %v", tt.use.Kind, names, tt.questions)
 		}
 	}
-	// An enumeration record never carries a contract that is not in D-6.
+	// An enumeration record never carries a contract outside the mail and digest contracts.
 	bad := accountUse(analysis.AccountEnumerationKind, "a.php", "")
 	bad.APIModel = &analysis.APIModel{ID: "php-account-lookup-v1", Library: "php"}
 	if _, err := Select(bad); err == nil {

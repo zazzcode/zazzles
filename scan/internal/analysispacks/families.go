@@ -33,7 +33,7 @@ type Family struct {
 	// by a universal count.
 	QuestionNames []string
 	// KindQuestions, when set, gives each kind its own ordered subset of
-	// QuestionNames. Only the account family sets it (branch 3 D-1).
+	// QuestionNames. Only the account family sets it.
 	KindQuestions map[string][]string
 	// Languages lists the source languages with verified adapters.
 	Languages []lang.Language

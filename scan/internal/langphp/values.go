@@ -120,10 +120,10 @@ type phpValue struct {
 	// doctrine object keeps it across branch joins; this pointer is the
 	// copy on the value that created the object.
 	authz *phpAuthz
-	// secret marks a value derived from a generated secret (branch 3 D-5).
+	// secret marks a value derived from a generated secret.
 	// Only the recovery adapter reads it.
 	secret *phpSecret
-	// digest marks a value computed by one fast digest (branch 3 D-8).
+	// digest marks a value computed by one fast digest.
 	digest *phpDigest
 }
 

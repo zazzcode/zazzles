@@ -9,7 +9,7 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/pipeline"
 )
 
-// Every account candidate of the branch 3 fixtures selects the account
+// Every account candidate of the account fixtures selects the account
 // family's components and assembles its material.
 func TestAccountFixturesSelect(t *testing.T) {
 	for _, dir := range []string{"symfony/account", "symfony/account-transfer", "account-plain"} {

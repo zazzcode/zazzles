@@ -3,11 +3,11 @@ package analysispacks
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // AuthorizationProtocol versions the authorization claim questions (D-13).
-// v2 fixed N03/N05 on a judged retry but treated ROLE_USER as adequate for
-// request-selected object-level writes (AUTHZ-02/-04). v3 restored that listed
-// roles alone do not cover request-selected writes or deletes, and the judge
-// then treated a restricted role as inadequate too (N03 delete). v4 separates
-// the role every signed-in user holds from a role only some users hold. v5
+// v2 let a role every signed-in user holds cover a request-selected
+// object-level write. v3 said listed roles alone never cover such a write or
+// delete, which also rejected a role only some users hold. v4 judges a role by
+// who holds it: one every signed-in user holds is inadequate, one only some
+// users hold is adequate unless a peer writer needs a role the entry lacks. v5
 // aligns the judge instruction with the v4 question prose.
 const AuthorizationProtocol = "authorization-components-v5"
 

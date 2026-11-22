@@ -30,9 +30,9 @@ type symfonySecurity struct {
 	access *symfonyAccessConfig
 }
 
-// symfonyPasswordHasher is one entry of security.password_hashers: a fixed
-// algorithm or a hasher service id, with the line that sets it (branch 3
-// D-8, https://symfony.com/doc/6.4/security/passwords.html).
+// symfonyPasswordHasherConfig is one entry of security.password_hashers: a
+// fixed algorithm or a hasher service id, with the line that sets it
+// (https://symfony.com/doc/6.4/security/passwords.html).
 type symfonyPasswordHasherConfig struct {
 	algorithm, id string
 	at            analysis.Evidence

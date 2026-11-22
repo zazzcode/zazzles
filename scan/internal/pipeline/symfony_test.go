@@ -600,7 +600,7 @@ func symfonyEntryAccess(t *testing.T, report *analysis.AnalysisReport) {
 	}
 }
 
-// symfonyAccountEvidence checks the branch 3 facts of AC12.
+// symfonyAccountEvidence checks the account facts of the sample rows.
 func symfonyAccountEvidence(id string, u analysis.CandidateUse) (string, bool) {
 	switch u.Kind {
 	case analysis.AccountEnumerationKind:

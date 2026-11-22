@@ -82,7 +82,7 @@ type phpSet struct {
 	census         map[*symfonyProject]*phpSecurityCensus
 	// authzChanges collects stored writes while entries are walked.
 	authzChanges []authzChange
-	// account is the account adapter's state (branch 3).
+	// account is the account adapter's state.
 	account *phpAccountState
 }
 

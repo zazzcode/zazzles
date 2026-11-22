@@ -235,3 +235,34 @@ provider key passed to the scanner.
   changes that fixture's architecture-baseline row. The owner accepted the row update.
 - **AC6 vocabulary grep.** Pre-existing files matched the grep. With the owner's approval the
   identifiers were renamed (`Note::$abstract`, `isStaff`); the grep prints nothing.
+
+## Branch 2 judged runs
+
+Scanner commit `c72ff1c` on `symfony-more-analyzers-2`. Provider OpenAI `gpt-6-luna`,
+default candidate limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`. The sample stayed at
+`086f81f941501bd1170b249e01107ba99beb2962` and `git status --porcelain --ignored` was
+empty before and after each run. Three judged runs of the eight-run budget were used.
+
+| Run ID | Scanner | Scope | Requests | Input tokens | Key outcome |
+|---|---|---|---:|---:|---|
+| `run-1127320838` | `c72ff1c` parent, before the guard-kind instruction | `--only-family authorization` | 18 | 59,240 | Five positives Confirmed. `SYM-AUTHZ-N01` mixed. `SYM-AUTHZ-N05` Confirmed. `SYM-AUTHZ-N03` needs evidence |
+| `run-790981836` | `c72ff1c` | `--only-family authorization` | 18 | 59,348 | Five positives Confirmed. `SYM-AUTHZ-N01` Protected. `SYM-AUTHZ-N05` line 78 Confirmed, line 79 Protected. `SYM-AUTHZ-N03` template line 44 Confirmed; delete and create need evidence |
+| `run-3061203983` | `c72ff1c` | Full | 68 | 282,297 | Every earlier positive Confirmed. The five new positives Confirmed. `SYM-AUTHZ-N01` Protected. `SYM-AUTHZ-N03` and `SYM-AUTHZ-N05` are not both Protected |
+
+### Branch 2 keyed outcomes (run `run-3061203983`)
+
+| Case | Outcome |
+|---|---|
+| `SYM-AUTHZ-01`–`04`, `SYM-LOCAL-01` | Confirmed |
+| `SYM-AUTHZ-N01` | Protected (`ownership_check` at the avatar write and the avatar-from-URL write) |
+| `SYM-AUTHZ-N02`, `-N04`, `-N06`, `-N07`, `SYM-LOCAL-N01`, `-N02` | No authorization record |
+| `SYM-AUTHZ-N03` | Template line 44 Confirmed. `deleteUser` and `createUser` need evidence. The model did not treat `ROLE_ADMIN` as adequate access |
+| `SYM-AUTHZ-N05` | Line 78 Confirmed (`secret_check` judged inadequate). Line 79 Protected |
+| `SYM-LOCAL-02` | Confirmed. The action returns every account's login identifier and role source, and the only recorded guard is an address check |
+| `SYM-AUTHZ-R01` | Confirmed. The unauthenticated reset entry writes the reset field of the account selected by the request |
+
+The two assessment-dependent rows are Confirmed because the recorded facts match the
+questions' confirmed rule: the request selects the record, the guard is inadequate or
+absent, and the entry's access is inadequate. `SYM-LOCAL-02` is the address-only list of
+accounts. `SYM-AUTHZ-R01` is the reset-token write. Neither row is a required positive
+or a required control.

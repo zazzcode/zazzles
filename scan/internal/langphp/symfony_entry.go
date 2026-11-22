@@ -79,6 +79,7 @@ func (f *phpFlow) symfonyParameter(route string, param *sitter.Node, action bool
 					return f.symfonyDTO(decl, param, "query", "http.query")
 				}
 				if f.symfonyAttribute(f.module, param, `Symfony\Component\HttpKernel\Attribute\MapRequestPayload`) != nil {
+					f.requestPayloadEntity(param, decl)
 					return f.symfonyDTO(decl, param, "body", "http.body")
 				}
 				current := f.symfonyAttribute(f.module, param, `Symfony\Component\Security\Http\Attribute\CurrentUser`) != nil

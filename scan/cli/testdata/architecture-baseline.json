@@ -4249,6 +4249,25 @@
     "uses_count": 3,
     "gaps": 0
   },
+  "internal/langphp/testdata/mass-assignment-plain": {
+    "uses": [
+      {
+        "id": "candidate:v1:0083353ccc9d350fd62e59e274c824fa817de11ca294aae7bca79b4065fa5c4f",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "da58ea4373830b2c6915baa5f8f58cf4106d8f4fa44cc13139ee65b807167658",
+        "signature_sha256": "bf3241e198567b4049a1707cd65b2291e5bdb9e083cd827cfd24aa83e7bb3ef3"
+      }
+    ],
+    "report_sha256": "0478adf214638364d983cfd4bace0e8ef95bdd4de0385a015be82c0f00619825",
+    "sarif_sha256": "b6b7400dce5934b2994ee334e4fef499f46e765f0eff62d37e9c2f44457738d5",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 1,
+    "gaps": 0
+  },
   "internal/langphp/testdata/path": {
     "uses": [
       {
@@ -4954,6 +4973,92 @@
     "callables": 6,
     "invocation_contexts": 6,
     "uses_count": 4,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/mass-assignment": {
+    "uses": [
+      {
+        "id": "candidate:v1:6dbd08bfa179081e406f930805c3c93fa5c48873d48a079d6c6c63f5da9a0f5e",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "199e7400d046c1ef63bfed2e86e951e892a88616f1051c89166ce08f6b4b0e5a",
+        "signature_sha256": "af70d8d767252961a630b6ee8d43e41819ee6eae99ea853c41b05dbead6a2662"
+      },
+      {
+        "id": "candidate:v1:36cc5d2b99376ade1e24617a6cb337cbbea849193d81071d296cd4897d07ac4e",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "719c2cf7e3fd354018d0e7507dbac379eb7680da33c49f5475d7be5dc322edf6",
+        "signature_sha256": "be5017468e9406c77a989dafa285aa82c19c59c033ef2ed430911a65875bffb0"
+      },
+      {
+        "id": "candidate:v1:136536cda78f19eb738a5230978ca4c019cb18468410289c3b4f3c701e0fabbb",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "5d14f83fdfd71ca100a4dad557fef70ff11dbe2204aa5d9342ac59a81b6af1e1",
+        "signature_sha256": "2404d35c01a33af510e4d1908bd20e4cdc3ba84a54f9317b5f1507f9e0898197"
+      },
+      {
+        "id": "candidate:v1:bf7deaf406b1a814b4177f8713893a77d4d13e4ef548d9ee0e4acfd302e0f1e4",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "b96e07f12ec9a1aaaf4363a5970d6bd334452bb53e2216b72e08bd86d93a25ae",
+        "signature_sha256": "f195a22724ab90a40b27ea7b0100e001535ce6a303f8f72d293f3842bd2c5641"
+      },
+      {
+        "id": "candidate:v1:c0439d5c42c9d4e21ee177f00298105ff3af453a5810697116cf8b293052315b",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "d29f0550d0b29d916cefeb3fb15f7e195c0818d26a34ca94e81ae1bcebc5c1ca",
+        "signature_sha256": "d7fff232a5f383a079a07572bc863cfab28ff1bc864e589c7f9b8b82b642d73e"
+      },
+      {
+        "id": "candidate:v1:5bf34798c19920f666a945967a2f3aabec3e21333a2c7345f2ac5891713082d7",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "3d9369ee512914e40f4a64bb092449bc60d0ecd13fae250548ae3301d0ba3cc5",
+        "signature_sha256": "a6a0c54fd4b3d0f9ed7b77b743f88784482374465139318f4527d206e66dacac"
+      },
+      {
+        "id": "candidate:v1:375d59e09a4bfe5e8ffcc5fc621700b3ca3cd755f562a58755377b38263d7a47",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "7c7fbe5ce134b2433bef6b3d9c3d54347de7ba3251ccbfcd7029d1b9b39de47a",
+        "signature_sha256": "2e24a1bb359d66fa599ba87ad9e3c7a5eabe86fdc70ecc02f67354f2a9e32064"
+      },
+      {
+        "id": "candidate:v1:f26fab1240c9d9fd08f9e6240763c80fb550a631945630beca1907bb53d8acf3",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "6c1d3ffca8127c39ae5d6bdb34f7fcc790fd44c82f031f1f5fd592a3bd09ed60",
+        "signature_sha256": "6ed6f482ce9a9d447460a3a0946d11589db996a12021ec219e825722859e0d12"
+      },
+      {
+        "id": "candidate:v1:8d8741a65f2d71890cebc4c24a6dfbeb38f304341d79244cba49405a169e3e5e",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "c8b3f4f37f7d72f9aada86075077ae24756376c51c066891829876dcd60d7eab",
+        "signature_sha256": "5893de9cbe05ebc1c1e96aa1ae8b1f88bae04f6796cfb0598c0ae92186c93afb"
+      }
+    ],
+    "report_sha256": "c5371150dd74bb1aae422dc1b739e20b40343864dfb1e97842feec0633bb6670",
+    "sarif_sha256": "0de5fcc9960c86091385019938b1cbf5dbe7ede382cf22b7429056dcc796fe86",
+    "entries": 13,
+    "registrations": 13,
+    "dispatch_bindings": 13,
+    "callables": 13,
+    "invocation_contexts": 13,
+    "uses_count": 9,
+    "gaps": 1
+  },
+  "internal/langphp/testdata/symfony/mass-assignment-transfer": {
+    "uses": [
+      {
+        "id": "candidate:v1:c1aa689cc956cdf98aabf36b667931408b35542aab10a23db3fefba80ac6ee38",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "67f9af65d14e6c7d67fde3070c3d9a6467cf4fc14a3ffbea0ba02fdcad1238a1",
+        "signature_sha256": "c016501cce8d12dd9c4578b9409fc766578f5935f25a865209e5fe902dfd45cf"
+      }
+    ],
+    "report_sha256": "517f303bfd22eb59bae999a3854ba698b4566662b56189f9ef74411d27efe64e",
+    "sarif_sha256": "fcfec1ccf9c9bd0575d0a28fa2a7b5da887c85e0b9b0632e54e6ede6a535d801",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 1,
     "gaps": 0
   },
   "internal/langphp/testdata/symfony/mixed": {

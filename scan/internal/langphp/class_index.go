@@ -459,6 +459,9 @@ func (f *phpFlow) propertyWrite(left *sitter.Node, v phpValue) {
 	if !ok || base.classDecl == nil {
 		return
 	}
+	if name.Kind() != "name" {
+		f.keyControlledWrite(base, f.eval(phpUnwrapName(name)), left, analysis.MassAssignmentPropertyWrite)
+	}
 	f.doctrinePropertyWrite(base, left, name, v)
 	props := make(map[string]phpValue, len(base.props)+1)
 	for k, p := range base.props {

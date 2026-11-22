@@ -34,7 +34,8 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		values[i] = f.eval(a)
 		all = phpCombine(all, values[i])
 	}
-	return f.diagnosticCall(n, nodes, f.callValues(n, nodes, values, all))
+	f.massAssignmentCall(n, nodes, values)
+	return f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.callValues(n, nodes, values, all)))
 }
 
 // callValues shares the native API models with compiled witness recipes; only
@@ -648,6 +649,7 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		}
 	}
 	cls := phpText(m, clsNode)
+	f.reflectionObject(n)
 	if v, ok := f.symfonyOperationObject(n, clsNode, cls); ok {
 		return v
 	}

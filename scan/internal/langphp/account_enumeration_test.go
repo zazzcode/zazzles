@@ -57,13 +57,14 @@ func blockerKinds(u analysis.CandidateUse) []string {
 	return out
 }
 
-// Cases EN-01 to EN-14 of branch 3 section 8.
+// Enumeration cases: Symfony, transfer and plain-PHP lookups by request values.
 func TestAccountEnumeration(t *testing.T) {
 	type want struct {
 		line            int
 		found, notFound string
 		blocker         string
 	}
+	reports := fixtureReports{}
 	for _, tt := range []struct {
 		id, root, entry string
 		want            []want
@@ -82,9 +83,12 @@ func TestAccountEnumeration(t *testing.T) {
 		{"EN-12", "testdata/symfony/account-transfer", "POST /api/members/probe", nil},
 		{"EN-13", "testdata/account-plain", "FILE /join.php", []want{{4, "body:That address has an account", "body:Choose a password", ""}}},
 		{"EN-14", "testdata/account-plain", "FILE /stock.php", nil},
+		{"EN-15", "testdata/account-plain", "FILE /login.php", nil},
+		{"EN-16", "testdata/symfony/account", "POST /sign/magic", nil},
+		{"EN-17", "testdata/symfony/account", "POST /member/lookup", []want{{28, "redirect:member", "flash:No such member|redirect:home", ""}}},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
-			r := phpAnalyze(t, tt.root, "")
+			r := reports.get(t, tt.root)
 			uses := accountUses(r, analysis.AccountEnumerationKind, tt.entry)
 			if len(uses) != len(tt.want) {
 				t.Fatalf("%d candidates, want %d; all:\n%s", len(uses), len(tt.want), accountSummary(r, analysis.AccountEnumerationKind))
@@ -108,7 +112,7 @@ func TestAccountEnumeration(t *testing.T) {
 				if w.blocker == "" && len(blockers) > 0 || w.blocker != "" && !strings.Contains(strings.Join(blockers, ","), w.blocker) {
 					t.Fatalf("blockers %v, want %q", blockers, w.blocker)
 				}
-				if len(phpInputDeps(nil)) != 0 || !hasInputDependency(u) {
+				if !hasInputDependency(u) {
 					t.Fatal("candidate has no request source dependency")
 				}
 				if u.EntryFacts == nil && u.Completeness.Evidence["entry_access"] == nil {
@@ -117,6 +121,17 @@ func TestAccountEnumeration(t *testing.T) {
 			}
 		})
 	}
+}
+
+// fixtureReports analyzes each fixture root once per test.
+type fixtureReports map[string]*analysis.AnalysisReport
+
+func (c fixtureReports) get(t *testing.T, root string) *analysis.AnalysisReport {
+	t.Helper()
+	if c[root] == nil {
+		c[root] = phpAnalyze(t, root, "")
+	}
+	return c[root]
 }
 
 func hasInputDependency(u analysis.CandidateUse) bool {

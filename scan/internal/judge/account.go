@@ -5,8 +5,9 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
 
-// applyAccountPolicy follows the lane contract policy order (section 2.7)
-// with the three tables of branch 3 D-9, one per kind.
+// applyAccountPolicy follows the shared policy order (protocol, evidence,
+// answer consistency, blocking gaps, then the status rules) with one rule
+// table per kind.
 func applyAccountPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	a.FindingStatus, a.Protection = "needs_evidence", "uncertain"
 	gap := func(kind, detail string) {
@@ -112,8 +113,7 @@ func enumerationPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap fu
 	a.Reason = "The answers do not establish an existence disclosure or a protection."
 }
 
-// enumerationBlocking is response_unresolved and every entry-access gap of
-// branch 2.
+// enumerationBlocking is response_unresolved and every entry-access gap.
 func enumerationBlocking(kind string) bool {
 	switch kind {
 	case analysis.ResponseUnresolved, "access_rule_unresolved", "access_rule_condition_unmodeled", "voter_unmodeled", "access_expression_unmodeled", "authenticator_unmodeled", "symfony_config_unread":
@@ -160,7 +160,7 @@ func recoveryPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap func(
 		gap("answers_inconsistent", "account_bound contradicts a recipient that is a request value.")
 		return
 	}
-	// No kind-specific blocking gap (D-9).
+	// Recovery has no kind-specific blocking gap.
 	if coverage == "complete" && quality == "adequate" {
 		a.FindingStatus, a.Protection = "protected_for_claim", "sufficient"
 		a.Reason = "The assessment supports that every recipient is tied to the account and the secret is unpredictable."
@@ -177,7 +177,7 @@ func recoveryPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap func(
 func passwordHashPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap func(string, string)) {
 	f := use.PasswordHash
 	input, strength := a.Answers["password_input"], a.Answers["hash_strength"]
-	if strength == "adaptive" && accountDigestAlgorithm(f.Algorithm) && f.Iterated == "no" {
+	if strength == "adaptive" && f.Algorithm != "" && !analysispacks.PasswordDigestUnmodeled(f.Algorithm) && f.Iterated == "no" {
 		gap("answers_inconsistent", "adaptive contradicts a single call of a fast digest.")
 		return
 	}
@@ -195,16 +195,6 @@ func passwordHashPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap f
 		return
 	}
 	a.Reason = "The answers do not establish a weak password hash or a protection."
-}
-
-// accountDigestAlgorithm is the D-8 digest list, including the hash()
-// algorithms the configuration row names.
-func accountDigestAlgorithm(name string) bool {
-	switch name {
-	case "md5", "sha1", "crc32", "sha256", "sha512", "plaintext":
-		return true
-	}
-	return false
 }
 
 func wireEnumeration(use analysis.CandidateUse, ref func(analysis.Evidence) string) any {

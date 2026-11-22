@@ -7,12 +7,13 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 )
 
-// Cases PH-01 to PH-12 of branch 3 section 8.
+// Password-hashing cases: each password basis and the digests never recorded.
 func TestPasswordHash(t *testing.T) {
 	type want struct {
 		file, algorithm, basis, salted, hasher, gap string
 		line                                        int
 	}
+	reports := fixtureReports{}
 	for _, tt := range []struct {
 		id, root string
 		want     []want
@@ -31,9 +32,12 @@ func TestPasswordHash(t *testing.T) {
 			{"config/packages/security.yaml", "sha1", analysis.BasisConfiguration, "no", `App\Crypto\ShaHasher`, "", 4}}, nil},
 		{"PH-11", "testdata/account-plain", []want{{"register.php", "md5", analysis.BasisSQLCredentialColumn, "no", "", "", 4}}, []string{"FILE /signin.php"}},
 		{"PH-12", "testdata/symfony/account", []want{{"src/Controller/ProfileController.php", "crypt", analysis.BasisCredentialField, "no", "", analysis.PasswordDigestUnmodeled, 80}}, nil},
+		{"PH-13", "testdata/symfony/account-defaults", []want{{"src/Security/QuickDigest.php", "md5", analysis.BasisHasherClass, "no", `App\Security\QuickDigest`, "", 10},
+			{"config/packages/security.yaml", "md5", analysis.BasisConfiguration, "no", "", "", 3},
+			{"config/packages/security.yaml", "md5", analysis.BasisConfiguration, "no", `App\Security\QuickDigest`, "", 5}}, nil},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
-			r := phpAnalyze(t, tt.root, "")
+			r := reports.get(t, tt.root)
 			all := accountUses(r, analysis.PasswordHashKind, "")
 			for _, entry := range tt.none {
 				if n := len(accountUses(r, analysis.PasswordHashKind, entry)); n != 0 {
@@ -68,7 +72,7 @@ func TestPasswordHash(t *testing.T) {
 		})
 	}
 	t.Run("only the listed records", func(t *testing.T) {
-		r := phpAnalyze(t, "testdata/symfony/account", "")
+		r := reports.get(t, "testdata/symfony/account")
 		if n := len(accountUses(r, analysis.PasswordHashKind, "")); n != 7 {
 			t.Fatalf("%d records, want 7:\n%s", n, accountSummary(r, analysis.PasswordHashKind))
 		}

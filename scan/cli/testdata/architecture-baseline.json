@@ -4000,10 +4000,16 @@
         "signature_sha256": "f59f68d2f9dca72d753229f4e898137b5c4d49babd35cfed6554a750280ae7a7"
       },
       {
+        "id": "candidate:v1:0c6e467211f28c9628d4483c2396090c595a9553d745152dddf71ce7d33f6fc2",
+        "kind": "sql_query_candidate",
+        "request_sha256": "ec36da03cae891d1fe35d17fe119b63fabdad9fa48058c03a47888e2f9157f18",
+        "signature_sha256": "b1cc69e53eb00dbdcfe7b4c1cdb56aae42d395ca7e75f111d623488c3da12c29"
+      },
+      {
         "id": "candidate:v1:bd8998240e48391815ac17fede98d4d5e660edbf453bf012fba4b5da006f0507",
         "kind": "password_hash_candidate",
-        "request_sha256": "277cfd3bf6e86e92d9f39a19ec8e6d3d1be48cd4061cce72f0d212cb9f9a787f",
-        "signature_sha256": "e80fafa3e2beff1e5851d82686767bbb5f015bd97138dd4c39e5f3d79a1f8c23"
+        "request_sha256": "69b289b4b6c60ccd216de574dab6cc4d9074cd331a25fc8a839a07a228247047",
+        "signature_sha256": "7d19c6e55472d5e7cd21901d9035274dc8b26be8a812ce41d8e101799eb16304"
       },
       {
         "id": "candidate:v1:982897d257f31860e1cf88b0dc974a7970e9a447aef8c3031f04b801ad710e62",
@@ -4024,14 +4030,14 @@
         "signature_sha256": "4f63f18bf871fe29afb01440136164dcc27fa7857443a9b8d619aab652aea06a"
       }
     ],
-    "report_sha256": "01bb1f3b2429e177c3231dbaabe4861a394c25f95f5a08aca45a46aaad44b743",
-    "sarif_sha256": "95c7398818bd4ae45edd5de98429eabf2d2977f07435cdd78f9613530d6de607",
-    "entries": 6,
-    "registrations": 6,
-    "dispatch_bindings": 6,
-    "callables": 6,
-    "invocation_contexts": 6,
-    "uses_count": 9,
+    "report_sha256": "7df0ed95cc7d23eb3039beed6f694eae070858d54c2ca0342ae1bcd7b5ad6b3a",
+    "sarif_sha256": "0d0d85f5e3b3a0f1a393afea2962825bc5bfd096b56321bbb4a41a74d4909cda",
+    "entries": 7,
+    "registrations": 7,
+    "dispatch_bindings": 7,
+    "callables": 7,
+    "invocation_contexts": 7,
+    "uses_count": 10,
     "gaps": 0
   },
   "internal/langphp/testdata/authorization-plain": {
@@ -4580,38 +4586,38 @@
       {
         "id": "candidate:v1:96dca21108d43b5b525ca70f5f497d1a8fd8fcb2236dfdcff2d9a56cd502fb01",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "f72469ed212de36c4249b48a9d07a94e44f207b91fe4200785ab53afed5ec1bc",
-        "signature_sha256": "485fd20703db53d5bc891032f891576762bd9cddfb7cabed9ef10b9d1443d5ab"
+        "request_sha256": "3294165ef6d8f7acbb6f142047bb21bf1574eb310f0db5ba57826564041d0d8c",
+        "signature_sha256": "56250b839cb8860abb80c052590342939f2fbbf0bc7a2e886f3d72e769629645"
       },
       {
         "id": "candidate:v1:e0c88c921f516d858d295ef72c70b40767a17be747cf2a27330bc2adf6dc02fd",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "e427d02d1a8b79bf200af1daff8acf2f6db3ac7a60345b401a5793a9faa45108",
-        "signature_sha256": "b6893fc79b4fc274c5e6b87c5543eb5a412753ee1f3f1778160c78581a7828c9"
+        "request_sha256": "46d8f0a2edb53ed120db7a5dfac94c286a2eb6557b38e5b6f59588364d515d64",
+        "signature_sha256": "973f276f2b5cdd951f01c8fff9bdfb35a72b1e4fcc691f3078b990f3534471c6"
       },
       {
         "id": "candidate:v1:767153cde7583956227cd7d3ad1588457aca180eeba21036ec75b801f566abe0",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "7059565c916d6b27ca9a486f7568190a7a67e176762b09007e67f7150fb57e15",
-        "signature_sha256": "4adf555ae6bb4228e42ae61a67ee99c35cf6b7b6c3841afc3547cab80c7ec7a3"
+        "request_sha256": "4db35226b1dedf6beb5b089b702d22afa1f18d7512f2fa591890dc29313c18f1",
+        "signature_sha256": "c8ce0663e68d1609f7c20122b88b324ff71b218720c57f34d17f420dd7cb3006"
       },
       {
         "id": "candidate:v1:c2d17e98a94498e670997363fb17f615d022632693aabe6a0dbade45b90861c8",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "1989b0819ea4a876009fb857aed9730f92ed8cddfba65a0f402ca1944f64b0df",
-        "signature_sha256": "8daaabc62cc1e8526a0c38d000ee881249617d552502df23c86bcbf274b3d3de"
+        "request_sha256": "286846ff3c0e8e323f4f698ff5741f0ea8947dea7a5c43286b860084473ba874",
+        "signature_sha256": "e7c78f975a4559076ced0ef373f283e080045b07e23cf12ed3cba1a94c274783"
       },
       {
         "id": "candidate:v1:549a96eb09d6116ce17304eb05ea7f5b18683d22ff61d1c0cc989a234eb26ddf",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "b9a3655ba2cd60d49cfd9ebd3a1e9f2f199168510866625c5391734af65cc0bd",
-        "signature_sha256": "3a32bd616eae6b7bb47f91637602d9072c9e219d8be2371b4f24682acb46ca07"
+        "request_sha256": "80a85625c26647186b9fde9d9eb97b645b0ed3a371ca1b6887688f04f9035f09",
+        "signature_sha256": "6fd127ad3d67d1eccc07128a1eaff53227368186a6fea13babd9aa94aa829cd4"
       },
       {
         "id": "candidate:v1:0bbf27bf21dfdfa6c5c76d97de6b3e90509fcfc58b647ad1ec6cbd4cb9379853",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "fa018c0d98d111bb933e9606cb76768505acd8d9762af66e84c470d64e85e4a1",
-        "signature_sha256": "3ce9a79e8077bbd3a50056b47a3ae7b7438a049a11146c6ecd72394d25b76481"
+        "request_sha256": "46b3c3294dc9c30f23aeff10a93f8136d1fa4531f07e32301edc73c7f4d7467c",
+        "signature_sha256": "7a72ebe40d66677940339b1a4caa387d3cd4784d4eb5b197fd8e534d3365d2c9"
       },
       {
         "id": "candidate:v1:87c38d2e132fd6f2ff9920a868d82e750cdb22b679fb6d482480d2535caade34",
@@ -4620,10 +4626,22 @@
         "signature_sha256": "ce3b3cf3dc64e578916ad221c0ec764b15792305ca83361e95c26241947e84a9"
       },
       {
+        "id": "candidate:v1:36ad11f68cee6981ac45beb1044bd9f5f4d4e679be6c46ef9058061c4dbc2c52",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "b1b4cd599dbbe9258c9a00b4ff86e0205f91d63bec05b934146d7048b61b73e9",
+        "signature_sha256": "c0e8f4690ecaa47d479944b578957318639a80acb73f27c0682d69b5d04bbcb6"
+      },
+      {
         "id": "candidate:v1:abb7d389ab6bc07e54259f0da7eb8c7a6efb5c22712aa16e804bf3fb4cf04d73",
         "kind": "recovery_delivery_candidate",
         "request_sha256": "dd084cdb055b3bd44c71b0a8ea2d96e3c61d3ff1ca92f20dd46542dc805162d3",
         "signature_sha256": "d278b62d88d59f095665ca1ce690f049b9731488c878f980816c2eae28af2d02"
+      },
+      {
+        "id": "candidate:v1:daf584201721b9dd59f323262430b33b78f0078675c8c077779ee81d2e9a5df7",
+        "kind": "recovery_delivery_candidate",
+        "request_sha256": "23e83002744f57d56cdd1ddc15edc36e7b614334cd1446dc903e400d732d1d41",
+        "signature_sha256": "e161f8c1d89da45c0c4997ccc62299e6973e91794faca700cda51c9df8aeefeb"
       },
       {
         "id": "candidate:v1:e8b4b27da01e90ab352012586d1b3414bde66f6468767163a71e7154bdd4ef81",
@@ -4740,14 +4758,45 @@
         "signature_sha256": "677fd3dc86dc6bfe7d08e9891d65b86d8ef75ea529658b58c40c1e7adf481dd2"
       }
     ],
-    "report_sha256": "8318cd5e6d58d0acacf366cc4fec6c5db74a31465be51ad56c7af92c176e3690",
-    "sarif_sha256": "6e1f8bb4c8cb46cf94c806129527401b1d366273b7ad019ce91003de0ed85040",
-    "entries": 33,
-    "registrations": 33,
-    "dispatch_bindings": 33,
-    "callables": 32,
-    "invocation_contexts": 33,
-    "uses_count": 27,
+    "report_sha256": "64b95c0d15935f4428bfd75f2678bb02ec87c1a82bed2dc0f1ff092b0fd9d1c9",
+    "sarif_sha256": "1ed7527249947a579558052b4e38528ec78d4afaac1d02c2fb84ef8b140f0c79",
+    "entries": 36,
+    "registrations": 36,
+    "dispatch_bindings": 36,
+    "callables": 35,
+    "invocation_contexts": 36,
+    "uses_count": 29,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/account-defaults": {
+    "uses": [
+      {
+        "id": "candidate:v1:6d0d516be8f6fa1d80d040cf46cb5f8dfead323b7a766eac552e4f416976a5ea",
+        "kind": "password_hash_candidate",
+        "request_sha256": "4626152fe59fef72dcf4cc633fa4a326f668b1e4929468d7404ba8deb11b944f",
+        "signature_sha256": "b7aeaadb520255bc0f5b24ee0fd2aaa2a613c5c017548d9db55a92958ef04902"
+      },
+      {
+        "id": "candidate:v1:aa9e687771f7b2f44a96162ac5a225a75bd2bae2ff7921771c7110ef5858fed4",
+        "kind": "password_hash_candidate",
+        "request_sha256": "e915a4e1dabf5d2bb278f68a81473282786c9e30492ec50a6099ee6df34ca206",
+        "signature_sha256": "e2299ecf579c7a5e96882e905d58bc5e45adb5025358638ce7b878c7c678a5be"
+      },
+      {
+        "id": "candidate:v1:f5c026ecdf7af5770272d6a6910fb013b9a694624ed13917ec6a41ea6d87bd5d",
+        "kind": "password_hash_candidate",
+        "request_sha256": "a0095d4294e32fb1bbdb861c7dfdca4040bc1e4b1428191aaeea99cedb9e844d",
+        "signature_sha256": "96ae4237e1513e00ab1184fc10d492bcaf99ca9ce38e9bb8c0d80a724692940a"
+      }
+    ],
+    "report_sha256": "24c6a077010db3b0fe98ac9d1f884f3a46cae2d17cc6051a27703e22eb198c99",
+    "sarif_sha256": "3844d9fe78fd5182455963d36417511fe4ffabfcb16b281f4edc6fc168a8ce80",
+    "entries": 2,
+    "registrations": 2,
+    "dispatch_bindings": 2,
+    "callables": 2,
+    "invocation_contexts": 2,
+    "uses_count": 3,
     "gaps": 0
   },
   "internal/langphp/testdata/symfony/account-transfer": {
@@ -4755,8 +4804,8 @@
       {
         "id": "candidate:v1:4749b364501eff4c1a5b5417ffd08b092cfdfbe43bd016c8e9e0b7c33a9a5425",
         "kind": "account_enumeration_candidate",
-        "request_sha256": "184cd101691396cd3ba69323f3c7079ee2297853ea4af22c0b196056dcb13c0d",
-        "signature_sha256": "a5f56f6f3b4a6ac61ea130ed1b1f30192b974a918739cd32cb1d6d7a67ef3585"
+        "request_sha256": "8acfdb4760b550491d6e670f91a63642b14568fe053ba8d4cd84704ca3ef2bd2",
+        "signature_sha256": "4fab469820004986193dc996425afcd231f3c567e1b36887319bd3382c46ed01"
       },
       {
         "id": "candidate:v1:5c47d8226b29498a96d296e8deae7b2bb47869f7fb09233f2de0c01e9892343b",
@@ -4789,7 +4838,7 @@
         "signature_sha256": "9af2c44ccd4958375a9c5c59300e615f8a7c8da07967bd33f0192880509a311a"
       }
     ],
-    "report_sha256": "0e401af99328c69bc9e1b2534e8a7ae4179bf123a98d7e47cad6d61cd9321a07",
+    "report_sha256": "79c01627d1dcc2680aacf1aea90d07d3a3ed642f4b57766c7a096318ba67aee9",
     "sarif_sha256": "d0446be53bb74b9a72ffcb56ef4f518df6626d4c1b45aba345149b26e84d456f",
     "entries": 6,
     "registrations": 6,

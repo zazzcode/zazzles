@@ -44,7 +44,7 @@ func accountPolicyUse(kind string, blockers ...string) analysis.CandidateUse {
 	return u
 }
 
-// One row per rule of the three D-9 tables, plus the shared policy order.
+// One row per rule of the three kind tables, plus the shared policy order.
 func TestAccountPolicy(t *testing.T) {
 	enum, rec, hash := analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind
 	same := func(u analysis.CandidateUse) analysis.CandidateUse {
@@ -101,6 +101,10 @@ func TestAccountPolicy(t *testing.T) {
 		{"recovery otherwise", rec, "", map[string]string{"recipient_control": "unknown", "validation_coverage": "unknown", "secret_quality": "unknown"}, nil, nil, "needs_evidence", ""},
 		// Password hashing.
 		{"hash adaptive for a single digest", hash, "", map[string]string{"password_input": "password", "hash_strength": "adaptive"}, nil, nil, "needs_evidence", "account_answers_inconsistent"},
+		{"hash adaptive for a single hash() digest outside the configuration list", hash, "", map[string]string{"password_input": "password", "hash_strength": "adaptive"}, func(u analysis.CandidateUse) analysis.CandidateUse {
+			u.PasswordHash.Algorithm = "sha384"
+			return u
+		}, nil, "needs_evidence", "account_answers_inconsistent"},
 		{"hash blocking unmodeled digest", hash, "", map[string]string{"password_input": "password", "hash_strength": "fast_digest"}, func(u analysis.CandidateUse) analysis.CandidateUse {
 			u.PasswordHash.Algorithm = "crypt"
 			return u

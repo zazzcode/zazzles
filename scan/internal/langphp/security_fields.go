@@ -506,13 +506,14 @@ func phpPropertyElement(m *phpModule, declaration *sitter.Node, field string) *s
 	return declaration
 }
 
-// addCensusRole adds census role recovery_secret to a stored field after the
-// entries are walked (branch 3 D-7). Records already emitted keep the facts
-// they copied.
-func (s *phpSet) addCensusRole(p *symfonyProject, key, role string, e analysis.Evidence) {
-	if p == nil || key == "" || role != analysis.RoleRecoverySecret {
+// addRecoverySecretRole adds census role recovery_secret to a stored field
+// after the entries are walked. Records already emitted keep the facts they
+// copied.
+func (s *phpSet) addRecoverySecretRole(p *symfonyProject, key string, e analysis.Evidence) {
+	if p == nil || key == "" {
 		return
 	}
+	role := analysis.RoleRecoverySecret
 	c := s.securityCensus(p)
 	field := c.fields[key]
 	field.storageKey = key

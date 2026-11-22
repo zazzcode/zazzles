@@ -15,35 +15,41 @@ type observedSend struct {
 }
 
 // observeAccount runs an analysis and returns the mail sends it modeled and
-// the census after the account post-pass.
+// the census after the account post-pass, read from the set's state.
 func observeAccount(t *testing.T, root string) (*analysis.AnalysisReport, []observedSend, map[string][]string) {
 	t.Helper()
+	s, err := newPHPSet(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.close()
+	r, err := s.report("", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var sends []observedSend
-	census := map[string][]string{}
-	mailSendHook = func(entry string, s phpMailSend) {
+	for _, m := range s.accountState().sends {
 		var rec, con []string
 		secret := false
-		for _, o := range s.recipients {
+		for _, o := range m.recipients {
 			rec = append(rec, o.method)
 		}
-		for _, o := range s.content {
+		for _, o := range m.content {
 			con = append(con, o.method)
 			secret = secret || o.value.secret != nil
 		}
-		sends = append(sends, observedSend{entry, s.contract, strings.Join(rec, ","), strings.Join(con, ","), secret})
+		sends = append(sends, observedSend{m.entry, m.contract, strings.Join(rec, ","), strings.Join(con, ","), secret})
 	}
-	accountFinishHook = func(s *phpSet) {
-		for _, c := range s.census {
-			for key, field := range c.fields {
-				census[key] = field.roles
-			}
+	census := map[string][]string{}
+	for _, c := range s.census {
+		for key, field := range c.fields {
+			census[key] = field.roles
 		}
 	}
-	defer func() { mailSendHook, accountFinishHook = nil, nil }()
-	return phpAnalyze(t, root, ""), sends, census
+	return r, sends, census
 }
 
-// Cases ML-01 to ML-06 of branch 3 section 8.
+// Mailer cases: the recipient and content operands of each send form.
 func TestPHPMailer(t *testing.T) {
 	r, sends, _ := observeAccount(t, "testdata/symfony/account")
 	find := func(entry string) []observedSend {
@@ -86,7 +92,7 @@ func TestPHPMailer(t *testing.T) {
 	})
 }
 
-// Cases RC-01 to RC-10 of branch 3 section 8.
+// Recovery cases: each recipient origin and the stored-secret census role.
 func TestRecoveryDelivery(t *testing.T) {
 	r, _, census := observeAccount(t, "testdata/symfony/account")
 	const resetKey = "php-sql:Account.resetCode"
@@ -112,6 +118,8 @@ func TestRecoveryDelivery(t *testing.T) {
 		{"RC-06", "POST /recover/weak", &want{"src/Controller/RecoveryController.php", 87, analysis.RecipientFull, analysis.RecipientCountOne, analysis.SecretWeak, analysis.RecipientStoredField, nil, resetKey}},
 		{"RC-07", "POST /recover/stored", nil},
 		{"RC-08", "POST /recover/echo", nil},
+		{"RC-11", "POST /recover/typed", &want{"src/Service/ResetNotifier.php", 8, analysis.RecipientPartial, analysis.RecipientCountRequest, analysis.SecretCSPRNG, analysis.RecipientRequestValue,
+			[]string{"src/Controller/NotifyController.php:17", "src/Service/ResetNotifier.php:6"}, ""}},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
 			uses := accountUses(r, analysis.RecoveryDeliveryKind, tt.entry)
@@ -162,7 +170,7 @@ func TestRecoveryDelivery(t *testing.T) {
 	})
 }
 
-// Cases RC-09 (transfer) and RC-10 (plain PHP).
+// Recovery cases on a transfer project and a plain-PHP project.
 func TestRecoveryDeliveryTransfer(t *testing.T) {
 	for _, tt := range []struct {
 		id, root, entry, file string
@@ -200,7 +208,7 @@ func TestRecoveryDeliveryTransfer(t *testing.T) {
 }
 
 // Mail content is a delivery sink for the recovery claim only: a request
-// value in html() or text() content produces no xss_candidate (section 3).
+// value in html() or text() content produces no xss_candidate.
 func TestMailContentNotRenderingSink(t *testing.T) {
 	for _, root := range []string{"testdata/symfony/account", "testdata/symfony/account-transfer", "testdata/account-plain"} {
 		r := phpAnalyze(t, root, "")

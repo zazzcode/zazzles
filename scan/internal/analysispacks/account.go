@@ -2,12 +2,13 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
-// AccountProtocol versions the account claim questions (branch 3 D-9). The
+// AccountProtocol versions the account claim questions. The
 // protocol carries one question set per kind.
 const AccountProtocol = "account-components-v1"
 
-// Account operation contracts (D-6, D-8). Enumeration has no operation
-// contract: its record is a finder, a branch and two responses.
+// Account operation contracts: the mail sinks and the password digests.
+// Enumeration has no operation contract: its record is a finder, a branch
+// and two responses.
 const (
 	SymfonyMailerContract  = "symfony-mailer-v1"
 	PHPMailContract        = "php-mail-v1"
@@ -17,6 +18,24 @@ const (
 )
 
 var accountContracts = []string{SymfonyMailerContract, PHPMailContract, PHPPasswordDigest}
+
+// PasswordDigestUnmodeled reports a digest algorithm of contract
+// php-password-digest-v1 whose parameters are not modeled: crypt and
+// hash_pbkdf2 may be iterated. Every other recorded algorithm is one fast
+// digest.
+func PasswordDigestUnmodeled(algorithm string) bool {
+	return algorithm == "crypt" || algorithm == "pbkdf2"
+}
+
+// ConfiguredPasswordDigest reports a security.password_hashers algorithm that
+// selects a fast digest or no hash.
+func ConfiguredPasswordDigest(algorithm string) bool {
+	switch algorithm {
+	case "md5", "sha1", "sha256", "sha512", "plaintext":
+		return true
+	}
+	return false
+}
 
 // AccountRoles are the evidence obligations of one account kind.
 func AccountRoles(kind string) []string {

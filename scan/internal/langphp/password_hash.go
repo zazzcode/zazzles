@@ -10,9 +10,9 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
 
-// Weak password hashing (branch 3 D-8). A fast digest is recorded only when
-// evidence says its input is a password: a census credential field, a
-// password-hasher class or the security configuration.
+// Weak password hashing. A fast digest is recorded only when evidence says
+// its input is a password: a census credential field, a password-hasher class
+// or the security configuration.
 
 const (
 	symfonyLegacyPasswordHasher = `Symfony\Component\PasswordHasher\LegacyPasswordHasherInterface`
@@ -26,23 +26,25 @@ type phpDigest struct {
 	unmodeled bool
 }
 
-// digestAlgorithm returns the D-8 algorithm of a digest call, or "".
+// digestAlgorithm returns the algorithm of a digest call, or "", and whether
+// the contract leaves its parameters unmodeled.
 func digestAlgorithm(m *phpModule, name string, nodes []*sitter.Node) (string, bool) {
+	algorithm := ""
 	switch name {
 	case "md5", "sha1", "crc32":
-		return name, false
+		algorithm = name
 	case "hash", "hash_hmac":
 		if len(nodes) > 0 {
 			if algo, ok := phpStringLiteral(m, nodes[0]); ok && algo != "" {
-				return strings.ToLower(algo), false
+				algorithm = strings.ToLower(algo)
 			}
 		}
 	case "crypt":
-		return "crypt", true
+		algorithm = "crypt"
 	case "hash_pbkdf2":
-		return "pbkdf2", true
+		algorithm = "pbkdf2"
 	}
-	return "", false
+	return algorithm, algorithm != "" && analysispacks.PasswordDigestUnmodeled(algorithm)
 }
 
 // digestInput is the argument a digest hashes.
@@ -166,10 +168,15 @@ func emitPasswordHash(out *analysis.AnalysisReport, entryID, invocationID string
 // finishPasswordHashers records the digests a hasher class returns and the
 // password_hashers lines that select a fast algorithm or such a class. The
 // records belong to the firewall's form-login entry, where Symfony verifies
-// passwords with the selected hasher.
+// passwords with the selected hasher. A project whose login route does not
+// resolve (form_login defaults, a custom authenticator, http_basic) anchors
+// them to its first entry: the claim needs no HTTP entry of its own.
 func (s *phpSet) finishPasswordHashers(out *analysis.AnalysisReport) {
 	for _, p := range s.symfony {
 		entryID, invocationID := s.loginEntry(out, p)
+		if entryID == "" {
+			entryID, invocationID = s.projectEntry(out, p)
+		}
 		if entryID == "" {
 			continue
 		}
@@ -215,7 +222,7 @@ func (s *phpSet) finishPasswordHashers(out *analysis.AnalysisReport) {
 				}
 				class = strings.TrimPrefix(h.id, `\`)
 				d = &phpDigest{algorithm: hd.algorithm, at: h.at, salted: "no", unmodeled: hd.unmodeled}
-			case configuredDigest(h.algorithm):
+			case analysispacks.ConfiguredPasswordDigest(h.algorithm):
 				d = &phpDigest{algorithm: h.algorithm, at: h.at, salted: "no"}
 			default:
 				continue
@@ -223,15 +230,6 @@ func (s *phpSet) finishPasswordHashers(out *analysis.AnalysisReport) {
 			emitPasswordHash(out, entryID, invocationID, d, &analysis.PasswordHashFacts{Algorithm: d.algorithm, Basis: analysis.BasisConfiguration, BasisEvidence: []analysis.Evidence{h.at}, Salted: "no", Iterated: "no", HasherClass: class}, nil, nil)
 		}
 	}
-}
-
-// configuredDigest is the configuration row of D-8.
-func configuredDigest(algorithm string) bool {
-	switch algorithm {
-	case "md5", "sha1", "sha256", "sha512", "plaintext":
-		return true
-	}
-	return false
 }
 
 // loginEntry is the POST (else ANY) entry of the route a firewall's
@@ -259,6 +257,23 @@ func (s *phpSet) loginEntry(out *analysis.AnalysisReport, p *symfonyProject) (st
 						return e.ID, c.ID
 					}
 				}
+			}
+		}
+	}
+	return "", ""
+}
+
+// projectEntry is the first entry of a project, in report order, with an
+// invocation context.
+func (s *phpSet) projectEntry(out *analysis.AnalysisReport, p *symfonyProject) (string, string) {
+	for _, e := range out.Entries {
+		file := e.Location.Span.File
+		if p.root != "" && p.root != "." && file != p.root && !strings.HasPrefix(file, p.root+"/") {
+			continue
+		}
+		for _, c := range out.InvocationContexts {
+			if c.EntryID == e.ID {
+				return e.ID, c.ID
 			}
 		}
 	}

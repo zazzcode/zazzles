@@ -9,10 +9,10 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 )
 
-// Account enumeration (branch 3 D-2 to D-4). The record is a lookup by a
-// request value on an account class, the branch on its result, and the
-// responses on each side. The two response lists are compared with each
-// other; no rule reads meaning into the text.
+// Account enumeration. The record is a lookup by a request value on an
+// account class, the branch on its result, and the responses on each side.
+// The two response lists are compared with each other; no rule reads meaning
+// into the text.
 
 // noteEnumerationLookup records a candidate for a finder call whose criteria
 // hold a request value, when the two branches on its result answer
@@ -23,14 +23,11 @@ func (f *phpFlow) noteEnumerationLookup(n *sitter.Node, entity, method string, v
 	}
 	access := f.entry.Access
 	decls := f.set.classIndex().byName[strings.ToLower(strings.TrimPrefix(entity, `\`))]
-	if len(decls) != 1 || !f.accountClass(decls[0]) {
+	if len(decls) != 1 || decls[0] == nil || !f.accountClass(decls[0]) {
 		return
 	}
 	decl := decls[0]
-	if decl == nil {
-		return
-	}
-	fields, deps, ok := f.lookupCriteria(n, method, values)
+	fields, deps, ok := f.lookupCriteria(method, values)
 	if !ok || len(deps) == 0 {
 		return
 	}
@@ -41,13 +38,30 @@ func (f *phpFlow) noteEnumerationLookup(n *sitter.Node, entity, method string, v
 	keys := f.doctrineFieldKeys(decl)
 	var census []analysis.SecurityFieldFact
 	for _, field := range fields {
-		key := keys[field]
-		if slices.Contains(f.censusRoles(key), analysis.RoleCredential) {
-			return // A lookup that includes the credential is a login (out of scope).
-		}
-		if fact, ok := f.censusFact(key); ok {
+		if fact, ok := f.censusFact(keys[field]); ok {
 			census = append(census, fact)
 		}
+	}
+	credential := func(field string) bool {
+		return slices.Contains(f.censusRoles(keys[field]), analysis.RoleCredential)
+	}
+	f.noteEnumerationBranch(n, enumerationLookup{class: decl.fqn, method: method, fields: fields, deps: deps, census: census}, credential)
+}
+
+// enumerationLookup is one account lookup by request values.
+type enumerationLookup struct {
+	class, method string
+	fields        []string
+	deps          []phpDep
+	census        []analysis.SecurityFieldFact
+}
+
+// noteEnumerationBranch records a candidate when the two sides of the branch
+// on a lookup's result answer differently. A lookup whose criteria include a
+// credential field is a login, which this claim does not cover.
+func (f *phpFlow) noteEnumerationBranch(n *sitter.Node, l enumerationLookup, credential func(field string) bool) {
+	if slices.ContainsFunc(l.fields, credential) {
+		return
 	}
 	m := f.module
 	branch, foundOnTrue := lookupBranch(m, n)
@@ -62,11 +76,11 @@ func (f *phpFlow) noteEnumerationLookup(n *sitter.Node, entity, method string, v
 	if sameResponses(found, notFound) {
 		return
 	}
-	f.emitEnumeration(n, branch, decl.fqn, method, fields, deps, found, notFound, census)
+	f.emitEnumeration(n, branch, l, found, notFound)
 }
 
 // accountClass is a class implementing the Symfony UserInterface, or the
-// entity class of a security.yaml user provider (D-2).
+// entity class of a security.yaml user provider.
 func (f *phpFlow) accountClass(decl *phpClassDecl) bool {
 	if f.set.classIndex().interfacesOf(decl)[strings.ToLower(symfonyUserInterface)] {
 		return true
@@ -81,8 +95,9 @@ func (f *phpFlow) accountClass(decl *phpClassDecl) bool {
 }
 
 // lookupCriteria returns the criteria fields of a finder and the request
-// dependencies of their values.
-func (f *phpFlow) lookupCriteria(n *sitter.Node, method string, values []phpValue) ([]string, []phpDep, bool) {
+// dependencies of their values. method keeps its source case, so a magic
+// finder names its field as declared.
+func (f *phpFlow) lookupCriteria(method string, values []phpValue) ([]string, []phpDep, bool) {
 	lower := strings.ToLower(method)
 	if len(values) == 0 {
 		return nil, nil, false
@@ -150,7 +165,7 @@ func lookupBranch(m *phpModule, call *sitter.Node) (*sitter.Node, bool) {
 }
 
 // resultTest classifies a condition on the lookup result: truthiness, a null
-// test, count or empty (D-2). It reports whether true means found.
+// test, count or empty. It reports whether true means found.
 func resultTest(m *phpModule, c *sitter.Node, name string) (bool, bool) {
 	for c != nil && c.Kind() == "parenthesized_expression" && c.NamedChildCount() == 1 {
 		c = c.NamedChild(0)
@@ -220,322 +235,7 @@ func phpAssigns(m *phpModule, stmt *sitter.Node, name string) bool {
 	return e.Kind() == "assignment_expression" && phpText(m, phpField(e, "left")) == name
 }
 
-// branchSides collects the responses of the true and false side of a branch.
-// A side that does not end the action continues after the if statement.
-func branchSides(m *phpModule, branch *sitter.Node) ([]analysis.BranchResponse, []analysis.BranchResponse) {
-	body := phpField(branch, "body")
-	var alternative *sitter.Node
-	for i := uint(0); i < branch.NamedChildCount(); i++ {
-		c := branch.NamedChild(i)
-		if c.Kind() == "else_clause" {
-			alternative = phpField(c, "body")
-			if alternative == nil && c.NamedChildCount() > 0 {
-				alternative = c.NamedChild(c.NamedChildCount() - 1)
-			}
-		}
-	}
-	continuation := func() []analysis.BranchResponse {
-		out, _ := continueAfter(m, branch)
-		return out
-	}
-	side := func(n *sitter.Node) []analysis.BranchResponse {
-		if n == nil {
-			return continuation()
-		}
-		out, ended := collectResponses(m, statementList(n))
-		if !ended {
-			out = append(out, continuation()...)
-		}
-		return out
-	}
-	return side(body), side(alternative)
-}
-
-func statementList(n *sitter.Node) []*sitter.Node {
-	if n == nil {
-		return nil
-	}
-	if n.Kind() != "compound_statement" {
-		return []*sitter.Node{n}
-	}
-	var out []*sitter.Node
-	for i := uint(0); i < n.NamedChildCount(); i++ {
-		if c := n.NamedChild(i); c.Kind() != "comment" {
-			out = append(out, c)
-		}
-	}
-	return out
-}
-
-// continueAfter collects the responses after a statement until the action
-// returns, climbing out of enclosing blocks up to the function body.
-func continueAfter(m *phpModule, stmt *sitter.Node) ([]analysis.BranchResponse, bool) {
-	var out []analysis.BranchResponse
-	for cur := stmt; cur != nil; {
-		var rest []*sitter.Node
-		for next := cur.NextNamedSibling(); next != nil; next = next.NextNamedSibling() {
-			if next.Kind() != "comment" {
-				rest = append(rest, next)
-			}
-		}
-		got, ended := collectResponses(m, rest)
-		out = append(out, got...)
-		if ended {
-			return out, true
-		}
-		parent := cur.Parent()
-		for parent != nil && parent.Kind() != "compound_statement" {
-			if parent.Kind() == "method_declaration" || parent.Kind() == "function_definition" || parent.Kind() == "program" {
-				return out, false
-			}
-			parent = parent.Parent()
-		}
-		if parent == nil {
-			return out, false
-		}
-		owner := parent.Parent()
-		if owner == nil || owner.Kind() == "method_declaration" || owner.Kind() == "function_definition" || owner.Kind() == "anonymous_function" {
-			return out, false
-		}
-		// Leave the enclosing if/else, loop or try: continue after the
-		// statement that owns this block.
-		for owner != nil && owner.Kind() == "else_clause" || owner != nil && owner.Kind() == "else_if_clause" {
-			owner = owner.Parent()
-		}
-		cur = owner
-	}
-	return out, false
-}
-
-// collectResponses reads the responses of a straight-line statement list in
-// order. Nested conditional statements are not entered: their responses are
-// not on every path of this side. It reports whether the list ends the action.
-func collectResponses(m *phpModule, list []*sitter.Node) ([]analysis.BranchResponse, bool) {
-	var out []analysis.BranchResponse
-	for _, s := range list {
-		switch s.Kind() {
-		case "return_statement":
-			if s.NamedChildCount() > 0 {
-				out = append(out, returnResponses(m, s.NamedChild(0))...)
-			}
-			return out, true
-		case "echo_statement":
-			for i := uint(0); i < s.NamedChildCount(); i++ {
-				out = append(out, literalResponse(m, analysis.ResponseBody, s.NamedChild(i)))
-			}
-		case "expression_statement":
-			if s.NamedChildCount() != 1 {
-				continue
-			}
-			e := s.NamedChild(0)
-			if e.Kind() == "throw_expression" {
-				out = append(out, throwResponse(m, e))
-				return out, true
-			}
-			if r, ok := statementResponse(m, e); ok {
-				out = append(out, r...)
-			}
-			if e.Kind() == "exit_statement" || phpExitCall(m, e) {
-				return out, true
-			}
-		case "exit_statement":
-			if s.NamedChildCount() > 0 {
-				out = append(out, literalResponse(m, analysis.ResponseBody, s.NamedChild(0)))
-			}
-			return out, true
-		}
-	}
-	return out, false
-}
-
-func phpExitCall(m *phpModule, e *sitter.Node) bool {
-	if e.Kind() != "function_call_expression" {
-		return false
-	}
-	fn := strings.ToLower(phpText(m, phpField(e, "function")))
-	return fn == "exit" || fn == "die"
-}
-
-func spanOf(m *phpModule, n *sitter.Node) analysis.Span {
-	return m.evidence("response", n).Span
-}
-
-func literalResponse(m *phpModule, kind string, n *sitter.Node) analysis.BranchResponse {
-	if text, ok := phpStringLiteral(m, n); ok {
-		return analysis.BranchResponse{Kind: kind, Literal: text, Span: spanOf(m, n)}
-	}
-	if n != nil && (n.Kind() == "integer" || n.Kind() == "boolean") {
-		return analysis.BranchResponse{Kind: kind, Literal: phpText(m, n), Span: spanOf(m, n)}
-	}
-	return analysis.BranchResponse{Kind: analysis.ResponseUnresolved, Span: spanOf(m, n)}
-}
-
-// statementResponse reads a response written by an expression statement:
-// addFlash, echo-like calls, header Location and http_response_code.
-func statementResponse(m *phpModule, e *sitter.Node) ([]analysis.BranchResponse, bool) {
-	switch e.Kind() {
-	case "member_call_expression":
-		name := phpText(m, phpField(e, "name"))
-		if strings.EqualFold(name, "addFlash") && phpText(m, phpField(e, "object")) == "$this" {
-			args := phpArgs(e)
-			if len(args) < 2 {
-				return []analysis.BranchResponse{{Kind: analysis.ResponseUnresolved, Span: spanOf(m, e)}}, true
-			}
-			r := literalResponse(m, analysis.ResponseFlash, args[1])
-			return []analysis.BranchResponse{r}, true
-		}
-	case "function_call_expression":
-		fn := strings.ToLower(phpText(m, phpField(e, "function")))
-		args := phpArgs(e)
-		switch fn {
-		case "header":
-			if len(args) > 0 {
-				if text, ok := phpStringLiteral(m, args[0]); ok && strings.HasPrefix(strings.ToLower(text), "location:") {
-					return []analysis.BranchResponse{{Kind: analysis.ResponseRedirect, Literal: strings.TrimSpace(text[len("location:"):]), Span: spanOf(m, e)}}, true
-				}
-			}
-		case "http_response_code":
-			if len(args) > 0 {
-				return []analysis.BranchResponse{literalResponse(m, analysis.ResponseStatus, args[0])}, true
-			}
-		case "die", "exit":
-			if len(args) > 0 {
-				return []analysis.BranchResponse{literalResponse(m, analysis.ResponseBody, args[0])}, true
-			}
-			return nil, true
-		}
-	}
-	return nil, false
-}
-
-// returnResponses reads the response an action returns.
-func returnResponses(m *phpModule, e *sitter.Node) []analysis.BranchResponse {
-	for e != nil && e.Kind() == "parenthesized_expression" && e.NamedChildCount() == 1 {
-		e = e.NamedChild(0)
-	}
-	if e == nil {
-		return nil
-	}
-	switch e.Kind() {
-	case "member_call_expression":
-		if phpText(m, phpField(e, "object")) != "$this" {
-			break
-		}
-		args := phpArgs(e)
-		first := func(kind string) []analysis.BranchResponse {
-			if len(args) == 0 {
-				return []analysis.BranchResponse{{Kind: analysis.ResponseUnresolved, Span: spanOf(m, e)}}
-			}
-			return []analysis.BranchResponse{literalResponse(m, kind, args[0])}
-		}
-		switch strings.ToLower(phpText(m, phpField(e, "name"))) {
-		case "redirecttoroute", "redirect":
-			return first(analysis.ResponseRedirect)
-		case "render":
-			return first(analysis.ResponseTemplate)
-		case "json":
-			return bodyAndStatus(m, e, args)
-		}
-	case "object_creation_expression":
-		class := strings.ToLower(phpText(m, phpObjectClassNode(e)))
-		short := class[strings.LastIndex(class, `\`)+1:]
-		switch short {
-		case "response", "jsonresponse":
-			return bodyAndStatus(m, e, phpNewArguments(e))
-		case "redirectresponse":
-			args := phpNewArguments(e)
-			if len(args) > 0 {
-				return []analysis.BranchResponse{literalResponse(m, analysis.ResponseRedirect, args[0])}
-			}
-		}
-	}
-	return []analysis.BranchResponse{{Kind: analysis.ResponseUnresolved, Span: spanOf(m, e)}}
-}
-
-// bodyAndStatus reads a literal body (a string or an array of literal
-// scalars) and a literal status.
-func bodyAndStatus(m *phpModule, at *sitter.Node, args []*sitter.Node) []analysis.BranchResponse {
-	var out []analysis.BranchResponse
-	if len(args) > 0 {
-		if text, ok := literalBody(m, args[0]); ok {
-			out = append(out, analysis.BranchResponse{Kind: analysis.ResponseBody, Literal: text, Span: spanOf(m, args[0])})
-		} else {
-			out = append(out, analysis.BranchResponse{Kind: analysis.ResponseUnresolved, Span: spanOf(m, args[0])})
-		}
-	}
-	if len(args) > 1 {
-		out = append(out, literalResponse(m, analysis.ResponseStatus, args[1]))
-	}
-	if len(out) == 0 {
-		out = append(out, analysis.BranchResponse{Kind: analysis.ResponseBody, Span: spanOf(m, at)})
-	}
-	return out
-}
-
-func literalBody(m *phpModule, n *sitter.Node) (string, bool) {
-	if text, ok := phpStringLiteral(m, n); ok {
-		return text, true
-	}
-	if n == nil || n.Kind() != "array_creation_expression" {
-		return "", false
-	}
-	literal := true
-	phpWalk(n, func(c *sitter.Node) {
-		switch c.Kind() {
-		case "variable_name", "function_call_expression", "member_call_expression", "scoped_call_expression", "member_access_expression", "encapsed_string", "subscript_expression":
-			if c.Kind() != "encapsed_string" {
-				literal = false
-			} else if _, ok := phpStringLiteral(m, c); !ok {
-				literal = false
-			}
-		}
-	})
-	if !literal {
-		return "", false
-	}
-	return strings.Join(strings.Fields(phpText(m, n)), " "), true
-}
-
-func throwResponse(m *phpModule, e *sitter.Node) analysis.BranchResponse {
-	if e.NamedChildCount() > 0 {
-		inner := e.NamedChild(0)
-		if inner.Kind() == "object_creation_expression" {
-			class := phpText(m, phpObjectClassNode(inner))
-			return analysis.BranchResponse{Kind: analysis.ResponseException, Literal: class[strings.LastIndex(class, `\`)+1:], Span: spanOf(m, e)}
-		}
-		if inner.Kind() == "member_call_expression" && phpText(m, phpField(inner, "object")) == "$this" {
-			return analysis.BranchResponse{Kind: analysis.ResponseException, Literal: phpText(m, phpField(inner, "name")), Span: spanOf(m, e)}
-		}
-	}
-	return analysis.BranchResponse{Kind: analysis.ResponseUnresolved, Span: spanOf(m, e)}
-}
-
-func phpObjectClassNode(n *sitter.Node) *sitter.Node {
-	for i := uint(0); i < n.NamedChildCount(); i++ {
-		c := n.NamedChild(i)
-		switch c.Kind() {
-		case "name", "qualified_name":
-			return c
-		}
-	}
-	return nil
-}
-
-// sameResponses compares two response lists position by position (D-3). An
-// unresolved response is never equal to anything.
-func sameResponses(a, b []analysis.BranchResponse) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i].Kind == analysis.ResponseUnresolved || a[i].Kind != b[i].Kind || a[i].Literal != b[i].Literal {
-			return false
-		}
-	}
-	return true
-}
-
-func (f *phpFlow) emitEnumeration(n, branch *sitter.Node, class, method string, fields []string, deps []phpDep, found, notFound []analysis.BranchResponse, census []analysis.SecurityFieldFact) {
+func (f *phpFlow) emitEnumeration(n, branch *sitter.Node, l enumerationLookup, found, notFound []analysis.BranchResponse) {
 	sink := f.module.evidence(analysis.AccountEnumerationKind, n)
 	id := fmt.Sprintf("use:%s:%s:%d:%s", f.invocation.ID, sink.Span.File, sink.Span.StartByte, analysis.AccountEnumerationKind)
 	for _, u := range f.report.Uses {
@@ -544,6 +244,7 @@ func (f *phpFlow) emitEnumeration(n, branch *sitter.Node, class, method string, 
 		}
 	}
 	branchAt := f.module.evidence("result_branch", phpField(branch, "condition"))
+	census := l.census
 	if census == nil {
 		census = []analysis.SecurityFieldFact{}
 	}
@@ -554,7 +255,7 @@ func (f *phpFlow) emitEnumeration(n, branch *sitter.Node, class, method string, 
 		notFound = []analysis.BranchResponse{}
 	}
 	facts := &analysis.EnumerationFacts{
-		Lookup:         analysis.EnumerationLookup{Class: class, Method: method, CriteriaFields: fields, Evidence: sink, Branch: branchAt},
+		Lookup:         analysis.EnumerationLookup{Class: l.class, Method: l.method, CriteriaFields: l.fields, Evidence: sink, Branch: branchAt},
 		Found:          found,
 		NotFound:       notFound,
 		SecurityFields: census,
@@ -562,8 +263,8 @@ func (f *phpFlow) emitEnumeration(n, branch *sitter.Node, class, method string, 
 	dependencies := []analysis.Dependency{}
 	sources := []analysis.Evidence{}
 	seen := map[string]bool{}
-	for _, d := range deps {
-		key := fmt.Sprintf("%s:%d", d.dep.Source.Span.File, d.dep.Source.Span.StartByte)
+	for _, d := range l.deps {
+		key := depKey(d)
 		if seen[key] {
 			continue
 		}

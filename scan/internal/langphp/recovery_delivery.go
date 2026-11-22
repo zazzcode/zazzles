@@ -11,9 +11,9 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
 
-// Recovery-secret delivery (branch 3 D-5 and D-7). A generated secret that
-// reaches mail content is recorded with the origin of its recipient and the
-// checks that tied the recipient to the account.
+// Recovery-secret delivery. A generated secret that reaches mail content is
+// recorded with the origin of its recipient and the checks that tied the
+// recipient to the account.
 
 // phpSecret is the generated secret a value derives from.
 type phpSecret struct {
@@ -41,25 +41,27 @@ type phpAccountState struct {
 	mails     map[int]*phpMail
 	lookups   map[string][]phpAccountLookup           // entry -> lookups
 	shapeUses map[string]map[string]analysis.Evidence // entry -> request source -> first array use
+	// paramUses are request values bound to an array-typed parameter. They
+	// count only where no iteration or spread of the same value is recorded.
+	paramUses map[string]map[string]analysis.Evidence
 	stores    []phpSecretStore
+	sends     []phpMailSend // every modeled send, in walk order
 	plain     *plainAccountSQL
 }
 
-// accountFinishHook observes the set after the account post-pass in tests.
-var accountFinishHook func(s *phpSet)
-
 func (s *phpSet) accountState() *phpAccountState {
 	if s.account == nil {
-		s.account = &phpAccountState{mails: map[int]*phpMail{}, lookups: map[string][]phpAccountLookup{}, shapeUses: map[string]map[string]analysis.Evidence{}}
+		s.account = &phpAccountState{mails: map[int]*phpMail{}, lookups: map[string][]phpAccountLookup{}, shapeUses: map[string]map[string]analysis.Evidence{},
+			paramUses: map[string]map[string]analysis.Evidence{}}
 	}
 	return s.account
 }
 
 func depKey(d phpDep) string {
-	return fmt.Sprintf("%s:%d", d.dep.Source.Span.File, d.dep.Source.Span.StartByte)
+	return spanKey(d.dep.Source.Span)
 }
 
-// D-5 secret sources.
+// Secret sources: a CSPRNG, or a predictable value.
 var (
 	csprngFunctions = map[string]bool{"random_bytes": true, "random_int": true, "openssl_random_pseudo_bytes": true}
 	weakFunctions   = map[string]bool{"uniqid": true, "mt_rand": true, "rand": true, "lcg_value": true, "microtime": true, "time": true}
@@ -111,24 +113,38 @@ func (f *phpFlow) accountCall(n *sitter.Node, nodes []*sitter.Node, values []php
 }
 
 // noteArrayUse records a request value used as an array: iterated by
-// foreach or spread into a call (D-7).
+// foreach or spread into a call.
 func (f *phpFlow) noteArrayUse(at *sitter.Node, v phpValue) {
+	f.noteShapeUse(f.set.accountState().shapeUses, at, v)
+}
+
+// noteArrayParameter records a request value passed to an array-typed
+// parameter.
+func (f *phpFlow) noteArrayParameter(at *sitter.Node, v phpValue) {
+	f.noteShapeUse(f.set.accountState().paramUses, at, v)
+}
+
+func (f *phpFlow) noteShapeUse(uses map[string]map[string]analysis.Evidence, at *sitter.Node, v phpValue) {
 	if f.entry.ID == "" {
 		return
 	}
-	st := f.set.accountState()
 	for _, d := range phpInputDeps([]phpValue{v}) {
-		if st.shapeUses[f.entry.ID] == nil {
-			st.shapeUses[f.entry.ID] = map[string]analysis.Evidence{}
+		if uses[f.entry.ID] == nil {
+			uses[f.entry.ID] = map[string]analysis.Evidence{}
 		}
-		if _, ok := st.shapeUses[f.entry.ID][depKey(d)]; !ok {
-			st.shapeUses[f.entry.ID][depKey(d)] = f.module.evidence("array_use", at)
+		if _, ok := uses[f.entry.ID][depKey(d)]; !ok {
+			uses[f.entry.ID][depKey(d)] = f.module.evidence("array_use", at)
 		}
 	}
 }
 
+// phpArrayParameter reports a parameter declared `array` or `?array`.
+func phpArrayParameter(m *phpModule, p *sitter.Node) bool {
+	return strings.EqualFold(strings.TrimPrefix(strings.TrimSpace(phpText(m, phpField(p, "type"))), "?"), "array")
+}
+
 // noteAccountLookup records a finder's request criteria for the recipient
-// check of D-7, with the first criterion read through a literal index.
+// check, with the first criterion read through a literal index.
 func (f *phpFlow) noteAccountLookup(n *sitter.Node, deps []phpDep) {
 	if args := phpArgs(n); len(args) > 0 {
 		f.noteAccountLookupAt(args[0], deps)
@@ -175,7 +191,8 @@ func spanKey(s analysis.Span) string {
 	return fmt.Sprintf("%s:%d", s.File, s.StartByte)
 }
 
-// noteRecovery records a send whose content carries a secret (D-7).
+// noteRecovery records a send whose content carries a secret, with the
+// origin of its recipient and the checks that tied it to the account.
 func (f *phpFlow) noteRecovery(n *sitter.Node, s phpMailSend) {
 	if f.report == nil || f.entry.ID == "" {
 		return
@@ -191,7 +208,6 @@ func (f *phpFlow) noteRecovery(n *sitter.Node, s phpMailSend) {
 	if content == nil || len(s.recipients) == 0 {
 		return
 	}
-	st := f.set.accountState()
 	recipient := s.recipients[0]
 	var deps []phpDep
 	for _, r := range s.recipients {
@@ -202,38 +218,57 @@ func (f *phpFlow) noteRecovery(n *sitter.Node, s phpMailSend) {
 	}
 	facts := &analysis.RecoveryFacts{SecretSource: secret.source, SecretStrength: secret.strength, Recipient: recipient.at, Content: content.at,
 		MailContract: s.contract, SecurityFields: []analysis.SecurityFieldFact{}}
+	f.recipientFacts(facts, deps)
+	f.emitRecovery(s, facts, deps)
+}
+
+// recipientFacts fills the recipient origin, validation and count of a
+// recovery record from the request dependencies of its recipient.
+func (f *phpFlow) recipientFacts(facts *analysis.RecoveryFacts, deps []phpDep) {
 	if len(deps) == 0 {
 		facts.RecipientOrigin, facts.RecipientValidated, facts.RecipientCount = analysis.RecipientStoredField, analysis.RecipientFull, analysis.RecipientCountOne
-	} else {
-		facts.RecipientOrigin = analysis.RecipientRequestValue
-		var use *analysis.Evidence
-		for _, d := range deps {
-			if e, ok := st.shapeUses[f.entry.ID][depKey(d)]; ok {
-				use = &e
-				break
-			}
-		}
-		var lookup *phpAccountLookup
-		for i, l := range st.lookups[f.entry.ID] {
-			if slices.ContainsFunc(deps, func(d phpDep) bool { return l.sources[depKey(d)] }) {
-				lookup = &st.lookups[f.entry.ID][i]
-				break
-			}
-		}
-		facts.RecipientCount = analysis.RecipientCountOne
-		if use != nil {
-			facts.RecipientCount = analysis.RecipientCountRequest
-		}
-		switch {
-		case lookup != nil && use != nil && lookup.element != nil:
-			facts.RecipientValidated = analysis.RecipientPartial
-			facts.ShapeUses = []analysis.Evidence{*lookup.element, *use}
-		case lookup != nil:
-			facts.RecipientValidated = analysis.RecipientFull
-		default:
-			facts.RecipientValidated = analysis.RecipientNone
+		return
+	}
+	st := f.set.accountState()
+	facts.RecipientOrigin = analysis.RecipientRequestValue
+	use := firstShapeUse(st.shapeUses[f.entry.ID], deps)
+	if use == nil {
+		use = firstShapeUse(st.paramUses[f.entry.ID], deps)
+	}
+	var lookup *phpAccountLookup
+	for i, l := range st.lookups[f.entry.ID] {
+		if slices.ContainsFunc(deps, func(d phpDep) bool { return l.sources[depKey(d)] }) {
+			lookup = &st.lookups[f.entry.ID][i]
+			break
 		}
 	}
+	facts.RecipientCount = analysis.RecipientCountOne
+	if use != nil {
+		facts.RecipientCount = analysis.RecipientCountRequest
+	}
+	switch {
+	case lookup != nil && use != nil && lookup.element != nil:
+		facts.RecipientValidated = analysis.RecipientPartial
+		facts.ShapeUses = []analysis.Evidence{*lookup.element, *use}
+	case lookup != nil:
+		facts.RecipientValidated = analysis.RecipientFull
+	default:
+		facts.RecipientValidated = analysis.RecipientNone
+	}
+}
+
+// firstShapeUse is the recorded array use of the first dependency that has
+// one.
+func firstShapeUse(uses map[string]analysis.Evidence, deps []phpDep) *analysis.Evidence {
+	for _, d := range deps {
+		if e, ok := uses[depKey(d)]; ok {
+			return &e
+		}
+	}
+	return nil
+}
+
+func (f *phpFlow) emitRecovery(s phpMailSend, facts *analysis.RecoveryFacts, deps []phpDep) {
 	sink := s.at
 	id := fmt.Sprintf("use:%s:%s:%d:%s", f.invocation.ID, sink.Span.File, sink.Span.StartByte, analysis.RecoveryDeliveryKind)
 	for _, u := range f.report.Uses {
@@ -260,9 +295,9 @@ func (f *phpFlow) noteRecovery(n *sitter.Node, s phpMailSend) {
 			Required:  []string{"secret_source", "mail_recipient", "mail_content", "control_flow"},
 			Scope:     "One generated secret delivered by mail, its recipient's origin and the checks that covered it.",
 			Evidence: map[string][]analysis.Evidence{
-				"secret_source":  {secret.source},
-				"mail_recipient": {recipient.at},
-				"mail_content":   {content.at},
+				"secret_source":  {facts.SecretSource},
+				"mail_recipient": {facts.Recipient},
+				"mail_content":   {facts.Content},
 				"control_flow":   append([]analysis.Evidence{sink}, f.context...),
 				"sink_binding":   {binding},
 			},
@@ -287,7 +322,7 @@ func (s *phpSet) finishAccount(out *analysis.AnalysisReport) {
 	for _, store := range st.stores {
 		if s.secretCompared(out, store) {
 			compared[store.key] = true
-			s.addCensusRole(store.project, store.key, analysis.RoleRecoverySecret, store.at)
+			s.addRecoverySecretRole(store.project, store.key, store.at)
 		}
 	}
 	kept := out.Uses[:0]
@@ -316,9 +351,6 @@ func (s *phpSet) finishAccount(out *analysis.AnalysisReport) {
 	}
 	out.Uses = kept
 	s.finishPasswordHashers(out)
-	if accountFinishHook != nil {
-		accountFinishHook(s)
-	}
 }
 
 // secretCompared reports a recorded secret_check whose stored getter returns

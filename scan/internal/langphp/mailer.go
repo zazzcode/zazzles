@@ -8,7 +8,7 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
 
-// Mail sinks of branch 3 D-6. Mail content is a delivery sink for the
+// Mail sinks: Symfony Mailer and mail(). Mail content is a delivery sink for the
 // recovery claim only; it is never an output (XSS), header or request sink.
 
 const (
@@ -31,15 +31,13 @@ type phpMail struct {
 	recipients, content []phpMailOperand
 }
 
-// phpMailSend is one delivered message.
+// phpMailSend is one delivered message, under the entry that sends it.
 type phpMailSend struct {
+	entry               string
 	contract            string
 	recipients, content []phpMailOperand
 	at                  analysis.Evidence
 }
-
-// mailSendHook observes modeled sends in tests. Nil in production.
-var mailSendHook func(entry string, s phpMailSend)
 
 var mailRecipientMethods = map[string]bool{"to": true, "addto": true, "cc": true, "addcc": true, "bcc": true, "addbcc": true}
 var mailContentMethods = map[string]bool{"html": true, "text": true, "subject": true, "context": true}
@@ -127,10 +125,12 @@ func (f *phpFlow) phpMailCall(n *sitter.Node, nodes []*sitter.Node, values []php
 	})
 }
 
+// mailSend keeps the modeled send in the account state and records a
+// recovery candidate when its content carries a secret.
 func (f *phpFlow) mailSend(n *sitter.Node, s phpMailSend) {
-	if mailSendHook != nil {
-		mailSendHook(f.entry.Name, s)
-	}
+	s.entry = f.entry.Name
+	st := f.set.accountState()
+	st.sends = append(st.sends, s)
 	f.noteRecovery(n, s)
 }
 

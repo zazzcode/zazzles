@@ -783,6 +783,9 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 		} else if def := phpField(p, "default_value"); def != nil {
 			v = h.eval(def)
 		}
+		if phpArrayParameter(m, p) {
+			h.noteArrayParameter(p, v)
+		}
 		h.env[phpVarName(m, phpField(p, "name"))] = v
 		pos++
 	}

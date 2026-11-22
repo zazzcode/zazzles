@@ -69,3 +69,9 @@ the same block and explicit `writeHead(3xx, ...)`; unknown status flow is not a 
 Unmodeled framework wrappers, dynamic HTML and multi-step navigation stay unresolved.
 
 Use `--only-family redirect` with a judged scan to select this family.
+
+## Symfony
+
+Symfony matches the URL of the verified AbstractController::redirect helper and the first argument of RedirectResponse. A literal local destination or redirectToRoute internal route name produces no open-redirect record.
+
+[Symfony analysis coverage](../symfony-support.md)

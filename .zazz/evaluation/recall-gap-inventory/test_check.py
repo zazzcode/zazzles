@@ -26,6 +26,21 @@ def finding(uid, status='poor_practice'):
 
 
 class FrozenKeyTest(unittest.TestCase):
+    def test_judged_key_distinguishes_confirmed_from_practice_and_control_findings(self):
+        reports = {'entries': [{'id': 'e1', 'name': 'GET /page'}],
+                   'uses': [use('a', 'xss_candidate', 'a.twig', 3, deps=['input_source'])],
+                   'findings': [finding('a')]}
+        row = {'kind': 'xss_candidate', 'expect': 'positive', 'file': 'a.twig', 'line': 3,
+               'entry_names': ['GET /page']}
+        self.assertEqual(check.judged_outcome(row, reports), 'practice_finding')
+        reports['findings'] = [finding('a', 'confirmed_vulnerability')]
+        self.assertEqual(check.judged_outcome(row, reports), 'confirmed')
+        row['entry_names'] = ['POST /page']
+        self.assertEqual(check.judged_outcome(row, reports), 'missed')
+        del row['entry_names']
+        row['expect'] = 'not_raw'
+        self.assertEqual(check.judged_outcome(row, reports), 'control_finding')
+
     def test_multiple_anchors_and_whole_sample_control(self):
         report = {'uses': [use('a', 'xss_candidate', 'a.twig', 3),
                            use('b', 'xss_candidate', 'b.twig', 5),

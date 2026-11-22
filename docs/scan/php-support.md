@@ -5,7 +5,7 @@
 Zazzles analyzes a bounded plain-PHP subset through the same evidence, decision and reporting
 pipeline as JavaScript/TypeScript and Python. It reads source; it does not execute the
 application, install its dependencies, open its database, or make the outbound requests found in
-the code. The acceptance corpus is DVWA at revision `a1978a2`; framework-specific entry discovery for Drupal and Symfony is planned. Verified Twig template-source
+the code. The acceptance corpus is DVWA at revision `a1978a2`; framework-specific entry discovery for Drupal is planned. The [Symfony guide](symfony-support.md) covers route, controller, Doctrine, and Twig support. Verified Twig template-source
 operations are covered by the [template injection analyzer](detection-capabilities/template-injection.md).
 
 Configure a decision-model provider before running the security assessment.
@@ -36,6 +36,8 @@ and troubleshooting, use [offline evidence inspection](running-scans.md#offline-
 | Code and templates | `eval`, string `assert` and `create_function` as interpreter operands. A `file_get_contents` return retains its path's dependencies. Verified Twig `createTemplate` and `template_from_string` take a template-source operand |
 | Deserialization | Global `unserialize` and Symfony `Yaml::parse` with source-backed options, request byte paths, and object-injection outcomes ([analysis rules](analysis/deserialization.md#php)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
+| SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects ([SSRF rules](analysis/ssrf.md)) |
+| Logging | Verified PSR-3 and PHP log emission in Symfony projects ([logging rules](analysis/sensitive-data-logging.md)) |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 
 SQL construction is a practice finding independently of an injection judgment. Bound parameters
@@ -63,7 +65,7 @@ scanned files leaves a gap only when the method is not found before it. Loops, r
 dynamic calls by variable name, polymorphic dispatch through interfaces, Composer autoload
 mapping (namespace declarations are read directly) and unresolved dynamic includes
 (`php_dynamic_include` gaps) are incomplete. Reached bounds and unresolved values stay visible
-and cannot establish protection.
+and cannot establish protection. See the [Symfony guide](symfony-support.md#bounds) for framework-specific bounds.
 
 Library contracts: [mysqli](https://www.php.net/manual/en/book.mysqli.php),
 [PDO](https://www.php.net/manual/en/book.pdo.php),

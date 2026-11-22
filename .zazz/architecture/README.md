@@ -318,7 +318,7 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   provide exact Composer PSR-4 FQCN/method lookup and bounded Symfony/Drupal service maps, with
   `psr4`, `container_service` and explicit unresolved reasons. Symfony block-map autowiring resources
   and explicit class/alias maps, and Drupal `*.services.yml` classes carry config/definition spans.
-  Unsupported YAML stays unresolved. These are resolution inputs; route adapters remain later work.
+  Unsupported YAML stays unresolved. For detected Symfony projects, the same walk provides allow-listed configuration and Twig templates. The Symfony adapter reports route registration, invokes controller actions, and reuses PHP flow, storage, and operation evidence. [Symfony analysis](../../docs/scan/symfony-support.md)
 - **Implemented (PHP effects):** the closed `analysispacks.PHPBuiltinContentEffect` table retains
   content dependencies with unknown protection for six builtins. Mutating `array_shift` invalidates
   stale container shape. The table never establishes validation or context-appropriate encoding.
@@ -326,7 +326,7 @@ immutable afterwards ([source index spec](../specifications/architecture-phase-1
   the original resolver's answers, avoiding repeated parent walks without expanding its semantics.
 - **Planned:** broader branch/loop/recursive witness recipes and store summaries over module state;
   a flat syntax index for flow evaluation; and
-  binding indexes for PHP when a PHP query needs one. Library mode, Symfony and Drupal build on the
+  binding indexes for PHP when a PHP query needs one. Library mode and Drupal build on the
   call index and summaries.
 
 Offline effect so far, with byte-identical reports: juice-shop 64.16 s → 9.89 s, vulnpy 7.98 s →

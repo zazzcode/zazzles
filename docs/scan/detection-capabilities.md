@@ -52,7 +52,7 @@ on its class pages. [OWASP Web Top 10](https://top10.owasp.org/) · [OWASP API T
 |---|---|---|
 | JavaScript and TypeScript | Supported HTTP handlers in Express, Fastify and Hapi, Next.js routes, pages and Server Actions, browser entry points, Apollo GraphQL resolvers and unary gRPC | [Node inputs](analysis/node-inputs.md) · [Next.js](nextjs-support.md) · [Entry selection](running-scans.md#common-entry-selection-and-tagged-checks) |
 | Python | Supported HTTP dispatch in Flask, FastAPI, Quart, Django, Falcon, Bottle, Pyramid, aiohttp and WSGI | [Python analysis](python-support.md) |
-| PHP | Server-mapped `.php` and `.phtml` files with bounded includes and in-repository dispatch | [PHP analysis](php-support.md) |
+| PHP | Server-mapped `.php` and `.phtml` files and Symfony attribute, annotation, and YAML routes | [PHP analysis](php-support.md), [Symfony analysis](symfony-support.md) |
 
 Entry adapters acquire input and establish context for the same claim and verdict model. Each
 language adapter establishes its own supported value flow and protection facts. [Technical approach](../technical-approach.md#common-entry-and-dispatch-architecture)

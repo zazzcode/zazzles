@@ -108,6 +108,7 @@ For general startup, worktree, spec, and PR tasks, see the
 | Product goals, status, and roadmap | [Implementation plan](../project/implementation-plan.md), [detection capabilities](../../docs/scan/detection-capabilities.md) |
 | Architecture & package map | [Architecture README](../architecture/README.md), [request size and relevance](../architecture/request-size-and-evidence-relevance.md) |
 | Product analysis rules | [Analysis rules index](../../docs/scan/analysis/README.md) |
+| Symfony analysis | [User guide](../../docs/scan/symfony-support.md), [implementation contract](../specifications/php-symfony-support.md), [evaluation results](../evaluation/symfony-results.md) |
 | User docs by module | [User docs index](../../docs/README.md): [Code Scan](../../docs/scan/README.md), [Fix](../../docs/fix/README.md), [Endpoint Probe](../../docs/probe/README.md) |
 | Contracts, standards, and process | [Spec index](../specifications/README.md#specification-index), [standards index](../standards/index.yaml), [execution discipline](agent-execution-discipline.md) |
 | Go language-server tooling for agents | [gopls setup](gopls-setup.md) |

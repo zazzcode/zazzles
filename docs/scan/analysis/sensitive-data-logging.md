@@ -93,3 +93,9 @@ is private or identifies a person, so literal-address sensitivity remains a bloc
 it contains. These source kinds are eligible for the same logging questions; a model still must
 establish data class, content and lack of effective redaction consistently. Length, presence and
 comparison facts are separate from content. Arbitrary request logging is not automatically a PII leak.
+
+## Symfony
+
+In Symfony projects, verified PSR-3 LoggerInterface methods and error_log emissions use source-backed sensitive fields or protocol credentials. A resolved receiver and an actual emitted operand are required. Server status values, literal messages and untyped objects remain controls.
+
+[Symfony analysis coverage](../symfony-support.md)

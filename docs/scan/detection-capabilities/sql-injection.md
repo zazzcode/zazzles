@@ -15,6 +15,7 @@ Supported bindings include Sequelize, Prisma raw queries, sql.js, better-sqlite3
 | Bound values | A literal statement with placeholders and a separate parameter argument | May be Protected for the bound values. Any interpolated identifier or raw clause is assessed separately |
 | Structured Sequelize finders | A verified model finder with values in `where` | Ordinary finder values are bound. Raw SQL literal escapes are evaluated separately |
 | Provider-specific literal escaping | Prisma raw SQL with quote doubling inside a single-quoted value | Recognized per operand for SQLite, PostgreSQL and CockroachDB |
+| Doctrine DBAL and ORM | A prepared DBAL statement or ORM QueryBuilder executes source-backed query text | Bound data and executable fragments carry separate evidence |
 
 ## Recorded in Review
 
@@ -22,6 +23,7 @@ Supported bindings include Sequelize, Prisma raw queries, sql.js, better-sqlite3
 | --- | --- | --- | --- | --- |
 | `SQL-R01` | Unresolved query transformation | A custom helper transforms SQL text before execution | Review when the helper’s effect or a route guard is unresolved | Establish the effective SQL text and its source path |
 | `SQL-R02` | Unknown external origin | Executed SQL is assembled from a value whose origin is unresolved | Review with `external_origin_not_established` for the construction claim | Link the value to its source |
+| `SQL-R03` | Unresolved Doctrine query target | An unknown receiver has a query-shaped method | Dispatch or receiver identity stays unresolved | Trace the receiver to its declared Doctrine type |
 
 ## Not recorded
 

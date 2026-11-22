@@ -14,6 +14,7 @@ See [code injection](code-injection.md) and [cross-site scripting](cross-site-sc
 | Python template source | A request string reaches Jinja2 `Template`, Flask `render_template_string` or Mako `Template` | A complete raw source path can be Confirmed |
 | Node and PHP template source | A verified Node compile/render operation or Twig `createTemplate` receives request-dependent source text | Assess the template source operand with its engine contract |
 | Enforced restriction on source | A complete, verified grammar or type control constrains what reaches compilation | May be Protected when the assessed restriction covers every path |
+| Symfony Twig extensions | A resolved project Twig function compiles supplied template source | Follow the context value to the compilation operand |
 
 ## Recorded in Review
 
@@ -21,6 +22,7 @@ See [code injection](code-injection.md) and [cross-site scripting](cross-site-sc
 | --- | --- | --- | --- | --- |
 | `SSTI-R01` | Sandbox without established restrictions | A template environment is marked sandboxed while it compiles request content | Review when the effective restriction is unknown | Prove the effective scope and restrictions of that environment |
 | `SSTI-R02` | Unresolved template source | An opaque helper returns the template text | Review when relevant transfers or protections are unresolved | Resolve the effective source and controls |
+| `SSTI-R03` | Unresolved Twig function | A template calls a function whose registration or callable cannot be resolved | Review when the source-to-compiler path is unresolved | Resolve the extension service and method binding |
 
 ## Not recorded
 

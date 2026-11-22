@@ -13,6 +13,7 @@ In a judged scan, select this family with `--only-family path`.
 | Archive extraction paths | A verified `adm-zip` extraction, `unzipper` entry write, or Python `TarFile.extractall` | Follow the archive or entry path and record supported extractor controls |
 | Contained paths | A resolved value is checked against a trusted directory at a component boundary | May be Protected when every relevant path is contained |
 | Weak containment tests | A raw prefix check does not enforce a path separator boundary | Can support a construction-practice finding |
+| Symfony file responses | A controller `file()` call or `BinaryFileResponse` reads argument 0 | Trace the request or stored path to the verified read |
 
 ## Recorded in Review
 
@@ -20,6 +21,7 @@ In a judged scan, select this family with `--only-family path`.
 | --- | --- | --- | --- | --- |
 | `PATH-R01` | Tar filter depends on runtime defaults | `extractall` omits `filter`, or the filter is dynamic | Review with `tar_filter_unresolved` | Establish the Python runtime and the effective filter |
 | `PATH-R02` | Unresolved effective path | An unmodeled helper or middleware transforms the final filesystem operand | Review when containment on the same operand is unresolved | Follow the transformation and its enforcing controls |
+| `PATH-R03` | Unresolved Symfony file operand | A configured or stored response path has no witnessed origin | Review while path construction is unresolved | Identify the directory and path writer |
 
 ## Not recorded
 

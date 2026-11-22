@@ -25,8 +25,8 @@ answers against scanner evidence before classifying them.
 - [Analysis rules](analysis/README.md) explain how Scan interprets operations, guards, evidence,
   and poor-practice findings.
 - [Finding categories and terminology](glossary.md) defines labels used in reports.
-- [Next.js](nextjs-support.md), [Python](python-support.md), and [PHP](php-support.md) describe
-  their entry and language boundaries.
+- [Next.js](nextjs-support.md), [Python](python-support.md), [PHP](php-support.md), and
+  [Symfony](symfony-support.md) describe their entry and language boundaries.
 - [Semgrep CE comparison](semgrep-ce-cheat-sheet.md) explains how to run a local comparison.
 
 ## Shared project guides

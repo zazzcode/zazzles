@@ -233,3 +233,9 @@ An unrelated unknown template-content value does not erase an established raw-ou
 unknown transformations or relevant guards still prevent protection claims. Runtime registration data,
 mutation, unknown wrappers, unresolved callbacks and reached limits remain explicit gaps. See the
 [Python subset and limits](../python-support.md#finite-generated-http-routes).
+
+## Symfony
+
+Symfony HTML responses use argument 0 of a verified HttpFoundation Response. A literal non-HTML content type excludes the HTML claim. Twig records the output context and the outermost filter or function. Raw output and autoescape-disabled regions carry no encoding evidence. Unknown template paths, transformations, and storage writers remain explicit gaps.
+
+[Symfony analysis coverage](../symfony-support.md)

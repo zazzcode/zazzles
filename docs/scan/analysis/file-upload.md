@@ -54,3 +54,9 @@ path; request-derived parts of the destination are its `stored_name` paths.
 
 The protocol is `upload-components-v2`: `type_restriction`, `execution_exposure`,
 `protection_coverage`.
+
+## Symfony
+
+Symfony UploadedFile::move uses the directory at argument 0 and the optional stored name at argument 1. Client file properties, content-derived types, and allow-list guards are separate inputs to the storage and type facts. The document root determines whether a known destination is served.
+
+[Symfony analysis coverage](../symfony-support.md)

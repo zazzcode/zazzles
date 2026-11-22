@@ -12,6 +12,7 @@ In a judged scan, select this family with `--only-family redirect`.
 | Verified navigation destination | Express `res.redirect`, Next navigation, browser location, Python redirect helpers or PHP `Location` uses a request value | A complete raw destination that can select an external location can be Confirmed |
 | Verified origin or relative path restriction | A check enforces a parsed allowed origin for the final unchanged destination | May be Protected when every relevant path has the restriction |
 | Weak raw URL checks | A raw prefix or substring is used as the restriction | Assess the form of the check and which destination forms remain possible |
+| Symfony redirects | `redirect()` and `RedirectResponse` consume a URL operand | Trace the destination and same-value controls on the path |
 
 ## Recorded in Review
 
@@ -19,6 +20,7 @@ In a judged scan, select this family with `--only-family redirect`.
 | --- | --- | --- | --- | --- |
 | `REDIR-R01` | Unknown redirect status | A `Location` header is set after dynamic status selection | Review where redirect behavior needs status evidence | Resolve the status and its path to the header write |
 | `REDIR-R02` | Unresolved navigation chain | An unmodeled helper rewrites the destination after a check | Review when the final value or its restriction is unresolved | Follow the value through rewriting to navigation |
+| `REDIR-R03` | Unresolved Symfony destination | A service returns an opaque redirect destination | Review when a transfer or control remains unresolved | Establish the effective URL and its source |
 
 ## Not recorded
 

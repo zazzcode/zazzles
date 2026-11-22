@@ -28,6 +28,9 @@ PY_EXPECT = {'construction': 'positive', 'raw_xss': 'positive', 'candidate': 'po
              'form_policy': 'present', 'encoded': 'encoded', 'bound': 'bound', 'absent': 'no_record',
              'registration_or_gap': 'registration', 'review': 'review'}
 ASSESSMENT = {'validation_defect', 'not_confirmed', 'validation_enforced'}
+# Operation-centered kinds have no request source (lane contract section 2.7):
+# a positive is met by a candidate at its anchor with no completeness blocker.
+SOURCELESS_KINDS = {'info_exposure_candidate'}
 
 
 def evaluator():
@@ -74,6 +77,8 @@ def select(row, report, entries):
 
 
 def witnessed(u, row):
+    if u['kind'] in SOURCELESS_KINDS:
+        return True
     deps = u.get('dependencies', [])
     if not any(d.get('source', {}).get('kind') in WITNESS for d in deps):
         return False
@@ -120,6 +125,12 @@ def classify(row, report):
     elif expect == 'not_decisive':
         ok = all(blockers(u) or not any(d.get('source', {}).get('kind') == 'input_source' for d in u.get('dependencies', [])) for u in uses)
         res['outcome'] = 'control_pass' if ok else 'control_fail'
+    elif expect == 'only_lines' and 'anchors' in row:
+        found = [u for u in report['uses'] if u['kind'] == row['kind']]
+        at = sorted({(u['sink']['span']['file'], u['sink']['span']['start_line']) for u in found})
+        ok = all(line in row['anchors'].get(f, []) for f, line in at) and len(found) <= row.get('max_uses', len(found))
+        res['outcome'] = 'control_pass' if ok else 'control_fail'
+        res['observed_lines'] = [f'{f}:{line}' for f, line in at]
     elif expect == 'only_lines':
         lines = sorted({u['sink']['span']['start_line'] for u in report['uses'] if u['kind'] == row['kind'] and u['sink']['span']['file'] == row['file']})
         res['outcome'] = 'control_pass' if set(lines) <= set(row['lines']) else 'control_fail'
@@ -211,7 +222,10 @@ def judged_outcome(row, report):
     uses = select(row, report, entries)
     if row['expect'] == 'positive':
         uses = [u for u in uses if witnessed(u, row)]
-    if row['expect'] == 'only_lines':
+    if row['expect'] == 'only_lines' and 'anchors' in row:
+        uses = [u for u in report['uses'] if u['kind'] == row['kind'] and
+                u['sink']['span']['start_line'] not in row['anchors'].get(u['sink']['span']['file'], [])]
+    elif row['expect'] == 'only_lines':
         uses = [u for u in uses if u['sink']['span']['start_line'] not in row['lines']]
     findings = presented(report)
     outcomes = [findings.get(u['id'], {}) for u in uses]

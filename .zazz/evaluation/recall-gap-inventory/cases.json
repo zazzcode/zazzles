@@ -7,7 +7,7 @@
     "no_record": "No candidate of the kind at the anchor",
     "not_raw": "Every matching xss candidate is classified other than raw (or there is none)",
     "not_decisive": "No matching candidate, or every matching candidate keeps a blocker or lacks a request origin",
-    "only_lines": "Candidates of the kind in the file sit only at the listed lines",
+    "only_lines": "Candidates of the kind in the file sit only at the listed lines; with anchors, every candidate of the kind in the report sits at a listed file and line, and max_uses bounds their count",
     "bound": "No matching sql candidate carries query_text_interpolated",
     "excluded": "Outside candidate/registration recall; reason given",
     "noise_rows": "Source-reviewed anchors for keyed noise classes; the checker counts matching records that still carry the class condition"
@@ -635,6 +635,70 @@
           "email"
         ]
       ]
+    },
+    {
+      "id": "SYM-INFO-01",
+      "entry_names": [
+        "FILE /public/info.php"
+      ],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "info_exposure_candidate",
+      "expect": "positive",
+      "file": "public/info.php",
+      "line": 2,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-INFO-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "info_exposure_candidate",
+      "expect": "only_lines",
+      "anchors": {
+        "public/info.php": [
+          2
+        ]
+      },
+      "max_uses": 1
+    },
+    {
+      "id": "SYM-MASS-01",
+      "entry_names": [
+        "POST /user/edit/"
+      ],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "src/Entity/User.php",
+      "line": 59,
+      "expect_status": "confirmed_vulnerability",
+      "source": [
+        "src/Controller/UserController.php",
+        239
+      ]
+    },
+    {
+      "id": "SYM-MASS-N01",
+      "entry_names": [
+        "ANY /admin/create",
+        "POST /register"
+      ],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-MASS-N02",
+      "entry_names": [
+        "POST /user/about/"
+      ],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "no_record"
     },
     {
       "id": "TS-DESER-N01",

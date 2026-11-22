@@ -64,6 +64,35 @@ class FrozenKeyTest(unittest.TestCase):
         report['uses'][1]['check']['fields'] = ['other']
         self.assertEqual(check.classify(row, report)['outcome'], 'missing_candidate')
 
+    def test_sourceless_positive_needs_anchor_and_no_blocker(self):
+        report = {'entries': [{'id': 'e1', 'name': 'FILE /info.php'}],
+                  'uses': [use('a', 'info_exposure_candidate', 'info.php', 2)]}
+        row = {'kind': 'info_exposure_candidate', 'expect': 'positive', 'file': 'info.php', 'line': 2,
+               'entry_names': ['FILE /info.php']}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_with_witness')
+        report['uses'][0]['completeness']['blockers'] = [{'kind': 'diagnostic_output_environment_dependent'}]
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_evidence_gap')
+        row['line'] = 3
+        self.assertEqual(check.classify(row, report)['outcome'], 'missing_candidate')
+        # A kind with a request source still needs a witness.
+        mass = {'uses': [use('m', 'mass_assignment_candidate', 'E.php', 9)]}
+        self.assertEqual(check.classify({'kind': 'mass_assignment_candidate', 'expect': 'positive', 'file': 'E.php', 'line': 9}, mass)['outcome'],
+                         'candidate_evidence_gap')
+        mass['uses'][0]['dependencies'] = [{'source': {'kind': 'input_source', 'span': span('C.php', 4, 0)}}]
+        self.assertEqual(check.classify({'kind': 'mass_assignment_candidate', 'expect': 'positive', 'file': 'E.php', 'line': 9,
+                                         'source': ['C.php', 4]}, mass)['outcome'], 'candidate_with_witness')
+
+    def test_report_wide_only_lines(self):
+        report = {'uses': [use('a', 'info_exposure_candidate', 'info.php', 2)], 'findings': []}
+        row = {'kind': 'info_exposure_candidate', 'expect': 'only_lines', 'anchors': {'info.php': [2]}, 'max_uses': 1}
+        self.assertEqual(check.classify(row, report)['outcome'], 'control_pass')
+        report['uses'].append(use('b', 'info_exposure_candidate', 'info.php', 2, start=9, entry='e2'))
+        self.assertEqual(check.classify(row, report)['outcome'], 'control_fail')
+        report['uses'][1] = use('b', 'info_exposure_candidate', 'other.php', 4)
+        self.assertEqual(check.classify(row, report)['outcome'], 'control_fail')
+        report['findings'] = [finding('b', 'confirmed_vulnerability')]
+        self.assertEqual(check.judged_outcome(row, report), 'control_finding')
+
 
 class PrecisionTest(unittest.TestCase):
     def setUp(self):

@@ -1,0 +1,16 @@
+security:
+  password_hashers:
+    App\Entity\Account: { algorithm: sha1 }
+    App\Entity\Operator: { algorithm: auto }
+    legacy_digest:
+      id: 'App\Security\LegacyDigest'
+  providers:
+    accounts:
+      entity: { class: App\Entity\Account, property: mail }
+  firewalls:
+    main:
+      provider: accounts
+      form_login: { login_path: sign_in, check_path: sign_in }
+  access_control:
+    - { path: ^/staff, roles: ROLE_STAFF }
+    - { path: ^/office, roles: ROLE_MEMBER, ips: [10.0.0.0/8] }

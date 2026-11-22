@@ -271,8 +271,8 @@ func phpOwnMethod(d *phpClassDecl, name string) *sitter.Node {
 
 // method finds a method through the class, its used traits and its
 // in-repository extends chain, to depth phpClassDepth (D-9). It returns the
-// declaring class and, when the method is not found, the reason: a parent
-// outside the repository leaves a gap only when the method was not found
+// declaring class and, when the method is missing, the reason: a parent
+// outside the repository leaves a gap only when the method is missing
 // before it.
 func (x *phpClassIndex) method(d *phpClassDecl, name string) (owner *phpClassDecl, fn *sitter.Node, module *phpModule, reason string) {
 	seen := map[*phpClassDecl]bool{}

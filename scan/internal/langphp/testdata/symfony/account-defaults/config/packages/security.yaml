@@ -1,0 +1,12 @@
+security:
+  password_hashers:
+    App\Entity\Member: md5
+    quick_digest:
+      id: App\Security\QuickDigest
+  providers:
+    members:
+      entity: { class: App\Entity\Member, property: mail }
+  firewalls:
+    main:
+      provider: members
+      form_login: ~

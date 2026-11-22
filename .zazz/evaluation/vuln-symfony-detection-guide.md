@@ -159,13 +159,31 @@ or the entry's recorded roles.
 | `SYM-LOCAL-02` | `authorization_candidate` | `ANY /local/users` | `LocalController.php:51`–`63` | `present` | Returns `login_identifier` and `role_source` of every account behind the address guard only |
 | `SYM-AUTHZ-R01` | `authorization_candidate` | `ANY /reset` | `src/Services/Mail.php:38` | `present` | An unauthenticated entry writes a field of an account selected by a request value. The defect in this flow is branch 3's `SYM-RESET-01` |
 
+### Branch 3 rows
+
+Owned by [branch 3](../specifications/symfony-more-analyzers-3.md#11-sample-rows-owned-by-this-branch).
+The four positives have expected status `confirmed_vulnerability`. `SYM-ENUM-01` and
+`SYM-HASH-01` list several anchors, and every anchor must have a candidate (`each_anchor`).
+`password_hash_candidate` has no request source, so a candidate at its anchor with no
+completeness blocker meets it.
+
+| ID | Kind | Entry | Anchor | Offline expectation | Source evidence |
+|---|---|---|---|---|---|
+| `SYM-ENUM-01` | `account_enumeration_candidate` | `POST /register` | Lookups `src/Controller/LoginController.php:76` and `:83` | Positive, one candidate per lookup, entry access `none`, differing response lists | `findOneBy` on the user class by request `email`, then by request `username`. The found branch flashes a distinct literal (`:78`, `:85`) and redirects; the other continues to create the account |
+| `SYM-ENUM-02` | `account_enumeration_candidate` | `ANY /reset` | Lookup `src/Controller/PasswordResetController.php:34` | Positive | `findBy` by request `email`. The not-found branch flashes `:36` and redirects; the found branch flashes `:43` and renders |
+| `SYM-RESET-01` | `recovery_delivery_candidate` | `ANY /reset` | Send `src/Services/Mail.php:35`, source `PasswordResetController.php:28` | Positive. Secret `:40` (`csprng`), `recipient_validated: partial`, `recipient_count: request_controlled`, use sites `:34` and `Mail.php:23`, stored field `php-sql:user.reset` with role `recovery_secret` | A `random_bytes` secret reaches a mail link (`Mail.php:24`, `:33`) to each element of the request array (`:31`) and the stored field of each matching account (`:38`). Only element `[0]` was looked up (`:34`) |
+| `SYM-HASH-01` | `password_hash_candidate` | Several | `src/Security/Hasher/Md5Hasher.php:15`; `src/Controller/UserController.php:41`, `LoginController.php:106`, `src/Controller/AdminController.php:105`, `PasswordResetController.php:78` | Positive at each anchor, `algorithm: md5`, `salted: no` | `md5` is the return of a `PasswordHasherInterface::hash` implementation that `config/packages/security.yaml:5` selects (`hasher_class`), and `md5` of a request value is written to the `credential` field at four sites (`credential_field`) |
+| `SYM-ENUM-N01` | `account_enumeration_candidate` | `POST /login` | `LoginController.php:21`–`46` | `no_record` | The only finder (`:32`) takes a database value, not a request value. Every failure path uses one literal |
+| `SYM-ENUM-N02` | `account_enumeration_candidate` | `ANY /admin/create` | `AdminController.php:79`–`90` | `no_record` | The same lookup-and-message shape under entry access `required` |
+| `SYM-RESET-N01` | `recovery_delivery_candidate` | `ANY /reset/{email}/{token}` | `PasswordResetController.php:63`–`84` | `no_record` | No secret is generated or mailed. Its authorization control is `SYM-AUTHZ-N05` |
+| `SYM-HASH-N01` | `password_hash_candidate` | `POST /user/avatar/{user}`, `POST /user/avatar/url/{user}` | `UserController.php:98`, `:138` | `no_record` | `md5(uniqid())` names a file. The input is not a password and the output is not a credential |
+
 **Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
 Mass assignment, `phpinfo()`, and missing authorization are covered by branches 1 and 2 of the
-lane (rows above). The wildcard write stays modeled as a storage writer (D-15) as well.
+lane, and user enumeration, the recovery-secret delivery and MD5 password hashing by branch 3
+(rows above). The wildcard write stays modeled as a storage writer (D-15) as well.
 
-- User enumeration (including the request-shaped `email` lookup at `PasswordResetController.php:34`,
-  previously listed with mass assignment), MD5 password hashing, directory listing,
-  secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
+- Directory listing, secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
   privilege escalation.
 - The request made by `curl` inside `SYM-CMD-01`. It is covered by the command claim. A URL passed
   to a shell program is not an `ssrf` operand.

@@ -240,6 +240,8 @@ func ruleIdentity(use analysis.CandidateUse) (string, string) {
 		return "scan/mass-assignment", "CWE-915"
 	case analysis.AuthorizationKind:
 		return authorizationRule(use)
+	case analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind:
+		return accountRule(use)
 	case "upload", "file_upload_candidate":
 		return "scan/unrestricted-upload", "CWE-434"
 	case "ssrf_candidate":

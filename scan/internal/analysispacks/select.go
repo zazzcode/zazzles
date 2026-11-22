@@ -30,11 +30,11 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 	if !ok || !family.supports(language) {
 		return nil, fmt.Errorf("unsupported %s source language", family.Label)
 	}
-	if family.Name != "xss" && family.Name != "logging" && family.Name != "pollution" && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
+	if family.Name != "xss" && family.Name != "logging" && family.Name != "pollution" && family.Name != accountFamilyName && !family.ObservationOnly && !family.RequiresAPI && use.APIModel != nil {
 		return nil, fmt.Errorf("%s selection must not carry an API contract", family.Label)
 	}
 	var contract *analysis.APIModel
-	if family.RequiresAPI || family.Name == "pollution" && use.APIModel != nil {
+	if family.RequiresAPI || (family.Name == "pollution" || family.Name == accountFamilyName) && use.APIModel != nil {
 		if use.APIModel == nil || use.Completeness == nil || len(use.Completeness.Evidence["sink_binding"]) == 0 {
 			return nil, fmt.Errorf("%s component selection needs verified API binding", family.Label)
 		}

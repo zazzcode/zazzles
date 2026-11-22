@@ -20,6 +20,12 @@ func sourceLanguage(u analysis.CandidateUse, f *Family) (lang.Language, bool) {
 	if f.Name == "authorization" && filepath.Ext(u.Sink.Span.File) == ".twig" && u.APIModel != nil && u.APIModel.ID == PHPAuthorizationOperation {
 		return lang.PHP, true
 	}
+	if f.Name == accountFamilyName && u.APIModel != nil && u.APIModel.ID == PHPPasswordDigest {
+		// A password_hashers line in security.yaml anchors a PHP claim.
+		if ext := filepath.Ext(u.Sink.Span.File); ext == ".yaml" || ext == ".yml" {
+			return lang.PHP, true
+		}
+	}
 	if f.Name != "xss" {
 		return lang.Detect(u.Sink.Span.File)
 	}

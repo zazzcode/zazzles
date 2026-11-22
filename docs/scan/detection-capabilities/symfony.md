@@ -76,6 +76,9 @@ in Review with `storage_origin_unresolved`.
 | [Information exposure](information-exposure.md) | `phpinfo()`, `debug_print_backtrace()`, dumps of environment arrays, `Response` bodies built from server state | No request source. Guards on the path are recorded for the decision model |
 | [Mass assignment](mass-assignment.md) | A whole request bag iterated into `$entity->$key`, a `set…` dispatch or `PropertyAccessor::setValue` | Records the entity's credential, login identifier and role-source fields from the security contracts |
 | [Missing authorization](missing-authorization.md) | A stored write, file write or delete, or a response that carries a census field of a request-selected or enumerated record | Records the subject, the operation, the entry's access and the guards that dominate the operation. An address check is its own guard kind |
+| [Account enumeration](account-enumeration.md) | Doctrine finders on an account class, and the flash, redirect, render, `Response` and `JsonResponse` answers on each side of the result branch | The two response lists are compared with each other. Entries with access `required` are not recorded |
+| [Weak password recovery](weak-password-recovery.md) | Symfony Mailer `Email` and `TemplatedEmail` recipients and content, `MailerInterface::send`, URL generation that carries a generated secret | Records the recipient's origin and the checks that covered it. Mail content is not a rendering sink |
+| [Weak password hashing](weak-password-hashing.md) | A fast digest written to the security user's credential field, a `PasswordHasherInterface` class and `security.password_hashers` | A variable name never establishes a password |
 
 ## Recorded in Review
 
@@ -96,13 +99,14 @@ in Review with `storage_origin_unresolved`.
 | Forms and validation | Symfony Form types and Validator constraints | Not modeled as inputs or as controls |
 | Filesystem component | `Filesystem::remove($path)` | Not a recorded path operation |
 | Session attributes | `$request->getSession()->set()` and `->get()` | Not linked as a store |
-| Mail bodies | HTML passed to `Email::html()` | Not a rendering sink |
+| Mail bodies | HTML passed to `Email::html()` | Not a rendering sink. Mail content is a delivery sink for the recovery claim only |
 | XML parsing | `simplexml_load_string` with entity loading | No XML external entity analyzer |
 
 ## Outside these claims
 
-Cross-site request forgery, user enumeration, password hashing, session cookie policy,
-secrets, debug-mode and profiler configuration and server configuration are not analyzed.
+Cross-site request forgery, session cookie policy, secrets, debug-mode and profiler
+configuration and server configuration are not analyzed.
 A clean report says nothing about them. Authorization of a stored write, a file write or
 delete, and a census-field read is the [missing authorization](missing-authorization.md)
-claim. Entry access is recorded for every route.
+claim. Account enumeration, recovery-secret delivery and password hashing are the
+[account](account-enumeration.md) claims. Entry access is recorded for every route.

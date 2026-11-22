@@ -40,6 +40,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyAuthorizationPolicy(use, a)
 		return
 	}
+	if use.Kind == analysis.AccountEnumerationKind || use.Kind == analysis.RecoveryDeliveryKind || use.Kind == analysis.PasswordHashKind {
+		applyAccountPolicy(use, a)
+		return
+	}
 	if use.Kind == "file_upload_candidate" {
 		applyUploadPolicy(use, a)
 		return

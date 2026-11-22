@@ -50,6 +50,7 @@ Library references for [routing](https://symfony.com/doc/6.4/routing.html),
 | Redirect | Controller `redirect()` and `RedirectResponse` destination operands. `redirectToRoute()` resolves an internal route name. |
 | Information exposure | `phpinfo()`, backtraces and environment dumps reached from routes and served files, with dominating guards as evidence. `dump()` and `dd()` stay in Review. |
 | Authorization | A stored write, a file write or delete, or a census-field read, with the entry's access and the guards that dominate the operation ([analysis rules](analysis/authorization.md)) |
+| Account | Account enumeration from finder branches, recovery secrets delivered through Symfony Mailer, and fast password digests stored as credentials, in hasher classes or in `password_hashers` (family `account`, [analysis rules](analysis/account-security.md)) |
 | Mass assignment | Whole request bags iterated into dynamic property writes, `set…` dispatch, `PropertyAccessor::setValue` or reflection on an entity, with the census roles of its fields. Form, serializer and payload mapping stay in Review. |
 | Logging | Verified PSR-3 method and `error_log` emission of a value with a sensitive-data source. |
 | Validation | Automatic PHP query checks use source-backed request field names and control evidence. |

@@ -82,6 +82,8 @@ type phpSet struct {
 	census         map[*symfonyProject]*phpSecurityCensus
 	// authzChanges collects stored writes while entries are walked.
 	authzChanges []authzChange
+	// account is the account adapter's state.
+	account *phpAccountState
 }
 
 type phpWrite struct {
@@ -417,6 +419,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 	}
 	s.assemblePHPInputs(out)
 	s.finishAuthorization(out)
+	s.finishAccount(out)
 	if err := parse.FinalizeEntries(out); err != nil {
 		return nil, err
 	}

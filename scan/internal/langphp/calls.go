@@ -35,7 +35,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		all = phpCombine(all, values[i])
 	}
 	f.massAssignmentCall(n, nodes, values)
-	return f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.callValues(n, nodes, values, all)))
+	return f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.accountCall(n, nodes, values, f.callValues(n, nodes, values, all))))
 }
 
 // callValues shares the native API models with compiled witness recipes; only
@@ -445,6 +445,9 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return sliceFrom(values, 0)
 	}
 	receiver := f.eval(obj)
+	if v, ok := f.mailerCall(n, receiver, method, values); ok {
+		return v
+	}
 	if v, ok := f.symfonyOperationMethod(n, receiver, method, nodes, values); ok {
 		return v
 	}
@@ -664,6 +667,9 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	if v, ok := f.symfonyObjectCreation(n, clsNode, cls); ok {
 		return v
 	}
+	if v, ok := f.mailCreation(n, clsNode, cls); ok {
+		return v
+	}
 	cls = strings.TrimPrefix(cls, "\\")
 	switch cls {
 	case "mysqli":
@@ -776,6 +782,9 @@ func (f *phpFlow) boundHelper(call *sitter.Node, callable *phpBoundCallable, val
 			v = phpTransfer(values[pos], m.evidence("argument_to_parameter", p))
 		} else if def := phpField(p, "default_value"); def != nil {
 			v = h.eval(def)
+		}
+		if phpArrayParameter(m, p) {
+			h.noteArrayParameter(p, v)
 		}
 		h.env[phpVarName(m, phpField(p, "name"))] = v
 		pos++

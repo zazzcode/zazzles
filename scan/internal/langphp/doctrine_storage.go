@@ -160,6 +160,8 @@ func (f *phpFlow) doctrinePropertyWrite(object phpValue, left, name *sitter.Node
 		if key := obj.fields[phpText(f.module, name)]; key != "" {
 			f.doctrineWrite(obj, key, v, f.module.evidence("storage_write", left))
 			f.noteAuthzProperty(object, key, v, left)
+			f.noteSecretStore(object, key, v, left)
+			f.noteDigestStore(key, v, left)
 		}
 		return
 	}
@@ -258,13 +260,18 @@ func doctrineClassConstant(index *phpClassIndex, m *phpModule, n *sitter.Node) s
 
 func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method string, values []phpValue) (phpValue, bool) {
 	many := false
+	// The callers pass the lower-cased name; the lookup keeps the declared
+	// case so a magic finder names its field as the entity declares it.
+	declared := phpText(f.module, phpField(n, "name"))
+	if !strings.EqualFold(declared, method) {
+		declared = method
+	}
 	method = strings.ToLower(method)
 	switch method {
 	case "findall", "findby":
 		many = true
 	case "find", "findoneby":
 	case "count":
-		return phpValue{}, true
 	default:
 		switch {
 		case strings.HasPrefix(method, "findoneby") && len(method) > len("findoneby"):
@@ -275,6 +282,7 @@ func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method strin
 		}
 	}
 	entity := ""
+	criteria := values
 	switch strings.ToLower(receiver.class) {
 	case "doctrine\\orm\\entitymanagerinterface", "doctrine\\orm\\entitymanager":
 		if method != "find" {
@@ -284,6 +292,8 @@ func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method strin
 		if len(args) > 0 {
 			entity = doctrineClassConstant(f.set.classIndex(), f.module, args[0])
 		}
+		// EntityManager::find(Class::class, $id): the identifier is argument 2.
+		criteria = values[min(1, len(values)):]
 	default:
 		switch {
 		case receiver.classDecl != nil && f.doctrineRepository(receiver.classDecl):
@@ -293,6 +303,10 @@ func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method strin
 		default:
 			return phpValue{}, false
 		}
+	}
+	f.noteEnumerationLookup(n, entity, declared, criteria)
+	if method == "count" {
+		return phpValue{}, true
 	}
 	object := f.doctrineResultEntity(n, entity, many)
 	return f.noteFinderSubject(n, object, method, values), true

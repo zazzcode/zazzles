@@ -30,7 +30,8 @@ PY_EXPECT = {'construction': 'positive', 'raw_xss': 'positive', 'candidate': 'po
 ASSESSMENT = {'validation_defect', 'not_confirmed', 'validation_enforced'}
 # Operation-centered kinds have no request source (lane contract section 2.7):
 # a positive is met by a candidate at its anchor with no completeness blocker.
-SOURCELESS_KINDS = {'info_exposure_candidate'}
+# A row with each_anchor needs that at every listed anchor, not at any one.
+SOURCELESS_KINDS = {'info_exposure_candidate', 'password_hash_candidate'}
 
 
 def evaluator():
@@ -76,6 +77,12 @@ def select(row, report, entries):
     return out
 
 
+def anchor_groups(row, uses):
+    """The uses at each listed anchor, in key order."""
+    return [[u for u in uses if u['sink']['span']['file'] == f and u['sink']['span']['start_line'] == line]
+            for f, lines in row['anchors'].items() for line in lines]
+
+
 def witnessed(u, row):
     if u['kind'] in SOURCELESS_KINDS:
         return True
@@ -107,6 +114,13 @@ def classify(row, report):
                   for u in uses if (c := u.get('check')) for field in c.get('fields', [])}
         if len(uses) < row.get('min_uses', 1) or not all(tuple(c) in checks for c in row.get('required_checks', [])):
             res['outcome'] = 'missing_candidate'
+        elif row.get('each_anchor') and any(not group for group in anchor_groups(row, uses)):
+            res['outcome'] = 'missing_candidate'
+        elif expect == 'positive' and row.get('each_anchor'):
+            good = all(any(witnessed(u, row) and not blockers(u) for u in group) for group in anchor_groups(row, uses))
+            res['outcome'] = 'candidate_with_witness' if good else 'candidate_evidence_gap'
+            if not good:
+                res['blockers'] = sorted({b for u in uses for b in blockers(u)}) or ['no_witnessed_source']
         elif expect == 'positive' and any(witnessed(u, row) and not blockers(u) for u in uses):
             res['outcome'] = 'candidate_with_witness'
         elif expect == 'positive':
@@ -249,6 +263,15 @@ def judged_outcome(row, report):
     elif row['expect'] == 'only_lines':
         uses = [u for u in uses if u['sink']['span']['start_line'] not in row['lines']]
     findings = presented(report)
+    if row['expect'] == 'positive' and row.get('each_anchor'):
+        groups = [[findings.get(u['id'], {}) for u in group] for group in anchor_groups(row, uses)]
+        if any(not g for g in groups):
+            return 'missed'
+        if all(any(is_finding(f) and f.get('status') == 'confirmed_vulnerability' for f in g) for g in groups):
+            return 'confirmed'
+        if any(is_finding(f) and f.get('status') != 'confirmed_vulnerability' for g in groups for f in g):
+            return 'practice_finding'
+        return 'review'
     outcomes = [findings.get(u['id'], {}) for u in uses]
     if row['expect'] in CONTROL_EXPECT:
         if not outcomes:

@@ -193,6 +193,7 @@ func descriptors() ([]Component, error) {
 	out = append(out, applicationDescriptors("exposure")...)
 	out = append(out, applicationDescriptors("mass-assignment")...)
 	out = append(out, applicationDescriptors("authorization")...)
+	out = append(out, applicationDescriptors(accountFamilyName)...)
 	out = append(out, outboundDescriptors()...)
 	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent(), symfonyInputComponent())
 	return out, nil
@@ -209,7 +210,7 @@ func ownsComponents(f Family) bool {
 // families of the Symfony lane. Each owns every component it selects, so no
 // existing component's bytes or selected digest changes.
 func applicationFamily(name string) bool {
-	return name == "exposure" || name == "mass-assignment" || name == "authorization"
+	return name == "exposure" || name == "mass-assignment" || name == "authorization" || name == accountFamilyName
 }
 
 func applicationQuestions(name string) ([]Question, func(string) []map[string]string, []string) {
@@ -218,6 +219,9 @@ func applicationQuestions(name string) ([]Question, func(string) []map[string]st
 		return ExposureQuestions(), ExposureChoices, ExposureRoles()
 	case "authorization":
 		return AuthorizationQuestions(), AuthorizationChoices, AuthorizationRoles()
+	case accountFamilyName:
+		// Evidence roles differ per kind; the policy checks them by kind.
+		return AccountQuestions(), AccountChoices, nil
 	default:
 		return MassAssignmentQuestions(), MassAssignmentChoices, MassAssignmentRoles()
 	}
@@ -228,6 +232,9 @@ func applicationDescriptors(name string) []Component {
 	protocol := familyProtocol(name)
 	owner := "internal/analysispacks/" + strings.ReplaceAll(name, "-", "_") + ".go"
 	compiled := "internal/langphp/" + strings.ReplaceAll(name, "-", "_") + ".go"
+	if name == accountFamilyName {
+		compiled = "internal/langphp/account_enumeration.go"
+	}
 	test := "TestApplicationFamiliesSelect"
 	base := func(id, kind, material string, app []string) Component {
 		return Component{ID: id, Version: "1", Kind: kind, Owner: owner, Applicability: app, Compatibility: []string{protocol}, Domains: []string{"security", name}, Tests: []string{test}, Material: material}
@@ -253,6 +260,8 @@ func applicationDescriptors(name string) []Component {
 		body += "A diagnostic operation that prints configuration, environment, runtime state or a stack to a caller discloses internal state. A recorded guard is evidence: judge whether it dominates the operation and restricts the caller. A served file under the document root is reachable by URL."
 	case "authorization":
 		body += "An authorization candidate is one protected operation on a record the request may select. Judge whether the request selects the record, whether each recorded guard is enough for that operation, and whether the entry's access is enough given the other writers of the same field. A role name is a string. An address check is a property of the connection, not of the user. Do not decide that a guard is enough merely because it is present."
+	case accountFamilyName:
+		body += "An account candidate is one of three claims. Enumeration: an entry that needs no login looks up an account by a request value and the found and not-found branches answer; compare the two recorded responses with each other, never with expected wording. Recovery delivery: a generated secret reaches mail content; judge who chooses the recipients and whether a check covered every recipient. Password hashing: judge whether the digest input is a password from the recorded basis and whether the stored form is one fast digest. Mail content is delivered, not rendered."
 	default:
 		body += "Mass assignment is a write whose property names the request chooses. A whole request bag iterated into dynamic property writes, dynamic setter calls or a property accessor lets the request name any property. A literal allow-list of keys is the fix; property_exists restricts nothing. Census roles from framework contracts (credential, login identifier, role source) mark fields a request should not choose; a name hint is only a hint."
 	}

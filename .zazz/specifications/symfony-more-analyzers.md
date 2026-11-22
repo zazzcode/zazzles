@@ -18,7 +18,7 @@
 - **Run log** `.zazz/ephemeral/symfony-more-analyzers-run-log.md` (gitignored), one section per
   branch. No tracker is used.
 - **Implementation coordination** One Lead Agent per session. Each branch is implemented in its
-  own session, in dependency order.
+  own unattended session, in dependency order (§4.2).
 - **Companion guides** [Using gh-stack](../docs/using-gh-stack.md), `spec-driven`, `pr-builder`.
 - **Integration branch** `stage`. Every PR needs human review. Agents never merge.
 - **Approved review shape** Bounded stacked review lane of four draft PRs.
@@ -44,8 +44,9 @@ the shared facts land once.
 Rejected alternatives: one milestone PR (too large to review, as PR #39 showed at 112 fixture
 cases), and sibling worktrees (the three shared facts above would be written three times).
 
-The stack shape is fixed before implementation. A session that needs to add, remove, split or
-merge a branch stops and asks the owner, then updates this document and its change log.
+The stack shape is fixed before implementation. A session that finds it needs to add, remove,
+split or merge a branch treats that as a halt (§4.2). The owner then updates this document and
+its change log.
 
 ### Branches
 
@@ -58,10 +59,12 @@ merge a branch stops and asks the owner, then updates this document and its chan
 
 All four branches live in this one worktree. No branch gets its own worktree.
 
-### Lane setup (first session only)
+### Lane setup
 
-The worktree starts on branch `symfony-more-analyzers` at the baseline, with the specifications
-uncommitted. The first session renames that branch and starts the stack:
+**Done on 2026-11-22.** The branch was renamed, the stack was initialized on `stage`, and the
+documentation checkpoint is commit `28c3e7f` on `symfony-more-analyzers-1`, pushed to `origin`.
+The branch 1 session verifies this state with `gh stack view --json` and `git log` and does not
+repeat it. The commands that were run:
 
 ```bash
 git config rerere.enabled true
@@ -146,7 +149,7 @@ family's `--only-family` name is user-visible.
 | 1 | `mass-assignment` | `mass_assignment_candidate` | `mass-assignment` | 915 |
 | 2 | `authorization` | `authorization_candidate` | `missing-authorization`, `address-based-access` | 862, 639, 285, 291 |
 | 3 | `account` | `account_enumeration_candidate`, `recovery_delivery_candidate`, `password_hash_candidate` | `account-enumeration`, `weak-password-recovery`, `weak-password-hash` | 204, 640, 1287, 916 |
-| 4 | `configuration` | `configuration_candidate` | `insecure-configuration` | 548, 352, 1004, 732, 269, 489 |
+| 4 | `configuration` | `configuration_candidate` | `insecure-configuration` | 548, 352, 1004, 614, 732, 269, 489 |
 | 4 | `ssrf` (existing) | `ssrf_candidate` with contract `api.php-shell-url-client-v1` | `server-side-request-forgery` | 918 |
 
 Every new family takes new component, contract and protocol identifiers. No existing component's
@@ -206,9 +209,10 @@ this closed list: `role_check`, `ownership_check`, `authenticated_check`, `secre
 
 ### 2.4 Contract change rule
 
-If an upper branch needs a different shape from a lower branch's fact, the session stops, the
-owner approves, the lower branch is changed on the lower branch, the stack is rebased upstack, and
-both specifications and this section are updated in place with a change-log entry.
+If an upper branch needs a different shape from a lower branch's fact, that is a halt (§4.2). An
+unattended session does not change the shape itself. After the owner approves, the change is made
+on the lower branch, the stack is rebased upstack, and both specifications and this section are
+updated in place with a change-log entry.
 
 ### 2.5 File ownership
 
@@ -245,12 +249,57 @@ extended and improved wherever the claim fits them.
 | Bounded YAML reader and walk allow-list | `security.yaml`, `framework.yaml` |
 | `ssrf` and `command` families | Unchanged requests; new records only |
 
-- An implementation session that finds a claim fits an existing family better than this contract
-  states brings the evidence to the owner. Folding a family into another changes a user-visible
-  name and a protocol, so it follows the contract change rule of §2.4.
+- The owner decided the packaging in §5. A session that finds a claim would fit an existing
+  family better records the evidence in the run log and the results document as a follow-up and
+  implements the contract as written.
 - A defect the work exposes in an existing analyzer is fixed on the branch that found it, with a
   fixture case, when the fix is inside that branch's scope. Otherwise it is recorded in the
   results document as a follow-up.
+
+### 2.7 Protocol and policy pattern for a new family
+
+Every new family is judged the way the existing families are. Each branch specification gives a
+protocol table for its families with exact question names, the allowed answers, and the status
+rules. The shared rules are here. `scan/internal/judge/deserialization.go` is the code to mirror.
+
+**Statuses.** A judged candidate ends in one of three statuses, the ones the existing policies
+set: `confirmed_vulnerability` (a Confirmed finding), `protected_for_claim` (Protected) and
+`needs_evidence` (Review). In this lane's criteria, "Confirmed" means `confirmed_vulnerability`.
+"A control is not a finding" means its candidate, when one exists, is not
+`confirmed_vulnerability` and is not presented as a poor-practice finding. A control with offline
+expectation `guarded` must end `protected_for_claim`.
+
+**Policy order.** Each `apply<Family>Policy` function does these steps in this order and returns
+at the first that applies:
+
+1. Start at `needs_evidence`.
+2. The answers carry the family's protocol identifier. Otherwise gap `<family>_protocol_missing`.
+3. The candidate's facts exist and validate, its completeness record names the claim kind, and
+   every required evidence role of the branch's table has evidence. Otherwise
+   `<family>_claim_missing`, `<family>_facts_invalid` or `<family>_evidence_missing`.
+4. No answer contradicts a recorded fact. The branch's table lists the contradictions.
+   Otherwise `<family>_answers_inconsistent`.
+5. Any gap the branch's table marks **blocking** keeps the candidate at `needs_evidence`.
+6. The table's Protected rule gives `protected_for_claim`.
+7. The table's Confirmed rule gives `confirmed_vulnerability`.
+8. Anything else stays `needs_evidence`.
+
+**Operation-centered claims.** `exposure`, `configuration` and `password_hash_candidate` have no
+request source. Their completeness record requires the operation and entry (or file) evidence
+only, and `check.py` treats a positive of these kinds as present when the candidate is at its
+anchor with no blocker. No policy step for them asks for an `input_source`.
+
+**A policy test per family.** Each family has a table-driven policy test with one row per rule
+of its table: an answer combination and the recorded facts, and the status and gap expected. It
+runs offline with no model.
+
+**Wiring.** A new family touches every site the deserialization family touched. Find them with:
+
+```bash
+grep -rn 'deserialization_candidate\|DeserializationKind\|\.Deserialization\b\|DeserializationProtocol\|"deserialization"' --include='*.go' scan | grep -v _test.go
+```
+
+Each hit gets a sibling for the new family or a recorded reason for skipping it in the run log.
 
 ## 3. Sample answer key for the lane
 
@@ -306,8 +355,11 @@ Follow the [common rules](architecture-update-plan.md#common-agent-implementatio
 - **Scope.** A branch's diff stays inside `scan/`, `docs/`, `.zazz/`, `README.md`, `go.mod` and
   `go.sum`. If required wiring needs a file its scope table does not list, add the row and the
   reason to that table and the run log and continue.
-- **Paid calls.** Follow [AGENTS.md](../../AGENTS.md#credentials-and-live-model-calls) and the
-  judged checkpoint protocol of §4.1. Offline criteria need no key.
+- **Paid calls.** Paid judged runs of the sample are authorized by the owner for this lane
+  within §4.1. Follow [AGENTS.md](../../AGENTS.md#credentials-and-live-model-calls) for keys.
+  Offline criteria need no key.
+- **Gate.** The contributor gate is `gofmt -l cmd scan` (prints nothing), `go vet ./...`,
+  `go build ./...` and `go test -race ./... -count=1`.
 - **Verifier.** Each branch ends with a fresh-context, read-only Verifier Agent running the
   checks its specification lists.
 
@@ -334,11 +386,42 @@ recorded. Only a judged run proves that the decision model reaches the right sta
 - Each run is logged in the run log and in
   [symfony-results.md](../evaluation/symfony-results.md): run ID, scanner commit, scope, request
   count, input tokens, and the status of each row in scope.
-- The bound is §5 OQ-1. Reaching it with a criterion unmet is a halt, reported with each open
-  row and its first failing stage.
+- The bound is 8 judged runs per branch, or two consecutive full runs with no row changing
+  status (§5 OQ-1). Reaching it with a criterion unmet is a halt, reported with each open row and
+  its first failing stage.
 - A judged run of another sample, provider or model needs the owner's word.
 
-Halt and ask the owner when:
+### 4.2 Unattended operation
+
+Each branch is implemented by one unattended session. The owner is not available during the run.
+These rules replace "ask the owner" wherever the lane or a branch specification says it.
+
+- **No questions.** Every owner decision is in §5. Do not wait for confirmation of anything this
+  contract or the branch specification already decides.
+- **The specification is the instruction.** Implement the decision tables and case tables as
+  written. Where a table is silent or two readings are possible, take the narrower one (record
+  less, claim less), write the reading and its reason in the run log under "Deviations", and
+  continue. Do not add a rule, a contract name or a list entry that no table contains.
+- **One slice at a time.** For each slice: write its fixtures and failing tests, see them fail,
+  implement, see them pass, run the package tests, commit on the branch. Do not start the next
+  slice with the current one red.
+- **Check your own claims.** Before marking a criterion met, run its command and paste the
+  output into the run log. A criterion with no recorded output is not met.
+- **Blocked item protocol.** When a halt condition of this section or of the branch applies:
+  1. Stop work on the blocked item only. Do not work around it, and do not weaken, delete,
+     skip or relabel a test, a case, a key row or a criterion to get past it.
+  2. Write it in the run log under "Blocked": what blocked, the evidence, the exact decision
+     needed, and which criteria depend on it.
+  3. Finish every slice and criterion that does not depend on the blocked item.
+  4. Commit and push. Update the draft PR body with a "Blocked" section at the top.
+  5. End the session with a report that lists each criterion as met, blocked or not reached.
+- **Recoverable failures are not halts.** A failing test, a build error, a rebase conflict in
+  your own files, a transient provider error or a tool that needs a retry is ordinary work. Fix
+  it and continue.
+- **Session end.** The last actions are always: run the gate, run the Verifier Agent, update the
+  run log and the PR body, push. Leave the worktree clean on the branch being delivered.
+
+A halt condition starts the blocked item protocol of §4.2. The halt conditions are:
 
 1. An existing row of `scan/cli/testdata/architecture-baseline.json`, a DVWA keyed outcome or one
    of the 14 Symfony positives and their controls from PR #39 changes.
@@ -347,38 +430,27 @@ Halt and ask the owner when:
 3. A required positive cannot reach a witnessed candidate without a rule that names the sample,
    or a row looks wrong on source review. Bring the source evidence. Do not relabel the row.
 4. A lower-branch fact of §2.3 needs a different shape (§2.4).
-5. The same test fails three iterations in a row with no clear recovery.
+5. The same test fails five iterations in a row with no new diagnosis between them.
 6. The stack shape needs to change, or `gh stack view --json` shows a chain or PR base that does
    not match §0.
-7. The judged-run bound of §5 OQ-1 is reached with a judged criterion unmet (§4.1).
+7. The judged-run bound is reached with a judged criterion unmet (§4.1).
+8. A paid call would be needed outside §4.1: another sample, provider or model.
 
-## 5. Open questions
+## 5. Owner decisions
 
-A default is applied to each so the specifications are complete. The owner confirms or overrules
-them before the first implementation session writes code. The answer is recorded here and in the
-run log.
+Every open question was answered by the owner on 2026-11-22. None is open. An implementation
+session does not ask them again.
 
-- **OQ-1. Paid judged runs. Answered 2026-11-22:** required. Each branch validates its
-  checkpoints with paid judged runs on the sample, and branch 4 confirms every capability on the
-  whole sample (§4.1). Still to confirm with the owner at the first session: the numeric bound
-  per branch. Default: OpenAI `gpt-6-luna` as in the Symfony contract's D-28, and a halt at 8
-  judged runs per branch or two consecutive full runs with no row changing status.
-- **OQ-2. Configuration scanning in Code Scan.** Default: in scope for branch 4 as a bounded
-  `configuration` family over allow-listed files, because README entries 18 and 21 cannot close
-  without it. The alternative is to record both as outside Code Scan and remove the deployment
-  slice from branch 4.
-- **OQ-3. Unlisted defects.** Default: weak password hashing (branch 3), disabled CSRF protection
-  and the script-readable session cookie (branch 4) are in scope. Committed secrets are out: the
-  roadmap has a separate secret-scanning item with its own placeholder and test-data rules.
-- **OQ-4. README entry 8.** Default: accepted as not present in source at the pin, recorded with
-  its evidence, and not required.
-- **OQ-5. Authorization scope.** Default: one `authorization` family. A candidate is a state
-  change on a request-selected record, or a read that returns a census field. Public reads of
-  other fields make no record.
-- **OQ-6. Family names.** Default: the five names of §2.2 as `--only-family` values.
-- **OQ-7. New families or extensions.** Default: five new families and one extension, as §2.2
-  and §2.6 state. The owner may prefer fewer families, for example enumeration as a check inside
-  the validation family, at the cost of a protocol change to that family.
+| ID | Question | Decision |
+|---|---|---|
+| OQ-1 | Paid judged runs | Required at every checkpoint (§4.1). OpenAI `gpt-6-luna`. A branch stops judged iteration at 8 judged runs, or at two consecutive full runs with no row changing status |
+| OQ-2 | Configuration scanning in Code Scan | In scope, bounded: allow-listed framework and deployment files with closed check lists (branch 4) |
+| OQ-3 | Defects in source that the README does not list | In scope: weak password hashing (branch 3), disabled CSRF protection and the session cookie flags (branch 4). Out of scope: committed secrets, left to the roadmap's secret-scanning item |
+| OQ-4 | README entry 8 | Accepted as not present in source at the pin. Recorded with its evidence. Not required. The sample is not changed |
+| OQ-5 | Authorization scope | State changes on a request-selected record, plus reads that return a `credential`, `login_identifier` or `role_source` field. Other reads make no record |
+| OQ-6, OQ-7 | Families | Five new families with the names of §2.2, and one extension of `ssrf`. No claim is folded into an existing family's protocol. `account` stays one family with three kinds |
+| OQ-8 | Behavior on a halt in an unattended run | Finish everything that does not depend on the blocked item, then stop with a report (§4.2). Never weaken a row or a criterion |
+| OQ-9 | Draft pull requests | Each session opens its draft PR with `gh stack submit --auto` after its first green slice and keeps it current. Never marked ready. Never merged |
 
 ## 6. Cross-branch acceptance bar
 
@@ -399,6 +471,22 @@ the sample in the closing state of §3. Every PR needs human sign-off before mer
 
 Accepted steering, review feedback and contract changes update the sections above in place. This
 section records the audit trail.
+
+### 2026-11-22 — Owner decisions, second pass, unattended execution
+
+Source: the owner answered every open question, asked for a second review pass, and stated that
+each branch will be implemented unattended by a less capable model than the one that wrote the
+specifications.
+
+- **§5.** Open questions became the owner-decision table. OQ-8 and OQ-9 are new.
+- **§2.7 (new).** Statuses, the policy order, operation-centered completeness, the policy test
+  and the wiring command. The first draft named families and facts but did not say how a judged
+  status is reached, which a session could not have derived.
+- **§4, §4.2 (new).** Unattended operation and the blocked item protocol. "Ask the owner"
+  became a halt that finishes the unblocked work first.
+- **Branch specifications.** Each gained a protocol table, a policy test criterion, a report
+  criterion and corrections listed in its own change log.
+- **Verification impact.** New offline policy and report tests in every branch.
 
 ### 2026-11-22 — Drafted
 

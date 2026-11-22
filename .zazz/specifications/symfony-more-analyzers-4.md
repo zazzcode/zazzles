@@ -176,6 +176,23 @@ directory of static assets and on a directory that receives uploads are differen
 that distinction is context the model is here to weigh. *Rejected:* model-free practice
 observations in the style of the Next.js checks, which cannot weigh the join.
 
+Protocol `configuration-components-v1`, claim kind `configuration`. The shared policy order is
+the lane contract §2.7. Required evidence roles: `setting`, `scope`. A candidate has no request
+source and needs no entry.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `setting_effect` | `in_effect`, `not_in_effect`, `unknown` | Is the recorded setting applied to the deployed application, given `configuration.scope` and the deployment-mapping evidence? |
+| `weakness` | `weakens`, `benign`, `unknown` | Given `configuration.joined`, does the setting weaken this application? |
+| `mitigation` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `configuration.mitigations` remove the weakness? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `mitigation: adequate` when no mitigation is recorded. `not_in_effect` when `config_installed` evidence is present and the scope is mapped |
+| Blocking gap | `deploy_mapping_unresolved`, `config_file_unread` |
+| Protected | `not_in_effect`, or `benign`, or `mitigation: adequate` with a recorded mitigation |
+| Confirmed | `in_effect`, `weakens`, and `mitigation` of `none` or `inadequate` |
+
 **D-4. Checks.**
 
 | Check | Recorded when | Joined application facts | No record when |
@@ -189,7 +206,12 @@ observations in the style of the Next.js checks, which cannot weigh the join.
 
 **D-5. Deployment mapping is read from the Dockerfile, literally.** `WORKDIR`, `COPY <src> <dst>`
 and `ADD` with literal operands give a map from container paths to project paths. Apache
-`DocumentRoot` and `<Directory>` paths are resolved through it. An environment file is "deployed"
+`DocumentRoot` and `<Directory>` paths are resolved through it. A web-server configuration file
+is recorded as installed (`config_installed` evidence) when a `COPY` places it under a server
+configuration directory (`/etc/apache2/`, `/etc/httpd/`, `/usr/local/apache2/conf/`,
+`/etc/nginx/`), or when it is a `.htaccess` under the document root. With no Dockerfile, the
+record carries `deploy_mapping_unresolved` only when the scope path cannot be matched to a
+project directory by its trailing path segments. An environment file is "deployed"
 when a `COPY` places it at the project root as `.env` or `.env.local`, or when it is the project's
 `.env` and nothing overrides it. An operand with a build argument or a glob is recorded as
 `deploy_mapping_unresolved`, and the record depending on it carries that gap. *Why literal only:*
@@ -200,7 +222,7 @@ resolving build arguments needs the build context, which the scanner does not ha
 | Fact | Accepted evidence |
 |---|---|
 | Schedule and user | A system-crontab line (six fields, the sixth a user) in a `cron.d/` file, a `crontab` file, or the literal text a Dockerfile `RUN echo "…" > /etc/cron.d/<name>` writes. A five-field line installed by `crontab <file>` runs as the Dockerfile's current `USER`, default `root` |
-| Execution chain | The command's program and literal path arguments, after `cd <dir> &&` is applied. When an argument is a project script (`bash x`, `sh x`, `php x`, or `./x`), that script is read and each line's program and literal path arguments are added, one level only |
+| Execution chain | The command's program and literal path arguments. A leading `cd <dir> &&` sets the working directory for the rest of the line and for the script it runs, so a relative path in the script resolves against it. When an argument is a project script (`bash x`, `sh x`, `php x`, or `./x`), that script is read and each line's program and literal path arguments are added, one level only |
 | Writable link | In the same Dockerfile: `chown` of a chain file, or of a directory containing it with `-R`, to a user other than the schedule's user; or `chmod` giving group or other write (`o+w`, `g+w`, `a+w`, or an octal mode with those bits). `COPY --chown=` to such a user counts |
 
 The candidate is recorded when all three exist. The schedule user is compared by name with the
@@ -247,6 +269,10 @@ removes the command injection and leaves the request to an attacker-chosen host.
 report would go clean after that fix. *Why not a new family:* the claim is exactly SSRF, and the
 family's questions already ask about destination control and restriction.
 
+The `ssrf` family's questions, protocol and policy are not changed. A shell-client candidate
+must satisfy the existing SSRF facts validation and completeness roles as a URL-open candidate
+does, with the new contract as its `APIModel`.
+
 **D-10. The command candidate is untouched.** The same sink keeps its
 `command_execution_candidate` with identical facts and request bytes. The new record is a second
 use at the same span with a different kind, as the URL-open contract already produces a `path`
@@ -256,7 +282,8 @@ and an `ssrf` record for one operand.
 
 The lane contract §4 applies in full. Additional for this branch:
 
-- Start from the top of the stack: `gh stack add symfony-more-analyzers-4`.
+- Start from the top of the stack: `gh stack add symfony-more-analyzers-4`. The session is
+  unattended (lane contract §4.2).
 - S1 (readers) has no dependency on the PHP adapter and may go to a Contributor Agent. S2 to S4
   are the Lead Agent's or serialized Contributor work, because they share `configuration.go`.
   S5 (shell URL client) owns disjoint files and may run beside S2 to S4.
@@ -269,7 +296,9 @@ The lane contract §4 applies in full. Additional for this branch:
 ## 7. Acceptance criteria
 
 1. **AC1 (key).** The detection guide and `cases.json` hold the §1.1 rows. `check.py` accepts
-   `configuration_candidate` and rows anchored at non-PHP files. Verified by `test_check.py` and
+   `configuration_candidate` and rows anchored at non-PHP files. Each positive has
+   `expect_status: confirmed_vulnerability`, and `SYM-CONF-02` uses the `anchors` form with its
+   three lines. Verified by `test_check.py` and
    by `check.py` on a branch 3 offline report, which reports the five positives missing.
 2. **AC2 (walk and readers).** `TestWalkDeployList` proves the D-1 lists, the limits, that a
    symlink and a file under `vendor/` are not read, and that `ByLanguage` and `Files` are
@@ -307,10 +336,18 @@ The lane contract §4 applies in full. Additional for this branch:
    prints only lines in test files.
 8. **AC8 (catalog and selection).** `go test ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`
    passes. The family and the new contract are registered with reference URLs,
-   `analysispacks.Select` accepts every new fixture candidate, `--only-family configuration` is
-   accepted, a finding anchored at a Dockerfile or YAML line renders in HTML and SARIF with its
-   file and line (`TestConfigurationFindingLocations`), and `TestExistingFamilyRequestsUnchanged`
-   still passes.
+   `analysispacks.Select` accepts every new fixture candidate, `--only-family` and
+   `--skip-family` accept `configuration`, a finding anchored at a Dockerfile or YAML line renders
+   in HTML and SARIF with its file and line (`TestConfigurationFindingLocations`), and
+   `TestExistingFamilyRequestsUnchanged` still passes with every lower-branch family included.
+   `TestConfigurationPolicy` has one row per rule of the D-3 table.
+   `TestConfigurationFindingsReport` asserts for one stubbed Confirmed candidate of each check:
+   `type_ids` is `insecure-configuration`, and the SARIF rule carries the check's CWE
+   (`directory_listing` 548, `csrf_disabled` 352, `session_cookie_script_readable` 1004,
+   `session_cookie_insecure_transport` 614, `debug_enabled` 489,
+   `scheduled_privileged_writable` 732). `TestEnvValuesNeverReported` scans a fixture whose
+   environment file holds a marker value under a third key and asserts the marker appears in no
+   JSON, HTML, SARIF or request output.
 9. **AC9 (isolation and determinism).** `TestArchitectureBaseline` passes with every pre-existing
    row byte-identical and one row per new fixture directory. `TestDVWASourceKey` passes. Two
    scans of each new fixture and of the sample are byte-identical.
@@ -372,7 +409,19 @@ The lane contract §4 applies in full. Additional for this branch:
     covered" section, `.zazz/specifications/README.md`, `spec-index.md`, the lane contract's
     definition of done and the orientation's documentation map name the delivered state. Checked
     by reading and by `doc-check`.
-15. **AC15 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes.
+15. **AC15 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes:
+    `gofmt -l cmd scan` prints nothing, and `go vet ./...`, `go build ./...` and
+    `go test -race ./... -count=1` succeed.
+16. **AC16 (pull request).** A draft PR from `symfony-more-analyzers-4` exists whose base is
+    `symfony-more-analyzers-3` (or `stage` after the lower PRs landed), created with
+    `gh stack submit --auto`. Its body links this specification, lists every criterion with its
+    evidence or its blocked state, and holds the closing table of AC13.
+17. **AC17 (generality on a second application).** An offline scan of DVWA at its pin with the
+    lane's families enabled is recorded in `symfony-results.md`: the count of candidates per new
+    kind, and a source review of up to ten candidates per kind stating for each whether the
+    record is a correct observation. No expected count is set, because DVWA has no key for these
+    families. A candidate that the review finds wrong is fixed with a fixture case or listed as a
+    follow-up with its cause. `TestDVWASourceKey` still passes.
 
 ## 8. Test strategy
 
@@ -480,7 +529,7 @@ prove.
 | **S4** | Address trust | `address_trust.go` | S1 | AC5 |
 | **S5** | Shell URL client contract | `php_shell_url_client.go`, `analysispacks/ssrf.go` | S0 | AC6 |
 | **S6** | Family registration, policy, report locations | `analysispacks/`, `judge/`, `report/` | S2, S3 | AC8 |
-| **S7** | Transfer fixtures, sample key test, determinism, no-drift, the lane's judged run, results, architecture, user and closing documents | `pipeline/symfony_test.go`, `docs/`, `.zazz/` | All | AC7, AC9–AC15 |
+| **S7** | Transfer fixtures, policy and report tests, sample key test, determinism, no-drift, the DVWA offline review, the lane's judged run, results, architecture, user and closing documents, draft PR | `pipeline/symfony_test.go`, `docs/`, `.zazz/` | All | AC7–AC17 |
 
 S1 starts with `RD-01` failing. S5 starts with `SU-01` failing and is independent of S1 to S4.
 
@@ -546,7 +595,7 @@ func (f *phpFlow) shellURLClient(n *sitter.Node, command phpValue, argv []phpVal
 ## 10. Definition of done
 
 - [ ] Required reading done and the standards-index lookup recorded in the run log.
-- [ ] AC1 to AC15 verified, each with its command and output in the run log.
+- [ ] AC1 to AC17 verified, each with its command and output in the run log.
 - [ ] The stack shows four branches in order, and the no-drift check held.
 - [ ] The diff against `origin/symfony-more-analyzers-3` matches §4.
 - [ ] The architecture, user and closing documents of AC10, AC11 and AC14 exist and are linked.
@@ -556,11 +605,8 @@ func (f *phpFlow) shellURLClient(n *sitter.Node, command phpValue, argv []phpVal
 
 ## 11. Open questions
 
-The lane's OQ-1, OQ-2 (configuration scanning in scope) and OQ-3 (CSRF and cookie checks in
-scope, secrets out) apply. If the owner answers OQ-2 with "out of scope", this branch keeps D-8 to
-D-10, the Symfony framework checks of D-4 and the closure, and drops `Result.Deploy`, the
-`deployconf` package, D-5, D-6 and rows `SYM-CONF-01` and `SYM-CONF-02`, which are then recorded
-as outside Code Scan.
+None. The owner's decisions are in the lane contract §5: configuration scanning is in scope and
+bounded, the CSRF and session-cookie checks are in scope, and committed secrets are out.
 
 ## 12. Run log protocol
 
@@ -569,37 +615,87 @@ every file the two allow-lists opened on the sample.
 
 ## 13. Agent implementation prompt
 
-> Work in the `symfony-more-analyzers` sibling worktree. Read AGENTS.md, the orientation contents,
-> `.zazz/specifications/symfony-more-analyzers.md`, then
-> `.zazz/specifications/symfony-more-analyzers-4.md` and its §2 reading. Load the `spec-driven`
-> skill and `.zazz/docs/using-gh-stack.md`. Read the run log and `git log`. Verify the path, the
-> worktree list and `gh stack view --json`.
+> You are implementing the top branch of a stacked lane, unattended, and closing the lane.
+> Nobody will answer questions during this run. Everything you need is in the documents named
+> here. Follow them exactly.
 >
-> Add the branch with `gh stack add symfony-more-analyzers-4` from the top of the stack. Carry any
-> lower-branch review change upward with `gh stack rebase --upstack`, or run `gh stack sync` if a
-> lower PR has landed.
+> **Setup.** Work only in the `symfony-more-analyzers` sibling worktree. Read `AGENTS.md`, then
+> `.zazz/specifications/symfony-more-analyzers.md` (the lane contract) in full, then
+> `.zazz/specifications/symfony-more-analyzers-4.md` in full, then the files §2 lists, then the
+> run log at `.zazz/ephemeral/symfony-more-analyzers-run-log.md` and `git log`. Load the
+> `spec-driven` skill and `.zazz/docs/using-gh-stack.md`. Run `pwd`, `git status --short
+> --branch`, `git worktree list` and `gh stack view --json`.
 >
-> Deliver S0 to S7 in order. Add each slice's fixtures and failing test before its code. Read only
-> the files of D-1 and only the two environment keys of D-2. Implement the check tables as
-> written. Join each setting to application facts and leave the judgment to the model. The shell
-> URL client contract adds a record and changes none. Do not weaken, delete or relabel a case of
-> §8 or a row of §1.1. Stop on any halt condition.
+> **Branch.** If a lower PR has landed, run `gh stack sync` first. If
+> `symfony-more-analyzers-4` does not exist, check out the top of the stack and run
+> `gh stack add symfony-more-analyzers-4`. Branch 2 must be complete: if the run log shows
+> unmet criteria this branch depends on (entry access, state changes, the address guard), that
+> is a halt. Add a "Branch 4" section to the run log.
 >
-> This branch closes the lane: make the full judged run last, record the closing table, and
-> update the closing documents of AC14. Open the draft PR with `gh stack submit --auto`. Its base
-> is `symfony-more-analyzers-3`. Never merge.
+> **Work.** Deliver slices S0 to S7 of §9 in that order. For each slice: write its fixtures and
+> failing tests from the §8 case tables, record the failing output, implement, make them pass,
+> run the package tests, then commit on this branch. Implement the §5 tables literally. A
+> directive, option or file that is not in a table is not modeled. Use the question names,
+> answers and status rules of D-3 exactly.
 >
-> Verifier Agent, fresh context, read-only: run `go build ./...`, `go vet ./...`, `go test ./...`,
-> `go test ./scan/cli -run TestArchitectureBaseline`, `TestDVWASourceKey`,
-> `TestSymfonySourceKey` and the AC12 no-drift command. Then check by reading the sample's JSON
-> report that (1) the four configuration candidates are at their anchors with their joins;
-> (2) no report text contains a value from an environment file other than `APP_ENV` and
-> `APP_DEBUG`; (3) `Analytics.php:32` has both a command and an SSRF record and
-> `UserController.php:195` has only a command record; (4) the address-guard record carries
-> `address_trust`; (5) `check.py` prints 30 of 30; (6) no pre-existing baseline row changed.
-> Report PASS or FAIL per item with the command output.
+> **Rules that never bend.** Open only the files of D-1. Keep only the two environment keys of
+> D-2 and discard every other line before storing anything. Execute nothing and expand no
+> variable. Join each setting to application facts and leave the judgment to the model. The
+> shell URL client contract adds a record and changes no existing record or request. Nothing
+> may name or copy the sample. Do not weaken, delete, skip or relabel a test, a §8 case, a §1.1
+> row or a §7 criterion. Do not edit the lower-branch files AC12 lists, except the one hook in
+> `authorization_guards.go`. Do not merge anything.
+>
+> **Judged runs.** Paid judged runs of the sample are authorized. Run the family checkpoints
+> AC13 lists as the lane contract §4.1 states. Make the lane acceptance run last, as a full scan
+> with no family, entry or route scope, on the commit you submit. Stop judged iteration at 8
+> runs.
+>
+> **Closure.** Write the closing table of AC13 in `symfony-results.md`, do the DVWA offline
+> review of AC17, and update the closing documents of AC14.
+>
+> **When blocked.** Follow the blocked item protocol of the lane contract §4.2. A failing test
+> or build error is not a halt. Fix it.
+>
+> **Finish.** Run the gate of AC15 and the no-drift command of AC12. Start a fresh-context,
+> read-only Verifier Agent with the text below and record its report. Open or update the draft
+> PR with `gh stack submit --auto` (AC16). Update the run log. End with a list of AC1 to AC17,
+> each marked met with its evidence, blocked, or not reached, and the closing table.
+>
+> **Verifier Agent prompt.** "Read-only. In the `symfony-more-analyzers` worktree on branch
+> `symfony-more-analyzers-4`, run `go build ./...`, `go vet ./...`,
+> `go test -race ./... -count=1`, `go test ./scan/cli -run TestArchitectureBaseline -count=1`,
+> `TestDVWASourceKey`, `TestSymfonySourceKey`, and the no-drift command of AC12 in
+> `.zazz/specifications/symfony-more-analyzers-4.md`. Then scan the Symfony sample offline and
+> read its JSON report. Check: (1) a `configuration_candidate` exists at `docker/apache.conf:2`,
+> `Dockerfile:50`, `config/packages/framework.yaml:4` and `:13`, each with joined facts; (2) no
+> output file contains a value from an environment file other than those of `APP_ENV` and
+> `APP_DEBUG`; (3) `src/Services/Analytics.php:32` has both a `command_execution_candidate` and
+> an `ssrf_candidate`, and `src/Controller/UserController.php:195` has no `ssrf_candidate`;
+> (4) the address-guard record carries `address_trust` with a status other than `unread`;
+> (5) `check.py` prints 30 of 30 positives and no control failure; (6) no pre-existing baseline
+> row changed; (7) the judged report named in `symfony-results.md` shows all 30 required
+> positives as `confirmed_vulnerability` and no control as a finding; (8) the closing table
+> lists all 21 README entries. Report PASS or FAIL for each item with the command output.
+> Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Second pass and unattended execution
+
+- **D-3.** Question names, answers and status rules for the `configuration` family.
+- **D-5.** `config_installed` evidence, so "in effect" rests on a recorded fact, and the rule
+  for a project with no Dockerfile.
+- **D-6.** The working directory set by `cd` carries into the script, which the sample row
+  depends on.
+- **D-9.** The shell-client candidate must satisfy the existing SSRF facts and completeness.
+- **AC1, AC8.** `expect_status` and the three-anchor row; named policy and report tests with a
+  CWE per check; a test that no environment value leaks, which §3 states and nothing verified.
+- **AC16, AC17 (new).** The draft PR is a criterion. An offline review on DVWA checks the
+  families on an application they were not built against.
+- **§11, §13.** No open question. The prompt is written for an unattended run.
+- **Verification impact.** New offline tests: one policy test, one report test, one leak test.
+  One additional offline scan and review.
 
 ### 2026-11-22 — Drafted
 

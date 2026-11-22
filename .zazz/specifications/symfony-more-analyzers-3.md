@@ -128,10 +128,60 @@ Each table is a closed list. A name outside a table is unmodeled.
 validation family.** The existing `account-creation-validation` type asks whether required fields
 are enforced before an account is stored. Enumeration asks whether two responses differ, and it
 also occurs in recovery flows where no account is created. *Why a new family:* a different
-question on different evidence. The family's protocol carries a question set per kind, as the
-`code` family does for its two kinds. If the `Family` registration cannot hold a question set per
-kind, stop and ask the owner before splitting it into three families, because family names are
-user-visible.
+question on different evidence. The family's protocol carries a question set per kind (D-9), as
+the `code` family does for its two kinds. The owner decided that `account` stays one family
+(lane contract §5). If the `Family` registration cannot hold a question set per kind, extend the
+registration so it can, for this family only, without changing how any existing family
+registers. If that is not possible without changing an existing family's digest, it is a halt.
+
+**D-9. Protocol and policy.** Protocol `account-components-v1`. The shared policy order is the
+lane contract §2.7. Each kind has its own claim kind, evidence roles, questions and rules.
+
+`account_enumeration_candidate`, claim kind `account_enumeration`. Required evidence roles:
+`input_source`, `account_lookup`, `result_branch`, `entry_access`.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `response_difference` | `distinguishable`, `indistinguishable`, `unknown` | Can a caller tell the `enumeration.found` response from the `enumeration.not_found` response? |
+| `existence_disclosure` | `discloses`, `does_not_disclose`, `unknown` | Does that difference tell a caller with no login whether an account exists for the value sent? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `indistinguishable` when the two recorded sequences differ in status or redirect target |
+| Blocking gap | `response_unresolved`, and any entry-access gap of branch 2 |
+| Protected | `indistinguishable`, or `does_not_disclose` |
+| Confirmed | `distinguishable` and `discloses` |
+
+`recovery_delivery_candidate`, claim kind `recovery_delivery`. Required evidence roles:
+`secret_source`, `mail_recipient`, `mail_content`, `control_flow`.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `recipient_control` | `request_controlled`, `account_bound`, `unknown` | Does the request choose who receives the secret, as the recipient origin states? |
+| `validation_coverage` | `none`, `partial`, `complete`, `unknown` | Did a check tie every recipient to the account the secret is for, given `recovery.recipient_validated` and `recovery.shape_uses`? |
+| `secret_quality` | `adequate`, `weak`, `unknown` | Is the secret unpredictable, given `recovery.secret_strength`? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `complete` when `recipient_validated` is `partial` or `none`. `adequate` when `secret_strength` is `weak`. `account_bound` when the recipient origin is a request value |
+| Blocking gap | None specific. A mail call through an unmodeled client makes no candidate |
+| Protected | `validation_coverage: complete` and `secret_quality: adequate` |
+| Confirmed | `request_controlled` with `validation_coverage` of `none` or `partial`. Or `secret_quality: weak` |
+
+`password_hash_candidate`, claim kind `password_hash`. Required evidence roles:
+`digest_operation`, `password_basis`.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `password_input` | `password`, `not_password`, `unknown` | Is the digest's input a user password, given `password_hash.basis` and its evidence? |
+| `hash_strength` | `fast_digest`, `adaptive`, `unknown` | Is the stored form a single fast digest, given `password_hash.algorithm`, `salted` and `iterated`? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `adaptive` when the algorithm is on the D-8 digest list and `iterated` is `no` |
+| Blocking gap | `password_digest_unmodeled` |
+| Protected | `not_password` |
+| Confirmed | `password` and `fast_digest`. A salt does not change this |
 
 ### Account enumeration
 
@@ -227,7 +277,8 @@ so a hasher class and a configuration line can be anchors.
 
 The lane contract §4 applies in full. Additional for this branch:
 
-- Start from the top of the stack: `gh stack add symfony-more-analyzers-3`.
+- Start from the top of the stack: `gh stack add symfony-more-analyzers-3`. The session is
+  unattended (lane contract §4.2).
 - S1 (enumeration), S2 with S3 (mailer and recovery) and S4 (hashing) own disjoint new files and
   may go to Contributor Agents. `control.go`, `calls.go`, `security_fields.go` and the family
   registration files are edited only by the Lead Agent.
@@ -238,7 +289,9 @@ The lane contract §4 applies in full. Additional for this branch:
 
 1. **AC1 (key).** The detection guide and `cases.json` hold the §1.1 rows. `check.py` accepts the
    three kinds. Verified by `test_check.py` and by `check.py` on a branch 2 offline report, which
-   reports the four positives missing.
+   reports the four positives missing. Each positive has
+   `expect_status: confirmed_vulnerability`. `SYM-ENUM-01` and `SYM-HASH-01` use the `anchors`
+   form, and every listed anchor must have a candidate.
 2. **AC2 (enumeration).** Cases `EN-01` to `EN-14` pass in `TestAccountEnumeration`: a lookup by
    request value with differing branch responses yields one candidate with both response lists;
    identical responses, a lookup by a non-request value, a lookup that includes the credential, a
@@ -264,8 +317,15 @@ The lane contract §4 applies in full. Additional for this branch:
    prints only lines in test files.
 7. **AC7 (catalog and selection).** `go test ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`
    passes. The family and its three contracts are registered with reference URLs,
-   `analysispacks.Select` accepts every new fixture candidate, `--only-family account` is accepted,
-   and `TestExistingFamilyRequestsUnchanged` (branch 2) still passes.
+   `analysispacks.Select` accepts every new fixture candidate, `--only-family` and
+   `--skip-family` accept `account`, and `TestExistingFamilyRequestsUnchanged` (branch 2) still
+   passes with the three lower-branch families included. `TestAccountPolicy` has one row per rule
+   of the three D-9 tables. `TestAccountFindingsReport` asserts for one stubbed Confirmed
+   candidate of each kind: `type_ids` of `account-enumeration`, `weak-password-recovery` or
+   `weak-password-hash`; SARIF rules tagged `CWE-204`, `CWE-640` and `CWE-916`; a
+   `password_hash_candidate` anchored at a YAML line renders with that file and line; and
+   `TestMailContentNotRenderingSink` proves that a request value in `html()` content produces no
+   `xss_candidate`.
 8. **AC8 (isolation and determinism).** `TestArchitectureBaseline` passes with every pre-existing
    row byte-identical and one row per new fixture directory. `TestDVWASourceKey` passes. Two scans
    of each new fixture and of the sample are byte-identical.
@@ -310,7 +370,13 @@ The lane contract §4 applies in full. Additional for this branch:
       Confirmed findings, every earlier positive as Confirmed, and no control of this or an
       earlier branch as a finding. `symfony-results.md` records each run and
     the final status of every row.
-14. **AC14 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes.
+14. **AC14 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes:
+    `gofmt -l cmd scan` prints nothing, and `go vet ./...`, `go build ./...` and
+    `go test -race ./... -count=1` succeed.
+15. **AC15 (pull request).** A draft PR from `symfony-more-analyzers-3` exists whose base is
+    `symfony-more-analyzers-2` (or `stage` after the lower PRs landed), created with
+    `gh stack submit --auto`. Its body links this specification and lists every criterion with
+    its evidence or its blocked state.
 
 ## 8. Test strategy
 
@@ -392,7 +458,7 @@ prove.
 | **S2** | Mailer contracts | `mailer.go` | S0 | AC3 |
 | **S3** | Secret sources, array-shape use, recovery candidate, `recovery_secret` role | `recovery_delivery.go`, `security_fields.go` | S2 | AC4 |
 | **S4** | Digest contracts, hasher classes, `password_hashers` reader | `password_hash.go`, `symfony_security.go` | S0 | AC5 |
-| **S5** | Transfer and plain fixtures, sample key test, determinism, no-drift, judged runs, results, documents | `pipeline/symfony_test.go`, `docs/`, `.zazz/architecture/` | All | AC6–AC14 |
+| **S5** | Transfer and plain fixtures, policy and report tests, sample key test, determinism, no-drift, branch-acceptance judged run, results, documents, draft PR | `pipeline/symfony_test.go`, `docs/`, `.zazz/architecture/` | All | AC6–AC15 |
 
 S1 starts with `EN-01` failing. S1, S2 with S3, and S4 are independent after S0.
 
@@ -460,7 +526,7 @@ func (f *phpFlow) digestCall(n *sitter.Node, name string, values []phpValue) (ph
 ## 10. Definition of done
 
 - [ ] Required reading done and the standards-index lookup recorded in the run log.
-- [ ] AC1 to AC14 verified, each with its command and output in the run log.
+- [ ] AC1 to AC15 verified, each with its command and output in the run log.
 - [ ] The stack shows branch 3 on branch 2, and the no-drift check held.
 - [ ] The diff against `origin/symfony-more-analyzers-2` matches §4.
 - [ ] The architecture section and the user pages of AC9 and AC10 exist and are linked.
@@ -469,8 +535,8 @@ func (f *phpFlow) digestCall(n *sitter.Node, name string, values []phpValue) (ph
 
 ## 11. Open questions
 
-The lane's OQ-1, OQ-3 (weak password hashing in scope) and OQ-6 apply. None is specific to this
-branch.
+None. The owner's decisions are in the lane contract §5: weak password hashing is in scope and
+`account` is one family.
 
 ## 12. Run log protocol
 
@@ -478,35 +544,73 @@ Section "Branch 3" of the lane run log, with the items branch 1's §12 lists.
 
 ## 13. Agent implementation prompt
 
-> Work in the `symfony-more-analyzers` sibling worktree. Read AGENTS.md, the orientation contents,
-> `.zazz/specifications/symfony-more-analyzers.md`, then
-> `.zazz/specifications/symfony-more-analyzers-3.md` and its §2 reading. Load the `spec-driven`
-> skill and `.zazz/docs/using-gh-stack.md`. Read the run log and `git log`. Verify the path, the
-> worktree list and `gh stack view --json`.
+> You are implementing one branch of a stacked lane, unattended. Nobody will answer questions
+> during this run. Everything you need is in the documents named here. Follow them exactly.
 >
-> Add the branch with `gh stack add symfony-more-analyzers-3` from the top of the stack. Carry any
-> lower-branch review change upward with `gh stack rebase --upstack`, or run `gh stack sync` if a
-> lower PR has landed.
+> **Setup.** Work only in the `symfony-more-analyzers` sibling worktree. Read `AGENTS.md`, then
+> `.zazz/specifications/symfony-more-analyzers.md` (the lane contract) in full, then
+> `.zazz/specifications/symfony-more-analyzers-3.md` in full, then the files §2 lists, then the
+> run log at `.zazz/ephemeral/symfony-more-analyzers-run-log.md` and `git log`. Load the
+> `spec-driven` skill and `.zazz/docs/using-gh-stack.md`. Run `pwd`, `git status --short
+> --branch`, `git worktree list` and `gh stack view --json`.
 >
-> Deliver S0 to S5 in order. Add each slice's fixtures and failing test before its code. Implement
-> the decision tables as written. Compare responses with each other and never with a phrase list.
-> Read entry access and the census from the lower branches; do not rebuild them. Do not weaken,
-> delete or relabel a case of §8 or a row of §1.1. Stop on any halt condition.
+> **Branch.** If a lower PR has landed, run `gh stack sync` first. If
+> `symfony-more-analyzers-3` does not exist, check out the top of the stack and run
+> `gh stack add symfony-more-analyzers-3`. Branches 1 and 2 must be complete: if the run log
+> shows unmet criteria this branch depends on (the census, entry access, `secret_check`), that
+> is a halt. Add a "Branch 3" section to the run log.
 >
-> Open the draft PR with `gh stack submit --auto`. Its base is `symfony-more-analyzers-2`. Never
-> merge.
+> **Work.** Deliver slices S0 to S5 of §9 in that order. For each slice: write its fixtures and
+> failing tests from the §8 case tables, record the failing output, implement, make them pass,
+> run the package tests, then commit on this branch. Implement the §5 decision tables
+> literally. A name that is not in a table is not modeled. Use the question names, answers and
+> status rules of D-9 exactly. Read entry access and the census from the lower branches.
 >
-> Verifier Agent, fresh context, read-only: run `go build ./...`, `go vet ./...`,
-> `go test ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`,
-> `go test ./scan/cli -run TestArchitectureBaseline`, `TestDVWASourceKey`,
-> `TestSymfonySourceKey` and the AC11 no-drift command. Then check by reading the sample's JSON
-> report that (1) the registration and reset entries have their enumeration candidates and the
-> login and admin-create entries have none; (2) the recovery candidate has
-> `recipient_validated: partial` with two use sites; (3) the five hashing anchors are present and
-> the two `md5(uniqid())` lines are not; (4) the AC6 grep prints only test lines; (5) no
-> pre-existing baseline row changed. Report PASS or FAIL per item with the command output.
+> **Rules that never bend.** Compare a response with the other response, never with a list of
+> phrases. A password is established only by the evidence D-8 lists. Mail content is not a
+> rendering sink. Nothing may name or copy the sample. Do not weaken, delete, skip or relabel a
+> test, a §8 case, a §1.1 row or a §7 criterion. Do not edit the lower-branch files AC11 lists,
+> except the one role added to `security_fields.go`. Do not merge anything.
+>
+> **Judged runs.** Paid judged runs of the sample are authorized. Run the checkpoints AC13
+> lists as the lane contract §4.1 states, and stop judged iteration at 8 runs.
+>
+> **When blocked.** Follow the blocked item protocol of the lane contract §4.2. A failing test
+> or build error is not a halt. Fix it.
+>
+> **Finish.** Run the gate of AC14 and the no-drift command of AC11. Start a fresh-context,
+> read-only Verifier Agent with the text below and record its report. Open or update the draft
+> PR with `gh stack submit --auto` (AC15). Update the run log. End with a list of AC1 to AC15,
+> each marked met with its evidence, blocked, or not reached.
+>
+> **Verifier Agent prompt.** "Read-only. In the `symfony-more-analyzers` worktree on branch
+> `symfony-more-analyzers-3`, run `go build ./...`, `go vet ./...`,
+> `go test -race ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/... -count=1`,
+> `go test ./scan/cli -run TestArchitectureBaseline -count=1`, `TestDVWASourceKey`,
+> `TestSymfonySourceKey`, and the no-drift command of AC11 in
+> `.zazz/specifications/symfony-more-analyzers-3.md`. Then scan the Symfony sample offline and
+> read its JSON report. Check: (1) `POST /register` has two `account_enumeration_candidate`
+> records and `ANY /reset` has one, and the login and admin-create actions have none; (2) the
+> `recovery_delivery_candidate` has `recipient_validated: partial` with two use sites and stored
+> field `php-sql:user.reset`; (3) a `password_hash_candidate` exists at each of the five
+> anchors of `SYM-HASH-01` and none at `UserController.php:98` or `:138`; (4) no `xss_candidate`
+> has a mail call as its sink; (5) the AC6 grep prints only test-file lines; (6) no pre-existing
+> baseline row changed; (7) the judged report named in `symfony-results.md` shows the four
+> positives as `confirmed_vulnerability`. Report PASS or FAIL for each item with the command
+> output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Second pass and unattended execution
+
+- **D-9 (new).** Question names, answers and status rules for the three kinds.
+- **D-1.** The fallback for a registration that cannot hold per-kind questions is decided:
+  extend the registration for this family. Asking the owner is removed.
+- **AC1, AC7.** `expect_status` and multi-anchor rows; named policy and report tests; a test
+  that mail content is not a rendering sink, which §3 states and nothing verified.
+- **AC14, AC15.** The gate names its commands. The draft PR is a criterion.
+- **§11, §13.** No open question. The prompt is written for an unattended run.
+- **Verification impact.** New offline tests: one policy test, one report test, one sink test.
 
 ### 2026-11-22 — Drafted
 

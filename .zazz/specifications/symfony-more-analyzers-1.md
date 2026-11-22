@@ -161,7 +161,7 @@ shape. This branch implements `credential`, `login_identifier`, `role_source` an
 |---|---|
 | `credential` | A class implementing `Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface`: the mapped field its `getPassword()` returns. Or any mapped field written from `password_hash(…)`, `PasswordHasherInterface::hash` or `UserPasswordHasherInterface::hashPassword` |
 | `login_identifier` | `security.providers.<name>.entity.property` for the entity class, read by the bounded YAML reader. Or the mapped field `getUserIdentifier()` (or `getUsername()` on Symfony 5) returns |
-| `role_source` | The mapped field `getRoles()` returns on a `UserInterface` class. Plus each mapped field read by `getRoles()` or by a method carrying `#[ORM\PrePersist]`, `#[ORM\PreUpdate]` (or the docblock forms) whose body writes a `role_source` field. One step |
+| `role_source` | The mapped field `getRoles()` returns on a `UserInterface` class, directly or through a local variable assigned from it and then extended (`$r = $this->grants; $r[] = '…'; return array_unique($r);`). Plus each mapped field read by `getRoles()` or by a method carrying `#[ORM\PrePersist]`, `#[ORM\PreUpdate]` (or the docblock forms) whose body writes a `role_source` field. One step: a field read through a call to another method or service is not followed |
 | `name_hint` | The property name, lower-cased with separators removed, is on this list: `isadmin`, `admin`, `issuperuser`, `superuser`, `isstaff`, `role`, `roles`, `permissions`, `privileges`, `password`, `passwordhash`, `apikey`, `token`, `resettoken`, `verified`, `isverified`, `balance`, `credit`, `ownerid`, `userid`, `tenantid` |
 
 *Why contracts first:* an application can call its privilege flag anything. The framework
@@ -228,6 +228,44 @@ set, and does the target have a field the request should not choose. Each questi
 facts it reads. *Why new families:* neither claim fits an existing protocol, and a changed
 protocol on an existing family would invalidate its saved answers.
 
+**D-13. Protocols and policy.** The shared order is the lane contract §2.7.
+
+`exposure`, protocol `exposure-components-v1`, claim kind `exposure`. Required evidence roles:
+`diagnostic_operation`, `entry`, `control_flow`.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `exposure_output` | `internal_state`, `benign`, `unknown` | Does the recorded operation emit server configuration, environment, runtime state or a stack, as `exposure.subject` states? |
+| `exposure_reach` | `reachable`, `restricted`, `unknown` | Can a caller reach the operation through the recorded entry, given `exposure.guards` and `exposure.entry_served`? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `restricted` with no guard recorded. `reachable` with `entry_served: no` |
+| Blocking gap | `diagnostic_output_environment_dependent` |
+| Protected | `exposure_output: benign`, or `exposure_reach: restricted` with at least one guard |
+| Confirmed | `internal_state` and `reachable` |
+
+`mass-assignment`, protocol `mass-assignment-components-v1`, claim kind `mass_assignment`.
+Required evidence roles: `input_source`, `key_origin`, `property_write`, `target_class`,
+`control_flow`.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `key_control` | `request_chosen`, `fixed`, `unknown` | Does the request choose which properties are written, as the key origin and `mass_assignment.shape` state? |
+| `key_restriction` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `key_guards` limit the names to a set that excludes the fields the request should not choose? |
+| `field_impact` | `privileged_field`, `no_sensitive_field`, `unknown` | Does the target class have a field the request should not choose, judged from `security_fields` and the listed mapped fields? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `adequate` with no `key_allow_list` guard recorded. `privileged_field` when `security_fields` is empty. `fixed` when the key origin is a whole request bag |
+| Blocking gap | `mass_assignment_form_unmodeled`, `mass_assignment_serializer_unmodeled`, `mass_assignment_payload_unmodeled`. `security_fields_unresolved` blocks only when `security_fields` is empty |
+| Protected | `key_restriction: adequate` with a `key_allow_list` guard |
+| Confirmed | `request_chosen`, `key_restriction` of `none` or `inadequate`, and `privileged_field` |
+| Stays Review | `no_sensitive_field`: the write is poor practice and is not confirmed as a privilege defect |
+
+A `name_hint` role alone satisfies "`security_fields` is not empty". The question text tells the
+model it is a hint.
+
 **D-12. Entries.** `exposure` accepts HTTP entries, including server-mapped `FILE` entries.
 `mass-assignment` accepts HTTP entries. Both are PHP-only in this version and say so in
 `Languages`.
@@ -236,8 +274,8 @@ protocol on an existing family would invalidate its saved answers.
 
 The lane contract §4 applies in full, including its halt conditions. Additional for this branch:
 
-- This is the first session. Do the lane setup of the lane contract §0 before anything else, and
-  resolve its open questions with the owner.
+- The lane setup and the documentation checkpoint are already done (lane contract §0). Verify
+  them and continue. The session is unattended (lane contract §4.2).
 - The Lead Agent works alone on S0 and S1. S2 (exposure) and S3 plus S4 (census and mass
   assignment) may go to two Contributor Agents in this worktree with the file ownership of §9.
   Only the Lead Agent edits `calls.go`, `families.go`, `descriptors.go`, `select.go`, `policy.go`
@@ -255,8 +293,10 @@ The lane contract §4 applies in full, including its halt conditions. Additional
    Verified by `git show --stat <first-commit>` and `git branch -r --contains <first-commit>`.
 2. **AC2 (key).** The detection guide holds the README-entry table of the lane contract §3 and
    the §1.1 rows with source evidence. `cases.json` has one row per §1.1 ID with
-   `app: vuln-symfony`. `check.py` accepts `info_exposure_candidate` and
-   `mass_assignment_candidate`. Verified by
+   `app: vuln-symfony`, and each positive has `expect_status: confirmed_vulnerability`.
+   `check.py` accepts `info_exposure_candidate` and `mass_assignment_candidate`, and treats a
+   positive of a kind with no request source (lane contract §2.7) as met when the candidate is at
+   its anchor with no completeness blocker. `test_check.py` has a case for that rule. Verified by
    `python3 .zazz/evaluation/recall-gap-inventory/test_check.py`, and by `check.py` on a baseline
    offline report, which reports both positives missing.
 3. **AC3 (exposure).** Cases `EX-01` to `EX-12` pass in `TestPHPExposure`
@@ -283,9 +323,16 @@ The lane contract §4 applies in full, including its halt conditions. Additional
 7. **AC7 (catalog and selection).** `go test ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`
    passes. Both families are in `Families()` with non-empty question names, every new contract
    has `Semantics` or material and a reference URL, `analysispacks.Select` accepts every candidate
-   of the new fixtures (`TestApplicationFamiliesSelect`), and `--only-family exposure` and
-   `--only-family mass-assignment` are accepted by the CLI (`TestFamilyFlags` or its existing
-   equivalent in `scan/cli/main_test.go`).
+   of the new fixtures (`TestApplicationFamiliesSelect`), and `--only-family` and `--skip-family`
+   accept `exposure` and `mass-assignment` and reject an unknown name
+   (`TestApplicationFamilyFilters` in `scan/cli/main_test.go`). The flag help and the error text
+   in `scan/cli/main.go` list both names. `TestExposurePolicy` and `TestMassAssignmentPolicy`
+   (`scan/internal/judge/`) have one row per rule of the D-13 tables and assert the status and
+   the gap kind. `TestApplicationFindingsReport` (`scan/internal/report/`) asserts for one
+   stubbed Confirmed candidate of each family: the JSON finding has `type_ids` of
+   `information-exposure` or `mass-assignment`; the SARIF output has a rule whose tags include
+   `CWE-200` or `CWE-915` and a result at the sink file and line; the HTML report shows the type
+   label and the guidance text.
 8. **AC8 (isolation and determinism).** `go test ./scan/cli -run TestArchitectureBaseline` passes
    with every pre-existing row byte-identical and one new row per new fixture directory.
    `TestDVWASourceKey` passes. Two scans of each new fixture and of the sample are byte-identical.
@@ -333,7 +380,11 @@ The lane contract §4 applies in full, including its halt conditions. Additional
     `.zazz/evaluation/symfony-results.md` records each run (run ID, commit, scope, request count,
     input tokens) and the row-by-row status of the final run.
 13. **AC13 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes:
-    build, `go vet ./...`, `go test ./...`, and `gofmt -l` prints nothing for changed Go files.
+    `gofmt -l cmd scan` prints nothing, and `go vet ./...`, `go build ./...` and
+    `go test -race ./... -count=1` succeed.
+14. **AC14 (pull request).** A draft PR from `symfony-more-analyzers-1` into `stage` exists,
+    created with `gh stack submit --auto`. Its body links this specification, lists every
+    criterion with its evidence or its blocked state, and repeats the invariants of §3.
 
 ## 8. Test strategy
 
@@ -410,12 +461,12 @@ gains one row per new fixture directory.
 
 | Slice | Content | Owns | Depends on | ACs |
 |---|---|---|---|---|
-| **S0** | Lane setup, specification commit, key rows, `check.py` kinds, offline baseline | `.zazz/` | None | AC1, AC2 |
+| **S0** | Verify the lane setup and checkpoint commit. Key rows, `check.py` kinds and the source-less positive rule, offline baseline | `.zazz/` | None | AC1, AC2 |
 | **S1** | Family skeletons: analysis facts, family registration, descriptors, policy stubs, finding types, CLI names. No detection | `analysis/`, `analysispacks/`, `judge/`, `report/`, `cli/` | S0 | AC7 (partly) |
 | **S2** | Exposure adapter | `langphp/exposure.go` | S1 | AC3 |
 | **S3** | `security.yaml` provider reader and the census | `symfony_security.go`, `security_fields.go` | S1 | AC4 |
 | **S4** | Key origin, mass-assignment shapes and candidate | `mass_assignment.go`, `doctrine_storage.go`, `symfony_request.go` | S3 | AC5, AC6 |
-| **S5** | Sample key test, determinism, judged runs, results record, architecture and user documents | `pipeline/symfony_test.go`, `docs/`, `.zazz/architecture/` | All | AC7–AC13 |
+| **S5** | Policy and report tests, sample key test, determinism, branch-acceptance judged run, results record, architecture and user documents, draft PR | `pipeline/symfony_test.go`, `docs/`, `.zazz/architecture/` | All | AC7–AC14 |
 
 S2 starts with `EX-01` failing. S3 starts with `SF-01` failing. S2 is independent of S3 and S4.
 
@@ -484,9 +535,8 @@ func (f *phpFlow) keyControlledWrite(target phpValue, key phpValue, at *sitter.N
 
 ## 10. Definition of done
 
-- [ ] Lane open questions answered by the owner and recorded.
 - [ ] Required reading done and the standards-index lookup recorded in the run log.
-- [ ] AC1 to AC13 verified, each with its command and output in the run log.
+- [ ] AC1 to AC14 verified, each with its command and output in the run log.
 - [ ] `git diff origin/stage --stat` matches §4.
 - [ ] The architecture document and the user pages of AC10 and AC11 exist and are linked.
 - [ ] A fresh-context Verifier Agent reran the §13 checks and reported PASS.
@@ -494,7 +544,7 @@ func (f *phpFlow) keyControlledWrite(target phpValue, key phpValue, at *sitter.N
 
 ## 11. Open questions
 
-The lane's OQ-1, OQ-3 and OQ-6 apply. None is specific to this branch.
+None. The owner's decisions are in the lane contract §5.
 
 ## 12. Run log protocol
 
@@ -505,35 +555,72 @@ its request count.
 
 ## 13. Agent implementation prompt
 
-> Work in the `symfony-more-analyzers` sibling worktree. Read AGENTS.md, the orientation contents,
-> `.zazz/specifications/symfony-more-analyzers.md`, then
-> `.zazz/specifications/symfony-more-analyzers-1.md` and its §2 reading. Load the `spec-driven`
-> skill and `.zazz/docs/using-gh-stack.md`. Verify the path, branch and worktree list. Use the run
-> log at `.zazz/ephemeral/symfony-more-analyzers-run-log.md`; no tracker is used.
+> You are implementing one branch of a stacked lane, unattended. Nobody will answer questions
+> during this run. Everything you need is in two documents. Follow them exactly.
 >
-> First ask the owner the lane contract's open questions and record the answers. Then do the lane
-> setup: rename the branch to `symfony-more-analyzers-1`, initialize the stack on `stage`, and,
-> if the owner has not already done so, commit and push the documentation checkpoint as the
-> first commit.
+> **Setup.** Work only in the `symfony-more-analyzers` sibling worktree, on branch
+> `symfony-more-analyzers-1`. Read `AGENTS.md`, then
+> `.zazz/specifications/symfony-more-analyzers.md` (the lane contract) in full, then
+> `.zazz/specifications/symfony-more-analyzers-1.md` in full, then the files §2 lists. Load the
+> `spec-driven` skill and `.zazz/docs/using-gh-stack.md`. Run `pwd`, `git branch --show-current`,
+> `git status --short --branch`, `git worktree list` and `gh stack view --json`, and confirm the
+> stack has this one branch on `stage` with the documentation commit already present. Create the
+> run log at `.zazz/ephemeral/symfony-more-analyzers-run-log.md` with a "Branch 1" section.
 >
-> Deliver S0 to S5 in order. Add each slice's fixtures and failing test before its code. Implement
-> the decision tables as written: a name outside a table is unmodeled. Every rule is a general PHP
-> or framework contract. Do not weaken, delete or relabel a case of §8 or a row of §1.1. Treat the
-> sample as read-only data and keep it out of fixtures, detectors and requests. Stop on any halt
-> condition of the lane contract §4 or of §6 here.
+> **Work.** Deliver slices S0 to S5 of §9 in that order. For each slice: write its fixtures and
+> its failing tests from the §8 case tables, run them and record the failing output, implement,
+> run them until they pass, run the package tests, then commit on this branch with a bracketed
+> scope label. Implement the §5 decision tables literally. A name that is not in a table is not
+> modeled. Use the question names, answers and status rules of D-13 exactly. Use the lane
+> contract §2.7 for the policy order and the wiring command.
 >
-> Open the draft PR with `gh stack submit --auto` and keep it current. Never merge.
+> **Rules that never bend.** Every detection rule is a general PHP, Symfony or Doctrine contract.
+> Nothing in scanner code, fixtures, component text or model requests may name or copy the
+> sample. Do not weaken, delete, skip or relabel a test, a §8 case, a §1.1 row or a §7
+> criterion. Do not change an existing family's request, protocol or baseline row. Do not merge
+> anything. The sample checkout is read-only: check its pin and clean status before and after
+> each scan.
 >
-> Verifier Agent, fresh context, read-only: run `go build ./...`, `go vet ./...`,
-> `go test ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`,
-> `go test ./scan/cli -run TestArchitectureBaseline`, and with the two sample checkouts
-> `TestDVWASourceKey` and `TestSymfonySourceKey`. Then check by reading the sample's JSON report
-> that (1) `public/info.php:2` is the only exposure candidate; (2) the mass-assignment candidate
-> lists the three census roles of AC9; (3) the named-setter actions have no mass-assignment
-> candidate; (4) the AC6 grep prints only test lines; (5) no pre-existing baseline row changed.
-> Report PASS or FAIL per item with the command output.
+> **Judged runs.** Paid judged runs of the sample are authorized. Run the checkpoints AC12
+> lists, in the way the lane contract §4.1 states, and stop judged iteration at 8 runs.
+>
+> **When blocked.** If a halt condition of the lane contract §4 or of §6 applies, follow the
+> blocked item protocol of the lane contract §4.2: log it, finish everything that does not
+> depend on it, push, and report. A failing test or build error is not a halt. Fix it.
+>
+> **Finish.** Run the gate of AC13. Start a fresh-context, read-only Verifier Agent with the
+> text below and record its report. Open or update the draft PR with `gh stack submit --auto`
+> (AC14). Update the run log. End with a list of AC1 to AC14, each marked met with its evidence,
+> blocked, or not reached.
+>
+> **Verifier Agent prompt.** "Read-only. In the `symfony-more-analyzers` worktree on branch
+> `symfony-more-analyzers-1`, run `go build ./...`, `go vet ./...`,
+> `go test -race ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/... -count=1`,
+> `go test ./scan/cli -run TestArchitectureBaseline -count=1`, and with `ZAZZLES_DVWA` and
+> `ZAZZLES_VULN_SYMFONY` set to the sample checkouts, `TestDVWASourceKey` and
+> `TestSymfonySourceKey`. Then scan the Symfony sample offline and read its JSON report. Check:
+> (1) `public/info.php:2` is the only `info_exposure_candidate`; (2) the
+> `mass_assignment_candidate` has sink `src/Entity/User.php:59` and lists `role_source`,
+> `credential` and `login_identifier` roles; (3) the admin-create, register and about actions
+> have no `mass_assignment_candidate`; (4) the AC6 grep prints only test-file lines; (5) no
+> pre-existing row of `scan/cli/testdata/architecture-baseline.json` changed, by `git diff
+> origin/stage -- scan/cli/testdata/architecture-baseline.json`; (6) the judged report named in
+> `symfony-results.md` shows `SYM-INFO-01` and `SYM-MASS-01` as `confirmed_vulnerability`.
+> Report PASS or FAIL for each item with the command output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Second pass and unattended execution
+
+- **D-13 (new).** Question names, answers and status rules for both families. The draft did not
+  say how a judged status is reached.
+- **D-4.** `role_source` now states the local-variable form of `getRoles()` and the one-step
+  bound precisely.
+- **AC2.** Positives carry `expect_status`, and `check.py` gets a rule for kinds with no source.
+- **AC7.** Named policy, report and CLI filter tests replace a vague reference.
+- **AC13, AC14.** The gate names its commands. The draft PR is a criterion.
+- **§6, §11, §13.** No open question. The prompt is written for an unattended run.
+- **Verification impact.** New offline tests: two policy tests, one report test, one CLI test.
 
 ### 2026-11-22 — Drafted
 

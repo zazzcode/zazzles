@@ -49,7 +49,7 @@ Paths are relative to the sample root at the pin. `security.yaml` requires `ROLE
 |---|---|---|---|
 | `SYM-AUTHZ-N01` | `UserController::uploadAvatar` `:99`–`102`, `getAvatarFromUrl` `:139`–`142` | `guarded`: a candidate with an `ownership_check` at `:75` and `:118` | `if ($user !== $this->getUser())` returns before the write |
 | `SYM-AUTHZ-N02` | `UserController::about` `:214`, `edit` `:239`, `index` `:17`, `editForm` `:221` | `no_record` | The record is the session user (`#[CurrentUser]`), not a request-selected one |
-| `SYM-AUTHZ-N03` | `AdminController::index` `:17`, `deleteUser` `:53`, `createUser` `:101` | `guarded`: entry roles `ROLE_ADMIN` | `^/admin` requires `ROLE_ADMIN`. This is also README entry 8: the delete action is routed at `/admin/delete/{user}`, and no `/user/delete/{user}` route exists at the pin |
+| `SYM-AUTHZ-N03` | `AdminController::index` (output at `templates/admin/index.html.twig:44`), `deleteUser` `:53`, `createUser` `:101` | `guarded`: entry roles `ROLE_ADMIN` | `^/admin` requires `ROLE_ADMIN`. This is also README entry 8: the delete action is routed at `/admin/delete/{user}`, and no `/user/delete/{user}` route exists at the pin |
 | `SYM-AUTHZ-N04` | `src/Controller/BlogController.php:53`–`58` | `no_record` | A new record is created as the session user. No existing record is changed |
 | `SYM-AUTHZ-N05` | `src/Controller/PasswordResetController.php:78`–`80` | `guarded`: a `secret_check` at `:65` | The stored reset value of the selected account is compared with the path token before the write |
 | `SYM-AUTHZ-N06` | `BlogController::post`, `index`, `search` | `no_record` | Public reads of non-account fields |
@@ -192,7 +192,7 @@ An early exit is a `return`, a `throw`, or a call that throws (`createAccessDeni
 | Rule | Operation | Facet |
 |---|---|---|
 | E1 | An update or delete of a `request_selected` stored record: a setter or property write that the storage model already records as a write, or `remove`. Also a file write or delete whose path is built from a field of such a record | `object_level` |
-| E2 | A write to a `role_source` field of a `request_selected` record, or of a `created` record when the written value is request-derived | `function_level` |
+| E2 | A write to a `role_source` field of a `request_selected` record, or of a `created` record when the written value is request-derived. A value computed from a request value is request-derived, including the result of comparing it with a literal | `function_level` |
 | E3 | A response or template output that carries a `credential`, `login_identifier` or `role_source` field of a `request_selected` or `enumerated` record | `data_exposure` |
 | Anything else | No record | — |
 
@@ -266,11 +266,28 @@ finding. *Why one-way:* changing the SSRF request would change an existing proto
 saved answers (lane halt 2). The punch list asked for a two-way link; the report gives it without
 touching the wire.
 
-**D-13. One family, three facets.** `authorization` asks: does the request select the record as
-recorded; does a listed guard restrict the operation to an appropriate caller, judged by its
-kind; and is the entry's access requirement adequate for the fields involved. A candidate whose
-only guard is an `address_check` maps to finding type `address-based-access`. Every other
-candidate maps to `missing-authorization`. *Why one family:* the three facets share subject,
+**D-13. One family, three facets.** A candidate whose only guard is an `address_check` maps to
+finding type `address-based-access`. Every other candidate maps to `missing-authorization`.
+The protocol is `authorization-components-v1`, claim kind `authorization`. The shared policy
+order is the lane contract §2.7. Required evidence roles: `subject_selection`,
+`protected_operation`, `entry_access`, `control_flow`.
+
+| Question | Answers | Asks |
+|---|---|---|
+| `subject_control` | `request_selected`, `not_selected`, `unknown` | Does the request choose which record the operation acts on, or which records are returned, as `authorization.subject` states? |
+| `guard_adequacy` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `authorization.guards`, judged by kind, limit the operation to a caller who should be allowed to perform it on this record? An `address_check` is a property of the connection, not of the user |
+| `access_adequacy` | `adequate`, `inadequate`, `unknown` | Is the entry's recorded `access` enough for the fields in `security_fields` and the operation, given `peer_access`? |
+
+| Rule | Condition |
+|---|---|
+| Inconsistent | `guard_adequacy: none` when a guard is recorded (the answer must be `adequate` or `inadequate`). `guard_adequacy: adequate` when no guard is recorded. `access_adequacy: adequate` when `access.authentication` is `none`. `not_selected` when the subject provenance is `request_selected` from a route placeholder |
+| Blocking gap | `access_rule_unresolved`, `access_rule_condition_unmodeled`, `voter_unmodeled`, `access_expression_unmodeled`, `authenticator_unmodeled`, `guard_unclassified`, `symfony_config_unread`, and `security_fields_unresolved` when the candidate's only facet depends on a census role |
+| Not blocking | `address_trust_configuration_unread`. The address guard is judged as recorded; branch 4 adds evidence |
+| Protected | `guard_adequacy: adequate`, or `guard_adequacy: none` with `access_adequacy: adequate` |
+| Confirmed | `request_selected`, `guard_adequacy` of `none` or `inadequate`, and `access_adequacy: inadequate` |
+
+For the `data_exposure` facet with an `enumerated` subject, `subject_control: request_selected`
+is not required: the Confirmed rule needs only the guard and access answers. *Why one family:* the three facets share subject,
 operation and guard evidence, and `AdminController`-style actions are function-level and
 object-level at once.
 
@@ -278,7 +295,8 @@ object-level at once.
 
 The lane contract §4 applies in full. Additional for this branch:
 
-- Start from the top of the stack: `gh stack add symfony-more-analyzers-2`.
+- Start from the top of the stack: `gh stack add symfony-more-analyzers-2`. The session is
+  unattended (lane contract §4.2).
 - The Lead Agent delivers S0 and S1 alone. S2 (guards) and S3 (subject and operations) are
   serialized, because both edit `control.go` and `symfony_entry.go`.
 - **Stated exception to lane halt 1.** Adding `access` and `state_changes` to entry records
@@ -295,6 +313,7 @@ The lane contract §4 applies in full. Additional for this branch:
    anchor and carries a guard of the stated kind, or entry roles as stated). Verified by
    `test_check.py` and by `check.py` on a branch 1 offline report, which reports the five
    positives missing.
+   Each positive has `expect_status: confirmed_vulnerability`.
 2. **AC2 (access rules).** Cases `AR-01` to `AR-14` pass in `TestSymfonyAccess`
    (`scan/internal/langphp/symfony_access_test.go`): first match wins; a literal-prefix rule
    gives `required` with its roles; `PUBLIC_ACCESS` gives `none`; no matching rule gives `none`;
@@ -323,9 +342,16 @@ The lane contract §4 applies in full. Additional for this branch:
    produced with the authorization family skipped.
 8. **AC8 (catalog and selection).** `go test ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`
    passes. The family is registered, `analysispacks.Select` accepts every new fixture candidate,
-   `--only-family authorization` is accepted, and `TestExistingFamilyRequestsUnchanged` proves
-   that the request bytes of every pre-existing family on the Symfony fixtures are identical with
-   and without entry access computed.
+   `--only-family` and `--skip-family` accept `authorization`, and
+   `TestExistingFamilyRequestsUnchanged` proves that the request bytes of every pre-existing
+   family, and of the two branch 1 families, on the Symfony fixtures are identical with and
+   without entry access computed. `TestAuthorizationPolicy` has one row per rule of the D-13
+   table, including one row showing `address_trust_configuration_unread` does not block.
+   `TestAuthorizationFindingsReport` asserts for stubbed Confirmed candidates: `type_ids` is
+   `missing-authorization`, or `address-based-access` when the only guard is an `address_check`;
+   SARIF rules carry `CWE-862`, `CWE-639` and `CWE-291` tags as the facet and guard state; the
+   HTML entry view shows each entry's access; and a judged SSRF finding gains `related_findings`
+   (D-12) while its saved request is unchanged.
 9. **AC9 (isolation and determinism).** `TestArchitectureBaseline` passes: every pre-existing
    non-Symfony row is byte-identical, pre-existing Symfony rows differ only as §6 allows, and each
    new fixture directory has a row. `TestDVWASourceKey` passes. Two scans of each new fixture and
@@ -359,7 +385,7 @@ The lane contract §4 applies in full. Additional for this branch:
     prints nothing. After the branch 1 PR lands and `gh stack sync` runs, the same command against
     `origin/stage` prints nothing.
 13. **AC13 (sample, offline).** `TestSymfonySourceKey` passes at the pin with all earlier
-    assertions and these added: the 31 route entries carry `access`, with `required` and
+    assertions and these added: `FILE` entries carry no `access`; the 31 route entries carry `access`, with `required` and
     `ROLE_ADMIN` on the three `/admin` entries, `required` and `ROLE_USER` on the eleven `/user`
     entries, and `none` on the rest; each of the five positives has a candidate at its anchor with
     the facets, census roles, guards and access of §1.1; `SYM-AUTHZ-04` has `method_safe: yes`;
@@ -375,7 +401,13 @@ The lane contract §4 applies in full. Additional for this branch:
       earlier branch as a finding. `symfony-results.md` records each run and
     the final status of every row, including the two assessment-dependent rows with a source
     review of the judge's answer.
-15. **AC15 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes.
+15. **AC15 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes:
+    `gofmt -l cmd scan` prints nothing, and `go vet ./...`, `go build ./...` and
+    `go test -race ./... -count=1` succeed.
+16. **AC16 (pull request).** A draft PR from `symfony-more-analyzers-2` exists whose base is
+    `symfony-more-analyzers-1` (or `stage` after that PR landed), created with
+    `gh stack submit --auto`. Its body links this specification and lists every criterion with
+    its evidence or its blocked state.
 
 ## 8. Test strategy
 
@@ -478,7 +510,7 @@ prove.
 | **S2** | Guard classification and the address guard | `authorization_guards.go`, `control.go`, `guards.go` | S1 | AC4 |
 | **S3** | Subject provenance, operations E1 to E3, state changes, peer access, candidate assembly | `authorization.go`, `symfony_entry.go`, `doctrine_storage.go` | S2 | AC5, AC6 |
 | **S4** | Family registration, protocol, policy, finding types, SSRF link | `analysispacks/`, `judge/`, `report/` | S3 | AC7, AC8 |
-| **S5** | Sample key test, determinism, no-drift, judged runs, results, architecture and user documents | `pipeline/symfony_test.go`, `docs/`, `.zazz/architecture/` | All | AC9–AC15 |
+| **S5** | Policy and report tests, sample key test, determinism, no-drift, branch-acceptance judged run, results, architecture and user documents, draft PR | `pipeline/symfony_test.go`, `docs/`, `.zazz/architecture/` | All | AC8–AC16 |
 
 S1 starts with `AR-01` failing.
 
@@ -553,7 +585,7 @@ func (f *phpFlow) protectedOperation(subject phpValue, op analysis.StateChange, 
 ## 10. Definition of done
 
 - [ ] Required reading done and the standards-index lookup recorded in the run log.
-- [ ] AC1 to AC15 verified, each with its command and output in the run log.
+- [ ] AC1 to AC16 verified, each with its command and output in the run log.
 - [ ] The stack shows branch 2 on branch 1, and the no-drift check printed nothing.
 - [ ] The diff against `origin/symfony-more-analyzers-1` matches §4.
 - [ ] The architecture document and the user pages of AC10 and AC11 exist and are linked.
@@ -562,7 +594,8 @@ func (f *phpFlow) protectedOperation(subject phpValue, op analysis.StateChange, 
 
 ## 11. Open questions
 
-The lane's OQ-1, OQ-4 and OQ-5 apply. None is specific to this branch.
+None. The owner's decisions are in the lane contract §5: entry 8 is accepted as not present,
+and the authorization scope is state changes plus reads of census fields.
 
 ## 12. Run log protocol
 
@@ -571,35 +604,77 @@ baseline diff review that §6 requires.
 
 ## 13. Agent implementation prompt
 
-> Work in the `symfony-more-analyzers` sibling worktree. Read AGENTS.md, the orientation contents,
-> `.zazz/specifications/symfony-more-analyzers.md`, then
-> `.zazz/specifications/symfony-more-analyzers-2.md` and its §2 reading. Load the `spec-driven`
-> skill and `.zazz/docs/using-gh-stack.md`. Read the run log and `git log`. Verify the path, the
-> worktree list and `gh stack view --json`.
+> You are implementing one branch of a stacked lane, unattended. Nobody will answer questions
+> during this run. Everything you need is in the documents named here. Follow them exactly.
 >
-> Add the branch with `gh stack add symfony-more-analyzers-2` from the top of the stack. If branch
-> 1 has unmerged review changes, make them on branch 1 and run `gh stack rebase --upstack`. If the
-> branch 1 PR has landed, run `gh stack sync` first.
+> **Setup.** Work only in the `symfony-more-analyzers` sibling worktree. Read `AGENTS.md`, then
+> `.zazz/specifications/symfony-more-analyzers.md` (the lane contract) in full, then
+> `.zazz/specifications/symfony-more-analyzers-2.md` in full, then the files §2 lists, then the
+> run log at `.zazz/ephemeral/symfony-more-analyzers-run-log.md` and `git log`. Load the
+> `spec-driven` skill and `.zazz/docs/using-gh-stack.md`. Run `pwd`, `git status --short
+> --branch`, `git worktree list` and `gh stack view --json`.
 >
-> Deliver S0 to S5 in order. Add each slice's fixtures and failing test before its code. Implement
-> the decision tables as written. The scanner lists guards and never decides that one is enough.
-> No existing family's request may change. Read branch 1's census; do not rebuild it. Do not
-> weaken, delete or relabel a case of §8 or a row of §1.1. Stop on any halt condition.
+> **Branch.** If the branch 1 PR has landed, run `gh stack sync` first. If
+> `symfony-more-analyzers-2` does not exist, check out the top of the stack and run
+> `gh stack add symfony-more-analyzers-2`. Branch 1 must be complete: if its run log section
+> shows unmet criteria that this branch depends on (the census, the family registration
+> pattern), that is a halt. Add a "Branch 2" section to the run log.
 >
-> Open the draft PR with `gh stack submit --auto`. Its base is `symfony-more-analyzers-1`. Never
-> merge.
+> **Work.** Deliver slices S0 to S5 of §9 in that order. For each slice: write its fixtures and
+> failing tests from the §8 case tables, record the failing output, implement, make them pass,
+> run the package tests, then commit on this branch. Implement the §5 decision tables
+> literally. A name that is not in a table is not modeled. Use the question names, answers and
+> status rules of D-13 exactly. Read branch 1's census with `securityFields`; do not rebuild it.
 >
-> Verifier Agent, fresh context, read-only: run `go build ./...`, `go vet ./...`,
-> `go test ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/...`,
-> `go test ./scan/cli -run TestArchitectureBaseline`, `TestDVWASourceKey`,
-> `TestSymfonySourceKey` and the AC12 no-drift command. Then check by reading the sample's JSON
-> report that (1) the `/admin` and `/user` entries carry the access of AC13; (2) each of the five
-> positives has its candidate with the stated guards; (3) the two ownership-guarded upload actions
-> carry `ownership_check`; (4) the session-user actions have no authorization candidate; (5) the
-> SSRF candidate's request bytes match a run with `--skip-family authorization`. Report PASS or
-> FAIL per item with the command output.
+> **Rules that never bend.** The scanner lists guards and never decides that a guard is enough.
+> No existing family's request, protocol or baseline row may change, except the entry-record
+> additions §6 allows. A role name has no special meaning in scanner code. Nothing may name or
+> copy the sample. Do not weaken, delete, skip or relabel a test, a §8 case, a §1.1 row or a §7
+> criterion. Do not edit the branch 1 files AC12 lists. Do not merge anything.
+>
+> **Judged runs.** Paid judged runs of the sample are authorized. Run the checkpoints AC14
+> lists as the lane contract §4.1 states, and stop judged iteration at 8 runs.
+>
+> **When blocked.** Follow the blocked item protocol of the lane contract §4.2. A failing test
+> or build error is not a halt. Fix it.
+>
+> **Finish.** Run the gate of AC15 and the no-drift command of AC12. Start a fresh-context,
+> read-only Verifier Agent with the text below and record its report. Open or update the draft
+> PR with `gh stack submit --auto` (AC16). Update the run log. End with a list of AC1 to AC16,
+> each marked met with its evidence, blocked, or not reached.
+>
+> **Verifier Agent prompt.** "Read-only. In the `symfony-more-analyzers` worktree on branch
+> `symfony-more-analyzers-2`, run `go build ./...`, `go vet ./...`,
+> `go test -race ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/judge/... ./scan/internal/report/... -count=1`,
+> `go test ./scan/cli -run TestArchitectureBaseline -count=1`, `TestDVWASourceKey`,
+> `TestSymfonySourceKey`, and the no-drift command of AC12 in
+> `.zazz/specifications/symfony-more-analyzers-2.md`. Then scan the Symfony sample offline and
+> read its JSON report. Check: (1) the three `/admin` entries have `access` `required` with
+> `ROLE_ADMIN`, the eleven `/user` entries `required` with `ROLE_USER`, the other route entries
+> `none`; (2) each of `SYM-AUTHZ-01` to `-04` and `SYM-LOCAL-01` has an
+> `authorization_candidate` at its anchor with the guards §1.1 states; (3) the upload and
+> avatar-from-URL actions carry an `ownership_check`; (4) the actions whose record is the
+> session user have no `authorization_candidate`; (5) the request bytes of the `ssrf_candidate`
+> equal those of a scan run with `--skip-family authorization`; (6) the AC6 grep prints only
+> test-file lines; (7) the judged report named in `symfony-results.md` shows the five positives
+> as `confirmed_vulnerability` and the three `guarded` controls as `protected_for_claim`.
+> Report PASS or FAIL for each item with the command output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Second pass and unattended execution
+
+- **D-13.** Question names, answers, status rules, and which gaps block. The address-trust gap
+  is stated as not blocking, without which `SYM-LOCAL-01` could not be Confirmed on this branch.
+- **D-5.** "Request-derived" includes a comparison result, which the role-write rows depend on.
+- **D-8.** The `address_trust` field exists from this branch so branch 4 fills a value without a
+  protocol change.
+- **§1.1.** The admin index control is anchored at its template output line.
+- **AC1, AC8, AC13.** `expect_status` on positives; named policy and report tests; `FILE`
+  entries carry no access.
+- **AC15, AC16.** The gate names its commands. The draft PR is a criterion.
+- **§11, §13.** No open question. The prompt is written for an unattended run.
+- **Verification impact.** New offline tests: one policy test and one report test.
 
 ### 2026-11-22 — Drafted
 

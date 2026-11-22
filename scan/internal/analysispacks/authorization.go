@@ -3,9 +3,12 @@ package analysispacks
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // AuthorizationProtocol versions the authorization claim questions (D-13).
-// It distinguishes authorization for census-field reads from authorization for
-// request-selected writes and deletes.
-const AuthorizationProtocol = "authorization-components-v3"
+// v2 fixed N03/N05 on a judged retry but treated ROLE_USER as adequate for
+// request-selected object-level writes (AUTHZ-02/-04). v3 restored that listed
+// roles alone do not cover request-selected writes or deletes, and the judge
+// then treated a restricted role as inadequate too (N03 delete). v4 separates
+// the role every signed-in user holds from a role only some users hold.
+const AuthorizationProtocol = "authorization-components-v4"
 
 // PHPAuthorizationOperation is the verified operation this family judges.
 const PHPAuthorizationOperation = "php-authorization-operation-v1"
@@ -35,7 +38,7 @@ func AuthorizationQuestions() []Question {
 	return []Question{
 		{"subject_control", "Does the request choose which record the operation acts on, or which records are returned, as authorization.subject states (request_selected, not_selected, unknown)?"},
 		{"guard_adequacy", "Do the recorded authorization.guards, judged by kind, limit the operation to a caller who should be allowed to perform it on this record (none, adequate, inadequate, unknown)? Answer none only when no guard is recorded. An ownership_check, role_check, authenticated_check or secret_check that dominates this operation on this subject is adequate; a secret_check is a stored-field comparison with a request value not written back on the same path. An address_check is a property of the connection, not of the user."},
-		{"access_adequacy", "Is the entry's recorded access enough for the fields in security_fields and the operation, given peer_access (adequate, inadequate, unknown)? When authentication is none, answer inadequate. Required roles are adequate for data_exposure of census fields. For object_level or function_level writes or deletes on a request_selected subject, listed roles alone are not adequate (any holder of those roles can still pick another caller's record) unless peer_access shows no stronger writer of the same key and the fields are not a weaker privilege write than those peers."},
+		{"access_adequacy", "Is the entry's recorded access enough for the fields in security_fields and the operation, given peer_access (adequate, inadequate, unknown)? When authentication is none, answer inadequate. Required roles are adequate for data_exposure of census fields. For an object_level or function_level write or delete on a request_selected subject, judge the listed roles by who holds them. A role every signed-in user holds (ROLE_USER, which Symfony's user contract gives every user, or an IS_AUTHENTICATED_* attribute) is inadequate: any user can pick another user's record. A role that only some users hold is adequate unless peer_access shows another writer of the same key that requires a role this entry does not."},
 	}
 }
 
@@ -57,8 +60,8 @@ func AuthorizationChoices(question string) []map[string]string {
 		)
 	case "access_adequacy":
 		return choicePairs(
-			[2]string{"adequate", "Authentication is required with listed roles that cover a census-field read, or peer_access shows this entry is not weaker than other writers of the same key for a non-privilege object-level change."},
-			[2]string{"inadequate", "Authentication is none, or listed roles alone leave a request-selected write or delete open to any role holder, or peer_access shows a stronger writer of the same privilege field."},
+			[2]string{"adequate", "Authentication is required with listed roles that cover a census-field read, or with a role only some users hold for a request-selected write or delete, and no peer writer of the same key requires a role this entry lacks."},
+			[2]string{"inadequate", "Authentication is none, or the only listed role is one every signed-in user holds for a request-selected write or delete, or a peer writer of the same key requires a role this entry lacks."},
 			[2]string{"unknown", "The supplied evidence does not establish whether the entry's access is enough."},
 		)
 	}

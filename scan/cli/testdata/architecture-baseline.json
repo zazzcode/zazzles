@@ -4508,6 +4508,61 @@
     "uses_count": 0,
     "gaps": 0
   },
+  "internal/langphp/testdata/symfony/account": {
+    "uses": [
+      {
+        "id": "candidate:v1:96dca21108d43b5b525ca70f5f497d1a8fd8fcb2236dfdcff2d9a56cd502fb01",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "bd24ddd2f0c9dadf6c93ab0fd57da024f66e423557497957e7423d4e2e98fa4e",
+        "signature_sha256": "82055bbed435d038d384d39baffa371789e7259e9852aa215daf489c03fb6442"
+      },
+      {
+        "id": "candidate:v1:e0c88c921f516d858d295ef72c70b40767a17be747cf2a27330bc2adf6dc02fd",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "b22b1eee0b2cf411aabfcbe5dcc47ecef9b71cae50eeeada2d4edf2e4353e7d1",
+        "signature_sha256": "f8d583e561646609cdc657250227ac0bf95699ce49e2039cb75892e0b039f883"
+      },
+      {
+        "id": "candidate:v1:767153cde7583956227cd7d3ad1588457aca180eeba21036ec75b801f566abe0",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "c97568841f7cb4d67f7a439cbe3ad1fb6099941645be1a1ca631367019143b96",
+        "signature_sha256": "3340dbeaf0ca3546b017e8d268da7e5c2a94aa981566ac84b4e318da29e353a5"
+      },
+      {
+        "id": "candidate:v1:c2d17e98a94498e670997363fb17f615d022632693aabe6a0dbade45b90861c8",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "0ce176e215cc3450fb08d4bd82844656dd5fec3417b9638829703542bf2967cf",
+        "signature_sha256": "77a4cc96fac90004c4eea29359680843ba5cd1469e3f822abd950a961a49bfe3"
+      },
+      {
+        "id": "candidate:v1:549a96eb09d6116ce17304eb05ea7f5b18683d22ff61d1c0cc989a234eb26ddf",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "dba99204ef30ac95137c3c4d829dda8eae6313a3d5022b93dbda34f6946a89c5",
+        "signature_sha256": "9b8bae2c5afc1c079b7c75a0abf298dcdf1d4498d185ef84e39505a85e84ecbc"
+      },
+      {
+        "id": "candidate:v1:0bbf27bf21dfdfa6c5c76d97de6b3e90509fcfc58b647ad1ec6cbd4cb9379853",
+        "kind": "account_enumeration_candidate",
+        "request_sha256": "5dc69bfb8afb0d6e6619c709a7f60e09e4ccef0b83a7e60b7bb96bc251f15c39",
+        "signature_sha256": "7dfc86c42f29dcbe875a49dffa18e3065ebde16fd2c77b93597827918d1a8d11"
+      },
+      {
+        "id": "candidate:v1:87c38d2e132fd6f2ff9920a868d82e750cdb22b679fb6d482480d2535caade34",
+        "kind": "xss_candidate",
+        "request_sha256": "d1aa7bd35bb1c56b12968be0f121738ce7be5e38747c412a3a6d40ffce631f88",
+        "signature_sha256": "ce3b3cf3dc64e578916ad221c0ec764b15792305ca83361e95c26241947e84a9"
+      }
+    ],
+    "report_sha256": "d014a894a59d41136ab8ab8b7c94a715fc77e733b24fc63308d2eae0d472f267",
+    "sarif_sha256": "51a98ed5c5a54e57e2de2d3719ece1fdbe76d08209e032a697291432f05c748d",
+    "entries": 11,
+    "registrations": 11,
+    "dispatch_bindings": 11,
+    "callables": 11,
+    "invocation_contexts": 11,
+    "uses_count": 7,
+    "gaps": 0
+  },
   "internal/langphp/testdata/symfony/authorization": {
     "uses": [
       {

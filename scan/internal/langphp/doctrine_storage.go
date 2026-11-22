@@ -264,7 +264,6 @@ func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method strin
 		many = true
 	case "find", "findoneby":
 	case "count":
-		return phpValue{}, true
 	default:
 		switch {
 		case strings.HasPrefix(method, "findoneby") && len(method) > len("findoneby"):
@@ -293,6 +292,10 @@ func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method strin
 		default:
 			return phpValue{}, false
 		}
+	}
+	f.noteEnumerationLookup(n, entity, method, values)
+	if method == "count" {
+		return phpValue{}, true
 	}
 	object := f.doctrineResultEntity(n, entity, many)
 	return f.noteFinderSubject(n, object, method, values), true

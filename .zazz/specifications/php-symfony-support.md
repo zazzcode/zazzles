@@ -610,20 +610,35 @@ unmodeled and follows the "anything else" row.
 
   | Outermost operation | Protection in a `.html.twig` template |
   |---|---|
-  | Variable, property read, method call, concatenation, conditional, or a filter or function not marked safe | `encoded` for HTML text and quoted attributes |
-  | `\|raw` | `raw` |
+  | Variable, property read, method call, concatenation, or a filter or function not marked safe | `encoded` for HTML text and quoted attributes |
+  | Conditional (`c ? x : y`, `x ?: y`, `x ?? y`) | Each branch is escaped on its own. A `raw` branch that carries a dependency makes the output `raw`; branches with different strategies are `unknown` |
+  | `\|raw`, `\|spaceless` | `raw` |
   | `\|e`, `\|escape` with no argument or `'html'` | `encoded` for HTML text and quoted attributes |
   | `\|e('js')`, `('css')`, `('url')`, `('html_attr')` | `encoded` only for the matching context; otherwise `unknown` |
   | `\|nl2br` | `encoded`: it escapes first and adds only `<br />` |
   | A project filter or function registered with `is_safe` containing `html` | `raw`. Its PHP callable is expanded with the template arguments and its return value is the output |
   | An unknown filter or function as the outermost operation, with an argument that carries dependencies | `unknown`, gap `twig_expression_unresolved` |
-  | Anything inside `{% autoescape false %}…{% endautoescape %}` | `raw` |
+  | Anything inside `{% autoescape false %}…{% endautoescape %}`, or in a project whose `twig.autoescape` is `false` | `raw` |
+  | Anything inside `{% autoescape '<strategy>' %}` other than `html`, or under `twig.autoescape_service` | `unknown`, gap `render_protection_unresolved` |
   | Anything in a template whose name does not end in `.html.twig` | `unknown`, gap `render_protection_unresolved` |
+  | A macro call (`_self.m(x)`, an `import … as` alias) with an argument that carries dependencies | `unknown`, gap `twig_expression_unresolved`. A `{% macro %}` definition adds the entry gap `twig_template_unresolved` and its body is not expanded |
 
-  An `encoded` value in a script, style, unquoted-attribute or URL-attribute context is not
-  credited: it stays a candidate with the context recorded and protection `unknown`, and the
-  literal prefix of a concatenation is kept as a fact. A region whose value has no dependencies
-  records nothing, whatever its filters.
+  An `encoded` value in a script, style or unquoted-attribute context is not credited: it stays a
+  candidate with the context recorded and protection `unknown`. A region whose value has no
+  dependencies records nothing, whatever its filters.
+
+  **URL attributes.** HTML escaping keeps a value inside its quoted attribute and does not choose
+  the URL scheme, so the literal text before the value decides (markup text in the attribute, then
+  the literal prefix of the expression, which is also kept as a fact):
+
+  | Quoted URL attribute | Protection |
+  |---|---|
+  | The prefix is a relative reference with `/`, `?` or `#` before any colon, or an `http(s)` URL with a complete host, on `a`, `area`, `img`, `video`, `audio`, `source`, `track`, `form`, `button` or `input` | `encoded` |
+  | No prefix, and the attribute is `href` of `a` or `area`, `action` of `form`, `formaction`, or `src` of `iframe`, `frame`, `script` or `embed` | `raw`: a script URL runs |
+  | Anything else, including an unquoted attribute | `unknown` |
+
+  Every Twig candidate carries the surrounding markup as `render_markup_context` evidence, as the
+  Jinja and EJS adapters do.
 
   **Filter and function contracts.** The implementer MUST confirm each row against the Twig 3 and
   Symfony Twig bridge documentation and cite the page in `scan/internal/langphp/twig_functions.go`.
@@ -990,6 +1005,10 @@ means an entry of `uses` in the JSON report with the stated `kind`.
       documentation map name the delivered state.
 17. **AC17 (gate).** The [contributor gate](../../docs/contributing.md#verification) passes:
     build, `go vet ./...`, `go test ./...`, and `gofmt -l` prints nothing for changed Go files.
+18. **AC18 (review coverage).** Cases `CV-01` to `CV-42` pass in `TestSymfonyCoverageInputs`,
+    `TestSymfonyCoverageOperations` and `TestSymfonyCoverageTwig`. AC12 to AC14 still hold on the
+    reviewed scanner, and `docs/scan/detection-capabilities/symfony.md` and `twig.md` describe the
+    delivered coverage.
 
 ## 8. Test strategy
 
@@ -1085,7 +1104,7 @@ unless stated.
 | `TW-01` | `<p>{{ q }}</p>` | `protection: encoded`, `output_context: html_text` |
 | `TW-02` | `<p>{{ q\|raw }}</p>` | `raw` |
 | `TW-03` | `<input value="{{ q }}">` | `encoded`, quoted attribute |
-| `TW-04` | `<a href="{{ q }}">x</a>` | `unknown`, URL attribute context |
+| `TW-04` | `<a href="{{ q }}">x</a>` | `raw`, URL attribute context: the value is the whole link URL |
 | `TW-05` | `<script>var a = "{{ q }}";</script>` | `unknown`, script context |
 | `TW-06` | `{% autoescape false %}{{ q }}{% endautoescape %}` | `raw` |
 | `TW-07` | `{{ q\|nl2br }}` | `encoded` |
@@ -1161,6 +1180,27 @@ unless stated.
 | `LG-02` | `$this->logger->info('status: ' . $code)` with a server value | No candidate |
 | `LG-03` | `$logger->error('failed', ['token' => $request->headers->get('Authorization')])` | `log_sink_candidate` with `log_protocol_credential` |
 | `LG-04` | `$logger->info($request->get('password'))` where `$logger` has no declared type | No candidate |
+
+### Review coverage (`coverage/`, `twig-raw/`)
+
+Added by the independent review. Each case is one action in `coverage/src/Controller/Cases.php`
+unless stated, and the expectation is the `xss_candidate` protection unless a kind is named.
+
+| Case | Source shape | Expected |
+|---|---|---|
+| `CV-01` to `CV-04` | Placeholders `{id<\d+>}`, `{slug<[a-z-]+>}`, `{page?1}` and `{slug}.html` bound to a `string` argument | `encoded` (digits only), then `raw` three times |
+| `CV-05` | `int $id` from `{id}` | `encoded` |
+| `CV-06`, `CV-07` | `query->getString('a')`; `json_decode($request->getContent(), true)['a']` | `raw` |
+| `CV-08` to `CV-11` | `(int)` cast; `sprintf('<b>%s</b>', $x)`; `sprintf('<b>%d</b>', $x)`; `implode(',', $all)` | `encoded`, `raw`, `encoded`, `raw` |
+| `CV-12`, `CV-13` | `$r = new Response(); $r->setContent($x)`; the same after `headers->set('Content-Type', 'text/plain')` | `raw`; no candidate |
+| `CV-14`, `CV-15` | `Invokable.php`: class-level route and `__invoke`. `Scoped.php`: class-level `methods: ['POST']` | Entries `GET /invokable` and `POST /scoped/a`, each `raw` |
+| `CV-16`, `CV-17` | `Item $item` on `/store/read/{id}` rendering `getId()` and `getName()`; on `/store/id/{id}` rendering `getId()` only | One `raw` path with `php-sql:item.name` and a resolved origin; no candidate |
+| `CV-18` | `app.flashes('never')` with no `addFlash('never', …)` in the project | No candidate |
+| `CV-20`, `CV-21` | `` `ping $h` `` in an action and in `public/tick.php` | `command_execution_candidate` with a request dependency |
+| `CV-22` to `CV-25` | Entity-manager builder with `from` and a concatenated `where`; the same with `setParameter` and `setMaxResults`; `createQuery(…)->setMaxResults(10)->getResult()`; a repository chain through `setMaxResults` and `setFirstResult` | `sql_query_candidate`; `query_text_interpolated` on all but the bound case, which carries `parameter_binding` |
+| `CV-26` | `echo 'n' . (int) $_GET['n']` in `public/tick.php` | `encoded` |
+| `CV-30` to `CV-41` | `templates/tw.html.twig`, one output per line: raw conditional branch, `asset('uploads/' ~ q)`, `/go/{{ q }}`, whole `href`, whole `img src`, `script src` with a prefix, `java{{ q }}`, `{% autoescape 'js' %}`, `spaceless`, quoted attribute with its markup evidence, macro body, macro call | `raw`, `encoded`, `encoded`, `raw`, `unknown`, `unknown`, `unknown`, `unknown` with `render_protection_unresolved`, `raw`, `encoded` with `render_markup_context`, no candidate with an entry gap, `unknown` with `twig_expression_unresolved` |
+| `CV-42` | `twig-raw/`: `twig.autoescape: false`, `{{ q }}` and `{{ q\|e }}` | `raw`, `encoded` |
 
 ### Sample and regression
 
@@ -1413,3 +1453,30 @@ The owner confirmed that all work and publication use the existing `symfony-mvp`
 The original one-draft-per-group instruction led to separate remote review heads for S2 and S3.
 §4, §6, §9, §10, and §13 now specify one cumulative draft with per-group checkpoints and evidence.
 The analysis decisions and acceptance criteria are unchanged.
+
+### 2026-11-22 — Independent review
+
+Source: owner request to review the delivered work, fix gaps a code scan is expected to find, and
+verify with paid judged runs. A probe application exercised the claimed coverage form by form.
+The sample key already held. Results are in the
+[review section of the results record](../evaluation/symfony-results.md#independent-review).
+
+- **D-17.** Conditionals are escaped per branch, `spaceless` is marked safe, autoescape strategies
+  and the project setting are read, macro calls and definitions leave gaps, and every Twig
+  candidate carries its surrounding markup. The rendering contract text states Twig's escaping.
+- **D-17, URL attributes (changed).** A URL attribute was always `unknown`, which no assessment can
+  resolve. A literal local prefix is now `encoded` and the whole URL of a link, form or frame is
+  `raw`. `TW-04` changes from `unknown` to `raw`. `SYM-XSS-N08` moves from Review to Protected
+  offline.
+- **D-9, D-11, D-12, D-14, D-15 (extended, no decision reversed).** Route placeholder syntax,
+  entity arguments bound from any placeholder, typed scalar arguments, invokable controllers,
+  class-level methods, `getString` and whole-bag readers, decoded request content,
+  `Response::setContent`, fluent QueryBuilder and Query setters, numeric-typed entity fields, and
+  flash types with no writer.
+- **Plain PHP (outside the Symfony decisions).** `(int)` casts are numeric, backtick commands are
+  recorded, a literal `sprintf` format keeps its argument protections, and `implode` keeps its
+  elements. The 70 `stage` rows of the architecture baseline are unchanged.
+- **§7, §8.** AC18 and cases `CV-01` to `CV-42` are new. Two fixture rows join the architecture
+  baseline and three Symfony rows change.
+- **Verification impact.** 34 of the 40 coverage subtests failed on `187cdb1`. A full judged run
+  on `e527fe0` confirmed all 14 positives with no control finding.

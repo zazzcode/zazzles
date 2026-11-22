@@ -1,6 +1,6 @@
 # Symfony analysis
 
-[Code Scan](README.md) · [PHP analysis](php-support.md) · [Detection capabilities](detection-capabilities.md)
+[Code Scan](README.md) · [PHP analysis](php-support.md) · [Detection capabilities](detection-capabilities.md) · [Symfony coverage](detection-capabilities/symfony.md) · [Twig coverage](detection-capabilities/twig.md)
 
 Code Scan discovers Symfony routes from source, invokes their controller actions in the bounded
 PHP analysis, and records source-to-operation evidence for supported library calls. Point the
@@ -24,11 +24,11 @@ SARIF reports.
 | Area | Supported subset |
 |---|---|
 | Project | The nearest `composer.json` controls project detection. Its `require` must include `symfony/framework-bundle`. File entries are limited to `public/` or the literal Composer `extra.public-dir`. |
-| Entries | PHP route attributes, imported docblock annotations, and YAML route definitions. Each method/path pair has its own entry. An unimported or dynamic route or unresolved controller appears with a dispatch gap. |
-| Inputs | Typed `Request` parameter bags, raw and decoded bodies, mapped query fields and request payloads, route placeholders, upload inputs, and PHP superglobals. Fixed entry methods narrow supported method comparisons. |
+| Entries | PHP route attributes on actions, classes and invokable controllers, imported docblock annotations, and YAML route definitions. Each method/path pair has its own entry. An unimported or dynamic route or unresolved controller appears with a dispatch gap. |
+| Inputs | Typed `Request` parameter bags and their typed readers, raw and decoded bodies, mapped query fields and request payloads, route placeholders with inline requirements and defaults, upload inputs, and PHP superglobals. An `int`, `float` or `bool` argument is a numeric value. Fixed entry methods narrow supported method comparisons. |
 | Services | Source-declared types, service aliases and constructor arguments from allow-listed YAML, promoted properties and bounded method tracing. Environment-dependent values are configuration evidence on the path. |
-| Storage | Doctrine entity arguments, the session user, finder and query results, mapped fields and associations. A storage link connects a possible request writer with a reader. |
-| Twig | Literal templates from the walk inventory, render context, supported filters, and project Twig extension calls. The outermost output operation and the HTML context determine encoding evidence. |
+| Storage | Doctrine entity arguments, the session user, finder and query results, mapped fields and associations. A storage link connects a possible request writer with a reader. A numeric-typed field is not rendering content. |
+| Twig | Literal templates from the walk inventory, render context, supported filters, and project Twig extension calls. The outermost output operation, the autoescape strategy and the surrounding markup determine encoding evidence. [Twig coverage](detection-capabilities/twig.md) lists each output form. |
 
 Library references for [routing](https://symfony.com/doc/6.4/routing.html),
 [request and response handling](https://symfony.com/doc/6.4/components/http_foundation.html),
@@ -39,9 +39,9 @@ Library references for [routing](https://symfony.com/doc/6.4/routing.html),
 
 | Family | Symfony evidence |
 |---|---|
-| SQL | Verified Doctrine DBAL statements, prepared execution, ORM DQL and native queries, and QueryBuilder text construction. Parameter bindings apply to their data slots. |
-| XSS | HTML `Response` content and Twig output in the actual HTML context. The report distinguishes ordinary autoescape, explicit strategies, raw output, and unresolved expressions. |
-| Command | PHP shell APIs in resolved services and Symfony `Process`. An argument vector and a shell command string carry different operand evidence. |
+| SQL | Verified Doctrine DBAL statements, prepared execution, ORM DQL and native queries, and QueryBuilder text construction. Parameter bindings apply to their data slots. A chain keeps its query text through pagination and cache setters. |
+| XSS | HTML `Response` content, `Response::setContent`, and Twig output in the actual HTML context. The report distinguishes ordinary autoescape, explicit strategies, raw output, URL attributes, and unresolved expressions. |
+| Command | PHP shell APIs and backtick commands in resolved services, and Symfony `Process`. An argument vector and a shell command string carry different operand evidence. |
 | Path | PHP local file operations, `BinaryFileResponse`, and the controller `file()` helper. |
 | Upload | `UploadedFile::move` destination and stored name, including whether the destination is served, how the extension is chosen, and which type controls apply before the write. |
 | SSRF and outbound | Verified PHP URL-capable operations, cURL destination slots, and Symfony HttpClient. Outbound observations use destination evidence without requesting a vulnerability judgment. |
@@ -69,9 +69,10 @@ Library references for [Doctrine DBAL](https://www.doctrine-project.org/projects
 - XML and PHP route definitions, API Platform, Symfony Forms, Validator constraints, event
   subscribers, Messenger handlers and console entry points are outside route discovery. Console
   code can contribute a non-entry storage writer.
-- Twig macros, `embed` overrides, dynamic template names, sandbox policy, and mail HTML are
-  outside the supported render subset. Doctrine XML and YAML mappings, custom naming strategies,
+- Twig macro bodies, `embed` overrides, dynamic template names, sandbox policy, and mail HTML are
+  outside the supported render subset. A macro definition and a macro call are recorded as gaps. Doctrine XML and YAML mappings, custom naming strategies,
   full DQL parsing and lifecycle listeners are outside the storage model.
-- Other frameworks use their own adapters. Authorization, mass assignment, CSRF, secrets,
-  session cookie policy, and cryptography are outside these claims. Security configuration can
+- Other frameworks use their own adapters. Authorization, mass assignment, CSRF, user
+  enumeration, secrets, session cookie policy, cryptography, and server configuration are outside
+  these claims. [Symfony coverage](detection-capabilities/symfony.md#outside-these-claims) Security configuration can
   supply entry context. Protection evidence belongs to the actual sink and value path.

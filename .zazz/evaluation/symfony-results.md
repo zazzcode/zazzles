@@ -117,3 +117,58 @@ using the same stored field and configured directory as the keyed delete action.
 The two command assessments with model-resolved evidence were source-reviewed against
 the recorded call, conditional configuration, and URL-format guard. The reports and
 request traces remain local and unpublished.
+
+## Independent review
+
+A separate review session on 2026-11-22 scanned a probe application that exercises the claimed
+Symfony coverage form by form, then fixed what it missed. The sample key was already met, so the
+probe was the source of the findings below. The [coverage tests](../../scan/internal/langphp/symfony_coverage_test.go)
+hold each one: 34 of their 40 subtests failed on scanner `187cdb1` and all pass on `5f28bb5`.
+
+| Area | Missed or wrong before the review | Now |
+|---|---|---|
+| Entries | An invokable controller with a class-level route had no entry. Class-level `methods` were ignored | Both produce the documented entries |
+| Route arguments | `{id<\d+>}`, `{page?1}` and `{slug}.html` did not bind their argument. An entity argument bound only when the placeholder had its name | All bind. A digits requirement and an `int`, `float` or `bool` argument are numeric |
+| Request readers | `getString`, whole-bag reads of headers, cookies and attributes, and `json_decode($request->getContent())` gave no source or an unknown value | Request values |
+| PHP values | `(int)` casts were not numeric, in plain PHP as well. `sprintf` and `implode` results were unknown | Casts are numeric. A literal `sprintf` format keeps `%s` arguments and makes numeric conversions numeric |
+| Commands | Backtick commands were never recorded: the grammar node kind was misspelled | Recorded |
+| SQL | A QueryBuilder or Query chain lost its claim at `from`, `setMaxResults`, `setFirstResult` and other setters | The chain keeps its text and bound values |
+| Response | `Response::setContent` was not an output | Recorded under the response's content type |
+| Twig | `{{ c ? x\|raw : y }}` was reported encoded. `{% autoescape 'js' %}` and a project `autoescape: false` were read as HTML escaping. `spaceless` was unknown. A macro body and call left no record and no gap | Raw, unknown with a gap, raw, raw, and gaps |
+| Twig URL attributes | Every URL attribute was Review and never assessed | A literal local prefix is encoded. The whole URL of a link, form or frame is raw. The rest stay Review |
+| Judge evidence | A Twig output was sent as the bare `{{ … }}` text, so the model could not see its element or attribute | The surrounding markup is render context evidence, as in the Jinja and EJS adapters |
+| Stored values | A generated integer identifier in a rendered string blocked the origin of the whole record. A flash type with no writer stayed in Review | A numeric-typed entity field is not rendering content. An unwritten flash type has no record |
+
+### Sample effect
+
+Offline, the sample report at `5f28bb5` differs from the one at `187cdb1` in five records:
+`templates/blog/post.html.twig:33` and `templates/user/index.html.twig:64` (the `asset()` avatar
+URLs) moved from Review to Protected, `src/Controller/LocalController.php:101` moved from Review
+to a finding with a resolved origin, `LocalController.php:63` lost its generated-identifier path,
+and `templates/user/index.html.twig:45` (a flash type nothing writes) has no record. All 14
+positives, 20 controls and three assessment-dependent rows keep their offline expectations.
+
+### Judged runs
+
+Same provider, model and limits as above. The sample was clean at its pin before and after each.
+
+| Run ID (UTC) | Scanner | Scope | Requests | Input tokens | Key outcome |
+|---|---|---|---:|---:|---|
+| `20261122T133713Z` | `e527fe0` | Full | 48 | 212,292 | 14 confirmed, zero control findings |
+| `20261122T133820Z` | `d215a80` | XSS only | 22 | 109,948 | The three XSS positives and both assessment-dependent XSS rows confirmed, zero control findings |
+
+In the full run `LocalController.php:101` (`ANY /local/posts`) was Confirmed. It was Review in
+every earlier run. The model now names the quoted-attribute context for
+`templates/user/edit.html.twig:14` and `:16`, which it called HTML text before.
+
+**Remaining limit.** Of the 16 XSS records the scanner marks encoded, seven stayed in Review in
+the full run and five in the XSS-only run. In each the model's component answers agree with the
+scanner (context correct, encoding adequate, every path protected) and its overall exposure answer
+does not, so the policy withholds Protected. None is a finding. The second run used a rendering
+contract that states Twig's escaping in full, which removed the "encoding unknown" answers. The
+exposure answer is a property of the shared XSS question set and is the subject of the
+protected-recognition follow-on work.
+
+The other two Review records are unchanged: the path claim on the upload `move` at
+`src/Controller/UserController.php:99`, and the deserialization record under `ANY /reset`, which
+carries the loop gap of that action.

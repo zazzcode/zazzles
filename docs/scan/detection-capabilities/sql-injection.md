@@ -15,7 +15,7 @@ Supported bindings include Sequelize, Prisma raw queries, sql.js, better-sqlite3
 | Bound values | A literal statement with placeholders and a separate parameter argument | May be Protected for the bound values. Any interpolated identifier or raw clause is assessed separately |
 | Structured Sequelize finders | A verified model finder with values in `where` | Ordinary finder values are bound. Raw SQL literal escapes are evaluated separately |
 | Provider-specific literal escaping | Prisma raw SQL with quote doubling inside a single-quoted value | Recognized per operand for SQLite, PostgreSQL and CockroachDB |
-| Doctrine DBAL and ORM | A prepared DBAL statement or ORM QueryBuilder executes source-backed query text | Bound data and executable fragments carry separate evidence |
+| Doctrine DBAL and ORM | A prepared DBAL statement, ORM query, or QueryBuilder chain from a repository or the entity manager executes source-backed query text | Bound data and executable fragments carry separate evidence. Pagination and cache setters keep the chain's text. [Symfony coverage](symfony.md#operations) |
 
 ## Recorded in Review
 

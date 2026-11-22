@@ -54,6 +54,14 @@ on its class pages. [OWASP Web Top 10](https://top10.owasp.org/) · [OWASP API T
 | Python | Supported HTTP dispatch in Flask, FastAPI, Quart, Django, Falcon, Bottle, Pyramid, aiohttp and WSGI | [Python analysis](python-support.md) |
 | PHP | Server-mapped `.php` and `.phtml` files and Symfony attribute, annotation, and YAML routes | [PHP analysis](php-support.md), [Symfony analysis](symfony-support.md) |
 
+Framework coverage pages list the entries, inputs, stored values and operations read in one
+framework, across every vulnerability class.
+
+| Framework | Coverage |
+|---|---|
+| Symfony | [Routes, request values, services, Doctrine and operations](detection-capabilities/symfony.md) |
+| Twig | [Template outputs, escaping, URL attributes and Review cases](detection-capabilities/twig.md) |
+
 Entry adapters acquire input and establish context for the same claim and verdict model. Each
 language adapter establishes its own supported value flow and protection facts. [Technical approach](../technical-approach.md#common-entry-and-dispatch-architecture)
 

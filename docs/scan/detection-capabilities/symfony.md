@@ -67,6 +67,8 @@ in Review with `storage_origin_unresolved`.
 | [Unsafe deserialization](unsafe-deserialization.md) | `unserialize`, `Yaml::parse` with object support | Includes a service built as a Twig global, which runs on every rendered page |
 | [Open redirect](open-redirect.md) | `redirect($url)`, `new RedirectResponse($url)`, `header('Location: ...')` | `redirectToRoute` takes a route name and is not recorded |
 | [Sensitive data in logs](sensitive-data-logging.md) | PSR-3 logger methods and `error_log` | Requires a value with a sensitive-data source |
+| [Information exposure](information-exposure.md) | `phpinfo()`, `debug_print_backtrace()`, dumps of environment arrays, `Response` bodies built from server state | No request source. Guards on the path are recorded for the decision model |
+| [Mass assignment](mass-assignment.md) | A whole request bag iterated into `$entity->$key`, a `set…` dispatch or `PropertyAccessor::setValue` | Records the entity's credential, login identifier and role-source fields from the security contracts |
 
 ## Recorded in Review
 
@@ -76,6 +78,8 @@ in Review with `storage_origin_unresolved`.
 | Environment-dependent path | A service method that returns early on a configuration flag | The flag is evidence on the path. It is not a protection |
 | Unlinked stored value | An entity field with no request writer in scanned source | The origin of the stored content is unknown |
 | Loops and unsupported control flow | A collection built in a `foreach` | The loop body is modeled once |
+| Form, serializer or payload mapping onto an entity | `$form->handleRequest($request)`, `deserialize(…, Entity::class, …)`, `#[MapRequestPayload]` | Recorded as mass assignment with a gap. Form types and serializer groups are not read |
+| Framework dumps | `dump($value)`, `dd($value)` | Output depends on the debug environment |
 
 ## Not recorded
 
@@ -90,6 +94,6 @@ in Review with `storage_origin_unresolved`.
 
 ## Outside these claims
 
-Authorization and access control, mass assignment, cross-site request forgery, user enumeration,
-password hashing, session cookie policy, secrets, exposed debug pages and server configuration are
-not analyzed. A clean report says nothing about them.
+Authorization and access control, cross-site request forgery, user enumeration, password
+hashing, session cookie policy, secrets, debug-mode and profiler configuration and server
+configuration are not analyzed. A clean report says nothing about them.

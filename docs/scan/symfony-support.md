@@ -48,6 +48,8 @@ Library references for [routing](https://symfony.com/doc/6.4/routing.html),
 | Code and template injection | PHP interpreter calls inside reached methods and verified Twig compilation reached through a template function. |
 | Deserialization | PHP `unserialize` and verified `Yaml::parse` in reached controllers and services, including services wired as Twig globals. |
 | Redirect | Controller `redirect()` and `RedirectResponse` destination operands. `redirectToRoute()` resolves an internal route name. |
+| Information exposure | `phpinfo()`, backtraces and environment dumps reached from routes and served files, with dominating guards as evidence. `dump()` and `dd()` stay in Review. |
+| Mass assignment | Whole request bags iterated into dynamic property writes, `set…` dispatch, `PropertyAccessor::setValue` or reflection on an entity, with the census roles of its fields. Form, serializer and payload mapping stay in Review. |
 | Logging | Verified PSR-3 method and `error_log` emission of a value with a sensitive-data source. |
 | Validation | Automatic PHP query checks use source-backed request field names and control evidence. |
 | NoSQL and prototype pollution | Outside Symfony coverage. Doctrine MongoDB ODM needs its own model. |

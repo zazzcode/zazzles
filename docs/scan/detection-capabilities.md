@@ -28,6 +28,8 @@ that evidence to classify a supported security claim. [How to read a report](int
 | [Code injection](detection-capabilities/code-injection.md) | [CWE-95](https://cwe.mitre.org/data/definitions/95.html) | `code` | [A05:2025 Injection](https://top10.owasp.org/2025/A05_2025-Injection/) |
 | [Server-side template injection](detection-capabilities/template-injection.md) | [CWE-1336](https://cwe.mitre.org/data/definitions/1336.html) | `code` | — |
 | [Unsafe deserialization](detection-capabilities/unsafe-deserialization.md) | [CWE-502](https://cwe.mitre.org/data/definitions/502.html) | `deserialization` | — |
+| [Information exposure](detection-capabilities/information-exposure.md) | [CWE-200](https://cwe.mitre.org/data/definitions/200.html), [CWE-215](https://cwe.mitre.org/data/definitions/215.html) | `exposure` | [A02:2025 Security Misconfiguration](https://top10.owasp.org/2025/A02_2025-Security_Misconfiguration/) |
+| [Mass assignment](detection-capabilities/mass-assignment.md) | [CWE-915](https://cwe.mitre.org/data/definitions/915.html) | `mass-assignment` | [API3:2023 Broken Object Property Level Authorization](https://api-security.owasp.org/editions/2023/en/0xa3-broken-object-property-level-authorization/) |
 | [Prototype pollution](detection-capabilities/prototype-pollution.md) | [CWE-1321](https://cwe.mitre.org/data/definitions/1321.html) | `pollution` | — |
 | [Open redirect](detection-capabilities/open-redirect.md) | [CWE-601](https://cwe.mitre.org/data/definitions/601.html) | `redirect` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) |
 | [Sensitive data in logs](detection-capabilities/sensitive-data-logging.md) | [CWE-532](https://cwe.mitre.org/data/definitions/532.html) | `logging` | [A09:2025 Security Logging and Alerting Failures](https://top10.owasp.org/2025/A09_2025-Security_Logging_and_Alerting_Failures/) |
@@ -75,6 +77,12 @@ Supported reads and writes can link a stored value back to an originating reques
 writer is linked, the claim can stay in Review with `storage_origin_unresolved`. A request key
 that selects a stored record does not establish the origin of its contents.
 [Stored and browser analysis](analysis/xss.md#stored-and-browser-analysis)
+
+In a Symfony project, a **security-field census** marks which stored fields hold a credential,
+the login identifier or the source of a user's roles. Each role comes from a framework contract
+(the security user interfaces, entity user providers and Doctrine lifecycle callbacks), never
+from a field name; a name on a fixed hint list is recorded only as a hint.
+[Census rules](analysis/mass-assignment.md#security-field-census)
 
 <a id="prototype-pollution-known-gaps"></a>
 

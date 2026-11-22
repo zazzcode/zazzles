@@ -178,7 +178,8 @@ report with its reason and a stderr warning, and the scan exits 0. Only a stoppe
 The graph design and full CFG/interprocedural analysis exceed this first implementation slice.
 
 Use `--only-family deserialization` to assess CWE-502 alone, or `--skip-family input-validation,outbound`
-to exclude those families with `--analyze --judge`. Use one of these flags per run. The
+to exclude those families with `--analyze --judge`. `--only-family exposure` and
+`--only-family mass-assignment` select the information-exposure and mass-assignment families. Use one of these flags per run. The
 [coverage index](detection-capabilities.md) lists the family names. Set defaults with
 `JUDGE_ONLY_FAMILY` or `JUDGE_SKIP_FAMILY`.
 Excluded model assessments remain unrun without an incompleteness warning. Existing deterministic practice

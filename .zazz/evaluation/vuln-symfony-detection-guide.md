@@ -133,11 +133,12 @@ Owned by [branch 1](../specifications/symfony-more-analyzers-1.md#11-sample-rows
 | `SYM-MASS-N02` | `mass_assignment_candidate` | `POST /user/about/` | `src/Controller/UserController.php:213`–`215` | `no_record` | One named field through one named setter |
 
 **Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
+Mass assignment and `phpinfo()` are covered by branch 1 of the lane (rows above). The wildcard
+write stays modeled as a storage writer (D-15) as well.
 
 - Missing authorization on six `/user/…` and `/admin/…` actions, and the `/local` endpoints.
-- Mass assignment (`src/Entity/User.php:56`–`61`, `PasswordResetController.php:34`). The wildcard
-  write is modeled as a storage writer (D-15). The privilege escalation itself is not a claim.
-- User enumeration, MD5 password hashing, `phpinfo()` at `public/info.php`, directory listing,
+- User enumeration (including the request-shaped `email` lookup at `PasswordResetController.php:34`,
+  previously listed with mass assignment), MD5 password hashing, directory listing,
   secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
   privilege escalation.
 - The request made by `curl` inside `SYM-CMD-01`. It is covered by the command claim. A URL passed

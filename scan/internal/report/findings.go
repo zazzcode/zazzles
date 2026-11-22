@@ -298,6 +298,12 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	if u.Deserialization != nil {
 		describeDeserialization(u, &f)
 	}
+	if u.Exposure != nil {
+		describeExposure(u, &f)
+	}
+	if u.MassAssignment != nil {
+		describeMassAssignment(u, &f)
+	}
 	f.Recommendations = scopedGuidance(u, f)
 	if u.Code != nil || u.Redirect != nil {
 		describeInterpreter(u, &f)
@@ -307,12 +313,6 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if u.Kind == analysis.PollutionKind {
 		describePollution(&f)
-	}
-	if u.Exposure != nil {
-		describeExposure(u, &f)
-	}
-	if u.MassAssignment != nil {
-		describeMassAssignment(u, &f)
 	}
 	return f
 }

@@ -1,0 +1,4 @@
+security:
+  access_control:
+    - { path: ^/manage, roles: ROLE_STAFF }
+    - { path: ^/manage/public, roles: PUBLIC_ACCESS }

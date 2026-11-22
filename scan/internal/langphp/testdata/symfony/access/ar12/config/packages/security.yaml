@@ -1,0 +1,5 @@
+security:
+  firewalls:
+    health:
+      pattern: ^/health
+      security: false

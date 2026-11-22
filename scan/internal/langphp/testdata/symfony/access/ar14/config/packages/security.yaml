@@ -1,0 +1,5 @@
+security:
+  role_hierarchy:
+    ROLE_STAFF: ROLE_MEMBER
+  access_control:
+    - { path: ^/desk, roles: ROLE_MEMBER }

@@ -16,6 +16,12 @@ func (s *phpSet) analyzeSymfonyEntry(out *analysis.AnalysisReport, p *symfonyPro
 	}
 	entryIndex, invocationIndex := len(out.Entries)-1, len(out.InvocationContexts)-1
 	entry, invocation := out.Entries[entryIndex], out.InvocationContexts[invocationIndex]
+	access := p.accessFor(s, r, method)
+	if r.target != nil {
+		access = (&phpFlow{set: s, module: r.target.module, symfony: p}).applyAccessAttributes(access, r.target, r.action)
+	}
+	out.Entries[entryIndex].Access = &access
+	entry.Access = &access
 	m := r.target.module
 	handler := m.evidence("invoked_callable", r.action)
 	work := 0

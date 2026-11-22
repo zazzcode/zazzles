@@ -336,6 +336,7 @@ func selectColumns(header string) []string {
 // reflected claim: the raw witness is scoped to its own path and the
 // unresolved stored siblings stay visible instead of vetoing it.
 func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
+	projects := s.storageProjectIndex(out)
 	kept := out.Uses[:0]
 	defer func() { out.Uses = kept }()
 	for i := range out.Uses {
@@ -384,10 +385,7 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 			if firstKey == "" {
 				firstKey = d.StorageKey
 			}
-			writes := s.writes[d.StorageKey]
-			if session {
-				writes = s.sessionWrites[d.StorageKey]
-			}
+			writes := s.scopedStorageWrites(d.StorageKey, u.EntryID, projects)
 			if len(writes) == 0 {
 				resolved = false
 				add(d, "", read)

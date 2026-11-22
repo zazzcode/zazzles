@@ -73,6 +73,9 @@ type phpSet struct {
 	// magicClasses caches the deserialization magic-method class evidence.
 	magicClasses      []analysis.Evidence
 	magicClassesReady bool
+	twig              twigInventory
+	doctrine          doctrineStorage
+	responses         map[int]symfonyResponseState
 }
 
 type phpWrite struct {
@@ -104,6 +107,9 @@ func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 	}
 	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
 	s.loadSymfonyProjects(inv.Config)
+	s.twig = newTwigInventory(inv.Templates, root)
+	s.doctrine = newDoctrineStorage()
+	s.responses = map[int]symfonyResponseState{}
 	for _, f := range inv.Files {
 		if f.Language == lang.PHP && !s.symfonyCacheFile(f.Path) {
 			s.files = append(s.files, f.Path)
@@ -380,6 +386,8 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 	}
 	// Class-resolution gaps found while walking entries are report coverage.
 	out.Gaps = append(out.Gaps, s.gaps[before:]...)
+	s.finalizeSymfonyResponses(out)
+	s.linkDoctrineStorage(out)
 	s.linkStorage(out)
 	s.linkStoredOnlySessions(out)
 	parse.AssembleXSSClaims(out)
@@ -392,6 +400,11 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 			e.Text = ""
 			out.Files = append(out.Files, e)
 		}
+	}
+	for _, file := range s.twig.text.Files() {
+		e, _ := s.twig.text.Get(file)
+		e.Kind, e.Text = "file", ""
+		out.Files = append(out.Files, e)
 	}
 	for _, r := range guidelines.ForPaths(s.files) {
 		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: r.ID, Version: r.Version, Languages: r.Languages})

@@ -459,6 +459,7 @@ func (f *phpFlow) propertyWrite(left *sitter.Node, v phpValue) {
 	if !ok || base.classDecl == nil {
 		return
 	}
+	f.doctrinePropertyWrite(base, left, name, v)
 	props := make(map[string]phpValue, len(base.props)+1)
 	for k, p := range base.props {
 		props[k] = p
@@ -487,6 +488,9 @@ func (f *phpFlow) propertyRead(n *sitter.Node) (phpValue, bool) {
 	}
 	base, ok := f.env[phpVarName(m, obj)]
 	if v, modeled := symfonyRequestProperty(base, phpText(m, name)); modeled {
+		return v, true
+	}
+	if v, modeled := f.symfonyResponseProperty(base, phpText(m, name)); modeled {
 		return v, true
 	}
 	if !ok || base.classDecl == nil {

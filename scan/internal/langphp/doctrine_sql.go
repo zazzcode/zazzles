@@ -180,17 +180,20 @@ func (f *phpFlow) doctrineORMCall(n *sitter.Node, receiver phpValue, kind, metho
 		case "getentitymanager":
 			return f.doctrineReceiver(n, doctrineManager), true
 		case "createquerybuilder":
+			if receiver.classDecl != nil {
+				receiver.class = f.doctrineRepositoryEntity(receiver.classDecl)
+			}
 			return f.newDoctrineQuery(n, nil, phpValue{}, receiver, "doctrine_builder"), true
 		}
 		if doctrineFinderName(method) {
-			return phpValue{}, true
+			return f.doctrineFinder(n, receiver, method, values)
 		}
 	case "doctrine_manager":
 		switch method {
 		case "getconnection":
 			return f.doctrineReceiver(n, doctrineConnection), true
 		case "find":
-			return phpValue{}, true
+			return f.doctrineFinder(n, receiver, method, values)
 		case "getrepository":
 			if len(nodes) > 0 {
 				return phpValue{binding: "doctrine_repository", class: f.doctrineClassArgument(nodes[0])}, true
@@ -221,6 +224,9 @@ func (f *phpFlow) doctrineORMCall(n *sitter.Node, receiver phpValue, kind, metho
 		switch method {
 		case "getresult", "getoneornullresult", "getsingleresult", "getsinglescalarresult", "getarrayresult", "execute":
 			f.runDoctrineQuery(n, receiver, doctrineORMDriver)
+			if method != "getsinglescalarresult" && receiver.class != "" {
+				return f.doctrineResultEntity(n, receiver.class, method == "getresult" || method == "getarrayresult" || method == "execute"), true
+			}
 			return phpValue{}, true
 		}
 		return f.doctrineORMParameters(n, receiver, method, values)

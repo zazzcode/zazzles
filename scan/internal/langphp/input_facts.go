@@ -94,7 +94,8 @@ func (f *phpFlow) source(n *sitter.Node, container, origin, key string) phpValue
 	if container == "_SESSION" {
 		key0 := "php-session:" + key
 		v.deps[0].dep.StorageKey = key0
-		for _, w := range f.set.sessionWrites[key0] {
+		writes := f.set.scopedStorageWrites(key0, f.entry.ID, f.set.storageProjectIndex(f.report))
+		for _, w := range writes {
 			for _, wd := range w.value.deps {
 				nd := wd
 				nd.dep.StorageKey = key0
@@ -103,7 +104,7 @@ func (f *phpFlow) source(n *sitter.Node, container, origin, key string) phpValue
 				v.deps = append(v.deps, nd)
 			}
 		}
-		if len(f.set.sessionWrites[key0]) == 0 {
+		if len(writes) == 0 {
 			v.deps[0].protection = phpUnwritten
 		}
 	}
@@ -237,6 +238,7 @@ func phpStoredKeys(deps []phpDep) []string {
 // those request sources into the claim and lifts its stored-only blocker. A
 // key with no request-derived writer keeps the claim in Review.
 func (s *phpSet) linkStoredOnlySessions(out *analysis.AnalysisReport) {
+	projects := s.storageProjectIndex(out)
 	for i := range out.Uses {
 		u := &out.Uses[i]
 		keys, ok := s.storedOnly[u.ID]
@@ -252,7 +254,7 @@ func (s *phpSet) linkStoredOnlySessions(out *analysis.AnalysisReport) {
 			if !strings.HasPrefix(key, "php-session:") {
 				continue
 			}
-			for _, w := range s.sessionWrites[key] {
+			for _, w := range s.scopedStorageWrites(key, u.EntryID, projects) {
 				for _, wd := range w.value.deps {
 					if wd.dep.Source.Kind != "input_source" || wd.protection == "numeric" || wd.protection == "non_content" || seen[wd.dep.Source.Span] {
 						continue

@@ -421,6 +421,9 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if v, ok := f.symfonyControllerCall(n, receiver, method, values); ok {
 		return v
 	}
+	if v, ok := f.doctrineStorageCall(n, receiver, method, values); ok {
+		return v
+	}
 	if v, ok := f.doctrineSQLCall(n, receiver, method, nodes, values); ok {
 		return v
 	}
@@ -619,6 +622,7 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		return phpValue{binding: "db_statement", driver: "mysqli", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	}
 	if v, ok, reason := f.newObject(n, clsNode, cls); ok {
+		f.doctrineTrackObject(v, n)
 		return v
 	} else if reason != "" && strings.Contains(reason, "more than once") {
 		f.evalChildren(n)

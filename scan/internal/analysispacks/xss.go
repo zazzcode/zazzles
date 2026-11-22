@@ -70,6 +70,8 @@ func XSSContract(id, library string) *analysis.APIModel {
 		return &analysis.APIModel{ID: id, Library: library, Semantics: "Flask string returns use HTML; FastAPI HTML is explicit. Jinja autoescape protects template variables, not request text compiled as template source.", Reference: "https://flask.palletsprojects.com/en/stable/templating/"}
 	case "symfony-response-v1":
 		return &analysis.APIModel{ID: id, Library: "symfony/http-foundation", Semantics: "Response argument 0 is the body. Without an overriding Content-Type, the response is HTML. Argument 2 contains headers. A literal non-HTML content type removes the HTML rendering claim. Content reaches this response without output encoding by the constructor.", Reference: "https://symfony.com/doc/6.4/components/http_foundation.html#response"}
+	case "twig-html-output-v1":
+		return &analysis.APIModel{ID: id, Library: "twig", Semantics: "A Twig interpolation emits the expression result in the surrounding document context. HTML autoescaping applies to the final value in HTML templates unless disabled or the outermost operation is marked safe. The raw filter bypasses escaping, and an explicit escape strategy must match the output context.", Reference: "https://twig.symfony.com/doc/3.x/filters/escape.html"}
 	case "php-html-output-v1":
 		return &analysis.APIModel{ID: id, Library: library, Semantics: "PHP echo/print and string interpolation emit HTML directly; there is no autoescaping. htmlspecialchars (with its actual flags) escapes HTML text and quoted non-active attributes; it does not establish script or URL-scheme safety.", Reference: "https://www.php.net/manual/en/function.echo.php"}
 	}

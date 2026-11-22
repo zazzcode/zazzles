@@ -2,11 +2,12 @@
 
 - **Lane contract** [Symfony application-security analyzers](symfony-more-analyzers.md). Its §0,
   §2, §4 and §5 apply here and are not repeated.
-- **Branch** `symfony-more-analyzers-3`, stacked on `symfony-more-analyzers-2`.
+- **Branch** `symfony-more-analyzers-3`, stacked on `symfony-more-analyzers-2`. Branch 2 landed on
+  `stage` (PR #43, merge `21b4556`); this branch is rebased onto `stage`.
 - **Depends on** [Branch 1](symfony-more-analyzers-1.md) (census roles `credential` and
   `login_identifier`) and [Branch 2](symfony-more-analyzers-2.md) (entry access, `secret_check`).
 - **Worktree** `symfony-more-analyzers`.
-- **Review artifact** One draft PR whose base is `symfony-more-analyzers-2`.
+- **Review artifact** One draft PR (#45), base `stage` since branch 2 landed.
 - **Run log** `.zazz/ephemeral/symfony-more-analyzers-run-log.md`, section "Branch 3".
 
 ## 1. Capability
@@ -538,19 +539,40 @@ func (f *phpFlow) digestCall(n *sitter.Node, name string, values []phpValue) (ph
 None from this branch's own scope. The owner's decisions are in the lane contract §5: weak
 password hashing is in scope and `account` is one family.
 
-### 11.1 Follow-on from branch 2 (required)
+### 11.1 Follow-on from branch 2 (resolved on this branch)
 
-Branch 2 AC14 is **not implemented**. Offline evidence and family registration are done; the
-judged authorization controls and positives do not yet hold together.
+Branch 2 AC14 shipped **not implemented**: on `authorization-components-v2` the judged retry
+`run-3075298902` made `SYM-AUTHZ-N03` and `-N05` Protected but regressed `SYM-AUTHZ-02` and
+`-04` to Protected, and branch 2 landed `authorization-components-v3` without another paid run.
+This branch owns the residual. The bar: the five branch 2 positives `confirmed_vulnerability`
+and `SYM-AUTHZ-N01`, `-N03`, `-N05` `protected_for_claim` (or not findings), first under
+`--only-family authorization`, then in the full branch-acceptance run, with no offline row
+weakened.
 
-| Residual | Evidence | Required on this branch |
-|---|---|---|
-| Authorization judge adequacy | Judged retry `run-3075298902` on `authorization-components-v2`: `SYM-AUTHZ-N03` and `SYM-AUTHZ-N05` became `protected_for_claim`, but `SYM-AUTHZ-02` and `SYM-AUTHZ-04` regressed to Protected because listed `ROLE_USER` was treated as adequate for request-selected object-level writes/deletes. Protocol tip is `authorization-components-v3` (untested prose that keeps the `secret_check` / census-read fixes and restores that listed roles alone do not cover those writes). | Before branch 3 acceptance: one judged `--only-family authorization` (and a full run if that passes) must show the five branch-2 positives as `confirmed_vulnerability` and `SYM-AUTHZ-N01`, `-N03`, `-N05` as `protected_for_claim` (or not findings). Adjust question/instruction prose under a new protocol id if v3 still fails. Do not weaken offline rows. |
+| Step | Run | Protocol | Outcome |
+|---|---|---|---|
+| Re-judge v3 as landed | `b3-j1-authz` | `authorization-components-v3` | Five positives Confirmed; `N01`, `N05` Protected; `N03` delete (`ROLE_ADMIN`, no stronger peer writer) Confirmed. First failing stage: question wording ("listed roles alone are not adequate" also rejected a restricted role) |
+| Judge roles by who holds them | `b3-j2-authz` | `authorization-components-v4` | Five positives Confirmed; `N01`, `N03`, `N05` Protected |
+| Align the judge instruction with v4 | branch acceptance `b3-j6-full` | `authorization-components-v5` | 25 of 25 positives Confirmed, 0 control findings |
+| Recheck after branch 2 landed and the rebase onto `stage` | `b3-j7-full-rebased` | `authorization-components-v5` | 25 of 25 positives Confirmed (including `SYM-AUTHZ-02`, `-04`), `N01`, `N03`, `N05` Protected, 0 control findings |
 
-This residual is in scope for branch 3 even though the `account` family is the primary
-deliverable: branch 3's branch-acceptance judged run already requires every earlier positive
-Confirmed and no earlier control as a finding (lane §4.1). Solve the authorization judge gap
-first (or as an early S0-adjacent slice) so the stacked acceptance does not inherit AC14.
+**Rule (v4/v5).** For an object-level or function-level write or delete on a request-selected
+subject, the listed entry roles are judged by who holds them. A role every signed-in user holds
+(`ROLE_USER`, which Symfony's user contract gives every user, or an `IS_AUTHENTICATED_*`
+attribute) is inadequate. A role only some users hold is adequate unless `peer_access` shows
+another writer of the same key that requires a role the entry lacks. Census-field reads under
+required roles stay adequate. No role name of the sample is in a rule.
+
+**Kept from branch 2 as landed.** D-6 as documented there (an unclassified same-class
+private-helper call is recorded; other unclassified conditions such as inline validation add
+no guard or blocker), the shared `analysis.AuthorizationBlockingGap`, and the report-only SSRF
+back-link. The rebase changed only authorization component digests: the 50 other sample
+records, SSRF included, are byte-identical to a `stage` build.
+
+**File placement.** The change is in `scan/internal/analysispacks/authorization.go` (question
+prose and protocol id) and the judge instruction in `scan/internal/judge/client.go`. Branch 2
+was in review when it was made, so it lives here, and the AC11 no-drift diff (now against
+`origin/stage`) shows that one listed file. Branch 2 AC14 is met by this branch.
 
 ## 12. Run log protocol
 
@@ -614,6 +636,21 @@ Section "Branch 3" of the lane run log, with the items branch 1's §12 lists.
 > output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Rebased onto `stage` after branch 2 landed
+
+**Source.** Owner: branch 2 merged to `stage`; rebase this branch, confirm every item, and
+record the deferred branch 2 AC14 here.
+
+**Changed Sections.** Header (base and review artifact), §11.1 (rewritten as resolved).
+
+**Summary.** Rebased the ten branch 3 commits onto `stage` (`21b4556`). Conflicts in
+`analysispacks/authorization.go` (kept v4/v5) and `report/findings.go` (account finding types
+now listed from the findings' type ids, as branch 2 lists its own). `--skip-family` help names
+`account`. Gate, baseline, `TestSymfonySourceKey`, `TestDVWASourceKey`, AC6 and AC11 rerun;
+judged run `b3-j7-full-rebased` repeats the branch-acceptance outcome.
+
+**Verification Impact.** None new; the criteria were rerun on the rebased head.
 
 ### 2026-11-22 — Branch 3 implementation
 

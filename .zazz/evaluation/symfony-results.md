@@ -280,7 +280,7 @@ or a required control.
 carries the branch 2 authorization residual (§11.1). Provider OpenAI `gpt-6-luna`, default
 candidate limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, only the provider key passed. The
 sample stayed at `086f81f941501bd1170b249e01107ba99beb2962` and `git status --porcelain --ignored`
-was empty before and after each run. Six of the eight-run budget were used.
+was empty before and after each run. Seven of the eight-run budget were used.
 
 | Run ID | Scanner | Scope | Requests | Input tokens | Key outcome |
 |---|---|---|---:|---:|---|
@@ -290,13 +290,16 @@ was empty before and after each run. Six of the eight-run budget were used.
 | `b3-j4-account-s3` (`run-4175915011`) | `48e66a6` | `--only-family account` | 4 | 12,096 | `SYM-RESET-01` Confirmed (`request_controlled`, `partial`) |
 | `b3-j5-account-s4` (`run-3183312456`) | `86f1211` | `--only-family account` | 10 | 27,493 | `SYM-HASH-01` Confirmed at all five anchors |
 | `b3-j6-full` (`run-37424552`) | `94c5138` (`authorization-components-v5`, `account-components-v1`) | Full | 78 | 318,286 | **25 of 25 positives Confirmed, 0 control findings** |
+| `b3-j7-full-rebased` (`run-2847565093`) | `a369652` (rebased onto `stage` after PR #43 landed) | Full | 78 | 318,286 | **25 of 25 positives Confirmed, 0 control findings**; same row outcomes as `b3-j6-full` |
 
 The authorization residual was question wording: v3 said listed roles alone never cover a
 request-selected write, so a role only administrators hold was judged inadequate too. v4 judges
 listed roles by who holds them (the role every signed-in user holds is inadequate for a
 request-selected write or delete; a role only some users hold is adequate unless a peer writer
 of the same key requires a role the entry lacks). v5 aligns the judge instruction with that
-prose. Only authorization request digests changed in the baseline.
+prose. Only authorization request digests changed in the baseline. Branch 2 AC14 is met by
+this branch: on the rebased head the five branch 2 positives (including `SYM-AUTHZ-02` and
+`-04`) are Confirmed and `SYM-AUTHZ-N01`, `-N03`, `-N05` are Protected.
 
 ### Branch 3 keyed outcomes (run `b3-j6-full`)
 

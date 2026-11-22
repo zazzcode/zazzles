@@ -13,6 +13,7 @@ In a judged scan, select this family with `--only-family ssrf`.
 | Parsed destination restrictions | A scheme and host check restricts the final URL on every path | May be Protected for the observed destination |
 | Raw string restrictions | A prefix check runs on an unparsed destination | Can produce a practice finding. A scheme-only check leaves host control open |
 | PHP URL operations and Symfony HttpClient | A URL-capable PHP function or verified HttpClient call receives a request destination | Record the verified destination slot independently of file paths and request data |
+| Address-guarded endpoint | An authorization record whose only guard is an address check, in the same report as this request | The authorization finding may list this request under `related_findings`. The SSRF request itself is unchanged |
 
 ## Recorded in Review
 

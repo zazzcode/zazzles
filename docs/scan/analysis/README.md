@@ -19,6 +19,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Unsafe deserialization](deserialization.md) | Verified data operands, loader and schema facts, and byte-level integrity and class restrictions |
 | [Information exposure](information-exposure.md) | PHP diagnostic operations, the internal state they reveal, entry reach and dominating guards |
 | [Mass assignment](mass-assignment.md) | Request-chosen property names, key origin, key guards and the security-field census |
+| [Authorization](authorization.md) | Subject, operation, entry access and the guards that dominate a protected operation |
 | [Open redirect](open-redirect.md) | Verified redirect destinations and effective origin restrictions |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |

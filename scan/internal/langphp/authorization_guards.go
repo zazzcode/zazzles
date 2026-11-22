@@ -26,6 +26,9 @@ func (f *phpFlow) dominatingGuards(n *sitter.Node, subject *phpAuthz) []analysis
 			return
 		}
 		g := f.classifyGuard(cond, subject, 0)
+		if g.Kind == "" || g.Kind == analysis.GuardUnclassified && !f.isPrivateCall(f.unwrapGuard(cond)) {
+			return
+		}
 		key := g.Kind + ":" + g.Evidence.Span.File + ":" + strconv.Itoa(g.Evidence.Span.StartByte)
 		if seen[key] {
 			return
@@ -75,6 +78,20 @@ func (f *phpFlow) classifyGuard(n *sitter.Node, subject *phpAuthz, depth int) an
 	n = f.unwrapGuard(n)
 	if n == nil {
 		return f.unclassified(n)
+	}
+	if n.Kind() == "binary_expression" {
+		switch phpOperator(f.module, n) {
+		case "||", "or", "&&", "and":
+			left := f.classifyGuard(phpField(n, "left"), subject, depth)
+			right := f.classifyGuard(phpField(n, "right"), subject, depth)
+			if left.Kind != analysis.GuardUnclassified {
+				return left
+			}
+			if right.Kind != analysis.GuardUnclassified {
+				return right
+			}
+			return f.unclassified(n)
+		}
 	}
 	if f.isPrivateCall(n) {
 		if depth >= 1 {

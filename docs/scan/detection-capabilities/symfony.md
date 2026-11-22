@@ -16,7 +16,13 @@ verdicts. [Twig output](twig.md) has its own page.
 | Invokable controller | A class-level route and a public `__invoke` with no action route | The class route is the entry for `__invoke` |
 | Docblock annotation | `@Route("/c", methods={"GET"})` with the annotation class imported | The same entry as an attribute |
 | YAML route | `controller: App\Controller\X::show` in `config/routes.yaml` | The entry dispatches to the named public method, or to `__invoke` |
-| Public PHP file | `public/info.php` | A file entry. Files outside the public directory are not entries |
+| Public PHP file | `public/info.php` | A file entry. Files outside the public directory are not entries. A file entry carries no access rule |
+
+A route entry records `access`: whether a login is required and which roles, from
+`access_control`, a `security: false` firewall, `#[IsGranted]` and a leading
+`denyAccessUnlessGranted`. The first matching rule wins. That access is context for the
+[authorization](missing-authorization.md) claim. It is not protection for any other
+claim. The entry also lists `state_changes` for the stored writes its action performs.
 
 A route that the routing configuration does not import, a non-literal path or method list, and a
 controller that does not resolve to a public project method are recorded as entries with a
@@ -69,6 +75,7 @@ in Review with `storage_origin_unresolved`.
 | [Sensitive data in logs](sensitive-data-logging.md) | PSR-3 logger methods and `error_log` | Requires a value with a sensitive-data source |
 | [Information exposure](information-exposure.md) | `phpinfo()`, `debug_print_backtrace()`, dumps of environment arrays, `Response` bodies built from server state | No request source. Guards on the path are recorded for the decision model |
 | [Mass assignment](mass-assignment.md) | A whole request bag iterated into `$entity->$key`, a `set…` dispatch or `PropertyAccessor::setValue` | Records the entity's credential, login identifier and role-source fields from the security contracts |
+| [Missing authorization](missing-authorization.md) | A stored write, file write or delete, or a response that carries a census field of a request-selected or enumerated record | Records the subject, the operation, the entry's access and the guards that dominate the operation. An address check is its own guard kind |
 
 ## Recorded in Review
 
@@ -94,6 +101,8 @@ in Review with `storage_origin_unresolved`.
 
 ## Outside these claims
 
-Authorization and access control, cross-site request forgery, user enumeration, password
-hashing, session cookie policy, secrets, debug-mode and profiler configuration and server
-configuration are not analyzed. A clean report says nothing about them.
+Cross-site request forgery, user enumeration, password hashing, session cookie policy,
+secrets, debug-mode and profiler configuration and server configuration are not analyzed.
+A clean report says nothing about them. Authorization of a stored write, a file write or
+delete, and a census-field read is the [missing authorization](missing-authorization.md)
+claim. Entry access is recorded for every route.

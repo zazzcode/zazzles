@@ -57,8 +57,9 @@ type phpFlow struct {
 	// authzSite is the controller call whose helper is writing a subject.
 	// authzGuards are the checks that dominate that call, computed in the
 	// controller so the helper's own environment is not consulted.
-	authzSite   *sitter.Node
-	authzGuards []analysis.AuthorizationGuard
+	authzSite       *sitter.Node
+	authzSiteModule *phpModule
+	authzGuards     []analysis.AuthorizationGuard
 }
 
 func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {

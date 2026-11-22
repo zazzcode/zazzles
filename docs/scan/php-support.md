@@ -37,6 +37,7 @@ and troubleshooting, use [offline evidence inspection](running-scans.md#offline-
 | Deserialization | Global `unserialize` and Symfony `Yaml::parse` with source-backed options, request byte paths, and object-injection outcomes ([analysis rules](analysis/deserialization.md#php)) |
 | Information exposure | `phpinfo()`, `debug_print_backtrace()`, dumps of `$_SERVER`/`$_ENV`/`$GLOBALS`, and output of `getenv()`, `php_uname()` or `phpversion()` in served files ([analysis rules](analysis/information-exposure.md)) |
 | Mass assignment | `foreach ($_POST as $k => $v) { $obj->$k = $v; }` and the `set…` forms on a project class; field roles are name hints only ([analysis rules](analysis/mass-assignment.md)) |
+| Authorization | A plain PHP file whose only guard is an address check on a modeled SQL write or a file write or delete ([analysis rules](analysis/authorization.md)). Symfony route entries carry the fuller claim |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects ([SSRF rules](analysis/ssrf.md)) |
 | Logging | Verified PSR-3 and PHP log emission in Symfony projects ([logging rules](analysis/sensitive-data-logging.md)) |

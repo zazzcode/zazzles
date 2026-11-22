@@ -354,8 +354,8 @@ func censusSensitive(roles []string) bool {
 }
 
 func (f *phpFlow) authzSink(at *sitter.Node) analysis.Evidence {
-	if f.authzSite != nil && f.entryModule != nil {
-		return f.entryModule.evidence(analysis.AuthorizationKind, f.authzSite)
+	if f.authzSite != nil && f.authzSiteModule != nil {
+		return f.authzSiteModule.evidence(analysis.AuthorizationKind, f.authzSite)
 	}
 	return f.module.evidence(analysis.AuthorizationKind, at)
 }

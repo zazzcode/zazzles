@@ -30,6 +30,7 @@ that evidence to classify a supported security claim. [How to read a report](int
 | [Unsafe deserialization](detection-capabilities/unsafe-deserialization.md) | [CWE-502](https://cwe.mitre.org/data/definitions/502.html) | `deserialization` | — |
 | [Information exposure](detection-capabilities/information-exposure.md) | [CWE-200](https://cwe.mitre.org/data/definitions/200.html), [CWE-215](https://cwe.mitre.org/data/definitions/215.html) | `exposure` | [A02:2025 Security Misconfiguration](https://top10.owasp.org/2025/A02_2025-Security_Misconfiguration/) |
 | [Mass assignment](detection-capabilities/mass-assignment.md) | [CWE-915](https://cwe.mitre.org/data/definitions/915.html) | `mass-assignment` | [API3:2023 Broken Object Property Level Authorization](https://api-security.owasp.org/editions/2023/en/0xa3-broken-object-property-level-authorization/) |
+| [Missing authorization](detection-capabilities/missing-authorization.md) | [CWE-862](https://cwe.mitre.org/data/definitions/862.html), [CWE-639](https://cwe.mitre.org/data/definitions/639.html), [CWE-291](https://cwe.mitre.org/data/definitions/291.html) | `authorization` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) |
 | [Prototype pollution](detection-capabilities/prototype-pollution.md) | [CWE-1321](https://cwe.mitre.org/data/definitions/1321.html) | `pollution` | — |
 | [Open redirect](detection-capabilities/open-redirect.md) | [CWE-601](https://cwe.mitre.org/data/definitions/601.html) | `redirect` | [A01:2025 Broken Access Control](https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/) |
 | [Sensitive data in logs](detection-capabilities/sensitive-data-logging.md) | [CWE-532](https://cwe.mitre.org/data/definitions/532.html) | `logging` | [A09:2025 Security Logging and Alerting Failures](https://top10.owasp.org/2025/A09_2025-Security_Logging_and_Alerting_Failures/) |
@@ -54,7 +55,7 @@ on its class pages. [OWASP Web Top 10](https://top10.owasp.org/) · [OWASP API T
 |---|---|---|
 | JavaScript and TypeScript | Supported HTTP handlers in Express, Fastify and Hapi, Next.js routes, pages and Server Actions, browser entry points, Apollo GraphQL resolvers and unary gRPC | [Node inputs](analysis/node-inputs.md) · [Next.js](nextjs-support.md) · [Entry selection](running-scans.md#common-entry-selection-and-tagged-checks) |
 | Python | Supported HTTP dispatch in Flask, FastAPI, Quart, Django, Falcon, Bottle, Pyramid, aiohttp and WSGI | [Python analysis](python-support.md) |
-| PHP | Server-mapped `.php` and `.phtml` files and Symfony attribute, annotation, and YAML routes | [PHP analysis](php-support.md), [Symfony analysis](symfony-support.md) |
+| PHP | Server-mapped `.php` and `.phtml` files and Symfony attribute, annotation, and YAML routes. A Symfony route entry also records the access the security configuration requires of its caller | [PHP analysis](php-support.md), [Symfony analysis](symfony-support.md) |
 
 Framework coverage pages list the entries, inputs, stored values and operations read in one
 framework, across every vulnerability class.

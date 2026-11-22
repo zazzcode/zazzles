@@ -28,9 +28,8 @@ PY_EXPECT = {'construction': 'positive', 'raw_xss': 'positive', 'candidate': 'po
              'form_policy': 'present', 'encoded': 'encoded', 'bound': 'bound', 'absent': 'no_record',
              'registration_or_gap': 'registration', 'review': 'review'}
 ASSESSMENT = {'validation_defect', 'not_confirmed', 'validation_enforced'}
-# Operation-centered kinds have no request source (lane contract section 2.7):
-# a positive is met by a candidate at its anchor with no completeness blocker.
-# A row with each_anchor needs that at every listed anchor, not at any one.
+# Operation-centered kinds have no request source: a positive is met by a
+# candidate at its anchor with no completeness blocker.
 SOURCELESS_KINDS = {'info_exposure_candidate', 'password_hash_candidate', 'configuration_candidate'}
 
 
@@ -78,7 +77,10 @@ def select(row, report, entries):
 
 
 def anchor_groups(row, uses):
-    """The uses at each listed anchor, in key order."""
+    """The uses at each listed anchor, in key order.
+
+    A row with each_anchor needs a candidate at every listed anchor, not at any one.
+    """
     return [[u for u in uses if u['sink']['span']['file'] == f and u['sink']['span']['start_line'] == line]
             for f, lines in row['anchors'].items() for line in lines]
 

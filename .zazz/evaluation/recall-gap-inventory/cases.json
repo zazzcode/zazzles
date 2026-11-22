@@ -8,6 +8,7 @@
     "not_raw": "Every matching xss candidate is classified other than raw (or there is none)",
     "not_decisive": "No matching candidate, or every matching candidate keeps a blocker or lacks a request origin",
     "only_lines": "Candidates of the kind in the file sit only at the listed lines; with anchors, every candidate of the kind in the report sits at a listed file and line, and max_uses bounds their count",
+    "guarded": "A candidate of the kind exists at the anchor and carries a guard of guard_kind (guard_lines, when set, are covered by those guards), or the entry's access.roles include entry_roles",
     "bound": "No matching sql candidate carries query_text_interpolated",
     "excluded": "Outside candidate/registration recall; reason given",
     "noise_rows": "Source-reviewed anchors for keyed noise classes; the checker counts matching records that still carry the class condition"
@@ -699,6 +700,163 @@
       "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
       "kind": "mass_assignment_candidate",
       "expect": "no_record"
+    },
+    {
+      "id": "SYM-AUTHZ-01",
+      "entry_names": ["POST /user/role/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "src/Controller/AdminController.php",
+      "line": 32,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-AUTHZ-02",
+      "entry_names": ["POST /user/password/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "src/Controller/UserController.php",
+      "line": 41,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-AUTHZ-03",
+      "entry_names": ["POST /user/email/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "src/Controller/UserController.php",
+      "line": 62,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-AUTHZ-04",
+      "entry_names": ["GET /user/avatar/delete/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "anchors": {"src/Controller/UserController.php": [159, 161]},
+      "min_uses": 2,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-LOCAL-01",
+      "entry_names": ["ANY /local/promote/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "src/Controller/LocalController.php",
+      "line": 77,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-AUTHZ-N01",
+      "entry_names": ["POST /user/avatar/{user}", "POST /user/avatar/url/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "guarded",
+      "anchors": {"src/Controller/UserController.php": [99, 100, 101, 102, 139, 140, 141, 142]},
+      "guard_kind": "ownership_check",
+      "guard_lines": [75, 118]
+    },
+    {
+      "id": "SYM-AUTHZ-N02",
+      "entry_names": ["ANY /user", "POST /user/about/", "GET /user/edit/", "POST /user/edit/"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-AUTHZ-N03",
+      "entry_names": ["ANY /admin", "ANY /admin/delete/{user}", "ANY /admin/create"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "guarded",
+      "anchors": {
+        "templates/admin/index.html.twig": [44],
+        "src/Controller/AdminController.php": [53, 101]
+      },
+      "entry_roles": ["ROLE_ADMIN"]
+    },
+    {
+      "id": "SYM-AUTHZ-N04",
+      "entry_names": ["POST /post/{post}/comment"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-AUTHZ-N05",
+      "entry_names": ["ANY /reset/{email}/{token}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "guarded",
+      "anchors": {"src/Controller/PasswordResetController.php": [78, 79, 80]},
+      "guard_kind": "secret_check",
+      "guard_lines": [65]
+    },
+    {
+      "id": "SYM-AUTHZ-N06",
+      "entry_names": ["ANY /", "ANY /post/{post}", "GET /search"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-AUTHZ-N07",
+      "entry_names": ["GET /user/avatar/resize/{user}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-LOCAL-N01",
+      "entry_names": ["ANY /local/"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-LOCAL-N02",
+      "entry_names": ["ANY /local/posts"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record"
+    },
+    {
+      "id": "SYM-LOCAL-02",
+      "entry_names": ["ANY /local/users"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "present",
+      "anchors": {"src/Controller/LocalController.php": [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]}
+    },
+    {
+      "id": "SYM-AUTHZ-R01",
+      "entry_names": ["ANY /reset"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "present",
+      "file": "src/Services/Mail.php",
+      "line": 38
     },
     {
       "id": "TS-DESER-N01",

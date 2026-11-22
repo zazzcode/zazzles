@@ -118,6 +118,27 @@ def classify(row, report):
         return res
     if expect == 'no_record':
         res['outcome'] = 'control_pass' if not uses else 'control_fail'
+    elif expect == 'guarded':
+        # A candidate at the anchor carries guard_kind (and the stated guard
+        # lines, taken together), or the entry access lists entry_roles.
+        ok = len(uses) >= row.get('min_uses', 1)
+        guard_lines = set()
+        for u in uses:
+            if kind := row.get('guard_kind'):
+                matched = [g for g in ((u.get('authorization') or {}).get('guards') or []) if g.get('kind') == kind]
+                if not matched:
+                    ok = False
+                for g in matched:
+                    span = (g.get('evidence') or {}).get('span') or {}
+                    if span.get('start_line'):
+                        guard_lines.add(span['start_line'])
+            if roles := row.get('entry_roles'):
+                have = ((entries.get(u.get('entry_id')) or {}).get('access') or {}).get('roles') or []
+                if any(role not in have for role in roles):
+                    ok = False
+        if ok and row.get('guard_lines') and not set(row['guard_lines']) <= guard_lines:
+            ok = False
+        res['outcome'] = 'control_pass' if ok else 'control_fail'
     elif expect == 'not_raw':
         res['outcome'] = 'control_pass' if all((u.get('xss') or {}).get('protection') != 'raw' for u in uses) else 'control_fail'
     elif expect == 'encoded':
@@ -196,7 +217,7 @@ def lab_rows(lab, report):
 # Precision measures (false-positive contract W5). Expected labels stay here;
 # none of this reaches scanner or model input.
 EXTERNAL = WITNESS | {'api_response_source', 'browser_storage'}
-CONTROL_EXPECT = {'no_record', 'not_raw', 'not_decisive', 'only_lines', 'only_sources', 'bound', 'encoded', 'control_assessment'}
+CONTROL_EXPECT = {'no_record', 'not_raw', 'not_decisive', 'only_lines', 'only_sources', 'bound', 'encoded', 'control_assessment', 'guarded'}
 VALIDATION_ROLES = ('input_source', 'field_policy', 'invoked_callable', 'control_flow')
 TEST_PATH = re.compile(r'(^|/)(tests?|__tests__|spec|specs|fixtures?|cypress|e2e)(/|$)|\.(test|spec)\.[a-z]+$', re.I)
 UNDECIDED = {'', 'uncertain', 'unknown', 'not_applicable', 'guard_semantics_unknown'}

@@ -132,11 +132,37 @@ Owned by [branch 1](../specifications/symfony-more-analyzers-1.md#11-sample-rows
 | `SYM-MASS-N01` | `mass_assignment_candidate` | `ANY /admin/create`, `POST /register` | `src/Controller/AdminController.php:99`–`105`, `src/Controller/LoginController.php:102`–`106` | `no_record` | Each field is set by a named setter from a named request field |
 | `SYM-MASS-N02` | `mass_assignment_candidate` | `POST /user/about/` | `src/Controller/UserController.php:213`–`215` | `no_record` | One named field through one named setter |
 
-**Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
-Mass assignment and `phpinfo()` are covered by branch 1 of the lane (rows above). The wildcard
-write stays modeled as a storage writer (D-15) as well.
+### Branch 2 rows
 
-- Missing authorization on six `/user/…` and `/admin/…` actions, and the `/local` endpoints.
+Owned by [branch 2](../specifications/symfony-more-analyzers-2.md#11-sample-rows-owned-by-this-branch).
+`security.yaml` requires `ROLE_ADMIN` for `^/admin` and `ROLE_USER` for `^/user`
+(`config/packages/security.yaml:35`–`36`). The five positives have expected status
+`confirmed_vulnerability`. `guarded` means a candidate at the anchor carries the stated guard,
+or the entry's recorded roles.
+
+| ID | Kind | Entry | Anchor | Offline expectation | Source evidence |
+|---|---|---|---|---|---|
+| `SYM-AUTHZ-01` | `authorization_candidate` | `POST /user/role/{user}` | `src/Controller/AdminController.php:32` | Positive. Writes `role_source` field `php-sql:user.is_admin` of a path-selected record. Entry roles `ROLE_USER`. No guard. Peer entries that write the same field require `ROLE_ADMIN` | `setAdmin` of the entity argument bound from `{user}` |
+| `SYM-AUTHZ-02` | `authorization_candidate` | `POST /user/password/{user}` | `src/Controller/UserController.php:41` | Positive. Writes the `credential` field of a path-selected record. Entry roles `ROLE_USER`. No ownership guard | `setPassword` of the `{user}` entity |
+| `SYM-AUTHZ-03` | `authorization_candidate` | `POST /user/email/{user}` | `src/Controller/UserController.php:62` | Positive. Writes the `login_identifier` field of a path-selected record. No ownership guard | `setEmail` of the `{user}` entity |
+| `SYM-AUTHZ-04` | `authorization_candidate` | `GET /user/avatar/delete/{user}` | `src/Controller/UserController.php:159` and `:161` | Positive. Deletes a file named by a path-selected record's field and clears the field. No ownership guard. State change on `GET` (`method_safe: yes`) | `unlink` of `getAvatar()` and `setAvatar(null)` |
+| `SYM-LOCAL-01` | `authorization_candidate` | `ANY /local/promote/{user}` | `src/Controller/LocalController.php:77` | Positive. Writes `role_source` of a path-selected record. Entry authentication `none`. The only guard is `address_check` at `:22` against `127.0.0.1` and `::1` | `setAdmin(true)` after `isLocalRequest` |
+| `SYM-AUTHZ-N01` | `authorization_candidate` | `POST /user/avatar/{user}`, `POST /user/avatar/url/{user}` | Writes `:99`–`102` and `:139`–`142` | `guarded`: a candidate with an `ownership_check` at `:75` and `:118` | `if ($user !== $this->getUser())` returns before the write |
+| `SYM-AUTHZ-N02` | `authorization_candidate` | `ANY /user`, `POST /user/about/`, `GET /user/edit/`, `POST /user/edit/` | `UserController.php:17`, `:214`, `:221`, `:239` | `no_record` | The record is the session user (`#[CurrentUser]`), not a request-selected one |
+| `SYM-AUTHZ-N03` | `authorization_candidate` | `ANY /admin`, `ANY /admin/delete/{user}`, `ANY /admin/create` | `templates/admin/index.html.twig:44`, `AdminController.php:53`, `:101` | `guarded`: entry roles `ROLE_ADMIN` | `^/admin` requires `ROLE_ADMIN`. README entry 8 is this delete, routed at `/admin/delete/{user}` |
+| `SYM-AUTHZ-N04` | `authorization_candidate` | `POST /post/{post}/comment` | `src/Controller/BlogController.php:53`–`58` | `no_record` | A new record is created as the session user. No existing record is changed |
+| `SYM-AUTHZ-N05` | `authorization_candidate` | `ANY /reset/{email}/{token}` | `src/Controller/PasswordResetController.php:78`–`80` | `guarded`: a `secret_check` at `:65` | The stored reset value is compared with the path token before the write |
+| `SYM-AUTHZ-N06` | `authorization_candidate` | `BlogController::post`, `index`, `search` | — | `no_record` | Public reads of non-account fields |
+| `SYM-AUTHZ-N07` | `authorization_candidate` | `GET /user/avatar/resize/{user}` | `UserController.php:177`–`199` | `no_record` | No stored change and no file write or delete. Its command claim is `SYM-CMD-02` |
+| `SYM-LOCAL-N01` | `authorization_candidate` | `ANY /local/` | `LocalController.php:25`–`39` | `no_record` | Literal text only |
+| `SYM-LOCAL-N02` | `authorization_candidate` | `ANY /local/posts` | `LocalController.php:84`–`102` | `no_record` | No census field is returned |
+| `SYM-LOCAL-02` | `authorization_candidate` | `ANY /local/users` | `LocalController.php:51`–`63` | `present` | Returns `login_identifier` and `role_source` of every account behind the address guard only |
+| `SYM-AUTHZ-R01` | `authorization_candidate` | `ANY /reset` | `src/Services/Mail.php:38` | `present` | An unauthenticated entry writes a field of an account selected by a request value. The defect in this flow is branch 3's `SYM-RESET-01` |
+
+**Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
+Mass assignment, `phpinfo()`, and missing authorization are covered by branches 1 and 2 of the
+lane (rows above). The wildcard write stays modeled as a storage writer (D-15) as well.
+
 - User enumeration (including the request-shaped `email` lookup at `PasswordResetController.php:34`,
   previously listed with mass assignment), MD5 password hashing, directory listing,
   secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron

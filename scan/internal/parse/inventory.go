@@ -11,8 +11,15 @@ import (
 // Inventory is the single walk result shared by every language runner. Runners
 // filter its files by language; none walks the target again.
 type Inventory struct {
-	Root  string
-	Files []walk.File
+	Root      string
+	Files     []walk.File
+	Config    []string
+	Templates []string
+}
+
+// WalkInventory preserves every inventory list from a single repository walk.
+func WalkInventory(result *walk.Result) Inventory {
+	return Inventory{Root: result.Root, Files: result.Files, Config: result.Config, Templates: result.Templates}
 }
 
 // Options controls optional acquisition discovery without changing Python adapters.

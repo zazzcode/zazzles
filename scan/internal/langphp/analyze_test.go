@@ -58,7 +58,7 @@ func testInventory(root string) (parse.Inventory, error) {
 	if err != nil {
 		return parse.Inventory{}, err
 	}
-	return parse.Inventory{Root: root, Files: files.Files}, nil
+	return parse.WalkInventory(files), nil
 }
 
 // newPHPSet opens a set over a fresh walk for set-level tests.

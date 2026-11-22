@@ -4421,6 +4421,18 @@
     "uses_count": 4,
     "gaps": 0
   },
+  "internal/langphp/testdata/symfony": {
+    "uses": [],
+    "report_sha256": "408abade841c9fdeb4cdaabe2987749c25886c8e34cb62d18c5ccf6b9a169a51",
+    "sarif_sha256": "be70588f5616792c9267a6673d54e6007d3527a8de115baa5f5baf354ca0b4cf",
+    "entries": 19,
+    "registrations": 19,
+    "dispatch_bindings": 19,
+    "callables": 14,
+    "invocation_contexts": 19,
+    "uses_count": 0,
+    "gaps": 0
+  },
   "internal/langphp/testdata/symfony-resolution": {
     "uses": [],
     "report_sha256": "63730a7fed63acea1f2387b42f5ca09fc56b7cbd23e0bbd7cd7151c3827715a6",

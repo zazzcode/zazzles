@@ -10,4 +10,5 @@ require (
 	github.com/tree-sitter/tree-sitter-javascript v0.23.1 // indirect
 	github.com/tree-sitter/tree-sitter-php v0.23.12 // indirect
 	github.com/tree-sitter/tree-sitter-typescript v0.23.2 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 )

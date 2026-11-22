@@ -46,6 +46,8 @@ type phpSet struct {
 	witnessPrograms map[string]*phpWitnessProgram
 	resolutions     map[string]phpCallResolution
 	project         *phpProjectInputs
+	composers       map[string]*symfonyProject
+	symfony         []*symfonyProject
 	builtinEffects  map[string]bool
 	summaries       map[string]*parse.ClosedCallable
 	root            string
@@ -101,8 +103,9 @@ func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 		return nil, err
 	}
 	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
+	s.loadSymfonyProjects(inv.Config)
 	for _, f := range inv.Files {
-		if f.Language == lang.PHP {
+		if f.Language == lang.PHP && !s.symfonyCacheFile(f.Path) {
 			s.files = append(s.files, f.Path)
 		}
 	}
@@ -352,12 +355,25 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		"PHP SQL text, command strings, output rendering and file operands are candidate findings, not confirmed vulnerabilities",
 	}}
 	before := len(s.gaps)
+	if len(s.symfony) > 0 {
+		out.Limitations = append(out.Limitations, "Symfony route discovery covers source-backed attributes, annotations and YAML registrations")
+		for _, project := range s.symfony {
+			for _, route := range project.routes(s) {
+				if entry != "" && route.sourceFile() != entry {
+					continue
+				}
+				for _, method := range route.httpMethods() {
+					route.register(out, method)
+				}
+			}
+		}
+	}
 	for _, file := range s.files {
 		m := s.modules[file]
 		if m == nil {
 			continue
 		}
-		if entry != "" && file != entry {
+		if !s.fileMapped(file) || entry != "" && file != entry {
 			continue
 		}
 		s.analyzeEntry(out, m)

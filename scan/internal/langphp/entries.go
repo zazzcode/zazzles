@@ -15,7 +15,24 @@ func Routes(inv parse.Inventory) ([]analysis.Route, []analysis.Gap, error) {
 		return nil, nil, err
 	}
 	defer ph.close()
-	return ph.phpRoutes(), ph.gaps, nil
+	routes := ph.phpRoutes()
+	for _, project := range ph.symfony {
+		for _, route := range project.routes(ph) {
+			ph.gaps = append(ph.gaps, route.gaps...)
+			for _, method := range route.httpMethods() {
+				var handler analysis.Symbol
+				if !route.unresolved && route.action != nil {
+					handler = analysis.Symbol{Name: route.callableName(), Kind: "method", Span: parse.Span(route.sourceFile(), route.action)}
+				}
+				routes = append(routes, analysis.Route{
+					ID:     parse.SnapshotID("route", route.origin, route.sourceFile(), route.name+":"+method+":"+route.path),
+					Method: method, PathPattern: route.path, Framework: "symfony", Registration: route.origin.Span,
+					Handler: handler, Steps: []analysis.Step{{Kind: route.mechanism, Symbol: handler}},
+				})
+			}
+		}
+	}
+	return routes, ph.gaps, nil
 }
 
 // phpRoutes returns one server-mapped route record per PHP file (D-2): no
@@ -24,7 +41,7 @@ func (s *phpSet) phpRoutes() []analysis.Route {
 	out := []analysis.Route{}
 	for _, file := range s.files {
 		m := s.modules[file]
-		if m == nil {
+		if m == nil || !s.fileMapped(file) {
 			continue
 		}
 		out = append(out, analysis.Route{

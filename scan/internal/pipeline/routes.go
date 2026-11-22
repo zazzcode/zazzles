@@ -19,7 +19,7 @@ func Routes(root string) (*analysis.RouteInventory, error) {
 	if err != nil {
 		return nil, err
 	}
-	inv := parse.Inventory{Root: root, Files: parsed.Files}
+	inv := parse.WalkInventory(parsed)
 	out := &analysis.RouteInventory{
 		SchemaVersion: analysis.RouteSchemaVersion,
 		Root:          root,

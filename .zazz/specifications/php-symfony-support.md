@@ -229,9 +229,10 @@ Review shape: sibling draft PRs into `stage`, one per slice group of §9, from t
 |---|---|---|
 | `scan/internal/walk/walk.go`, `walk_test.go` | Modified | `Result.Config` and `Result.Templates` allow-lists (D-25). Neither is a language |
 | `scan/internal/parse/inventory.go` | Modified | Carry the two lists to the adapters |
+| `scan/internal/pipeline/pipeline.go`, `routes.go` | Modified | Pass the single walk's inventory into production analysis and route discovery |
 | `scan/internal/langphp/symfony_project.go` | New | Project detection, document root, parameters, config inventory |
 | `scan/internal/langphp/symfony_yaml.go` | New | `gopkg.in/yaml.v3` reader with the D-26 limits |
-| `scan/internal/langphp/symfony_routes.go` | New | Attribute, annotation and YAML routes to entries, registrations and dispatch |
+| `scan/internal/langphp/symfony_routes.go`, `symfony_route_source.go` | New | Attribute, annotation and YAML routes to entries, registrations and dispatch |
 | `scan/internal/langphp/symfony_entry.go` | New | Action invocation, argument binding, method-condition narrowing |
 | `scan/internal/langphp/symfony_request.go` | New | `Request`, parameter bags and `UploadedFile` as input facts |
 | `scan/internal/langphp/symfony_controller.go` | New | `AbstractController` helper contracts, `Response` classes, redirect |
@@ -836,6 +837,11 @@ Follow the [common rules](architecture-update-plan.md#common-agent-implementatio
   only the Lead Agent edits it, by adding one dispatch line per contract that calls into the
   slice's own file. The Lead Agent reviews every diff and runs the gates.
 
+The owner authorizes changes in this worktree to any files required to implement the contract.
+The §4 file table records expected ownership. If production wiring, tests or documentation require
+another file, record the path and reason in §4 and the run log, then continue in the same session.
+Run narrower diagnostics and correct recoverable failures before treating them as blockers.
+
 Halt and ask the owner when:
 
 1. An existing fixture row of `scan/cli/testdata/architecture-baseline.json` or a DVWA keyed
@@ -848,9 +854,10 @@ Halt and ask the owner when:
 5. A §1.3 required positive cannot reach a witnessed candidate without a rule that names the
    sample, or the row appears wrong on source review. Do not relabel a row; bring the source
    evidence to the owner.
-6. The same test fails three iterations in a row, or `git diff origin/stage --stat` shows a file
-   outside §4.
-7. A standard in `.zazz/standards/index.yaml` that §2 does not list matches a changed file.
+6. The same test fails three iterations in a row with no clear recovery, or completing the work
+   would require changing behavior outside this contract.
+7. A newly applicable standard conflicts with a hard requirement. Load and follow any compatible
+   standard, and record it in the run log.
 8. The D-28 loop reaches 10 judged runs, or two consecutive full runs change no row's status,
    with AC14 still unmet. Report each open row with its first failing stage.
 9. A paid call is needed outside D-28: another sample, provider or model.
@@ -1314,6 +1321,10 @@ judged run identifier with request counts. A new session reads this spec, the ru
 > worktree list before editing. Use the local run log at
 > `.zazz/ephemeral/php-symfony-support-run-log.md`; no tracker is used. Load the `spec-driven`
 > skill.
+> Continue unattended in this session. Add any files required to implement the contract in the
+> assigned worktree and log their purpose. Recover from routine tooling and test failures without
+> waiting for confirmation. Surface unresolved §6 halts with the evidence and the exact decision
+> needed to continue.
 >
 > Deliver the slices of §9 in order: S0, then S1 from a failing `RT-01`, then S2. You may delegate
 > S3, S4, S5 and S6 to Contributor Agents in this same worktree with the file ownership of §9; you
@@ -1380,3 +1391,10 @@ expected finding of the sample. Re-measured against `stage` at `a8edac7` and the
 - **D-28 (previous text), AC15, §4, OQ-3, OQ-6.** The sample report is not published. The
   `docs/samples/vuln-symfony/` scope, the license file and the license question are removed.
 - **Verification impact.** AC15 now checks the results record instead of a published report.
+
+### 2026-11-21 — Unattended execution scope
+
+The owner authorized required implementation files in the assigned worktree and directed execution
+to continue in the same session. §4 now includes the two production pipeline entry points that
+carry the walk inventory. §6 and §13 explain how to handle required wiring and recoverable failures
+without additional confirmation. AC2 and AC3 still verify the same behavior.

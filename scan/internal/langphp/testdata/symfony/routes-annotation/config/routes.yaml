@@ -1,0 +1,6 @@
+attributes:
+  resource: ../src/Controller/
+  type: attribute
+annotations:
+  resource: ../src/Controller/
+  type: annotation

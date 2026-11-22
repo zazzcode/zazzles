@@ -1,0 +1,4 @@
+detail:
+  path: /d
+  controller: App\Controller\X::show
+missing: {path: /missing, controller: 'App\Controller\Missing::show'}

@@ -109,13 +109,16 @@ type AuthorizationFacts struct {
 
 // Validate rejects a record outside the closed lists.
 func (f *AuthorizationFacts) Validate() error {
-	if f == nil || f.SubjectClass == "" || len(f.Facets) == 0 {
+	plain := f != nil && f.SubjectClass == "" && len(f.Facets) == 0 && len(f.Guards) == 1 && f.Guards[0].Kind == GuardAddress
+	if f == nil || (!plain && (f.SubjectClass == "" || len(f.Facets) == 0)) {
 		return fmt.Errorf("missing authorization facts")
 	}
-	switch f.SubjectProvenance {
-	case SubjectRequestSelected, SubjectEnumerated, SubjectSessionUser, SubjectCreated:
-	default:
-		return fmt.Errorf("invalid subject provenance")
+	if !plain {
+		switch f.SubjectProvenance {
+		case SubjectRequestSelected, SubjectEnumerated, SubjectSessionUser, SubjectCreated:
+		default:
+			return fmt.Errorf("invalid subject provenance")
+		}
 	}
 	for _, facet := range f.Facets {
 		switch facet {

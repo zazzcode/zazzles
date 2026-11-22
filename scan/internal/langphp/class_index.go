@@ -431,7 +431,7 @@ func (f *phpFlow) instantiate(n *sitter.Node, decl *phpClassDecl) phpValue {
 		// what it writes is not established.
 		v.propsUnknown = true
 	}
-	return v
+	return f.noteCreated(v, decl)
 }
 
 // writeObject replaces every alias of an object with its updated value.
@@ -548,7 +548,15 @@ func (f *phpFlow) classMethodCall(n *sitter.Node, decl *phpClassDecl, method str
 		}
 		return phpValue{}, false
 	}
+	prevSite, prevGuards := f.authzSite, f.authzGuards
+	if object != nil {
+		if sub := f.authzOf(*object); sub != nil {
+			f.authzSite = n
+			f.authzGuards = f.dominatingGuards(n, sub)
+		}
+	}
 	out := f.boundHelper(n, &phpBoundCallable{module: module, fn: fn, object: object, class: owner}, values)
+	f.authzSite, f.authzGuards = prevSite, prevGuards
 	if object != nil {
 		f.writeObject(*object)
 	}

@@ -64,6 +64,7 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 		result.sqlTextEvidence = []analysis.Evidence{m.evidence("query_text", queryNode)}
 	}
 
+	f.notePlainSQL(n, text)
 	if constant, ok := phpSQLText(text); ok {
 		if match := phpSelectRe.FindStringSubmatch(constant); len(match) > 0 {
 			result.table = strings.ToLower(match[1])

@@ -384,6 +384,7 @@ func (t *twigScope) output(expr string, at analysis.Evidence, markup, autoescape
 	if len(v.deps) == 0 {
 		return
 	}
+	t.flow.noteAuthzOutput(at, t.call, v)
 	context := parse.HTMLOutputContext(markup)
 	protection, reason := "unknown", ""
 	switch {

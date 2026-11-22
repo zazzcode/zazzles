@@ -332,3 +332,78 @@ their `authorization-components-v5` selection (spec §11.1).
   project's first entry when no login route resolves, and a request value passed to an
   `array`-typed parameter is an array use. Offline, the sample's records are unchanged except
   the three enumeration records' `lookup.method`, now in declared case.
+- Hasher-class and configuration records need a firewall `form_login` or `json_login` route.
+  A project with neither records no such claim.
+- Array-typed parameters that are neither iterated nor spread are not array uses.
+
+## Branch 4 — configuration, shell URL client, lane closure
+
+Scanner commit `54dd0b0` on `symfony-more-analyzers-4`. Sample pin
+`086f81f941501bd1170b249e01107ba99beb2962`, clean before and after. Provider OpenAI
+`gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`. Seven judged
+runs. The lane acceptance run is the last one.
+
+| Run | ID | Scope | Requests | Input tokens | Result |
+|---|---|---|---:|---:|---|
+| 1 | `b4-j1-configuration` (`run-3058996910`) | `--only-family configuration` | 4 | — | All four stayed `needs_evidence` (`setting_effect: unknown`) |
+| 2 | `b4-j2-configuration` (`run-2884673080`) | `--only-family configuration` | 4 | — | CSRF and cookie Confirmed. Listing and schedule still open |
+| 3 | `b4-j3-configuration` (`run-2226124914`) | `--only-family configuration` | 4 | — | Listing judged benign. Schedule weakness unknown |
+| 4 | `b4-j4-configuration` (`run-1686484977`) | `--only-family configuration` | 4 | — | All four configuration positives Confirmed. Protocol `configuration-components-v4` |
+| 5 | `b4-j5-ssrf` (`run-3168265217`) | `--only-family ssrf` | 3 | — | `SYM-SSRF-01` Confirmed. Shell-client path was `guarded`, so `SYM-SSRF-02` stayed in Review |
+| 6 | `b4-j6-ssrf` (`run-594135459`) | `--only-family ssrf` | 3 | — | `SYM-SSRF-01` and both `SYM-SSRF-02` anchors Confirmed. `UserController.php:195` has no `ssrf_candidate` |
+| 7 | `b4-j7-full` (`run-348970572`) | Full scan, no family, entry or route scope | 84 | 334,571 | `30 of 30 positives confirmed, 0 control findings` |
+
+The URL-format filter stays on the shell-client candidate as evidence. The path stays raw,
+because a format check is not a destination restriction. Existing URL-open requests are
+unchanged. `services-ops` gains two `ssrf_candidate` records for `shell_exec('curl ' . $origin)`.
+Their command candidates' request digests are unchanged.
+
+### DVWA offline review
+
+Offline scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and after,
+`b4-offline` (`run-3455210590`). `TestDVWASourceKey` still passes.
+
+| Kind | Candidates |
+|---|---:|
+| `configuration_candidate` | 0 |
+| `ssrf_candidate` with `transport: shell_client` | 0 |
+
+Source review of the files the allow-lists opened: `Dockerfile` copies the tree with
+`--chown=www-data` and enables `rewrite`, and it has no cron line, so the scheduled-writable
+check correctly records nothing. `vulnerabilities/api/.htaccess` is rewrite rules only.
+Root `php.ini` is outside the deploy directories, so it is not read. The command sinks are
+`ping`, not `curl` or `wget`. No candidate was wrong, and none was missing for a check the
+lists cover.
+
+### Closing table — sample README, 21 entries
+
+Judged on `b4-j7-full` at scanner `54dd0b0`. Entry 8 is not in the source at the pin. Committed
+secrets stay outside the lane.
+
+| # | README entry | Row | Judged status |
+|---:|---|---|---|
+| 1 | SSRF and remote code execution in the referer header | `SYM-SSRF-02` and `SYM-CMD-01` | Confirmed |
+| 2 | Stored XSS on the comment parameter | `SYM-XSS-02` | Confirmed |
+| 3 | Reflected XSS and SQL injection on search | `SYM-XSS-01`, `SYM-SQL-01` | Confirmed |
+| 4 | Local file inclusion on `legal/content` | `SYM-PATH-01` | Confirmed |
+| 5 | SQL injection on login email | `SYM-SQL-02` | Confirmed |
+| 6 | User enumeration on `/register` | `SYM-ENUM-01` | Confirmed |
+| 7 | Missing right control on `/user/role/{user}` | `SYM-AUTHZ-01` | Confirmed |
+| 8 | Missing right control on `/user/delete/{user}` | Not in source. The delete action is `SYM-AUTHZ-N03` under `^/admin` | Not a finding (Protected) |
+| 9 | Missing right control on `/user/password/{user}` | `SYM-AUTHZ-02` | Confirmed |
+| 10 | Missing right control on `/user/email/{user}` | `SYM-AUTHZ-03` | Confirmed |
+| 11 | File upload without an extension check | `SYM-UPLOAD-01` | Confirmed |
+| 12 | SSRF on the avatar URL parameter | `SYM-SSRF-01` | Confirmed |
+| 13 | Missing right control on `/user/avatar/delete/{user}` | `SYM-AUTHZ-04` | Confirmed |
+| 14 | Command injection on the uploaded extension | `SYM-CMD-02` | Confirmed |
+| 15 | Server-side template injection on `/user/about` | `SYM-SSTI-01` | Confirmed |
+| 16 | Sensitive endpoint intended for SSRF on `/local` | `SYM-LOCAL-01`, `SYM-LOCAL-02` | Confirmed |
+| 17 | Technical information disclosure on `/info.php` | `SYM-INFO-01` | Confirmed |
+| 18 | Directory listing | `SYM-CONF-01` | Confirmed |
+| 19 | Mass assignment on `/user/edit/` | `SYM-MASS-01` | Confirmed |
+| 20 | Recovery token delivered to request-chosen recipients | `SYM-RESET-01` | Confirmed |
+| 21 | Privilege escalation through a cron job | `SYM-CONF-02` | Confirmed |
+
+Unlisted source-reviewed rows `SYM-CONF-03` (disabled CSRF) and `SYM-CONF-04` (script-readable
+session cookie) are also Confirmed. `SYM-DESER-01`, `SYM-PATH-02`, `SYM-PATH-03` and `SYM-XSS-03`
+remain Confirmed with the PR #39 positives. No control is a finding.

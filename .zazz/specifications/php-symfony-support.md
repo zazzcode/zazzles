@@ -1,6 +1,6 @@
 # PHP Symfony support — Symfony websites as Code Scan targets
 
-- **Status** Proposal, refined 2026-11-21 for unattended implementation. No code is written.
+- **Status** Implementation in progress in the assigned worktree.
 - **Worktree and branch** `symfony-mvp`, cut from `stage`.
 - **Baseline** `stage` at `a8edac7`. Every path in this spec is relative to the repository root.
 - **Supersedes** [Architecture phase 6](architecture-phase-6-symfony.md), the Symfony registration
@@ -8,7 +8,7 @@
 - **Prerequisites, all merged at the baseline** PHP class, method and property binding, the PHP
   upload claim and the template-injection claim ([close findings gaps](close-findings-gaps.md) W3,
   W5, W6), and the `deserialization` family ([unsafe deserialization](unsafe-deserialization.md)).
-- **Delivery** One draft PR into `stage` per slice group in §9, each reviewable alone.
+- **Delivery** One draft PR from `symfony-mvp` into `stage`, with slice checkpoints and acceptance evidence.
 - **Run log** `.zazz/ephemeral/php-symfony-support-run-log.md`
 
 ## 1. Capability
@@ -222,12 +222,9 @@ a control.
 
 ## 4. Scope and review shape
 
-Review shape: sibling draft PRs into `stage`, one per slice group of §9, from the single
-`symfony-mvp` worktree. Use a distinct remote head for each group because GitHub accepts one open
-PR for a given head/base pair. All implementation commits are made on `symfony-mvp`. Push each
-later checkpoint to a remote review head without checking out that head or creating a worktree.
-Later drafts include their prerequisites until those reach `stage`. The PR body identifies the
-commit range and acceptance evidence for the group under review.
+Review shape: one draft PR from `symfony-mvp` into `stage`. Keep the same branch and worktree
+throughout. Record the commit and acceptance evidence for each slice group in that PR and the
+local run log.
 
 | Path | Change | Purpose |
 |---|---|---|
@@ -824,8 +821,8 @@ unmodeled and follows the "anything else" row.
 Follow the [common rules](architecture-update-plan.md#common-agent-implementation-rules) and
 [execution discipline](../docs/agent-execution-discipline.md).
 
-- **Integration.** Commit on `symfony-mvp` only. Push the first group to its existing branch and
-  use the §4 review heads for later groups. Open drafts into `stage`. Never merge.
+- **Integration.** Commit and push on `symfony-mvp` only. Update its draft PR into `stage` as slices
+  finish. Never merge.
 - **Working directory.** Run every command from the worktree root, where `go.mod` is.
 - **Test first.** Each slice starts by adding its fixtures and its failing test, and records the
   failing output in the run log before any non-test file changes.
@@ -1188,9 +1185,9 @@ unless stated.
 | **S6** | Upload, template and deserialization reachability, redirect, PSR-3 logging | `upload.go`, `logging.go`, `analysispacks/logging.go` | S4 | AC9, AC10 |
 | **S7** | Catalog check, sample key test, determinism, the judged-run loop of D-28, results record, documentation | `pipeline/symfony_test.go`, `docs/`, `README.md` | All | AC11–AC17 |
 
-PR groups: S0 with S1; S2; S3; S4; S5; S6; S7. S1 starts with `RT-01` failing. S3, S4 and S5 are
+Checkpoint groups: S0 with S1; S2; S3; S4; S5; S6; S7. S1 starts with `RT-01` failing. S3, S4 and S5 are
 independent once S2 lands. The storage part of S4 must land before `SV-05`, `TI-01` and the stored
-sample rows can pass, so those cases are added in S5 and S6 but asserted after S4 merges.
+sample rows can pass, so those cases are added in S5 and S6 but asserted after S4 is integrated into the feature branch.
 
 How an entry runs, for S1 and S2:
 
@@ -1296,7 +1293,7 @@ func (t *twigScope) eval(expr string, at analysis.Span) (v phpValue, outermost s
 - [ ] `README.md` and the documents of AC16 name Symfony websites as supported targets.
 - [ ] `git diff origin/stage --stat` matches §4.
 - [ ] A fresh-context Verifier Agent reran the §13 checks and reported PASS.
-- [ ] Each draft PR body links this spec and lists its ACs with their evidence.
+- [ ] The draft PR body links this spec and lists each slice group and its AC evidence.
 
 ## 11. Open questions
 
@@ -1342,7 +1339,8 @@ judged run identifier with request counts. A new session reads this spec, the ru
 > Treat the sample as read-only data: keep it out of fixtures, detectors and requests, and check
 > its pin and clean status around every scan. Paid judged scans of this sample are authorized:
 > run the D-28 loop until AC14 holds, within its bounds, and log every run.
-> Finish each slice group as a draft PR into `stage` with its AC evidence. Never merge.
+> Keep the single draft PR from `symfony-mvp` into `stage` current with each slice group and
+> its AC evidence. Never merge.
 >
 > Verifier Agent, fresh context, read-only: run `go build ./...`, `go vet ./...`,
 > `go test ./scan/internal/langphp/... ./scan/internal/analysispacks/... ./scan/internal/walk/...`,
@@ -1407,3 +1405,11 @@ without additional confirmation. AC2 and AC3 still verify the same behavior.
 
 §4 and §6 also record how to keep each draft's changes available while implementing later groups
 on the same worktree. The drafts use distinct remote heads and retain `stage` as their base.
+
+
+### 2026-11-22 — Single-branch delivery
+
+The owner confirmed that all work and publication use the existing `symfony-mvp` branch.
+The original one-draft-per-group instruction led to separate remote review heads for S2 and S3.
+§4, §6, §9, §10, and §13 now specify one cumulative draft with per-group checkpoints and evidence.
+The analysis decisions and acceptance criteria are unchanged.

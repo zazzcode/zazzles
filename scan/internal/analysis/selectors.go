@@ -125,6 +125,9 @@ func (r *AnalysisReport) FilterEntries(scope EntrySelection) error {
 		}
 		if scope.RegistrationFile != "" {
 			fileMatch := e.Location.Span.File == scope.RegistrationFile
+			if e.HTTP != nil && e.HTTP.Framework == "symfony" {
+				fileMatch = fileMatch || e.HTTP.SourcePath == scope.RegistrationFile
+			}
 			for _, reg := range r.Registrations {
 				fileMatch = fileMatch || (reg.EntryID == e.ID && reg.Origin.Span.File == scope.RegistrationFile)
 			}

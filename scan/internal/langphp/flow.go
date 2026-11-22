@@ -496,6 +496,7 @@ func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue 
 
 // render records a terminal echo/print as the PHP HTML rendering sink.
 func (f *phpFlow) render(n *sitter.Node, v phpValue) {
+	f.diagnosticOutput(n, v)
 	if len(v.deps) == 0 {
 		return
 	}

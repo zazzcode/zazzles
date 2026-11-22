@@ -34,7 +34,7 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		values[i] = f.eval(a)
 		all = phpCombine(all, values[i])
 	}
-	return f.callValues(n, nodes, values, all)
+	return f.diagnosticCall(n, nodes, f.callValues(n, nodes, values, all))
 }
 
 // callValues shares the native API models with compiled witness recipes; only
@@ -305,6 +305,7 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return phpValue{}
 	case "print":
 		if len(values) >= 1 {
+			f.diagnosticOutput(n, values[0])
 			f.render(n, values[0])
 			return phpValue{}
 		}

@@ -94,6 +94,9 @@ type phpValue struct {
 	evidence        []analysis.Evidence
 	built           bool
 	unknown         bool
+	// diagnostic marks a value that carries internal state from a diagnostic
+	// operation (exposure D-1). Only output sinks read it.
+	diagnostic *phpDiagnostic
 }
 
 // phpSQLWrite is one write-statement template with its interpolated deps.
@@ -107,6 +110,16 @@ func phpEmpty(v phpValue) bool {
 }
 
 func phpCombine(a, b phpValue) phpValue {
+	if a.diagnostic != nil || b.diagnostic != nil {
+		d := a.diagnostic
+		if d == nil {
+			d = b.diagnostic
+		}
+		a.diagnostic, b.diagnostic = nil, nil
+		out := phpCombine(a, b)
+		out.diagnostic = d
+		return out
+	}
 	if phpEmpty(a) {
 		return b
 	}
@@ -174,6 +187,16 @@ func phpJoinProps(a, b map[string]phpValue) map[string]phpValue {
 // phpJoin merges branch values: distinct protections on the same source stay
 // separate dependency paths; literal candidate sets union with their conditions.
 func phpJoin(a, b phpValue) phpValue {
+	if a.diagnostic != nil || b.diagnostic != nil {
+		d := a.diagnostic
+		if d == nil {
+			d = b.diagnostic
+		}
+		a.diagnostic, b.diagnostic = nil, nil
+		out := phpJoin(a, b)
+		out.diagnostic = d
+		return out
+	}
 	if phpEmpty(a) {
 		return b
 	}

@@ -34,6 +34,9 @@ func (f *phpFlow) symfonyObjectCreation(n, clsNode *sitter.Node, class string) (
 	for i, arg := range args {
 		values[i] = f.eval(arg)
 	}
+	if len(values) > 0 {
+		f.diagnosticOutput(n, values[0])
+	}
 	f.set.objects++
 	response := phpValue{binding: "symfony_response", class: symfonyResponseClass, objectID: f.set.objects}
 	state := symfonyResponseState{media: "html", conditions: symfonyResponseConditions(f.context)}
@@ -81,6 +84,7 @@ func (f *phpFlow) symfonyResponseContent(n *sitter.Node, receiver phpValue, meth
 	if receiver.binding != "symfony_response" || method != "setContent" || len(values) == 0 {
 		return false
 	}
+	f.diagnosticOutput(n, values[0])
 	if len(values[0].deps) == 0 {
 		return true
 	}

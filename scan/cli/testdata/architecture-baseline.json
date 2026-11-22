@@ -4193,6 +4193,31 @@
     "uses_count": 0,
     "gaps": 0
   },
+  "internal/langphp/testdata/exposure": {
+    "uses": [
+      {
+        "id": "candidate:v1:42f7424e25467eaa63c5575aec6a58906842e1b6b848d59f087cfdbe1b976b9f",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "91163932dea34a4f798bb66cdf240893708027e933f8f29d7c1c6d8f16ff9166",
+        "signature_sha256": "0ace24f12afadb319a9499e9fc348a2a6a06b5fcbbdb0c739d229b4eab13b4fb"
+      },
+      {
+        "id": "candidate:v1:3b329df2bbf90fa02a4dd5fa6d2cfd3b0dfd08b6cb83ecd4a61a6e0a73aa962c",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "0fa9b2460d38fafcf6eebe27993b9238d8d72fceb194926fbd0ef78613a93b9e",
+        "signature_sha256": "2015ea3d73328bfd6baab6bcd5e2cae90006004b5fed23e634581c65deaaa2ff"
+      }
+    ],
+    "report_sha256": "9c4d8283f01b9ba83b5e6ce4f12868e0c4143429604713bd212b9434fa1cef11",
+    "sarif_sha256": "d882c63df8838e3b3fca54b84ba26f8f4b91132365fd0f7a6051842a8a9cfe42",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 2,
+    "gaps": 0
+  },
   "internal/langphp/testdata/includes": {
     "uses": [
       {
@@ -4759,6 +4784,61 @@
     "invocation_contexts": 10,
     "uses_count": 4,
     "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/exposure": {
+    "uses": [
+      {
+        "id": "candidate:v1:dcf155f891f8771d6fe8b5322fb507a2fc30c2fecf9cc19412372aaa31c79276",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "3d4c8aec348ea6e9259e22f8ed256058929db4ab6fd9991d607f90e816398a78",
+        "signature_sha256": "9d560bbbf22bef9030e2d110423e4806c19d95675ae563dbf908f60e70eae206"
+      },
+      {
+        "id": "candidate:v1:45abdb8e8d5fde08d4fd1afb490172d2c971ddef5288d0ee0fb0c27b3cc497b9",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "2f275a37f7b4f290344f4ea7247462c49a70ee3f6aea2a4d62acec1844a54eac",
+        "signature_sha256": "9e47676477e16b3d882f04a71d793ab5867ec99e15e849431c974cf9629ce242"
+      },
+      {
+        "id": "candidate:v1:b47de337e6d856fa244fa95342a14b7b071e73495e13fd5ea66d3f94edf030ac",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "dc5e762a85734a9e002b406fca1b699fccc41c4fda0ad6c9b074c7e7687ff9eb",
+        "signature_sha256": "ca976f4c92ce636e354a4cad381e5aeb71b0f1ecf0b432b49417b50e5f6032a0"
+      },
+      {
+        "id": "candidate:v1:9715383c97bef2d4238ff2620d24d8f710a7103a38e9347c9d67f837f89ea397",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "68bbbfe0e62617296d322728ede3bb6b3ea4123181a61edc0c8b762d133c0cce",
+        "signature_sha256": "3a7968b04f7aa34217362cad3d15f36a678b38c30da90cd34be278bed339c74f"
+      },
+      {
+        "id": "candidate:v1:e60530e4a1d85b2965380234dd389d6ec3afcb39d94a04d5c8a88bd05e9531b2",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "8482c19ae6a9c94f014c4528b48d3a9e4144ff702387f9fb3ec81794091cf136",
+        "signature_sha256": "21aa42adb505e5dbc5caa6cdcc0d992316fe7f3761fb63a7fa447fb29abb6200"
+      },
+      {
+        "id": "candidate:v1:e8617981cddc46c5a2fadd48d0e01fc8c1f49b1fe00af97be268b78351558826",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "3636de6b9908f3fe775dc4932e42512420951b9f9a25191324f324b33e656a50",
+        "signature_sha256": "531c546bd7a2bda3507e8911663c19a9f5c133af28d708d0319661d5ca75fcba"
+      },
+      {
+        "id": "candidate:v1:853395c9b0fe8294266373b0abe83f193011a4752351269a1439d4c59f459ed6",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "fdd0b202780d2ca1e48fdb724db8ae57a75927913cba33fc1dceb510a320053b",
+        "signature_sha256": "16e1bdb0a22e16c9dd99c8e77ed1f8bff5d6970576f3dccc4d3bba8cbeb36b78"
+      }
+    ],
+    "report_sha256": "d72ce074a0b19f49885593a4529c740e3a1791137bebb21b72fdae8fd0725181",
+    "sarif_sha256": "274b58319da4b54bfefcc8fbcdaffc800dc7fe334135c2140b03fdf50deffde8",
+    "entries": 10,
+    "registrations": 10,
+    "dispatch_bindings": 10,
+    "callables": 10,
+    "invocation_contexts": 10,
+    "uses_count": 7,
+    "gaps": 1
   },
   "internal/langphp/testdata/symfony/inputs": {
     "uses": [

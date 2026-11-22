@@ -389,7 +389,7 @@ def precision(reports, keyed, noise_rows, controls):
             if row['expect'] == 'only_lines':
                 sel.pop('lines', None)
             for u in select(sel, report, entries):
-                if row['expect'] == 'only_lines' and u['sink']['span']['start_line'] in row['lines']:
+                if row['expect'] == 'only_lines' and u['sink']['span']['start_line'] in (row['lines'] if 'lines' in row else row['anchors'].get(u['sink']['span']['file'], [])):
                     pol_u = 'assessment'
                 else:
                     pol_u = pol

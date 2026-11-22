@@ -92,6 +92,9 @@ class FrozenKeyTest(unittest.TestCase):
         self.assertEqual(check.classify(row, report)['outcome'], 'control_fail')
         report['findings'] = [finding('b', 'confirmed_vulnerability')]
         self.assertEqual(check.judged_outcome(row, report), 'control_finding')
+        # The precision pass reads the anchored form too.
+        prec = check.precision({'s': report}, [{**row, 'app': 's'}], [], [])['s']
+        self.assertEqual(prec['info_exposure']['records'], 2)
 
 
 class PrecisionTest(unittest.TestCase):

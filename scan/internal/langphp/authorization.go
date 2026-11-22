@@ -1,6 +1,7 @@
 package langphp
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -423,7 +424,7 @@ func (f *phpFlow) emitAuthz(sink analysis.Evidence, at *sitter.Node, sub *phpAut
 }
 
 func authzMethodSafe(entry analysis.EntryPoint, op string) string {
-	if op == "read" || entry.Kind == "FILE" || entry.HTTP == nil {
+	if op == "read" || entry.HTTP == nil {
 		return "no"
 	}
 	switch entry.HTTP.Method {
@@ -454,14 +455,14 @@ func (f *phpFlow) authzCompleteness(sink analysis.Evidence, sub *phpAuthz, facts
 	blockers := []analysis.Gap{}
 	if f.entry.Access != nil {
 		for _, g := range f.entry.Access.Gaps {
-			if authzBlockingGap(g.Kind) {
+			if analysis.AuthorizationBlockingGap(g.Kind, false) {
 				blockers = append(blockers, g)
 			}
 		}
 	}
 	for _, g := range facts.Guards {
 		for _, gap := range g.Gaps {
-			if authzBlockingGap(gap.Kind) {
+			if analysis.AuthorizationBlockingGap(gap.Kind, false) {
 				blockers = append(blockers, gap)
 			}
 		}
@@ -490,15 +491,6 @@ func (f *phpFlow) authzCompleteness(sink analysis.Evidence, sub *phpAuthz, facts
 	}
 }
 
-func authzBlockingGap(kind string) bool {
-	switch kind {
-	case "access_rule_unresolved", "access_rule_condition_unmodeled", "voter_unmodeled", "access_expression_unmodeled", "authenticator_unmodeled", "guard_unclassified", "symfony_config_unread":
-		return true
-	default:
-		return false
-	}
-}
-
 func (f *phpFlow) addAuthzChange(c analysis.StateChange) {
 	if f.entry.ID == "" {
 		return
@@ -519,10 +511,10 @@ func (s *phpSet) finishAuthorization(out *analysis.AnalysisReport) {
 	for _, c := range s.authzChanges {
 		byEntry[c.entryID] = append(byEntry[c.entryID], c.change)
 	}
-	names := map[string]string{}
+	entries := make(map[string]*analysis.EntryPoint, len(out.Entries))
 	for i := range out.Entries {
 		e := &out.Entries[i]
-		names[e.ID] = e.Name
+		entries[e.ID] = e
 		if changes := byEntry[e.ID]; len(changes) > 0 {
 			e.StateChanges = changes
 		}
@@ -538,6 +530,30 @@ func (s *phpSet) finishAuthorization(out *analysis.AnalysisReport) {
 			writers[c.StorageKey] = append(writers[c.StorageKey], id)
 		}
 	}
+	name := func(id string) string {
+		if e := entries[id]; e != nil {
+			return e.Name
+		}
+		return ""
+	}
+	for _, ids := range writers {
+		slices.SortFunc(ids, func(a, b string) int {
+			return cmp.Or(strings.Compare(name(a), name(b)), strings.Compare(a, b))
+		})
+	}
+	type writerKey struct{ entryID, storageKey string }
+	guardKinds := map[writerKey][]string{}
+	for _, u := range out.Uses {
+		if u.Authorization == nil || u.Authorization.Operation.StorageKey == "" {
+			continue
+		}
+		key := writerKey{u.EntryID, u.Authorization.Operation.StorageKey}
+		for _, g := range u.Authorization.Guards {
+			if g.Kind != "" && !slices.Contains(guardKinds[key], g.Kind) {
+				guardKinds[key] = append(guardKinds[key], g.Kind)
+			}
+		}
+	}
 	for i := range out.Uses {
 		u := &out.Uses[i]
 		if u.Authorization == nil {
@@ -546,14 +562,19 @@ func (s *phpSet) finishAuthorization(out *analysis.AnalysisReport) {
 		facts := u.Authorization
 		if facts.Operation.Operation != "read" && facts.Operation.StorageKey != "" {
 			var peers []analysis.PeerAccess
-			ids := append([]string{}, writers[facts.Operation.StorageKey]...)
-			slices.SortFunc(ids, func(a, b string) int { return strings.Compare(names[a], names[b]) })
-			for _, id := range ids {
-				if id == u.EntryID || len(peers) >= 8 {
+			for _, id := range writers[facts.Operation.StorageKey] {
+				if len(peers) == 8 {
+					break
+				}
+				if id == u.EntryID {
 					continue
 				}
+				var access analysis.EntryAccess
+				if e := entries[id]; e != nil && e.Access != nil {
+					access = *e.Access
+				}
 				peers = append(peers, analysis.PeerAccess{
-					Entry: names[id], Access: entryAccessOf(out, id), GuardKinds: guardKinds(out, id, facts.Operation.StorageKey),
+					Entry: name(id), Access: access, GuardKinds: guardKinds[writerKey{id, facts.Operation.StorageKey}],
 				})
 			}
 			if len(peers) > 0 {
@@ -585,30 +606,4 @@ func (s *phpSet) linkServerSideRequests(out *analysis.AnalysisReport) {
 		}
 		facts.ServerSideRequests = append([]string{}, ssrf...)
 	}
-}
-
-func entryAccessOf(out *analysis.AnalysisReport, id string) analysis.EntryAccess {
-	for _, e := range out.Entries {
-		if e.ID == id && e.Access != nil {
-			return *e.Access
-		}
-	}
-	return analysis.EntryAccess{}
-}
-
-func guardKinds(out *analysis.AnalysisReport, entryID, key string) []string {
-	var outKinds []string
-	seen := map[string]bool{}
-	for _, u := range out.Uses {
-		if u.EntryID != entryID || u.Authorization == nil || u.Authorization.Operation.StorageKey != key {
-			continue
-		}
-		for _, g := range u.Authorization.Guards {
-			if g.Kind != "" && !seen[g.Kind] {
-				seen[g.Kind] = true
-				outKinds = append(outKinds, g.Kind)
-			}
-		}
-	}
-	return outKinds
 }

@@ -2,6 +2,19 @@ package analysis
 
 import "fmt"
 
+// AuthorizationBlockingGap reports whether the gap blocks this authorization claim.
+// Incomplete security fields block only claims that rely solely on the census.
+func AuthorizationBlockingGap(kind string, censusOnly bool) bool {
+	switch kind {
+	case "access_rule_unresolved", "access_rule_condition_unmodeled", "voter_unmodeled", "access_expression_unmodeled", "authenticator_unmodeled", GuardUnclassified, "symfony_config_unread":
+		return true
+	case SecurityFieldsUnresolved:
+		return censusOnly
+	default:
+		return false
+	}
+}
+
 // AuthorizationKind is the claim kind of an operation that changes or reveals a
 // record the request selects (CWE-862, CWE-639, CWE-285, CWE-291).
 const AuthorizationKind = "authorization_candidate"

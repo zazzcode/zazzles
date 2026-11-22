@@ -10,11 +10,30 @@ import (
 
 // accessRule is one security.access_control item, in file order.
 type accessRule struct {
-	path, routeName string
-	roles, methods  []string
-	unmodeled       []string
-	pathDecided     bool
-	at              analysis.Evidence
+	routeName      string
+	pattern        *accessPattern
+	roles, methods []string
+	unmodeled      []string
+	at             analysis.Evidence
+}
+
+type accessPattern struct {
+	alts          []string
+	anchored, end bool
+}
+
+type accessFirewall struct {
+	open           bool
+	pattern        *accessPattern
+	at             analysis.Evidence
+	authenticators []analysis.Evidence
+}
+
+type symfonyAccessConfig struct {
+	rules         []accessRule
+	firewalls     []accessFirewall
+	roleMentions  map[string]bool
+	roleHierarchy analysis.Evidence
 }
 
 // accessFor evaluates access_control the way Symfony does: first match wins.
@@ -28,15 +47,16 @@ func (p *symfonyProject) accessFor(s *phpSet, r symfonyRoute, method string) ana
 		}
 		return analysis.EntryAccess{Authentication: analysis.AccessUnresolved, Gaps: []analysis.Gap{gap}, Sources: []analysis.Evidence{}}
 	}
+	config := sec.accessConfig()
 	prefix, placeholder := routeStaticPrefix(r.path)
-	if fw, matched, decided := p.matchOpenFirewall(sec, prefix, placeholder); !decided {
+	if fw, matched, decided := config.matchOpenFirewall(prefix, placeholder); !decided {
 		return analysis.EntryAccess{Authentication: analysis.AccessUnresolved, Gaps: []analysis.Gap{{Kind: "access_rule_unresolved", Detail: "Firewall pattern is not in the supported expression subset", At: fw.Span}}, Sources: []analysis.Evidence{fw}}
 	} else if matched {
 		return analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{fw}}
 	}
-	base := p.matchAccessRules(sec, r, method, prefix, placeholder)
-	base = p.attachFirewallEvidence(sec, base, prefix, placeholder)
-	base = p.attachRoleHierarchy(sec, base)
+	base := config.matchAccessRules(sec.source, r, method, prefix, placeholder)
+	base = config.attachFirewallEvidence(base, prefix, placeholder)
+	base = config.attachRoleHierarchy(base)
 	return base
 }
 
@@ -44,34 +64,26 @@ func (p *symfonyProject) securityFile() string {
 	return path.Join(p.root, "config/packages/security.yaml")
 }
 
-func (p *symfonyProject) matchAccessRules(sec *symfonySecurity, r symfonyRoute, method, prefix string, placeholder bool) analysis.EntryAccess {
-	rules := p.readAccessRules(sec)
-	var skipped bool
-	for _, rule := range rules {
+func (c *symfonyAccessConfig) matchAccessRules(source analysis.Evidence, r symfonyRoute, method, prefix string, placeholder bool) analysis.EntryAccess {
+	for _, rule := range c.rules {
 		match, decided := rule.matches(r.name, prefix, placeholder)
 		if !decided {
 			return analysis.EntryAccess{Authentication: analysis.AccessUnresolved, Gaps: []analysis.Gap{{Kind: "access_rule_unresolved", Detail: "Access rule path is not in the supported expression subset", At: rule.at.Span}}, Sources: []analysis.Evidence{rule.at}}
 		}
 		if !match {
-			skipped = true
 			continue
 		}
 		if len(rule.unmodeled) > 0 {
 			return analysis.EntryAccess{Authentication: analysis.AccessUnresolved, Gaps: []analysis.Gap{{Kind: "access_rule_condition_unmodeled", Detail: "Access rule condition is not modeled: " + strings.Join(rule.unmodeled, ", "), At: rule.at.Span}}, Sources: []analysis.Evidence{rule.at}}
 		}
-		ok, _ := accessMethodsMatch(rule.methods, method)
-		if !ok {
+		if !accessMethodsMatch(rule.methods, method) {
 			continue
 		}
 		return accessFromRoles(rule.roles, rule.at)
 	}
-	detail := "no rule matched"
-	if !skipped && len(rules) == 0 {
-		detail = "no rule matched"
-	}
-	at := sec.source
+	at := source
 	at.Kind = "access_rule"
-	at.Text = detail
+	at.Text = "no rule matched"
 	return analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{at}}
 }
 
@@ -96,46 +108,61 @@ func (rule accessRule) matches(routeName, prefix string, placeholder bool) (bool
 	if rule.routeName != "" && rule.routeName != routeName {
 		return false, true
 	}
-	if rule.path == "" && rule.routeName != "" {
-		return true, true
+	if rule.pattern == nil {
+		match := rule.routeName != ""
+		return match, match
 	}
-	if rule.path == "" {
-		return false, false
-	}
-	if !rule.pathDecided {
-		return false, false
-	}
-	return accessPathMatches(rule.path, prefix, placeholder)
+	return rule.pattern.matches(prefix, placeholder)
 }
 
-func accessMethodsMatch(methods []string, entry string) (bool, bool) {
-	if len(methods) == 0 {
-		return true, false
-	}
-	if entry == "" {
-		// An ANY entry matches, and the rule's methods stay on the evidence.
-		return true, true
+func accessMethodsMatch(methods []string, entry string) bool {
+	if len(methods) == 0 || entry == "" {
+		return true
 	}
 	for _, m := range methods {
 		if strings.EqualFold(m, entry) {
-			return true, false
+			return true
 		}
 	}
-	return false, false
+	return false
 }
 
-func (p *symfonyProject) readAccessRules(sec *symfonySecurity) []accessRule {
-	list := symfonyYAMLValue(symfonyYAMLValue(sec.doc, "security"), "access_control")
+func (sec *symfonySecurity) accessConfig() *symfonyAccessConfig {
+	if sec.access == nil {
+		root := symfonyYAMLValue(sec.doc, "security")
+		config := &symfonyAccessConfig{
+			rules:     readAccessRules(root, sec.source),
+			firewalls: readAccessFirewalls(root, sec.source),
+		}
+		if node := symfonyYAMLValue(root, "role_hierarchy"); node != nil && node.Kind == yaml.MappingNode {
+			config.roleHierarchy = symfonyYAMLOrigin(sec.source, node)
+			config.roleHierarchy.Kind = "role_hierarchy"
+			config.roleMentions = map[string]bool{}
+			for i := 0; i+1 < len(node.Content); i += 2 {
+				config.roleMentions[node.Content[i].Value] = true
+				for _, role := range symfonyYAMLStrings(node.Content[i+1]) {
+					config.roleMentions[role] = true
+				}
+			}
+		}
+		sec.access = config
+	}
+	return sec.access
+}
+
+func readAccessRules(root *yaml.Node, source analysis.Evidence) []accessRule {
+	list := symfonyYAMLValue(root, "access_control")
 	if list == nil || list.Kind != yaml.SequenceNode {
 		return nil
 	}
 	var out []accessRule
 	for _, item := range list.Content {
-		rule := accessRule{at: symfonyYAMLOrigin(sec.source, item)}
+		rule := accessRule{at: symfonyYAMLOrigin(source, item)}
 		if pathNode := symfonyYAMLValue(item, "path"); pathNode != nil {
-			rule.path = symfonyYAMLString(pathNode)
-			_, _, _, rule.pathDecided = parseAccessExpr(rule.path)
-			rule.at = symfonyYAMLOrigin(sec.source, pathNode)
+			if expr := symfonyYAMLString(pathNode); expr != "" {
+				rule.pattern = compileAccessPattern(expr)
+			}
+			rule.at = symfonyYAMLOrigin(source, pathNode)
 		}
 		if routeNode := symfonyYAMLValue(item, "route"); routeNode != nil {
 			rule.routeName = symfonyYAMLString(routeNode)
@@ -182,17 +209,24 @@ func routeStaticPrefix(path string) (string, bool) {
 	return path, false
 }
 
-// accessPathMatches reports whether a supported path expression matches the
+func compileAccessPattern(expr string) *accessPattern {
+	alts, anchored, end, _ := parseAccessExpr(expr)
+	return &accessPattern{alts: alts, anchored: anchored, end: end}
+}
+
+// matches reports whether a supported path expression matches the
 // route's static prefix. decided is false when the expression is outside the
 // subset or the placeholder can change the answer (D-1).
-func accessPathMatches(expr, staticPrefix string, hasPlaceholder bool) (match, decided bool) {
-	alts, anchored, end, ok := parseAccessExpr(expr)
-	if !ok {
+func (p *accessPattern) matches(staticPrefix string, hasPlaceholder bool) (match, decided bool) {
+	if p == nil {
+		return true, true
+	}
+	if p.alts == nil {
 		return false, false
 	}
 	undecided := false
-	for _, alt := range alts {
-		m, d := matchAccessLiteral(alt, anchored, end, staticPrefix, hasPlaceholder)
+	for _, alt := range p.alts {
+		m, d := matchAccessLiteral(alt, p.anchored, p.end, staticPrefix, hasPlaceholder)
 		if !d {
 			undecided = true
 			continue
@@ -337,67 +371,63 @@ func appendLiteral(alts []string, c byte) []string {
 	return alts
 }
 
-func (p *symfonyProject) matchOpenFirewall(sec *symfonySecurity, prefix string, placeholder bool) (analysis.Evidence, bool, bool) {
-	firewalls := symfonyYAMLValue(symfonyYAMLValue(sec.doc, "security"), "firewalls")
+func readAccessFirewalls(root *yaml.Node, source analysis.Evidence) []accessFirewall {
+	firewalls := symfonyYAMLValue(root, "firewalls")
 	if firewalls == nil || firewalls.Kind != yaml.MappingNode {
-		return analysis.Evidence{}, false, true
+		return nil
 	}
+	var out []accessFirewall
 	for i := 0; i+1 < len(firewalls.Content); i += 2 {
 		node := firewalls.Content[i+1]
-		if symfonyYAMLString(symfonyYAMLValue(node, "security")) != "false" {
+		fw := accessFirewall{open: symfonyYAMLString(symfonyYAMLValue(node, "security")) == "false"}
+		origin := node
+		if pattern := symfonyYAMLValue(node, "pattern"); pattern != nil {
+			fw.pattern = compileAccessPattern(symfonyYAMLString(pattern))
+			origin = pattern
+		}
+		if fw.open {
+			fw.at = symfonyYAMLOrigin(source, origin)
+			fw.at.Kind = "firewall"
+		} else {
+			for _, key := range []string{"form_login", "http_basic", "json_login", "custom_authenticators"} {
+				if auth := symfonyYAMLValue(node, key); auth != nil {
+					at := symfonyYAMLOrigin(source, auth)
+					at.Kind, at.Text = "firewall_authenticator", key
+					fw.authenticators = append(fw.authenticators, at)
+				}
+			}
+		}
+		out = append(out, fw)
+	}
+	return out
+}
+
+func (c *symfonyAccessConfig) matchOpenFirewall(prefix string, placeholder bool) (analysis.Evidence, bool, bool) {
+	for _, fw := range c.firewalls {
+		if !fw.open {
 			continue
 		}
-		pattern := symfonyYAMLValue(node, "pattern")
-		at := symfonyYAMLOrigin(sec.source, node)
-		at.Kind = "firewall"
-		if pattern == nil {
-			return at, true, true
-		}
-		at = symfonyYAMLOrigin(sec.source, pattern)
-		at.Kind = "firewall"
-		expr := symfonyYAMLString(pattern)
-		_, _, _, decidedExpr := parseAccessExpr(expr)
-		if !decidedExpr {
-			return at, false, false
-		}
-		match, decided := accessPathMatches(expr, prefix, placeholder)
-		if !decided {
-			return at, false, false
-		}
-		if match {
-			return at, true, true
+		if match, decided := fw.pattern.matches(prefix, placeholder); !decided || match {
+			return fw.at, match, decided
 		}
 	}
 	return analysis.Evidence{}, false, true
 }
 
-func (p *symfonyProject) attachFirewallEvidence(sec *symfonySecurity, base analysis.EntryAccess, prefix string, placeholder bool) analysis.EntryAccess {
-	firewalls := symfonyYAMLValue(symfonyYAMLValue(sec.doc, "security"), "firewalls")
-	if firewalls == nil || firewalls.Kind != yaml.MappingNode || base.Authentication == analysis.AccessUnresolved {
+func (c *symfonyAccessConfig) attachFirewallEvidence(base analysis.EntryAccess, prefix string, placeholder bool) analysis.EntryAccess {
+	if base.Authentication == analysis.AccessUnresolved {
 		return base
 	}
-	for i := 0; i+1 < len(firewalls.Content); i += 2 {
-		node := firewalls.Content[i+1]
-		if symfonyYAMLString(symfonyYAMLValue(node, "security")) == "false" {
+	for _, fw := range c.firewalls {
+		if fw.open {
 			continue
 		}
-		pattern := symfonyYAMLValue(node, "pattern")
-		if pattern != nil {
-			expr := symfonyYAMLString(pattern)
-			match, decided := accessPathMatches(expr, prefix, placeholder)
-			if !decided || !match {
-				continue
-			}
+		if match, decided := fw.pattern.matches(prefix, placeholder); !decided || !match {
+			continue
 		}
-		for _, key := range []string{"form_login", "http_basic", "json_login", "custom_authenticators"} {
-			if symfonyYAMLValue(node, key) == nil {
-				continue
-			}
-			at := symfonyYAMLOrigin(sec.source, symfonyYAMLValue(node, key))
-			at.Kind = "firewall_authenticator"
-			at.Text = key
+		for _, at := range fw.authenticators {
 			base.Sources = append(base.Sources, at)
-			if key == "custom_authenticators" {
+			if at.Text == "custom_authenticators" {
 				base.Authentication = analysis.AccessUnresolved
 				base.Gaps = append(base.Gaps, analysis.Gap{Kind: "authenticator_unmodeled", Detail: "Custom authenticators are not modeled", At: at.Span})
 			}
@@ -407,25 +437,13 @@ func (p *symfonyProject) attachFirewallEvidence(sec *symfonySecurity, base analy
 	return base
 }
 
-func (p *symfonyProject) attachRoleHierarchy(sec *symfonySecurity, base analysis.EntryAccess) analysis.EntryAccess {
-	node := symfonyYAMLValue(symfonyYAMLValue(sec.doc, "security"), "role_hierarchy")
-	if node == nil || base.Authentication != analysis.AccessRequired {
+func (c *symfonyAccessConfig) attachRoleHierarchy(base analysis.EntryAccess) analysis.EntryAccess {
+	if base.Authentication != analysis.AccessRequired {
 		return base
 	}
-	at := symfonyYAMLOrigin(sec.source, node)
-	at.Kind = "role_hierarchy"
-	mentioned := map[string]bool{}
-	if node.Kind == yaml.MappingNode {
-		for i := 0; i+1 < len(node.Content); i += 2 {
-			mentioned[node.Content[i].Value] = true
-			for _, role := range symfonyYAMLStrings(node.Content[i+1]) {
-				mentioned[role] = true
-			}
-		}
-	}
 	for _, role := range base.Roles {
-		if mentioned[role] {
-			base.Sources = append(base.Sources, at)
+		if c.roleMentions[role] {
+			base.Sources = append(base.Sources, c.roleHierarchy)
 			break
 		}
 	}

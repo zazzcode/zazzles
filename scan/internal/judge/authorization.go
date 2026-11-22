@@ -55,14 +55,9 @@ func applyAuthorizationPolicy(use analysis.CandidateUse, a *analysis.Assessment)
 		return
 	}
 	var blocking []analysis.Gap
+	census := censusOnly(f)
 	for _, g := range c.Blockers {
-		if g.Kind == "address_trust_configuration_unread" {
-			continue
-		}
-		if g.Kind == analysis.SecurityFieldsUnresolved && !censusOnly(f) {
-			continue
-		}
-		if authorizationBlocking(g.Kind) {
+		if analysis.AuthorizationBlockingGap(g.Kind, census) {
 			blocking = append(blocking, g)
 		}
 	}
@@ -142,13 +137,4 @@ func wireAuthorization(use analysis.CandidateUse, ref func(analysis.Evidence) st
 		out["access"] = use.EntryFacts.Access
 	}
 	return out
-}
-
-func authorizationBlocking(kind string) bool {
-	switch kind {
-	case "access_rule_unresolved", "access_rule_condition_unmodeled", "voter_unmodeled", "access_expression_unmodeled", "authenticator_unmodeled", "guard_unclassified", "symfony_config_unread", analysis.SecurityFieldsUnresolved:
-		return true
-	default:
-		return false
-	}
 }

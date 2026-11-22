@@ -22,7 +22,6 @@ func (s *phpSet) analyzeSymfonyEntry(out *analysis.AnalysisReport, p *symfonyPro
 	}
 	invocationIndex := len(out.InvocationContexts) - 1
 	entry, invocation := out.Entries[entryIndex], out.InvocationContexts[invocationIndex]
-	entry.Access = &access
 	m := r.target.module
 	handler := m.evidence("invoked_callable", r.action)
 	work := 0

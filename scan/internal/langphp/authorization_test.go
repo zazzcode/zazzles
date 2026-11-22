@@ -1,11 +1,39 @@
 package langphp
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 )
+
+func TestAuthorizationPeerOrder(t *testing.T) {
+	change := analysis.StateChange{Operation: "update", StorageKey: "account.name"}
+	set := phpSet{authzChanges: []authzChange{
+		{entryID: "writer-b", change: change},
+		{entryID: "writer-a", change: change},
+	}}
+	r := &analysis.AnalysisReport{
+		Entries: []analysis.EntryPoint{
+			{ID: "writer-b", Name: "POST /account", Access: &analysis.EntryAccess{Authentication: analysis.AccessNone}},
+			{ID: "writer-a", Name: "POST /account", Access: &analysis.EntryAccess{Authentication: analysis.AccessRequired}},
+		},
+		Uses: []analysis.CandidateUse{
+			{EntryID: "subject", Authorization: &analysis.AuthorizationFacts{Operation: change}},
+			{EntryID: "writer-a", Authorization: &analysis.AuthorizationFacts{Operation: change, Guards: []analysis.AuthorizationGuard{{Kind: analysis.GuardOwnership}}}},
+			{EntryID: "writer-a", Authorization: &analysis.AuthorizationFacts{Operation: change, Guards: []analysis.AuthorizationGuard{{Kind: analysis.GuardOwnership}, {Kind: analysis.GuardRole}}}},
+		},
+	}
+	for range 64 {
+		set.finishAuthorization(r)
+		peers := r.Uses[0].Authorization.PeerAccess
+		if len(peers) != 2 || peers[0].Access.Authentication != analysis.AccessRequired || peers[1].Access.Authentication != analysis.AccessNone ||
+			!slices.Equal(peers[0].GuardKinds, []string{analysis.GuardOwnership, analysis.GuardRole}) || len(peers[1].GuardKinds) != 0 {
+			t.Fatalf("peers not ordered by name then ID, or guard kinds not deduplicated: %+v", peers)
+		}
+	}
+}
 
 func TestAuthorizationGuards(t *testing.T) {
 	report := phpAnalyze(t, "testdata/symfony/authorization", "")

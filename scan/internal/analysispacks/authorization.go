@@ -3,10 +3,8 @@ package analysispacks
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // AuthorizationProtocol versions the authorization claim questions (D-13).
-// v2 fixed N03/N05 on a judged retry but treated ROLE_USER as adequate for
-// request-selected object-level writes (AUTHZ-02/-04). v3 keeps the secret_check
-// and census-read rules and restores that listed roles alone do not cover
-// request-selected writes or deletes. AC14 residual is follow-on for branch 3.
+// It distinguishes authorization for census-field reads from authorization for
+// request-selected writes and deletes.
 const AuthorizationProtocol = "authorization-components-v3"
 
 // PHPAuthorizationOperation is the verified operation this family judges.

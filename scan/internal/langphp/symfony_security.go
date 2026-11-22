@@ -26,6 +26,7 @@ type symfonySecurity struct {
 	// The provider walk below is unchanged.
 	doc    *yaml.Node
 	source analysis.Evidence
+	access *symfonyAccessConfig
 }
 
 // security reads the entity user providers once per project.

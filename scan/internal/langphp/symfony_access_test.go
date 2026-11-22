@@ -2,6 +2,8 @@ package langphp
 
 import (
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
@@ -42,7 +44,7 @@ func TestSymfonyAccess(t *testing.T) {
 			if entry.Access.Authentication != tt.auth {
 				t.Fatalf("authentication %s, want %s (gaps %v)", entry.Access.Authentication, tt.auth, entry.Access.Gaps)
 			}
-			if stringsJoin(entry.Access.Roles) != stringsJoin(tt.roles) {
+			if !slices.Equal(entry.Access.Roles, tt.roles) {
 				t.Fatalf("roles %v, want %v", entry.Access.Roles, tt.roles)
 			}
 			if tt.gap != "" && !hasGap(entry.Access.Gaps, tt.gap) {
@@ -84,7 +86,7 @@ func TestSymfonyAccessChecks(t *testing.T) {
 			if entry.Access.Authentication != tt.auth {
 				t.Fatalf("authentication %s, want %s gaps %v sources %v", entry.Access.Authentication, tt.auth, entry.Access.Gaps, entry.Access.Sources)
 			}
-			if stringsJoin(entry.Access.Roles) != stringsJoin(tt.roles) {
+			if !slices.Equal(entry.Access.Roles, tt.roles) {
 				t.Fatalf("roles %v, want %v", entry.Access.Roles, tt.roles)
 			}
 			if tt.gap != "" && !hasGap(entry.Access.Gaps, tt.gap) {
@@ -126,33 +128,9 @@ func accessSource(a *analysis.EntryAccess, kind, text string) bool {
 		if s.Kind != kind {
 			continue
 		}
-		if text == "" || s.Text == text || containsText(s.Text, text) {
+		if strings.Contains(s.Text, text) {
 			return true
 		}
 	}
 	return false
-}
-
-func containsText(s, part string) bool {
-	return len(part) > 0 && len(s) >= len(part) && (s == part || len(s) > 0 && (stringIndex(s, part) >= 0))
-}
-
-func stringIndex(s, part string) int {
-	for i := 0; i+len(part) <= len(s); i++ {
-		if s[i:i+len(part)] == part {
-			return i
-		}
-	}
-	return -1
-}
-
-func stringsJoin(v []string) string {
-	out := ""
-	for i, s := range v {
-		if i > 0 {
-			out += ","
-		}
-		out += s
-	}
-	return out
 }

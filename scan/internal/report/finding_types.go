@@ -81,6 +81,14 @@ var applicationFindingTypes = []analysis.FindingType{
 		Description:    "A request chooses the names of the properties written on an object that has a field the request should not choose (CWE-915).",
 		Interpretation: "The record establishes that the property names come from the request, how they are written and which fields of the target carry a credential, login identifier or role source by framework contract. A field-name hint is weighed, not trusted. A key allow-list is a control whose adequacy is judged. Form, serializer and payload mapping are recorded in Review. Whether a named write is authorized is a separate claim.",
 		Remediation:    "Write each permitted field through a named setter from a named request field, or intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields."},
+	{ID: "missing-authorization", Label: "Missing Authorization", Coverage: "bounded PHP authorization analysis",
+		Description:    "An operation changes or reveals a record the request selects without a guard or an entry rule that covers it (CWE-862, CWE-639).",
+		Interpretation: "The record lists the subject, the operation, the entry's access and the guards that dominate the operation. A guard is evidence. Whether it is enough is judged. A role name is a string.",
+		Remediation:    "Authorize the operation on the selected record, and require the same access on every entry that writes the field."},
+	{ID: "address-based-access", Label: "Address-Based Access", Coverage: "bounded PHP address-check analysis",
+		Description:    "An operation is limited by the caller's network address (CWE-291).",
+		Interpretation: "An address check is a property of the connection, not of the user. A framework client address depends on trusted-proxy configuration, which is recorded as unread until that configuration is read.",
+		Remediation:    "Do not authorize a state change from the peer address alone. Require an authenticated caller and authorize the operation on the selected record."},
 }
 
 var findingTypesByID = func() map[string]analysis.FindingType {
@@ -128,6 +136,11 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		return []string{"information-exposure"}
 	case analysis.MassAssignmentKind:
 		return []string{"mass-assignment"}
+	case analysis.AuthorizationKind:
+		if authorizationAddressOnly(u) {
+			return []string{"address-based-access"}
+		}
+		return []string{"missing-authorization"}
 	case "upload", "file_upload_candidate":
 		return []string{"unrestricted-upload"}
 	case "ssrf_candidate":

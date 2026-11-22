@@ -1,0 +1,3 @@
+security:
+  access_control:
+    - { path: ^/both, roles: [ROLE_A, ROLE_B] }

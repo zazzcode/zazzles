@@ -11,10 +11,16 @@ import (
 
 func (s *phpSet) analyzeSymfonyEntry(out *analysis.AnalysisReport, p *symfonyProject, r symfonyRoute, method string) {
 	r.register(out, method)
-	if r.unresolved || r.action == nil {
+	entryIndex := len(out.Entries) - 1
+	access := p.accessFor(s, r, method)
+	if r.target != nil && r.action != nil {
+		access = (&phpFlow{set: s, module: r.target.module, symfony: p}).applyAccessAttributes(access, r.target, r.action)
+	}
+	out.Entries[entryIndex].Access = &access
+	if r.unresolved || r.action == nil || r.target == nil {
 		return
 	}
-	entryIndex, invocationIndex := len(out.Entries)-1, len(out.InvocationContexts)-1
+	invocationIndex := len(out.InvocationContexts) - 1
 	entry, invocation := out.Entries[entryIndex], out.InvocationContexts[invocationIndex]
 	m := r.target.module
 	handler := m.evidence("invoked_callable", r.action)
@@ -88,7 +94,7 @@ func (f *phpFlow) symfonyParameter(route string, param *sitter.Node, action bool
 				// identifier or field placeholders, whatever the argument is named.
 				if current || placeholder || mapped || strings.Contains(route, "{") {
 					if entity, ok := f.symfonyEntity(decl, param); ok {
-						return entity
+						return f.bindAuthzEntity(route, param, entity, current)
 					}
 				}
 			}

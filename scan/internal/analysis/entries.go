@@ -22,6 +22,11 @@ type EntryPoint struct {
 	UnknownMetadata json.RawMessage        `json:"unknown_metadata,omitempty"`
 	Transports      []TransportAssociation `json:"transports,omitempty"`
 	Gaps            []Gap                  `json:"gaps,omitempty"`
+	// Access is what a Symfony route requires of its caller (lane contract §2.3).
+	// FILE entries leave it unset. It is context, never protection for another claim.
+	Access *EntryAccess `json:"access,omitempty"`
+	// StateChanges lists stored writes the action performs, including writes on a safe method.
+	StateChanges []StateChange `json:"state_changes,omitempty"`
 }
 
 // HTTPEntryMetadata contains delivery details, not generic entry identity.

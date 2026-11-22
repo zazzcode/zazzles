@@ -1,0 +1,3 @@
+security:
+  access_control:
+    - { path: ^/api, roles: ROLE_API, methods: [POST] }

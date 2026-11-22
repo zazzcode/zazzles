@@ -54,6 +54,12 @@ type phpFlow struct {
 	class    *phpClassDecl
 	symfony  *symfonyProject
 	services map[string]phpValue
+	// authzSite is the controller call whose helper is writing a subject.
+	// authzGuards are the checks that dominate that call, computed in the
+	// controller so the helper's own environment is not consulted.
+	authzSite       *sitter.Node
+	authzSiteModule *phpModule
+	authzGuards     []analysis.AuthorizationGuard
 }
 
 func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -509,6 +515,7 @@ func (f *phpFlow) render(n *sitter.Node, v phpValue) {
 	m := f.module
 	markup := m.inlineHTMLBefore(n.StartByte())
 	f.recordXSS(m.evidence("html_output", n), v, parse.HTMLOutputContext(markup), f.pathContexts(n, v, markup))
+	f.noteAuthzOutput(m.evidence("html_output", n), n, v)
 	if markup != "" {
 		// The judge sees the markup around an echo embedded in a page, so the
 		// output context (`value="<?php echo $x ?>"`) is source-backed.

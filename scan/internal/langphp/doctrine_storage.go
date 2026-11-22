@@ -111,6 +111,7 @@ type doctrineObject struct {
 	managed bool
 	fields  map[string]string
 	writes  map[string][]phpWrite
+	authz   *phpAuthz
 }
 
 type doctrineStorage struct {
@@ -158,6 +159,7 @@ func (f *phpFlow) doctrinePropertyWrite(object phpValue, left, name *sitter.Node
 	if name.Kind() == "name" {
 		if key := obj.fields[phpText(f.module, name)]; key != "" {
 			f.doctrineWrite(obj, key, v, f.module.evidence("storage_write", left))
+			f.noteAuthzProperty(object, key, v, left)
 		}
 		return
 	}
@@ -191,6 +193,11 @@ func (f *phpFlow) doctrineStorageCall(n *sitter.Node, receiver phpValue, method 
 			}
 			return phpValue{}, true
 		case "flush":
+			return phpValue{}, true
+		case "remove":
+			if len(values) > 0 {
+				f.noteAuthzDelete(values[0], n)
+			}
 			return phpValue{}, true
 		}
 	}
@@ -287,7 +294,8 @@ func (f *phpFlow) doctrineFinder(n *sitter.Node, receiver phpValue, method strin
 			return phpValue{}, false
 		}
 	}
-	return f.doctrineResultEntity(n, entity, many), true
+	object := f.doctrineResultEntity(n, entity, many)
+	return f.noteFinderSubject(n, object, method, values), true
 }
 
 func (f *phpFlow) doctrineResultEntity(n *sitter.Node, class string, many bool) phpValue {

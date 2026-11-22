@@ -100,8 +100,8 @@ Beyond the lane contract's §1:
   or digest changes**, and access rules never establish protection for an injection claim.
 - The scanner lists guards. It never marks an authorization candidate protected on its own. The
   closed "no claim" cases of D-7 are the only way an operation makes no record.
-- A rule, attribute or check the reader cannot resolve is recorded as a gap. Access is then
-  `unresolved`, never `none`.
+- An entry access rule or attribute the reader cannot resolve is recorded as a gap. Access is
+  then `unresolved`, never `none`. Operation guards follow the separate D-6 evidence boundary.
 - Branch 1's files, records and outcomes are unchanged (AC12).
 
 ## 4. Scope and review shape
@@ -109,17 +109,21 @@ Beyond the lane contract's §1:
 | Path | Change | Purpose |
 |---|---|---|
 | `scan/internal/analysis/authorization.go`, `entries.go`, `report_entries.go`, `json.go`, `analysis.go` | New, modified | `EntryAccess`, `StateChange`, `AuthorizationFacts`, guard kinds |
+| `scan/internal/analysis/findings.go` | Modified | Report-only related finding IDs (D-12) |
 | `scan/internal/langphp/symfony_access.go` | New | `access_control`, firewall and role-hierarchy reader; rule matching |
 | `scan/internal/langphp/symfony_access_attr.go` | New | `#[IsGranted]` and annotation forms; in-code check contracts |
 | `scan/internal/langphp/authorization.go` | New | Subject selection, protected operations, candidate assembly, peer access |
 | `scan/internal/langphp/authorization_guards.go` | New | Guard classification, including the address guard |
 | `scan/internal/langphp/symfony_security.go` | Modified | Expose the parsed `security.yaml` document to the access reader. No change to the provider reader |
 | `scan/internal/langphp/symfony_entry.go`, `symfony_controller.go`, `symfony_request.go`, `calls.go`, `control.go`, `guards.go`, `doctrine_storage.go`, `modules.go`, `path.go` | Modified | Subject provenance on bound entities, check contracts, state-change collection, dispatch lines. `control.go` termination rules stay unchanged (D-3) |
+| `scan/internal/langphp/class_index.go`, `flow.go`, `values.go` | Modified | Resolve helper and subject context, and propagate it through followed paths |
+| `scan/internal/langphp/sql.go`, `twig.go` | Modified | Record plain-PHP SQL changes (D-9) and authorization evidence at template outputs (D-5 E3) |
 | `scan/internal/langphp/*_test.go`, `testdata/symfony/access/`, `testdata/symfony/authorization/`, `testdata/symfony/authorization-transfer/`, `testdata/authorization-plain/` | New | Fixtures and tests of §8 |
-| `scan/internal/analysispacks/authorization.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `authorization-components-v1`, questions, contracts |
+| `scan/internal/analysispacks/authorization.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `authorization-components-v3`, questions, contracts |
+| `scan/internal/analysispacks/xss_selection.go`, `scan/internal/judge/injection.go` | Modified | Exclude authorization uses from XSS selection and dispatch the authorization judgment policy (D-13) |
 | `scan/internal/judge/authorization.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, tests | New, modified | Policy and wire facts |
-| `scan/internal/report/finding_types.go`, `findings.go`, `entries.go`, `sarif.go`, `guidance.go`, `html.go`, `report.html`, tests | Modified | Two finding types, entry access in the entry view, SARIF rules, the report-only SSRF link (D-12) |
-| `scan/cli/main.go`, `architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Family name; baseline rows (AC9) |
+| `scan/internal/report/finding_types.go`, `findings.go`, `application_findings.go`, `entries.go`, `sarif.go`, `guidance.go`, `html.go`, `report.html`, tests | Modified | Two finding types, entry access in the entry view, SARIF rules, the report-only SSRF link (D-12) |
+| `scan/cli/main.go`, `schedule_cli_test.go`, `architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Family name and filter parsing (AC8); baseline rows (AC9) |
 | `scan/internal/pipeline/symfony_test.go` | Modified | This branch's sample assertions |
 | `.zazz/evaluation/vuln-symfony-detection-guide.md`, `recall-gap-inventory/cases.json`, `check.py`, `test_check.py`, `symfony-results.md` | Modified | Rows, the `guarded` expectation, results |
 | `.zazz/architecture/entry-access-and-authorization.md` | New | Design and approach (AC10) |
@@ -153,7 +157,7 @@ row.
 
 | Rule part | Reading |
 |---|---|
-| `path` | A regular expression. Matched against the route's static prefix, which is the path up to its first placeholder. The reader decides a match only for an expression made of `^`, literal characters, `/`, escaped characters, a group of literal alternatives and an optional `$`. Anything else gives `access_rule_unresolved` |
+| `path` | A regular expression. Matched against the route's static prefix, which is the path up to its first placeholder. The reader decides a match only for an expression made of `^`, literal characters, `/`, escaped characters, groups of literal alternatives (which may themselves contain such groups) and an optional `$`. Anything else gives `access_rule_unresolved` |
 | `route` | Exact route name |
 | `roles` | A string or list. `PUBLIC_ACCESS` and `IS_AUTHENTICATED_ANONYMOUSLY` give `authentication: none`. Every other attribute gives `required` and is listed in `roles` |
 | `methods` | Compared with the entry's method. An `ANY` entry matches with the methods recorded |
@@ -228,8 +232,9 @@ application. E3 is limited to census fields because a public page that shows a t
 path is correct, and reporting it would bury the real records. *Rejected:* reporting every
 unguarded read of a path-selected record.
 
-**D-6. Guards are classified and listed.** Every condition with an early exit that dominates the
-operation is recorded with one kind.
+**D-6. Guards are classified and listed.** A condition with an early exit that dominates the
+operation is recorded when it matches a modeled guard kind or the unclassified private-helper
+case below. A dominating early exit alone is not authorization evidence.
 
 | Kind | Shape |
 |---|---|
@@ -238,7 +243,8 @@ operation is recorded with one kind.
 | `authenticated_check` | D-3's null test of the session user |
 | `secret_check` | A comparison between a stored field of the subject and a request value, where the request value is not written to that field on the same path |
 | `address_check` | D-8 |
-| Unclassified | Recorded as `guard_unclassified` with its source text span. The model reads it |
+| Unclassified call to a private helper of the same class | Record `guard_unclassified` and the available source span if following the call does not establish a modeled kind |
+| Other unclassified condition | No authorization guard or `guard_unclassified` gap. This includes inline validation conditions such as a password-confirmation mismatch |
 
 A guard reached through one private helper method of the same class is followed one step, as the
 callable summaries allow. A deeper helper gives `guard_unclassified`.
@@ -280,7 +286,8 @@ written or returned, `authorization.guards` (kind, form, evidence), the entry's 
 the operation is a state change), and `authorization.peer_access`.
 
 **D-11. Peer access.** For a state change, the candidate lists up to eight other entries that
-write the same storage key, each with its `access` and guard kinds, sorted by entry name. *Why:*
+write the same storage key, each with its `access` and guard kinds, sorted by entry name and
+then entry ID. *Why:*
 the scanner cannot know which role an operation should need, but it can show that the same field
 is written elsewhere only under a stronger rule. That is general evidence of an inconsistent
 check, and it is what a reviewer would look for.
@@ -295,15 +302,15 @@ touching the wire.
 
 **D-13. One family, three facets.** A candidate whose only guard is an `address_check` maps to
 finding type `address-based-access`. Every other candidate maps to `missing-authorization`.
-The protocol is `authorization-components-v1`, claim kind `authorization`. The shared policy
+The protocol is `authorization-components-v3`, claim kind `authorization`. The shared policy
 order is the lane contract §2.7. Required evidence roles: `subject_selection`,
 `protected_operation`, `entry_access`, `control_flow`.
 
 | Question | Answers | Asks |
 |---|---|---|
 | `subject_control` | `request_selected`, `not_selected`, `unknown` | Does the request choose which record the operation acts on, or which records are returned, as `authorization.subject` states? |
-| `guard_adequacy` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `authorization.guards`, judged by kind, limit the operation to a caller who should be allowed to perform it on this record? An `address_check` is a property of the connection, not of the user |
-| `access_adequacy` | `adequate`, `inadequate`, `unknown` | Is the entry's recorded `access` enough for the fields in `security_fields` and the operation, given `peer_access`? |
+| `guard_adequacy` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `authorization.guards`, judged by kind, limit the operation to a caller who should be allowed to perform it on this record? Answer `none` only when no guard is recorded. An `ownership_check`, `role_check`, `authenticated_check` or `secret_check` that dominates this operation on this subject is `adequate`; a `secret_check` is a stored-field comparison with a request value not written back on the same path. An `address_check` is a property of the connection, not of the user |
+| `access_adequacy` | `adequate`, `inadequate`, `unknown` | Is the entry's recorded `access` enough for the fields in `security_fields` and the operation, given `peer_access`? When authentication is `none`, answer `inadequate`. Required roles are `adequate` for `data_exposure` of census fields. For `object_level` or `function_level` writes or deletes on a `request_selected` subject, listed roles alone are not `adequate` (any holder of those roles can still pick another caller's record) unless `peer_access` shows no stronger writer of the same key and the fields are not a weaker privilege write than those peers |
 
 | Rule | Condition |
 |---|---|
@@ -546,6 +553,9 @@ and the lane count grows. Handle `guarded` beside the existing control cases wit
 how they evaluate. `TestExistingFamilyRequestsUnchanged` and `TestSSRFRequestUnchanged` are the
 guards for the invariant that no existing request changes.
 
+`TestSymfonySourceKey/SYM-AUTHZ-02` also checks D-6: the password-confirmation early exit
+does not introduce an unclassified guard or an authorization blocker.
+
 ## 9. Execution sequence
 
 | Slice | Content | Owns | Depends on | ACs |
@@ -706,6 +716,66 @@ baseline diff review that §6 requires.
 > Report PASS or FAIL for each item with the command output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Branch 2 PR review
+
+**Source.** [PR #43 review](https://github.com/zazzcode/zazzles/pull/43#issuecomment-7084643997)
+and the Branch 2 run log.
+
+**Changed sections.** §4 names the implementation wiring already present in the review diff.
+D-1 states that literal-alternative groups may be nested, as used by Symfony's default
+development firewall. D-11 specifies the entry-ID tie-breaker for entries with the same name.
+
+**Verification impact.** The access rules and firewall patterns are derived once per project
+without changing the supported syntax. AC8 covers all three authorization CWE tags, HTML entry
+access, and the reverse D-12 reference in the report. The latter is added only for judged SSRF
+uses, without changing either family’s judge request. AC14 remains deferred.
+
+### 2026-11-22 — D-6 guard scope clarification
+
+**Source.** [PR #43 spec review](https://github.com/zazzcode/zazzles/pull/43#issuecomment-7084643997)
+and the Branch 2 implementation deviation.
+
+**Changed sections.** §3 limits the unresolved-access invariant to entry access. D-6 now
+records unclassified conditions only for same-class private-helper calls and omits other
+unclassified conditions. The early exit of an input-validation check does not establish
+an authorization check, and should not by itself introduce a blocking authorization gap.
+
+**Verification impact.** No scanner or judge protocol change. `TestAuthorizationGuards`
+retains GD-12 for unresolved private helpers. `TestSymfonySourceKey/SYM-AUTHZ-02`
+checks that the inline password-confirmation check does not introduce a
+`guard_unclassified` guard or blocker.
+
+### 2026-11-22 — Authorization judge retry for AC14 controls (not resolved)
+
+**Source.** Owner steering after the branch 2 judged acceptance: authorize one more judged
+budget with a tighter instruction; if still unmet, mark not implemented and carry into
+branch 3 as follow-on work.
+
+**Changed Sections.** D-13 (protocol id and the `guard_adequacy` / `access_adequacy` Asks
+prose); §4 scope table protocol name; architecture and analysis docs that name the protocol;
+`scan/internal/judge/client.go` family instruction; `scan/internal/analysispacks/authorization.go`
+question and choice text; AC14 status (not met — follow-on).
+
+**Rationale.** On `authorization-components-v1` the five positives Confirmed and
+`SYM-AUTHZ-N01` Protected, but `SYM-AUTHZ-N03` (admin index template, `ROLE_ADMIN` entry,
+no in-action guard) and `SYM-AUTHZ-N05` (credential write dominated by a `secret_check`) were
+`confirmed_vulnerability`. The scanner listed the roles and the secret guard correctly; the
+model answered `access_adequacy: inadequate` and `guard_adequacy: inadequate`.
+
+**Summary.** One judged retry (`run-3075298902`, `--only-family authorization`, scanner
+`c963f5d`, protocol `authorization-components-v2`) fixed both controls (`N03` and `N05`
+`protected_for_claim`, `secret_check` / required-role census-read rules held) but regressed
+required positives `SYM-AUTHZ-02` and `SYM-AUTHZ-04` to `protected_for_claim` by treating
+listed `ROLE_USER` as adequate for request-selected object-level writes and deletes. AC14
+is therefore **not implemented** on this branch. Protocol advanced to
+`authorization-components-v3` with untested prose that keeps the `secret_check` and
+census-read fixes and restores that listed roles alone do not cover request-selected
+writes or deletes. No further judged run on this branch. Branch 3 owns the residual
+(judge adequacy so all five positives Confirmed and `N01`/`N03`/`N05` Protected together).
+
+**Verification Impact.** Recorded in the run log and `symfony-results.md`. Architecture
+baseline digests follow v3. Reviewers treat AC14 as open residual, not a pass.
 
 ### 2026-11-22 — Findings from the branch 1 run
 

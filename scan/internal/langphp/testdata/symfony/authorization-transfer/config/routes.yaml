@@ -1,0 +1,16 @@
+held:
+  path: /portal/member/{member}/held
+  methods: [POST]
+  controller: App\Controller\MemberController::held
+open:
+  path: /portal/member/{member}/open
+  methods: [POST]
+  controller: App\Controller\MemberController::open
+portal_grants:
+  path: /portal/member/{member}/grants
+  methods: [POST]
+  controller: App\Controller\MemberController::portalGrants
+desk_grants:
+  path: /desk/member/{member}/grants
+  methods: [POST]
+  controller: App\Controller\MemberController::deskGrants

@@ -31,7 +31,7 @@ Existing [package boundaries](README.md#11-implemented-package-boundaries) remai
 
 | Record | Responsibility | Relationships |
 | --- | --- | --- |
-| Entry point | Logical exposed operation within a service/application instance | Has zero or more registrations |
+| Entry point | Logical exposed operation within a service/application instance. A Symfony route also carries `access` (authentication and roles) and `state_changes` (storage key, operation, span) for the writes that action performs | Has zero or more registrations |
 | Registration | Source/configuration wiring and generation provenance | Exposes an entry; has dispatch bindings |
 | Dispatch binding | Target alternative, condition, ordering, invocation mapping, resolution | Belongs to entry/registration; zero or one known callable target |
 | Callable | Lexically resolved function/method/body identity | Shared by any number of bindings |

@@ -96,6 +96,31 @@ class FrozenKeyTest(unittest.TestCase):
         prec = check.precision({'s': report}, [{**row, 'app': 's'}], [], [])['s']
         self.assertEqual(prec['info_exposure']['records'], 2)
 
+    def test_guarded_needs_candidate_with_guard_or_entry_roles(self):
+        guard = {'kind': 'ownership_check', 'evidence': {'span': {'file': 'UserController.php', 'start_line': 75}}}
+        report = {'entries': [{'id': 'e1', 'name': 'POST /user/avatar/{user}',
+                               'access': {'authentication': 'required', 'roles': ['ROLE_USER']}}],
+                  'uses': [use('a', 'authorization_candidate', 'UserController.php', 101, deps=['input_source'],
+                               authorization={'guards': [guard]})]}
+        row = {'kind': 'authorization_candidate', 'expect': 'guarded', 'file': 'UserController.php',
+               'anchors': {'UserController.php': [101]}, 'guard_kind': 'ownership_check', 'guard_lines': [75]}
+        self.assertEqual(check.classify(row, report)['outcome'], 'control_pass')
+        report['uses'][0]['authorization']['guards'] = [{'kind': 'role_check', 'evidence': {'span': {'file': 'UserController.php', 'start_line': 75}}}]
+        self.assertEqual(check.classify(row, report)['outcome'], 'control_fail')
+        report['uses'] = []
+        self.assertEqual(check.classify(row, report)['outcome'], 'control_fail')
+        roles = {'kind': 'authorization_candidate', 'expect': 'guarded', 'file': 'AdminController.php',
+                 'anchors': {'AdminController.php': [53]}, 'entry_roles': ['ROLE_ADMIN']}
+        report['entries'][0]['access']['roles'] = ['ROLE_USER']
+        report['uses'] = [use('b', 'authorization_candidate', 'AdminController.php', 53)]
+        self.assertEqual(check.classify(roles, report)['outcome'], 'control_fail')
+        report['entries'][0]['access']['roles'] = ['ROLE_ADMIN']
+        self.assertEqual(check.classify(roles, report)['outcome'], 'control_pass')
+        report['findings'] = [finding('b', 'confirmed_vulnerability')]
+        self.assertEqual(check.judged_outcome(roles, report), 'control_finding')
+        report['findings'] = [finding('b', 'protected_for_claim')]
+        self.assertEqual(check.judged_outcome(roles, report), 'control_protected')
+
 
 class PrecisionTest(unittest.TestCase):
     def setUp(self):

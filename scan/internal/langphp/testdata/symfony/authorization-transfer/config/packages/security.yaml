@@ -1,0 +1,4 @@
+security:
+  access_control:
+    - { path: ^/desk, roles: ROLE_STAFF }
+    - { path: ^/portal, roles: ROLE_MEMBER }

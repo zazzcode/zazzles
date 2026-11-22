@@ -74,6 +74,13 @@ func entryPresentation(e analysis.EntryPoint) entryView {
 
 func entryDetails(r *analysis.AnalysisReport, e analysis.EntryPoint) entryView {
 	v := entryPresentation(e)
+	if e.Access != nil {
+		roles := strings.Join(e.Access.Roles, ", ")
+		if roles == "" {
+			roles = "none"
+		}
+		v.Details = append(v.Details, entryDetail{"Access", e.Access.Authentication + " " + roles})
+	}
 	for _, reg := range r.Registrations {
 		if reg.EntryID == e.ID {
 			v.Details = append(v.Details, entryDetail{"Registration", reg.ID})

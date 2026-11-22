@@ -277,6 +277,18 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the selected diagnostic-output contract and the two exposure questions to this operation-centered claim. There is no request source: judge what the recorded operation emits and whether a caller of the recorded entry reaches it. A recorded guard restricts reach only when it dominates the operation and rejects the caller. Do not infer deployment access rules, debug settings or network policy that the source does not state."
 	}
+	if use.Authorization != nil {
+		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
+		instruction = common + "Apply only the three authorization questions to this protected operation. " +
+			"For guard_adequacy: answer none only when authorization.guards is empty; when any guard is recorded answer adequate or inadequate, never none. " +
+			"Treat ownership_check, role_check, authenticated_check and secret_check as adequate when that recorded guard dominates this operation on this subject: ownership compares the subject or its id with the session user; role_check is isGranted; authenticated_check is a null test of the session user; secret_check compares a stored field of the subject with a request value that is not written to that field on the same path — that comparison is adequate for every write it dominates on that subject, including a credential write. " +
+			"Answer inadequate for address_check alone, or when a recorded guard does not cover this operation or this record. An address_check is a property of the connection, not of the user. " +
+			"For access_adequacy: when access.authentication is none, answer inadequate. " +
+			"For data_exposure of census fields when authentication is required with listed roles, answer adequate. " +
+			"For object_level or function_level writes or deletes on a request_selected subject, listed entry roles alone are not adequate: any caller who holds those roles could still pick another caller's record. Answer inadequate unless peer_access shows that every other writer of the same storage key requires no stronger authentication or roles than this entry AND the operation is not a credential, login_identifier or role_source write under a weaker rule than those peers. " +
+			"When peer_access shows the same privilege field written under a stronger role while this entry is weaker, answer inadequate. " +
+			"A role name is only the string the entry requires. Do not invent guards, roles, hierarchy or bindings."
+	}
 	if use.MassAssignment != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the three mass-assignment questions to this key-controlled write. The claim is that the request chooses property names on the target object; the written values are a separate concern. A recorded key allow-list is a control whose adequacy you judge; property_exists restricts nothing. security_fields roles come from framework contracts, except name_hint, which is a field-name hint only. Whether the caller may write a named field at all is a separate authorization claim. Do not invent missing guards, fields or bindings."

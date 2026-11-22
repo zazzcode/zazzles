@@ -176,6 +176,11 @@ component/source identity. Unknown kinds and legacy unresolved associations rema
 inspectable with a fallback label. Declaration locations and registration/dispatch/context
 details are separate from the sensitive operation's finding location.
 
+A Symfony route entry shows its access in the entry view: `required` plus the role
+names the configuration listed, or `none`. A guarded authorization record is Protected
+when the assessment says a recorded guard or that access covers the operation. The
+record still lists the guard. Protection is the model's answer, not a scanner decision.
+
 Zero-use entries and unresolved alternatives remain coverage records. Hiding protected
 results retains rows with coverage gaps. A Protected count names scoped claims; it never
 certifies an entire entry, including its unexamined alternatives. Counts are contextual

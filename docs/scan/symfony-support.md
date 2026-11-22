@@ -49,6 +49,7 @@ Library references for [routing](https://symfony.com/doc/6.4/routing.html),
 | Deserialization | PHP `unserialize` and verified `Yaml::parse` in reached controllers and services, including services wired as Twig globals. |
 | Redirect | Controller `redirect()` and `RedirectResponse` destination operands. `redirectToRoute()` resolves an internal route name. |
 | Information exposure | `phpinfo()`, backtraces and environment dumps reached from routes and served files, with dominating guards as evidence. `dump()` and `dd()` stay in Review. |
+| Authorization | A stored write, a file write or delete, or a census-field read, with the entry's access and the guards that dominate the operation ([analysis rules](analysis/authorization.md)) |
 | Mass assignment | Whole request bags iterated into dynamic property writes, `set…` dispatch, `PropertyAccessor::setValue` or reflection on an entity, with the census roles of its fields. Form, serializer and payload mapping stay in Review. |
 | Logging | Verified PSR-3 method and `error_log` emission of a value with a sensitive-data source. |
 | Validation | Automatic PHP query checks use source-backed request field names and control evidence. |
@@ -74,7 +75,7 @@ Library references for [Doctrine DBAL](https://www.doctrine-project.org/projects
 - Twig macro bodies, `embed` overrides, dynamic template names, sandbox policy, and mail HTML are
   outside the supported render subset. A macro definition and a macro call are recorded as gaps. Doctrine XML and YAML mappings, custom naming strategies,
   full DQL parsing and lifecycle listeners are outside the storage model.
-- Other frameworks use their own adapters. Authorization, mass assignment, CSRF, user
-  enumeration, secrets, session cookie policy, cryptography, and server configuration are outside
-  these claims. [Symfony coverage](detection-capabilities/symfony.md#outside-these-claims) Security configuration can
-  supply entry context. Protection evidence belongs to the actual sink and value path.
+- Other frameworks use their own adapters. CSRF, user enumeration, secrets, session cookie
+  policy, cryptography, and server configuration are outside these claims.
+  [Symfony coverage](detection-capabilities/symfony.md#outside-these-claims) Security configuration supplies
+  entry access for the authorization claim. Protection evidence belongs to the actual sink and value path.

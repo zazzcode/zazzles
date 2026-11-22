@@ -1,9 +1,37 @@
 package report
 
 import (
+	"slices"
+
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
+
+// linkJudgedSSRFFindings adds the reverse presentation link without changing uses.
+func linkJudgedSSRFFindings(r *analysis.AnalysisReport) {
+	judgedSSRF := map[string]int{}
+	for i, u := range r.Uses {
+		if u.Kind == "ssrf_candidate" && u.Assessment.Status == "completed" {
+			judgedSSRF[u.ID] = i
+		}
+	}
+	if len(judgedSSRF) == 0 {
+		return
+	}
+	for i, u := range r.Uses {
+		if u.Authorization == nil {
+			continue
+		}
+		for _, id := range u.Authorization.ServerSideRequests {
+			if j, ok := judgedSSRF[id]; ok {
+				related := &r.Findings[j].RelatedFindings
+				if ref := r.Findings[i].ID; !slices.Contains(*related, ref) {
+					*related = append(*related, ref)
+				}
+			}
+		}
+	}
+}
 
 // describeExposure presents the diagnostic operation and the judged status.
 func describeExposure(u analysis.CandidateUse, f *analysis.Finding) {
@@ -45,4 +73,64 @@ func describeMassAssignment(u analysis.CandidateUse, f *analysis.Finding) {
 	if a.Reason != "" {
 		f.Protection = "Mass-assignment assessment: key control " + displayLabel(a.Answers["key_control"]) + ", restriction " + displayLabel(a.Answers["key_restriction"]) + ", field impact " + displayLabel(a.Answers["field_impact"]) + ". Scanner policy: " + a.Reason
 	}
+}
+
+func describeAuthorization(u analysis.CandidateUse, f *analysis.Finding) {
+	x := u.Authorization
+	a := u.Assessment
+	address := authorizationAddressOnly(u)
+	if f.Status != "protected_for_claim" {
+		if address {
+			f.Title = "Address check needs review"
+			f.Summary = "The operation is dominated by a check of the caller's network address."
+		} else {
+			f.Title = "Authorization of the operation needs review"
+			f.Summary = "The operation acts on " + x.SubjectClass + " (" + displayLabel(x.SubjectProvenance) + ")."
+		}
+	}
+	if a.Status == "completed" && a.QuestionVersion == analysispacks.AuthorizationProtocol && len(a.BlockingGaps) == 0 && a.FindingStatus == "confirmed_vulnerability" {
+		f.RecordType, f.Status = "finding", "confirmed_vulnerability"
+		if address {
+			f.Title = "Address-based access supported by source analysis"
+			f.Summary = "The operation is limited by the caller's network address (CWE-291)."
+		} else {
+			f.Title = "Missing authorization supported by source analysis"
+			f.Summary = "The operation acts on a record the request selects without a guard or an entry rule that covers it (CWE-862)."
+		}
+	} else if f.Status == "protected_for_claim" {
+		f.Title = "The operation is covered for this claim"
+		f.Summary = "The assessment supports that a recorded guard or the entry's access covers the operation."
+	}
+	if a.Reason != "" {
+		f.Protection = "Authorization assessment: subject " + displayLabel(a.Answers["subject_control"]) + ", guard " + displayLabel(a.Answers["guard_adequacy"]) + ", access " + displayLabel(a.Answers["access_adequacy"]) + ". Scanner policy: " + a.Reason
+	}
+	for _, id := range x.ServerSideRequests {
+		f.RelatedFindings = append(f.RelatedFindings, "finding:"+id)
+	}
+}
+
+func authorizationAddressOnly(u analysis.CandidateUse) bool {
+	if u.Authorization == nil || len(u.Authorization.Guards) == 0 {
+		return false
+	}
+	for _, g := range u.Authorization.Guards {
+		if g.Kind != analysis.GuardAddress {
+			return false
+		}
+	}
+	return true
+}
+
+func authorizationRule(u analysis.CandidateUse) (string, string) {
+	if authorizationAddressOnly(u) {
+		return "scan/address-based-access", "CWE-291"
+	}
+	if u.Authorization != nil {
+		for _, facet := range u.Authorization.Facets {
+			if facet == analysis.FacetObjectLevel {
+				return "scan/missing-authorization", "CWE-639"
+			}
+		}
+	}
+	return "scan/missing-authorization", "CWE-862"
 }

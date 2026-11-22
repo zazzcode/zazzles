@@ -31,7 +31,7 @@ func TestCLIFamilySelection(t *testing.T) {
 			t.Fatalf("code=%d: %s", code, stderr.String())
 		}
 	}
-	for _, family := range []string{"sql", "nosql", "xss", "command", "path", "logging", "input-validation", "outbound", "ssrf"} {
+	for _, family := range []string{"sql", "nosql", "xss", "command", "path", "logging", "input-validation", "outbound", "ssrf", "authorization"} {
 		if _, err := parseSkipFamilies(family); err != nil {
 			t.Error(err)
 		}

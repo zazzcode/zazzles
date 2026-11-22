@@ -1,0 +1,66 @@
+package analysispacks
+
+import "github.com/zazzcode/zazzles/scan/internal/analysis"
+
+// AuthorizationProtocol versions the authorization claim questions (D-13).
+// It distinguishes authorization for census-field reads from authorization for
+// request-selected writes and deletes.
+const AuthorizationProtocol = "authorization-components-v3"
+
+// PHPAuthorizationOperation is the verified operation this family judges.
+const PHPAuthorizationOperation = "php-authorization-operation-v1"
+
+var authorizationContracts = []string{PHPAuthorizationOperation}
+
+// AuthorizationRoles are the evidence obligations of D-13.
+func AuthorizationRoles() []string {
+	return []string{"subject_selection", "protected_operation", "entry_access", "control_flow"}
+}
+
+// AuthorizationContract returns the semantics of one protected operation.
+func AuthorizationContract(id string) *analysis.APIModel {
+	if id != PHPAuthorizationOperation {
+		return nil
+	}
+	return &analysis.APIModel{ID: id, Library: "php", Reference: "https://symfony.com/doc/current/security.html",
+		Semantics: "An authorization candidate is one protected operation: a stored write, file write or delete, or a response that carries a census field of a record. The scanner records the subject, the operation, the entry's access rule and the guards that dominate the operation. It does not decide that a guard or a role is enough."}
+}
+
+func authorizationQuestionNames() []string {
+	return []string{"subject_control", "guard_adequacy", "access_adequacy"}
+}
+
+// AuthorizationQuestions returns the family's questions in protocol order.
+func AuthorizationQuestions() []Question {
+	return []Question{
+		{"subject_control", "Does the request choose which record the operation acts on, or which records are returned, as authorization.subject states (request_selected, not_selected, unknown)?"},
+		{"guard_adequacy", "Do the recorded authorization.guards, judged by kind, limit the operation to a caller who should be allowed to perform it on this record (none, adequate, inadequate, unknown)? Answer none only when no guard is recorded. An ownership_check, role_check, authenticated_check or secret_check that dominates this operation on this subject is adequate; a secret_check is a stored-field comparison with a request value not written back on the same path. An address_check is a property of the connection, not of the user."},
+		{"access_adequacy", "Is the entry's recorded access enough for the fields in security_fields and the operation, given peer_access (adequate, inadequate, unknown)? When authentication is none, answer inadequate. Required roles are adequate for data_exposure of census fields. For object_level or function_level writes or deletes on a request_selected subject, listed roles alone are not adequate (any holder of those roles can still pick another caller's record) unless peer_access shows no stronger writer of the same key and the fields are not a weaker privilege write than those peers."},
+	}
+}
+
+// AuthorizationChoices lists the accepted answers for an authorization question.
+func AuthorizationChoices(question string) []map[string]string {
+	switch question {
+	case "subject_control":
+		return choicePairs(
+			[2]string{"request_selected", "The request chooses the record or the set of records the operation returns."},
+			[2]string{"not_selected", "The request does not choose the record."},
+			[2]string{"unknown", "The supplied evidence does not establish whether the request chooses the record."},
+		)
+	case "guard_adequacy":
+		return choicePairs(
+			[2]string{"none", "No guard is recorded on the operation."},
+			[2]string{"adequate", "A recorded ownership_check, role_check, authenticated_check or secret_check dominates this operation on this subject and limits it to an allowed caller."},
+			[2]string{"inadequate", "Every recorded guard fails to limit the operation to an allowed caller (including an address_check alone)."},
+			[2]string{"unknown", "The supplied evidence does not establish whether a recorded guard is enough."},
+		)
+	case "access_adequacy":
+		return choicePairs(
+			[2]string{"adequate", "Authentication is required with listed roles that cover a census-field read, or peer_access shows this entry is not weaker than other writers of the same key for a non-privilege object-level change."},
+			[2]string{"inadequate", "Authentication is none, or listed roles alone leave a request-selected write or delete open to any role holder, or peer_access shows a stronger writer of the same privilege field."},
+			[2]string{"unknown", "The supplied evidence does not establish whether the entry's access is enough."},
+		)
+	}
+	return nil
+}

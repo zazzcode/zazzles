@@ -27,18 +27,21 @@ func Enrich(r *analysis.AnalysisReport) {
 			break
 		}
 	}
-	for _, t := range applicationFindingTypes {
-		for _, u := range r.Uses {
-			if u.Kind == analysis.ExposureKind && t.ID == "information-exposure" || u.Kind == analysis.MassAssignmentKind && t.ID == "mass-assignment" {
-				r.FindingTypes = append(r.FindingTypes, t)
-				break
-			}
+	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
+	present := map[string]bool{}
+	for _, u := range r.Uses {
+		f := describe(u)
+		r.Findings = append(r.Findings, f)
+		for _, id := range f.TypeIDs {
+			present[id] = true
 		}
 	}
-	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
-	for _, u := range r.Uses {
-		r.Findings = append(r.Findings, describe(u))
+	for _, t := range applicationFindingTypes {
+		if present[t.ID] {
+			r.FindingTypes = append(r.FindingTypes, t)
+		}
 	}
+	linkJudgedSSRFFindings(r)
 	groupSinks(r)
 	explainOutcomes(r)
 }
@@ -303,6 +306,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if u.MassAssignment != nil {
 		describeMassAssignment(u, &f)
+	}
+	if u.Authorization != nil {
+		describeAuthorization(u, &f)
 	}
 	f.Recommendations = scopedGuidance(u, f)
 	if u.Code != nil || u.Redirect != nil {

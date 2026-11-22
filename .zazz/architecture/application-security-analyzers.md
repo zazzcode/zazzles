@@ -125,10 +125,20 @@ field sets depend on form types, serializer groups and validation that this vers
 Bounds: one census step, no Doctrine XML or YAML mapping, no `extract`/`parse_str`, no named-setter
 authorization (branch 2).
 
-## Authorization (branch 2)
+## Authorization
 
-Filled by [branch 2](../specifications/symfony-more-analyzers-2.md): entry access rules, guard
-kinds and the authorization family.
+Record shape (`analysis.AuthorizationFacts`): facets, subject class and provenance, the
+operation, census fields, guards, `method_safe`, peer access and, for an address guard,
+the ids of SSRF uses in the same report. One candidate per operation per entry. Protocol
+`authorization-components-v3`. Required roles: `subject_selection`, `protected_operation`,
+`entry_access`, `control_flow`. Contract `php-authorization-operation-v1`.
+
+Entry access is context. It is computed from `access_control`, firewalls and
+`IsGranted` before the action is walked, and it never protects another family's claim.
+The design is [entry access and authorization](entry-access-and-authorization.md).
+
+Bounds: one private helper, no voters or expressions beyond a gap, no trusted-proxy
+configuration, no command-execution claim. A role name is a string.
 
 ## Account security (branch 3)
 

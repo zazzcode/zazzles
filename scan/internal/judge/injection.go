@@ -48,6 +48,12 @@ func questionsFor(use analysis.CandidateUse) []question {
 				items[i].choices = analysispacks.MassAssignmentChoices(items[i].name)
 			}
 			return items
+		case analysis.AuthorizationKind:
+			items := componentQuestions(analysispacks.AuthorizationQuestions())
+			for i := range items {
+				items[i].choices = analysispacks.AuthorizationChoices(items[i].name)
+			}
+			return items
 		}
 	}
 	if use.Kind == "xss_candidate" {

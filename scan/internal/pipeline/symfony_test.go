@@ -46,6 +46,7 @@ func TestSymfonySourceKey(t *testing.T) {
 	report := symfonyDeterministicReport(t, root)
 	names := symfonyEntries(t, report)
 	t.Run("component-selection", func(t *testing.T) { symfonyValidateCandidates(t, report) })
+	t.Run("entry-access", func(t *testing.T) { symfonyEntryAccess(t, report) })
 
 	for _, row := range readSymfonyKey(t) {
 		t.Run(row.ID, func(t *testing.T) {
@@ -61,7 +62,7 @@ func TestSymfonySourceKey(t *testing.T) {
 			}
 			switch row.Expect {
 			case "positive":
-				symfonyPositive(t, row, matches, names)
+				symfonyPositive(t, row, matches, names, report)
 			case "present":
 				if len(matches) == 0 {
 					t.Fatal("assessment-dependent candidate is absent")
@@ -192,11 +193,19 @@ type symfonyKeyRow struct {
 	Source                 []json.RawMessage
 	EntryNames             []string `json:"entry_names"`
 	MaxUses                int      `json:"max_uses"`
+	MinUses                int      `json:"min_uses"`
+	GuardKind              string   `json:"guard_kind"`
+	EntryRoles             []string `json:"entry_roles"`
 }
 
-// symfonyLaneRows are the rows of the application-security lane, branch 1.
+// symfonyLaneRows are the rows of the application-security lane.
 // The 37 rows of PR #39 are counted separately and unchanged.
-var symfonyLaneRows = []string{"SYM-INFO-01", "SYM-INFO-N01", "SYM-MASS-01", "SYM-MASS-N01", "SYM-MASS-N02"}
+var symfonyLaneRows = []string{
+	"SYM-INFO-01", "SYM-INFO-N01", "SYM-MASS-01", "SYM-MASS-N01", "SYM-MASS-N02",
+	"SYM-AUTHZ-01", "SYM-AUTHZ-02", "SYM-AUTHZ-03", "SYM-AUTHZ-04", "SYM-LOCAL-01",
+	"SYM-AUTHZ-N01", "SYM-AUTHZ-N02", "SYM-AUTHZ-N03", "SYM-AUTHZ-N04", "SYM-AUTHZ-N05", "SYM-AUTHZ-N06", "SYM-AUTHZ-N07",
+	"SYM-LOCAL-N01", "SYM-LOCAL-N02", "SYM-LOCAL-02", "SYM-AUTHZ-R01",
+}
 
 func readSymfonyKey(t *testing.T) []symfonyKeyRow {
 	t.Helper()
@@ -246,7 +255,7 @@ func (r symfonyKeyRow) matches(u analysis.CandidateUse) bool {
 		(r.Anchors == nil || slices.Contains(r.Anchors[s.File], s.StartLine))
 }
 
-func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateUse, entries map[string]string) {
+func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateUse, entries map[string]string, report *analysis.AnalysisReport) {
 	t.Helper()
 	entriesByRow := map[string][]string{
 		"SYM-SQL-01": {"GET /search"}, "SYM-SQL-02": {"POST /login"},
@@ -256,6 +265,9 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 		"SYM-PATH-03": {"POST /user/avatar/url/{user}"}, "SYM-SSRF-01": {"POST /user/avatar/url/{user}"},
 		"SYM-UPLOAD-01": {"POST /user/avatar/{user}"}, "SYM-SSTI-01": {"ANY /post/{post}"}, "SYM-DESER-01": {"GET /search"},
 		"SYM-INFO-01": {"FILE /public/info.php"}, "SYM-MASS-01": {"POST /user/edit/"},
+		"SYM-AUTHZ-01": {"POST /user/role/{user}"}, "SYM-AUTHZ-02": {"POST /user/password/{user}"},
+		"SYM-AUTHZ-03": {"POST /user/email/{user}"}, "SYM-AUTHZ-04": {"GET /user/avatar/delete/{user}"},
+		"SYM-LOCAL-01": {"ANY /local/promote/{user}"},
 	}
 	storage := map[string]string{
 		"SYM-XSS-02": "php-sql:comment.content", "SYM-XSS-03": "php-sql:user.about_me",
@@ -275,11 +287,22 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 			if entries[u.EntryID] != name {
 				continue
 			}
-			if detail := symfonyPositiveEvidence(row.ID, u, sourceFile, sourceLine, storage); detail == "" {
+			if detail := symfonyPositiveEvidence(row.ID, u, sourceFile, sourceLine, storage, report); detail == "" {
 				failures = nil
 				break
 			} else {
 				failures = append(failures, detail)
+			}
+		}
+		if row.MinUses > 0 {
+			n := 0
+			for _, u := range uses {
+				if entries[u.EntryID] == name {
+					n++
+				}
+			}
+			if n < row.MinUses {
+				t.Errorf("%s has %d candidates, want at least %d", name, n, row.MinUses)
 			}
 		}
 		if failures == nil && !slices.ContainsFunc(uses, func(u analysis.CandidateUse) bool { return entries[u.EntryID] == name }) {
@@ -293,9 +316,12 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 	}
 }
 
-func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile string, sourceLine int, storage string) string {
+func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile string, sourceLine int, storage string, report *analysis.AnalysisReport) string {
 	if u.Completeness != nil && len(u.Completeness.Blockers) > 0 {
 		return fmt.Sprintf("blockers %v", u.Completeness.Blockers)
+	}
+	if u.Kind == analysis.AuthorizationKind {
+		return symfonyAuthorizationEvidence(id, u, report)
 	}
 	if u.Kind == analysis.ExposureKind {
 		// An operation-centered claim has no request source (lane contract 2.7).
@@ -376,8 +402,8 @@ func symfonyReportWideControl(t *testing.T, row symfonyKeyRow, report *analysis.
 
 func symfonyControl(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateUse) {
 	t.Helper()
-	if row.Expect == "encoded" && len(uses) == 0 {
-		t.Fatal("encoded control is absent")
+	if (row.Expect == "encoded" || row.Expect == "guarded") && len(uses) == 0 {
+		t.Fatal(row.Expect + " control is absent")
 	}
 	for _, u := range uses {
 		var pass bool
@@ -393,11 +419,157 @@ func symfonyControl(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateUs
 			pass = !slices.ContainsFunc(u.Gaps, func(g analysis.Gap) bool { return g.Kind == "query_text_interpolated" })
 		case "no_record":
 			pass = false
+		case "guarded":
+			pass = symfonyGuarded(row, u)
 		default:
 			t.Fatalf("unknown frozen control expectation %q", row.Expect)
 		}
 		if !pass {
 			t.Errorf("%s control failed at %s:%d", row.Expect, u.Sink.Span.File, u.Sink.Span.StartLine)
 		}
+	}
+}
+
+func symfonyGuarded(row symfonyKeyRow, u analysis.CandidateUse) bool {
+	if u.Authorization == nil || u.EntryFacts == nil || u.EntryFacts.Access == nil {
+		return false
+	}
+	if row.GuardKind != "" && !slices.ContainsFunc(u.Authorization.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == row.GuardKind }) {
+		return false
+	}
+	for _, role := range row.EntryRoles {
+		if !slices.Contains(u.EntryFacts.Access.Roles, role) {
+			return false
+		}
+	}
+	return row.GuardKind != "" || len(row.EntryRoles) > 0
+}
+
+func symfonyAuthorizationEvidence(id string, u analysis.CandidateUse, report *analysis.AnalysisReport) string {
+	f := u.Authorization
+	if f == nil || f.SubjectProvenance != analysis.SubjectRequestSelected {
+		return "missing request-selected subject"
+	}
+	if u.EntryFacts == nil || u.EntryFacts.Access == nil {
+		return "missing entry access"
+	}
+	access := u.EntryFacts.Access
+	switch id {
+	case "SYM-AUTHZ-01":
+		if !symfonyHasRole(f, "php-sql:user.is_admin", analysis.RoleSource) || !slices.Contains(f.Facets, analysis.FacetFunctionLevel) {
+			return "missing role_source write"
+		}
+		if access.Authentication != analysis.AccessRequired || !slices.Contains(access.Roles, "ROLE_USER") {
+			return "entry access is not ROLE_USER"
+		}
+		if len(f.Guards) != 0 {
+			return "unexpected guard"
+		}
+		if !slices.ContainsFunc(f.PeerAccess, func(p analysis.PeerAccess) bool { return p.Entry == "ANY /admin/create" }) {
+			return "peer access lacks ANY /admin/create"
+		}
+	case "SYM-AUTHZ-02":
+		if !symfonyHasRole(f, "php-sql:user.password", analysis.RoleCredential) || !slices.Contains(f.Facets, analysis.FacetObjectLevel) {
+			return "missing credential write"
+		}
+		if slices.ContainsFunc(f.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardOwnership }) {
+			return "unexpected ownership guard"
+		}
+		if slices.ContainsFunc(f.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardUnclassified }) ||
+			u.Completeness != nil && slices.ContainsFunc(u.Completeness.Blockers, func(g analysis.Gap) bool { return g.Kind == analysis.GuardUnclassified }) {
+			return "inline input validation was recorded as an unclassified authorization guard or blocker"
+		}
+	case "SYM-AUTHZ-03":
+		if !symfonyHasRole(f, "php-sql:user.email", analysis.RoleLoginIdentifier) {
+			return "missing login_identifier write"
+		}
+	case "SYM-AUTHZ-04":
+		if f.MethodSafe != "yes" {
+			return "method_safe is not yes"
+		}
+		if slices.ContainsFunc(f.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardOwnership }) {
+			return "unexpected ownership guard"
+		}
+	case "SYM-LOCAL-01":
+		if access.Authentication != analysis.AccessNone {
+			return "entry authentication is not none"
+		}
+		if !slices.Contains(f.Facets, analysis.FacetFunctionLevel) || !symfonyHasRole(f, "php-sql:user.is_admin", analysis.RoleSource) {
+			return "missing role_source write"
+		}
+		if len(f.Guards) != 1 || f.Guards[0].Kind != analysis.GuardAddress {
+			return "guard is not only address_check"
+		}
+		if !symfonyListsSSRF(f, report) {
+			return "server_side_requests lacks the avatar URL request"
+		}
+	}
+	return ""
+}
+
+func symfonyHasRole(f *analysis.AuthorizationFacts, key, role string) bool {
+	return slices.ContainsFunc(f.SecurityFields, func(field analysis.SecurityFieldFact) bool {
+		return field.StorageKey == key && slices.Contains(field.Roles, role)
+	})
+}
+
+func symfonyListsSSRF(f *analysis.AuthorizationFacts, report *analysis.AnalysisReport) bool {
+	if report == nil {
+		return false
+	}
+	for _, u := range report.Uses {
+		if u.Kind != "ssrf_candidate" || u.EntryFacts == nil || u.EntryFacts.Name != "POST /user/avatar/url/{user}" {
+			continue
+		}
+		if slices.Contains(f.ServerSideRequests, u.ID) {
+			return true
+		}
+	}
+	return false
+}
+
+func symfonyEntryAccess(t *testing.T, report *analysis.AnalysisReport) {
+	t.Helper()
+	admin := map[string]bool{"ANY /admin": true, "ANY /admin/delete/{user}": true, "ANY /admin/create": true}
+	user := map[string]bool{
+		"ANY /user": true, "POST /user/password/{user}": true, "POST /user/email/{user}": true,
+		"POST /user/avatar/{user}": true, "POST /user/avatar/url/{user}": true, "GET /user/avatar/delete/{user}": true,
+		"GET /user/avatar/resize/{user}": true, "POST /user/about/": true, "GET /user/edit/": true,
+		"POST /user/edit/": true, "POST /user/role/{user}": true,
+	}
+	var routes, files int
+	for _, e := range report.Entries {
+		if e.Kind != "http" {
+			continue
+		}
+		if strings.HasPrefix(e.Name, "FILE ") {
+			files++
+			if e.Access != nil {
+				t.Errorf("%s carries access", e.Name)
+			}
+			continue
+		}
+		routes++
+		if e.Access == nil {
+			t.Errorf("%s has no access", e.Name)
+			continue
+		}
+		switch {
+		case admin[e.Name]:
+			if e.Access.Authentication != analysis.AccessRequired || !slices.Equal(e.Access.Roles, []string{"ROLE_ADMIN"}) {
+				t.Errorf("%s access %+v, want required ROLE_ADMIN", e.Name, e.Access)
+			}
+		case user[e.Name]:
+			if e.Access.Authentication != analysis.AccessRequired || !slices.Equal(e.Access.Roles, []string{"ROLE_USER"}) {
+				t.Errorf("%s access %+v, want required ROLE_USER", e.Name, e.Access)
+			}
+		default:
+			if e.Access.Authentication != analysis.AccessNone || len(e.Access.Roles) != 0 {
+				t.Errorf("%s access %+v, want none", e.Name, e.Access)
+			}
+		}
+	}
+	if files != 2 || routes != 31 {
+		t.Errorf("access census files=%d routes=%d, want 2 and 31", files, routes)
 	}
 }

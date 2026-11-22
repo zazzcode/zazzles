@@ -52,6 +52,12 @@ func guidance(use analysis.CandidateUse) Guidance {
 		g = Guidance{Title: "Keep diagnostic output away from callers", Actions: []string{"Remove phpinfo(), backtraces and environment dumps from served code.", "Where a diagnostic page is required, restrict it to an authenticated administrator and disable it outside development."}}
 	case analysis.MassAssignmentKind:
 		g = Guidance{Title: "Let the code, not the request, choose written fields", Actions: []string{"Write each permitted field through a named setter from a named request field.", "If a generic copy is required, intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields; property_exists restricts nothing."}}
+	case analysis.AuthorizationKind:
+		if authorizationAddressOnly(use) {
+			g = Guidance{Title: "Do not authorize an operation from the caller's address", Actions: []string{"Require an authenticated caller.", "Authorize the operation on the selected record. An address check is a property of the connection."}}
+		} else {
+			g = Guidance{Title: "Authorize the operation on the selected record", Actions: []string{"Check that the caller may perform this operation on this record.", "Require the same access on every entry that writes the field."}}
+		}
 	case "upload", "file_upload_candidate":
 		g = Guidance{Title: "Restrict what an upload can become", Actions: []string{"Generate the stored file name and choose its extension on the server from an allow-list or the verified content type.", "Check the content (magic bytes, image decoding) or re-encode it, and store uploads outside the served document root."}}
 	case "redirect", "open_redirect_candidate":

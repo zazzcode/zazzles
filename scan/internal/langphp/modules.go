@@ -80,6 +80,8 @@ type phpSet struct {
 	// security-field census per Symfony project.
 	securityConfig map[*symfonyProject]*symfonySecurity
 	census         map[*symfonyProject]*phpSecurityCensus
+	// authzChanges collects stored writes while entries are walked.
+	authzChanges []authzChange
 }
 
 type phpWrite struct {
@@ -414,9 +416,11 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: r.ID, Version: r.Version, Languages: r.Languages})
 	}
 	s.assemblePHPInputs(out)
+	s.finishAuthorization(out)
 	if err := parse.FinalizeEntries(out); err != nil {
 		return nil, err
 	}
+	s.linkServerSideRequests(out)
 	return out, nil
 }
 

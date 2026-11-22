@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
+	"gopkg.in/yaml.v3"
 )
 
 // symfonyUserProvider is one entity user provider of security.yaml: the
@@ -21,6 +22,11 @@ type symfonySecurity struct {
 	providers map[string]symfonyUserProvider // name -> entity class and property
 	read      bool
 	unread    []analysis.Gap
+	// doc is the parsed security.yaml mapping, exposed for the access reader.
+	// The provider walk below is unchanged.
+	doc    *yaml.Node
+	source analysis.Evidence
+	access *symfonyAccessConfig
 }
 
 // security reads the entity user providers once per project.
@@ -40,6 +46,8 @@ func (p *symfonyProject) security(s *phpSet) *symfonySecurity {
 	}
 	if config, ok := p.configs[file]; ok {
 		out.read = true
+		out.doc = config.value
+		out.source = config.source
 		providers := symfonyYAMLValue(symfonyYAMLValue(config.value, "security"), "providers")
 		if providers != nil {
 			for i := 0; i+1 < len(providers.Content); i += 2 {

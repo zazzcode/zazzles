@@ -1,0 +1,4 @@
+security:
+  access_control:
+    - { path: '^/(?!open).*', roles: ROLE_X }
+    - { path: ^/desk, roles: ROLE_STAFF }

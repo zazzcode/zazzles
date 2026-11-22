@@ -260,6 +260,9 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			if !suppressSymfonyPath {
 				f.pathUse(n, qname, nodes, values, "php-filesystem-v1", role)
 			}
+			if qname == "file_put_contents" || qname == "unlink" {
+				f.noteAuthzFile(n, qname, values)
+			}
 			return phpValue{unknown: true}
 		}
 	case "move_uploaded_file":

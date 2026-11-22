@@ -60,6 +60,7 @@ func (f *phpFlow) symfonyObjectCreation(n, clsNode *sitter.Node, class string) (
 	}
 	before := len(f.report.Uses)
 	f.recordXSS(f.module.evidence("html_output", n), values[0], "html_text", nil)
+	f.noteAuthzOutput(f.module.evidence("html_output", n), n, values[0])
 	if len(f.report.Uses) > before {
 		u := &f.report.Uses[before]
 		u.APIModel = analysispacks.XSSContract("symfony-response-v1", "")
@@ -94,6 +95,7 @@ func (f *phpFlow) symfonyResponseContent(n *sitter.Node, receiver phpValue, meth
 	}
 	before := len(f.report.Uses)
 	f.recordXSS(f.module.evidence("html_output", n), values[0], "html_text", nil)
+	f.noteAuthzOutput(f.module.evidence("html_output", n), n, values[0])
 	if len(f.report.Uses) > before {
 		u := &f.report.Uses[before]
 		u.APIModel = analysispacks.XSSContract("symfony-response-v1", "")
@@ -241,6 +243,8 @@ func (f *phpFlow) symfonyControllerCall(n *sitter.Node, receiver phpValue, metho
 		const userInterface = `Symfony\Component\Security\Core\User\UserInterface`
 		if decl := f.symfonyImplementation(userInterface); decl != nil {
 			if user, ok := f.symfonyEntity(decl, n); ok {
+				user.authz = &phpAuthz{provenance: analysis.SubjectSessionUser, class: decl.fqn}
+				f.stampAuthz(user)
 				return user, true
 			}
 		}

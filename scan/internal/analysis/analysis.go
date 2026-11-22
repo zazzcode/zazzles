@@ -65,6 +65,7 @@ type CandidateUse struct {
 	Outbound        *OutboundFacts        `json:"outbound,omitempty"`
 	Exposure        *ExposureFacts        `json:"exposure,omitempty"`
 	MassAssignment  *MassAssignmentFacts  `json:"mass_assignment,omitempty"`
+	Authorization   *AuthorizationFacts   `json:"authorization,omitempty"`
 	// StoredOrigin is write-set evidence for a record whose stored origin is
 	// unresolved (blocked by storage_origin_unresolved). It is evidence, not a
 	// verdict: the record stays Review.

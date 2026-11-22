@@ -17,6 +17,11 @@ type phpDep struct {
 	// is "numeric", and numericAt the check or conversion that made it so.
 	numeric   string
 	numericAt analysis.Evidence
+	// authzProv, authzClass and authzSelecting ride a storage field from the
+	// record that holds it. Only the authorization adapter reads them.
+	authzProv      string
+	authzClass     string
+	authzSelecting []phpDep
 }
 
 // phpRegexCapture labels a path that is a capture group of a literal
@@ -111,12 +116,16 @@ type phpValue struct {
 	// sink is the later setValue or getProperty call, so the construction only
 	// tags the value. Only the mass-assignment adapter reads it.
 	reflection *phpReflectionTarget
+	// authz is the authorization subject of an entity object. The shared
+	// doctrine object keeps it across branch joins; this pointer is the
+	// copy on the value that created the object.
+	authz *phpAuthz
 }
 
 // phpSideChannel reports a value carrying claim-specific side facts that the
 // generic join must preserve but never treats as content.
 func phpSideChannel(v phpValue) bool {
-	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0
+	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0 || v.authz != nil
 }
 
 // phpJoinSide joins two values with join after setting their side facts aside,
@@ -133,10 +142,15 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
 	sources := phpMergeDeps(a.keySources, b.keySources)
 	guards := phpMergeEvidence(a.keyGuards, b.keyGuards)
 	bag := phpMergeDeps(a.wholeBag, b.wholeBag)
+	az := a.authz
+	if az == nil {
+		az = b.authz
+	}
 	for _, v := range []*phpValue{&a, &b} {
-		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag = nil, nil, nil, nil, nil
+		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag, v.authz = nil, nil, nil, nil, nil, nil
 	}
 	out := join(a, b)
+	out.authz = az
 	out.diagnostic = d
 	out.reflection = r
 	if len(sources) > 0 {

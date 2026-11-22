@@ -24,6 +24,9 @@ type Finding struct {
 	// LinkedUseIDs lists independent claims on the same operation (for example
 	// a redirect and an XSS claim on one navigation); each keeps its own record.
 	LinkedUseIDs []string `json:"linked_use_ids,omitempty"`
+	// RelatedFindings names other findings this record points at. It is
+	// presentation only: the saved request of the other finding is unchanged.
+	RelatedFindings []string `json:"related_findings,omitempty"`
 	// GroupedUseIDs lists the other records an observation finding stands for:
 	// entries that reach the same call site. GroupedInto marks such a record with
 	// the finding that represents it; renderers show only the representative.

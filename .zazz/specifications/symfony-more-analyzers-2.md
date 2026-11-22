@@ -68,7 +68,15 @@ Paths are relative to the sample root at the pin. `security.yaml` requires `ROLE
 
 Beyond the lane contract's §1:
 
-- [Branch 1](symfony-more-analyzers-1.md) D-4, D-5, D-11 and its §9 skeletons.
+- [Branch 1](symfony-more-analyzers-1.md) D-4, D-5, D-11 and its §9 skeletons, and the
+  branch 1 section of the run log (deviations and owner decisions).
+- Branch 1 code this branch reads and does not rebuild or edit:
+  `langphp/security_fields.go` (`s.securityFields(p)` for the census, `s.securityGaps(p)` for its
+  gaps, `s.receiverType` for declared receiver types, `phpEnclosing`),
+  `langphp/symfony_security.go` (`p.security(s)`, which reads entity user providers only and is
+  extended here for `access_control`, firewalls and the role hierarchy),
+  `langphp/exposure.go` (`throwingGuards`, `phpEndsInThrow`) and `langphp/mass_assignment.go`
+  (`phpSkips`, `keyConditionGuards`, the `mass_assignment_candidate` sink used by D-7).
 - [PHP Symfony support](php-symfony-support.md) D-8 (method narrowing), D-9 (entity arguments),
   D-15 (storage writes) and its invariant that security configuration is entry context.
 - `scan/internal/langphp/symfony_entry.go` (argument binding, `#[CurrentUser]`),
@@ -106,7 +114,7 @@ Beyond the lane contract's §1:
 | `scan/internal/langphp/authorization.go` | New | Subject selection, protected operations, candidate assembly, peer access |
 | `scan/internal/langphp/authorization_guards.go` | New | Guard classification, including the address guard |
 | `scan/internal/langphp/symfony_security.go` | Modified | Expose the parsed `security.yaml` document to the access reader. No change to the provider reader |
-| `scan/internal/langphp/symfony_entry.go`, `symfony_controller.go`, `symfony_request.go`, `calls.go`, `control.go`, `guards.go`, `doctrine_storage.go`, `modules.go`, `path.go` | Modified | Subject provenance on bound entities, check contracts, state-change collection, dispatch lines |
+| `scan/internal/langphp/symfony_entry.go`, `symfony_controller.go`, `symfony_request.go`, `calls.go`, `control.go`, `guards.go`, `doctrine_storage.go`, `modules.go`, `path.go` | Modified | Subject provenance on bound entities, check contracts, state-change collection, dispatch lines. `control.go` termination rules stay unchanged (D-3) |
 | `scan/internal/langphp/*_test.go`, `testdata/symfony/access/`, `testdata/symfony/authorization/`, `testdata/symfony/authorization-transfer/`, `testdata/authorization-plain/` | New | Fixtures and tests of §8 |
 | `scan/internal/analysispacks/authorization.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `authorization-components-v1`, questions, contracts |
 | `scan/internal/judge/authorization.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, tests | New, modified | Policy and wire facts |
@@ -174,6 +182,16 @@ role includes.
 An early exit is a `return`, a `throw`, or a call that throws (`createAccessDeniedException`,
 `createNotFoundException` with `throw`).
 
+**The shared guard engine does not treat `throw` as terminating, and this branch does not change
+that.** Making `control.go` end a path at `throw` would change existing requests: the sample's
+`SYM-PATH-01` path claim has `throw $this->createNotFoundException()` at
+`src/Controller/BlogController.php:93` before its sink at `:95` (lane halt 1). Guard
+classification therefore detects a `throw` exit itself, syntactically, the way branch 1's
+exposure records do: an earlier `if` in an enclosing block whose only branch ends in `throw`,
+`return` or `exit` dominates the operations after it. Reuse `throwingGuards`, `phpEndsInThrow`
+and `phpSkips`. Making the shared engine model `throw` is a recorded follow-up that needs a
+protocol change for each affected family.
+
 ### The authorization claim
 
 **D-4. Subject: a record the request selects.**
@@ -186,6 +204,15 @@ An early exit is a `return`, a `throw`, or a call that throws (`createAccessDeni
 | `#[CurrentUser]`, `getUser()`, `Security::getUser()`, or `getUser()->get…()` relations | `session_user` |
 | `new` | `created` |
 | A finder whose criteria include the session user or a field of it | `request_selected` with an `ownership_check` guard of form `query_scope` |
+
+**The selecting source is a dependency.** A `request_selected` candidate's `dependencies`
+include the request value that selects the subject: the route-placeholder input source of a bound
+entity argument, or the request value in a finder's identifier or criteria, with its
+`input_source` evidence also in the `subject_selection` role. *Why:* the key checker counts a
+positive only when its candidate has a witnessed request source (`check.py` `witnessed`), so a
+candidate without it cannot meet AC13's 21 of 21. An `enumerated`, `session_user` or `created`
+subject has no selecting source. `authorization_candidate` is not added to `check.py`'s
+`SOURCELESS_KINDS`.
 
 **D-5. Protected operations.** A candidate is recorded for each of these on a path of the action.
 
@@ -299,10 +326,24 @@ The lane contract §4 applies in full. Additional for this branch:
   unattended (lane contract §4.2).
 - The Lead Agent delivers S0 and S1 alone. S2 (guards) and S3 (subject and operations) are
   serialized, because both edit `control.go` and `symfony_entry.go`.
-- **Stated exception to lane halt 1.** Adding `access` and `state_changes` to entry records
-  changes the baseline digest of pre-existing Symfony fixture rows. That change is expected. For
-  each changed row, record in the run log that the diff of its JSON report is only added `access`
-  and `state_changes` fields. Any other difference in an existing row is a halt.
+- **Stated exception to lane halt 1.** Two changes to pre-existing Symfony fixture rows of
+  `scan/cli/testdata/architecture-baseline.json` are expected and are not a halt:
+  1. Adding `access` and `state_changes` to entry records changes the report and SARIF digests.
+  2. A pre-existing Symfony fixture that contains a D-5 shape gains `authorization_candidate`
+     uses. Known cases at `stage`: `doctrine-storage` (`POST /note/{note}` calls
+     `$note->setBody($request->get('b'))` on a route-bound entity), branch 1's `mass-assignment`
+     fixture (the named-setter actions under `/account/{account}/…`), and possibly `coverage`,
+     `services-ops` and `operations`, which contain setters. Branch 1 met the same situation with
+     `doctrine-storage` and had to stop for the owner, who accepted the row.
+
+  For each changed row, the run log records, from a comparison of the old and new golden rows,
+  that (a) every pre-existing use keeps its ID, kind, request digest and signature digest, in
+  the same relative order; (b) every added use is an `authorization_candidate`; and (c) the
+  report's JSON diff is otherwise only the added `access` and `state_changes` fields. Update the
+  golden with `go test ./scan/cli -run TestArchitectureBaseline -update-architecture-baseline`
+  only after that check. Any other difference in an existing row is a halt.
+- **Do not change `control.go` termination.** See D-3: `throw` is detected by guard
+  classification, not by the shared engine.
 - Additional halt: an authorization candidate appears on a pre-existing non-Symfony fixture other
   than through D-9.
 
@@ -498,8 +539,12 @@ prove.
 
 ### Sample and regression
 
-`TestSymfonySourceKey` gains the AC13 assertions. `TestExistingFamilyRequestsUnchanged` and
-`TestSSRFRequestUnchanged` are the guards for the invariant that no existing request changes.
+`TestSymfonySourceKey` gains the AC13 assertions. Branch 1 keeps the PR #39 row count separate
+from the lane's rows: append this branch's row IDs to `symfonyLaneRows` in
+`scan/internal/pipeline/symfony_test.go`, so `readSymfonyKey` still checks exactly 37 PR #39 rows
+and the lane count grows. Handle `guarded` beside the existing control cases without changing
+how they evaluate. `TestExistingFamilyRequestsUnchanged` and `TestSSRFRequestUnchanged` are the
+guards for the invariant that no existing request changes.
 
 ## 9. Execution sequence
 
@@ -661,6 +706,28 @@ baseline diff review that §6 requires.
 > Report PASS or FAIL for each item with the command output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Findings from the branch 1 run
+
+**Source.** Owner steering after the branch 1 run: "ideally any problem surfaced should be fix
+in the -2 spec".
+
+**Changed Sections.** §2, D-3, D-4, §4 scope table, §6, §8 "Sample and regression".
+
+**Rationale.** Branch 1 halted twice on the same kinds of condition this branch meets more
+widely: a pre-existing fixture containing the new family's shape (its baseline row changed), and
+the shared guard engine not ending a path at `throw`. It also showed that the key checker needs a
+witnessed source on positives and that the PR #39 row count must stay separate.
+
+**Summary.** §6 now allows added `authorization_candidate` uses in pre-existing Symfony rows,
+with a per-row check that every existing use is unchanged. D-3 states that `throw` exits are
+detected by guard classification and `control.go` termination is not changed. D-4 requires the
+selecting request source as a dependency. §8 names `symfonyLaneRows`. §2 names the branch 1
+functions to reuse.
+
+**Verification Impact.** The run log records the per-row baseline comparison of §6. GD-01, GD-05
+and AC-05 are verified through the guard classifier, not through engine termination. AC13's
+"21 of 21 positives" depends on the D-4 dependency rule.
 
 ### 2026-11-22 — Second pass and unattended execution
 

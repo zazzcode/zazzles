@@ -42,7 +42,10 @@ func ForUse(use analysis.CandidateUse) (*Material, error) {
 	if err != nil {
 		return nil, err
 	}
-	if family.RequiresAPI || family.Name == "pollution" {
+	if names := family.KindQuestions[use.Kind]; family.KindQuestions != nil {
+		m.Questions, m.Choices = kindSubset(m.Questions, m.Choices, names)
+	}
+	if family.RequiresAPI || family.Name == "pollution" || family.Name == accountFamilyName {
 		if !reflect.DeepEqual(m.Contract, use.APIModel) {
 			return nil, fmt.Errorf("selected %s contract conflicts with verified operation model", family.Label)
 		}
@@ -116,7 +119,7 @@ func (c *catalog) material(family *Family, s *analysis.ComponentSelection) (*Mat
 	if m.Guidelines.Body == "" || len(m.Questions) != len(family.QuestionNames) {
 		return nil, fmt.Errorf("%s required material missing", family.Label)
 	}
-	if !family.RequiresAPI && family.Name != "pollution" && m.Contract != nil {
+	if !family.RequiresAPI && family.Name != "pollution" && family.Name != accountFamilyName && m.Contract != nil {
 		return nil, fmt.Errorf("%s material must not include an API contract", family.Label)
 	}
 	if family.RequiresAPI && m.Contract == nil {
@@ -129,3 +132,20 @@ func (c *catalog) material(family *Family, s *analysis.ComponentSelection) (*Mat
 }
 
 func decode(s string, v any) error { return json.Unmarshal([]byte(s), v) }
+
+// kindSubset keeps the questions a kind registers, in protocol order.
+func kindSubset(questions []Question, choices map[string][]map[string]string, names []string) ([]Question, map[string][]map[string]string) {
+	keep := map[string]bool{}
+	for _, n := range names {
+		keep[n] = true
+	}
+	var out []Question
+	sub := map[string][]map[string]string{}
+	for _, q := range questions {
+		if keep[q.Name] {
+			out = append(out, q)
+			sub[q.Name] = choices[q.Name]
+		}
+	}
+	return out, sub
+}

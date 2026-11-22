@@ -93,7 +93,7 @@ var applicationFindingTypes = []analysis.FindingType{
 
 var findingTypesByID = func() map[string]analysis.FindingType {
 	index := make(map[string]analysis.FindingType, len(findingTypes))
-	for _, t := range append(append(append([]analysis.FindingType{}, findingTypes...), interpreterFindingTypes...), applicationFindingTypes...) {
+	for _, t := range append(append(append(append([]analysis.FindingType{}, findingTypes...), interpreterFindingTypes...), applicationFindingTypes...), accountFindingTypes...) {
 		index[t.ID] = t
 	}
 	return index
@@ -141,6 +141,8 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 			return []string{"address-based-access"}
 		}
 		return []string{"missing-authorization"}
+	case analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind:
+		return []string{accountFindingType(u)}
 	case "upload", "file_upload_candidate":
 		return []string{"unrestricted-upload"}
 	case "ssrf_candidate":

@@ -32,6 +32,9 @@ type Family struct {
 	// QuestionNames defines the family protocol by exact question names, not
 	// by a universal count.
 	QuestionNames []string
+	// KindQuestions, when set, gives each kind its own ordered subset of
+	// QuestionNames. Only the account family sets it (branch 3 D-1).
+	KindQuestions map[string][]string
 	// Languages lists the source languages with verified adapters.
 	Languages []lang.Language
 	// Entries lists required entry capabilities; standalone claims need none.
@@ -76,7 +79,7 @@ func (f Family) rootIDs() []string {
 	if f.Name == "xss" {
 		ids = append(ids, "render.html-output-v1", "render.browser-output-v1", "render.python-html-output-v1", "render.php-html-output-v1", "context.xss", "protection.xss", "browser.xss", "storage.xss", "response.xss")
 	}
-	if f.RequiresAPI || f.Name == "pollution" {
+	if f.RequiresAPI || f.Name == "pollution" || f.Name == accountFamilyName {
 		for _, id := range contractIDs(&f) {
 			ids = append(ids, "api."+id)
 		}
@@ -179,6 +182,13 @@ func Families() []Family {
 			Pack: "pack.authorization", Claim: "claim.authorization", Evidence: "evidence.authorization", PolicyOwner: "internal/judge/authorization.go",
 		},
 		{
+			// A hasher class or a configuration line can anchor a password-hash
+			// claim, so the family names no entry capability.
+			Name: accountFamilyName, Label: "Account security", Kinds: []string{analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind},
+			QuestionNames: accountQuestionNames(), KindQuestions: accountKindQuestions(), Languages: []lang.Language{lang.PHP},
+			Pack: "pack.account", Claim: "claim.account", Evidence: "evidence.account", PolicyOwner: "internal/judge/account.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP},
 			// A standalone field claim needs an explicit/source-backed
@@ -246,6 +256,8 @@ func familyProtocol(name string) string {
 		return MassAssignmentProtocol
 	case "authorization":
 		return AuthorizationProtocol
+	case accountFamilyName:
+		return AccountProtocol
 	}
 	return ""
 }
@@ -276,6 +288,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return ExposureContract(id)
 	case "authorization":
 		return AuthorizationContract(id)
+	case accountFamilyName:
+		return AccountContract(id)
 	}
 	return nil
 }
@@ -306,6 +320,8 @@ func contractIDs(f *Family) []string {
 		return nil
 	case "authorization":
 		return authorizationContracts
+	case accountFamilyName:
+		return accountContracts
 	}
 	return noSQLContractIDs
 }

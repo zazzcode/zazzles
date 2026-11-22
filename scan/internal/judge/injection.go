@@ -48,6 +48,12 @@ func questionsFor(use analysis.CandidateUse) []question {
 				items[i].choices = analysispacks.MassAssignmentChoices(items[i].name)
 			}
 			return items
+		case analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind:
+			items := componentQuestions(analysispacks.AccountKindQuestions(use.Kind))
+			for i := range items {
+				items[i].choices = analysispacks.AccountChoices(items[i].name)
+			}
+			return items
 		case analysis.AuthorizationKind:
 			items := componentQuestions(analysispacks.AuthorizationQuestions())
 			for i := range items {

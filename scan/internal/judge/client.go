@@ -289,6 +289,17 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 			"When peer_access shows the same privilege field written under a stronger role while this entry is weaker, answer inadequate. " +
 			"A role name is only the string the entry requires. Do not invent guards, roles, hierarchy or bindings."
 	}
+	if use.Enumeration != nil || use.Recovery != nil || use.PasswordHash != nil {
+		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
+		switch {
+		case use.Enumeration != nil:
+			instruction = common + "Apply only the two enumeration questions to this lookup. The scanner recorded the found and not-found responses and does not know which wording reveals an account; compare the two recorded lists with each other, entry by entry: literal, status, redirect target and template. A response_unresolved entry is unknown, not equal. Judge disclosure for a caller with the entry's recorded access. Do not infer timing, rate limits or messages the source does not show."
+		case use.Recovery != nil:
+			instruction = common + "Apply only the three recovery questions to this secret delivered by mail. The recipient origin, recipient_validated and shape_uses are recorded facts: a request value used as an array can name many recipients, and a check of one element says nothing about the others. Mail content is delivered to the recipients, not rendered by this application. Judge secret quality from secret_strength only. Do not infer token lifetime, host-header handling or mail transport behavior."
+		default:
+			instruction = common + "Apply only the two password-hash questions to this digest. Judge whether the input is a password from password_hash.basis and its evidence, and whether the stored form is one fast digest from algorithm, salted and iterated. A salt does not make a fast digest adaptive. Do not infer configuration that the source does not state."
+		}
+	}
 	if use.MassAssignment != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the three mass-assignment questions to this key-controlled write. The claim is that the request chooses property names on the target object; the written values are a separate concern. A recorded key allow-list is a control whose adequacy you judge; property_exists restricts nothing. security_fields roles come from framework contracts, except name_hint, which is a field-name hint only. Whether the caller may write a named field at all is a separate authorization claim. Do not invent missing guards, fields or bindings."

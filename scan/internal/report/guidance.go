@@ -58,6 +58,8 @@ func guidance(use analysis.CandidateUse) Guidance {
 		} else {
 			g = Guidance{Title: "Authorize the operation on the selected record", Actions: []string{"Check that the caller may perform this operation on this record.", "Require the same access on every entry that writes the field."}}
 		}
+	case analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind:
+		g = accountGuidance(use)
 	case "upload", "file_upload_candidate":
 		g = Guidance{Title: "Restrict what an upload can become", Actions: []string{"Generate the stored file name and choose its extension on the server from an allow-list or the verified content type.", "Check the content (magic bytes, image decoding) or re-encode it, and store uploads outside the served document root."}}
 	case "redirect", "open_redirect_candidate":

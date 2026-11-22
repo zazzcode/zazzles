@@ -1,9 +1,37 @@
 package report
 
 import (
+	"slices"
+
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
+
+// linkJudgedSSRFFindings adds the reverse presentation link without changing uses.
+func linkJudgedSSRFFindings(r *analysis.AnalysisReport) {
+	judgedSSRF := map[string]int{}
+	for i, u := range r.Uses {
+		if u.Kind == "ssrf_candidate" && u.Assessment.Status == "completed" {
+			judgedSSRF[u.ID] = i
+		}
+	}
+	if len(judgedSSRF) == 0 {
+		return
+	}
+	for i, u := range r.Uses {
+		if u.Authorization == nil {
+			continue
+		}
+		for _, id := range u.Authorization.ServerSideRequests {
+			if j, ok := judgedSSRF[id]; ok {
+				related := &r.Findings[j].RelatedFindings
+				if ref := r.Findings[i].ID; !slices.Contains(*related, ref) {
+					*related = append(*related, ref)
+				}
+			}
+		}
+	}
+}
 
 // describeExposure presents the diagnostic operation and the judged status.
 func describeExposure(u analysis.CandidateUse, f *analysis.Finding) {

@@ -27,18 +27,21 @@ func Enrich(r *analysis.AnalysisReport) {
 			break
 		}
 	}
-	for _, t := range applicationFindingTypes {
-		for _, u := range r.Uses {
-			if u.Kind == analysis.ExposureKind && t.ID == "information-exposure" || u.Kind == analysis.MassAssignmentKind && t.ID == "mass-assignment" || u.Kind == analysis.AuthorizationKind && (t.ID == "missing-authorization" && !authorizationAddressOnly(u) || t.ID == "address-based-access" && authorizationAddressOnly(u)) {
-				r.FindingTypes = append(r.FindingTypes, t)
-				break
-			}
+	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
+	present := map[string]bool{}
+	for _, u := range r.Uses {
+		f := describe(u)
+		r.Findings = append(r.Findings, f)
+		for _, id := range f.TypeIDs {
+			present[id] = true
 		}
 	}
-	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
-	for _, u := range r.Uses {
-		r.Findings = append(r.Findings, describe(u))
+	for _, t := range applicationFindingTypes {
+		if present[t.ID] {
+			r.FindingTypes = append(r.FindingTypes, t)
+		}
 	}
+	linkJudgedSSRFFindings(r)
 	groupSinks(r)
 	explainOutcomes(r)
 }

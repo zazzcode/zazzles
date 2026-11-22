@@ -116,7 +116,7 @@ Beyond the lane contract's §1:
 | `scan/internal/langphp/symfony_security.go` | Modified | Expose the parsed `security.yaml` document to the access reader. No change to the provider reader |
 | `scan/internal/langphp/symfony_entry.go`, `symfony_controller.go`, `symfony_request.go`, `calls.go`, `control.go`, `guards.go`, `doctrine_storage.go`, `modules.go`, `path.go` | Modified | Subject provenance on bound entities, check contracts, state-change collection, dispatch lines. `control.go` termination rules stay unchanged (D-3) |
 | `scan/internal/langphp/*_test.go`, `testdata/symfony/access/`, `testdata/symfony/authorization/`, `testdata/symfony/authorization-transfer/`, `testdata/authorization-plain/` | New | Fixtures and tests of §8 |
-| `scan/internal/analysispacks/authorization.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `authorization-components-v1`, questions, contracts |
+| `scan/internal/analysispacks/authorization.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `authorization-components-v2`, questions, contracts |
 | `scan/internal/judge/authorization.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, tests | New, modified | Policy and wire facts |
 | `scan/internal/report/finding_types.go`, `findings.go`, `entries.go`, `sarif.go`, `guidance.go`, `html.go`, `report.html`, tests | Modified | Two finding types, entry access in the entry view, SARIF rules, the report-only SSRF link (D-12) |
 | `scan/cli/main.go`, `architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Family name; baseline rows (AC9) |
@@ -295,15 +295,15 @@ touching the wire.
 
 **D-13. One family, three facets.** A candidate whose only guard is an `address_check` maps to
 finding type `address-based-access`. Every other candidate maps to `missing-authorization`.
-The protocol is `authorization-components-v1`, claim kind `authorization`. The shared policy
+The protocol is `authorization-components-v2`, claim kind `authorization`. The shared policy
 order is the lane contract §2.7. Required evidence roles: `subject_selection`,
 `protected_operation`, `entry_access`, `control_flow`.
 
 | Question | Answers | Asks |
 |---|---|---|
 | `subject_control` | `request_selected`, `not_selected`, `unknown` | Does the request choose which record the operation acts on, or which records are returned, as `authorization.subject` states? |
-| `guard_adequacy` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `authorization.guards`, judged by kind, limit the operation to a caller who should be allowed to perform it on this record? An `address_check` is a property of the connection, not of the user |
-| `access_adequacy` | `adequate`, `inadequate`, `unknown` | Is the entry's recorded `access` enough for the fields in `security_fields` and the operation, given `peer_access`? |
+| `guard_adequacy` | `none`, `adequate`, `inadequate`, `unknown` | Do the recorded `authorization.guards`, judged by kind, limit the operation to a caller who should be allowed to perform it on this record? Answer `none` only when no guard is recorded. An `ownership_check`, `role_check`, `authenticated_check` or `secret_check` that dominates this operation on this subject is `adequate`; a `secret_check` is a stored-field comparison with a request value not written back on the same path. An `address_check` is a property of the connection, not of the user |
+| `access_adequacy` | `adequate`, `inadequate`, `unknown` | Is the entry's recorded `access` enough for the fields in `security_fields` and the operation, given `peer_access`? When authentication is `required` and roles are listed, treat that as `adequate` for census-field reads and deletes under the entry unless `peer_access` shows the same privilege field under a weaker rule. When authentication is `none`, answer `inadequate` |
 
 | Rule | Condition |
 |---|---|
@@ -706,6 +706,37 @@ baseline diff review that §6 requires.
 > Report PASS or FAIL for each item with the command output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Authorization judge retry for AC14 controls
+
+**Source.** Owner steering after the branch 2 judged acceptance: authorize one more judged
+budget with a tighter instruction, and if `SYM-AUTHZ-N03` / `SYM-AUTHZ-N05` still fail, mark
+the residual as not implemented and carry it into branch 3 as follow-on work.
+
+**Changed Sections.** D-13 (protocol id and the `guard_adequacy` / `access_adequacy` Asks
+prose); §4 scope table protocol name; architecture and analysis docs that name the protocol;
+`scan/internal/judge/client.go` family instruction; `scan/internal/analysispacks/authorization.go`
+question and choice text.
+
+**Rationale.** On `authorization-components-v1` the five positives Confirmed and
+`SYM-AUTHZ-N01` Protected, but `SYM-AUTHZ-N03` (admin index template, `ROLE_ADMIN` entry,
+no in-action guard) and `SYM-AUTHZ-N05` (credential write dominated by a `secret_check`) were
+`confirmed_vulnerability`. The scanner listed the roles and the secret guard correctly; the
+model answered `access_adequacy: inadequate` and `guard_adequacy: inadequate`.
+
+**Summary.** Protocol bumped to `authorization-components-v2`. Question names, allowed
+answers and status rules are unchanged. The Asks prose and choice descriptions now state that
+`none` is only for an empty guard list, that a dominating `secret_check` is adequate for the
+writes it covers (including credential writes), and that `authentication: required` with listed
+roles is adequate for census-field reads and deletes unless `peer_access` shows a weaker writer.
+The family instruction mirrors those rules. One judged `--only-family authorization` retry is
+authorized; if the two controls are still findings, AC14 stays unmet and the residual is
+follow-on work for branch 3.
+
+**Verification Impact.** Architecture-baseline authorization request digests change with the
+new protocol text. Re-run the family judged checkpoint; update
+`.zazz/evaluation/symfony-results.md` and the run log with the retry outcome. If still unmet,
+branch 3's specification records the follow-on.
 
 ### 2026-11-22 — Findings from the branch 1 run
 

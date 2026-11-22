@@ -279,7 +279,13 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 	}
 	if use.Authorization != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
-		instruction = common + "Apply only the three authorization questions to this protected operation. Judge the recorded guards by kind: an ownership comparison with the session user, a role check, an authenticated check, or a secret comparison can be adequate when it covers this operation and this record. An address check is a property of the connection, not of the user. Judge the entry's recorded authentication and roles against the operation and the other writers of the same field. A role name means only what the recorded configuration says. Do not invent guards, roles or bindings."
+		instruction = common + "Apply only the three authorization questions to this protected operation. " +
+			"For guard_adequacy: answer none only when authorization.guards is empty; when any guard is recorded answer adequate or inadequate, never none. " +
+			"Treat ownership_check, role_check, authenticated_check and secret_check as adequate when that recorded guard dominates this operation on this subject: ownership compares the subject or its id with the session user; role_check is isGranted; authenticated_check is a null test of the session user; secret_check compares a stored field of the subject with a request value that is not written to that field on the same path — that comparison is adequate for every write it dominates on that subject, including a credential write. " +
+			"Answer inadequate for address_check alone, or when a recorded guard does not cover this operation or this record. An address_check is a property of the connection, not of the user. " +
+			"For access_adequacy: when access.authentication is required and roles are listed, answer adequate for reading census fields and for object-level deletes under that entry unless peer_access shows the same privilege field written under a weaker rule (authentication none, or fewer roles) while this entry is the weaker one. " +
+			"When access.authentication is none, answer inadequate. Peer_access is evidence of inconsistency across writers, not a reason to reject a required role that peers also require or that is stronger. " +
+			"A role name is only the string the entry requires. Do not invent guards, roles, hierarchy or bindings."
 	}
 	if use.MassAssignment != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")

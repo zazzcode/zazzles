@@ -80,7 +80,11 @@ func applyAuthorizationPolicy(use analysis.CandidateUse, a *analysis.Assessment)
 	subjectOK := subject == "request_selected" || enumeratedExposure
 	if subjectOK && (guard == "none" || guard == "inadequate") && access == "inadequate" {
 		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
-		a.Reason = "The request selects the record, no adequate guard is recorded, and the entry's access is not enough."
+		if enumeratedExposure && subject != "request_selected" {
+			a.Reason = "Enumerated census fields are returned without an adequate guard, and the entry's access is not enough."
+		} else {
+			a.Reason = "The request selects the record, no adequate guard is recorded, and the entry's access is not enough."
+		}
 		return
 	}
 	a.Reason = "The answers do not establish a missing authorization or a protection."

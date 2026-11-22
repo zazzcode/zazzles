@@ -88,20 +88,11 @@ advances between when the two sub-agents start. Capture:
 - **Changed files:** `git diff $MERGE_BASE...HEAD --name-only`
 - **Changed file count:** `git diff $MERGE_BASE...HEAD --name-only | wc -l`
 
-### 4. Size The Review And Prefer Code-Review-Graph For Large Diffs
+### 4. Size The Review
 
-Use the changed-file count from step 3 as a cheap sizing gate before reading broad file contents.
-
-`code-review-graph` is the preferred context accelerator for large PRs. Use it to reduce token usage and avoid reading
-broad file contents before knowing which files, symbols, flows, and tests matter. If the changed file count is
-**greater than 10**, or the user explicitly asked for graph context, blast-radius analysis, token-efficient review, or
-graph tooling, read `code-review-graph.md` from this skill directory and follow its discovery/setup guidance.
-
-If the changed file count is **10 or fewer** and the user did not ask for graph context, do not load the optional
-utility file. Record `Graph context: not requested - N changed files` in the preamble.
-
-When the optional helper is loaded, capture its concise graph summary so both review axes can use it. Do not block an
-ordinary review on this optional utility unless the user specifically requested it.
+Use the changed-file count from step 3 as a cheap sizing gate before reading broad file contents. For a large diff,
+read the diff stat and the commit list first, group the changed files by area, and give each sub-agent the groups it
+needs. Record the count in the preamble.
 
 ### 5. Gather Governing Context
 
@@ -154,7 +145,6 @@ single confirmation, not a multi-step interview:
 - **Target**: <branch/PR> against `<integration-branch>` (merge base: `<short-sha>`)
 - **Standards**: <N standards matched from `<docs-root>/standards/index.yaml`> [or "none found — running with general judgment"]
 - **Spec**: <tier> — <spec source description> [or "none found — Spec axis will be skipped"]
-- **Graph context**: <not requested/unavailable/declined/available/recommended> [brief risk/blast-radius summary if used]
 - **Changed files**: <N files> across <services/areas>
 
 Proceed with review, or should I adjust anything?
@@ -182,8 +172,7 @@ Read the following files from this skill's directory:
 **Standards sub-agent prompt — include:**
 
 - The pinned merge base, diff command, commit list, and changed-files list from step 3
-- The optional code-review-graph summary from step 4, if available, especially blast radius, impacted
-  callers/dependents, and test signals
+- The changed-file groups from step 4
 - The list of matched standards files and their contents from step 5
 - The full text of `shared-rules.md`
 - The full text of `standards-axis.md`
@@ -195,8 +184,7 @@ Read the following files from this skill's directory:
 **Spec sub-agent prompt — include:**
 
 - The pinned merge base, diff command, commit list, and changed-files list from step 3
-- The optional code-review-graph summary from step 4, if available, especially blast radius and affected flows that may
-  change acceptance-criteria coverage
+- The changed-file groups from step 4
 - The spec contents or path from step 5, with the tier classification from step 6
 - The full text of `shared-rules.md`
 - The full text of `spec-axis.md`

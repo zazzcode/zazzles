@@ -36,19 +36,16 @@ The skill does not approve, merge, mark a PR ready, or replace human judgment.
 
 ```text
 .agents/skills/pr-review/
-  SKILL.md              # Orchestrator: startup, pinning, optional utility loading, dispatch
+  SKILL.md              # Orchestrator: startup, pinning, sizing, dispatch
   README.md             # This file
-  code-review-graph.md  # Optional graph-context utility workflow
   shared-rules.md       # Diff scope, finding sizing, output format, boundaries
   standards-axis.md     # Standards sub-agent brief
   spec-axis.md          # Spec sub-agent brief
 ```
 
-- **SKILL.md** orchestrates the review: reads repo context, pins the comparison base, optionally loads utility
-  guidance, gathers governing context, determines spec availability, dispatches the two sub-agents in parallel, and
-  aggregates their findings.
-- **code-review-graph.md** describes the optional graph-context workflow: discovery, user consent for setup, compact
-  graph queries, and the summary passed to sub-agents.
+- **SKILL.md** orchestrates the review: reads repo context, pins the comparison base, sizes the diff, gathers
+  governing context, determines spec availability, dispatches the two sub-agents in parallel, and aggregates their
+  findings.
 - **shared-rules.md** contains rules both sub-agents need: diff scope discipline, the geological finding-sizing
   taxonomy, security/data/operations escalation, output format, and boundaries.
 - **standards-axis.md** is the full brief for the Standards sub-agent: standards-driven review, test quality, agentic
@@ -98,52 +95,14 @@ The orchestrator starts small, then loads more context only when the diff needs 
 1. The review target: working tree diff, branch diff, PR, or stack branch.
 1. **Pin the comparison base** — `git merge-base` against the fixed point, so both sub-agents use an identical diff
    reference even if the integration branch advances.
-1. **Size the diff and prefer graph context for large reviews** — count changed files from the pinned diff. If the
-   count is greater than 10, or the user requested graph, blast-radius, or token-efficient review, load
-   `code-review-graph.md` and follow its discovery/setup flow.
+1. **Size the diff** — count changed files from the pinned diff and group them by area before reading broad file
+   contents.
 1. Governing context: deliverable specification, PR body, linked ticket, and ACs.
 1. **Determine spec availability** — full spec, lightweight spec, or no spec.
 1. `<DOCS_ROOT>/standards/index.yaml` — select only the standards matching the changed paths and activities.
 1. Dispatch both sub-agents with their respective briefs.
 
 This keeps the skill generic while letting each repo provide its own standards.
-
-## Optional Graph Utility
-
-The skill can optionally use [`code-review-graph`](https://github.com/tirth8205/code-review-graph) for graph-derived
-blast radius, impacted callers/dependents, affected flows, test-coverage signals, and lower-token review context for
-large diffs.
-
-Sizing and context-loading boundary:
-
-- Do not load `code-review-graph.md` during ordinary reviews with 10 or fewer changed files unless graph context is
-  requested.
-- Load `code-review-graph.md` for PRs with more than 10 changed files so the agent can prefer compact graph-derived
-  review context before reading broad file contents.
-- Keep the detailed agent workflow in `code-review-graph.md`.
-- Keep human install, setup, troubleshooting, and update checks in `docs/code-review-graph.md` or
-  `.zazz/docs/code-review-graph.md` when that project doc exists.
-- For Zazz review, prefer minimal CLI/MCP setup. Do not install upstream companion skills, hooks, or instruction
-  injections unless the user explicitly asks for full upstream integration.
-- Treat graph output as advisory context. Findings still need to be verified against the actual diff, source, tests,
-  standards, and spec.
-
-Useful public companion skills in the `code-review-graph` repository include `review-pr`, `review-delta`,
-`review-changes`, `build-graph`, `explore-codebase`, `debug-issue`, and `refactor-safely`. The PR Review skill does not
-replace itself with those skills or install them by default; it borrows their graph-first context-gathering workflow
-when available.
-
-### Simple Graph Gate
-
-Use the pinned diff to decide whether graph context should be loaded:
-
-```bash
-git diff $MERGE_BASE...HEAD --name-only | wc -l
-```
-
-- `0-10` changed files: skip graph context unless the user asks for graph or blast-radius review.
-- `11+` changed files: load `code-review-graph.md`; if the tool is unavailable, tell the user it is recommended for a
-  PR of this size and ask whether to install/configure it, use an existing install, or continue without it.
 
 ## Spec Availability Tiers
 

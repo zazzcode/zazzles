@@ -152,7 +152,6 @@ func (s *phpSet) projectImages(root string) []deployconf.DockerImage {
 			continue
 		}
 		img := deployconf.Dockerfile(file, raw)
-		img.WorkDir = img.WorkDir // keep
 		out = append(out, img)
 	}
 	return out

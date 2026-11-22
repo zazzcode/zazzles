@@ -5168,6 +5168,18 @@
     "uses_count": 0,
     "gaps": 0
   },
+  "internal/langphp/testdata/symfony/security-fields": {
+    "uses": [],
+    "report_sha256": "44917ce4c98a49ec7db6d1d13e7edf08db3d3cba0826fb0ca99314c1b85a286f",
+    "sarif_sha256": "b4245018ceda6c1d457ee5367b3bc21d8b0ee604f6099e791138551496bb9944",
+    "entries": 2,
+    "registrations": 2,
+    "dispatch_bindings": 2,
+    "callables": 2,
+    "invocation_contexts": 2,
+    "uses_count": 0,
+    "gaps": 0
+  },
   "internal/langphp/testdata/symfony/services": {
     "uses": [
       {

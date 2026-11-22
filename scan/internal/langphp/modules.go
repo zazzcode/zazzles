@@ -76,6 +76,10 @@ type phpSet struct {
 	twig              twigInventory
 	doctrine          doctrineStorage
 	responses         map[int]symfonyResponseState
+	// securityConfig and census cache the security.yaml reader and the
+	// security-field census per Symfony project.
+	securityConfig map[*symfonyProject]*symfonySecurity
+	census         map[*symfonyProject]*phpSecurityCensus
 }
 
 type phpWrite struct {

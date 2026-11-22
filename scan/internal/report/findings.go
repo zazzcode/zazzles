@@ -29,7 +29,7 @@ func Enrich(r *analysis.AnalysisReport) {
 	}
 	for _, t := range applicationFindingTypes {
 		for _, u := range r.Uses {
-			if u.Kind == analysis.ExposureKind && t.ID == "information-exposure" || u.Kind == analysis.MassAssignmentKind && t.ID == "mass-assignment" {
+			if u.Kind == analysis.ExposureKind && t.ID == "information-exposure" || u.Kind == analysis.MassAssignmentKind && t.ID == "mass-assignment" || u.Kind == analysis.AuthorizationKind && (t.ID == "missing-authorization" && !authorizationAddressOnly(u) || t.ID == "address-based-access" && authorizationAddressOnly(u)) {
 				r.FindingTypes = append(r.FindingTypes, t)
 				break
 			}
@@ -303,6 +303,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if u.MassAssignment != nil {
 		describeMassAssignment(u, &f)
+	}
+	if u.Authorization != nil {
+		describeAuthorization(u, &f)
 	}
 	f.Recommendations = scopedGuidance(u, f)
 	if u.Code != nil || u.Redirect != nil {

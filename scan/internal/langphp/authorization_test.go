@@ -254,6 +254,34 @@ func hasKind(r *analysis.AnalysisReport, entry, kind string) bool {
 	return false
 }
 
+func TestSSRFRequestUnchanged(t *testing.T) {
+	report := phpAnalyze(t, "testdata/symfony/authorization", "")
+	authz := oneAuthz(t, report, "POST /open/fetch/{account}")
+	if guardOf(authz, analysis.GuardAddress) == nil {
+		t.Fatal("fetch write has no address check")
+	}
+	linked := map[string]bool{}
+	for _, id := range authz.Authorization.ServerSideRequests {
+		linked[id] = true
+	}
+	if len(linked) == 0 {
+		t.Fatal("address-guarded write lists no server-side request")
+	}
+	seen := 0
+	for _, u := range report.Uses {
+		if u.Kind != "ssrf_candidate" || !linked[u.ID] {
+			continue
+		}
+		seen++
+		if u.Authorization != nil {
+			t.Fatal("ssrf use carries authorization facts")
+		}
+	}
+	if seen != len(linked) {
+		t.Fatalf("server_side_requests %v are not ssrf uses", authz.Authorization.ServerSideRequests)
+	}
+}
+
 func authzSummary(r *analysis.AnalysisReport) string {
 	var b strings.Builder
 	for _, e := range r.Entries {

@@ -17,6 +17,9 @@ func sourceLanguage(u analysis.CandidateUse, f *Family) (lang.Language, bool) {
 		// adapter's claim: the operation that produced it is PHP source.
 		return lang.PHP, u.APIModel != nil && u.APIModel.ID == PHPDiagnosticOutput
 	}
+	if f.Name == "authorization" && filepath.Ext(u.Sink.Span.File) == ".twig" && u.APIModel != nil && u.APIModel.ID == PHPAuthorizationOperation {
+		return lang.PHP, true
+	}
 	if f.Name != "xss" {
 		return lang.Detect(u.Sink.Span.File)
 	}

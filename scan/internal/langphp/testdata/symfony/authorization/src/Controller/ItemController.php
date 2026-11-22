@@ -258,6 +258,17 @@ class ItemController extends AbstractController
         return new Response('ok');
     }
 
+    #[Route('/open/fetch/{account}', methods: ['POST'])]
+    public function fetch(Request $request, Account $account): Response
+    {
+        if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'], true)) {
+            return new Response('', 403);
+        }
+        $account->setGrants($request->get('grants'));
+        file_get_contents($request->get('url'));
+        return new Response('ok');
+    }
+
     private function allowLocal(Request $request): void
     {
         if (!in_array($request->getClientIp(), ['127.0.0.1', '::1'])) {

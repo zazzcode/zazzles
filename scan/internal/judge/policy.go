@@ -36,6 +36,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyMassAssignmentPolicy(use, a)
 		return
 	}
+	if use.Kind == analysis.AuthorizationKind {
+		applyAuthorizationPolicy(use, a)
+		return
+	}
 	if use.Kind == "file_upload_candidate" {
 		applyUploadPolicy(use, a)
 		return

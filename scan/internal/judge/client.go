@@ -277,6 +277,10 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the selected diagnostic-output contract and the two exposure questions to this operation-centered claim. There is no request source: judge what the recorded operation emits and whether a caller of the recorded entry reaches it. A recorded guard restricts reach only when it dominates the operation and rejects the caller. Do not infer deployment access rules, debug settings or network policy that the source does not state."
 	}
+	if use.Authorization != nil {
+		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
+		instruction = common + "Apply only the three authorization questions to this protected operation. The request may choose the record, a recorded guard may or may not be enough, and the entry's access may or may not be enough for the fields and the other writers of the same field. A role name is a string with no special meaning. An address check is a property of the connection, not of the user. Do not treat a guard as sufficient merely because it is recorded. Do not invent guards, roles or bindings."
+	}
 	if use.MassAssignment != nil {
 		common, _, _ := strings.Cut(instruction, "Apply the analysis guidelines")
 		instruction = common + "Apply only the three mass-assignment questions to this key-controlled write. The claim is that the request chooses property names on the target object; the written values are a separate concern. A recorded key allow-list is a control whose adequacy you judge; property_exists restricts nothing. security_fields roles come from framework contracts, except name_hint, which is a field-name hint only. Whether the caller may write a named field at all is a separate authorization claim. Do not invent missing guards, fields or bindings."

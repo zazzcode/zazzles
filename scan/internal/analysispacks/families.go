@@ -174,6 +174,11 @@ func Families() []Family {
 			Pack: "pack.mass-assignment", Claim: "claim.mass-assignment", Evidence: "evidence.mass-assignment", PolicyOwner: "internal/judge/mass_assignment.go",
 		},
 		{
+			Name: "authorization", Label: "Missing authorization", Kinds: []string{analysis.AuthorizationKind}, QuestionNames: authorizationQuestionNames(),
+			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true,
+			Pack: "pack.authorization", Claim: "claim.authorization", Evidence: "evidence.authorization", PolicyOwner: "internal/judge/authorization.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP},
 			// A standalone field claim needs an explicit/source-backed
@@ -239,6 +244,8 @@ func familyProtocol(name string) string {
 		return ExposureProtocol
 	case "mass-assignment":
 		return MassAssignmentProtocol
+	case "authorization":
+		return AuthorizationProtocol
 	}
 	return ""
 }
@@ -267,6 +274,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return SSRFContract(id)
 	case "exposure":
 		return ExposureContract(id)
+	case "authorization":
+		return AuthorizationContract(id)
 	}
 	return nil
 }
@@ -295,6 +304,8 @@ func contractIDs(f *Family) []string {
 		return exposureContracts
 	case "mass-assignment":
 		return nil
+	case "authorization":
+		return authorizationContracts
 	}
 	return noSQLContractIDs
 }

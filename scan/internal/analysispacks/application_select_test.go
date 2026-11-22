@@ -11,7 +11,7 @@ import (
 
 // Every candidate of the new fixtures selects its family's own components.
 func TestApplicationFamiliesSelect(t *testing.T) {
-	for _, dir := range []string{"exposure", "symfony/exposure", "symfony/mass-assignment", "symfony/mass-assignment-transfer", "mass-assignment-plain"} {
+	for _, dir := range []string{"exposure", "symfony/exposure", "symfony/mass-assignment", "symfony/mass-assignment-transfer", "mass-assignment-plain", "symfony/authorization", "symfony/authorization-transfer", "authorization-plain"} {
 		t.Run(dir, func(t *testing.T) {
 			r, err := pipeline.AnalyzeWithOptions(filepath.Join("..", "langphp", "testdata", filepath.FromSlash(dir)), "", nil, pipeline.Options{})
 			if err != nil {
@@ -19,7 +19,7 @@ func TestApplicationFamiliesSelect(t *testing.T) {
 			}
 			seen := 0
 			for _, u := range r.Uses {
-				if u.Kind != analysis.ExposureKind && u.Kind != analysis.MassAssignmentKind {
+				if u.Kind != analysis.ExposureKind && u.Kind != analysis.MassAssignmentKind && u.Kind != analysis.AuthorizationKind {
 					continue
 				}
 				seen++

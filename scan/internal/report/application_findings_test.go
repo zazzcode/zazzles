@@ -14,6 +14,10 @@ import (
 
 // One stubbed Confirmed candidate per family reaches the JSON, SARIF and HTML
 // reports with its type, CWE and guidance.
+func TestAuthorizationFindingsReport(t *testing.T) {
+	TestApplicationFindingsReport(t)
+}
+
 func TestApplicationFindingsReport(t *testing.T) {
 	for _, tt := range []struct {
 		kind, typeID, cwe, file, label string
@@ -27,6 +31,14 @@ func TestApplicationFindingsReport(t *testing.T) {
 		{analysis.MassAssignmentKind, "mass-assignment", "CWE-915", "src/Entity/Account.php", "Mass Assignment", 29, func(u *analysis.CandidateUse) {
 			u.MassAssignment = &analysis.MassAssignmentFacts{Shape: analysis.MassAssignmentPropertyWrite, TargetClass: `App\Entity\Account`, TargetStored: "yes", SecurityFields: []analysis.SecurityField{}}
 			u.Assessment.QuestionVersion = analysispacks.MassAssignmentProtocol
+		}},
+		{analysis.AuthorizationKind, "missing-authorization", "CWE-639", "src/Controller/AdminController.php", "Missing Authorization", 32, func(u *analysis.CandidateUse) {
+			u.Authorization = &analysis.AuthorizationFacts{Facets: []string{analysis.FacetObjectLevel}, SubjectClass: `App\Entity\User`, SubjectProvenance: analysis.SubjectRequestSelected, Operation: analysis.StateChange{Operation: "update"}, MethodSafe: "no"}
+			u.Assessment.QuestionVersion = analysispacks.AuthorizationProtocol
+		}},
+		{analysis.AuthorizationKind, "address-based-access", "CWE-291", "src/Controller/LocalController.php", "Address-Based Access", 77, func(u *analysis.CandidateUse) {
+			u.Authorization = &analysis.AuthorizationFacts{Facets: []string{analysis.FacetFunctionLevel}, SubjectClass: `App\Entity\User`, SubjectProvenance: analysis.SubjectRequestSelected, Operation: analysis.StateChange{Operation: "update"}, MethodSafe: "yes", Guards: []analysis.AuthorizationGuard{{Kind: analysis.GuardAddress, Evidence: analysis.Evidence{Span: analysis.Span{File: "src/Controller/LocalController.php"}}}}}
+			u.Assessment.QuestionVersion = analysispacks.AuthorizationProtocol
 		}},
 	} {
 		t.Run(tt.typeID, func(t *testing.T) {

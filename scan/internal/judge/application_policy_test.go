@@ -149,6 +149,120 @@ func TestMassAssignmentPolicy(t *testing.T) {
 	}
 }
 
+func authzPolicyUse(provenance string, guards int, auth string, facets []string, placeholder bool, gaps ...string) analysis.CandidateUse {
+	if len(facets) == 0 {
+		facets = []string{analysis.FacetObjectLevel}
+	}
+	f := &analysis.AuthorizationFacts{
+		Facets: facets, SubjectClass: `App\Entity\Item`, SubjectProvenance: provenance,
+		Operation:  analysis.StateChange{Operation: "update", StorageKey: "php-sql:item.name"},
+		MethodSafe: "no", SecurityFields: []analysis.SecurityFieldFact{},
+	}
+	if facets[0] == analysis.FacetDataExposure {
+		f.Operation.Operation = "read"
+	}
+	for i := 0; i < guards; i++ {
+		f.Guards = append(f.Guards, analysis.AuthorizationGuard{Kind: analysis.GuardRole, Evidence: policyEvidence("authorization_guard", 2+i)})
+	}
+	c := &analysis.Completeness{ClaimKind: "authorization", Required: analysispacks.AuthorizationRoles(), Evidence: map[string][]analysis.Evidence{}}
+	for _, role := range append(analysispacks.AuthorizationRoles(), "sink_binding") {
+		c.Evidence[role] = []analysis.Evidence{policyEvidence(role, 5)}
+	}
+	u := analysis.CandidateUse{
+		Kind: analysis.AuthorizationKind, Sink: policyEvidence(analysis.AuthorizationKind, 5),
+		Authorization: f, Completeness: c, APIModel: analysispacks.AuthorizationContract(analysispacks.PHPAuthorizationOperation),
+		EntryFacts: &analysis.EntryPoint{Access: &analysis.EntryAccess{Authentication: auth}},
+	}
+	if placeholder {
+		u.Dependencies = []analysis.Dependency{{Source: analysis.Evidence{Kind: "input_source", ModelText: "route placeholder", Span: analysis.Span{File: "src/App.php"}}}}
+	}
+	for _, g := range gaps {
+		gap := analysis.Gap{Kind: g, At: u.Sink.Span}
+		c.Blockers = append(c.Blockers, gap)
+	}
+	return u
+}
+
+func TestAuthorizationPolicy(t *testing.T) {
+	obj := []string{analysis.FacetObjectLevel}
+	for _, tt := range []struct {
+		rule, version, subject, guard, access string
+		use                                   func() analysis.CandidateUse
+		status, gap                           string
+	}{
+		{"protocol", "authorization-components-v0", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+		}, "needs_evidence", "authorization_protocol_missing"},
+		{"claim", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			u := authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+			u.Completeness.ClaimKind = "injection"
+			return u
+		}, "needs_evidence", "authorization_claim_missing"},
+		{"facts", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			u := authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+			u.Authorization.SubjectProvenance = "picked"
+			return u
+		}, "needs_evidence", "authorization_facts_invalid"},
+		{"evidence", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			u := authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+			delete(u.Completeness.Evidence, "entry_access")
+			return u
+		}, "needs_evidence", "authorization_evidence_missing"},
+		{"guard none with a guard", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 1, analysis.AccessRequired, obj, true)
+		}, "needs_evidence", "authorization_answers_inconsistent"},
+		{"guard adequate with none", "", "request_selected", "adequate", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+		}, "needs_evidence", "authorization_answers_inconsistent"},
+		{"access adequate when none", "", "request_selected", "none", "adequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessNone, obj, true)
+		}, "needs_evidence", "authorization_answers_inconsistent"},
+		{"not_selected on a route placeholder", "", "not_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+		}, "needs_evidence", "authorization_answers_inconsistent"},
+		{"blocking access rule", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true, "access_rule_unresolved")
+		}, "needs_evidence", "access_rule_unresolved"},
+		{"security fields block a census-only facet", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, []string{analysis.FacetFunctionLevel}, true, analysis.SecurityFieldsUnresolved)
+		}, "needs_evidence", analysis.SecurityFieldsUnresolved},
+		{"security fields do not block an object write", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, []string{analysis.FacetObjectLevel, analysis.FacetFunctionLevel}, true, analysis.SecurityFieldsUnresolved)
+		}, "confirmed_vulnerability", ""},
+		{"address trust is not blocking", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true, "address_trust_configuration_unread")
+		}, "confirmed_vulnerability", ""},
+		{"protected by a guard", "", "request_selected", "adequate", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 1, analysis.AccessRequired, obj, true)
+		}, "protected_for_claim", ""},
+		{"protected by access", "", "request_selected", "none", "adequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+		}, "protected_for_claim", ""},
+		{"confirmed", "", "request_selected", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+		}, "confirmed_vulnerability", ""},
+		{"confirmed with an inadequate guard", "", "request_selected", "inadequate", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 1, analysis.AccessRequired, obj, true)
+		}, "confirmed_vulnerability", ""},
+		{"enumerated exposure needs no request selection", "", "unknown", "none", "inadequate", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectEnumerated, 0, analysis.AccessNone, []string{analysis.FacetDataExposure}, false)
+		}, "confirmed_vulnerability", ""},
+		{"otherwise review", "", "unknown", "unknown", "unknown", func() analysis.CandidateUse {
+			return authzPolicyUse(analysis.SubjectRequestSelected, 0, analysis.AccessRequired, obj, true)
+		}, "needs_evidence", ""},
+	} {
+		t.Run(tt.rule, func(t *testing.T) {
+			version := tt.version
+			if version == "" {
+				version = analysispacks.AuthorizationProtocol
+			}
+			a := analysis.Assessment{QuestionVersion: version, Answers: map[string]string{"subject_control": tt.subject, "guard_adequacy": tt.guard, "access_adequacy": tt.access}}
+			applyPolicy(tt.use(), &a)
+			assertPolicy(t, a, tt.status, tt.gap)
+		})
+	}
+}
+
 func assertPolicy(t *testing.T, a analysis.Assessment, status, gap string) {
 	t.Helper()
 	if a.FindingStatus != status {

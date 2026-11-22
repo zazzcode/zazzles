@@ -7,6 +7,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
+	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
 
 // phpAuthz is the subject of one entity value (D-4).
@@ -68,7 +69,6 @@ func (f *phpFlow) bindAuthzEntity(route string, param *sitter.Node, entity phpVa
 		}
 		src := f.source(param, "attributes", "http.path", ph)
 		entity.authz = &phpAuthz{provenance: analysis.SubjectRequestSelected, class: entity.class, selecting: src.deps}
-		entity.deps = append(entity.deps, src.deps...)
 	}
 	f.stampAuthz(entity)
 	return entity
@@ -397,6 +397,9 @@ func (f *phpFlow) emitAuthz(sink analysis.Evidence, at *sitter.Node, sub *phpAut
 		deps = append(deps, d.dep)
 	}
 	for _, d := range sub.selecting {
+		if d.container == "attributes" {
+			d.dep.Source.ModelText = "route placeholder"
+		}
 		addDep(d)
 	}
 	for _, d := range extra {
@@ -413,6 +416,7 @@ func (f *phpFlow) emitAuthz(sink analysis.Evidence, at *sitter.Node, sub *phpAut
 		Context: phpDedupeEvidence(f.context), Gaps: append([]analysis.Gap{}, f.gaps...),
 		Assessment:    analysis.Assessment{Status: "not_run"},
 		Authorization: facts,
+		APIModel:      analysispacks.AuthorizationContract(analysispacks.PHPAuthorizationOperation),
 		Completeness:  f.authzCompleteness(sink, sub, facts),
 	}
 	f.report.Uses = append(f.report.Uses, u)
@@ -445,6 +449,8 @@ func (f *phpFlow) authzCompleteness(sink analysis.Evidence, sub *phpAuthz, facts
 	if len(access) == 0 {
 		access = []analysis.Evidence{f.entry.Location}
 	}
+	binding := sink
+	binding.Kind = "sink_binding"
 	blockers := []analysis.Gap{}
 	if f.entry.Access != nil {
 		for _, g := range f.entry.Access.Gaps {
@@ -477,6 +483,7 @@ func (f *phpFlow) authzCompleteness(sink analysis.Evidence, sub *phpAuthz, facts
 			"protected_operation": {sink},
 			"entry_access":        access,
 			"control_flow":        append([]analysis.Evidence{sink}, f.context...),
+			"sink_binding":        {binding},
 		},
 		Blockers: blockers,
 		Coverage: []analysis.Gap{},
@@ -531,12 +538,6 @@ func (s *phpSet) finishAuthorization(out *analysis.AnalysisReport) {
 			writers[c.StorageKey] = append(writers[c.StorageKey], id)
 		}
 	}
-	var ssrf []string
-	for _, u := range out.Uses {
-		if u.Kind == "ssrf_candidate" {
-			ssrf = append(ssrf, u.ID)
-		}
-	}
 	for i := range out.Uses {
 		u := &out.Uses[i]
 		if u.Authorization == nil {
@@ -559,9 +560,30 @@ func (s *phpSet) finishAuthorization(out *analysis.AnalysisReport) {
 				facts.PeerAccess = peers
 			}
 		}
-		if slices.ContainsFunc(facts.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardAddress }) && len(ssrf) > 0 {
-			facts.ServerSideRequests = append([]string{}, ssrf...)
+	}
+}
+
+// linkServerSideRequests runs after use ids are final. An address-guarded
+// candidate lists every ssrf use id; those uses are not modified.
+func (s *phpSet) linkServerSideRequests(out *analysis.AnalysisReport) {
+	if out == nil {
+		return
+	}
+	var ssrf []string
+	for _, u := range out.Uses {
+		if u.Kind == "ssrf_candidate" {
+			ssrf = append(ssrf, u.ID)
 		}
+	}
+	if len(ssrf) == 0 {
+		return
+	}
+	for i := range out.Uses {
+		facts := out.Uses[i].Authorization
+		if facts == nil || !slices.ContainsFunc(facts.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardAddress }) {
+			continue
+		}
+		facts.ServerSideRequests = append([]string{}, ssrf...)
 	}
 }
 

@@ -420,6 +420,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 	if err := parse.FinalizeEntries(out); err != nil {
 		return nil, err
 	}
+	s.linkServerSideRequests(out)
 	return out, nil
 }
 

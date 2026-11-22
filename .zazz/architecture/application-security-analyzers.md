@@ -160,7 +160,8 @@ record is made only when the two lists differ. *Why compare responses with each 
 the scanner does not know which wording reveals an account; a phrase list would encode one
 application's vocabulary. The model weighs the difference. Entries with access `required`
 are skipped; `unresolved` access and `response_unresolved` are blocking gaps. A lookup that
-includes the `credential` field is a login and is out of scope.
+includes the `credential` field is a login and is out of scope; in plain PHP the credential
+fields are the columns a statement writes from a password hash or digest.
 
 **Secret-to-mail model** (`langphp/mailer.go`, `recovery_delivery.go`). A D-5 source marks
 its value with a secret side fact that survives encoding, URL generation and concatenation
@@ -172,7 +173,7 @@ the recipient's origin:
 | --- | --- |
 | Stored field of the looked-up account | No record |
 | The scalar lookup criterion | `recipient_validated: full` |
-| A request value used as an array (foreach, spread) while the lookup read one element | `partial`, both use sites, `recipient_count: request_controlled` |
+| A request value used as an array (foreach, spread, an `array`-typed parameter) while the lookup read one element | `partial`, both use sites, `recipient_count: request_controlled` |
 | A request value with no lookup | `none` |
 
 *Array-shape fact:* a framework request reader returns an array for `name[]=`, so a check
@@ -187,8 +188,9 @@ value; the record is made when the value is written to a census `credential` fie
 password-hasher class returns it from `hash()`, when `security.password_hashers` selects a
 fast algorithm or names such a class by `id`, or (plain PHP) when a digest of a request
 value reaches a SQL column that a `SELECT` compares. Class and configuration records belong
-to the firewall's form-login check-path entry, where Symfony verifies passwords. A variable
-name establishes nothing.
+to the firewall's form-login check-path entry, where Symfony verifies passwords, or to the
+project's first entry when no check path resolves: the claim needs no HTTP entry of its own.
+A variable name establishes nothing.
 
 **Gaps.** `response_unresolved`, the entry-access gaps of branch 2 (blocking for
 enumeration), `password_digest_unmodeled` for `crypt` and `hash_pbkdf2` (blocking).

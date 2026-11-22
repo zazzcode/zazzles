@@ -16,7 +16,7 @@ A confirmed record is `weak-password-recovery`.
 | --- | --- | --- |
 | A stored field of the looked-up account | — | No record. This is the correct shape |
 | The scalar request value that was the lookup criterion | `full` | Yes |
-| A request value used as an array (iterated, spread) while the lookup read one element | `partial`, with both use sites | Yes |
+| A request value used as an array (iterated, spread, passed to an `array` parameter) while the lookup read one element | `partial`, with both use sites | Yes |
 | A request value with no lookup on the path | `none` | Yes |
 | The stored address, with a weak secret compared by a `secret_check` | `full` | Yes |
 

@@ -33,8 +33,9 @@ The digest, its algorithm, the basis and its evidence, and the census field.
 
 `password_hash`, `sodium_crypto_pwhash_str`, `UserPasswordHasherInterface::hashPassword`
 and a hasher from the factory, which establish a credential field instead. A digest used
-as a file name or a cache key. `md5_file`. Password policy, `crypt` salt formats,
-`hash_pbkdf2` parameter adequacy and pepper handling.
+as a file name or a cache key. `md5_file`. A hasher class or configuration line in a
+project with no entry point. Password policy, `crypt` salt formats, `hash_pbkdf2`
+parameter adequacy and pepper handling.
 
 ## Remediation
 

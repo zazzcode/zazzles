@@ -319,14 +319,16 @@ and is recorded here as an observation, not a criterion.
 ### Offline
 
 `check.py` on `b3-s4-offline` and on the judged report: `vuln-symfony: 25 of 25 positives
-witnessed`, no control failure. The 68 records the sample produced before this branch are
-byte-identical, including their component selections.
+witnessed`, no control failure. Of the 68 records the sample produced before this branch, 50
+are byte-identical to a `stage` build; the 18 `authorization_candidate` records differ only in
+their `authorization-components-v5` selection (spec §11.1).
 
 ### Follow-ups
 
 - `secret_check` reads a getter named `get…`; a getter with another name (`currentToken()`)
   is not classified, so its stored field gets no `recovery_secret` role. Changing it is a
   branch 2 guard-engine change.
-- Hasher-class and configuration records need a firewall `form_login` or `json_login` route.
-  A project with neither records no such claim.
-- Array-typed parameters that are neither iterated nor spread are not array uses.
+- Resolved in the PR #45 review: hasher-class and configuration records anchor to the
+  project's first entry when no login route resolves, and a request value passed to an
+  `array`-typed parameter is an array use. Offline, the sample's records are unchanged except
+  the three enumeration records' `lookup.method`, now in declared case.

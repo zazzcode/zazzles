@@ -88,21 +88,28 @@ Beyond the lane contract's §1:
 | Path | Change | Purpose |
 |---|---|---|
 | `scan/internal/analysis/account.go`, `analysis.go`, `json.go` | New, modified | Three kinds and their fact structs |
-| `scan/internal/langphp/account_enumeration.go` | New | Lookup-branch-response model |
+| `scan/internal/langphp/account_enumeration.go`, `branch_responses.go` | New | Lookup-branch-response model; the branch-response reader both enumeration paths share |
+| `scan/internal/langphp/account_plain.go` | New | Plain-PHP SQL pass: credential tables and columns, compared columns, digest writes |
 | `scan/internal/langphp/mailer.go` | New | Symfony Mailer and `mail()` contracts |
 | `scan/internal/langphp/recovery_delivery.go` | New | Secret sources, recipient shape, candidate assembly |
 | `scan/internal/langphp/password_hash.go` | New | Digest contracts, hasher classes, configured algorithms |
 | `scan/internal/langphp/security_fields.go` | Modified | Add the `recovery_secret` role only (lane contract §2.3) |
 | `scan/internal/langphp/symfony_security.go` | Modified | Read `password_hashers` |
-| `scan/internal/langphp/calls.go`, `control.go`, `values.go`, `symfony_controller.go`, `symfony_request.go`, `doctrine_storage.go` | Modified | Dispatch lines, branch-response collection, array-shape use of a request field, secret provenance |
-| `scan/internal/langphp/*_test.go`, `testdata/symfony/account/`, `testdata/symfony/account-transfer/`, `testdata/account-plain/` | New | Fixtures and tests of §8 |
-| `scan/internal/analysispacks/account.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `account-components-v1`, contracts `api.symfony-mailer-v1`, `api.php-mail-v1`, `api.php-password-digest-v1` |
+| `scan/internal/langphp/calls.go`, `control.go`, `values.go`, `symfony_controller.go`, `symfony_request.go`, `doctrine_storage.go` | Modified | Dispatch lines, branch-response collection, array-shape use of a request field (including an `array`-typed parameter), secret provenance |
+| `scan/internal/langphp/modules.go` | Modified | Account state on the set and the account post-pass call |
+| `scan/internal/langphp/class_index.go`, `scan/internal/analysis/selectors.go` | Modified | AC6: generic phrases reworded, no behavior change |
+| `scan/internal/langphp/*_test.go`, `testdata/symfony/account/`, `testdata/symfony/account-transfer/`, `testdata/symfony/account-defaults/`, `testdata/account-plain/` | New | Fixtures and tests of §8 |
+| `scan/internal/analysispacks/account.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `account-components-v1`, contracts `api.symfony-mailer-v1`, `api.php-mail-v1`, `api.php-password-digest-v1`; the one fast-digest definition langphp and judge share |
+| `scan/internal/analysispacks/material.go`, `xss_selection.go` | Modified | Account material assembly; a digest record selects no XSS components |
+| `scan/internal/analysispacks/authorization.go` | Modified | §11.1: question prose and protocol id |
 | `scan/internal/judge/account.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, tests | New, modified | Policy and wire facts |
-| `scan/internal/report/finding_types.go`, `findings.go`, `sarif.go`, `guidance.go`, tests | Modified | Three finding types and their SARIF rules |
+| `scan/internal/judge/injection.go` | Modified | Account kinds routed to their own policy, not the injection policy |
+| `scan/internal/report/finding_types.go`, `findings.go`, `sarif.go`, `guidance.go`, `account_findings.go`, tests | New, modified | Three finding types and their SARIF rules |
 | `scan/cli/main.go`, `architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Family name; rows for new fixtures only |
 | `scan/internal/pipeline/symfony_test.go` | Modified | This branch's sample assertions |
 | `.zazz/evaluation/vuln-symfony-detection-guide.md`, `recall-gap-inventory/cases.json`, `check.py`, `test_check.py`, `symfony-results.md` | Modified | Rows and results |
 | `.zazz/architecture/application-security-analyzers.md`, `finding-types.md` | Modified | Fill the account section (AC9); three finding types |
+| `.zazz/architecture/entry-access-and-authorization.md`, `docs/scan/analysis/authorization.md` | Modified | §11.1: the v4/v5 role rule |
 | `docs/scan/detection-capabilities/account-enumeration.md`, `weak-password-recovery.md`, `weak-password-hashing.md` | New | Capability pages (AC10) |
 | `docs/scan/analysis/account-security.md` | New | Analysis rules (AC10) |
 | `docs/scan/detection-capabilities.md`, `detection-capabilities/symfony.md`, `analysis/README.md`, `symfony-support.md`, `php-support.md`, `running-scans.md`, `README.md` | Modified | Class rows, Symfony coverage, family name |
@@ -272,7 +279,10 @@ Facts: `password_hash.algorithm`, `password_hash.salted` (`yes` when the digest 
 concatenation with a non-literal second value, else `no`), `password_hash.iterated` (`no` for a
 single call), `password_hash.basis` and the `security_fields` entry. Candidates of one algorithm
 in one project are grouped as the existing families group sinks. The family needs no HTTP entry,
-so a hasher class and a configuration line can be anchors.
+so a hasher class and a configuration line can be anchors. Their records belong to the entry of
+the firewall's `form_login` or `json_login` check path; when no such route resolves
+(`form_login: ~`, a custom authenticator, `http_basic`), to the project's first entry. A project
+with no entry records neither.
 
 ## 6. Agent implementation rules
 
@@ -328,7 +338,9 @@ The lane contract §4 applies in full. Additional for this branch:
    `TestMailContentNotRenderingSink` proves that a request value in `html()` content produces no
    `xss_candidate`.
 8. **AC8 (isolation and determinism).** `TestArchitectureBaseline` passes with every pre-existing
-   row byte-identical and one row per new fixture directory. `TestDVWASourceKey` passes. Two scans
+   row byte-identical and one row per new fixture directory. Exception (§11.1): the rows whose
+   fixtures produce `authorization_candidate` records change in those records' request and
+   signature digests and in the row's report digest, and in nothing else. `TestDVWASourceKey` passes. Two scans
    of each new fixture and of the sample are byte-identical.
 9. **AC9 (architecture document).** The account section of
    `.zazz/architecture/application-security-analyzers.md` states: the lookup-branch-response model
@@ -351,7 +363,8 @@ The lane contract §4 applies in full. Additional for this branch:
 11. **AC11 (no drift).** While stacked,
     `git diff origin/symfony-more-analyzers-2...HEAD --stat -- scan/internal/langphp/exposure.go scan/internal/langphp/mass_assignment.go scan/internal/langphp/symfony_access.go scan/internal/langphp/symfony_access_attr.go scan/internal/langphp/authorization.go scan/internal/langphp/authorization_guards.go scan/internal/analysis/authorization.go scan/internal/analysispacks/authorization.go scan/internal/judge/authorization.go .zazz/specifications/symfony-more-analyzers-1.md .zazz/specifications/symfony-more-analyzers-2.md`
     prints nothing, and the diff of `scan/internal/langphp/security_fields.go` only adds the
-    `recovery_secret` role. After the lower PRs land and `gh stack sync` runs, the same check
+    `recovery_secret` role. Exception (§11.1): the diff shows
+    `scan/internal/analysispacks/authorization.go`, question prose and protocol id only. After the lower PRs land and `gh stack sync` runs, the same check
     against `origin/stage` holds.
 12. **AC12 (sample, offline).** `TestSymfonySourceKey` passes at the pin with all earlier
     assertions and these added: `SYM-ENUM-01` has two candidates under `POST /register` at the
@@ -406,6 +419,9 @@ prove.
 | `EN-12` | Transfer: both sides return `JsonResponse(['ok' => true], 202)` | No record |
 | `EN-13` | Plain PHP: `SELECT` on the table a `password_hash` write targets, `echo` literal A against literal B | Candidate |
 | `EN-14` | Plain PHP: the same on a table with no credential evidence | No record |
+| `EN-15` | Plain PHP: a login `SELECT` that also compares the column a digest write targets, `if`/`exit` on the result | No record: a login |
+| `EN-16` | Magic finder `findOneBySecretHash(md5(request))` on the `credential` field | No record: a login |
+| `EN-17` | `EntityManager::find(Account::class, request)`, differing responses | Candidate; the identifier is argument 2 |
 
 ### Mailer (`testdata/symfony/account/`)
 
@@ -432,6 +448,7 @@ prove.
 | `RC-08` | A request value mailed in content, with no generated secret | No record |
 | `RC-09` | Transfer: `TemplatedEmail`, `Uuid::v4()`, recipients from `$request->toArray()['mail']` iterated, lookup on element zero | Candidate, `partial` |
 | `RC-10` | Plain PHP: `$_POST['mail']` checked by a `SELECT`, then `mail($_POST['mail'], …)` with a `random_bytes` token | Candidate, `full` |
+| `RC-11` | Lookup on `$v[0]`; `$v` passed to a service method's `array` parameter, which mails `implode(',', $v)` | Candidate, `partial`, `request_controlled`, the element and the parameter as use sites |
 
 ### Password hashing
 
@@ -449,6 +466,7 @@ prove.
 | `PH-10` | Transfer: hasher class returning `sha1($plain)`, selected by `id` | Two candidates as `PH-04` and `PH-06` |
 | `PH-11` | Plain PHP: `md5($_POST['pass'])` in an `INSERT` column that a login `SELECT` compares | Candidate, `sql_credential_column` |
 | `PH-12` | `crypt($pw, $salt)` to the credential field | Candidate with gap `password_digest_unmodeled` |
+| `PH-13` | `form_login: ~` (no check path), `algorithm: md5` and an `id` naming a hasher class returning `md5` | Three candidates, anchored to the project's first entry |
 
 ## 9. Execution sequence
 
@@ -549,12 +567,9 @@ and `SYM-AUTHZ-N01`, `-N03`, `-N05` `protected_for_claim` (or not findings), fir
 `--only-family authorization`, then in the full branch-acceptance run, with no offline row
 weakened.
 
-| Step | Run | Protocol | Outcome |
-|---|---|---|---|
-| Re-judge v3 as landed | `b3-j1-authz` | `authorization-components-v3` | Five positives Confirmed; `N01`, `N05` Protected; `N03` delete (`ROLE_ADMIN`, no stronger peer writer) Confirmed. First failing stage: question wording ("listed roles alone are not adequate" also rejected a restricted role) |
-| Judge roles by who holds them | `b3-j2-authz` | `authorization-components-v4` | Five positives Confirmed; `N01`, `N03`, `N05` Protected |
-| Align the judge instruction with v4 | branch acceptance `b3-j6-full` | `authorization-components-v5` | 25 of 25 positives Confirmed, 0 control findings |
-| Recheck after branch 2 landed and the rebase onto `stage` | `b3-j7-full-rebased` | `authorization-components-v5` | 25 of 25 positives Confirmed (including `SYM-AUTHZ-02`, `-04`), `N01`, `N03`, `N05` Protected, 0 control findings |
+The run-by-run outcomes (`b3-j1-authz` to `b3-j7-full-rebased`) are recorded in
+[Branch 3 judged runs](../evaluation/symfony-results.md#branch-3-judged-runs). The bar was met
+on `v5`: in `b3-j6-full` and again in `b3-j7-full-rebased` after the rebase.
 
 **Rule (v4/v5).** For an object-level or function-level write or delete on a request-selected
 subject, the listed entry roles are judged by who holds them. A role every signed-in user holds
@@ -636,6 +651,34 @@ Section "Branch 3" of the lane run log, with the items branch 1's §12 lists.
 > output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — PR #45 review resolution
+
+**Source.** Automated standards and spec review of PR #45 at `0df8307`.
+
+**Changed Sections.** §4 (rows for files the table missed), D-8 (anchor when no login route
+resolves), AC8 and AC11 (the §11.1 exception), §8 (`EN-15` to `EN-17`, `RC-11`, `PH-13`),
+§11.1 (run table moved to the results record).
+
+**Summary.**
+- D-2: the plain-PHP path applies the login exclusion: a `SELECT` that compares a column
+  written from a password hash or digest is a login. Both enumeration paths share one
+  branch-and-compare helper.
+- D-2: a magic finder keeps its declared case, so `findOneBySecretHash` resolves field
+  `secretHash`; `enumeration.lookup.method` is the declared name. `EntityManager::find`
+  reads the identifier from argument 2.
+- D-7: a request value passed to an `array`-typed parameter is an array use. An iteration or
+  spread of the same value, when recorded, stays the use site.
+- D-8: implemented as written. The earlier entry's check-path-only anchoring dropped hasher
+  and configuration records for `form_login: ~`, custom authenticators and `http_basic`.
+- D-9: the "adaptive contradicts a fast digest" rule covers every recorded algorithm except
+  `crypt` and `pbkdf2`, from one definition in `analysispacks/account.go`.
+- Determinism: a digest written to several columns keeps every column in column order.
+
+**Verification Impact.** New cases fail first and pass. Baseline rows `account-plain`,
+`symfony/account` and `account-transfer` change, and `symfony/account-defaults` is new. On the
+sample, only the three enumeration records' `lookup.method` changes case; no record is added
+or removed. The judged runs of §11.1 and AC13 were not repeated.
 
 ### 2026-11-22 — Rebased onto `stage` after branch 2 landed
 

@@ -1,7 +1,7 @@
 # Implementation plan
 
-**Reconciled: 2026-11-21.** This document owns the functionality roadmap. **Implemented** means
-bounded code and verification exist on `stage` (through PR #36) or in the named draft PR; it does
+**Reconciled: 2026-11-22.** This document owns the functionality roadmap. **Implemented** means
+bounded code and verification exist on `stage` (through PR #39) or in the named draft PR; it does
 not mean complete ecosystem coverage or a released version. Contracts and evaluation records own
 detailed acceptance evidence. This roadmap does not authorize implementation or live model calls.
 
@@ -71,12 +71,33 @@ Prototype pollution walk start PR #36) are merged into `stage`.
 | Order | Planned functionality | Notes |
 |---|---|---|
 | Active | **Scan / Fix / Endpoint Probe repository layout** | [Contract](../specifications/scan-fix-probe-repository-layout.md), draft [PR #37](https://github.com/zazzcode/zazzles/pull/37) on `update-repository-layout`. Moves Code Scan under `scan/` and organizes user docs by module |
-| 1 | **PHP Symfony support** | In draft review. [Contract](../specifications/php-symfony-support.md) (supersedes architecture phase 6). Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF, with `vuln-symfony` answer key at `086f81f`. Prerequisite PHP class binding (PR #31) is merged; `gopkg.in/yaml.v3` is approved |
-| 2 | **Unsafe deserialization analyzer (CWE-502)** | **Implemented in the feature worktree.** [Contract](../specifications/unsafe-deserialization.md) and [verification status](../evaluation/deserialization-results.md). The `deserialization` family for Python `pickle`, PyYAML and `jsonpickle`, PHP `unserialize` and Symfony `Yaml::parse`, Node `node-serialize`, `funcster` and `js-yaml`. No prerequisite; the `vuln-symfony` row stays blocked on order 1 and is not part of the deliverable |
+| Done | **PHP Symfony support** | Merged into `stage` ([PR #39](https://github.com/zazzcode/zazzles/pull/39)). [Contract](../specifications/php-symfony-support.md) (supersedes architecture phase 6). Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF. The `vuln-symfony` key at `086f81f` has 14 required positives, all Confirmed ([results](../evaluation/symfony-results.md)) |
+| 1 | **Close Symfony website support: application-security analyzers** | Specified, starts on owner assignment. [Lane contract](../specifications/symfony-more-analyzers.md): four stacked PRs in the `symfony-more-analyzers` worktree, in order. See [the lane table below](#symfony-application-security-lane). Every analyzer is a general PHP capability; `vuln-symfony` is the measuring sample only |
+| 2 | **Unsafe deserialization analyzer (CWE-502)** | **Merged into `stage` ([PR #38](https://github.com/zazzcode/zazzles/pull/38)).** [Contract](../specifications/unsafe-deserialization.md) and [verification status](../evaluation/deserialization-results.md). The `deserialization` family for Python `pickle`, PyYAML and `jsonpickle`, PHP `unserialize` and Symfony `Yaml::parse`, Node `node-serialize`, `funcster` and `js-yaml`. No prerequisite; the `vuln-symfony` row stays blocked on order 1 and is not part of the deliverable |
 | 3 | **npm library RCE scanning** | Architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on existing command and code analyzers), then compile-to-JS sinks and library prototype pollution per the [waypoints below](#before-library-scanning) |
 | 4 | **Fix module (agent skills, standards, playbooks & external findings import)** | Remediation skills, standards, and playbooks for findings from Zazzles modules and external SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
 | 5 | **Endpoint Probe module** | Authorized read-only endpoint checks starting with TLS versions, certificates, and trust chains, with remediation guidance |
 | Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
+
+<a id="symfony-application-security-lane"></a>
+
+### Closing Symfony website support (stacked lane)
+
+The independent review of PR #39 found that 11 of the 21 defects the `vuln-symfony` README
+documents belong to classes no analyzer covered. This lane closes them. Each branch is one draft
+PR, stacked with `gh-stack` in one worktree ([guide](../docs/using-gh-stack.md)), implemented in
+its own session, and validated by paid judged runs at each checkpoint. Existing analyzers are
+extended where a claim fits them; a new family is added only for a new question.
+
+| Order | Branch and contract | Delivers | README entries closed | State |
+|---:|---|---|---|---|
+| 1.1 | [`symfony-more-analyzers-1`](../specifications/symfony-more-analyzers-1.md) | `exposure` (CWE-200, CWE-215) and `mass-assignment` (CWE-915) families; the security-field census (credential, login identifier and role-source fields from framework contracts) | 17, 19 | Specified |
+| 1.2 | [`symfony-more-analyzers-2`](../specifications/symfony-more-analyzers-2.md) | Entry access from `access_control`, firewalls and `#[IsGranted]`; `authorization` family (CWE-862, CWE-639, CWE-285) with ownership, role and address-based guard kinds (CWE-291); state changes per entry | 7, 9, 10, 13, 16. Entry 8 recorded as not present in source | Specified |
+| 1.3 | [`symfony-more-analyzers-3`](../specifications/symfony-more-analyzers-3.md) | `account` family: enumeration (CWE-204), recovery-secret delivery (CWE-640) with the mail sink, weak password hashing (CWE-916) | 6, 20 | Specified |
+| 1.4 | [`symfony-more-analyzers-4`](../specifications/symfony-more-analyzers-4.md) | `configuration` family over allow-listed framework and deployment files (directory listing, disabled CSRF, session cookie flags, debug, privileged scheduled commands); SSRF through `curl` and `wget` as a new `ssrf` contract; whole-sample judged acceptance and closing documentation | 18, 21, and the SSRF half of 1 | Specified |
+
+After 1.4 the sample's closing state is 20 of 21 README entries detected, entry 8 recorded as not
+reproducible at the pin, and committed secrets left to the planned secret-scanning work.
 
 <a id="before-library-scanning"></a>
 
@@ -107,14 +128,15 @@ approved implementation assignments.
 
 | Planned functionality | Intended outcome / remaining boundary |
 |---|---|
-| **PHP Symfony & Drupal** | Symfony is implemented on the feature branch ([contract](../specifications/php-symfony-support.md), [results](../evaluation/symfony-results.md)); Drupal routing and render arrays remain planned ([phase 9](../specifications/architecture-phase-9-drupal.md)) |
+| **PHP Symfony & Drupal** | Symfony injection-family support is merged (PR #39; [contract](../specifications/php-symfony-support.md), [results](../evaluation/symfony-results.md)). Authorization, mass assignment, information exposure, account-flow and configuration analyzers are specified as the [Symfony application-security lane](#symfony-application-security-lane). Drupal routing and render arrays remain planned ([phase 9](../specifications/architecture-phase-9-drupal.md)) |
+| **Authorization, mass assignment, information exposure, account security, configuration** | General PHP analyzers delivered by the [Symfony application-security lane](#symfony-application-security-lane). Voters and custom authenticators, Symfony Form and serializer mass assignment, plain-PHP object-level authorization, and infrastructure files outside the allow-lists stay explicit gaps |
 | **Unsafe deserialization (CWE-502)** | Implemented in the feature worktree ([contract](../specifications/unsafe-deserialization.md), [verification](../evaluation/deserialization-results.md)) |
 | **Unrestricted upload adapter expansion** | PHP and Werkzeug uploads are merged (PR #31); Node and Starlette upload adapters remain |
 | **Prototype pollution in libraries** | Application writes and walk starts are merged (PR #35, PR #36); library export coverage follows W2/W4 |
 | **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; expanded dependency/lifecycle/discovery coverage beyond shared Python input facts |
 | **NoSQL engine expansion** | Additional MongoDB-style coverage and separately verified contracts for other databases |
 | **Weak randomness and cookie/session/header configuration** | Security-sensitive randomness and source-established configuration requirements with negative controls |
-| **Secret scanning** | Distinguish private material from public keys, placeholders, and test data |
+| **Secret scanning** | Distinguish private material from public keys, placeholders, and test data. The Symfony lane leaves committed `.env` secrets to this item |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |
 | **Fix & external finding imports** | Next up order 4: agent remediation skills, standards, playbooks, and provenance-preserving import from SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |

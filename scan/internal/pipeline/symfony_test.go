@@ -475,6 +475,10 @@ func symfonyAuthorizationEvidence(id string, u analysis.CandidateUse, report *an
 		if slices.ContainsFunc(f.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardOwnership }) {
 			return "unexpected ownership guard"
 		}
+		if slices.ContainsFunc(f.Guards, func(g analysis.AuthorizationGuard) bool { return g.Kind == analysis.GuardUnclassified }) ||
+			u.Completeness != nil && slices.ContainsFunc(u.Completeness.Blockers, func(g analysis.Gap) bool { return g.Kind == analysis.GuardUnclassified }) {
+			return "inline input validation was recorded as an unclassified authorization guard or blocker"
+		}
 	case "SYM-AUTHZ-03":
 		if !symfonyHasRole(f, "php-sql:user.email", analysis.RoleLoginIdentifier) {
 			return "missing login_identifier write"

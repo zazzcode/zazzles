@@ -45,6 +45,8 @@ and `control_flow`.
 ## Bounds
 
 Role names are strings. The scanner does not treat one role as stronger than another.
-One private helper is followed. Command execution is not an authorization operation.
+One private helper of the same class is followed. Outside that case, unclassified
+early-exit conditions are not recorded as authorization guards.
+Command execution is not an authorization operation.
 Trusted-proxy configuration is unread. The SSRF request is not modified when an
 authorization record points at it.

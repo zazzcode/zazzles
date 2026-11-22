@@ -78,12 +78,12 @@ The scanner lists the kind. It does not decide the kind is enough.
 | `authenticated_check` | A null test of `getUser()` or a `$_SESSION` test that exits |
 | `secret_check` | A stored field of the subject is compared with a request value that is not written to that field on the path |
 | `address_check` | The peer address is compared with literals. See the address sources below |
-| `guard_unclassified` | A private helper of the same class was followed one step and the body is not one of the kinds above |
+| `guard_unclassified` | Following a private helper of the same class does not establish one of the kinds above |
 
-A validation check that returns early and does not match a kind is not a guard. A
-comparison with no early exit is not a guard. A condition that dominates only one
-branch is recorded only for operations on that branch. One private helper is followed.
-A second step is `guard_unclassified`.
+Other unclassified conditions, including inline validation checks that return early,
+are not recorded as authorization guards. A comparison with no early exit is not a
+guard. A condition that dominates only one branch is recorded only for operations on
+that branch. One private helper is followed. A second step is `guard_unclassified`.
 
 The address guard is separate because a network address is a property of the
 connection, not of the user. Sources: `getClientIp` / `getClientIps`
@@ -96,15 +96,16 @@ classified loopback, private, or public. A framework client address also carries
 
 After every entry is analyzed, a state-changing candidate lists up to eight other
 entries that write the same storage key, with each entry's access and guard kinds,
-sorted by entry name.
+sorted by entry name, then entry ID.
 
-## One-way SSRF link
+## SSRF links in the report
 
 An address-guarded candidate lists the ids of the report's `ssrf_candidate` uses in
-`server_side_requests`. Those uses and their judge requests are unchanged. After
-judgment the authorization finding may name them in `related_findings`. The link is
-not copied back onto the SSRF record. The judge request omits the ids because a use
-id contains a snapshot hash.
+`server_side_requests`. The authorization finding links to the corresponding SSRF findings
+in `related_findings`. When the SSRF assessment has completed, its finding also links
+back to the authorization finding. Neither link changes the SSRF use or its judge
+request. The authorization judge request omits the IDs because a use ID contains a
+snapshot hash.
 
 ## Plain PHP
 

@@ -22,7 +22,7 @@ against its source facts before assigning an outcome.
 | --- | --- |
 | **JavaScript and TypeScript** | Node.js HTTP handlers, Next.js routes and Server Actions, browser entry points, Apollo GraphQL resolvers, and unary gRPC |
 | **Python** | HTTP handlers in Flask, FastAPI, Django, and other supported Python frameworks |
-| **PHP** | Server-mapped PHP files with bounded include and helper tracing |
+| **PHP** | Server-mapped PHP files plus Symfony routes, controllers, Twig and Doctrine |
 
 **Vulnerabilities Code Scan can identify**
 

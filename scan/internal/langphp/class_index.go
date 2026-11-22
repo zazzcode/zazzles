@@ -459,6 +459,7 @@ func (f *phpFlow) propertyWrite(left *sitter.Node, v phpValue) {
 	if !ok || base.classDecl == nil {
 		return
 	}
+	f.doctrinePropertyWrite(base, left, name, v)
 	props := make(map[string]phpValue, len(base.props)+1)
 	for k, p := range base.props {
 		props[k] = p
@@ -486,6 +487,12 @@ func (f *phpFlow) propertyRead(n *sitter.Node) (phpValue, bool) {
 		return phpValue{}, false
 	}
 	base, ok := f.env[phpVarName(m, obj)]
+	if v, modeled := symfonyRequestProperty(base, phpText(m, name)); modeled {
+		return v, true
+	}
+	if v, modeled := f.symfonyResponseProperty(base, phpText(m, name)); modeled {
+		return v, true
+	}
 	if !ok || base.classDecl == nil {
 		return phpValue{}, false
 	}
@@ -498,6 +505,9 @@ func (f *phpFlow) propertyRead(n *sitter.Node) (phpValue, bool) {
 	}
 	if base.propsUnknown {
 		return phpValue{unknown: true, gaps: []analysis.Gap{f.gap("php_value_unresolved", "Property is not resolved: ->"+key+" (the object's properties are not all established)", n)}}, true
+	}
+	if v, modeled := f.doctrineProperty(n, base, key); modeled {
+		return v, true
 	}
 	if decl, def := f.set.classIndex().propertyDefault(base.classDecl, key); decl != nil {
 		if def == nil {

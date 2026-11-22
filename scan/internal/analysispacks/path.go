@@ -8,26 +8,27 @@ const PathProtocol = "path-components-v3"
 // Operation-contract identifiers. Each is selected only after the parser
 // verified the actual import or builtin binding of the called filesystem API.
 const (
-	UnzipperEntryContract    = "unzipper-entry-write-v1"
-	HbsLayoutContract        = "hbs-render-layout-v1"
-	NodeFSContract           = "node-fs-file-v1"
-	PythonOpenContract       = "python-open-file-v1"
-	PythonPathlibContract    = "python-pathlib-file-v1"
-	PythonArchiveContract    = "python-archive-open-v1"
-	PythonSaveContract       = "werkzeug-file-save-v1"
-	ExpressSendContract      = "express-send-file-v1"
-	AdmZipContract           = "adm-zip-extract-v1"
-	PythonOSFileContract     = "python-os-file-v1"
-	FlaskSendContract        = "flask-send-file-v1"
-	StarletteFileContract    = "starlette-file-response-v1"
-	PythonShutilContract     = "python-shutil-file-v1"
-	PythonTarExtractContract = "python-tarfile-extract-v1"
-	PHPIncludeContract       = "php-include-v1"
-	PHPUploadMoveContract    = "php-upload-move-v1"
-	PHPFilesystemContract    = "php-filesystem-v1"
+	UnzipperEntryContract       = "unzipper-entry-write-v1"
+	HbsLayoutContract           = "hbs-render-layout-v1"
+	NodeFSContract              = "node-fs-file-v1"
+	PythonOpenContract          = "python-open-file-v1"
+	PythonPathlibContract       = "python-pathlib-file-v1"
+	PythonArchiveContract       = "python-archive-open-v1"
+	PythonSaveContract          = "werkzeug-file-save-v1"
+	ExpressSendContract         = "express-send-file-v1"
+	AdmZipContract              = "adm-zip-extract-v1"
+	PythonOSFileContract        = "python-os-file-v1"
+	FlaskSendContract           = "flask-send-file-v1"
+	StarletteFileContract       = "starlette-file-response-v1"
+	PythonShutilContract        = "python-shutil-file-v1"
+	PythonTarExtractContract    = "python-tarfile-extract-v1"
+	PHPIncludeContract          = "php-include-v1"
+	PHPUploadMoveContract       = "php-upload-move-v1"
+	PHPFilesystemContract       = "php-filesystem-v1"
+	SymfonyFileResponseContract = "symfony-file-response-v1"
 )
 
-var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract, PHPIncludeContract, PHPUploadMoveContract, PHPFilesystemContract}
+var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract, PHPIncludeContract, PHPUploadMoveContract, PHPFilesystemContract, SymfonyFileResponseContract, SymfonyUploadedFileMove}
 
 // PathContract returns a copy of the supported operation contract by verified ID.
 // Semantics follow the cited official documentation; the declared platform is a
@@ -35,6 +36,8 @@ var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlib
 // version is evidence of the target's deployed runtime.
 func PathContract(id string) *analysis.APIModel {
 	switch id {
+	case SymfonyUploadedFileMove:
+		return UploadContract(id)
 	case UnzipperEntryContract:
 		return &analysis.APIModel{ID: id, Library: "unzipper", Reference: "https://github.com/ZJONSSON/node-unzipper#openbuffer", Semantics: "unzipper.Open.buffer(buffer) returns the ZIP central directory with a files array. Each entry.path is the stored archive name and entry.stream() is content. When a request supplies buffer, entry names are request-derived path text. Caller code that passes an entry name to fs.createWriteStream writes the selected path; Open.buffer does not validate that caller's destination. A substring includes(root) check is not component containment: a normalized path can still leave the intended extraction directory or enter a sibling sharing text. A path.join/resolve alone is not containment. Only the write path, not stream content, is the path operand. This is the caller-controlled ZIP entry write (Zip Slip) contract, not a claim that unzipper's extract helper or every release is vulnerable. POSIX is a declared assumption; no symlink/race state is inferred."}
 	case HbsLayoutContract:
@@ -82,6 +85,9 @@ func PathContract(id string) *analysis.APIModel {
 	case PHPUploadMoveContract:
 		return &analysis.APIModel{ID: id, Library: "upload", Reference: "https://www.php.net/manual/en/function.move-uploaded-file.php",
 			Semantics: "move_uploaded_file(filename, destination) writes the uploaded stream to destination; filename is the server-managed $_FILES tmp_name and is not a request path source, while destination is the effective file-path operand. A destination built from $_FILES[name][name] carries the client-supplied original name, separators included; basename reduces it to one component, and a finite allow-list with a rejecting branch contains it. is_uploaded_file is a presence check on the source, not containment for the destination. Neither call resolves symbolic links on the caller's behalf. This contract is not evidence of the deployed platform."}
+	case SymfonyFileResponseContract:
+		return &analysis.APIModel{ID: id, Library: "symfony/http-foundation", Reference: "https://symfony.com/doc/6.4/components/http_foundation.html#serving-files",
+			Semantics: "The BinaryFileResponse constructor and AbstractController::file take the path of the file to read and serve in argument 0. The optional response status, headers and content-disposition metadata do not choose the path. The response helpers do not enforce containment within an application-specific directory."}
 	case PHPFilesystemContract:
 		return &analysis.APIModel{ID: id, Library: "filesystem", Reference: "https://www.php.net/manual/en/function.file-get-contents.php",
 			Semantics: "file_get_contents, fopen, readfile, file, file_put_contents and unlink take a file path as their first argument; file_put_contents' second argument is written data, a separate operand and never a path source; fopen's mode selects read/write and is not a path; readfile streams the selected file to the response. A relative path resolves against the process working directory with no containment check, so '..' segments and an absolute value select any file the process can reach. basename reduces a value to one component; realpath resolves symbolic links lexically-plus-filesystem but is not itself containment; a finite allow-list or a component-boundary check that rejects before the operation is. A function defined locally with one of these names carries no contract. This contract is not evidence of the deployed platform."}
@@ -128,21 +134,22 @@ func PathChoices(name string) []map[string]string {
 }
 
 var pathOwners = map[string]string{
-	UnzipperEntryContract:    "internal/parse/path_unzipper.go",
-	HbsLayoutContract:        "internal/parse/path_render.go",
-	NodeFSContract:           "internal/parse/path_node.go",
-	PythonOpenContract:       "internal/parse/python_path.go",
-	PythonPathlibContract:    "internal/parse/python_path.go",
-	PythonArchiveContract:    "internal/parse/python_path.go",
-	PythonSaveContract:       "internal/parse/python_path.go",
-	ExpressSendContract:      "internal/parse/path_node.go",
-	AdmZipContract:           "internal/parse/path_archive.go",
-	PythonOSFileContract:     "internal/parse/python_path.go",
-	FlaskSendContract:        "internal/parse/python_path.go",
-	StarletteFileContract:    "internal/parse/python_path.go",
-	PythonShutilContract:     "internal/parse/python_path.go",
-	PythonTarExtractContract: "internal/parse/python_path.go",
-	PHPIncludeContract:       "internal/parse/php_path.go",
-	PHPUploadMoveContract:    "internal/parse/php_path.go",
-	PHPFilesystemContract:    "internal/parse/php_path.go",
+	SymfonyFileResponseContract: "internal/langphp/symfony_process.go",
+	UnzipperEntryContract:       "internal/parse/path_unzipper.go",
+	HbsLayoutContract:           "internal/parse/path_render.go",
+	NodeFSContract:              "internal/parse/path_node.go",
+	PythonOpenContract:          "internal/parse/python_path.go",
+	PythonPathlibContract:       "internal/parse/python_path.go",
+	PythonArchiveContract:       "internal/parse/python_path.go",
+	PythonSaveContract:          "internal/parse/python_path.go",
+	ExpressSendContract:         "internal/parse/path_node.go",
+	AdmZipContract:              "internal/parse/path_archive.go",
+	PythonOSFileContract:        "internal/parse/python_path.go",
+	FlaskSendContract:           "internal/parse/python_path.go",
+	StarletteFileContract:       "internal/parse/python_path.go",
+	PythonShutilContract:        "internal/parse/python_path.go",
+	PythonTarExtractContract:    "internal/parse/python_path.go",
+	PHPIncludeContract:          "internal/parse/php_path.go",
+	PHPUploadMoveContract:       "internal/parse/php_path.go",
+	PHPFilesystemContract:       "internal/parse/php_path.go",
 }

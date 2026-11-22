@@ -15,7 +15,7 @@ func TestCodeRedirectSelection(t *testing.T) {
 				if file == "client.tsx" {
 					u.EntryKind = "browser"
 				}
-				if (file == "app.py") != strings.HasPrefix(id, "python-") || (file == "index.php") != strings.HasPrefix(id, "php-") {
+				if (file == "app.py") != strings.HasPrefix(id, "python-") || (file == "index.php") != (strings.HasPrefix(id, "php-") || id == SymfonyRedirectContract) {
 					if _, err := Select(u); err == nil {
 						t.Fatal("language/API conflict selected")
 					}

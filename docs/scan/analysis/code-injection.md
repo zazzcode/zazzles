@@ -76,3 +76,9 @@ other columns remain unresolved. A browser `eval` records only the code claim; s
 
 Use `--only-family code` with a judged scan to select this family. Offline evidence and practice
 observations do not consume model requests.
+
+## Symfony
+
+Symfony route dispatch reaches the existing PHP interpreter contracts in actions and services. A supported Twig function call can reach a verified template compiler in a project extension. Context-only render data remains distinct from the template source operand.
+
+[Symfony analysis coverage](../symfony-support.md)

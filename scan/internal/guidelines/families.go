@@ -1,6 +1,7 @@
 package guidelines
 
 import (
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -164,10 +165,16 @@ func phpSQLSpec() projectionSpec {
 	}}
 }
 
+//go:embed logging_php.md
+var phpLoggingGuidelines string
+
 // FamilyBody returns the validated section projection of the canonical
 // language document for one claim family. Unmigrated families keep the full
 // document through Body.
 func FamilyBody(language lang.Language, family string) (AnalysisGuidelines, error) {
+	if language == lang.PHP && family == "logging" {
+		return parse(phpLoggingGuidelines)
+	}
 	item, ok := ForLanguage(language)
 	if !ok || language == lang.Go {
 		return AnalysisGuidelines{}, fmt.Errorf("no analysis guidelines for %s", language)

@@ -12,6 +12,7 @@ import (
 type phpInputSource struct {
 	origin    string
 	container string
+	key       string
 }
 
 // superscriptOrigin maps a superglobal access to its acquisition origin.
@@ -93,7 +94,8 @@ func (f *phpFlow) source(n *sitter.Node, container, origin, key string) phpValue
 	if container == "_SESSION" {
 		key0 := "php-session:" + key
 		v.deps[0].dep.StorageKey = key0
-		for _, w := range f.set.sessionWrites[key0] {
+		writes := f.set.scopedStorageWrites(key0, f.entry.ID, f.set.storageProjectIndex(f.report))
+		for _, w := range writes {
 			for _, wd := range w.value.deps {
 				nd := wd
 				nd.dep.StorageKey = key0
@@ -102,7 +104,7 @@ func (f *phpFlow) source(n *sitter.Node, container, origin, key string) phpValue
 				v.deps = append(v.deps, nd)
 			}
 		}
-		if len(f.set.sessionWrites[key0]) == 0 {
+		if len(writes) == 0 {
 			v.deps[0].protection = phpUnwritten
 		}
 	}
@@ -120,7 +122,7 @@ func (f *phpFlow) recordInput(source analysis.Evidence, container, key, origin s
 		inputs = map[analysis.Evidence]phpInputSource{}
 		f.set.inputs[f.invocation.ID] = inputs
 	}
-	inputs[source] = phpInputSource{origin: origin, container: container}
+	inputs[source] = phpInputSource{origin: origin, container: container, key: key}
 }
 
 // assemblePHPInputs builds InputFacts after storage linking finalized the
@@ -149,6 +151,9 @@ func (s *phpSet) assemblePHPInputs(out *analysis.AnalysisReport) {
 			origin := "unknown"
 			if source, ok := s.inputs[u.InvocationContextID][dep.Source]; ok {
 				origin = source.origin
+				if facts.Framework == "symfony" && source.key != "" && dep.Source.Kind == "input_source" {
+					facts.Stages = append(facts.Stages, analysis.InputStage{Name: "request_field", Order: j, Scope: source.key, Evidence: dep.Source})
+				}
 			}
 			if origin == "http.upload" {
 				origin = phpUploadOrigin(dep)
@@ -161,6 +166,15 @@ func (s *phpSet) assemblePHPInputs(out *analysis.AnalysisReport) {
 				Dependency: j, Origin: origin, InitialType: "unknown", SinkType: "unknown",
 				Source: dep.Source, Transfers: append([]analysis.Evidence{}, dep.Transfers...),
 			})
+		}
+		if facts.Framework == "symfony" {
+			for _, dep := range u.Dependencies {
+				for _, transfer := range dep.Transfers {
+					if transfer.Kind == "typed_conversion" {
+						facts.Controls = append(facts.Controls, transfer)
+					}
+				}
+			}
 		}
 		u.InputFacts = facts
 	}
@@ -224,6 +238,7 @@ func phpStoredKeys(deps []phpDep) []string {
 // those request sources into the claim and lifts its stored-only blocker. A
 // key with no request-derived writer keeps the claim in Review.
 func (s *phpSet) linkStoredOnlySessions(out *analysis.AnalysisReport) {
+	projects := s.storageProjectIndex(out)
 	for i := range out.Uses {
 		u := &out.Uses[i]
 		keys, ok := s.storedOnly[u.ID]
@@ -239,7 +254,7 @@ func (s *phpSet) linkStoredOnlySessions(out *analysis.AnalysisReport) {
 			if !strings.HasPrefix(key, "php-session:") {
 				continue
 			}
-			for _, w := range s.sessionWrites[key] {
+			for _, w := range s.scopedStorageWrites(key, u.EntryID, projects) {
 				for _, wd := range w.value.deps {
 					if wd.dep.Source.Kind != "input_source" || wd.protection == "numeric" || wd.protection == "non_content" || seen[wd.dep.Source.Span] {
 						continue

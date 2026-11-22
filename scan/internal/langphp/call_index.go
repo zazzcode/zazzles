@@ -38,7 +38,7 @@ func (s *phpSet) computeReference(m *phpModule, ref string) phpCallResolution {
 	if r := s.legacyResolution(m, ref); r.Target != nil {
 		return r
 	}
-	p := s.projectInputs()
+	p := s.projectInputsFor(m.file)
 	fail := func(reason string) phpCallResolution { return phpCallResolution{Kind: "unresolved", Reason: reason} }
 	if p.invalid != "" {
 		return fail(p.invalid)
@@ -75,7 +75,7 @@ func (s *phpSet) computeReference(m *phpModule, ref string) phpCallResolution {
 		class = service.class
 		break
 	}
-	targets := s.psr4Class(class)
+	targets := s.psr4Targets(p, class)
 	if len(targets) != 1 {
 		if len(targets) > 1 {
 			return fail("ambiguous_class")
@@ -122,7 +122,10 @@ func (s *phpSet) computeReference(m *phpModule, ref string) phpCallResolution {
 	return phpCallResolution{Kind: kind, Target: &phpBoundCallable{module: target.module, fn: methods[0]}, Inputs: inputs}
 }
 func (s *phpSet) psr4Class(class string) []phpClassTarget {
-	p := s.projectInputs()
+	return s.psr4Targets(s.projectInputs(), class)
+}
+
+func (s *phpSet) psr4Targets(p *phpProjectInputs, class string) []phpClassTarget {
 	var prefixes []string
 	for prefix := range p.psr4 {
 		if strings.HasPrefix(class, prefix) {

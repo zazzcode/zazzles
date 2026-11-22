@@ -1,0 +1,12 @@
+<p>{{ q ? q|raw : 'none' }}</p>
+<img src="{{ asset('uploads/' ~ q) }}">
+<a href="/go/{{ q }}">x</a>
+<a href="{{ q }}">x</a>
+<img src="{{ q }}">
+<script src="/js/{{ q }}"></script>
+<a href="java{{ q }}">x</a>
+{% autoescape 'js' %}<p>{{ q }}</p>{% endautoescape %}
+<p>{{ q|spaceless }}</p>
+<input value="{{ q }}">
+{% macro show(v) %}<b>{{ v|raw }}</b>{% endmacro %}
+<p>{{ _self.show(q) }}</p>

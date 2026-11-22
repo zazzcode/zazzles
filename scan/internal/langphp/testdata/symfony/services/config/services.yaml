@@ -1,0 +1,3 @@
+services:
+  App\OptionalGreeting:
+    arguments: { $enabled: '%env(bool:FLAG)%' }

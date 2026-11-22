@@ -28,7 +28,7 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 - [Detection capabilities](scan/detection-capabilities.md) indexes weakness classes, CWE mappings, analyzer selectors and entry points.
 - [Analysis rules](scan/analysis/README.md) explain how Zazzles interprets specific operations, guards and evidence.
 - [Finding categories and terminology](scan/glossary.md) defines labels used in reports.
-- [Next.js](scan/nextjs-support.md), [Python](scan/python-support.md) and [PHP](scan/php-support.md) describe their entry and language boundaries.
+- [Next.js](scan/nextjs-support.md), [Python](scan/python-support.md), [PHP](scan/php-support.md), and [Symfony](scan/symfony-support.md) describe their entry and language boundaries.
 
 ## Shared project guides
 

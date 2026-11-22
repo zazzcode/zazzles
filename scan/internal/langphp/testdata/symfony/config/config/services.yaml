@@ -1,0 +1,8 @@
+parameters: {dir: '%kernel.project_dir%/public/up'}
+services:
+  App\Demo:
+    tags: [{ name: twig.extension }]
+    arguments:
+      $nested: [one, two]
+when@prod:
+  parameters: {prod_only: production}

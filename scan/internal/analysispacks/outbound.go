@@ -28,6 +28,19 @@ func OutboundContract(library string) *analysis.APIModel {
 }
 
 func outboundRoots(u analysis.CandidateUse, language lang.Language) ([]string, error) {
+	if language == lang.PHP {
+		if u.APIModel == nil || (u.APIModel.ID != PHPURLOpenContract && u.APIModel.ID != SymfonyHTTPClientContract) ||
+			!reflect.DeepEqual(u.APIModel, SSRFContract(u.APIModel.ID)) || u.Outbound == nil ||
+			u.Outbound.ContractID != u.APIModel.ID || u.Outbound.DestinationOrigin != analysis.DestinationExternalData {
+			return nil, fmt.Errorf("PHP outbound observation needs its demonstrated destination contract")
+		}
+		for _, e := range u.Context {
+			if e.Kind == "sink_binding" {
+				return []string{"api." + u.APIModel.ID}, nil
+			}
+		}
+		return nil, fmt.Errorf("PHP outbound destination binding missing")
+	}
 	if language != lang.Python {
 		if u.APIModel != nil {
 			return nil, fmt.Errorf("JS/TS outbound shapes have no verified API contract")
@@ -71,7 +84,8 @@ func outboundDescriptors() []Component {
 	// Library is source metadata. One component owns shared semantics, not three
 	// competing contracts with different receivers.
 	contract.Material = encoded(analysis.APIModel{ID: "python-http-destination-v1", Semantics: OutboundContract("requests").Semantics})
-	return append(items, js, py, contract)
+	php := makeItem("language.outbound.php", "language_guidance", "Only verified PHP stream URL, cURL URL settings, and typed Symfony HTTP client destination operands are in scope. A stored or remote-response destination is an observation with independent provenance.", []string{"php"})
+	return append(items, js, py, php, contract)
 }
 
 func (c *catalog) validateObservation(f *Family) error {

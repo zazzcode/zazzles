@@ -20,6 +20,9 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, echoContext stri
 	hasRaw, hasUnknown := false, false
 	stored := false
 	for i, d := range v.deps {
+		if f.symfony != nil && phpTypedStorageField(d) {
+			continue
+		}
 		context := echoContext
 		if i < len(pathContexts) && pathContexts[i] != "" {
 			context = pathContexts[i]
@@ -42,6 +45,9 @@ func (f *phpFlow) recordXSS(sink analysis.Evidence, v phpValue, echoContext stri
 		stored = stored || d.dep.StorageKey != ""
 		deps = append(deps, d.dep)
 		paths = append(paths, analysis.XSSPath{Dependency: len(deps) - 1, Protection: p, OutputContext: context})
+	}
+	if len(deps) == 0 {
+		return
 	}
 	// Stored writers can remove a raw path or establish its protection.
 	// Keep the echo context as the fallback until linkStorage sees the final paths.
@@ -100,4 +106,11 @@ func phpRenderProtection(p, context string) string {
 		return "sanitized"
 	}
 	return "unknown"
+}
+
+// phpTypedStorageField reports a read of an entity field whose declared PHP
+// type is numeric. It is not rendering content, and a generated identifier
+// has no writer to link.
+func phpTypedStorageField(d phpDep) bool {
+	return d.protection == "numeric" && d.dep.Source.Kind == "storage_source" && d.numericAt == d.dep.Source
 }

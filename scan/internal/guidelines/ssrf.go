@@ -11,7 +11,7 @@ import (
 // The SSRF documents are embedded separately and are not part of the default
 // language pack, so adding the family changes no existing request.
 //
-//go:embed ssrf_javascript.md ssrf_python.md
+//go:embed ssrf_javascript.md ssrf_python.md ssrf_php.md
 var ssrfFiles embed.FS
 
 // ssrfSections are required, exactly once, in every SSRF document.
@@ -24,6 +24,8 @@ func SSRFBody(language lang.Language) (AnalysisGuidelines, error) {
 	case lang.JavaScript, lang.TypeScript:
 	case lang.Python:
 		name = "ssrf_python.md"
+	case lang.PHP:
+		name = "ssrf_php.md"
 	default:
 		return AnalysisGuidelines{}, fmt.Errorf("no SSRF guidelines for %s", language)
 	}

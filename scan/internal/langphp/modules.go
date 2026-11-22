@@ -46,6 +46,8 @@ type phpSet struct {
 	witnessPrograms map[string]*phpWitnessProgram
 	resolutions     map[string]phpCallResolution
 	project         *phpProjectInputs
+	composers       map[string]*symfonyProject
+	symfony         []*symfonyProject
 	builtinEffects  map[string]bool
 	summaries       map[string]*parse.ClosedCallable
 	root            string
@@ -71,6 +73,9 @@ type phpSet struct {
 	// magicClasses caches the deserialization magic-method class evidence.
 	magicClasses      []analysis.Evidence
 	magicClassesReady bool
+	twig              twigInventory
+	doctrine          doctrineStorage
+	responses         map[int]symfonyResponseState
 }
 
 type phpWrite struct {
@@ -101,8 +106,12 @@ func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 		return nil, err
 	}
 	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
+	s.loadSymfonyProjects(inv.Config)
+	s.twig = newTwigInventory(inv.Templates, root)
+	s.doctrine = newDoctrineStorage()
+	s.responses = map[int]symfonyResponseState{}
 	for _, f := range inv.Files {
-		if f.Language == lang.PHP {
+		if f.Language == lang.PHP && !s.symfonyCacheFile(f.Path) {
 			s.files = append(s.files, f.Path)
 		}
 	}
@@ -352,18 +361,33 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 		"PHP SQL text, command strings, output rendering and file operands are candidate findings, not confirmed vulnerabilities",
 	}}
 	before := len(s.gaps)
+	if len(s.symfony) > 0 {
+		out.Limitations = append(out.Limitations, "Symfony route discovery covers source-backed attributes, annotations and YAML registrations")
+		for _, project := range s.symfony {
+			for _, route := range project.routes(s) {
+				if entry != "" && route.sourceFile() != entry {
+					continue
+				}
+				for _, method := range route.httpMethods() {
+					s.analyzeSymfonyEntry(out, project, route, method)
+				}
+			}
+		}
+	}
 	for _, file := range s.files {
 		m := s.modules[file]
 		if m == nil {
 			continue
 		}
-		if entry != "" && file != entry {
+		if !s.fileMapped(file) || entry != "" && file != entry {
 			continue
 		}
 		s.analyzeEntry(out, m)
 	}
 	// Class-resolution gaps found while walking entries are report coverage.
 	out.Gaps = append(out.Gaps, s.gaps[before:]...)
+	s.finalizeSymfonyResponses(out)
+	s.linkDoctrineStorage(out)
 	s.linkStorage(out)
 	s.linkStoredOnlySessions(out)
 	parse.AssembleXSSClaims(out)
@@ -376,6 +400,11 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 			e.Text = ""
 			out.Files = append(out.Files, e)
 		}
+	}
+	for _, file := range s.twig.text.Files() {
+		e, _ := s.twig.text.Get(file)
+		e.Kind, e.Text = "file", ""
+		out.Files = append(out.Files, e)
 	}
 	for _, r := range guidelines.ForPaths(s.files) {
 		out.AnalysisGuidelines = append(out.AnalysisGuidelines, analysis.GuidelinesRef{ID: r.ID, Version: r.Version, Languages: r.Languages})

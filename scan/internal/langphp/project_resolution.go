@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
+	"gopkg.in/yaml.v3"
 )
 
 // phpProjectInputs is a source-only subset of Composer and service wiring.
@@ -134,6 +135,37 @@ func yamlText(s string) (string, bool) {
 func safePHPPath(p string) bool {
 	return p != "" && !path.IsAbs(p) && !strings.Contains(p, "\\") && path.Clean(p) != ".." && !strings.HasPrefix(path.Clean(p), "../")
 }
+
+func (s *phpSet) projectInputsFor(file string) *phpProjectInputs {
+	project := s.symfonyProjectOf(file)
+	if project == nil {
+		return s.projectInputs()
+	}
+	if project.legacyInputs != nil {
+		return project.legacyInputs
+	}
+	p := &phpProjectInputs{psr4: project.psr4, composerSpan: project.composerSpan, services: map[string]phpServiceInput{}}
+	project.legacyInputs = p
+	config := project.configs[path.Join(project.root, "config/services.yaml")]
+	services := symfonyYAMLValue(config.value, "services")
+	if services == nil || services.Kind != yaml.MappingNode {
+		return p
+	}
+	for i := 0; i+1 < len(services.Content); i += 2 {
+		id, value := services.Content[i], services.Content[i+1]
+		class := strings.TrimPrefix(symfonyYAMLString(symfonyYAMLValue(value, "class")), `\`)
+		alias := symfonyYAMLString(symfonyYAMLValue(value, "alias"))
+		if text := symfonyYAMLString(value); strings.HasPrefix(text, "@") {
+			alias = text
+		}
+		if (class == "") == (alias == "") {
+			continue
+		}
+		p.services[id.Value] = phpServiceInput{class: class, alias: strings.TrimPrefix(alias, "@"), at: symfonyYAMLOrigin(config.source, id).Span}
+	}
+	return p
+}
+
 func (s *phpSet) projectInputs() *phpProjectInputs {
 	if s.project != nil {
 		return s.project

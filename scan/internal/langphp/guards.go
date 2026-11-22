@@ -202,3 +202,149 @@ func (f *phpFlow) protectElement(name, index, protection string, at analysis.Evi
 	f.env[name] = v
 	f.markDirty(name)
 }
+
+// applySymfonyFilters records the selected validation branch on the tested
+// value so a later write or another branch cannot inherit that evidence.
+func (f *phpFlow) applySymfonyFilters(condition *sitter.Node, truth bool) {
+	if f.symfony == nil || condition == nil {
+		return
+	}
+	f.symfonyImpliedFilters(condition, truth, func(variable, name string, module *phpModule, node *sitter.Node) {
+		value, exists := f.env[variable]
+		if !exists {
+			return
+		}
+		e := module.evidence("php_filter_"+name, node)
+		value = phpTransfer(value, e)
+		for i := range value.deps {
+			if value.deps[i].protection == "raw" {
+				value.deps[i].protection = e.Kind
+			}
+		}
+		f.env[variable] = value
+		f.markDirty(variable)
+	})
+}
+
+func phpFilterEvidence(dep phpDep) (analysis.Evidence, bool) {
+	for i := len(dep.dep.Transfers) - 1; i >= 0; i-- {
+		e := dep.dep.Transfers[i]
+		if strings.HasPrefix(e.Kind, "php_filter_") {
+			return e, true
+		}
+	}
+	return analysis.Evidence{}, false
+}
+
+func (f *phpFlow) symfonyImpliedFilters(n *sitter.Node, truth bool, record func(string, string, *phpModule, *sitter.Node)) {
+	if n == nil {
+		return
+	}
+	m := f.module
+	switch n.Kind() {
+	case "parenthesized_expression":
+		f.symfonyImpliedFilters(firstNamedChild(n), truth, record)
+		return
+	case "unary_op_expression":
+		if phpOperator(m, n) == "!" {
+			f.symfonyImpliedFilters(firstNamedChild(n), !truth, record)
+		}
+		return
+	case "binary_expression":
+		switch strings.ToLower(phpOperator(m, n)) {
+		case "&&", "and":
+			if truth {
+				f.symfonyImpliedFilters(phpField(n, "left"), truth, record)
+				f.symfonyImpliedFilters(phpField(n, "right"), truth, record)
+			}
+			return
+		case "||", "or":
+			if !truth {
+				f.symfonyImpliedFilters(phpField(n, "left"), truth, record)
+				f.symfonyImpliedFilters(phpField(n, "right"), truth, record)
+			}
+			return
+		}
+	case "member_call_expression":
+		variable, filter, helper, returned := f.symfonyFilterHelper(n)
+		if truth && variable != "" {
+			record(variable, filter, helper, returned)
+		}
+		return
+	}
+	if variable, filter := f.phpFilterPredicate(m, n, truth); variable != "" {
+		record(variable, filter, m, n)
+	}
+}
+
+func (f *phpFlow) phpFilterPredicate(m *phpModule, n *sitter.Node, truth bool) (variable, filter string) {
+	if n == nil {
+		return "", ""
+	}
+	if n.Kind() == "parenthesized_expression" {
+		return f.phpFilterPredicate(m, firstNamedChild(n), truth)
+	}
+	if n.Kind() == "unary_op_expression" && phpOperator(m, n) == "!" {
+		return f.phpFilterPredicate(m, firstNamedChild(n), !truth)
+	}
+	if n.Kind() == "binary_expression" {
+		op := phpOperator(m, n)
+		left, right := phpField(n, "left"), phpField(n, "right")
+		if phpText(m, left) == "false" {
+			left, right = right, left
+		}
+		if phpText(m, right) != "false" || (op != "!==" && op != "===") {
+			return "", ""
+		}
+		return f.phpFilterPredicate(m, left, truth == (op == "!=="))
+	}
+	if !truth || n.Kind() != "function_call_expression" {
+		return "", ""
+	}
+	callee := phpText(m, phpCallee(n))
+	if callee != "filter_var" && callee != `\filter_var` {
+		return "", ""
+	}
+	if !f.set.phpDeserializationBuiltin(m, phpCallee(n)) {
+		return "", ""
+	}
+	args := phpArgs(n)
+	if len(args) != 2 {
+		return "", ""
+	}
+	filter = strings.TrimPrefix(phpText(m, args[1]), `\`)
+	switch filter {
+	case "FILTER_VALIDATE_URL", "FILTER_VALIDATE_EMAIL", "FILTER_VALIDATE_INT", "FILTER_VALIDATE_IP", "FILTER_VALIDATE_BOOLEAN", "FILTER_VALIDATE_DOMAIN":
+		return phpVarName(m, args[0]), strings.ToLower(filter)
+	}
+	return "", ""
+}
+
+func (f *phpFlow) symfonyFilterHelper(n *sitter.Node) (variable, filter string, module *phpModule, returned *sitter.Node) {
+	m := f.module
+	receiver := phpVarName(m, phpField(n, "object"))
+	decl := f.env[receiver].classDecl
+	if receiver == "this" && decl == nil {
+		decl = f.class
+	}
+	if decl == nil {
+		return "", "", nil, nil
+	}
+	_, helper, module, _ := f.set.classIndex().method(decl, phpText(m, phpField(n, "name")))
+	body := phpField(helper, "body")
+	if body == nil || body.NamedChildCount() != 1 || body.NamedChild(0).Kind() != "return_statement" {
+		return "", "", nil, nil
+	}
+	returned = body.NamedChild(0)
+	param, filter := f.phpFilterPredicate(module, firstNamedChild(returned), true)
+	if param == "" {
+		return "", "", nil, nil
+	}
+	params, args := phpField(helper, "parameters"), phpArgs(n)
+	for i := uint(0); params != nil && i < params.NamedChildCount() && i < uint(len(args)); i++ {
+		if phpVarName(module, phpField(params.NamedChild(i), "name")) == param {
+			return phpVarName(m, args[i]), filter, module, returned
+		}
+	}
+	return "", "", nil, nil
+}

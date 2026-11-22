@@ -52,7 +52,7 @@ A supported non-request origin without a request witness stays Review. Literal i
 file-only reads, unmodeled sockets and data-only parsing are excluded. Version ranges and type
 package versions provide no exact version facts. Browser operations, dynamic callable dispatch,
 phar metadata, unspecified libraries and gadget-chain analysis are out of scope. The PHP adapter
-uses server-mapped entries. Symfony controller dispatch and service wiring are separate coverage.
+uses server-mapped entries. Symfony route dispatch follows reached services and Twig globals.
 
 Further limits of the supported subset:
 

@@ -1,0 +1,2 @@
+{% for m in app.flashes('notice') %}{{ m|raw }}{% endfor %}
+{% for m in app.flashes('fixed') %}{{ m|raw }}{% endfor %}

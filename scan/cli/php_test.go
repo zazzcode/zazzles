@@ -61,3 +61,19 @@ func TestPHPCLI(t *testing.T) {
 		}
 	}
 }
+
+func TestSymfonyYAMLRouteCLISelection(t *testing.T) {
+	root := filepath.Join("..", "internal", "langphp", "testdata", "symfony", "routes-yaml")
+	var stdout, stderr bytes.Buffer
+	args := []string{"--analyze", "--json", "--entry", "src/Controller/X.php", "--route", "/d", root}
+	if code := run(args, &stdout, &stderr); code != exitOK {
+		t.Fatalf("combined controller and route selection: %s", stderr.String())
+	}
+	var report analysis.AnalysisReport
+	if err := json.Unmarshal(stdout.Bytes(), &report); err != nil {
+		t.Fatal(err)
+	}
+	if len(report.Entries) != 1 || report.Entries[0].Name != "ANY /d" {
+		t.Fatalf("wrong entries: %+v", report.Entries)
+	}
+}

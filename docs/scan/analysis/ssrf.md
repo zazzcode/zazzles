@@ -55,3 +55,9 @@ the call, or its only effect is setting a flag or variable that no branch on the
 test is not a supported transfer or restriction, and the path stays raw. A loop that starts after the
 sink, or that precedes it without leaving the handler, assigning an outer binding or containing the
 sink, no longer adds `control_flow_unresolved`; removing that blocker never records a guard.
+
+## Symfony
+
+In Symfony projects, PHP URL-capable functions, cURL, and verified Symfony HttpClient calls identify the destination operand. A fixed local path prefix excludes the URL claim, and an HTTP-only prefix excludes the local path claim. A URL-format check establishes syntax evidence without a destination restriction.
+
+[Symfony analysis coverage](../symfony-support.md)

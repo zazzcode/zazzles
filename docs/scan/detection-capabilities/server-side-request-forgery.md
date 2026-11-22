@@ -12,6 +12,7 @@ In a judged scan, select this family with `--only-family ssrf`.
 | Request-controlled host or URL | A request value reaches the URL parameter of a verified `fetch`, axios, Node `http` or Python HTTP client | A complete raw destination path can be Confirmed |
 | Parsed destination restrictions | A scheme and host check restricts the final URL on every path | May be Protected for the observed destination |
 | Raw string restrictions | A prefix check runs on an unparsed destination | Can produce a practice finding. A scheme-only check leaves host control open |
+| PHP URL operations and Symfony HttpClient | A URL-capable PHP function or verified HttpClient call receives a request destination | Record the verified destination slot independently of file paths and request data |
 
 ## Recorded in Review
 
@@ -19,6 +20,7 @@ In a judged scan, select this family with `--only-family ssrf`.
 | --- | --- | --- | --- | --- |
 | `SSRF-R01` | Path or query control only | A modeled request value only affects the path or query portion of a destination claim | Review when host or URL control is unestablished | Resolve the URL construction and authority semantics |
 | `SSRF-R02` | Unresolved wrapper or transformation | A helper returns the outbound destination, but its relevant effects are unknown | Review when the destination path or enforcing guard is incomplete | Resolve the client binding and effective destination |
+| `SSRF-R03` | Unresolved PHP destination | A verified URL-capable call receives a transformed destination | Review when destination shape or guard semantics are unresolved | Establish URL construction and same-value controls |
 
 ## Not recorded
 

@@ -1,9 +1,13 @@
 package langphp
 
 import (
+	"path"
+	"strings"
+
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
+	"github.com/zazzcode/zazzles/scan/internal/parse"
 )
 
 // phpPathOps maps D-8 filesystem operations to their operand slot layout.
@@ -11,7 +15,7 @@ import (
 // never a request path source; the destination argument is the path operand.
 func phpPathSlots(op string) []string {
 	switch op {
-	case "move_uploaded_file":
+	case "move_uploaded_file", symfonyUploadOperation:
 		return []string{"path", "destination"}
 	case "file_put_contents":
 		return []string{"path", "content"}
@@ -43,6 +47,9 @@ func phpPathRole(op string) string {
 func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, values []phpValue, contract, role string) {
 	m := f.module
 	slots := phpPathSlots(op)
+	if op == symfonyUploadOperation && len(nodes) == 1 {
+		slots = slots[:1]
+	}
 	if role == "" {
 		role = phpPathRole(op)
 	}
@@ -102,6 +109,19 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 				protection = "unknown"
 			}
 			flow := analysis.PathFlow{Dependency: len(deps), Operand: slot, Protection: protection, Transforms: transforms}
+			if f.symfony != nil {
+				for _, transfer := range d.dep.Transfers {
+					switch transfer.Kind {
+					case "string_construction":
+						flow.Transforms = parse.AppendUniqueString(flow.Transforms, analysis.PathTransformConcat)
+					case "string_interpolation":
+						flow.Transforms = parse.AppendUniqueString(flow.Transforms, analysis.PathTransformTemplate)
+					}
+				}
+				if strings.HasPrefix(v.prefix, "/") && strings.HasSuffix(v.prefix, "/") {
+					flow.Root = path.Clean(v.prefix)
+				}
+			}
 			if guard >= 0 {
 				flow.Controls = append(flow.Controls, guard)
 			}
@@ -118,6 +138,18 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 	u := f.addUse("path_traversal_candidate", n, phpValue{deps: deps, gaps: all.gaps})
 	u.Path = facts
 	u.APIModel = analysispacks.PathContract(contract)
+	if f.symfony != nil {
+		// Path facts refer to the final context, which begins with the
+		// invocation and branch evidence recorded by addUse.
+		for i := range facts.Operands {
+			for j := range facts.Operands[i].Context {
+				facts.Operands[i].Context[j] += len(u.Context)
+			}
+		}
+		for i := range facts.Guards {
+			facts.Guards[i].Context += len(u.Context)
+		}
+	}
 	u.Context = append(u.Context, context...)
 	u.Context = append(u.Context, m.evidence("sink_binding", phpCallee(n)))
 	sinkGaps := []analysis.Gap{}

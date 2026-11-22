@@ -1,10 +1,13 @@
 # Using gh-stack with Worktree Lanes
 
-This guide defines how the methodology uses GitHub Stacked PRs with Git worktrees. A stack is a chain of two or more PRs: the bottom PR targets the integration branch and each higher PR targets the branch below it. Each branch and PR is therefore an independently reviewable deliverable layer.
+This guide defines how Zazzles uses GitHub Stacked PRs in one assigned worktree. A stack is a chain of two or more PRs: the bottom PR targets `stage` and each higher PR targets the branch below it. Each branch and PR is therefore an independently reviewable deliverable layer.
 
 > **Scope:** Use the locally managed `gh-stack` workflow only for a traditional Git branch stack in which every stacked branch is available from one shared stack-lane worktree. Do not use it for a set of stacked branches that are separately checked out into individual worktrees. Use separate worktrees and ordinary PRs for that case.
 
-GitHub Stacked PRs is currently preview functionality. Use the workflow below when the repository has the feature enabled; keep the same branch and worktree discipline when it is not.
+Load this guide when the specification assigns multiple dependent PRs to a single worktree.
+Confirm the slice order before creating branches. A single-PR specification uses its assigned
+branch and ordinary draft PR workflow. GitHub Stacked PRs is a preview feature. If it is unavailable,
+preserve the same one-worktree dependency chain and create drafts with explicit parent PR bases.
 
 ## Assessment
 
@@ -22,7 +25,7 @@ Do not use a stack merely because work is large. Use it when the deliverables ha
 One report initiative can be decomposed into deliverables whose PRs form one stack:
 
 ```text
-dev
+stage
 └── deliverable-report-data          PR: database contract and independently testable data layer
     └── deliverable-report-api       PR: service and API layer
         └── deliverable-report-ui    PR: UI layer
@@ -70,14 +73,11 @@ branch stack = multiple branches you move between inside that directory
 Example:
 
 ```bash
-cd /path/to/repo-wt/dev
-git worktree add ../feature-next-report-lane -b feature-next-report-svc-1 dev
+cd /path/to/assigned-worktree
+# Start from the assigned bottom branch, cut from stage.
 
-cd ../feature-next-report-lane
-# currently on feature-next-report-svc-1
-
-gh stack init --base dev feature-next-report-svc-1
-# Older extensions: gh stack init --base dev --adopt feature-next-report-svc-1
+gh stack init --base stage feature-next-report-svc-1
+# Older extensions: gh stack init --base stage --adopt feature-next-report-svc-1
 gh stack add feature-next-report-svc-2
 # same directory, now checked out to feature-next-report-svc-2
 ```
@@ -88,15 +88,11 @@ Git generally does not let the same branch be checked out in two worktrees at on
 
 ### Constraint for one-worktree-per-branch stacks
 
-GitHub can represent a PR stack when its branches are checked out in separate worktrees.
-PR base relationships are remote branch relationships, not worktree relationships.
+The current extension supports some operations across linked worktrees and shares stack
+state across the clone. Zazzles uses a single lane for dependent slices. This keeps every layer
+available for navigation and gives one worktree responsibility for stack mutations.
 
-The full local gh-stack workflow does **not** work reliably in that layout. Commands such
-as `up`, `down`, `top`, `bottom`, and `checkout` must check out the target branch in the
-current worktree. Git blocks that checkout when the target branch is already checked out
-elsewhere.
-
-The official [`gh stack link` command](https://github.github.com/gh-stack/reference/cli/)
+The official [`gh stack link` command](https://docs.github.com/en/pull-requests/reference/stacked-prs-cli-commands)
 supports externally managed local branches. It creates or updates the remote PR stack, but
 does not provide local gh-stack tracking or navigation. See the [gh-stack FAQ](https://github.github.com/gh-stack/faq/) for the external-tool workflow.
 
@@ -118,7 +114,7 @@ Branch 2 can see Branch 1 changes only when those Branch 1 commits are in Branch
 When Branch 2 is first created on top of Branch 1, it sees everything Branch 1 had at that moment:
 
 ```text
-dev
+stage
 └── feature-next-report-svc-1
     └── feature-next-report-svc-2
 ```
@@ -126,7 +122,7 @@ dev
 If you later switch back to Branch 1 and add a commit, Branch 2 does not automatically see that new commit:
 
 ```text
-dev
+stage
 └── feature-next-report-svc-1 -- new data-contract commit
     \
      feature-next-report-svc-2   # still based on the older Branch 1 tip
@@ -148,7 +144,7 @@ gh stack top
 After the upstack rebase, Branch 2 sees the new Branch 1 commit:
 
 ```text
-dev
+stage
 └── feature-next-report-svc-1 -- new data-contract commit
     └── feature-next-report-svc-2
 ```
@@ -284,9 +280,13 @@ Install the extension from GitHub:
 gh extension install github/gh-stack
 ```
 
-Official reference: [GitHub Stacked PRs CLI Commands](https://github.github.com/gh-stack/reference/cli/). The page includes installation, stack management, remote operations, navigation, utilities, and exit codes.
+Use the [official gh-stack repository](https://github.com/github/gh-stack) for releases and issue
+tracking, the [GitHub CLI reference](https://docs.github.com/en/pull-requests/reference/stacked-prs-cli-commands)
+for command semantics, and the [official gh-stack skill](https://github.com/github/gh-stack/tree/main/skills/gh-stack)
+for agent command patterns and troubleshooting. This guide defines the Zazzles worktree and
+`stage` integration workflow.
 
-The GitHub documentation was reviewed on 2026-07-18. It describes GitHub Stacked PRs as preview functionality, so the repository must have it enabled. If it does not have access yet, use ordinary PRs with explicit base branches instead of treating the workflow as an active gh-stack lane.
+Check preview availability before publishing. For the explicit-base fallback, use `gh pr create --draft --base stage` for the bottom layer and `gh pr create --draft --base <parent-branch>` for each higher layer.
 
 ### CLI version check
 
@@ -302,44 +302,28 @@ gh stack <command> --help
   default with non-interactive `submit --auto`.
 
 Use the installed command help rather than copying an example from a different version.
+When several Git remotes are configured, set the intended remote explicitly on commands that
+accept `--remote`. Check `gh stack view --json` after synchronization. Some versions report a
+divergence as an aborted sync with a successful exit status, so verify the actual branch chain
+and PR bases before proceeding.
 
-### Zazz skill source and maintenance
+### Repository skill
 
-For a repository using Zazz methodology, install the Zazz-adapted skill from the
-`zazz-skills` clone:
-
-```bash
-<zazz-skills-clone>/.agents/skills/gh-stack
-```
-
-Copy it into the target repository or worktree at:
-
-```bash
-.agents/skills/gh-stack
-```
-
-Do not replace it with the generic upstream `gh-stack/skills/gh-stack` skill. The upstream
-documentation and command help define CLI capabilities and version-specific flags. The Zazz
-skill defines the required lane, flat naming, agent, file-placement, and review rules.
-
-Keep the Zazz skill current as gh-stack evolves. Review upstream release and CLI changes,
-then deliberately update and validate the Zazz skill before adopting a new workflow.
+The [gh-stack skill](../../.agents/skills/gh-stack/SKILL.md) is the Zazzles entry point.
+This guide owns lane and review procedures. GitHub's reference and the installed command help
+own CLI syntax and version-dependent flags.
 
 ## Recommended report workflow
 
-Create one lane worktree from `dev`. Run this from the existing `dev/` worktree:
-
-```bash
-cd /path/to/repo-wt/dev
-git worktree add ../feature-<feature-slug>-lane -b feature-<feature-slug>-svc-1 dev
-cd ../feature-<feature-slug>-lane
-```
+Use the assigned lane worktree. If a lane is needed, use the [worktree setup guide](worktree-setup.md)
+to provision it from `stage` and start on the bottom branch. Run the remaining commands inside
+that assigned lane.
 
 Initialize the stack using the current Branch 1 branch, then add Branch 2:
 
 ```bash
-gh stack init --base dev feature-<feature-slug>-svc-1
-# Older extensions: gh stack init --base dev --adopt feature-<feature-slug>-svc-1
+gh stack init --base stage feature-<feature-slug>-svc-1
+# Older extensions: gh stack init --base stage --adopt feature-<feature-slug>-svc-1
 gh stack add feature-<feature-slug>-svc-2
 ```
 
@@ -389,7 +373,7 @@ git diff --name-only <integration-branch>...HEAD
 
 For agents, prefer non-interactive forms:
 
-- `gh stack init --base dev <branch>` (older extensions: add `--adopt`)
+- `gh stack init --base stage <branch>` (older extensions: add `--adopt`)
 - `gh stack add <branch>`
 - `gh stack sync`
 - `gh stack submit --auto`
@@ -421,7 +405,7 @@ The seam is the typed binding contract. If Branch 2 needs a new column or RowTyp
 These examples assume a two-branch report stack:
 
 ```text
-dev
+stage
 └── feature-next-report-svc-1   # Branch 1: data layer
     └── feature-next-report-svc-2   # Branch 2: service/render/CLI
 ```
@@ -625,12 +609,12 @@ For report migrations, the remaining diff should be Branch 2 territory: service,
 
 ### Scenario 6: check what each PR will contain
 
-From Branch 1, compare against `dev`:
+From Branch 1, compare against `stage`:
 
 ```bash
 gh stack bottom
-git diff --stat dev...HEAD
-git diff --name-only dev...HEAD
+git diff --stat stage...HEAD
+git diff --name-only stage...HEAD
 ```
 
 From Branch 2, compare against Branch 1 to see only the top PR's review diff:
@@ -656,4 +640,4 @@ That command should print nothing for a clean Branch 2.
 
 Use separate worktrees instead when two agents must work concurrently on different branches. A single worktree has one checked-out branch and one index. Two agents editing it at the same time will collide.
 
-For one agent implementing one report, the single-lane stack is the better default.
+Use one branch and one draft PR when the specification assigns a single review unit.

@@ -55,13 +55,17 @@ def select(row, report, entries):
         if u['kind'] != row['kind']:
             continue
         sink = u['sink']['span']
-        if sink['file'] != row['file']:
+        if 'file' in row and sink['file'] != row['file']:
+            continue
+        if 'anchors' in row and sink['start_line'] not in row['anchors'].get(sink['file'], []):
             continue
         if 'line' in row and sink['start_line'] != row['line']:
             continue
         if 'lines' in row and row['expect'] in ('no_record', 'present') and sink['start_line'] not in row['lines']:
             continue
         if 'entry_file' in row and entries.get(u.get('entry_id'), {}).get('location', {}).get('span', {}).get('file') != row['entry_file']:
+            continue
+        if 'entry_names' in row and entries.get(u.get('entry_id'), {}).get('name') not in row['entry_names']:
             continue
         if 'dep_file' in row and row['dep_file'] not in {f for f, _ in spans(u.get('dependencies', []))}:
             continue
@@ -72,6 +76,9 @@ def select(row, report, entries):
 def witnessed(u, row):
     deps = u.get('dependencies', [])
     if not any(d.get('source', {}).get('kind') in WITNESS for d in deps):
+        return False
+    if 'storage_key' in row and not any(d.get('storage_key') == row['storage_key'] and
+                                        d.get('source', {}).get('kind') == 'input_source' for d in deps):
         return False
     if 'source' in row:
         # The key's source anchor must be a dependency's origin, not a transfer step.
@@ -91,7 +98,9 @@ def classify(row, report):
     counted = [u for u in uses if 'source' not in row or witnessed(u, row)] if expect == 'positive' else uses
     res = {'uses': len(counted), 'entries': len({u.get('entry_id') for u in counted})}
     if expect in ('positive', 'review', 'present'):
-        if len(uses) < row.get('min_uses', 1):
+        checks = {(u['sink']['span']['file'], u['sink']['span']['start_line'], c['id'], field)
+                  for u in uses if (c := u.get('check')) for field in c.get('fields', [])}
+        if len(uses) < row.get('min_uses', 1) or not all(tuple(c) in checks for c in row.get('required_checks', [])):
             res['outcome'] = 'missing_candidate'
         elif expect == 'positive' and any(witnessed(u, row) and not blockers(u) for u in uses):
             res['outcome'] = 'candidate_with_witness'
@@ -195,6 +204,34 @@ def presented(report):
 
 def is_finding(f):
     return bool(f) and f.get('record_type') == 'finding'
+
+
+def judged_outcome(row, report):
+    entries = {e['id']: e for e in report.get('entries', [])}
+    uses = select(row, report, entries)
+    if row['expect'] == 'positive':
+        uses = [u for u in uses if witnessed(u, row)]
+    if row['expect'] == 'only_lines':
+        uses = [u for u in uses if u['sink']['span']['start_line'] not in row['lines']]
+    findings = presented(report)
+    outcomes = [findings.get(u['id'], {}) for u in uses]
+    if row['expect'] in CONTROL_EXPECT:
+        if not outcomes:
+            return 'control_absent'
+        if any(is_finding(f) for f in outcomes):
+            return 'control_finding'
+        if all(f.get('status') == 'protected_for_claim' for f in outcomes):
+            return 'control_protected'
+        return 'control_review'
+    if not outcomes:
+        return 'missed'
+    if any(is_finding(f) and f.get('status') == 'confirmed_vulnerability' for f in outcomes):
+        return 'confirmed'
+    if any(is_finding(f) for f in outcomes):
+        return 'practice_finding'
+    if all(f.get('status') == 'protected_for_claim' for f in outcomes):
+        return 'protected'
+    return 'review'
 
 
 def span_key(u):
@@ -331,7 +368,7 @@ def precision(reports, keyed, noise_rows, controls):
         entries = {e['id']: e for e in report.get('entries', [])}
         role = {}
         for row in keyed:
-            if row.get('app') != app or 'kind' not in row or 'file' not in row:
+            if row.get('app') != app or 'kind' not in row:
                 continue
             pol = 'positive' if row['expect'] == 'positive' else 'control' if row['expect'] in CONTROL_EXPECT else 'assessment'
             sel = dict(row)
@@ -428,6 +465,7 @@ def main():
     p.add_argument('reports', type=Path)
     p.add_argument('--lab')
     p.add_argument('--json', type=Path)
+    p.add_argument('--judged', action='store_true', help='also score each row by its reported finding status')
     p.add_argument('--markdown', type=Path, help='write the per-row Markdown table')
     p.add_argument('--precision-markdown', type=Path, help='write the per-family precision and noise table')
     a = p.parse_args()
@@ -436,14 +474,21 @@ def main():
     ev = evaluator()
     rows = []
     for c in frozen['cases']:
+        if c['app'] not in reports:
+            continue
         c.setdefault('tag', 'independent')
         res = {'outcome': 'excluded'} if c['expect'] == 'excluded' else classify(c, reports[c['app']])
         rows.append((c, res))
     for app in PYTHON_APPS:
-        rows.extend(python_rows(app, reports[app], ev))
+        if app in reports:
+            rows.extend(python_rows(app, reports[app], ev))
     if a.lab:
         rows.extend(lab_rows(a.lab, reports['vuln-nextjs']))
     out = [{**{k: v for k, v in r.items() if k in ('id', 'app', 'kind', 'file', 'line', 'expect', 'key_expect', 'tag', 'reason', 'key')}, **res} for r, res in rows]
+    if a.judged:
+        for scored, (row, _) in zip(out, rows):
+            if row['expect'] not in ('excluded', 'registration'):
+                scored['judged_outcome'] = judged_outcome(row, reports[row['app']])
     summary = {}
     for o in out:
         summary.setdefault(o['outcome'], 0)
@@ -465,6 +510,15 @@ def main():
     for app, fams in prec.items():
         for f, d in fams.items():
             print('precision', app, f, json.dumps(d, sort_keys=True))
+    for app in reports:
+        positives = [row for row in out if row['app'] == app and row['expect'] == 'positive']
+        if positives:
+            witnessed_count = sum(row['outcome'] == 'candidate_with_witness' for row in positives)
+            print(f'{app}: {witnessed_count} of {len(positives)} positives witnessed')
+            if a.judged:
+                confirmed = sum(row.get('judged_outcome') == 'confirmed' for row in positives)
+                false_findings = sum(row['app'] == app and row.get('judged_outcome') == 'control_finding' for row in out)
+                print(f'{app}: {confirmed} of {len(positives)} positives confirmed, {false_findings} control findings')
     print(json.dumps(summary, sort_keys=True), 'total', len(out))
 
 

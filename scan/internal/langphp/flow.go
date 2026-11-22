@@ -51,7 +51,9 @@ type phpFlow struct {
 	// branch merges join only changed values instead of the whole environment.
 	dirty map[string]bool
 	// class is the class whose method this flow expands, if any.
-	class *phpClassDecl
+	class    *phpClassDecl
+	symfony  *symfonyProject
+	services map[string]phpValue
 }
 
 func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -210,7 +212,11 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			} else {
 				for j := uint(0); j < pair.NamedChildCount(); j++ {
 					c := pair.NamedChild(j)
-					if text, ok := phpStringLiteral(m, c); ok && key == "" && valueNode == nil {
+					text, literal := phpStringLiteral(m, c)
+					if f.symfony != nil && j == 0 && phpCurlURLKey(m, c) {
+						text, literal = phpCurlURLField, true
+					}
+					if literal && key == "" && valueNode == nil {
 						key = text
 					} else {
 						valueNode = c
@@ -235,7 +241,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			v.arrayLiterals = elements
 		}
 		return v
-	case "shell_execution_expression":
+	case "shell_command_expression":
 		v := f.evalChildren(n)
 		f.commandUse(n, "shell_exec", []string{"shell_command"}, []phpValue{v}, []*sitter.Node{n})
 		return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
@@ -265,17 +271,15 @@ func (f *phpFlow) castValue(n *sitter.Node, v phpValue) phpValue {
 }
 
 func castKind(m *phpModule, n *sitter.Node) string {
+	// The grammar spells a cast either as one "(int)" token or as "(",
+	// a cast_type node and ")". Bare parentheses carry no type.
 	for i := uint(0); i < n.ChildCount(); i++ {
 		c := n.Child(i)
-		if c == nil {
+		if c == nil || c.IsNamed() && c.Kind() != "cast_type" {
 			continue
 		}
-		if !c.IsNamed() {
-			text := strings.ToLower(strings.TrimSuffix(strings.TrimSpace(c.Utf8Text(m.src)), ")"))
-			return strings.TrimPrefix(text, "(")
-		}
-		if c.Kind() == "cast_type" {
-			return strings.ToLower(strings.Trim(strings.TrimSpace(c.Utf8Text(m.src)), "() "))
+		if kind := strings.ToLower(strings.Trim(strings.TrimSpace(c.Utf8Text(m.src)), "() ")); kind != "" {
+			return kind
 		}
 	}
 	return ""
@@ -454,6 +458,12 @@ func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 
 // projectValue projects a field of a tracked value (arrays, DB rows).
 func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue {
+	if v.binding == "symfony_body_array" {
+		return f.symfonyBagInput(n, "body", key)
+	}
+	if v.binding == "symfony_bag" && v.driver == "query" {
+		return f.symfonyBagInput(n, "query", key)
+	}
 	if v.regex != nil {
 		if group, err := strconv.Atoi(key); err == nil && group >= 1 {
 			return f.regexCapture(v, group, n)

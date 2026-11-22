@@ -11,8 +11,10 @@ package walk
 
 import (
 	"io/fs"
+	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/zazzcode/zazzles/scan/internal/lang"
 )
@@ -51,6 +53,9 @@ type Result struct {
 	Root string
 	// Files are the supported source files, sorted by path.
 	Files []File
+	// Config and Templates are allow-listed project artifacts, sorted by path.
+	Config    []string
+	Templates []string
 	// ByLanguage counts the supported files per language.
 	ByLanguage map[lang.Language]int
 	// Examined counts every regular file considered, supported or not.
@@ -75,6 +80,8 @@ func Walk(root string, opts Options) (*Result, error) {
 	}
 
 	result := &Result{Root: root, ByLanguage: map[lang.Language]int{}}
+	var artifacts []string
+	composers := map[string]bool{}
 
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -92,17 +99,22 @@ func Walk(root string, opts Options) (*Result, error) {
 			return nil
 		}
 
-		if !entry.Type().IsRegular() {
-			return nil
-		}
-
-		result.Examined++
-
 		rel, err := filepath.Rel(root, path)
 		if err != nil {
 			return err
 		}
 		rel = filepath.ToSlash(rel)
+		if entry.Name() == "composer.json" {
+			composers[filepath.ToSlash(filepath.Dir(rel))] = true
+		}
+		switch filepath.Ext(rel) {
+		case ".json", ".yaml", ".twig":
+			artifacts = append(artifacts, rel)
+		}
+		if !entry.Type().IsRegular() {
+			return nil
+		}
+		result.Examined++
 
 		language, ok := lang.Detect(rel)
 		if !ok {
@@ -122,8 +134,54 @@ func Walk(root string, opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	result.projectArtifacts(artifacts, composers)
 
 	sort.Slice(result.Files, func(i, j int) bool { return result.Files[i].Path < result.Files[j].Path })
 	sort.Strings(result.SkippedDirs)
 	return result, nil
+}
+
+func (r *Result) projectArtifacts(files []string, composers map[string]bool) {
+	for _, file := range files {
+		for dir := path.Dir(file); ; dir = path.Dir(dir) {
+			if composers[dir] && !underComposerVar(dir, composers) {
+				rel := file
+				if dir != "." {
+					rel = strings.TrimPrefix(file, dir+"/")
+				}
+				switch {
+				case projectConfig(rel):
+					r.Config = append(r.Config, file)
+				case strings.HasPrefix(rel, "templates/") && path.Ext(rel) == ".twig":
+					r.Templates = append(r.Templates, file)
+				}
+				break
+			}
+			if dir == "." {
+				break
+			}
+		}
+	}
+	sort.Strings(r.Config)
+	sort.Strings(r.Templates)
+}
+
+func underComposerVar(dir string, composers map[string]bool) bool {
+	for dir != "." {
+		parent := path.Dir(dir)
+		if path.Base(dir) == "var" && composers[parent] {
+			return true
+		}
+		dir = parent
+	}
+	return false
+}
+
+func projectConfig(rel string) bool {
+	switch rel {
+	case "composer.json", "config/routes.yaml", "config/services.yaml", "config/packages/twig.yaml",
+		"config/packages/doctrine.yaml", "config/packages/security.yaml":
+		return true
+	}
+	return path.Dir(rel) == "config/routes" && path.Ext(rel) == ".yaml"
 }

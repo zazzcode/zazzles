@@ -3,6 +3,7 @@ package walk
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/zazzcode/zazzles/scan/internal/lang"
@@ -134,5 +135,31 @@ func TestWalkExtraSkipDirs(t *testing.T) {
 func TestWalkMissingRoot(t *testing.T) {
 	if _, err := Walk(filepath.Join(t.TempDir(), "nope"), Options{}); err == nil {
 		t.Fatal("Walk on a missing root returned nil error")
+	}
+}
+
+func TestWalkConfigAndTemplates(t *testing.T) {
+	root := tree(t,
+		"project/composer.json", "project/config/routes.yaml", "project/config/routes/admin.yaml",
+		"project/config/packages/twig.yaml", "project/config/services.yaml",
+		"project/config/packages/irrelevant.yaml", "project/templates/blog/card.twig",
+		"project/templates/index.html", "project/var/composer.json",
+		"project/var/templates/cache.twig", "project/vendor/composer.json",
+		"project/vendor/templates/plugin.twig", "unrelated/templates/other.twig",
+		"project/public/index.php",
+	)
+	got, err := Walk(root, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantConfig := []string{"project/composer.json", "project/config/packages/twig.yaml",
+		"project/config/routes.yaml", "project/config/routes/admin.yaml", "project/config/services.yaml"}
+	wantTemplates := []string{"project/templates/blog/card.twig"}
+	if !slices.Equal(got.Config, wantConfig) || !slices.Equal(got.Templates, wantTemplates) {
+		t.Fatalf("Config=%v Templates=%v", got.Config, got.Templates)
+	}
+	if got.Examined != 12 || got.Unsupported != 11 || !slices.Equal(paths(got.Files), []string{"project/public/index.php"}) ||
+		got.ByLanguage[lang.PHP] != 1 || len(got.ByLanguage) != 1 {
+		t.Fatalf("changed source inventory: %+v", got)
 	}
 }

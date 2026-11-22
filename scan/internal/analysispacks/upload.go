@@ -9,14 +9,15 @@ const UploadProtocol = "upload-components-v2"
 
 // Upload contracts: verified operations that store a client upload (D-19).
 const (
-	PHPMoveUploadedFile   = "php-move-uploaded-file-v1"
-	NodeExpressFileupload = "node-express-fileupload-mv-v1"
-	NodeMulterDisk        = "node-multer-disk-v1"
-	PythonWerkzeugSave    = "python-werkzeug-save-v1"
-	PythonStarletteUpload = "python-starlette-upload-v1"
+	PHPMoveUploadedFile     = "php-move-uploaded-file-v1"
+	SymfonyUploadedFileMove = "symfony-uploaded-file-move-v1"
+	NodeExpressFileupload   = "node-express-fileupload-mv-v1"
+	NodeMulterDisk          = "node-multer-disk-v1"
+	PythonWerkzeugSave      = "python-werkzeug-save-v1"
+	PythonStarletteUpload   = "python-starlette-upload-v1"
 )
 
-var uploadContracts = []string{PHPMoveUploadedFile, NodeExpressFileupload, NodeMulterDisk, PythonWerkzeugSave, PythonStarletteUpload}
+var uploadContracts = []string{PHPMoveUploadedFile, NodeExpressFileupload, NodeMulterDisk, PythonWerkzeugSave, PythonStarletteUpload, SymfonyUploadedFileMove}
 
 // operandFamily reports the operand-path families that share the
 // interpreter descriptor and selection shape.
@@ -26,6 +27,10 @@ func operandFamily(name string) bool {
 
 // UploadContract returns the semantics of a verified upload write.
 func UploadContract(id string) *analysis.APIModel {
+	if id == SymfonyUploadedFileMove {
+		return &analysis.APIModel{ID: id, Library: "symfony/http-foundation", Reference: "https://github.com/symfony/symfony/blob/6.4/src/Symfony/Component/HttpFoundation/File/UploadedFile.php#L150",
+			Semantics: "UploadedFile::move(directory, name) stores the received upload under the directory in argument 0 and the optional name in argument 1. The framework extracts the final path component of a supplied name; if omitted or null the temporary file basename is used. getClientOriginalName, getClientOriginalExtension and getClientMimeType expose client metadata. getMimeType and guessExtension derive their result from file contents. The write occurs without applying an application-specific file type policy or constraining the directory operand to an application root."}
+	}
 	semantics := map[string]string{
 		PHPMoveUploadedFile:   "PHP move_uploaded_file(tmp, destination) stores a file the client uploaded at the destination path. $_FILES[f]['name'] and its extension and $_FILES[f]['type'] are client-supplied; basename() removes directories but keeps the client extension.",
 		NodeExpressFileupload: "express-fileupload req.files.<field>.mv(path) stores the client upload at path. file.name and file.mimetype are client-supplied.",

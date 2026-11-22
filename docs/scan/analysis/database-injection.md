@@ -236,3 +236,9 @@ Changed effective component content, questions, evidence or protocol cannot repl
 Historical reports preserve their original evidence and judgments. Component composition leaves
 validation, construction practice and injection protection independent and does not broaden existing
 SQL or NoSQL coverage.
+
+## Symfony
+
+Symfony Doctrine DBAL and ORM calls separate executable query text from bound parameter values. Prepared statements report at execution and retain the query construction span. Source-backed QueryBuilder text fragments remain in the SQL operand. Bound finder criteria carry storage provenance where the entity mapping is known.
+
+[Symfony analysis coverage](../symfony-support.md)

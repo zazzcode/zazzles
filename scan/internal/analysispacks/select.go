@@ -45,10 +45,13 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if operandFamily(family.Name) && (language == lang.Python) != strings.HasPrefix(contract.ID, "python-") {
 			return nil, fmt.Errorf("language and interpreter/redirect API conflict")
 		}
-		if family.RequiresAPI && language == lang.PHP && !strings.HasPrefix(contract.ID, "php-") {
+		phpContract := strings.HasPrefix(contract.ID, "php-") || contract.ID == SymfonyProcessContract ||
+			contract.ID == SymfonyFileResponseContract || contract.ID == SymfonyHTTPClientContract ||
+			contract.ID == SymfonyUploadedFileMove || contract.ID == SymfonyRedirectContract
+		if family.RequiresAPI && language == lang.PHP && !phpContract {
 			return nil, fmt.Errorf("PHP %s candidate requires a php- contract", family.Label)
 		}
-		if family.RequiresAPI && language != lang.PHP && strings.HasPrefix(contract.ID, "php-") {
+		if family.RequiresAPI && language != lang.PHP && phpContract {
 			return nil, fmt.Errorf("php contract selected for non-PHP %s candidate", family.Label)
 		}
 		if family.Name == "sql" && language != lang.PHP && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
@@ -127,15 +130,25 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			}
 		}
 		if language == lang.PHP {
-			if use.InputFacts.Acquisition != "http" || use.EntryFacts == nil || use.EntryFacts.HTTP == nil || use.InputFacts.Framework != "php" {
+			if use.InputFacts.Acquisition != "http" || use.EntryFacts == nil || use.EntryFacts.HTTP == nil {
 				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}
-			input = "source.php-input-v1"
-			if family.Name == "upload" || family.Name == "deserialization" {
-				input = "source.php-input-" + family.Name + "-v1"
-			}
-			if use.Kind == TemplateKind {
-				input = "source.php-input-template-v1"
+			switch use.InputFacts.Framework {
+			case "php":
+				input = "source.php-input-v1"
+				if family.Name == "upload" || family.Name == "deserialization" {
+					input = "source.php-input-" + family.Name + "-v1"
+				}
+				if use.Kind == TemplateKind {
+					input = "source.php-input-template-v1"
+				}
+			case "symfony":
+				if use.EntryFacts.HTTP.Framework != "symfony" {
+					return nil, fmt.Errorf("invalid Symfony HTTP input binding")
+				}
+				input = "source.symfony-input-v1"
+			default:
+				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}
 		}
 		roots = append(roots, input)

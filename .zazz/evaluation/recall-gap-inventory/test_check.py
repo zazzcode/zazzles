@@ -25,6 +25,46 @@ def finding(uid, status='poor_practice'):
     return {'use_id': uid, 'record_type': 'finding' if status in ('poor_practice', 'confirmed_vulnerability') else 'analysis', 'status': status}
 
 
+class FrozenKeyTest(unittest.TestCase):
+    def test_judged_key_distinguishes_confirmed_from_practice_and_control_findings(self):
+        reports = {'entries': [{'id': 'e1', 'name': 'GET /page'}],
+                   'uses': [use('a', 'xss_candidate', 'a.twig', 3, deps=['input_source'])],
+                   'findings': [finding('a')]}
+        row = {'kind': 'xss_candidate', 'expect': 'positive', 'file': 'a.twig', 'line': 3,
+               'entry_names': ['GET /page']}
+        self.assertEqual(check.judged_outcome(row, reports), 'practice_finding')
+        reports['findings'] = [finding('a', 'confirmed_vulnerability')]
+        self.assertEqual(check.judged_outcome(row, reports), 'confirmed')
+        row['entry_names'] = ['POST /page']
+        self.assertEqual(check.judged_outcome(row, reports), 'missed')
+        del row['entry_names']
+        row['expect'] = 'not_raw'
+        self.assertEqual(check.judged_outcome(row, reports), 'control_finding')
+
+    def test_multiple_anchors_and_whole_sample_control(self):
+        report = {'uses': [use('a', 'xss_candidate', 'a.twig', 3),
+                           use('b', 'xss_candidate', 'b.twig', 5),
+                           use('c', 'xss_candidate', 'b.twig', 6)]}
+        row = {'kind': 'xss_candidate', 'expect': 'no_record',
+               'anchors': {'a.twig': [3], 'b.twig': [5]}}
+        self.assertEqual([u['id'] for u in check.select(row, report, {})], ['a', 'b'])
+        del row['anchors']
+        self.assertEqual([u['id'] for u in check.select(row, report, {})], ['a', 'b', 'c'])
+
+    def test_automatic_check_on_both_sink_records(self):
+        report = {'uses': [use('a', 'sql_query_candidate', 'a.php', 3,
+                               check={'id': 'automatic-php-query', 'fields': ['s']}),
+                           use('b', 'sql_query_candidate', 'b.php', 5,
+                               check={'id': 'automatic-php-query', 'fields': ['email']})]}
+        row = {'kind': 'sql_query_candidate', 'expect': 'present',
+               'anchors': {'a.php': [3], 'b.php': [5]},
+               'required_checks': [['a.php', 3, 'automatic-php-query', 's'],
+                                   ['b.php', 5, 'automatic-php-query', 'email']]}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_present')
+        report['uses'][1]['check']['fields'] = ['other']
+        self.assertEqual(check.classify(row, report)['outcome'], 'missing_candidate')
+
+
 class PrecisionTest(unittest.TestCase):
     def setUp(self):
         uses = [

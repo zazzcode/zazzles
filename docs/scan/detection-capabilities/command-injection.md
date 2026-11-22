@@ -14,6 +14,7 @@ Verified APIs span Node `child_process`, Python `os` and `subprocess`, and plain
 | Request-derived shell text | A request field is concatenated into the command passed to Node `exec` | A complete raw operand path can be Confirmed |
 | Shell mode on a process call | A supported `spawn` or Python `subprocess` call uses a verified shell option | Evaluate the effective command text and the paths into it |
 | Fixed executable and constrained operands | A fixed absolute program is used with separate arguments and the shell disabled | The shell facet can be absent or protected according to the effective operands. Options are evaluated separately |
+| Symfony Process shell text | `Process::fromShellCommandline` supplies a shell command | Judge the selected command text and its actual controls |
 
 ## Recorded in Review
 
@@ -21,6 +22,7 @@ Verified APIs span Node `child_process`, Python `os` and `subprocess`, and plain
 | --- | --- | --- | --- | --- |
 | `CMD-R01` | Unresolved guard semantics | A custom validator accepts an input that reaches shell text | Review when the evidence cannot establish the guard’s behavior or its bypass | Recover the guard semantics and the exact path covered |
 | `CMD-R02` | Unknown shell or executable selection | A subprocess call uses a dynamic `shell` option or a bare executable whose PATH binding is unresolved | Review for the missing mode or executable identity | Resolve the effective options and executable binding |
+| `CMD-R03` | Unresolved Symfony Process binding | A process receiver or constructor operand cannot be verified | Review when command mode or flow is unresolved | Establish the receiver and command operation |
 
 ## Not recorded
 

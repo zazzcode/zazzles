@@ -146,3 +146,9 @@ export a verified patch.
 See the [path contract](../../../.zazz/specifications/path-traversal.md),
 [Tier-1 hardening contract](../../../.zazz/specifications/path-traversal-hardening.md), and the
 [acceptance results](../../../.zazz/evaluation/path-traversal-results.md) for the verified matrix and limits.
+
+## Symfony
+
+A Symfony BinaryFileResponse or the verified controller file helper reads argument 0 as a filesystem operand. PHP calls in reached controllers and services keep their existing path contracts. A whole request value can choose a local path or a URL where the called API supports both.
+
+[Symfony analysis coverage](../symfony-support.md)

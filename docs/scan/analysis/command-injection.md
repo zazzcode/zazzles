@@ -154,3 +154,9 @@ Static, bounded analysis: dynamic dispatch beyond the modeled registries, unmode
 wrappers, mutation through unmodeled calls, whole-program flow and runtime/platform differences stay
 Review. See the [command contract](../../../.zazz/specifications/command-injection.md) and the
 [acceptance results](../../../.zazz/evaluation/command-injection-results.md) for tested coverage.
+
+## Symfony
+
+Symfony Process::fromShellCommandline consumes shell text. A Process backed by an argument vector carries its executable and argument-slot facts. Resolved controller and service calls can reach the existing PHP shell sinks. FILTER_VALIDATE_URL records a format control and does not establish shell quoting.
+
+[Symfony analysis coverage](../symfony-support.md)

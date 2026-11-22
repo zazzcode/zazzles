@@ -66,7 +66,7 @@ func productionStages() stages {
 			if err != nil {
 				return parse.Inventory{}, err
 			}
-			return parse.Inventory{Root: root, Files: files.Files}, nil
+			return parse.WalkInventory(files), nil
 		},
 		runners: [runnerCount]runFunc{
 			javascriptRunner: langjs.Run,

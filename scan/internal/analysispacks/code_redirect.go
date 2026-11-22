@@ -19,7 +19,10 @@ var codeContracts = []string{"js-eval-v1", "js-function-constructor-v1", "js-tim
 // operand is template source compiled by a verified engine.
 const TemplateKind = "template_injection_candidate"
 
-var redirectContracts = []string{"express-redirect-v1", "node-location-header-v1", "fastify-redirect-v1", "hapi-redirect-v1", "next-redirect-v1", "browser-navigation-v1", "python-redirect-v1", "php-header-redirect-v1"}
+// SymfonyRedirectContract identifies the verified Symfony redirect URL operand.
+const SymfonyRedirectContract = "symfony-redirect-v1"
+
+var redirectContracts = []string{"express-redirect-v1", "node-location-header-v1", "fastify-redirect-v1", "hapi-redirect-v1", "next-redirect-v1", "browser-navigation-v1", "python-redirect-v1", "php-header-redirect-v1", SymfonyRedirectContract}
 
 // CodeContract returns semantics only for a verified interpreter binding.
 func CodeContract(id string) *analysis.APIModel {
@@ -48,6 +51,11 @@ func CodeContract(id string) *analysis.APIModel {
 
 // RedirectContract returns semantics for a verified redirect/navigation binding.
 func RedirectContract(id string) *analysis.APIModel {
+	if id == SymfonyRedirectContract {
+		return &analysis.APIModel{ID: id, Library: "symfony/http-foundation",
+			Reference: "https://symfony.com/doc/6.4/controller.html#redirecting",
+			Semantics: "AbstractController::redirect and the RedirectResponse constructor take the destination URL as argument 0. It sets the Location header and accepts relative paths and absolute URLs. Argument 1 is the response status, defaulting to 302, and does not choose the destination. The constructor rejects a status that is not a redirect. redirectToRoute generates a URL from a named route and its parameters."}
+	}
 	if !contains(redirectContracts, id) {
 		return nil
 	}
@@ -150,6 +158,16 @@ func interpreterDescriptors(name string) []Component {
 		model := familyContract(f, id)
 		v := base("api."+id, "api_contract", encoded(model), []string{model.Library})
 		v.CompiledOwner = compiled
+		if id == SymfonyRedirectContract {
+			v.CompiledOwner = "internal/langphp/symfony_redirect.go"
+			v.Tests = []string{"TestSymfonyOperations"}
+		}
+		if id == SymfonyUploadedFileMove {
+			v.Owner = "internal/analysispacks/upload.go"
+			v.CompiledOwner = "internal/langphp/upload.go"
+			v.Compatibility = []string{UploadProtocol, PathProtocol}
+			v.Tests = []string{"TestSymfonyOperations"}
+		}
 		out = append(out, v)
 	}
 	// Reuse the input rules under a family-specific identity to preserve all

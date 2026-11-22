@@ -54,6 +54,14 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if qname == "" {
 		return all
 	}
+	if f.phpLoggingFunction(n, qname, nodes, values) {
+		return phpValue{}
+	}
+	if v, ok := f.symfonyUploadNameCall(n, qname, nodes, values); ok {
+		return v
+	}
+
+	suppressSymfonyPath := f.symfonyURLBuiltin(n, qname, nodes, values)
 
 	// Procedural SQL operations.
 	switch qname {
@@ -168,7 +176,19 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 	case "md5", "sha1", "hash", "password_hash", "crc32", "hash_hmac":
 		return phpTransfer(phpProtect(all, "non_content"), f.module.evidence("non_content", n))
-	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "sprintf", "number_format", "nl2br", "stripslashes", "strip_whitespace":
+	case "sprintf":
+		if f.builtin(qname) && len(values) >= 1 {
+			return phpTransfer(phpSprintf(values), f.module.evidence("string_transform", n))
+		}
+	case "implode", "join":
+		if f.builtin(qname) && len(values) >= 1 {
+			// The result is every element joined by the separator: same
+			// sources and protections, no literal identity.
+			v := phpTransfer(all, f.module.evidence("string_transform", n))
+			v.literals, v.constant, v.fields = nil, false, nil
+			return v
+		}
+	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "number_format", "nl2br", "stripslashes", "strip_whitespace":
 		if f.builtin(qname) && len(values) >= 1 {
 			v := phpTransfer(phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown")), f.module.evidence("string_transform", n))
 			return v
@@ -214,7 +234,9 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			if text, ok := phpStringLiteral(f.module, nodes[0]); ok && text == "php://input" {
 				return f.source(n, "INPUT", "http.body", "")
 			}
-			f.pathUse(n, "file_get_contents", nodes, values, "php-filesystem-v1", "read")
+			if !suppressSymfonyPath {
+				f.pathUse(n, "file_get_contents", nodes, values, "php-filesystem-v1", "read")
+			}
 			// The returned content derives from the file the path selects:
 			// path control is content control for downstream sinks (eval,
 			// render). Keep the path's dependency paths with a read transfer
@@ -234,7 +256,9 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 			case "file_put_contents", "unlink":
 				role = "write"
 			}
-			f.pathUse(n, qname, nodes, values, "php-filesystem-v1", role)
+			if !suppressSymfonyPath {
+				f.pathUse(n, qname, nodes, values, "php-filesystem-v1", role)
+			}
 			return phpValue{unknown: true}
 		}
 	case "move_uploaded_file":
@@ -321,7 +345,8 @@ func phpRequestBody(v phpValue) bool {
 		return false
 	}
 	for _, d := range v.deps {
-		if d.container != "INPUT" || d.protection != "raw" || d.key != "" {
+		// "body" is the Symfony Request::getContent acquisition of the same bytes.
+		if d.container != "INPUT" && d.container != "body" || d.protection != "raw" || d.key != "" {
 			return false
 		}
 	}
@@ -415,6 +440,30 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return sliceFrom(values, 0)
 	}
 	receiver := f.eval(obj)
+	if v, ok := f.symfonyOperationMethod(n, receiver, method, nodes, values); ok {
+		return v
+	}
+	if v, ok := f.requestCall(n, receiver, method, values); ok {
+		return v
+	}
+	if f.phpLoggingMethod(n, receiver, method, nodes, values) {
+		return phpValue{}
+	}
+	if f.symfonyUploadMove(n, receiver, method, nodes, values) {
+		return phpValue{unknown: true}
+	}
+	if v, ok := f.symfonyRedirectCall(n, receiver, method, nodes, values); ok {
+		return v
+	}
+	if v, ok := f.symfonyControllerCall(n, receiver, method, values); ok {
+		return v
+	}
+	if v, ok := f.doctrineStorageCall(n, receiver, method, values); ok {
+		return v
+	}
+	if v, ok := f.doctrineSQLCall(n, receiver, method, nodes, values); ok {
+		return v
+	}
 	name := ""
 	if obj.Kind() == "variable_name" {
 		name = phpVarName(m, obj)
@@ -520,6 +569,9 @@ func (f *phpFlow) staticCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	method := phpText(m, fn)
 	scope := phpField(n, "scope")
 	clsName := phpText(m, scope)
+	if v, ok := f.symfonyProcessStatic(n, clsName, scope, method, nodes, values); ok {
+		return v
+	}
 	idx := f.set.classIndex()
 	var decl *phpClassDecl
 	relative := false
@@ -588,13 +640,22 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	clsNode := phpField(n, "class")
 	if clsNode == nil {
 		for i := uint(0); i < n.NamedChildCount(); i++ {
-			if c := n.NamedChild(i); c.Kind() == "name" {
+			if c := n.NamedChild(i); c.Kind() == "name" || f.symfony != nil && (c.Kind() == "qualified_name" || c.Kind() == "relative_name") {
 				clsNode = c
 				break
 			}
 		}
 	}
 	cls := phpText(m, clsNode)
+	if v, ok := f.symfonyOperationObject(n, clsNode, cls); ok {
+		return v
+	}
+	if v, ok := f.symfonyRedirectCreation(n, clsNode, cls); ok {
+		return v
+	}
+	if v, ok := f.symfonyObjectCreation(n, clsNode, cls); ok {
+		return v
+	}
 	cls = strings.TrimPrefix(cls, "\\")
 	switch cls {
 	case "mysqli":
@@ -607,6 +668,7 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		return phpValue{binding: "db_statement", driver: "mysqli", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	}
 	if v, ok, reason := f.newObject(n, clsNode, cls); ok {
+		f.doctrineTrackObject(v, n)
 		return v
 	} else if reason != "" && strings.Contains(reason, "more than once") {
 		f.evalChildren(n)
@@ -851,4 +913,51 @@ func (f *phpFlow) invalidateContentReceiver(n *sitter.Node) {
 		f.env[name] = phpContentValue(v)
 		f.markDirty(name)
 	}
+}
+
+// phpSprintf combines a sprintf format with its arguments. With a literal
+// format made only of sequential %s and numeric conversions, each argument
+// keeps its own protection (%s) or becomes numeric (%d, %u, %f, %F, %e, %E,
+// %x, %X, %o, %b). Any other format leaves the arguments' effect unknown.
+func phpSprintf(values []phpValue) phpValue {
+	fallback := phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown"))
+	format, ok := phpSQLText(values[0])
+	if !ok {
+		return fallback
+	}
+	out := values[0]
+	arg := 1
+	for i := 0; i < len(format); i++ {
+		if format[i] != '%' {
+			continue
+		}
+		i++
+		if i >= len(format) {
+			return fallback
+		}
+		if format[i] == '%' {
+			continue
+		}
+		// Flags, width and precision change padding only. A positional
+		// argument (%1$s) or custom pad character is outside this subset.
+		for i < len(format) && strings.IndexByte("+-0 .123456789", format[i]) >= 0 {
+			i++
+		}
+		if i >= len(format) || arg >= len(values) {
+			return fallback
+		}
+		switch format[i] {
+		case 's':
+			out = phpCombine(out, values[arg])
+		case 'd', 'u', 'f', 'F', 'e', 'E', 'x', 'X', 'o', 'b':
+			out = phpCombine(out, phpProtect(values[arg], "numeric"))
+		default:
+			return fallback
+		}
+		arg++
+	}
+	if arg != len(values) {
+		return fallback
+	}
+	return out
 }

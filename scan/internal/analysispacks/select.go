@@ -127,15 +127,25 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			}
 		}
 		if language == lang.PHP {
-			if use.InputFacts.Acquisition != "http" || use.EntryFacts == nil || use.EntryFacts.HTTP == nil || use.InputFacts.Framework != "php" {
+			if use.InputFacts.Acquisition != "http" || use.EntryFacts == nil || use.EntryFacts.HTTP == nil {
 				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}
-			input = "source.php-input-v1"
-			if family.Name == "upload" || family.Name == "deserialization" {
-				input = "source.php-input-" + family.Name + "-v1"
-			}
-			if use.Kind == TemplateKind {
-				input = "source.php-input-template-v1"
+			switch use.InputFacts.Framework {
+			case "php":
+				input = "source.php-input-v1"
+				if family.Name == "upload" || family.Name == "deserialization" {
+					input = "source.php-input-" + family.Name + "-v1"
+				}
+				if use.Kind == TemplateKind {
+					input = "source.php-input-template-v1"
+				}
+			case "symfony":
+				if use.EntryFacts.HTTP.Framework != "symfony" {
+					return nil, fmt.Errorf("invalid Symfony HTTP input binding")
+				}
+				input = "source.symfony-input-v1"
+			default:
+				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}
 		}
 		roots = append(roots, input)

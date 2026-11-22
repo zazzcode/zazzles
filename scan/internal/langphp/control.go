@@ -248,7 +248,7 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	if test != nil && test.Kind() == "parenthesized_expression" && test.NamedChildCount() > 0 {
 		test = test.NamedChild(0)
 	}
-	f.eval(test)
+	condition := f.eval(test)
 	// A decided constant condition walks only its feasible branch; an
 	// undecided one walks both.
 	truth, known := f.constantCondition(test)
@@ -257,6 +257,9 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	yes := f.clone()
 	holds := f.module.evidence("branch_precondition", test)
 	yes.context = append(yes.context, holds)
+	if condition.configuration {
+		yes.context = append(yes.context, f.module.evidence("configuration_precondition", test))
+	}
 	yes.applyProtections(yesProt, holds)
 	yes.narrowSuperglobals(test, yesProt, holds)
 	yt := false
@@ -281,6 +284,9 @@ func (f *phpFlow) ifChain(test, body *sitter.Node, alternatives []*sitter.Node) 
 	}
 	no.narrowSuperglobals(test, noProt, fails)
 	no.context = append(no.context, fails)
+	if condition.configuration {
+		no.context = append(no.context, f.module.evidence("configuration_precondition", test))
+	}
 	nt := false
 	if walkNo && len(alternatives) > 0 {
 		switch alt := alternatives[0]; alt.Kind() {
@@ -547,6 +553,9 @@ func sortedNames(m map[string]phpLiteral) []string {
 // `$level == 'impossible.php'` after narrowing. Loose comparison of numeric
 // strings and anything else that is not an exact constant stays undecided.
 func (f *phpFlow) constantCondition(test *sitter.Node) (truth, known bool) {
+	if truth, known := f.symfonyMethodCondition(test); known {
+		return truth, true
+	}
 	if test == nil || test.Kind() != "binary_expression" {
 		return false, false
 	}

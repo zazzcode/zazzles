@@ -363,7 +363,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 					continue
 				}
 				for _, method := range route.httpMethods() {
-					route.register(out, method)
+					s.analyzeSymfonyEntry(out, project, route, method)
 				}
 			}
 		}

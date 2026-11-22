@@ -12,6 +12,7 @@ import (
 type phpInputSource struct {
 	origin    string
 	container string
+	key       string
 }
 
 // superscriptOrigin maps a superglobal access to its acquisition origin.
@@ -120,7 +121,7 @@ func (f *phpFlow) recordInput(source analysis.Evidence, container, key, origin s
 		inputs = map[analysis.Evidence]phpInputSource{}
 		f.set.inputs[f.invocation.ID] = inputs
 	}
-	inputs[source] = phpInputSource{origin: origin, container: container}
+	inputs[source] = phpInputSource{origin: origin, container: container, key: key}
 }
 
 // assemblePHPInputs builds InputFacts after storage linking finalized the
@@ -149,6 +150,9 @@ func (s *phpSet) assemblePHPInputs(out *analysis.AnalysisReport) {
 			origin := "unknown"
 			if source, ok := s.inputs[u.InvocationContextID][dep.Source]; ok {
 				origin = source.origin
+				if facts.Framework == "symfony" && source.key != "" && dep.Source.Kind == "input_source" {
+					facts.Stages = append(facts.Stages, analysis.InputStage{Name: "request_field", Order: j, Scope: source.key, Evidence: dep.Source})
+				}
 			}
 			if origin == "http.upload" {
 				origin = phpUploadOrigin(dep)
@@ -161,6 +165,15 @@ func (s *phpSet) assemblePHPInputs(out *analysis.AnalysisReport) {
 				Dependency: j, Origin: origin, InitialType: "unknown", SinkType: "unknown",
 				Source: dep.Source, Transfers: append([]analysis.Evidence{}, dep.Transfers...),
 			})
+		}
+		if facts.Framework == "symfony" {
+			for _, dep := range u.Dependencies {
+				for _, transfer := range dep.Transfers {
+					if transfer.Kind == "typed_conversion" {
+						facts.Controls = append(facts.Controls, transfer)
+					}
+				}
+			}
 		}
 		u.InputFacts = facts
 	}

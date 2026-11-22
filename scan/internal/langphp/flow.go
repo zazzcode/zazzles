@@ -51,7 +51,9 @@ type phpFlow struct {
 	// branch merges join only changed values instead of the whole environment.
 	dirty map[string]bool
 	// class is the class whose method this flow expands, if any.
-	class *phpClassDecl
+	class    *phpClassDecl
+	symfony  *symfonyProject
+	services map[string]phpValue
 }
 
 func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
@@ -454,6 +456,12 @@ func (f *phpFlow) subscript(n *sitter.Node) phpValue {
 
 // projectValue projects a field of a tracked value (arrays, DB rows).
 func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue {
+	if v.binding == "symfony_body_array" {
+		return f.symfonyBagInput(n, "body", key)
+	}
+	if v.binding == "symfony_bag" && v.driver == "query" {
+		return f.symfonyBagInput(n, "query", key)
+	}
 	if v.regex != nil {
 		if group, err := strconv.Atoi(key); err == nil && group >= 1 {
 			return f.regexCapture(v, group, n)

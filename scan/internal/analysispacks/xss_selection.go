@@ -27,7 +27,7 @@ func sourceLanguage(u analysis.CandidateUse, f *Family) (lang.Language, bool) {
 	switch u.APIModel.ID {
 	case "python-html-output-v1":
 		return lang.Python, true
-	case "php-html-output-v1":
+	case "php-html-output-v1", "symfony-response-v1":
 		return lang.PHP, true
 	case "browser-output-v1", "html-output-v1":
 		if l, ok := lang.Detect(u.Sink.Span.File); ok && (l == lang.JavaScript || l == lang.TypeScript) {
@@ -72,7 +72,7 @@ func xssDescriptors() []Component {
 		return Component{ID: id, Version: "1", Kind: kind, Domains: []string{"xss"}, Applicability: []string{"xss_candidate"}, Compatibility: []string{XSSProtocol}, Owner: owner, Limits: []string{"existing bounded XSS adapters only; selected interpretation never supplies missing source facts"}, Tests: []string{"TestXSSComponentSelection"}, Material: material}
 	}
 	items := []Component{makeItem("flow.xss", "compiled_capability", "internal/parse/xss_*.go + internal/parse/python_templates.go", "")}
-	for _, id := range []string{"html-output-v1", "browser-output-v1", "python-html-output-v1", "php-html-output-v1"} {
+	for _, id := range []string{"html-output-v1", "browser-output-v1", "python-html-output-v1", "php-html-output-v1", "symfony-response-v1"} {
 		items = append(items, makeItem("render."+id, "rendering_contract", "internal/analysispacks/xss.go", XSSContract(id, "").Semantics))
 	}
 	for _, v := range []struct{ id, owner, text string }{

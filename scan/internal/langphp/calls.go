@@ -415,6 +415,12 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		return sliceFrom(values, 0)
 	}
 	receiver := f.eval(obj)
+	if v, ok := f.requestCall(n, receiver, method, values); ok {
+		return v
+	}
+	if v, ok := f.symfonyControllerCall(n, receiver, method, values); ok {
+		return v
+	}
 	name := ""
 	if obj.Kind() == "variable_name" {
 		name = phpVarName(m, obj)
@@ -588,13 +594,16 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	clsNode := phpField(n, "class")
 	if clsNode == nil {
 		for i := uint(0); i < n.NamedChildCount(); i++ {
-			if c := n.NamedChild(i); c.Kind() == "name" {
+			if c := n.NamedChild(i); c.Kind() == "name" || f.symfony != nil && (c.Kind() == "qualified_name" || c.Kind() == "relative_name") {
 				clsNode = c
 				break
 			}
 		}
 	}
 	cls := phpText(m, clsNode)
+	if v, ok := f.symfonyObjectCreation(n, clsNode, cls); ok {
+		return v
+	}
 	cls = strings.TrimPrefix(cls, "\\")
 	switch cls {
 	case "mysqli":

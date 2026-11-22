@@ -122,6 +122,19 @@ func architectureFixtures(t *testing.T) []string {
 			t.Fatal(err)
 		}
 		for _, e := range entries {
+			if tree == "internal/langphp/testdata" && e.IsDir() && e.Name() == "symfony" {
+				group := tree + "/symfony"
+				cases, err := os.ReadDir(filepath.Join(scanModuleRoot, group))
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, fixture := range cases {
+					if fixture.IsDir() {
+						out = append(out, group+"/"+fixture.Name())
+					}
+				}
+				continue
+			}
 			if e.IsDir() {
 				out = append(out, tree+"/"+e.Name())
 			}

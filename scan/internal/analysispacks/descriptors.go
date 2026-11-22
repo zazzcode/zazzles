@@ -187,6 +187,6 @@ func descriptors() ([]Component, error) {
 	out = append(out, interpreterDescriptors("deserialization")...)
 	out = append(out, xssDescriptors()...)
 	out = append(out, outboundDescriptors()...)
-	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent())
+	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent(), symfonyInputComponent())
 	return out, nil
 }

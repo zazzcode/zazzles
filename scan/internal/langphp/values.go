@@ -39,6 +39,7 @@ type phpLiteral struct {
 }
 
 type phpValue struct {
+	configuration bool
 	// superglobalFresh marks tracked request-element state that some joined
 	// path left unwritten and unchecked: a read also yields fresh input.
 	superglobalFresh bool

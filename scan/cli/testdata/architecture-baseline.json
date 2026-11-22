@@ -4421,18 +4421,6 @@
     "uses_count": 4,
     "gaps": 0
   },
-  "internal/langphp/testdata/symfony": {
-    "uses": [],
-    "report_sha256": "408abade841c9fdeb4cdaabe2987749c25886c8e34cb62d18c5ccf6b9a169a51",
-    "sarif_sha256": "be70588f5616792c9267a6673d54e6007d3527a8de115baa5f5baf354ca0b4cf",
-    "entries": 19,
-    "registrations": 19,
-    "dispatch_bindings": 19,
-    "callables": 14,
-    "invocation_contexts": 19,
-    "uses_count": 0,
-    "gaps": 0
-  },
   "internal/langphp/testdata/symfony-resolution": {
     "uses": [],
     "report_sha256": "63730a7fed63acea1f2387b42f5ca09fc56b7cbd23e0bbd7cd7151c3827715a6",
@@ -4443,6 +4431,176 @@
     "callables": 1,
     "invocation_contexts": 1,
     "uses_count": 0,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/config": {
+    "uses": [],
+    "report_sha256": "f7c168a6ff1f95dea6a27f9ef58ec85a6eb53ec749265c1a813591ee30531eb8",
+    "sarif_sha256": "c2fe600654d626dc324111cd922541ed45cc1a53b6cd4ec8f50b90438d621f62",
+    "entries": 2,
+    "registrations": 2,
+    "dispatch_bindings": 2,
+    "callables": 2,
+    "invocation_contexts": 2,
+    "uses_count": 0,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/inputs": {
+    "uses": [
+      {
+        "id": "candidate:v1:656584e21c4a2c8d4eff3cc9fb7f369a163fafc37bad86b39b4c47c10269b6d9",
+        "kind": "xss_candidate",
+        "request_sha256": "627b1cff7003410ba61e1feee82c2af4a3abc90b025ca837fa31216678c4904e",
+        "signature_sha256": "958209b475f321e5cedbf7b71a3753db3f7dc5b7428cd6fcc4ec153fa9c47f14"
+      },
+      {
+        "id": "candidate:v1:1863c8a1274508c0dcb74b9a9ae150426cfa7c6a374864913d978a1a16a855d5",
+        "kind": "xss_candidate",
+        "request_sha256": "341f56317d4082a64de4479f9c7d8c5d5cc55af2e6bf3c68d7779219c0f754e2",
+        "signature_sha256": "fc2acc8d321645ff062b44f01e75c5867516ad3f463ea21919d085ff14e901c4"
+      },
+      {
+        "id": "candidate:v1:1bd41c00c223c557b63d2b1544ffd44fbf1e5ae4dd14dcafbb8ab421fef429fb",
+        "kind": "xss_candidate",
+        "request_sha256": "b634e16c71aebd9e156bee0ecd5a3a61fc4fe0fe8a6c501e8e9216506ddd23db",
+        "signature_sha256": "848a2fd34c9f10e1c794d9915f68fee2c6f2219119f2613df3608e74508c1696"
+      },
+      {
+        "id": "candidate:v1:140a5f37ac19844c6088fdb3450e169a2de9d6485497b33ca588edbbf0d3ce68",
+        "kind": "xss_candidate",
+        "request_sha256": "957c5aa9a7df29e8f71898415cee80c021146a6e44322c57e5e3ec85197731e2",
+        "signature_sha256": "68f826579f107a2bac9ec60d8af924f195230b4f18965b2a84f0c3fe2c93717d"
+      },
+      {
+        "id": "candidate:v1:5a91a57f4f61514a3af733de69310e6400d01517d101e9145fd238aad1197593",
+        "kind": "xss_candidate",
+        "request_sha256": "74e842924e47eafbea2a7d8632717c4366a6774ff59b02da03dfd803ee473c9c",
+        "signature_sha256": "e2385750e137e498aff77d30c0900361ee1d8e3c57dbd8175c9509bb0867d64a"
+      },
+      {
+        "id": "candidate:v1:55fee921a0ca010c5edd60046e41ef46638d3ed0d6a95180dbf0f6fa0b5ab4f0",
+        "kind": "xss_candidate",
+        "request_sha256": "558169da6453ae328eaff5059c15bfa3b891f92037b138036310e8afea3f1624",
+        "signature_sha256": "dfa86fd3f5fc242cb890d5f2745cef262b8de829e06dd6d63a0ffa2be077a562"
+      },
+      {
+        "id": "candidate:v1:f9cf7424ee785450718d3a5af348184ec77a269745846e84a85d1663449fcf21",
+        "kind": "xss_candidate",
+        "request_sha256": "41f72a1845058216f3040d1331c480a3d1a47dc31bc7fb54cf5188f9ebe7de64",
+        "signature_sha256": "68f7f146c28b95b5a58faf2abd6c75ab6902398c77782ff99e1e1460fe1eb612"
+      },
+      {
+        "id": "candidate:v1:e0fe9cec62dc95a9cb227bf4fcbb1d55523802de259ab05b2d6a1fc7a882741f",
+        "kind": "xss_candidate",
+        "request_sha256": "572d97908888c717c348df688379b7d3a41446f35f56e4c782a85e99761a3fc2",
+        "signature_sha256": "30e2ee9e85999d944440946e71b364706943efda418293df7933a1d99e9bf9bd"
+      },
+      {
+        "id": "candidate:v1:5cf64ad58bed5b3dc7bb45c2134dbed555a64b70c2ed44eacc6a2cdd12803d79",
+        "kind": "xss_candidate",
+        "request_sha256": "965f0e9320d7615b171dc92f691a71ddc21fa970a6d28c5a7f1e95ae48f74a7a",
+        "signature_sha256": "3ebcd662f6fe272f2df57507f18763d890676d4fca49a8a2c8e357f09fde914f"
+      },
+      {
+        "id": "candidate:v1:9a8f31e65da851e65f34ff54c1a4303dc1ba09ce81352b3e2181108f0fcea58b",
+        "kind": "xss_candidate",
+        "request_sha256": "d443d0b27af7756571d447236e24dd69c233eae50b4a4f2113b67a704f263d96",
+        "signature_sha256": "715336fe4aa58531842bd129018e02d3905e4d850966701baaeac6b594ab342e"
+      },
+      {
+        "id": "candidate:v1:8bd8e3142ead52bfc9255455919e1c43bc8e0694924dc7ee1d2f5bf33e441526",
+        "kind": "xss_candidate",
+        "request_sha256": "a68858a7434491833c4711ef0fe93940563690111b4272b9ac94c94ec43ee20f",
+        "signature_sha256": "a2e1623d70c593e785cc0c35e131c2265f5eadae8191f4c640446dcb7ca7abb5"
+      }
+    ],
+    "report_sha256": "116ee62f503542f7b24aec6e8a43f89ea5f872a6a6fc933904bdd243930771fb",
+    "sarif_sha256": "2b77a36323bc978613b5b915c3561df0448a350def00fd0f6872420dc71f4f8c",
+    "entries": 12,
+    "registrations": 12,
+    "dispatch_bindings": 12,
+    "callables": 11,
+    "invocation_contexts": 12,
+    "uses_count": 11,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/mixed": {
+    "uses": [],
+    "report_sha256": "895ef7927026e88139bad4b81731e4dd2164d496821fb46a5686f175fe712033",
+    "sarif_sha256": "3091e497fd7757240c746cdf436b813d0cb6f4e1416494d693a357ade1d90f4f",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 0,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/routes": {
+    "uses": [],
+    "report_sha256": "95e8a4163734d800c3af1a080c0325eb539230ed904e276215c7eca125693e9c",
+    "sarif_sha256": "227387f26dd5ccd1c7873560ad3a56437c508a3f1147421e3fb0a6130439640a",
+    "entries": 9,
+    "registrations": 9,
+    "dispatch_bindings": 9,
+    "callables": 5,
+    "invocation_contexts": 9,
+    "uses_count": 0,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/routes-annotation": {
+    "uses": [],
+    "report_sha256": "365ebb9014724936fce9aa8db5955dfc5ea53ce4faa565ec4b6b118ed3478977",
+    "sarif_sha256": "933ad2c4315eeb877eb2c20cea644d548995d8f034a47e65320a3d33a307150e",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 0,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/routes-yaml": {
+    "uses": [],
+    "report_sha256": "d8aab7b9a5179acc4d169d21c759f7d6cdef88f658696af812a4ebd554e67b7a",
+    "sarif_sha256": "8f17355bd005e3d0eb5ff55ef8b5e768acd561d3c406bf24d67f2977de0ba665",
+    "entries": 2,
+    "registrations": 2,
+    "dispatch_bindings": 2,
+    "callables": 1,
+    "invocation_contexts": 2,
+    "uses_count": 0,
+    "gaps": 0
+  },
+  "internal/langphp/testdata/symfony/services": {
+    "uses": [
+      {
+        "id": "candidate:v1:fd8bd8da41a648e0ae89a9fd188d844c58a5690cf52d5393ece2085989acc9e6",
+        "kind": "xss_candidate",
+        "request_sha256": "eb855f8b1755bc27e4cb7acf200276a0895ebe1c0ca916f019a05978add468b6",
+        "signature_sha256": "c63b3b03ef6b227f3018434bb2f6872bf3a9bf346fcec3aefff3d088eeb7458d"
+      },
+      {
+        "id": "candidate:v1:f6da417d9cc85ec8a8593778f1967228b9a75b8185e0b6db3a1b0711a6fccbed",
+        "kind": "xss_candidate",
+        "request_sha256": "561d02a79e2ed66f544c5fbd1774bed9db38e6bee9c44dae8b804f09f0fce098",
+        "signature_sha256": "e167f8d7161a17f57e3491b1718b6597f3e3104e120c558d9662f6094508c3e2"
+      },
+      {
+        "id": "candidate:v1:0b2021da511be2ba5482913732d31795b826b9411fbc301b36d14b62b0a73cdf",
+        "kind": "xss_candidate",
+        "request_sha256": "ff2f3e3002972dd5e55c357ed7a1d720bd73c48bcaa80fd0baf09388dc377de1",
+        "signature_sha256": "974763fe171c3c79f8f9bded50343bee4be671a0cb0f1c54b93d71d5713b1e4d"
+      }
+    ],
+    "report_sha256": "57974a161106817df7a203ae1f21bcd3901967e749e63067b15c1beb7e86f377",
+    "sarif_sha256": "42632529e846a275af5d5b8e8207ea34d0d614fff64615cae506bf804ad2237f",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 3,
     "gaps": 0
   },
   "internal/langphp/testdata/templates": {

@@ -223,7 +223,11 @@ a control.
 ## 4. Scope and review shape
 
 Review shape: sibling draft PRs into `stage`, one per slice group of §9, from the single
-`symfony-mvp` worktree. A stack is not used because S3 to S6 are independent once S2 lands.
+`symfony-mvp` worktree. Use a distinct remote head for each group because GitHub accepts one open
+PR for a given head/base pair. All implementation commits are made on `symfony-mvp`. Push each
+later checkpoint to a remote review head without checking out that head or creating a worktree.
+Later drafts include their prerequisites until those reach `stage`. The PR body identifies the
+commit range and acceptance evidence for the group under review.
 
 | Path | Change | Purpose |
 |---|---|---|
@@ -234,6 +238,7 @@ Review shape: sibling draft PRs into `stage`, one per slice group of §9, from t
 | `scan/internal/langphp/symfony_yaml.go` | New | `gopkg.in/yaml.v3` reader with the D-26 limits |
 | `scan/internal/langphp/symfony_routes.go`, `symfony_route_source.go` | New | Attribute, annotation and YAML routes to entries, registrations and dispatch |
 | `scan/internal/langphp/symfony_entry.go` | New | Action invocation, argument binding, method-condition narrowing |
+| `scan/internal/langphp/control.go`, `flow.go`, `values.go` | Modified | Connect route-scoped condition evaluation, request projections, and configuration evidence to the existing PHP flow |
 | `scan/internal/langphp/symfony_request.go` | New | `Request`, parameter bags and `UploadedFile` as input facts |
 | `scan/internal/langphp/symfony_controller.go` | New | `AbstractController` helper contracts, `Response` classes, redirect |
 | `scan/internal/langphp/symfony_services.go` | New | Autowiring by declared type, scalar configuration arguments |
@@ -246,10 +251,11 @@ Review shape: sibling draft PRs into `stage`, one per slice group of §9, from t
 | `scan/internal/langphp/project_resolution.go`, `call_index.go`, `class_index.go`, `entries.go`, `modules.go`, `calls.go`, `sql.go`, `xss.go`, `path.go`, `command.go`, `code_redirect.go`, `upload.go`, `guards.go`, `input_facts.go` | Modified | Reader replacement, scoped invalidation, entry selection, dispatch of new method contracts, storage linking for every claim kind (D-15), `UploadedFile::move`, `filter_var` guards, Symfony input origin |
 | `scan/internal/langphp/*_test.go`, `scan/internal/langphp/testdata/symfony/<case>/` | New | Fixtures and tests of §8 |
 | `scan/internal/analysispacks/` (`families.go`, `contracts.go`, `ssrf.go`, `outbound.go`, `upload.go`, `command.go`, `path.go`, `code_redirect.go`, `guard_contracts.go`, `xss.go`, `logging.go`, new `symfony_inputs.go`, tests) | Modified, new | PHP in `ssrf`, `outbound` and `logging`; the contract identifiers of D-27; `filter_var` guard contracts |
+| `scan/internal/analysispacks/descriptors.go`, `select.go`, `xss_selection.go` | Modified | Register and select Symfony components without changing existing component definitions |
 | `scan/internal/guidelines/` (`ssrf.go`, new `ssrf_php.md`, `php.md`, tests) | Modified, new | PHP SSRF guideline; Symfony limits in the PHP guideline only if its digest rule allows (§6 halt 2) |
 | `scan/internal/analysis/` (`entries.go` validation only if a mechanism list exists, `outbound.go`) | Modified | Accept the three route mechanisms and PHP outbound facts |
 | `scan/internal/pipeline/symfony_test.go` | New | `TestSymfonySourceKey`, enabled by `ZAZZLES_VULN_SYMFONY` |
-| `scan/cli/testdata/architecture-baseline.json` | Modified | New Symfony fixture rows only |
+| `scan/cli/architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Inventory each Symfony fixture and add its baseline row |
 | `go.mod`, `go.sum` | Modified | `gopkg.in/yaml.v3` (approved, OQ-2) |
 | `README.md` | Modified | Symfony in the coverage table (AC16) |
 | `docs/scan/symfony-support.md` | New | User guide: supported subset and limits |
@@ -818,8 +824,8 @@ unmodeled and follows the "anything else" row.
 Follow the [common rules](architecture-update-plan.md#common-agent-implementation-rules) and
 [execution discipline](../docs/agent-execution-discipline.md).
 
-- **Integration.** Commit and push the `symfony-mvp` branch only. Open draft PRs into `stage`.
-  Never merge.
+- **Integration.** Commit on `symfony-mvp` only. Push the first group to its existing branch and
+  use the §4 review heads for later groups. Open drafts into `stage`. Never merge.
 - **Working directory.** Run every command from the worktree root, where `go.mod` is.
 - **Test first.** Each slice starts by adding its fixtures and its failing test, and records the
   failing output in the run log before any non-test file changes.
@@ -1398,3 +1404,6 @@ The owner authorized required implementation files in the assigned worktree and 
 to continue in the same session. §4 now includes the two production pipeline entry points that
 carry the walk inventory. §6 and §13 explain how to handle required wiring and recoverable failures
 without additional confirmation. AC2 and AC3 still verify the same behavior.
+
+§4 and §6 also record how to keep each draft's changes available while implementing later groups
+on the same worktree. The drafts use distinct remote heads and retain `stage` as their base.

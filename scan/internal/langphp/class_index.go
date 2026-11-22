@@ -486,6 +486,9 @@ func (f *phpFlow) propertyRead(n *sitter.Node) (phpValue, bool) {
 		return phpValue{}, false
 	}
 	base, ok := f.env[phpVarName(m, obj)]
+	if v, modeled := symfonyRequestProperty(base, phpText(m, name)); modeled {
+		return v, true
+	}
 	if !ok || base.classDecl == nil {
 		return phpValue{}, false
 	}

@@ -1,6 +1,6 @@
 # PHP Symfony support — Symfony websites as Code Scan targets
 
-- **Status** Implementation in progress in the assigned worktree.
+- **Status** Implemented and verified in [draft PR #39](https://github.com/zazzcode/zazzles/pull/39).
 - **Worktree and branch** `symfony-mvp`, cut from `stage`.
 - **Baseline** `stage` at `a8edac7`. Every path in this spec is relative to the repository root.
 - **Supersedes** [Architecture phase 6](architecture-phase-6-symfony.md), the Symfony registration
@@ -260,7 +260,7 @@ local run log.
 | `.zazz/evaluation/vuln-symfony-detection-guide.md`, `.zazz/evaluation/symfony-results.md`, `.zazz/evaluation/recall-gap-inventory/cases.json` (and `check.py`, `accuracy.py`, `test_check.py` only if a new app needs it), `.zazz/evaluation/sample-reference-manifests.json` | New, modified | Key, results, frozen rows, file-hash manifest |
 | `.zazz/project/vulnerable-sample-apps.md`, `.zazz/project/implementation-plan.md`, `.zazz/architecture/README.md`, `.zazz/specifications/README.md`, `.zazz/docs/zazzles-agent-orientation.md` | Modified | Catalog row, capability checklist, package map, spec index, documentation map |
 
-The diff MUST stay inside `scan/`, `docs/`, `.zazz/`, `README.md`, `go.mod` and `go.sum`.
+The implementation diff MUST stay inside `scan/`, `docs/`, `.zazz/`, `README.md`, `go.mod` and `go.sum`. The owner also requested the companion `.agents/skills/gh-stack/SKILL.md` and optional orientation link in the same draft.
 
 Out of scope:
 
@@ -1285,15 +1285,15 @@ func (t *twigScope) eval(expr string, at analysis.Span) (v phpValue, outermost s
 
 ## 10. Definition of done
 
-- [ ] §2 reading done and the standards-index lookup recorded in the run log.
-- [ ] AC1 to AC17 verified, each with its command and output in the run log.
-- [ ] The judged sample report has 14 Confirmed positives and no control finding (AC14).
-- [ ] The sample report shows route entries with controller methods, and no `FILE /src/…` entry.
-- [ ] `symfony-results.md` records every judged run of the D-28 loop (AC15).
-- [ ] `README.md` and the documents of AC16 name Symfony websites as supported targets.
-- [ ] `git diff origin/stage --stat` matches §4.
-- [ ] A fresh-context Verifier Agent reran the §13 checks and reported PASS.
-- [ ] The draft PR body links this spec and lists each slice group and its AC evidence.
+- [x] §2 reading done and the standards-index lookup recorded in the run log.
+- [x] AC1 to AC17 verified, each with its command and output in the run log.
+- [x] The judged sample report has 14 Confirmed positives and no control finding (AC14).
+- [x] The sample report shows route entries with controller methods, and no `FILE /src/…` entry.
+- [x] `symfony-results.md` records every judged run of the D-28 loop (AC15).
+- [x] `README.md` and the documents of AC16 name Symfony websites as supported targets.
+- [x] `git diff origin/stage --stat` matches §4.
+- [x] A fresh-context Verifier Agent reran the §13 checks and reported PASS.
+- [x] The draft PR body links this spec and lists each slice group and its AC evidence.
 
 ## 11. Open questions
 

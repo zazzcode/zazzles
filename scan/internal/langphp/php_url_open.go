@@ -164,6 +164,12 @@ func (f *phpFlow) phpDestinationUse(n, operand *sitter.Node, operation, contract
 		for j, e := range u.Context {
 			switch e.Kind {
 			case "branch_precondition", "branch_false_precondition":
+				if m := f.set.modules[e.Span.File]; m != nil {
+					test := parse.NodeAt(m.tree.RootNode(), e.Span.StartByte, e.Span.EndByte)
+					if phpPresenceOnly(m, test) {
+						continue
+					}
+				}
 				if parse.MentionsAny(e.Text, names) && !parse.PresenceOnlyCondition(e.Text, names) {
 					path.Controls = append(path.Controls, j)
 				}

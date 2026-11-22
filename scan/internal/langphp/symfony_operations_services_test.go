@@ -102,6 +102,26 @@ func TestSymfonyServices(t *testing.T) {
 		{"SV-12/read", "ANY /local", controller, localPath, "php-filesystem-v1", 78, nil},
 		{"SV-12/no-ssrf", "ANY /local", controller, "!ssrf_candidate", "", 78, nil},
 		{"SV-12/response", "ANY /local", controller, localPath, "symfony-file-response-v1", 79, nil},
+		{"SV-05/stored-path", "ANY /remove/{record}", controller, localPath, "php-filesystem-v1", 92, func(t *testing.T, use analysis.CandidateUse) {
+			operand := use.Path.Operands[0]
+			if len(operand.Context) == 0 || use.Context[operand.Context[0]].Kind != "path_operand" ||
+				!strings.Contains(use.Context[operand.Context[0]].Text, "/records/") {
+				t.Fatalf("path slot does not point to its source operand: %+v", operand)
+			}
+			for _, flow := range use.Path.Paths {
+				if flow.Root != "/src/Controller/records" || !slices.Contains(flow.Transforms, analysis.PathTransformConcat) {
+					t.Fatalf("stored path loses its base or construction: %+v", flow)
+				}
+			}
+		}},
+		{"SV-06/presence", "ANY /optional-destination", controller, ssrf, "php-url-open-v1", 101, func(t *testing.T, use analysis.CandidateUse) {
+			symfonyRequestDestination(t, use)
+			for _, p := range use.Outbound.Paths {
+				if p.Protection != "raw" || len(p.Controls) != 0 {
+					t.Fatalf("presence test changes destination protection: %+v", p)
+				}
+			}
+		}},
 	} {
 		t.Run(tc.id, func(t *testing.T) {
 			found := false

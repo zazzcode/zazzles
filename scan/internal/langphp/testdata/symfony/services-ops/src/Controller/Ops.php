@@ -86,4 +86,18 @@ class Ops
         curl_setopt_array($handle, ['CURLOPT_URL' => $request->get('stringKey')]);
         curl_init($request->get('initial'));
     }
+
+    #[Route('/remove/{record}')]
+    public function remove(Record $record): void {
+        unlink(__DIR__ . '/records/' . $record->getSuffix());
+    }
+
+    #[Route('/optional-destination')]
+    public function optionalDestination(Request $request): void {
+        $address = $request->get('address');
+        if (empty($address)) {
+            return;
+        }
+        file_get_contents($address);
+    }
 }

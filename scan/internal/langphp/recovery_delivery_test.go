@@ -198,3 +198,31 @@ func TestRecoveryDeliveryTransfer(t *testing.T) {
 		})
 	}
 }
+
+// Mail content is a delivery sink for the recovery claim only: a request
+// value in html() or text() content produces no xss_candidate (section 3).
+func TestMailContentNotRenderingSink(t *testing.T) {
+	for _, root := range []string{"testdata/symfony/account", "testdata/symfony/account-transfer", "testdata/account-plain"} {
+		r := phpAnalyze(t, root, "")
+		for _, u := range r.Uses {
+			if u.Kind != "xss_candidate" {
+				continue
+			}
+			switch u.Sink.Span.File {
+			case "src/Controller/MailController.php", "src/Controller/RecoveryController.php", "src/Service/ResetMailer.php", "src/Api/MemberApi.php", "forgot.php":
+				if strings.Contains(u.Sink.Text, "mail") || strings.Contains(u.Sink.Text, "->html(") || strings.Contains(u.Sink.Text, "->text(") || strings.Contains(u.Sink.Text, "send(") {
+					t.Fatalf("%s: xss_candidate at a mail operand %s:%d %q", root, u.Sink.Span.File, u.Sink.Span.StartLine, u.Sink.Text)
+				}
+			}
+		}
+		if len(phpUsesOfKind(r, analysis.RecoveryDeliveryKind))+len(phpUsesOfKind(r, analysis.AccountEnumerationKind)) == 0 {
+			t.Fatalf("%s: fixture produced no account record", root)
+		}
+	}
+	r := phpAnalyze(t, "testdata/symfony/account", "")
+	for _, u := range r.Uses {
+		if u.Kind == "xss_candidate" && u.Sink.Span.File == "src/Controller/MailController.php" {
+			t.Fatalf("xss_candidate in the mail controller at %d: %q", u.Sink.Span.StartLine, u.Sink.Text)
+		}
+	}
+}

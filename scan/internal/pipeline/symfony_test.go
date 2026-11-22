@@ -196,6 +196,7 @@ type symfonyKeyRow struct {
 	MinUses                int      `json:"min_uses"`
 	GuardKind              string   `json:"guard_kind"`
 	EntryRoles             []string `json:"entry_roles"`
+	EachAnchor             bool     `json:"each_anchor"`
 }
 
 // symfonyLaneRows are the rows of the application-security lane.
@@ -205,6 +206,8 @@ var symfonyLaneRows = []string{
 	"SYM-AUTHZ-01", "SYM-AUTHZ-02", "SYM-AUTHZ-03", "SYM-AUTHZ-04", "SYM-LOCAL-01",
 	"SYM-AUTHZ-N01", "SYM-AUTHZ-N02", "SYM-AUTHZ-N03", "SYM-AUTHZ-N04", "SYM-AUTHZ-N05", "SYM-AUTHZ-N06", "SYM-AUTHZ-N07",
 	"SYM-LOCAL-N01", "SYM-LOCAL-N02", "SYM-LOCAL-02", "SYM-AUTHZ-R01",
+	"SYM-ENUM-01", "SYM-ENUM-02", "SYM-RESET-01", "SYM-HASH-01",
+	"SYM-ENUM-N01", "SYM-ENUM-N02", "SYM-RESET-N01", "SYM-HASH-N01",
 }
 
 func readSymfonyKey(t *testing.T) []symfonyKeyRow {
@@ -268,6 +271,8 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 		"SYM-AUTHZ-01": {"POST /user/role/{user}"}, "SYM-AUTHZ-02": {"POST /user/password/{user}"},
 		"SYM-AUTHZ-03": {"POST /user/email/{user}"}, "SYM-AUTHZ-04": {"GET /user/avatar/delete/{user}"},
 		"SYM-LOCAL-01": {"ANY /local/promote/{user}"},
+		"SYM-ENUM-01":  {"POST /register"}, "SYM-ENUM-02": {"ANY /reset"}, "SYM-RESET-01": {"ANY /reset"},
+		"SYM-HASH-01": {"ANY /admin/create", "POST /register", "ANY /reset/{email}/{token}", "POST /user/password/{user}", "POST /login"},
 	}
 	storage := map[string]string{
 		"SYM-XSS-02": "php-sql:comment.content", "SYM-XSS-03": "php-sql:user.about_me",
@@ -294,7 +299,7 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 				failures = append(failures, detail)
 			}
 		}
-		if row.MinUses > 0 {
+		if row.MinUses > 0 && !row.EachAnchor {
 			n := 0
 			for _, u := range uses {
 				if entries[u.EntryID] == name {
@@ -314,6 +319,24 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 	if len(entriesByRow[row.ID]) == 0 {
 		t.Fatal("positive row has no expected entry")
 	}
+	if row.EachAnchor {
+		n := 0
+		for _, lines := range row.Anchors {
+			n += len(lines)
+		}
+		if row.MinUses > 0 && len(uses) < row.MinUses || n < row.MinUses {
+			t.Errorf("%d candidates over %d anchors, want at least %d", len(uses), n, row.MinUses)
+		}
+		for file, lines := range row.Anchors {
+			for _, line := range lines {
+				if !slices.ContainsFunc(uses, func(u analysis.CandidateUse) bool {
+					return u.Sink.Span.File == file && u.Sink.Span.StartLine == line && symfonyPositiveEvidence(row.ID, u, sourceFile, sourceLine, storage, report) == ""
+				}) {
+					t.Errorf("anchor %s:%d has no candidate with its evidence", file, line)
+				}
+			}
+		}
+	}
 }
 
 func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile string, sourceLine int, storage string, report *analysis.AnalysisReport) string {
@@ -322,6 +345,9 @@ func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile stri
 	}
 	if u.Kind == analysis.AuthorizationKind {
 		return symfonyAuthorizationEvidence(id, u, report)
+	}
+	if detail, ok := symfonyAccountEvidence(id, u); ok {
+		return detail
 	}
 	if u.Kind == analysis.ExposureKind {
 		// An operation-centered claim has no request source (lane contract 2.7).
@@ -572,4 +598,50 @@ func symfonyEntryAccess(t *testing.T, report *analysis.AnalysisReport) {
 	if files != 2 || routes != 31 {
 		t.Errorf("access census files=%d routes=%d, want 2 and 31", files, routes)
 	}
+}
+
+// symfonyAccountEvidence checks the branch 3 facts of AC12.
+func symfonyAccountEvidence(id string, u analysis.CandidateUse) (string, bool) {
+	switch u.Kind {
+	case analysis.AccountEnumerationKind:
+		f := u.Enumeration
+		if f == nil || len(f.Found) == 0 || len(f.NotFound) == 0 || slices.Equal(f.Found, f.NotFound) {
+			return "missing differing response lists", true
+		}
+		if u.EntryFacts == nil || u.EntryFacts.Access == nil || u.EntryFacts.Access.Authentication != analysis.AccessNone {
+			return "entry access is not none", true
+		}
+		return "", true
+	case analysis.RecoveryDeliveryKind:
+		f := u.Recovery
+		if f == nil || f.SecretSource.Span.File != "src/Controller/PasswordResetController.php" || f.SecretSource.Span.StartLine != 40 || f.SecretStrength != analysis.SecretCSPRNG {
+			return "missing csprng secret at PasswordResetController.php:40", true
+		}
+		if f.RecipientValidated != analysis.RecipientPartial || f.RecipientCount != analysis.RecipientCountRequest || len(f.ShapeUses) != 2 {
+			return fmt.Sprintf("recipient facts %s %s %d", f.RecipientValidated, f.RecipientCount, len(f.ShapeUses)), true
+		}
+		if a, b := f.ShapeUses[0].Span, f.ShapeUses[1].Span; a.File != "src/Controller/PasswordResetController.php" || a.StartLine != 34 || b.File != "src/Services/Mail.php" || b.StartLine != 23 {
+			return "use sites are not :34 and Mail.php:23", true
+		}
+		if f.StoredField != "php-sql:user.reset" || !slices.ContainsFunc(f.SecurityFields, func(s analysis.SecurityFieldFact) bool {
+			return s.StorageKey == f.StoredField && slices.Contains(s.Roles, analysis.RoleRecoverySecret)
+		}) {
+			return "stored field lacks recovery_secret", true
+		}
+		return "", true
+	case analysis.PasswordHashKind:
+		f := u.PasswordHash
+		if f == nil || f.Algorithm != "md5" || f.Salted != "no" {
+			return "missing md5 digest facts", true
+		}
+		want := analysis.BasisCredentialField
+		if u.Sink.Span.File == "src/Security/Hasher/Md5Hasher.php" {
+			want = analysis.BasisHasherClass
+		}
+		if f.Basis != want {
+			return "basis " + f.Basis + ", want " + want, true
+		}
+		return "", true
+	}
+	return "", false
 }

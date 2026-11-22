@@ -649,7 +649,9 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 		}
 	}
 	cls := phpText(m, clsNode)
-	f.reflectionObject(n)
+	if v, ok := f.reflectionObject(n); ok {
+		return v
+	}
 	if v, ok := f.symfonyOperationObject(n, clsNode, cls); ok {
 		return v
 	}

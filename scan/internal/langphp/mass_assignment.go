@@ -120,10 +120,13 @@ func (f *phpFlow) massAssignmentCall(n *sitter.Node, nodes []*sitter.Node, value
 			if len(values) >= 3 && strings.EqualFold(f.set.receiverType(m, n, object), symfonyPropertyAccessor) && len(values[1].keySources) > 0 {
 				f.recordMassAssignment(n, values[0].classDecl, analysis.MassAssignmentAccessor, values[1], "")
 			}
+			if recv := f.eval(object); recv.reflection != nil && recv.reflection.property && len(recv.reflection.key.keySources) > 0 {
+				f.recordMassAssignment(n, recv.reflection.classDecl, analysis.MassAssignmentReflection, recv.reflection.key, "")
+			}
 		case "getProperty":
-			if len(values) >= 1 && len(values[0].keySources) > 0 && object.Kind() == "object_creation_expression" && f.reflectionClass(object, "ReflectionClass") {
-				if args := phpNewArguments(object); len(args) > 0 {
-					f.recordMassAssignment(n, f.eval(args[0]).classDecl, analysis.MassAssignmentReflection, values[0], "")
+			if len(values) >= 1 && len(values[0].keySources) > 0 {
+				if recv := f.eval(object); recv.reflection != nil && !recv.reflection.property {
+					f.recordMassAssignment(n, recv.reflection.classDecl, analysis.MassAssignmentReflection, values[0], "")
 				}
 			}
 		case "handleRequest", "submit":
@@ -173,19 +176,38 @@ func (f *phpFlow) massAssignmentCall(n *sitter.Node, nodes []*sitter.Node, value
 	}
 }
 
-// reflectionObject records new ReflectionProperty($object, $name) with a
-// request-chosen name.
-func (f *phpFlow) reflectionObject(n *sitter.Node) {
-	if f.entry.HTTP == nil || !f.reflectionClass(n, "ReflectionProperty") {
-		return
+// phpReflectionTarget carries a reflection object built over a stored target:
+// a ReflectionProperty whose construction named the property with the key
+// (request-chosen or not), or a ReflectionClass over the target. The claim's
+// sink is the later setValue or getProperty call on the tagged value, not the
+// construction: constructing a property alone writes nothing.
+type phpReflectionTarget struct {
+	property  bool
+	key       phpValue
+	classDecl *phpClassDecl
+}
+
+// reflectionObject tags new \ReflectionProperty($object, $name) and new
+// \ReflectionClass($object): the construction selects nothing by itself, so
+// the value it returns carries the target for the write sink.
+func (f *phpFlow) reflectionObject(n *sitter.Node) (phpValue, bool) {
+	if f.entry.HTTP == nil {
+		return phpValue{}, false
+	}
+	property := f.reflectionClass(n, "ReflectionProperty")
+	if !property && !f.reflectionClass(n, "ReflectionClass") {
+		return phpValue{}, false
 	}
 	args := phpNewArguments(n)
-	if len(args) < 2 {
-		return
+	if len(args) == 0 {
+		return phpValue{}, false
 	}
-	if key := f.eval(args[1]); len(key.keySources) > 0 {
-		f.recordMassAssignment(n, f.eval(args[0]).classDecl, analysis.MassAssignmentReflection, key, "")
+	v := phpValue{unknown: true, evidence: []analysis.Evidence{f.module.evidence("object_creation", n)}}
+	v.reflection = &phpReflectionTarget{property: property, classDecl: f.eval(args[0]).classDecl}
+	if property && len(args) > 1 {
+		v.reflection.key = f.eval(args[1])
 	}
+	return v, true
 }
 
 func (f *phpFlow) reflectionClass(n *sitter.Node, class string) bool {

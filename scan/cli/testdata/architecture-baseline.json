@@ -4990,68 +4990,80 @@
   "internal/langphp/testdata/symfony/mass-assignment": {
     "uses": [
       {
-        "id": "candidate:v1:6dbd08bfa179081e406f930805c3c93fa5c48873d48a079d6c6c63f5da9a0f5e",
+        "id": "candidate:v1:99549bffd6ae8fcd89bbe077afa693fef407b46018d878f5c164d926ea3a24e2",
         "kind": "mass_assignment_candidate",
         "request_sha256": "199e7400d046c1ef63bfed2e86e951e892a88616f1051c89166ce08f6b4b0e5a",
-        "signature_sha256": "af70d8d767252961a630b6ee8d43e41819ee6eae99ea853c41b05dbead6a2662"
+        "signature_sha256": "7320d3f4b1a1362d9944860d5aae74f795e7d29cf7cce2cec65839d47727575a"
       },
       {
-        "id": "candidate:v1:36cc5d2b99376ade1e24617a6cb337cbbea849193d81071d296cd4897d07ac4e",
+        "id": "candidate:v1:f4895cf180db174432f66c5454849d5f529f37db3b65e2bffdf6ff24c9530090",
         "kind": "mass_assignment_candidate",
         "request_sha256": "719c2cf7e3fd354018d0e7507dbac379eb7680da33c49f5475d7be5dc322edf6",
-        "signature_sha256": "be5017468e9406c77a989dafa285aa82c19c59c033ef2ed430911a65875bffb0"
+        "signature_sha256": "c93cfbd1dcf7658a681bbd8960c0b32de0a9a38f53e91ea5237002bf462036a5"
       },
       {
-        "id": "candidate:v1:136536cda78f19eb738a5230978ca4c019cb18468410289c3b4f3c701e0fabbb",
+        "id": "candidate:v1:bb92dcf8a23070c01c086ccff6facac8c01332b990620c29378f2a16a2bc5cb4",
         "kind": "mass_assignment_candidate",
         "request_sha256": "5d14f83fdfd71ca100a4dad557fef70ff11dbe2204aa5d9342ac59a81b6af1e1",
-        "signature_sha256": "2404d35c01a33af510e4d1908bd20e4cdc3ba84a54f9317b5f1507f9e0898197"
+        "signature_sha256": "102b44a0c2d670479d132323946d154924dac756422ab679d2578601189bc251"
       },
       {
-        "id": "candidate:v1:bf7deaf406b1a814b4177f8713893a77d4d13e4ef548d9ee0e4acfd302e0f1e4",
+        "id": "candidate:v1:42adf3c73601006f44c0b5d8c82b0abb6ea7dbdc3af38b68a5d82b5feb904021",
         "kind": "mass_assignment_candidate",
         "request_sha256": "b96e07f12ec9a1aaaf4363a5970d6bd334452bb53e2216b72e08bd86d93a25ae",
-        "signature_sha256": "f195a22724ab90a40b27ea7b0100e001535ce6a303f8f72d293f3842bd2c5641"
+        "signature_sha256": "315ccf6b3fe594a4e52a46bc1e521015c3355767bd76b61e26380a2cecedd79c"
       },
       {
-        "id": "candidate:v1:c0439d5c42c9d4e21ee177f00298105ff3af453a5810697116cf8b293052315b",
+        "id": "candidate:v1:3a5126702efa119987e1e943c17f6fd3baca67233e94d907d6ac3e59303f1933",
         "kind": "mass_assignment_candidate",
         "request_sha256": "d29f0550d0b29d916cefeb3fb15f7e195c0818d26a34ca94e81ae1bcebc5c1ca",
-        "signature_sha256": "d7fff232a5f383a079a07572bc863cfab28ff1bc864e589c7f9b8b82b642d73e"
+        "signature_sha256": "ecb116b76a43a2fb011af3e3609c144c4e28f4cadf933a9dca693a0efd485e69"
       },
       {
-        "id": "candidate:v1:5bf34798c19920f666a945967a2f3aabec3e21333a2c7345f2ac5891713082d7",
+        "id": "candidate:v1:5481580f6b06bfd3bf3e580cd3205b072755faaf16a22093182768fd3af10a23",
         "kind": "mass_assignment_candidate",
         "request_sha256": "3d9369ee512914e40f4a64bb092449bc60d0ecd13fae250548ae3301d0ba3cc5",
-        "signature_sha256": "a6a0c54fd4b3d0f9ed7b77b743f88784482374465139318f4527d206e66dacac"
+        "signature_sha256": "7cd68c5af869f08b03d1c0d6fd73fdd6ce278a73a626055c066d7da6a7e9caae"
       },
       {
-        "id": "candidate:v1:375d59e09a4bfe5e8ffcc5fc621700b3ca3cd755f562a58755377b38263d7a47",
+        "id": "candidate:v1:5a444a69569678e3296766edbbe1bc20e529cd791f0d19bd487fbd2b48b74dfb",
         "kind": "mass_assignment_candidate",
         "request_sha256": "7c7fbe5ce134b2433bef6b3d9c3d54347de7ba3251ccbfcd7029d1b9b39de47a",
-        "signature_sha256": "2e24a1bb359d66fa599ba87ad9e3c7a5eabe86fdc70ecc02f67354f2a9e32064"
+        "signature_sha256": "b4661ca26d7b07485c9b51c4486a1eb1896b86a89f5dfdbbcd34562a025c6d28"
       },
       {
-        "id": "candidate:v1:f26fab1240c9d9fd08f9e6240763c80fb550a631945630beca1907bb53d8acf3",
+        "id": "candidate:v1:6f1e2b9e820729b9f8ab1cf40cf45125f8f05a746bb58092c635c2eb3e8450ce",
         "kind": "mass_assignment_candidate",
         "request_sha256": "6c1d3ffca8127c39ae5d6bdb34f7fcc790fd44c82f031f1f5fd592a3bd09ed60",
-        "signature_sha256": "6ed6f482ce9a9d447460a3a0946d11589db996a12021ec219e825722859e0d12"
+        "signature_sha256": "5b0e1c725ca18d9dbd304f7ca02dae0546cc1478e4f7932a8c9cd7abb8d2a031"
       },
       {
-        "id": "candidate:v1:8d8741a65f2d71890cebc4c24a6dfbeb38f304341d79244cba49405a169e3e5e",
+        "id": "candidate:v1:ade92201329869d011a56fe021135e90ad95e2720bb02571a047be647c8ac670",
         "kind": "mass_assignment_candidate",
         "request_sha256": "c8b3f4f37f7d72f9aada86075077ae24756376c51c066891829876dcd60d7eab",
-        "signature_sha256": "5893de9cbe05ebc1c1e96aa1ae8b1f88bae04f6796cfb0598c0ae92186c93afb"
+        "signature_sha256": "b10d6f3f41bca6bf0c544e32a53ca88d1fc4ba1a609b5f3b6dd8ebe09526d185"
+      },
+      {
+        "id": "candidate:v1:329a3d311200b92c9b48a7192579f34bc4773a09102a7da1788268722b8cb0c2",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "8266acd1d12d5680fe4d5367a19685513abf43eff1e87934df91eb71a1eb699a",
+        "signature_sha256": "6a94c02f4cf37b3ae916f2f770fcc9274684ce55ef614abe5592f07d11cb0825"
+      },
+      {
+        "id": "candidate:v1:b3d18f6571f5b23e25053d9895817dd728ee7f7b2460e9d4a0daa04f17180678",
+        "kind": "mass_assignment_candidate",
+        "request_sha256": "f011eb4c7e36abb0c7773de96f381af031ce9067018eb5a635d81398eef69c44",
+        "signature_sha256": "289d5a0ac0d0dd5d04423a31f34632de0a15fa2fff38fc73af401c32de001ed8"
       }
     ],
-    "report_sha256": "c5371150dd74bb1aae422dc1b739e20b40343864dfb1e97842feec0633bb6670",
-    "sarif_sha256": "0de5fcc9960c86091385019938b1cbf5dbe7ede382cf22b7429056dcc796fe86",
-    "entries": 13,
-    "registrations": 13,
-    "dispatch_bindings": 13,
-    "callables": 13,
-    "invocation_contexts": 13,
-    "uses_count": 9,
+    "report_sha256": "aa336ed5d06b11cd5baf424f5fb82dcb319eb7e5969edae5387314826c077032",
+    "sarif_sha256": "5d59fd07809c6bae68d989cdc8b2c03a0317687cc679368e16d6648b078d45cd",
+    "entries": 16,
+    "registrations": 16,
+    "dispatch_bindings": 16,
+    "callables": 16,
+    "invocation_contexts": 16,
+    "uses_count": 11,
     "gaps": 1
   },
   "internal/langphp/testdata/symfony/mass-assignment-transfer": {

@@ -57,6 +57,9 @@ func TestMassAssignment(t *testing.T) {
 		{"MA-15", plain, "FILE /profile.php", true, "profile.php", 6, 5, analysis.MassAssignmentPropertyWrite, "Profile", "unresolved", nil, analysis.SecurityFieldsUnresolved, map[string]string{
 			"php-object:Profile.role": analysis.RoleNameHint, "php-object:Profile.password": analysis.RoleNameHint}},
 		{"MA-16", plain, "FILE /rename.php", false, "", 0, 0, "", "", "", nil, "", nil},
+		{"MA-17", first, "POST /account/{account}/reflect", true, controller, 122, 119, analysis.MassAssignmentReflection, target, "yes", nil, "", accountRoles},
+		{"MA-18", first, "POST /account/{account}/inspect", true, controller, 132, 131, analysis.MassAssignmentReflection, target, "yes", nil, "", accountRoles},
+		{"MA-19", first, "POST /account/{account}/reflect-only", false, "", 0, 0, "", "", "", nil, "", nil},
 	}
 	reports := map[string]*analysis.AnalysisReport{}
 	for _, root := range []string{first, transfer, plain} {

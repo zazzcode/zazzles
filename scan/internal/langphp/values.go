@@ -105,12 +105,18 @@ type phpValue struct {
 	keySources []phpDep
 	keyGuards  []analysis.Evidence
 	wholeBag   []phpDep
+	// reflection tags a value of a reflection object built over a stored
+	// target: a ReflectionProperty whose construction named the property with
+	// a request-chosen key, or a ReflectionClass over the target. The write
+	// sink is the later setValue or getProperty call, so the construction only
+	// tags the value. Only the mass-assignment adapter reads it.
+	reflection *phpReflectionTarget
 }
 
 // phpSideChannel reports a value carrying claim-specific side facts that the
 // generic join must preserve but never treats as content.
 func phpSideChannel(v phpValue) bool {
-	return v.diagnostic != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0
+	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0
 }
 
 // phpJoinSide joins two values with join after setting their side facts aside,
@@ -120,14 +126,19 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
 	if d == nil {
 		d = b.diagnostic
 	}
+	r := a.reflection
+	if r == nil {
+		r = b.reflection
+	}
 	sources := phpMergeDeps(a.keySources, b.keySources)
 	guards := phpMergeEvidence(a.keyGuards, b.keyGuards)
 	bag := phpMergeDeps(a.wholeBag, b.wholeBag)
 	for _, v := range []*phpValue{&a, &b} {
-		v.diagnostic, v.keySources, v.keyGuards, v.wholeBag = nil, nil, nil, nil
+		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag = nil, nil, nil, nil, nil
 	}
 	out := join(a, b)
 	out.diagnostic = d
+	out.reflection = r
 	if len(sources) > 0 {
 		out.keySources = sources
 	}

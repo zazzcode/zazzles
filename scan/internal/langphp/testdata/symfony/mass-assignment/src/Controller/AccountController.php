@@ -113,6 +113,36 @@ class AccountController extends AbstractController
         return new Response('');
     }
 
+    #[Route('/account/{account}/reflect', methods: ['POST'])]
+    public function reflect(Request $request, Account $account): Response
+    {
+        foreach ($request->request->all() as $field => $value) {
+            $idle = new \ReflectionProperty($account, $field);
+            $rp = new \ReflectionProperty($account, $field);
+            $rp->setValue($account, $value);
+        }
+        return new Response('');
+    }
+
+    #[Route('/account/{account}/inspect', methods: ['POST'])]
+    public function inspect(Request $request, Account $account): Response
+    {
+        $rc = new \ReflectionClass($account);
+        foreach ($request->request->all() as $field => $value) {
+            $prop = $rc->getProperty($field);
+        }
+        return new Response('');
+    }
+
+    #[Route('/account/{account}/reflect-only', methods: ['POST'])]
+    public function reflectOnly(Request $request, Account $account): Response
+    {
+        foreach ($request->request->all() as $field => $value) {
+            $rp = new \ReflectionProperty($account, $field);
+        }
+        return new Response('');
+    }
+
     private function starterValues(): array
     {
         return ['name' => 'guest', 'bio' => ''];

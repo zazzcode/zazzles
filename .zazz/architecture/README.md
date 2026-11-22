@@ -97,6 +97,8 @@ novel-repository generalization remain hypotheses until matched independent eval
 - [Reporting and SARIF](reporting-and-sarif.md): report records and implemented bounded SARIF export.
 - [Standalone HTML](html-reporting.md): human-facing report and disclosure rows.
 - [SCA follow-on](sca-design.md): planned dependency auditing.
+- [Application-security analyzers](application-security-analyzers.md): operation-centered families
+  (information exposure, mass assignment), the security-field census and key origin.
 - [Analyzers and analysis packs](analysis-packs.md): SQL/NoSQL/validation/XSS and outbound-observation ownership, selection, bounds,
   provenance, compatibility and incremental migration ledger; [original proposal](../project/analysis-pack-mvp.md).
 

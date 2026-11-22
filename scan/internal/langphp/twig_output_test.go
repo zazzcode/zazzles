@@ -116,7 +116,7 @@ func TestDoctrineStorage(t *testing.T) {
 			keys = append(keys, u.XSS.StorageKey)
 		}
 		slices.Sort(keys)
-		if !slices.Equal(keys, []string{"php-sql:note.about_me", "php-sql:note.bio"}) {
+		if !slices.Equal(keys, []string{"php-sql:note.abstract", "php-sql:note.bio"}) {
 			t.Fatalf("field keys: %v", keys)
 		}
 	})

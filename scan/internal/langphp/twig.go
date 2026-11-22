@@ -379,6 +379,7 @@ func twigURLProtection(markup, expressionPrefix string) (protection, reason stri
 
 func (t *twigScope) output(expr string, at analysis.Evidence, markup, autoescape string, markupContext analysis.Evidence) {
 	v, mode := t.eval(expr, at)
+	t.flow.diagnosticTemplateOutput(at, t.call, v)
 	v.deps = slices.DeleteFunc(slices.Clone(v.deps), phpTypedStorageField)
 	if len(v.deps) == 0 {
 		return

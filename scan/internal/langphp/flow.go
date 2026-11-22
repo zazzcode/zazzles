@@ -61,11 +61,17 @@ func (f *phpFlow) gap(kind, detail string, n *sitter.Node) analysis.Gap {
 }
 
 func (f *phpFlow) addUse(kind string, n *sitter.Node, v phpValue) *analysis.CandidateUse {
+	return f.addUseAt(kind, f.module.evidence(kind, n), v)
+}
+
+// addUseAt records a candidate anchored at sink evidence, which may lie
+// outside the current module (a Twig interpolation).
+func (f *phpFlow) addUseAt(kind string, sink analysis.Evidence, v phpValue) *analysis.CandidateUse {
 	deps := []analysis.Dependency{}
 	for _, d := range v.deps {
 		deps = append(deps, d.dep)
 	}
-	u := analysis.CandidateUse{ID: fmt.Sprintf("use:%s:%s:%d:%s", f.invocation.ID, f.module.file, n.StartByte(), kind), EntryID: f.invocation.EntryID, InvocationContextID: f.invocation.ID, Kind: kind, Sink: f.module.evidence(kind, n), Dependencies: deps, Context: phpDedupeEvidence(f.context), Gaps: append(append([]analysis.Gap{}, f.gaps...), v.gaps...), Assessment: analysis.Assessment{Status: "not_run"}}
+	u := analysis.CandidateUse{ID: fmt.Sprintf("use:%s:%s:%d:%s", f.invocation.ID, sink.Span.File, sink.Span.StartByte, kind), EntryID: f.invocation.EntryID, InvocationContextID: f.invocation.ID, Kind: kind, Sink: sink, Dependencies: deps, Context: phpDedupeEvidence(f.context), Gaps: append(append([]analysis.Gap{}, f.gaps...), v.gaps...), Assessment: analysis.Assessment{Status: "not_run"}}
 	f.report.Uses = append(f.report.Uses, u)
 	return &f.report.Uses[len(f.report.Uses)-1]
 }
@@ -496,6 +502,7 @@ func (f *phpFlow) projectValue(v phpValue, key string, n *sitter.Node) phpValue 
 
 // render records a terminal echo/print as the PHP HTML rendering sink.
 func (f *phpFlow) render(n *sitter.Node, v phpValue) {
+	f.diagnosticOutput(n, v)
 	if len(v.deps) == 0 {
 		return
 	}

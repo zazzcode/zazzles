@@ -172,3 +172,66 @@ protected-recognition follow-on work.
 The other two Review records are unchanged: the path claim on the upload `move` at
 `src/Controller/UserController.php:99`, and the deserialization record under `ANY /reset`, which
 carries the loop gap of that action.
+
+## Application-security lane, branch 1
+
+[Branch 1](../specifications/symfony-more-analyzers-1.md) adds the `exposure` and
+`mass-assignment` families and the security-field census. The sample was at its pin and clean,
+including ignored files, before and after every scan.
+
+### Offline
+
+Scanner `fd18dd9`, `go run ./scan/cmd/scan --analyze`. The checker reports **16 of 16 positives
+witnessed** and every control passing. `public/info.php:2` is the only
+`info_exposure_candidate`. The `mass_assignment_candidate` at `src/Entity/User.php:59` under
+`POST /user/edit/` has its request source at `src/Controller/UserController.php:239`, shape
+`dynamic_property_write`, a stored target, and census roles `role_source` on
+`php-sql:user.is_admin` and `php-sql:user.roles`, `credential` on `php-sql:user.password`, and
+`login_identifier` on `php-sql:user.email` and `php-sql:user.username`. `ANY /admin/create`,
+`POST /register` and `POST /user/about/` have no mass-assignment record. The 48 records the
+sample produced before this branch are byte-identical, including their component selections.
+
+After the judged runs, the branch added review fixes: a Twig output sink for diagnostic values and
+reflection records at the `setValue` or `getProperty` call. Both scanners, `fd18dd9` and the
+review-fix head, were run offline on the pinned, clean sample. Their `findings.json` files are
+byte-identical, because the sample has no diagnostic value in a template and no reflection write.
+The judged run at `fd18dd9` therefore stands for the submitted head. The commits between `fd18dd9`
+and the review fixes (`56ab26b` to `e6f001b`) change only evaluation records, the baseline, test
+fixtures, tests and specifications.
+
+### Judged runs
+
+OpenAI `gpt-6-luna`, the default candidate limit, 4,500 RPM and 1,800,000 TPM, with only the
+provider key passed to the scanner.
+
+| Run ID (UTC) | Scanner | Scope | Requests | Input tokens | Key outcome |
+|---|---|---|---:|---:|---|
+| `b1-j1-exposure-20261122T162631Z` | `55e72ee` | `--only-family exposure` | 1 | 1,949 | `SYM-INFO-01` confirmed |
+| `b1-j2-mass-20261122T163743Z` | `3bb9362` | `--only-family mass-assignment` | 1 | 2,940 | `SYM-MASS-01` confirmed; no record for `SYM-MASS-N01` or `-N02` |
+| `b1-j3-full-20261122T164316Z` | `fd18dd9` | Full | 50 | 222,797 | 16 of 16 positives confirmed, zero control findings |
+
+### Final keyed outcomes (run `b1-j3-full-20261122T164316Z`)
+
+| Case | Outcome |
+|---|---|
+| `SYM-SQL-01`, `-02`, `SYM-XSS-01`–`-03`, `SYM-CMD-01`, `-02`, `SYM-PATH-01`–`-03`, `SYM-SSRF-01`, `SYM-UPLOAD-01`, `SYM-SSTI-01`, `SYM-DESER-01` | Confirmed |
+| `SYM-INFO-01` | Confirmed |
+| `SYM-MASS-01` | Confirmed |
+| `SYM-SQL-N01`, `SYM-XSS-N05` | Protected |
+| `SYM-XSS-N01`, `-N02`, `-N08` | Review |
+| `SYM-SQL-N02`–`-N05`, `SYM-XSS-N03`, `-N04`, `-N06`, `-N07`, `-N09`, `SYM-REDIR-N01`, `SYM-PATH-N01`, `-N02`, `SYM-SSRF-N01`, `SYM-LOG-N01`, `SYM-CODE-N01` | No record |
+| `SYM-INFO-N01`, `SYM-MASS-N01`, `SYM-MASS-N02` | No record |
+| `SYM-XSS-R01`, `-R02`, `SYM-VAL-R01` | Confirmed (assessment-dependent) |
+
+### Follow-ups
+
+- **`throw` in the shared guard engine.** The engine does not treat `throw` as terminating, so a
+  rejecting `if (…) { throw …; }` does not make its false branch a dominating condition for the
+  injection families. Exposure records add that evidence themselves. Changing the shared engine
+  would change the `SYM-PATH-01` request (`BlogController.php:93`) and needs a protocol bump for
+  each affected family.
+- **Pre-existing fixture with a mass-assignment shape.** `scan/internal/langphp/testdata/symfony/doctrine-storage`
+  contains a whole-bag `fill()` loop. It now also yields a `mass_assignment_candidate`, which
+  changes that fixture's architecture-baseline row. The owner accepted the row update.
+- **AC6 vocabulary grep.** Pre-existing files matched the grep. With the owner's approval the
+  identifiers were renamed (`Note::$abstract`, `isStaff`); the grep prints nothing.

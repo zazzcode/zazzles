@@ -94,6 +94,61 @@ type phpValue struct {
 	evidence        []analysis.Evidence
 	built           bool
 	unknown         bool
+	// diagnostic marks a value that carries internal state from a diagnostic
+	// operation (exposure D-1). Only output sinks read it.
+	diagnostic *phpDiagnostic
+	// keySources are the request-key paths of a foreach key over a whole
+	// request bag (mass-assignment D-7); keyGuards are key allow-lists applied
+	// to the bag; wholeBag holds the request source of a bag value that has no
+	// dependency of its own (Request::toArray). Only the mass-assignment
+	// adapter reads them; no other claim's value changes.
+	keySources []phpDep
+	keyGuards  []analysis.Evidence
+	wholeBag   []phpDep
+	// reflection tags a value of a reflection object built over a stored
+	// target: a ReflectionProperty whose construction named the property with
+	// a request-chosen key, or a ReflectionClass over the target. The write
+	// sink is the later setValue or getProperty call, so the construction only
+	// tags the value. Only the mass-assignment adapter reads it.
+	reflection *phpReflectionTarget
+}
+
+// phpSideChannel reports a value carrying claim-specific side facts that the
+// generic join must preserve but never treats as content.
+func phpSideChannel(v phpValue) bool {
+	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0
+}
+
+// phpJoinSide joins two values with join after setting their side facts aside,
+// then restores the union of the side facts on the result.
+func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
+	d := a.diagnostic
+	if d == nil {
+		d = b.diagnostic
+	}
+	r := a.reflection
+	if r == nil {
+		r = b.reflection
+	}
+	sources := phpMergeDeps(a.keySources, b.keySources)
+	guards := phpMergeEvidence(a.keyGuards, b.keyGuards)
+	bag := phpMergeDeps(a.wholeBag, b.wholeBag)
+	for _, v := range []*phpValue{&a, &b} {
+		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag = nil, nil, nil, nil, nil
+	}
+	out := join(a, b)
+	out.diagnostic = d
+	out.reflection = r
+	if len(sources) > 0 {
+		out.keySources = sources
+	}
+	if len(guards) > 0 {
+		out.keyGuards = guards
+	}
+	if len(bag) > 0 {
+		out.wholeBag = bag
+	}
+	return out
 }
 
 // phpSQLWrite is one write-statement template with its interpolated deps.
@@ -107,6 +162,9 @@ func phpEmpty(v phpValue) bool {
 }
 
 func phpCombine(a, b phpValue) phpValue {
+	if phpSideChannel(a) || phpSideChannel(b) {
+		return phpJoinSide(a, b, phpCombine)
+	}
 	if phpEmpty(a) {
 		return b
 	}
@@ -174,6 +232,9 @@ func phpJoinProps(a, b map[string]phpValue) map[string]phpValue {
 // phpJoin merges branch values: distinct protections on the same source stay
 // separate dependency paths; literal candidate sets union with their conditions.
 func phpJoin(a, b phpValue) phpValue {
+	if phpSideChannel(a) || phpSideChannel(b) {
+		return phpJoinSide(a, b, phpJoin)
+	}
 	if phpEmpty(a) {
 		return b
 	}

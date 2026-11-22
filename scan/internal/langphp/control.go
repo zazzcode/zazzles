@@ -373,12 +373,23 @@ func (f *phpFlow) foreachBindings(n, body *sitter.Node) {
 		}
 	}
 	v := f.eval(collection)
-	for _, t := range targets {
+	keyed := len(targets) == 2
+	for i, t := range targets {
 		if t.Kind() == "by_ref" && t.NamedChildCount() == 1 {
 			t = t.NamedChild(0)
 		}
 		if name := phpVarName(m, t); name != "" {
-			f.env[name] = phpTransfer(v, m.evidence("iteration_binding", t))
+			at := m.evidence("iteration_binding", t)
+			bound := phpTransfer(v, at)
+			// A key over a whole request bag is a request-chosen name (D-7).
+			bound.keySources, bound.keyGuards, bound.wholeBag = nil, nil, nil
+			if keyed && i == 0 {
+				bound.keySources = phpKeyOrigin(v, at)
+				if len(bound.keySources) > 0 {
+					bound.keyGuards = v.keyGuards
+				}
+			}
+			f.env[name] = bound
 			f.markDirty(name)
 		}
 	}

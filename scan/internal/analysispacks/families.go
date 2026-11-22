@@ -164,6 +164,16 @@ func Families() []Family {
 			PolicyOwner: "internal/judge/ssrf.go",
 		},
 		{
+			Name: "exposure", Label: "Information exposure", Kinds: []string{analysis.ExposureKind}, QuestionNames: exposureQuestionNames(),
+			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, PHPHTTPOnly: true,
+			Pack: "pack.exposure", Claim: "claim.exposure", Evidence: "evidence.exposure", PolicyOwner: "internal/judge/exposure.go",
+		},
+		{
+			Name: "mass-assignment", Label: "Mass assignment", Kinds: []string{analysis.MassAssignmentKind}, QuestionNames: massAssignmentQuestionNames(),
+			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, PHPHTTPOnly: true,
+			Pack: "pack.mass-assignment", Claim: "claim.mass-assignment", Evidence: "evidence.mass-assignment", PolicyOwner: "internal/judge/mass_assignment.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP},
 			// A standalone field claim needs an explicit/source-backed
@@ -225,6 +235,10 @@ func familyProtocol(name string) string {
 		return PathProtocol
 	case "ssrf":
 		return SSRFProtocol
+	case "exposure":
+		return ExposureProtocol
+	case "mass-assignment":
+		return MassAssignmentProtocol
 	}
 	return ""
 }
@@ -251,6 +265,8 @@ func familyContract(f *Family, id string) *analysis.APIModel {
 		return PathContract(id)
 	case "ssrf":
 		return SSRFContract(id)
+	case "exposure":
+		return ExposureContract(id)
 	}
 	return nil
 }
@@ -275,6 +291,10 @@ func contractIDs(f *Family) []string {
 		return pathContractIDs
 	case "ssrf":
 		return ssrfContractIDs
+	case "exposure":
+		return exposureContracts
+	case "mass-assignment":
+		return nil
 	}
 	return noSQLContractIDs
 }
@@ -309,7 +329,7 @@ func (c *catalog) claimQuestions(f *Family) ([]Question, map[string][]map[string
 }
 
 func flowID(f *Family) string {
-	if f.Name == "pollution" || operandFamily(f.Name) {
+	if f.Name == "pollution" || operandFamily(f.Name) || applicationFamily(f.Name) {
 		return "flow." + f.Name
 	}
 	if f.ObservationOnly {

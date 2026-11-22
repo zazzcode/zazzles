@@ -28,6 +28,14 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyDeserializationPolicy(use, a)
 		return
 	}
+	if use.Kind == analysis.ExposureKind {
+		applyExposurePolicy(use, a)
+		return
+	}
+	if use.Kind == analysis.MassAssignmentKind {
+		applyMassAssignmentPolicy(use, a)
+		return
+	}
 	if use.Kind == "file_upload_candidate" {
 		applyUploadPolicy(use, a)
 		return

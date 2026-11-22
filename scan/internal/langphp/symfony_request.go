@@ -32,7 +32,10 @@ func (f *phpFlow) requestCall(n *sitter.Node, receiver phpValue, method string, 
 		case "getPayload":
 			return phpValue{binding: "symfony_bag", driver: "body"}, true
 		case "toArray":
-			return phpValue{binding: "symfony_body_array"}, true
+			// The decoded body's keys are request-controlled; the source
+			// rides as a side fact so no other claim's value changes.
+			bag := f.source(n, "body", "http.body", "")
+			return phpValue{binding: "symfony_body_array", wholeBag: bag.deps}, true
 		case "getContent":
 			return f.source(n, "body", "http.body", ""), true
 		case "get":

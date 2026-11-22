@@ -142,11 +142,17 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 				if use.Kind == TemplateKind {
 					input = "source.php-input-template-v1"
 				}
+				if applicationFamily(family.Name) {
+					input = "source.php-input-" + family.Name + "-v1"
+				}
 			case "symfony":
 				if use.EntryFacts.HTTP.Framework != "symfony" {
 					return nil, fmt.Errorf("invalid Symfony HTTP input binding")
 				}
 				input = "source.symfony-input-v1"
+				if applicationFamily(family.Name) {
+					input = "source.symfony-input-" + family.Name + "-v1"
+				}
 			default:
 				return nil, fmt.Errorf("invalid PHP HTTP input binding")
 			}

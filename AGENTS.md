@@ -39,7 +39,7 @@ before editing and MUST preserve unrelated user changes.
 | Set up or troubleshoot gopls for Claude Code or Codex | [gopls setup](.zazz/docs/gopls-setup.md) |
 | Refine SDLC or ownership/process rules | [Zazz methodology](.zazz/docs/zazz-methodology.md) |
 | Edit documentation or standards | Matched [standards](.zazz/standards/index.yaml) and `doc-check` |
-| Prepare or review a PR | [PR process](.zazz/standards/pr-process.md) and matching `pr-builder`/`pr-review` skill; [human-review guide](.zazz/docs/human-in-loop-pr-review-strategy.md) only for review policy |
+| Prepare, review, or resolve feedback on a PR | [PR process](.zazz/standards/pr-process.md) and matching `pr-builder`/`pr-review`/`pr-feedback-resolution` skill; [human-review guide](.zazz/docs/human-in-loop-pr-review-strategy.md) only for review policy |
 
 Skills live in `.agents/skills/`; agents MUST load only the matching skill. Procedures belong in their
 owning guides so this entry point stays small and stable.

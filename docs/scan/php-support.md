@@ -35,6 +35,8 @@ and troubleshooting, use [offline evidence inspection](running-scans.md#offline-
 | Upload | `move_uploaded_file` also yields a `file_upload_candidate` with stored-name, type-control and served-destination facts ([file upload rules](analysis/file-upload.md)) |
 | Code and templates | `eval`, string `assert` and `create_function` as interpreter operands. A `file_get_contents` return retains its path's dependencies. Verified Twig `createTemplate` and `template_from_string` take a template-source operand |
 | Deserialization | Global `unserialize` and Symfony `Yaml::parse` with source-backed options, request byte paths, and object-injection outcomes ([analysis rules](analysis/deserialization.md#php)) |
+| Information exposure | `phpinfo()`, `debug_print_backtrace()`, dumps of `$_SERVER`/`$_ENV`/`$GLOBALS`, and output of `getenv()`, `php_uname()` or `phpversion()` in served files ([analysis rules](analysis/information-exposure.md)) |
+| Mass assignment | `foreach ($_POST as $k => $v) { $obj->$k = $v; }` and the `set…` forms on a project class; field roles are name hints only ([analysis rules](analysis/mass-assignment.md)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects ([SSRF rules](analysis/ssrf.md)) |
 | Logging | Verified PSR-3 and PHP log emission in Symfony projects ([logging rules](analysis/sensitive-data-logging.md)) |

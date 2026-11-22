@@ -17,6 +17,11 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 
 ## Specification index
 
+The [delivery-ordered index](spec-index.md) lists every specification in the order it was
+delivered or is planned. The entries below describe each one.
+
+- [Symfony application-security analyzers](symfony-more-analyzers.md) — specified, a stacked lane of four PRs in the `symfony-more-analyzers` worktree that closes Symfony website support with general PHP analyzers: [1 information exposure, mass assignment and the security-field census](symfony-more-analyzers-1.md), [2 entry access and authorization](symfony-more-analyzers-2.md), [3 account enumeration, recovery-secret delivery and weak password hashing](symfony-more-analyzers-3.md), [4 configuration, SSRF through a shell URL client and lane closure](symfony-more-analyzers-4.md). Each branch is implemented in its own session and validated by paid judged runs on `vuln-symfony`.
+
 - [Scan, Fix, and Probe repository layout](scan-fix-probe-repository-layout.md) — proposed module migration, CLI and report compatibility, and a full documentation audit.
 
 - [Architecture update plan](architecture-update-plan.md) — foundation first (accuracy, performance, maintainability), then features. Capability matrix and one spec per phase, run in series:

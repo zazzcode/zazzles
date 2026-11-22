@@ -94,12 +94,51 @@ a control.
 | `SYM-XSS-R02` | `BlogController.php:95` | `new Response(file_get_contents(…))`: the request value selects the file whose content is the response. The existing rule treats path control as content control |
 | `SYM-VAL-R01` | The `automatic-php-query` check on the `SYM-SQL-01` and `SYM-SQL-02` candidates | Not a separate candidate. The check lists field `s`, and `email`. No server validation exists for either |
 
+## Application-security lane rows
+
+The [Symfony application-security lane](../specifications/symfony-more-analyzers.md) closes the
+README entries that PR #39 left outside Code Scan. Its rows are frozen here and in
+[`cases.json`](recall-gap-inventory/cases.json) by the branch that owns them, and are never
+relabeled.
+
+### README entries
+
+| README entry | Row | Branch |
+|---|---|---:|
+| 1 SSRF half of the `Referer` command | `SYM-SSRF-02` | 4 |
+| 2, 3, 4, 5, 11, 12, 14, 15 | Found at the baseline (the 14 required positives above) | — |
+| 6 User enumeration | `SYM-ENUM-01` | 3 |
+| 7, 9, 10, 13 Missing right control | `SYM-AUTHZ-01` to `-04` | 2 |
+| 8 Missing right control on `/user/delete/{user}` | Not present in source at the pin. The delete action is routed under `^/admin` and is control `SYM-AUTHZ-N03` | 2 |
+| 16 Sensitive endpoint for SSRF | `SYM-LOCAL-01`, `SYM-LOCAL-02` | 2 |
+| 17 `phpinfo` | `SYM-INFO-01` | 1 |
+| 18 Directory listing | `SYM-CONF-01` | 4 |
+| 19 Mass assignment on `/user/edit/` | `SYM-MASS-01` | 1 |
+| 20 Recovery token to request-chosen recipients | `SYM-RESET-01` | 3 |
+| 21 Cron privilege escalation | `SYM-CONF-02` | 4 |
+| Unlisted, source-reviewed | `SYM-ENUM-02`, `SYM-HASH-01` (3), `SYM-CONF-03`, `SYM-CONF-04` (4) | 3, 4 |
+
+### Branch 1 rows
+
+Owned by [branch 1](../specifications/symfony-more-analyzers-1.md#11-sample-rows-owned-by-this-branch).
+`SYM-INFO-01` and `SYM-MASS-01` are required positives with expected status
+`confirmed_vulnerability`.
+
+| ID | Kind | Entry | Anchor | Offline expectation | Source evidence |
+|---|---|---|---|---|---|
+| `SYM-INFO-01` | `info_exposure_candidate` | `FILE /public/info.php` | `public/info.php:2` | Positive. The kind has no request source, so the candidate is met at its anchor with no completeness blocker | `echo phpinfo();` is the whole file, served from the document root with no condition on the path |
+| `SYM-INFO-N01` | `info_exposure_candidate` | Whole sample | — | Exactly one candidate of this kind in the report (`only_lines` with `public/info.php:2`, at most one use) | No other `phpinfo`, `debug_print_backtrace`, environment dump or `dump()` call exists in `src/`, `public/` or `templates/` |
+| `SYM-MASS-01` | `mass_assignment_candidate` | `POST /user/edit/` | Sink `src/Entity/User.php:59`, source `src/Controller/UserController.php:239` | Positive, with census roles on the written fields | `$user->fromArray($request->request->all())` passes the whole form bag to a loop that writes `$this->$key = $value`. `isAdmin` (`:48`) is read by the `#[ORM\PreUpdate]` and `#[ORM\PrePersist]` callbacks (`:63`–`73`) that write `roles`, which `getRoles()` (`:105`–`112`) returns. `password` (`:30`) is the credential and `email` (`:21`) is the provider's `property` in `config/packages/security.yaml` |
+| `SYM-MASS-N01` | `mass_assignment_candidate` | `ANY /admin/create`, `POST /register` | `src/Controller/AdminController.php:99`–`105`, `src/Controller/LoginController.php:102`–`106` | `no_record` | Each field is set by a named setter from a named request field |
+| `SYM-MASS-N02` | `mass_assignment_candidate` | `POST /user/about/` | `src/Controller/UserController.php:213`–`215` | `no_record` | One named field through one named setter |
+
 **Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
+Mass assignment and `phpinfo()` are covered by branch 1 of the lane (rows above). The wildcard
+write stays modeled as a storage writer (D-15) as well.
 
 - Missing authorization on six `/user/…` and `/admin/…` actions, and the `/local` endpoints.
-- Mass assignment (`src/Entity/User.php:56`–`61`, `PasswordResetController.php:34`). The wildcard
-  write is modeled as a storage writer (D-15). The privilege escalation itself is not a claim.
-- User enumeration, MD5 password hashing, `phpinfo()` at `public/info.php`, directory listing,
+- User enumeration (including the request-shaped `email` lookup at `PasswordResetController.php:34`,
+  previously listed with mass assignment), MD5 password hashing, directory listing,
   secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
   privilege escalation.
 - The request made by `curl` inside `SYM-CMD-01`. It is covered by the command claim. A URL passed

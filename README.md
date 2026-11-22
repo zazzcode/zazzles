@@ -31,6 +31,8 @@ against its source facts before assigning an outcome.
 - **Web and file operations** include cross-site scripting (XSS), server-side request forgery (SSRF),
   open redirect, path traversal, and unrestricted file upload.
 - **Data handling** includes unsafe deserialization, prototype pollution, and sensitive data in logs.
+- **Application security** includes information exposure through diagnostic output and mass
+  assignment of request-chosen properties.
 
 **Code smells and poor practices** include building queries from untrusted strings, failing to
 enforce declared input rules on the server, returning stack traces from Next.js API handlers,

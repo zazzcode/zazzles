@@ -1,0 +1,6 @@
+security:
+  providers:
+    accounts:
+      entity:
+        class: App\Entity\Account
+        property: login

@@ -51,9 +51,13 @@ func TestSymfonySourceKey(t *testing.T) {
 		t.Run(row.ID, func(t *testing.T) {
 			var matches []analysis.CandidateUse
 			for _, use := range report.Uses {
-				if row.matches(use) {
+				if row.matches(use) && (row.Expect != "no_record" || len(row.EntryNames) == 0 || slices.Contains(row.EntryNames, names[use.EntryID])) {
 					matches = append(matches, use)
 				}
+			}
+			if row.Expect == "only_lines" && row.Anchors != nil {
+				symfonyReportWideControl(t, row, report)
+				return
 			}
 			switch row.Expect {
 			case "positive":
@@ -186,7 +190,13 @@ type symfonyKeyRow struct {
 	Lines                  []int
 	Anchors                map[string][]int
 	Source                 []json.RawMessage
+	EntryNames             []string `json:"entry_names"`
+	MaxUses                int      `json:"max_uses"`
 }
+
+// symfonyLaneRows are the rows of the application-security lane, branch 1.
+// The 37 rows of PR #39 are counted separately and unchanged.
+var symfonyLaneRows = []string{"SYM-INFO-01", "SYM-INFO-N01", "SYM-MASS-01", "SYM-MASS-N01", "SYM-MASS-N02"}
 
 func readSymfonyKey(t *testing.T) []symfonyKeyRow {
 	t.Helper()
@@ -208,13 +218,22 @@ func readSymfonyKey(t *testing.T) []symfonyKeyRow {
 		t.Fatal("frozen key pin does not match sample pin")
 	}
 	var rows []symfonyKeyRow
+	var base, lane int
 	for _, row := range key.Cases {
 		if row.App == "vuln-symfony" {
 			rows = append(rows, row.symfonyKeyRow)
+			if slices.Contains(symfonyLaneRows, row.ID) {
+				lane++
+			} else {
+				base++
+			}
 		}
 	}
-	if len(rows) != 37 {
-		t.Fatalf("frozen Symfony key contains %d rows, want 37", len(rows))
+	if base != 37 {
+		t.Fatalf("frozen Symfony key contains %d rows, want 37", base)
+	}
+	if lane != len(symfonyLaneRows) {
+		t.Fatalf("frozen Symfony key contains %d lane rows, want %d", lane, len(symfonyLaneRows))
 	}
 	return rows
 }
@@ -236,6 +255,7 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 		"SYM-PATH-01": {"GET /legal/content"}, "SYM-PATH-02": {"GET /user/avatar/delete/{user}"},
 		"SYM-PATH-03": {"POST /user/avatar/url/{user}"}, "SYM-SSRF-01": {"POST /user/avatar/url/{user}"},
 		"SYM-UPLOAD-01": {"POST /user/avatar/{user}"}, "SYM-SSTI-01": {"ANY /post/{post}"}, "SYM-DESER-01": {"GET /search"},
+		"SYM-INFO-01": {"FILE /public/info.php"}, "SYM-MASS-01": {"POST /user/edit/"},
 	}
 	storage := map[string]string{
 		"SYM-XSS-02": "php-sql:comment.content", "SYM-XSS-03": "php-sql:user.about_me",
@@ -277,6 +297,13 @@ func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile stri
 	if u.Completeness != nil && len(u.Completeness.Blockers) > 0 {
 		return fmt.Sprintf("blockers %v", u.Completeness.Blockers)
 	}
+	if u.Kind == analysis.ExposureKind {
+		// An operation-centered claim has no request source (lane contract 2.7).
+		if u.Exposure == nil || u.Exposure.Operation != "phpinfo" || u.Exposure.EntryServed != "yes" {
+			return "missing diagnostic operation facts"
+		}
+		return ""
+	}
 	witness := slices.ContainsFunc(u.Dependencies, func(dep analysis.Dependency) bool {
 		if dep.Source.Kind != "input_source" {
 			return false
@@ -314,8 +341,37 @@ func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile stri
 		if u.Upload == nil || u.Upload.ExtensionOrigin != "client" || u.Upload.DestinationServed != "yes" {
 			return "missing client extension or served destination evidence"
 		}
+	case "SYM-MASS-01":
+		m := u.MassAssignment
+		if m == nil || m.Shape != analysis.MassAssignmentPropertyWrite || m.TargetStored != "yes" {
+			return "missing dynamic property write facts"
+		}
+		for key, role := range map[string]string{"php-sql:user.is_admin": analysis.RoleSource, "php-sql:user.password": analysis.RoleCredential, "php-sql:user.email": analysis.RoleLoginIdentifier} {
+			if !slices.ContainsFunc(m.SecurityFields, func(f analysis.SecurityField) bool { return f.StorageKey == key && slices.Contains(f.Roles, role) }) {
+				return "missing census role " + role + " on " + key
+			}
+		}
 	}
 	return ""
+}
+
+// symfonyReportWideControl checks a report-wide only_lines row: every
+// candidate of the kind sits at a listed anchor, at most MaxUses of them.
+func symfonyReportWideControl(t *testing.T, row symfonyKeyRow, report *analysis.AnalysisReport) {
+	t.Helper()
+	count := 0
+	for _, u := range report.Uses {
+		if u.Kind != row.Kind {
+			continue
+		}
+		count++
+		if s := u.Sink.Span; !slices.Contains(row.Anchors[s.File], s.StartLine) {
+			t.Errorf("%s candidate outside the key at %s:%d", row.Kind, s.File, s.StartLine)
+		}
+	}
+	if row.MaxUses > 0 && count > row.MaxUses {
+		t.Errorf("%d %s candidates, want at most %d", count, row.Kind, row.MaxUses)
+	}
 }
 
 func symfonyControl(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateUse) {

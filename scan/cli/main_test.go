@@ -275,3 +275,33 @@ func TestSavedSARIFExportMakesNoJudgeRequest(t *testing.T) {
 		t.Fatal("API flags accepted for offline conversion")
 	}
 }
+
+func TestApplicationFamilyFilters(t *testing.T) {
+	for _, value := range []string{"exposure", "mass-assignment", "exposure,mass-assignment"} {
+		if _, err := parseSkipFamilies(value); err != nil {
+			t.Fatalf("%s rejected: %v", value, err)
+		}
+	}
+	if _, err := parseSkipFamilies("exposure,mass_assignment"); err == nil {
+		t.Fatal("unknown family accepted")
+	}
+	for _, flag := range []string{"--only-family", "--skip-family"} {
+		var out, stderr bytes.Buffer
+		if code := run([]string{"--analyze", "--judge", "openai", flag, "exposure,unknown", t.TempDir()}, &out, &stderr); code != exitUsage {
+			t.Fatalf("%s accepted an unknown family: code=%d", flag, code)
+		}
+		for _, name := range []string{"exposure", "mass-assignment"} {
+			if !strings.Contains(stderr.String(), name) {
+				t.Fatalf("usage error omits %s: %s", name, stderr.String())
+			}
+		}
+	}
+	var out, stderr bytes.Buffer
+	run([]string{"--help"}, &out, &stderr)
+	help := out.String() + stderr.String()
+	for _, name := range []string{"exposure", "mass-assignment"} {
+		if !strings.Contains(help, name) {
+			t.Fatalf("flag help omits %s", name)
+		}
+	}
+}

@@ -29,6 +29,8 @@ registry as `finding_types`; schema-v1 raw evidence remains unchanged and compat
 | `reflected-xss` | Reflected XSS | Planned; no current assignment |
 | `sensitive-data-logging` | Sensitive Data Logging | Planned; logger-leak detection follows the reporting work |
 | `sensitive-operation-review` | Sensitive Operation Review | Fallback for unresolved operation kinds |
+| `information-exposure` | Information Exposure | Bounded PHP diagnostic-output analysis (CWE-200, CWE-215); listed only when a record of the kind exists |
+| `mass-assignment` | Mass Assignment | Bounded PHP key-controlled write analysis (CWE-915); listed only when a record of the kind exists |
 
 XSS is cross-site scripting; the spelling is XSS, not XXS. NoSQL remains one word. Use neutral
 **Input Validation** for the family: **Poor Input Validation** is a conclusion requiring an applicable

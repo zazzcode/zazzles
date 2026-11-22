@@ -36,6 +36,18 @@ func questionsFor(use analysis.CandidateUse) []question {
 			return interpreterComponentQuestions("upload")
 		case "ssrf_candidate":
 			return componentQuestions(analysispacks.SSRFQuestions())
+		case analysis.ExposureKind:
+			items := componentQuestions(analysispacks.ExposureQuestions())
+			for i := range items {
+				items[i].choices = analysispacks.ExposureChoices(items[i].name)
+			}
+			return items
+		case analysis.MassAssignmentKind:
+			items := componentQuestions(analysispacks.MassAssignmentQuestions())
+			for i := range items {
+				items[i].choices = analysispacks.MassAssignmentChoices(items[i].name)
+			}
+			return items
 		}
 	}
 	if use.Kind == "xss_candidate" {

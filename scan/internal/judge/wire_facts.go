@@ -3,6 +3,8 @@ package judge
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/zazzcode/zazzles/scan/internal/analysis"
 )
 
 // wireContextFacts projects only CandidateUse.Context indices. Path flow controls
@@ -45,5 +47,47 @@ func wireContextFacts(facts any, context []string, path bool) any {
 		}
 	}
 	visit(out)
+	return out
+}
+
+// wireExposure sends the exposure facts with guard evidence as eN references.
+// Records of other families carry no exposure facts, so their bytes are unchanged.
+func wireExposure(f *analysis.ExposureFacts, ref func(analysis.Evidence) string) any {
+	if f == nil {
+		return nil
+	}
+	guards := make([]map[string]string, 0, len(f.Guards))
+	for _, g := range f.Guards {
+		guards = append(guards, map[string]string{"kind": g.Kind, "evidence": ref(g)})
+	}
+	out := map[string]any{"operation": f.Operation, "subject": f.Subject, "entry_served": f.EntryServed, "guards": guards}
+	if f.Flag != "" {
+		out["flag"] = f.Flag
+	}
+	return out
+}
+
+// wireMassAssignment sends the key-controlled write facts with key guards and
+// census evidence as eN references.
+func wireMassAssignment(f *analysis.MassAssignmentFacts, ref func(analysis.Evidence) string) any {
+	if f == nil {
+		return nil
+	}
+	guards := make([]map[string]string, 0, len(f.KeyGuards))
+	for _, g := range f.KeyGuards {
+		guards = append(guards, map[string]string{"kind": g.Kind, "evidence": ref(g)})
+	}
+	fields := make([]map[string]any, 0, len(f.SecurityFields))
+	for _, s := range f.SecurityFields {
+		evidence := make([]string, 0, len(s.Evidence))
+		for _, e := range s.Evidence {
+			evidence = append(evidence, ref(e))
+		}
+		fields = append(fields, map[string]any{"storage_key": s.StorageKey, "roles": s.Roles, "evidence": evidence})
+	}
+	out := map[string]any{"shape": f.Shape, "target_class": f.TargetClass, "target_stored": f.TargetStored, "key_guards": guards, "security_fields": fields}
+	if len(f.MappedFields) > 0 {
+		out["mapped_fields"] = f.MappedFields
+	}
 	return out
 }

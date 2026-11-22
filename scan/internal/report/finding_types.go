@@ -70,9 +70,22 @@ var interpreterFindingTypes = []analysis.FindingType{
 	{ID: "open-redirect", Label: "Open Redirect", Coverage: "bounded redirect destination analysis", Description: "Request text chooses an off-site navigation destination.", Interpretation: "Destination control and enforcing same-origin restrictions are assessed independently.", Remediation: "Select a destination from trusted constants or enforce parsed same-origin and host restrictions."},
 }
 
+// applicationFindingTypes are listed in a report only when a record of their
+// kind is present, so reports without them keep their bytes.
+var applicationFindingTypes = []analysis.FindingType{
+	{ID: "information-exposure", Label: "Information Exposure", Coverage: "bounded PHP diagnostic-output analysis",
+		Description:    "A diagnostic operation whose output reveals server configuration, environment, runtime state or a stack is reachable from an entry (CWE-200, CWE-215).",
+		Interpretation: "The operation and what it reveals are facts of the verified diagnostic contract. Conditions that dominate the operation are recorded as evidence, and whether they restrict the caller is judged. Dumping an ordinary local value is not this claim. Framework dump() output depends on the debug environment and stays Review.",
+		Remediation:    "Remove the diagnostic operation from served code, or restrict it to an authenticated administrator and a non-production environment."},
+	{ID: "mass-assignment", Label: "Mass Assignment", Coverage: "bounded PHP key-controlled write analysis",
+		Description:    "A request chooses the names of the properties written on an object that has a field the request should not choose (CWE-915).",
+		Interpretation: "The record establishes that the property names come from the request, how they are written and which fields of the target carry a credential, login identifier or role source by framework contract. A field-name hint is weighed, not trusted. A key allow-list is a control whose adequacy is judged. Form, serializer and payload mapping are recorded in Review. Whether a named write is authorized is a separate claim.",
+		Remediation:    "Write each permitted field through a named setter from a named request field, or intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields."},
+}
+
 var findingTypesByID = func() map[string]analysis.FindingType {
 	index := make(map[string]analysis.FindingType, len(findingTypes))
-	for _, t := range append(append([]analysis.FindingType{}, findingTypes...), interpreterFindingTypes...) {
+	for _, t := range append(append(append([]analysis.FindingType{}, findingTypes...), interpreterFindingTypes...), applicationFindingTypes...) {
 		index[t.ID] = t
 	}
 	return index
@@ -111,6 +124,10 @@ func findingTypeIDs(u analysis.CandidateUse) []string {
 		return []string{"open-redirect"}
 	case analysis.DeserializationKind:
 		return []string{"unsafe-deserialization"}
+	case analysis.ExposureKind:
+		return []string{"information-exposure"}
+	case analysis.MassAssignmentKind:
+		return []string{"mass-assignment"}
 	case "upload", "file_upload_candidate":
 		return []string{"unrestricted-upload"}
 	case "ssrf_candidate":

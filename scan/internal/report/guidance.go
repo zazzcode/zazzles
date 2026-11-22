@@ -48,6 +48,10 @@ func guidance(use analysis.CandidateUse) Guidance {
 		g = Guidance{Title: "Keep request text out of code", Actions: []string{"Replace eval/exec with data parsing or a restricted expression grammar.", "Do not rely on vm or a sandbox library as a security boundary; constrain every code operand."}}
 	case "deserialization", analysis.DeserializationKind:
 		g = Guidance{Title: "Parse untrusted bytes as plain data", Actions: []string{"Choose a data-only format or a verified safe loader or schema.", "When trusted serialized messages are required, enforce keyed integrity verification of the same bytes before deserializing."}}
+	case analysis.ExposureKind:
+		g = Guidance{Title: "Keep diagnostic output away from callers", Actions: []string{"Remove phpinfo(), backtraces and environment dumps from served code.", "Where a diagnostic page is required, restrict it to an authenticated administrator and disable it outside development."}}
+	case analysis.MassAssignmentKind:
+		g = Guidance{Title: "Let the code, not the request, choose written fields", Actions: []string{"Write each permitted field through a named setter from a named request field.", "If a generic copy is required, intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields; property_exists restricts nothing."}}
 	case "upload", "file_upload_candidate":
 		g = Guidance{Title: "Restrict what an upload can become", Actions: []string{"Generate the stored file name and choose its extension on the server from an allow-list or the verified content type.", "Check the content (magic bytes, image decoding) or re-encode it, and store uploads outside the served document root."}}
 	case "redirect", "open_redirect_candidate":

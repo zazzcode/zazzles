@@ -27,6 +27,14 @@ func Enrich(r *analysis.AnalysisReport) {
 			break
 		}
 	}
+	for _, t := range applicationFindingTypes {
+		for _, u := range r.Uses {
+			if u.Kind == analysis.ExposureKind && t.ID == "information-exposure" || u.Kind == analysis.MassAssignmentKind && t.ID == "mass-assignment" {
+				r.FindingTypes = append(r.FindingTypes, t)
+				break
+			}
+		}
+	}
 	r.Findings = make([]analysis.Finding, 0, len(r.Uses))
 	for _, u := range r.Uses {
 		r.Findings = append(r.Findings, describe(u))
@@ -299,6 +307,12 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if u.Kind == analysis.PollutionKind {
 		describePollution(&f)
+	}
+	if u.Exposure != nil {
+		describeExposure(u, &f)
+	}
+	if u.MassAssignment != nil {
+		describeMassAssignment(u, &f)
 	}
 	return f
 }

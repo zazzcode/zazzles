@@ -386,6 +386,11 @@ func (s *phpSet) linkStorage(out *analysis.AnalysisReport) {
 				firstKey = d.StorageKey
 			}
 			writes := s.scopedStorageWrites(d.StorageKey, u.EntryID, projects)
+			if len(writes) == 0 && strings.HasPrefix(d.StorageKey, "php-session:flash.") && s.flashStoreClosed() {
+				// No addFlash call writes this type and nothing else in the
+				// project reaches the flash bag, so the read carries no value.
+				continue
+			}
 			if len(writes) == 0 {
 				resolved = false
 				add(d, "", read)

@@ -46,7 +46,10 @@ func (t *twigScope) apply(kind, name string, args []phpValue, at analysis.Eviden
 			return twigResult{value: combined, mode: mode}
 		case "nl2br":
 			return twigResult{value: combined, mode: "html"}
-		case "upper", "lower", "capitalize", "title", "trim", "default", "first", "last", "join", "slice", "reverse", "replace", "format", "striptags", "u", "merge", "sort", "keys", "batch", "split", "abs", "round", "number_format", "url_encode", "json_encode":
+		case "spaceless":
+			// Declared is_safe for HTML: its input is emitted without escaping.
+			return twigResult{value: combined, mode: "raw"}
+		case "upper", "lower", "capitalize", "title", "trim", "default", "first", "last", "join", "slice", "reverse", "replace", "format", "striptags", "u", "merge", "sort", "keys", "batch", "split", "abs", "round", "number_format", "url_encode", "json_encode", "trans":
 			return twigResult{value: combined}
 		case "date", "length", "format_datetime", "format_date", "format_number", "format_currency":
 			return twigResult{value: twigLiteral("")}
@@ -186,6 +189,17 @@ func (f *phpFlow) twigFlashWrite(n *sitter.Node, kind, message phpValue) {
 	}
 	storageKey := "php-session:flash." + key
 	f.set.sessionWrites[storageKey] = append(f.set.sessionWrites[storageKey], phpWrite{value: phpTransfer(message, f.module.evidence("storage_write", n)), entry: f.entry.ID, evidence: f.module.evidence("storage_write", n)})
+}
+
+// flashStoreClosed reports that controller addFlash calls are the only flash
+// writers in scanned source: no file reaches the session flash bag directly.
+func (s *phpSet) flashStoreClosed() bool {
+	for _, file := range s.files {
+		if m := s.modules[file]; m != nil && (strings.Contains(string(m.src), "getFlashBag") || strings.Contains(string(m.src), "FlashBagInterface")) {
+			return false
+		}
+	}
+	return true
 }
 
 type twigExtension struct {

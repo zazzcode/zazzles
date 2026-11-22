@@ -70,7 +70,7 @@ func (f *phpFlow) symfonyParameter(route string, param *sitter.Node, action bool
 			if explicit := symfonyAttributeString(f.module, attr, "name"); explicit != "" {
 				name = explicit
 			}
-			return f.source(param, "query", "http.query", name)
+			return f.symfonyScalarArgument(param, text, f.source(param, "query", "http.query", name))
 		}
 		if class != "" {
 			decl := f.symfonyClass(class)
@@ -83,7 +83,9 @@ func (f *phpFlow) symfonyParameter(route string, param *sitter.Node, action bool
 				}
 				current := f.symfonyAttribute(f.module, param, `Symfony\Component\Security\Http\Attribute\CurrentUser`) != nil
 				mapped := f.symfonyAttribute(f.module, param, `Symfony\Bridge\Doctrine\Attribute\MapEntity`) != nil
-				if current || placeholder || mapped {
+				// The entity resolver maps an entity argument from the route's
+				// identifier or field placeholders, whatever the argument is named.
+				if current || placeholder || mapped || strings.Contains(route, "{") {
 					if entity, ok := f.symfonyEntity(decl, param); ok {
 						return entity
 					}
@@ -91,7 +93,12 @@ func (f *phpFlow) symfonyParameter(route string, param *sitter.Node, action bool
 			}
 		}
 		if class == "" && placeholder {
-			return f.source(param, "attributes", "http.path", name)
+			v := f.symfonyScalarArgument(param, text, f.source(param, "attributes", "http.path", name))
+			if symfonyDigitsRequirement(route, name) {
+				// The router rejects any other text before the action runs.
+				v = phpProtect(phpTransfer(v, f.entry.Location), "numeric")
+			}
+			return v
 		}
 	}
 	if class != "" {
@@ -100,11 +107,62 @@ func (f *phpFlow) symfonyParameter(route string, param *sitter.Node, action bool
 	return phpValue{unknown: true, gaps: []analysis.Gap{f.gap("symfony_argument_unresolved", "Unresolved Symfony argument $"+name, param)}}
 }
 
+// symfonyScalarArgument applies the declared scalar type of a route or query
+// argument: the framework passes an int, float or bool, never request text.
+func (f *phpFlow) symfonyScalarArgument(param *sitter.Node, declared string, v phpValue) phpValue {
+	switch strings.TrimPrefix(strings.ToLower(declared), "?") {
+	case "int", "float":
+		return phpProtect(phpTransfer(v, f.module.evidence("typed_conversion", param)), "numeric")
+	case "bool":
+		return phpProtect(phpTransfer(v, f.module.evidence("typed_conversion", param)), "non_content")
+	}
+	return v
+}
+
+// symfonyPlaceholder matches {name} anywhere in the route, with the optional
+// "!" marker, inline <requirement> and ?default the routing syntax allows.
+// https://symfony.com/doc/6.4/routing.html#route-parameters
 func symfonyPlaceholder(route, name string) bool {
-	for _, segment := range strings.Split(route, "/") {
-		if segment == "{"+name+"}" {
-			return true
+	_, ok := symfonyPlaceholderTail(route, name)
+	return ok
+}
+
+// symfonyPlaceholderTail returns the text after the placeholder's name, up to
+// its closing brace: the inline requirement and default, when present.
+func symfonyPlaceholderTail(route, name string) (string, bool) {
+	for rest := route; ; {
+		open := strings.Index(rest, "{")
+		if open < 0 {
+			return "", false
 		}
+		rest = rest[open+1:]
+		end := strings.IndexAny(rest, "<?}")
+		if end < 0 {
+			return "", false
+		}
+		if strings.TrimPrefix(rest[:end], "!") != name {
+			continue
+		}
+		tail := rest[end:]
+		if rest[end] == '<' {
+			// A requirement can contain "}" (a quantifier); it ends at ">".
+			if stop := strings.Index(tail, ">"); stop >= 0 {
+				return tail[:stop+1], true
+			}
+		}
+		if stop := strings.Index(tail, "}"); stop >= 0 {
+			return tail[:stop], true
+		}
+		return "", true
+	}
+}
+
+// symfonyDigitsRequirement reports an inline requirement that admits digits only.
+func symfonyDigitsRequirement(route, name string) bool {
+	tail, _ := symfonyPlaceholderTail(route, name)
+	switch tail {
+	case `<\d+>`, `<[0-9]+>`, `<\d{1,}>`:
+		return true
 	}
 	return false
 }

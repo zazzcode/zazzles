@@ -213,23 +213,50 @@ func (f *phpFlow) doctrineORMCall(n *sitter.Node, receiver phpValue, kind, metho
 			return receiver, true
 		}
 		if first, end, ok := doctrineBuilderText(method, len(values)); ok {
+			if doctrineBuilderRoot(method) && len(nodes) > 0 {
+				if class := f.doctrineClassArgument(nodes[0]); class != "" {
+					receiver.class = class
+				}
+			}
 			for i := first; i < end; i++ {
+				if doctrineBuilderRoot(method) && len(values[i].deps) == 0 {
+					// An entity class constant or alias is not constructed text.
+					continue
+				}
 				receiver = f.doctrineQueryText(receiver, nodes[i], values[i])
 			}
 			f.writeObject(receiver)
 			return receiver, true
 		}
-		return f.doctrineORMParameters(n, receiver, method, values)
+		if q, ok := f.doctrineORMParameters(n, receiver, method, values); ok {
+			return q, true
+		}
+		// A fluent setter that adds no query text returns the same builder.
+		// Dropping it would lose the text the chain already carries.
+		return receiver, doctrineFluent(method)
 	case "doctrine_query":
 		switch method {
-		case "getresult", "getoneornullresult", "getsingleresult", "getsinglescalarresult", "getarrayresult", "execute":
+		case "getresult", "getoneornullresult", "getsingleresult", "getsinglescalarresult", "getarrayresult",
+			"getscalarresult", "getsinglecolumnresult", "toiterable", "execute":
 			f.runDoctrineQuery(n, receiver, doctrineORMDriver)
-			if method != "getsinglescalarresult" && receiver.class != "" {
-				return f.doctrineResultEntity(n, receiver.class, method == "getresult" || method == "getarrayresult" || method == "execute"), true
+			switch method {
+			case "getresult", "getarrayresult", "toiterable", "execute", "getoneornullresult", "getsingleresult":
+				if receiver.class != "" {
+					return f.doctrineResultEntity(n, receiver.class, method != "getoneornullresult" && method != "getsingleresult"), true
+				}
 			}
 			return phpValue{}, true
+		case "setdql", "setsql":
+			if len(values) > 0 {
+				receiver = f.doctrineQueryText(receiver, nodes[0], values[0])
+				f.writeObject(receiver)
+			}
+			return receiver, true
 		}
-		return f.doctrineORMParameters(n, receiver, method, values)
+		if q, ok := f.doctrineORMParameters(n, receiver, method, values); ok {
+			return q, true
+		}
+		return receiver, doctrineFluent(method)
 	}
 	return phpValue{}, false
 }
@@ -254,12 +281,35 @@ func (f *phpFlow) doctrineClassArgument(node *sitter.Node) string {
 func doctrineBuilderText(operation string, args int) (first, end int, ok bool) {
 	switch operation {
 	case "where", "andwhere", "orwhere", "having", "andhaving", "orhaving", "select", "addselect",
-		"orderby", "addorderby", "groupby", "addgroupby", "set":
+		"orderby", "addorderby", "groupby", "addgroupby", "set", "from", "update", "delete", "indexby":
 		return 0, args, true
+	case "add":
+		// add(dqlPartName, dqlPart): the part is query text.
+		return min(1, args), min(2, args), true
 	case "join", "innerjoin", "leftjoin":
 		return 3, min(4, args), true
 	}
 	return 0, 0, false
+}
+
+// doctrineBuilderRoot reports the operations whose first argument names the
+// root entity of the query.
+func doctrineBuilderRoot(operation string) bool {
+	return operation == "from" || operation == "update" || operation == "delete"
+}
+
+// doctrineFluent lists QueryBuilder and Query setters that return the receiver
+// and contribute neither query text nor a bound value.
+// https://www.doctrine-project.org/projects/doctrine-orm/en/2.20/reference/query-builder.html
+func doctrineFluent(method string) bool {
+	switch method {
+	case "setmaxresults", "setfirstresult", "distinct", "setcacheable", "setcacheregion", "setlifetime",
+		"setcachemode", "resetdqlpart", "resetdqlparts", "sethint", "sethydrationmode", "usequerycache",
+		"enableresultcache", "disableresultcache", "setresultcachelifetime", "setresultcacheid",
+		"setlockmode", "setfetchmode", "setquerycachelifetime":
+		return true
+	}
+	return false
 }
 
 func (f *phpFlow) doctrineORMParameters(n *sitter.Node, q phpValue, method string, values []phpValue) (phpValue, bool) {

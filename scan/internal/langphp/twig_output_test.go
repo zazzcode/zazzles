@@ -18,7 +18,7 @@ func TestTwigOutput(t *testing.T) {
 		want, context, gap string
 	}{
 		{1, "encoded", "html_text", ""}, {2, "raw", "html_text", ""}, {3, "encoded", "html_attribute", ""},
-		{4, "unknown", "url", ""}, {5, "unknown", "script", ""}, {6, "raw", "html_text", ""},
+		{4, "raw", "url", ""}, {5, "unknown", "script", ""}, {6, "raw", "html_text", ""},
 		{7, "encoded", "html_text", ""}, {8, "encoded", "html_text", ""}, {9, "encoded", "html_text", ""},
 		{10, "unknown", "html_text", "twig_expression_unresolved"}, {11, "", "", ""},
 		{12, "raw", "html_text", ""}, {13, "raw", "html_text", ""}, {14, "raw", "html_text", ""},

@@ -176,7 +176,19 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 		}
 	case "md5", "sha1", "hash", "password_hash", "crc32", "hash_hmac":
 		return phpTransfer(phpProtect(all, "non_content"), f.module.evidence("non_content", n))
-	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "sprintf", "number_format", "nl2br", "stripslashes", "strip_whitespace":
+	case "sprintf":
+		if f.builtin(qname) && len(values) >= 1 {
+			return phpTransfer(phpSprintf(values), f.module.evidence("string_transform", n))
+		}
+	case "implode", "join":
+		if f.builtin(qname) && len(values) >= 1 {
+			// The result is every element joined by the separator: same
+			// sources and protections, no literal identity.
+			v := phpTransfer(all, f.module.evidence("string_transform", n))
+			v.literals, v.constant, v.fields = nil, false, nil
+			return v
+		}
+	case "strtoupper", "strtolower", "trim", "ltrim", "rtrim", "ucfirst", "ucwords", "strrev", "number_format", "nl2br", "stripslashes", "strip_whitespace":
 		if f.builtin(qname) && len(values) >= 1 {
 			v := phpTransfer(phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown")), f.module.evidence("string_transform", n))
 			return v
@@ -333,7 +345,8 @@ func phpRequestBody(v phpValue) bool {
 		return false
 	}
 	for _, d := range v.deps {
-		if d.container != "INPUT" || d.protection != "raw" || d.key != "" {
+		// "body" is the Symfony Request::getContent acquisition of the same bytes.
+		if d.container != "INPUT" && d.container != "body" || d.protection != "raw" || d.key != "" {
 			return false
 		}
 	}
@@ -900,4 +913,51 @@ func (f *phpFlow) invalidateContentReceiver(n *sitter.Node) {
 		f.env[name] = phpContentValue(v)
 		f.markDirty(name)
 	}
+}
+
+// phpSprintf combines a sprintf format with its arguments. With a literal
+// format made only of sequential %s and numeric conversions, each argument
+// keeps its own protection (%s) or becomes numeric (%d, %u, %f, %F, %e, %E,
+// %x, %X, %o, %b). Any other format leaves the arguments' effect unknown.
+func phpSprintf(values []phpValue) phpValue {
+	fallback := phpCombine(values[0], phpProtect(sliceFrom(values, 1), "unknown"))
+	format, ok := phpSQLText(values[0])
+	if !ok {
+		return fallback
+	}
+	out := values[0]
+	arg := 1
+	for i := 0; i < len(format); i++ {
+		if format[i] != '%' {
+			continue
+		}
+		i++
+		if i >= len(format) {
+			return fallback
+		}
+		if format[i] == '%' {
+			continue
+		}
+		// Flags, width and precision change padding only. A positional
+		// argument (%1$s) or custom pad character is outside this subset.
+		for i < len(format) && strings.IndexByte("+-0 .123456789", format[i]) >= 0 {
+			i++
+		}
+		if i >= len(format) || arg >= len(values) {
+			return fallback
+		}
+		switch format[i] {
+		case 's':
+			out = phpCombine(out, values[arg])
+		case 'd', 'u', 'f', 'F', 'e', 'E', 'x', 'X', 'o', 'b':
+			out = phpCombine(out, phpProtect(values[arg], "numeric"))
+		default:
+			return fallback
+		}
+		arg++
+	}
+	if arg != len(values) {
+		return fallback
+	}
+	return out
 }

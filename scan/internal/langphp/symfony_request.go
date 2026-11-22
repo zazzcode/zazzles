@@ -46,11 +46,14 @@ func (f *phpFlow) requestCall(n *sitter.Node, receiver phpValue, method string, 
 		}
 	case "symfony_bag":
 		switch method {
-		case "get":
+		case "get", "getString":
+			if method == "getString" && receiver.driver == "files" {
+				return phpValue{}, false
+			}
 			return f.symfonyBagInput(n, receiver.driver, key), true
 		case "all":
 			switch receiver.driver {
-			case "query", "request":
+			case "query", "request", "body", "attributes", "cookies", "headers":
 				return f.symfonyBagInput(n, receiver.driver, key), true
 			}
 		case "has":
@@ -63,8 +66,11 @@ func (f *phpFlow) requestCall(n *sitter.Node, receiver phpValue, method string, 
 			}
 			v := f.symfonyBagInput(n, receiver.driver, key)
 			v = phpTransfer(v, f.module.evidence("typed_conversion", n))
-			if method == "getInt" || method == "getDigits" {
+			switch method {
+			case "getInt", "getDigits":
 				v = phpProtect(v, "numeric")
+			case "getBoolean":
+				v = phpProtect(v, "non_content")
 			}
 			return v, true
 		}

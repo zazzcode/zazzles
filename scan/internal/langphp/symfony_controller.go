@@ -36,10 +36,13 @@ func (f *phpFlow) symfonyObjectCreation(n, clsNode *sitter.Node, class string) (
 	}
 	f.set.objects++
 	response := phpValue{binding: "symfony_response", class: symfonyResponseClass, objectID: f.set.objects}
+	state := symfonyResponseState{media: "html", conditions: symfonyResponseConditions(f.context)}
 	if len(values) == 0 || len(values[0].deps) == 0 {
+		// Track the empty response so a later setContent and header change
+		// on the same object are judged together.
+		f.set.responses[response.objectID] = state
 		return response, true
 	}
-	state := symfonyResponseState{media: "html", conditions: symfonyResponseConditions(f.context)}
 	if len(values) > 2 {
 		headers := values[2]
 		if headers.fields == nil {
@@ -70,6 +73,32 @@ func (f *phpFlow) symfonyResponseProperty(base phpValue, name string) (phpValue,
 		}
 	}
 	return phpValue{}, false
+}
+
+// symfonyResponseContent records Response::setContent as HTML output of the
+// same response object, under the content type its headers establish.
+func (f *phpFlow) symfonyResponseContent(n *sitter.Node, receiver phpValue, method string, values []phpValue) bool {
+	if receiver.binding != "symfony_response" || method != "setContent" || len(values) == 0 {
+		return false
+	}
+	if len(values[0].deps) == 0 {
+		return true
+	}
+	state, tracked := f.set.responses[receiver.objectID]
+	if !tracked {
+		state = symfonyResponseState{media: "html", conditions: symfonyResponseConditions(f.context)}
+	}
+	before := len(f.report.Uses)
+	f.recordXSS(f.module.evidence("html_output", n), values[0], "html_text", nil)
+	if len(f.report.Uses) > before {
+		u := &f.report.Uses[before]
+		u.APIModel = analysispacks.XSSContract("symfony-response-v1", "")
+		if receiver.objectID != 0 {
+			state.useID = u.ID
+			f.set.responses[receiver.objectID] = state
+		}
+	}
+	return true
 }
 
 func (f *phpFlow) symfonyResponseHeader(n *sitter.Node, receiver phpValue, method string, values []phpValue) bool {
@@ -123,6 +152,9 @@ func (s *phpSet) finalizeSymfonyResponses(out *analysis.AnalysisReport) {
 	states := map[string]symfonyResponseState{}
 	for _, id := range slices.Sorted(maps.Keys(s.responses)) {
 		state := s.responses[id]
+		if state.useID == "" {
+			continue
+		}
 		if prior, exists := states[state.useID]; exists && prior.media != state.media {
 			state.media = "unknown"
 		}
@@ -157,6 +189,9 @@ func (f *phpFlow) symfonyControllerCall(n *sitter.Node, receiver phpValue, metho
 	}
 	if f.symfonyResponseHeader(n, receiver, method, values) {
 		return phpValue{}, true
+	}
+	if f.symfonyResponseContent(n, receiver, method, values) {
+		return receiver, true
 	}
 	if !f.extendsSymfonyController(receiver.classDecl) {
 		return phpValue{}, false

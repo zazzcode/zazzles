@@ -30,6 +30,16 @@ func symfonyProperties(decl *phpClassDecl) map[string]*sitter.Node {
 	return properties
 }
 
+// doctrineScalarProperty reports an entity property whose declared type is
+// int, float or bool (nullable or not).
+func doctrineScalarProperty(m *phpModule, property *sitter.Node) bool {
+	switch strings.TrimPrefix(strings.ToLower(phpText(m, phpField(property, "type"))), "?") {
+	case "int", "float", "bool":
+		return true
+	}
+	return false
+}
+
 func (f *phpFlow) symfonyEntity(decl *phpClassDecl, origin *sitter.Node) (phpValue, bool) {
 	return f.symfonyEntityDepth(decl, origin, 0)
 }
@@ -59,6 +69,13 @@ func (f *phpFlow) symfonyEntityDepth(decl *phpClassDecl, origin *sitter.Node, de
 		}
 		key := fields[field]
 		if key == "" && (len(object.gaps) == 0 || f.symfonyAttribute(m, property, doctrineORM+"Column") == nil) {
+			continue
+		}
+		if doctrineScalarProperty(m, property) && key != "" {
+			// PHP enforces the declared int, float or bool type on every
+			// write, so the field never holds text content.
+			source := m.evidence("storage_source", property)
+			object.props[field] = phpNumeric(phpValue{gaps: object.gaps, deps: []phpDep{{dep: analysis.Dependency{Source: source, StorageKey: key}}}}, analysis.CommandValueNumber, source)
 			continue
 		}
 		source := m.evidence("storage_source", property)

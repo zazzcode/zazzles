@@ -391,9 +391,23 @@ func (t *twigScope) value(node *twigNode, at analysis.Evidence) twigResult {
 	case "property", "method":
 		base := t.value(node.args[0], at).value
 		args := t.arguments(node.args[1:], at)
+		if node.kind == "method" && (base.binding == "twig_macros" || node.args[0].kind == "variable" && node.args[0].text == "_self") {
+			// A macro call returns safe markup built from its arguments in a
+			// body this analysis does not expand.
+			for _, arg := range args {
+				v = phpCombine(v, arg)
+			}
+			if len(v.deps) > 0 {
+				v.gaps = append(v.gaps, analysis.Gap{Kind: "twig_expression_unresolved", Detail: "Twig macro call is not expanded: " + node.text, At: at.Span})
+			}
+			return twigResult{value: v, mode: "unknown"}
+		}
 		v = t.property(base, node.text, args, node.kind == "method", at)
 	case "choice":
-		v = phpJoin(t.value(node.args[0], at).value, t.value(node.args[1], at).value)
+		// Twig escapes each branch of a conditional on its own, so a raw
+		// branch stays raw beside an escaped one.
+		a, b := t.value(node.args[0], at), t.value(node.args[1], at)
+		return twigResult{value: phpJoin(a.value, b.value), mode: twigChoiceMode(a, b)}
 	case "concat":
 		a, b := t.value(node.args[0], at).value, t.value(node.args[1], at).value
 		v = phpCombine(a, b)
@@ -424,4 +438,20 @@ func (t *twigScope) arguments(nodes []*twigNode, at analysis.Evidence) []phpValu
 		args = append(args, t.value(n, at).value)
 	}
 	return args
+}
+
+// twigChoiceMode combines the escaping modes of two conditional branches. A
+// branch that carries no source value cannot make the output unsafe.
+func twigChoiceMode(a, b twigResult) string {
+	switch {
+	case len(a.value.deps) == 0:
+		return b.mode
+	case len(b.value.deps) == 0:
+		return a.mode
+	case a.mode == b.mode:
+		return a.mode
+	case a.mode == "raw" || b.mode == "raw":
+		return "raw"
+	}
+	return "unknown"
 }

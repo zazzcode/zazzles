@@ -241,7 +241,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			v.arrayLiterals = elements
 		}
 		return v
-	case "shell_execution_expression":
+	case "shell_command_expression":
 		v := f.evalChildren(n)
 		f.commandUse(n, "shell_exec", []string{"shell_command"}, []phpValue{v}, []*sitter.Node{n})
 		return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
@@ -271,17 +271,15 @@ func (f *phpFlow) castValue(n *sitter.Node, v phpValue) phpValue {
 }
 
 func castKind(m *phpModule, n *sitter.Node) string {
+	// The grammar spells a cast either as one "(int)" token or as "(",
+	// a cast_type node and ")". Bare parentheses carry no type.
 	for i := uint(0); i < n.ChildCount(); i++ {
 		c := n.Child(i)
-		if c == nil {
+		if c == nil || c.IsNamed() && c.Kind() != "cast_type" {
 			continue
 		}
-		if !c.IsNamed() {
-			text := strings.ToLower(strings.TrimSuffix(strings.TrimSpace(c.Utf8Text(m.src)), ")"))
-			return strings.TrimPrefix(text, "(")
-		}
-		if c.Kind() == "cast_type" {
-			return strings.ToLower(strings.Trim(strings.TrimSpace(c.Utf8Text(m.src)), "() "))
+		if kind := strings.ToLower(strings.Trim(strings.TrimSpace(c.Utf8Text(m.src)), "() ")); kind != "" {
+			return kind
 		}
 	}
 	return ""

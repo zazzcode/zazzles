@@ -25,12 +25,32 @@ func symfonyClassRoutes(index *phpClassIndex, decl *phpClassDecl, imports []symf
 	}
 	var out []symfonyRoute
 	body := phpField(decl.node, "body")
+	type declared struct {
+		action *sitter.Node
+		routes []symfonyRoute
+	}
+	var actions []declared
+	var invoke *sitter.Node
 	for i := uint(0); i < body.NamedChildCount(); i++ {
 		action := body.NamedChild(i)
 		if !symfonyPublicMethod(m, action) {
 			continue
 		}
-		for _, route := range symfonyRouteDeclarations(index, m, action) {
+		if phpText(m, phpField(action, "name")) == "__invoke" {
+			invoke = action
+		}
+		if routes := symfonyRouteDeclarations(index, m, action); len(routes) > 0 {
+			actions = append(actions, declared{action, routes})
+		}
+	}
+	if len(actions) == 0 && invoke != nil && prefixes[0].origin.Span.File != "" {
+		// A class-level route on an invokable controller with no method route
+		// is the route itself, not a prefix.
+		actions, prefixes = []declared{{invoke, prefixes}}, []symfonyRoute{{}}
+	}
+	for _, item := range actions {
+		action := item.action
+		for _, route := range item.routes {
 			route.class = decl.fqn
 			route.method = phpText(m, phpField(action, "name"))
 			route.target, route.action = decl, action
@@ -42,6 +62,10 @@ func symfonyClassRoutes(index *phpClassIndex, decl *phpClassDecl, imports []symf
 				} else if !route.unresolved {
 					joined.path = symfonyJoinRoute(prefix.path, route.path)
 					joined.name = prefix.name + route.name
+					if len(joined.methods) == 0 {
+						// Class-level methods apply to every action that declares none.
+						joined.methods = prefix.methods
+					}
 				}
 				added := false
 				for _, imp := range imports {

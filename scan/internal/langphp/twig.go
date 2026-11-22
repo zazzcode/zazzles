@@ -3,6 +3,8 @@ package langphp
 import (
 	"maps"
 	"path"
+	"slices"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -194,7 +196,7 @@ func twigRegionEnd(src string, start int, end, kind byte) int {
 
 func (t *twigScope) scanRegions(source analysis.Evidence) {
 	var html strings.Builder
-	autoescape := []bool{true}
+	autoescape := []string{t.flow.twigAutoescape()}
 	type block struct {
 		tag           string
 		start, branch map[string]phpValue
@@ -210,7 +212,7 @@ func (t *twigScope) scanRegions(source analysis.Evidence) {
 		}
 		at := parse.TextRange(source, r.start, r.end, "template_output")
 		if r.kind == "{" {
-			t.output(r.expression, at, parse.HTMLOutputContext(html.String()), autoescape[len(autoescape)-1])
+			t.output(r.expression, at, html.String(), autoescape[len(autoescape)-1], parse.RenderMarkup(source, r.start, r.end))
 			html.WriteByte('x')
 			continue
 		}
@@ -219,7 +221,15 @@ func (t *twigScope) scanRegions(source analysis.Evidence) {
 		at.Kind = "template_tag"
 		switch tag {
 		case "autoescape":
-			autoescape = append(autoescape, rest != "false" && autoescape[len(autoescape)-1])
+			autoescape = append(autoescape, twigAutoescapeTag(rest))
+		case "macro":
+			// A macro body renders with its own arguments and returns safe
+			// markup. Its outputs are outside the modeled render subset.
+			t.templateGap(at, "Twig macro "+rest+" is not analyzed")
+		case "import", "from":
+			if _, alias, ok := strings.Cut(rest, " as "); ok && tag == "import" && twigIdentifier(strings.TrimSpace(alias)) {
+				t.vars[strings.TrimSpace(alias)] = phpValue{binding: "twig_macros"}
+			}
 		case "endautoescape":
 			if len(autoescape) > 1 {
 				autoescape = autoescape[:len(autoescape)-1]
@@ -286,23 +296,110 @@ func (t *twigScope) include(name phpValue, vars map[string]phpValue, at analysis
 	child.scan(name, at)
 }
 
-func (t *twigScope) output(expr string, at analysis.Evidence, context string, autoescape bool) {
+// twigAutoescape is the project's default strategy from twig.yaml: "name"
+// (by template file name, the default), "html", "off" or "unknown".
+// https://symfony.com/doc/6.4/reference/configuration/twig.html#autoescape
+func (f *phpFlow) twigAutoescape() string {
+	cfg := f.symfony.configs[path.Join(f.symfony.root, "config/packages/twig.yaml")]
+	twig := symfonyYAMLValue(cfg.value, "twig")
+	if symfonyYAMLValue(twig, "autoescape_service") != nil {
+		return "unknown"
+	}
+	node := symfonyYAMLValue(twig, "autoescape")
+	if node == nil {
+		return "name"
+	}
+	if node.Kind != yaml.ScalarNode {
+		return "unknown"
+	}
+	switch strings.ToLower(node.Value) {
+	case "name", "html":
+		return strings.ToLower(node.Value)
+	case "false":
+		return "off"
+	}
+	return "unknown"
+}
+
+// twigAutoescapeTag reads the strategy of an {% autoescape %} block.
+// https://twig.symfony.com/doc/3.x/tags/autoescape.html
+func twigAutoescapeTag(argument string) string {
+	switch strings.Trim(argument, `'" `) {
+	case "", "html", "true":
+		return "html"
+	case "false":
+		return "off"
+	}
+	return "unknown"
+}
+
+// twigLocalURL reports a literal URL prefix that fixes the scheme of whatever
+// follows it: a relative reference with a path, query or fragment delimiter
+// before any colon, or an http(s) URL whose host is complete.
+func twigLocalURL(prefix string) bool {
+	if strings.HasPrefix(prefix, "//") {
+		return false
+	}
+	lower := strings.ToLower(prefix)
+	for _, scheme := range []string{"http://", "https://"} {
+		if host, ok := strings.CutPrefix(lower, scheme); ok {
+			return strings.Contains(host, "/")
+		}
+	}
+	delimiter := strings.IndexAny(prefix, "/?#")
+	colon := strings.Index(prefix, ":")
+	return delimiter >= 0 && (colon < 0 || delimiter < colon)
+}
+
+// twigURLProtection judges HTML-escaped output in a URL attribute. HTML
+// escaping keeps the value inside its quoted attribute but does not choose
+// the URL scheme, so the answer depends on the literal text before the value.
+func twigURLProtection(markup, expressionPrefix string) (protection, reason string) {
+	tag, attribute, quote, literal, ok := parse.HTMLAttributeValue(markup)
+	if !ok || quote == "" {
+		return "unknown", ""
+	}
+	prefix := literal + expressionPrefix
+	switch tag {
+	case "a", "area", "img", "video", "audio", "source", "track", "form", "button", "input":
+		if twigLocalURL(prefix) {
+			return "encoded", "The Twig output is HTML-escaped inside a quoted URL attribute, after the literal prefix " + strconv.Quote(prefix) + " that fixes the URL scheme."
+		}
+	}
+	if prefix != "" {
+		return "unknown", ""
+	}
+	switch {
+	case attribute == "href" && (tag == "a" || tag == "area"), attribute == "action" && tag == "form",
+		attribute == "formaction", attribute == "src" && (tag == "iframe" || tag == "frame" || tag == "script" || tag == "embed"):
+		return "raw", "The value is the whole URL of a " + tag + " " + attribute + " attribute. HTML escaping does not restrict its scheme, so a script URL runs."
+	}
+	return "unknown", ""
+}
+
+func (t *twigScope) output(expr string, at analysis.Evidence, markup, autoescape string, markupContext analysis.Evidence) {
 	v, mode := t.eval(expr, at)
+	v.deps = slices.DeleteFunc(slices.Clone(v.deps), phpTypedStorageField)
 	if len(v.deps) == 0 {
 		return
 	}
-	protection := "unknown"
+	context := parse.HTMLOutputContext(markup)
+	protection, reason := "unknown", ""
 	switch {
-	case !strings.HasSuffix(at.Span.File, ".html.twig"):
+	case autoescape == "name" && !strings.HasSuffix(at.Span.File, ".html.twig"):
 		v.gaps = append(v.gaps, analysis.Gap{Kind: "render_protection_unresolved", Detail: "Template does not establish HTML autoescaping", At: at.Span})
-	case !autoescape || mode == "raw":
+	case autoescape == "off" && mode == "auto" || mode == "raw":
 		protection = "raw"
+	case autoescape == "unknown" && mode == "auto":
+		v.gaps = append(v.gaps, analysis.Gap{Kind: "render_protection_unresolved", Detail: "The Twig autoescape strategy is not HTML or is unresolved", At: at.Span})
 	case mode == "unknown":
 	case mode == "js" && context == "script", mode == "css" && context == "style",
 		mode == "url" && context == "url", mode == "html_attr" && context == "html_attribute":
 		protection = "encoded"
 	case (mode == "html" || mode == "auto") && (context == "html_text" || context == "html_attribute"):
 		protection = "encoded"
+	case (mode == "html" || mode == "auto") && context == "url":
+		protection, reason = twigURLProtection(markup, v.prefix)
 	}
 	for _, gap := range v.gaps {
 		if gap.Kind == "doctrine_naming_unresolved" {
@@ -343,6 +440,12 @@ func (t *twigScope) output(expr string, at analysis.Evidence, context string, au
 	if protection == "unknown" {
 		u.XSS.ProtectionReason = "The Twig operation or output context leaves encoding unresolved."
 	}
+	if reason != "" {
+		u.XSS.ProtectionReason = reason
+	}
+	// The interpolation alone does not show where it lands. The surrounding
+	// markup is the evidence for the output context.
+	u.Context = append(u.Context, markupContext)
 	if context == "url" && v.prefix != "" {
 		u.Context = append(u.Context, analysis.Evidence{Kind: "render_literal_prefix", Text: v.prefix, Span: at.Span, SHA256: at.SHA256})
 	}

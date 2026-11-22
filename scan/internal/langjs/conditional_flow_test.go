@@ -415,10 +415,10 @@ func TestConditionalPreconditionsDoNotLeak(t *testing.T) {
 		return usesOfKind(conditionalReport(t, name, src), "sql_query_candidate")
 	}
 	for _, body := range []string{
-		"for(const x of req.query.l){if(!isAdmin(req)){return res.sendStatus(403)}}db.query('S '+req.query.q)",
-		"try{if(!isAdmin(req)){return res.sendStatus(403)}}catch(e){}db.query('S '+req.query.q)",
-		"while(more()){if(!isAdmin(req)){return res.sendStatus(403)}break}db.query('S '+req.query.q)",
-		"try{if(!isAdmin(req)){throw new Error('x')}}catch(e){db.query('S '+req.query.q)}",
+		"for(const x of req.query.l){if(!isStaff(req)){return res.sendStatus(403)}}db.query('S '+req.query.q)",
+		"try{if(!isStaff(req)){return res.sendStatus(403)}}catch(e){}db.query('S '+req.query.q)",
+		"while(more()){if(!isStaff(req)){return res.sendStatus(403)}break}db.query('S '+req.query.q)",
+		"try{if(!isStaff(req)){throw new Error('x')}}catch(e){db.query('S '+req.query.q)}",
 	} {
 		t.Run(body, func(t *testing.T) {
 			uses := sql(t, body)

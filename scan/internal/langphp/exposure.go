@@ -7,7 +7,6 @@ import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
-	"github.com/zazzcode/zazzles/scan/internal/parse"
 )
 
 // phpDiagnostic marks a value returned by a diagnostic operation of branch 1
@@ -34,7 +33,6 @@ func (f *phpFlow) diagnosticCall(n *sitter.Node, nodes []*sitter.Node, v phpValu
 	if !f.builtin(name) {
 		return v
 	}
-	operation := m.evidence("diagnostic_operation", n)
 	switch name {
 	case "phpinfo":
 		flag := ""
@@ -43,13 +41,13 @@ func (f *phpFlow) diagnosticCall(n *sitter.Node, nodes []*sitter.Node, v phpValu
 				flag = text
 			}
 		}
-		f.recordExposure(n, operation, name, analysis.ExposureConfiguration, flag, "")
+		f.recordExposureNode(n, m.evidence("diagnostic_operation", n), name, analysis.ExposureConfiguration, flag, "")
 	case "debug_print_backtrace":
-		f.recordExposure(n, operation, name, analysis.ExposureStack, "", "")
+		f.recordExposureNode(n, m.evidence("diagnostic_operation", n), name, analysis.ExposureStack, "", "")
 	case "var_dump", "debug_zval_refcount":
 		for _, arg := range nodes {
 			if subject := f.internalStateArgument(arg); subject != "" {
-				f.recordExposure(n, operation, name, subject, "", "")
+				f.recordExposureNode(n, m.evidence("diagnostic_operation", n), name, subject, "", "")
 				break
 			}
 		}
@@ -72,22 +70,23 @@ func (f *phpFlow) diagnosticCall(n *sitter.Node, nodes []*sitter.Node, v phpValu
 				return v
 			}
 		}
+		operation := m.evidence("diagnostic_operation", n)
 		if !returning {
-			f.recordExposure(n, operation, name, subject, "", "")
+			f.recordExposureNode(n, operation, name, subject, "", "")
 			return v
 		}
 		v.diagnostic = &phpDiagnostic{operation: name, subject: subject, at: operation}
 	case "getenv":
 		if len(nodes) == 0 {
-			v.diagnostic = &phpDiagnostic{operation: name, subject: analysis.ExposureEnvironment, at: operation}
+			v.diagnostic = &phpDiagnostic{operation: name, subject: analysis.ExposureEnvironment, at: m.evidence("diagnostic_operation", n)}
 		}
 	case "php_uname", "phpversion":
-		v.diagnostic = &phpDiagnostic{operation: name, subject: analysis.ExposureRuntimeState, at: operation}
+		v.diagnostic = &phpDiagnostic{operation: name, subject: analysis.ExposureRuntimeState, at: m.evidence("diagnostic_operation", n)}
 	case "ini_get_all":
-		v.diagnostic = &phpDiagnostic{operation: name, subject: analysis.ExposureConfiguration, at: operation}
+		v.diagnostic = &phpDiagnostic{operation: name, subject: analysis.ExposureConfiguration, at: m.evidence("diagnostic_operation", n)}
 	case "dump", "dd":
 		if f.symfony != nil {
-			f.recordExposure(n, operation, name, analysis.ExposureRuntimeState, "", analysis.ExposureEnvironmentDependent)
+			f.recordExposureNode(n, m.evidence("diagnostic_operation", n), name, analysis.ExposureRuntimeState, "", analysis.ExposureEnvironmentDependent)
 		}
 	}
 	return v
@@ -131,25 +130,46 @@ func (f *phpFlow) internalStateArgument(arg *sitter.Node) string {
 // whose value carries internal state.
 func (f *phpFlow) diagnosticOutput(sink *sitter.Node, v phpValue) {
 	if d := v.diagnostic; d != nil {
-		f.recordExposure(sink, d.at, d.operation, d.subject, "", "")
+		f.recordExposure(f.module.evidence(analysis.ExposureKind, sink), d.at, d.operation, d.subject, "", "", sink)
 	}
 }
 
+// diagnosticTemplateOutput records a Twig interpolation whose value carries
+// internal state: the anchor is the interpolation and the dominating
+// conditions are those of the render call that reached it.
+func (f *phpFlow) diagnosticTemplateOutput(sink analysis.Evidence, renderCall *sitter.Node, v phpValue) {
+	if d := v.diagnostic; d != nil {
+		f.recordExposure(evidenceAs(sink, analysis.ExposureKind), d.at, d.operation, d.subject, "", "", renderCall)
+	}
+}
+
+// recordExposureNode anchors the candidate at a PHP sink node.
+func (f *phpFlow) recordExposureNode(sink *sitter.Node, operation analysis.Evidence, name, subject, flag, gapKind string) {
+	f.recordExposure(f.module.evidence(analysis.ExposureKind, sink), operation, name, subject, flag, gapKind, sink)
+}
+
+// evidenceAs returns the same source evidence under another role name.
+func evidenceAs(e analysis.Evidence, kind string) analysis.Evidence {
+	e.Kind = kind
+	return e
+}
+
 // recordExposure emits one candidate per operation per entry (D-3). Guards
-// are the dominating conditions the guard engine recorded (D-2).
-func (f *phpFlow) recordExposure(sink *sitter.Node, operation analysis.Evidence, name, subject, flag, gapKind string) {
+// are the dominating conditions the guard engine recorded (D-2); guardNode is
+// the PHP node whose enclosing conditions dominate the sink (the sink itself,
+// or the render call for a Twig interpolation).
+func (f *phpFlow) recordExposure(sink analysis.Evidence, operation analysis.Evidence, name, subject, flag, gapKind string, guardNode *sitter.Node) {
 	if f.entry.HTTP == nil {
 		return
 	}
-	m := f.module
 	for _, u := range f.report.Uses {
-		if u.Kind == analysis.ExposureKind && u.InvocationContextID == f.invocation.ID && u.Sink.Span == parse.Span(m.file, sink) {
+		if u.Kind == analysis.ExposureKind && u.InvocationContextID == f.invocation.ID && u.Sink.Span == sink.Span {
 			return
 		}
 	}
-	u := f.addUse(analysis.ExposureKind, sink, phpValue{})
+	u := f.addUseAt(analysis.ExposureKind, sink, phpValue{})
 	facts := analysis.ExposureFacts{Operation: name, Subject: subject, Flag: flag, EntryServed: "yes"}
-	for _, e := range phpDedupeEvidence(append(append([]analysis.Evidence{}, f.context...), f.throwingGuards(sink)...)) {
+	for _, e := range phpDedupeEvidence(append(append([]analysis.Evidence{}, f.context...), f.throwingGuards(guardNode)...)) {
 		switch e.Kind {
 		case "branch_precondition", "branch_false_precondition", "configuration_precondition":
 			facts.Guards = append(facts.Guards, e)
@@ -157,7 +177,6 @@ func (f *phpFlow) recordExposure(sink *sitter.Node, operation analysis.Evidence,
 	}
 	u.Exposure = &facts
 	u.APIModel = analysispacks.ExposureContract(analysispacks.PHPDiagnosticOutput)
-	binding := m.evidence("sink_binding", sink)
 	var entry []analysis.Evidence
 	for _, e := range []analysis.Evidence{f.entryEvidence(), f.entry.Location} {
 		if e.Span.File != "" {
@@ -171,8 +190,8 @@ func (f *phpFlow) recordExposure(sink *sitter.Node, operation analysis.Evidence,
 		Evidence: map[string][]analysis.Evidence{
 			"diagnostic_operation": {operation},
 			"entry":                entry,
-			"control_flow":         append([]analysis.Evidence{m.evidence("operation", sink)}, f.context...),
-			"sink_binding":         {binding},
+			"control_flow":         append([]analysis.Evidence{evidenceAs(sink, "operation")}, f.context...),
+			"sink_binding":         {evidenceAs(sink, "sink_binding")},
 		},
 		Blockers: []analysis.Gap{},
 		Coverage: append([]analysis.Gap{}, u.Gaps...),
@@ -181,7 +200,7 @@ func (f *phpFlow) recordExposure(sink *sitter.Node, operation analysis.Evidence,
 		c.Evidence["guard"] = facts.Guards
 	}
 	if gapKind != "" {
-		g := analysis.Gap{Kind: gapKind, Detail: "Framework dump output depends on the debug environment.", At: parse.Span(m.file, sink)}
+		g := analysis.Gap{Kind: gapKind, Detail: "Framework dump output depends on the debug environment.", At: sink.Span}
 		u.Gaps = append(u.Gaps, g)
 		c.Blockers = append(c.Blockers, g)
 	}

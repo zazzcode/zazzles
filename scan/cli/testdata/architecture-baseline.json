@@ -4813,56 +4813,62 @@
   "internal/langphp/testdata/symfony/exposure": {
     "uses": [
       {
-        "id": "candidate:v1:dcf155f891f8771d6fe8b5322fb507a2fc30c2fecf9cc19412372aaa31c79276",
+        "id": "candidate:v1:2ad6b016fbf2fda03a5344d5f2f3a2fa95f98bb5c57ab90296cf3bedcef10a8b",
         "kind": "info_exposure_candidate",
         "request_sha256": "3d4c8aec348ea6e9259e22f8ed256058929db4ab6fd9991d607f90e816398a78",
-        "signature_sha256": "9d560bbbf22bef9030e2d110423e4806c19d95675ae563dbf908f60e70eae206"
+        "signature_sha256": "ca340e6a9ecce9855560361329dd0a19c1b64d1950d537374e8f4c0c1bb01922"
       },
       {
-        "id": "candidate:v1:45abdb8e8d5fde08d4fd1afb490172d2c971ddef5288d0ee0fb0c27b3cc497b9",
+        "id": "candidate:v1:6958af693b76012544e7a8e6bf86e1ce1888e0078f691bed4d4871917e03b3fa",
         "kind": "info_exposure_candidate",
         "request_sha256": "2f275a37f7b4f290344f4ea7247462c49a70ee3f6aea2a4d62acec1844a54eac",
-        "signature_sha256": "9e47676477e16b3d882f04a71d793ab5867ec99e15e849431c974cf9629ce242"
+        "signature_sha256": "4afe0b03fde036291555b6647f3579448cb904948eb7a2f2c1e01d7fc27e40a1"
       },
       {
-        "id": "candidate:v1:b47de337e6d856fa244fa95342a14b7b071e73495e13fd5ea66d3f94edf030ac",
+        "id": "candidate:v1:38b49b3911dbe1fc1cb19510377378d33abdc4ce59d9ab9d491df804c0dc0c37",
         "kind": "info_exposure_candidate",
         "request_sha256": "dc5e762a85734a9e002b406fca1b699fccc41c4fda0ad6c9b074c7e7687ff9eb",
-        "signature_sha256": "ca976f4c92ce636e354a4cad381e5aeb71b0f1ecf0b432b49417b50e5f6032a0"
+        "signature_sha256": "7516692973a333e977b802f34733c0122d0bc5bfb1afe7d21e44ea671b4fadee"
       },
       {
-        "id": "candidate:v1:9715383c97bef2d4238ff2620d24d8f710a7103a38e9347c9d67f837f89ea397",
+        "id": "candidate:v1:9c04cfe868a2be3ec23d1bbcde3cd9ecf808e076953fe9d6b45cc66888637c08",
         "kind": "info_exposure_candidate",
         "request_sha256": "68bbbfe0e62617296d322728ede3bb6b3ea4123181a61edc0c8b762d133c0cce",
-        "signature_sha256": "3a7968b04f7aa34217362cad3d15f36a678b38c30da90cd34be278bed339c74f"
+        "signature_sha256": "372194b3b2dfda9633b272aab8c815915d5bdabb8b69e0296c12351daa2d3b40"
       },
       {
-        "id": "candidate:v1:e60530e4a1d85b2965380234dd389d6ec3afcb39d94a04d5c8a88bd05e9531b2",
+        "id": "candidate:v1:a1924a2826991dec00696684bd8186a2f21d7a4f5f3c1062aed3fd3262da9fdb",
         "kind": "info_exposure_candidate",
         "request_sha256": "8482c19ae6a9c94f014c4528b48d3a9e4144ff702387f9fb3ec81794091cf136",
-        "signature_sha256": "21aa42adb505e5dbc5caa6cdcc0d992316fe7f3761fb63a7fa447fb29abb6200"
+        "signature_sha256": "375dbbd43453f2f2d58efde6bb83df3fb4002bc9a5e1dcf0cc09bbf2799bde6b"
       },
       {
-        "id": "candidate:v1:e8617981cddc46c5a2fadd48d0e01fc8c1f49b1fe00af97be268b78351558826",
+        "id": "candidate:v1:48b7dd465485b6270d67f42f199191ad8e74f3b448d66cfd217c1f8a97612b25",
         "kind": "info_exposure_candidate",
         "request_sha256": "3636de6b9908f3fe775dc4932e42512420951b9f9a25191324f324b33e656a50",
-        "signature_sha256": "531c546bd7a2bda3507e8911663c19a9f5c133af28d708d0319661d5ca75fcba"
+        "signature_sha256": "d59243731169526639729f2d8089c33851df6aac6043a2f1d574ee25360c53ea"
       },
       {
-        "id": "candidate:v1:853395c9b0fe8294266373b0abe83f193011a4752351269a1439d4c59f459ed6",
+        "id": "candidate:v1:215b0c7a53e142ed659e1d29aec977dd4ff0e720fd1653547e4569527082b3ca",
         "kind": "info_exposure_candidate",
         "request_sha256": "fdd0b202780d2ca1e48fdb724db8ae57a75927913cba33fc1dceb510a320053b",
-        "signature_sha256": "16e1bdb0a22e16c9dd99c8e77ed1f8bff5d6970576f3dccc4d3bba8cbeb36b78"
+        "signature_sha256": "0cd70648dab3f6ce33a9b78886e99ad9d631f0c8876999b65d951c1541f3cf40"
+      },
+      {
+        "id": "candidate:v1:012ecd889af695b6d7fd313dbbdbcab8be77ecdb55768a571a619faefa743eb5",
+        "kind": "info_exposure_candidate",
+        "request_sha256": "844d72b1a37abfa653ef30b9664f88b1cb2b005a71605bf1616828b650e5bbfa",
+        "signature_sha256": "c6f6554bd2ae28b52d750e1fdf63b187240385bd60e38d3b29054a88f234e582"
       }
     ],
-    "report_sha256": "d72ce074a0b19f49885593a4529c740e3a1791137bebb21b72fdae8fd0725181",
-    "sarif_sha256": "274b58319da4b54bfefcc8fbcdaffc800dc7fe334135c2140b03fdf50deffde8",
-    "entries": 10,
-    "registrations": 10,
-    "dispatch_bindings": 10,
-    "callables": 10,
-    "invocation_contexts": 10,
-    "uses_count": 7,
+    "report_sha256": "ddc296052f8e013f49bb0e718f9973ee79154f6ec698b3625ee9b6a56a9b29e3",
+    "sarif_sha256": "f10cf2c613e4eaf719461242c59ca12b8a7c8954c53fc8213ef009b7ba8adc90",
+    "entries": 11,
+    "registrations": 11,
+    "dispatch_bindings": 11,
+    "callables": 11,
+    "invocation_contexts": 11,
+    "uses_count": 8,
     "gaps": 1
   },
   "internal/langphp/testdata/symfony/inputs": {

@@ -74,4 +74,10 @@ class Diagnostics extends AbstractController
         dump($request);
         return new Response('');
     }
+
+    #[Route('/diag/uname', methods: ['GET'])]
+    public function uname(): Response
+    {
+        return $this->render('uname.html.twig', ['u' => php_uname()]);
+    }
 }

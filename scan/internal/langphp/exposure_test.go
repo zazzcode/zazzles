@@ -38,6 +38,7 @@ func TestPHPExposure(t *testing.T) {
 		{"EX-10", plain, "uname.php", 2, true, "FILE /uname.php", "php_uname", analysis.ExposureRuntimeState, "", 0, ""},
 		{"EX-11", plain, "lib/diagnostics.php", 4, false, "", "", "", "", 0, ""},
 		{"EX-12", symfony, controller, 74, true, "GET /diag/dump", "dump", analysis.ExposureRuntimeState, "", 0, analysis.ExposureEnvironmentDependent},
+		{"EX-13", symfony, "templates/uname.html.twig", 1, true, "GET /diag/uname", "php_uname", analysis.ExposureRuntimeState, "", 0, ""},
 	}
 	reports := map[string]*analysis.AnalysisReport{}
 	for _, root := range []string{symfony, plain} {

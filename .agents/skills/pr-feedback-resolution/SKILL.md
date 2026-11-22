@@ -1,6 +1,6 @@
 ---
 name: pr-feedback-resolution
-description: "Resolve review feedback on a pull request: verify each finding against the code, implement the ones that hold with failing-first evidence, challenge or defer the rest with a stated rationale, then commit, push and reply on the PR; use when asked to address, implement, triage, accept or challenge PR review comments, including feedback from a pr-review pass or another agent."
+description: "Resolve review feedback on a pull request: verify each finding against the code, implement the ones that hold with failing-first evidence, challenge or defer the rest with a stated rationale and settle each challenge with the PR owner, then commit, push and reply on the PR; use when asked to address, implement, triage, accept or challenge PR review comments, including feedback from a pr-review pass or another agent."
 ---
 
 # PR feedback resolution
@@ -35,6 +35,8 @@ it, then decide.
   compare. Re-run a paid or live check only under the repository's standing authorization, or
   with the owner's word.
 - **Challenge with reasons, never by silence.** Every finding gets a disposition.
+- **Fix valid feedback without asking.** When a finding holds and its fix is in scope, fix it.
+  Do not ask the owner for permission to fix it. Questions are for challenges.
 
 ## Dispositions
 
@@ -45,9 +47,9 @@ it, then decide.
 | Challenged: deferred | The finding holds, but fixing it now costs more than it saves (for example, churn on files a stacked branch is editing) | Where and when it will be done, and who owns it |
 | Challenged: rejected | The finding is wrong, out of scope, or conflicts with the spec, an owner decision or a standard | The evidence: a file and line, a spec clause, a test result, an owner decision |
 
-Severity guides urgency, not disposition. A `[rock]` or `[boulder]` that is challenged needs the
-owner's agreement before the PR is approvable. A `[pebble]` or `[sand]` may be deferred or
-challenged on the agent's judgment.
+Severity guides urgency, not disposition. A challenge, whether deferred or rejected and of any
+severity, is a proposal to the owner (the person who committed or owns the PR), not a final
+decision. A challenged `[rock]` or `[boulder]` keeps the PR unapprovable until the owner agrees.
 
 ## Where to work
 
@@ -102,14 +104,13 @@ done once at the end of the lane instead of in every rebase.
    changed.
 5. **Verify.** Run the gate that the assigned contract and the contributor guide name. Re-check
    any acceptance evidence the fix may affect. Confirm that only the intended golden rows changed.
-6. **Escalate.** Before publishing, ask the owner (the person who committed or assigned the PR)
-   about every open question and decision, in one message, each with your recommended answer. A
-   question can be a challenged `[rock]` or `[boulder]`, a deferral that needs an owner and a date,
-   a finding whose fix would change spec scope or an owner decision, a reviewer's ambiguous intent,
-   or a change to the PR title, body or shared evidence. Fix what needs no decision first, so the
-   owner answers once. Do not publish a disposition that depends on an unanswered question. If the
-   owner is unavailable, publish the fixes and list the open questions in the challenge comment as
-   awaiting the owner.
+6. **Discuss challenges with the owner.** Fixed findings need no discussion. For each challenged
+   finding, start a dialog with the owner before you close it. In one message, give the finding,
+   your challenge and its evidence, the alternative (fixing it now, and what that would cost), and
+   your recommendation. The owner may accept the challenge, ask for the fix, or redirect you. Fix
+   anything the owner sends back, and then go through steps 4 and 5 again. Record each item's final
+   outcome, and who decided it, in the challenge comment. If the owner is unavailable, publish the
+   fixes and post the challenge comment with each item marked as awaiting the owner's decision.
 7. **Publish.** Re-verify the branch, the Git identity and authentication. Then push the head
    branch only. Edit the PR title or body when a finding is about them.
 8. **Reply on the PR.** Post one comment that lists the fixed findings, each with its commit and
@@ -128,11 +129,10 @@ severity and location, so a reader can match it to the review without re-reading
 
 ## Halt conditions
 
-These need an answer before the affected work goes on. Raise them as soon as they appear, not
-only at the escalation step. Stop and ask the owner when:
+Challenges go through the dialog in step 6. The situations below need an answer before the
+affected work goes on, so raise each one as soon as it appears. Stop and ask the owner when:
 
 - the fix needs a paid or live run that no standing authorization covers;
-- a challenged finding is a `[rock]` or `[boulder]`, and the PR cannot proceed without a decision;
 - the only way to do the work is to switch a checkout another session is using;
 - implementing a finding would change scope that the specification or an owner decision fixed;
 - the feedback and the specification, or two findings, contradict each other.

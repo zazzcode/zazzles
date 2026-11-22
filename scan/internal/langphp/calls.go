@@ -421,6 +421,9 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if v, ok := f.symfonyControllerCall(n, receiver, method, values); ok {
 		return v
 	}
+	if v, ok := f.doctrineSQLCall(n, receiver, method, nodes, values); ok {
+		return v
+	}
 	name := ""
 	if obj.Kind() == "variable_name" {
 		name = phpVarName(m, obj)

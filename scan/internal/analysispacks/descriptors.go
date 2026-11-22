@@ -126,6 +126,8 @@ func descriptors() ([]Component, error) {
 	for _, id := range PHPSQLContractIDs {
 		contractOwners[id] = "internal/parse/php_sql.go"
 	}
+	contractOwners["php-doctrine-dbal-v1"] = "internal/langphp/doctrine_sql.go"
+	contractOwners["php-doctrine-orm-v1"] = "internal/langphp/doctrine_sql.go"
 	contractOwners[SequelizeFinderContract] = "internal/parse/sequelize_finders.go"
 	contractOwners[PrismaRawContract] = "internal/parse/sql_libraries.go"
 	contractOwners[PrismaFilterContract] = "internal/parse/sql_libraries.go"

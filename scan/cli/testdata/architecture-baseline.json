@@ -4445,6 +4445,73 @@
     "uses_count": 0,
     "gaps": 0
   },
+  "internal/langphp/testdata/symfony/doctrine-sql": {
+    "uses": [
+      {
+        "id": "candidate:v1:0810c8fefe858d3b213f9cb179ed09a6ab07afaa33a9423b295f4904e9e25291",
+        "kind": "sql_query_candidate",
+        "request_sha256": "858d57de403629e4aff3811ea4c372b8f7c8a927585f42331f9f13645a0c92d8",
+        "signature_sha256": "7777e100dbedf96739f0984e9bb48e2cc8e06adc8bb6d83d01bfa49e46f49928"
+      },
+      {
+        "id": "candidate:v1:4111d74273847641637cfe8449d63c30230a8d52040c8f0c711129f2a3d35f4a",
+        "kind": "sql_query_candidate",
+        "request_sha256": "7334bc9f9da574fc7715cfe5df2369e02c93d861453f02905549e99295043e31",
+        "signature_sha256": "79eb54823f37a64704d9f4a1d601532c01b5beeb561bda4224284b325af1cd94"
+      },
+      {
+        "id": "candidate:v1:a45645d9514f055dc4dbb641184e47c2213bf99de690b69982680f311a942691",
+        "kind": "sql_query_candidate",
+        "request_sha256": "34061cf7ce903beb91e21362193e2b73a70c15aa07341faeb997e1ef1530a1bc",
+        "signature_sha256": "149ca94353f95e5a2bc03f828b4ebe51b9ae5068e763080fe0bcc3c9f94d263e"
+      },
+      {
+        "id": "candidate:v1:b57aa81374d470b10e3f12aafb676657aa6199529ea368481c51d4dd7fadbfd3",
+        "kind": "sql_query_candidate",
+        "request_sha256": "d60c9d1fe0709cdb4388cb75ee76ffa0c230664f7e64e130ab2f41c41fac0ee8",
+        "signature_sha256": "ae57d85d11acae457afd8e2b6b50c051be3934b396bbec669f7fa2fdde1a24d0"
+      },
+      {
+        "id": "candidate:v1:e3b5d361e32f3914ab0f185cccff519d032b81ee720ff04cb9216d83be3e5973",
+        "kind": "sql_query_candidate",
+        "request_sha256": "baf64480a2d1b77a0a33abf18c269f9a44bc789f831e1c77c320e6df7b7ba9fd",
+        "signature_sha256": "f62b35114df689e97bd5f95d788e627c380b452a464e6ba94e7a3b068d037576"
+      },
+      {
+        "id": "candidate:v1:a79d8a5d932523c7cfe96caf158397aea5d5d6ca323e5b0741729164e2ca41fe",
+        "kind": "sql_query_candidate",
+        "request_sha256": "6dbf415520d1085bef3b99226881de6ff83f02bcdde8421db743cf672fa2b70b",
+        "signature_sha256": "4588b9a9a6c4bea15a20009bd40e3cb0d4969e8664d9e4a162e7db29201d062a"
+      },
+      {
+        "id": "candidate:v1:60873015a8031244282ff0a14dd377b191b34d5c7f5889ff96257722cfb72087",
+        "kind": "sql_query_candidate",
+        "request_sha256": "a0d978cc978ed0832190a36170cfd3c602165c405e14927727b6b11bdc569a50",
+        "signature_sha256": "0235523cf293cb70683a7c012b059a6d28d276ff7393a94c6697c2540e6cc939"
+      },
+      {
+        "id": "candidate:v1:b1e3cb1d7cff941f5def5e5ddcef168a4e982d7efa60bfde54220889e4f765e6",
+        "kind": "sql_query_candidate",
+        "request_sha256": "106bd09cebc8b5d6a3d47faf055039ecfa70de65b15e9b4cb0f87dad5c54d602",
+        "signature_sha256": "78f6a9d8bc98a29537e9d788fecc60231c498844782adb9fcd78c6b56b8448f6"
+      },
+      {
+        "id": "candidate:v1:38ce4ba1dbb3e5b6fe262d399eb1b4844bca63172049040ccdb21e5370a9cc26",
+        "kind": "sql_query_candidate",
+        "request_sha256": "bf580088b728e22a85e5087643d34faed3744f87fd67a4d0e234b7a0d994851d",
+        "signature_sha256": "cda9453f82107db54eafb1e575e0b15f0e03631f3b50b3b8f0a7d91675364670"
+      }
+    ],
+    "report_sha256": "0807ac6b05872111f0d764681ef140a109d20de4d42fce23954b96a4ec16c08c",
+    "sarif_sha256": "69ee4dbb01243caba6e57d625a49c6cfe3fb97fed2e75a585aebe7fc96f07736",
+    "entries": 12,
+    "registrations": 12,
+    "dispatch_bindings": 12,
+    "callables": 12,
+    "invocation_contexts": 12,
+    "uses_count": 9,
+    "gaps": 0
+  },
   "internal/langphp/testdata/symfony/inputs": {
     "uses": [
       {

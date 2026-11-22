@@ -502,6 +502,9 @@ func (f *phpFlow) propertyRead(n *sitter.Node) (phpValue, bool) {
 	if base.propsUnknown {
 		return phpValue{unknown: true, gaps: []analysis.Gap{f.gap("php_value_unresolved", "Property is not resolved: ->"+key+" (the object's properties are not all established)", n)}}, true
 	}
+	if v, modeled := f.doctrineProperty(n, base, key); modeled {
+		return v, true
+	}
 	if decl, def := f.set.classIndex().propertyDefault(base.classDecl, key); decl != nil {
 		if def == nil {
 			return phpValue{constant: true, literals: []phpLiteral{{text: ""}}}, true

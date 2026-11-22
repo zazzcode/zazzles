@@ -2,7 +2,12 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
-var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
+var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", PHPDoctrineDBALContract, PHPDoctrineORMContract, SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
+
+const (
+	PHPDoctrineDBALContract = "php-doctrine-dbal-v1"
+	PHPDoctrineORMContract  = "php-doctrine-orm-v1"
+)
 
 // PrismaRawContract is Prisma Client's unsafe raw-SQL API.
 const PrismaRawContract = "prisma-raw-v1"
@@ -46,7 +51,7 @@ func SQLContract(id string) *analysis.APIModel {
 			return v
 		}
 	}
-	for _, driver := range []string{"mysqli", "pdo", "sqlite3"} {
+	for _, driver := range []string{"mysqli", "pdo", "sqlite3", "doctrine-dbal", "doctrine-orm"} {
 		if v := PHPSQLContract(driver); v.ID == id {
 			return v
 		}
@@ -76,6 +81,12 @@ func PHPSQLContract(driver string) *analysis.APIModel {
 	case "sqlite3":
 		return &analysis.APIModel{ID: "php-sqlite3-v1", Library: "sqlite3", Reference: "https://www.php.net/manual/en/sqlite3.query.php",
 			Semantics: "SQLite3::query and SQLite3::exec run the SQL text argument; exec runs every statement in the text and binds nothing. SQLite3::prepare compiles one statement with named or positional placeholders; SQLite3Stmt::bindValue/execute supply separate values and cannot protect SQL already interpolated into the prepared text. Connection provenance is supplied separately; this contract is not evidence that the caller uses it correctly."}
+	case "doctrine-dbal":
+		return &analysis.APIModel{ID: PHPDoctrineDBALContract, Library: "doctrine-dbal", Reference: "https://www.doctrine-project.org/projects/doctrine-dbal/en/3.10/reference/data-retrieval-and-manipulation.html",
+			Semantics: "Doctrine DBAL Connection executeQuery, executeStatement, fetchOne, fetchAssociative, fetchNumeric, fetchAllAssociative, fetchAllNumeric, fetchFirstColumn and iterateAssociative take executable SQL text at argument 0 and separate parameter values at argument 1. prepare captures its argument 0 as the statement text. Statement bindValue and bindParam bind argument 1 to the placeholder selected by argument 0. Statement executeQuery and executeStatement execute the prepared text, with separately supplied data values and prior bindings. A parameter can fill a literal placeholder without protecting SQL already assembled into query text."}
+	case "doctrine-orm":
+		return &analysis.APIModel{ID: PHPDoctrineORMContract, Library: "doctrine-orm", Reference: "https://www.doctrine-project.org/projects/doctrine-orm/en/2.20/reference/query-builder.html",
+			Semantics: "Doctrine ORM EntityManager createQuery and createNativeQuery take executable DQL or SQL text at argument 0. QueryBuilder where, having, select, orderBy and groupBy and their supported add/and/or variants take executable string fragments, as does set. join, innerJoin and leftJoin take the executable condition at argument 3. setParameter binds argument 1 to the placeholder identified by argument 0, and setParameters holds the bindings at argument 0. getQuery constructs the query; execute and the result methods execute its text. Value bindings cannot protect fragments or identifiers already assembled into query text."}
 	}
 	return nil
 }

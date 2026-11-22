@@ -3,7 +3,7 @@
 An authorization candidate is one protected operation. The scanner records who the entry
 admits, which record the operation uses, and which checks dominate the operation. It does
 not decide that a check is enough. The decision model answers that with
-`authorization-components-v2`.
+`authorization-components-v3`.
 
 ## Access model
 

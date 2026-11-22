@@ -535,8 +535,22 @@ func (f *phpFlow) digestCall(n *sitter.Node, name string, values []phpValue) (ph
 
 ## 11. Open questions
 
-None. The owner's decisions are in the lane contract §5: weak password hashing is in scope and
-`account` is one family.
+None from this branch's own scope. The owner's decisions are in the lane contract §5: weak
+password hashing is in scope and `account` is one family.
+
+### 11.1 Follow-on from branch 2 (required)
+
+Branch 2 AC14 is **not implemented**. Offline evidence and family registration are done; the
+judged authorization controls and positives do not yet hold together.
+
+| Residual | Evidence | Required on this branch |
+|---|---|---|
+| Authorization judge adequacy | Judged retry `run-3075298902` on `authorization-components-v2`: `SYM-AUTHZ-N03` and `SYM-AUTHZ-N05` became `protected_for_claim`, but `SYM-AUTHZ-02` and `SYM-AUTHZ-04` regressed to Protected because listed `ROLE_USER` was treated as adequate for request-selected object-level writes/deletes. Protocol tip is `authorization-components-v3` (untested prose that keeps the `secret_check` / census-read fixes and restores that listed roles alone do not cover those writes). | Before branch 3 acceptance: one judged `--only-family authorization` (and a full run if that passes) must show the five branch-2 positives as `confirmed_vulnerability` and `SYM-AUTHZ-N01`, `-N03`, `-N05` as `protected_for_claim` (or not findings). Adjust question/instruction prose under a new protocol id if v3 still fails. Do not weaken offline rows. |
+
+This residual is in scope for branch 3 even though the `account` family is the primary
+deliverable: branch 3's branch-acceptance judged run already requires every earlier positive
+Confirmed and no earlier control as a finding (lane §4.1). Solve the authorization judge gap
+first (or as an early S0-adjacent slice) so the stacked acceptance does not inherit AC14.
 
 ## 12. Run log protocol
 
@@ -600,6 +614,24 @@ Section "Branch 3" of the lane run log, with the items branch 1's §12 lists.
 > output. Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-22 — Branch 2 AC14 residual carried in
+
+**Source.** Owner steering after the branch 2 authorization judge retry: one more judged
+attempt authorized; if unmet, mark not implemented and add follow-on to this specification.
+
+**Changed Sections.** §11.1 (new); this change-log entry.
+
+**Rationale.** Branch 2's single judged retry fixed `SYM-AUTHZ-N03`/`-N05` and regressed
+`SYM-AUTHZ-02`/`-04`. AC14 cannot pass on branch 2 without another iteration the owner
+declined. Lane §4.1 branch-acceptance on this branch already requires earlier positives and
+controls; the residual must be explicit so the session does not treat it as optional.
+
+**Summary.** §11.1 names the residual, the evidence run, the v3 untested tip, and the
+acceptance bar for the follow-on.
+
+**Verification Impact.** Branch 3 implementation must re-judge authorization (family, then
+full if needed) and record the outcome before claiming stacked acceptance.
 
 ### 2026-11-22 — Second pass and unattended execution
 

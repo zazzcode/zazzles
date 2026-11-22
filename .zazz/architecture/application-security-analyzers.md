@@ -130,7 +130,7 @@ authorization (branch 2).
 Record shape (`analysis.AuthorizationFacts`): facets, subject class and provenance, the
 operation, census fields, guards, `method_safe`, peer access and, for an address guard,
 the ids of SSRF uses in the same report. One candidate per operation per entry. Protocol
-`authorization-components-v2`. Required roles: `subject_selection`, `protected_operation`,
+`authorization-components-v3`. Required roles: `subject_selection`, `protected_operation`,
 `entry_access`, `control_flow`. Contract `php-authorization-operation-v1`.
 
 Entry access is context. It is computed from `access_control`, firewalls and

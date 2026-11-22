@@ -283,8 +283,10 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 			"For guard_adequacy: answer none only when authorization.guards is empty; when any guard is recorded answer adequate or inadequate, never none. " +
 			"Treat ownership_check, role_check, authenticated_check and secret_check as adequate when that recorded guard dominates this operation on this subject: ownership compares the subject or its id with the session user; role_check is isGranted; authenticated_check is a null test of the session user; secret_check compares a stored field of the subject with a request value that is not written to that field on the same path — that comparison is adequate for every write it dominates on that subject, including a credential write. " +
 			"Answer inadequate for address_check alone, or when a recorded guard does not cover this operation or this record. An address_check is a property of the connection, not of the user. " +
-			"For access_adequacy: when access.authentication is required and roles are listed, answer adequate for reading census fields and for object-level deletes under that entry unless peer_access shows the same privilege field written under a weaker rule (authentication none, or fewer roles) while this entry is the weaker one. " +
-			"When access.authentication is none, answer inadequate. Peer_access is evidence of inconsistency across writers, not a reason to reject a required role that peers also require or that is stronger. " +
+			"For access_adequacy: when access.authentication is none, answer inadequate. " +
+			"For data_exposure of census fields when authentication is required with listed roles, answer adequate. " +
+			"For object_level or function_level writes or deletes on a request_selected subject, listed entry roles alone are not adequate: any caller who holds those roles could still pick another caller's record. Answer inadequate unless peer_access shows that every other writer of the same storage key requires no stronger authentication or roles than this entry AND the operation is not a credential, login_identifier or role_source write under a weaker rule than those peers. " +
+			"When peer_access shows the same privilege field written under a stronger role while this entry is weaker, answer inadequate. " +
 			"A role name is only the string the entry requires. Do not invent guards, roles, hierarchy or bindings."
 	}
 	if use.MassAssignment != nil {

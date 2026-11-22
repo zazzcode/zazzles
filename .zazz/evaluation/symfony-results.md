@@ -238,16 +238,23 @@ provider key passed to the scanner.
 
 ## Branch 2 judged runs
 
-Scanner commit `c72ff1c` on `symfony-more-analyzers-2`. Provider OpenAI `gpt-6-luna`,
-default candidate limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`. The sample stayed at
+Provider OpenAI `gpt-6-luna`, default candidate limit, `JUDGE_RPM=4500`,
+`JUDGE_TPM=1800000`. The sample stayed at
 `086f81f941501bd1170b249e01107ba99beb2962` and `git status --porcelain --ignored` was
-empty before and after each run. Three judged runs of the eight-run budget were used.
+empty before and after each run. Four judged runs of the eight-run budget were used.
+**AC14 is not met** on this branch; residual carried to branch 3 (§11.1 of
+`symfony-more-analyzers-3.md`).
 
 | Run ID | Scanner | Scope | Requests | Input tokens | Key outcome |
 |---|---|---|---:|---:|---|
 | `run-1127320838` | `c72ff1c` parent, before the guard-kind instruction | `--only-family authorization` | 18 | 59,240 | Five positives Confirmed. `SYM-AUTHZ-N01` mixed. `SYM-AUTHZ-N05` Confirmed. `SYM-AUTHZ-N03` needs evidence |
 | `run-790981836` | `c72ff1c` | `--only-family authorization` | 18 | 59,348 | Five positives Confirmed. `SYM-AUTHZ-N01` Protected. `SYM-AUTHZ-N05` line 78 Confirmed, line 79 Protected. `SYM-AUTHZ-N03` template line 44 Confirmed; delete and create need evidence |
 | `run-3061203983` | `c72ff1c` | Full | 68 | 282,297 | Every earlier positive Confirmed. The five new positives Confirmed. `SYM-AUTHZ-N01` Protected. `SYM-AUTHZ-N03` and `SYM-AUTHZ-N05` are not both Protected |
+| `run-3075298902` | `c963f5d` (`authorization-components-v2`) | `--only-family authorization` | 18 | 64,982 | `N03`/`N05` Protected; `N01` Protected; `AUTHZ-01`/`-03`/`LOCAL-01` Confirmed; **`AUTHZ-02` and `AUTHZ-04` regressed to Protected** (listed `ROLE_USER` treated as adequate for request-selected object-level writes/deletes). AC14 still unmet |
+
+Protocol tip after the retry: `authorization-components-v3` (untested). It keeps the
+`secret_check` and census-read fixes and restores that listed roles alone do not cover
+request-selected writes or deletes. No further judged run on branch 2.
 
 ### Branch 2 keyed outcomes (run `run-3061203983`)
 

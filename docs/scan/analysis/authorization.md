@@ -3,7 +3,7 @@
 Zazzles emits an `authorization_candidate` for one protected operation: a stored write,
 a file write or delete, or a response that carries a census field. The facts are the
 subject, the operation, the entry's access and the guards that dominate the operation.
-A judged scan uses protocol `authorization-components-v2`.
+A judged scan uses protocol `authorization-components-v3`.
 
 ## Questions
 

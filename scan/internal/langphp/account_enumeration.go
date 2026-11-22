@@ -22,9 +22,6 @@ func (f *phpFlow) noteEnumerationLookup(n *sitter.Node, entity, method string, v
 		return
 	}
 	access := f.entry.Access
-	if access != nil && access.Authentication == analysis.AccessRequired {
-		return
-	}
 	decls := f.set.classIndex().byName[strings.ToLower(strings.TrimPrefix(entity, `\`))]
 	if len(decls) != 1 || !f.accountClass(decls[0]) {
 		return
@@ -35,6 +32,10 @@ func (f *phpFlow) noteEnumerationLookup(n *sitter.Node, entity, method string, v
 	}
 	fields, deps, ok := f.lookupCriteria(n, method, values)
 	if !ok || len(deps) == 0 {
+		return
+	}
+	f.noteAccountLookup(n, deps)
+	if access != nil && access.Authentication == analysis.AccessRequired {
 		return
 	}
 	keys := f.doctrineFieldKeys(decl)

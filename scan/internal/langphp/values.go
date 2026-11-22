@@ -120,12 +120,15 @@ type phpValue struct {
 	// doctrine object keeps it across branch joins; this pointer is the
 	// copy on the value that created the object.
 	authz *phpAuthz
+	// secret marks a value derived from a generated secret (branch 3 D-5).
+	// Only the recovery adapter reads it.
+	secret *phpSecret
 }
 
 // phpSideChannel reports a value carrying claim-specific side facts that the
 // generic join must preserve but never treats as content.
 func phpSideChannel(v phpValue) bool {
-	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0 || v.authz != nil
+	return v.diagnostic != nil || v.reflection != nil || len(v.keySources) > 0 || len(v.keyGuards) > 0 || len(v.wholeBag) > 0 || v.authz != nil || v.secret != nil
 }
 
 // phpJoinSide joins two values with join after setting their side facts aside,
@@ -146,11 +149,16 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue) phpValue {
 	if az == nil {
 		az = b.authz
 	}
+	sec := a.secret
+	if sec == nil {
+		sec = b.secret
+	}
 	for _, v := range []*phpValue{&a, &b} {
-		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag, v.authz = nil, nil, nil, nil, nil, nil
+		v.diagnostic, v.reflection, v.keySources, v.keyGuards, v.wholeBag, v.authz, v.secret = nil, nil, nil, nil, nil, nil, nil
 	}
 	out := join(a, b)
 	out.authz = az
+	out.secret = sec
 	out.diagnostic = d
 	out.reflection = r
 	if len(sources) > 0 {

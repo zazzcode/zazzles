@@ -373,6 +373,7 @@ func (f *phpFlow) foreachBindings(n, body *sitter.Node) {
 		}
 	}
 	v := f.eval(collection)
+	f.noteArrayUse(n, v)
 	keyed := len(targets) == 2
 	for i, t := range targets {
 		if t.Kind() == "by_ref" && t.NamedChildCount() == 1 {

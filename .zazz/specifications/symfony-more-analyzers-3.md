@@ -615,6 +615,31 @@ Section "Branch 3" of the lane run log, with the items branch 1's §12 lists.
 
 ## 14. Implementation and review change log
 
+### 2026-11-22 — Branch 3 implementation
+
+**Source.** Unattended branch 3 session.
+
+**Changed Sections.** None of the decisions; this entry records the implementation choices.
+
+**Summary.**
+- §11.1 residual closed on this branch: `authorization-components-v4` judges listed roles by
+  who holds them, and `v5` aligns the judge instruction with that prose. A push of the change
+  to branch 2 (PR #43, in review) was refused by the session's permission guard, so it lives
+  here and the AC11 diff shows `scan/internal/analysispacks/authorization.go` (prose and
+  protocol id only).
+- D-1: the registration gains `KindQuestions`, set by `account` only; the operation contract
+  is optional per kind, as for `pollution`.
+- D-7: census role `recovery_secret` is added by a post-pass after every entry, so no earlier
+  record changes; "compared with a request value" is a recorded `secret_check` whose getter
+  returns the field.
+- D-8: hasher-class and configuration records belong to the firewall's form-login check-path
+  entry.
+- AC6: three pre-existing generic phrases outside test files (`class_index.go` comments, one
+  `selectors.go` error message) were reworded so the grep prints only test-file lines.
+
+**Verification Impact.** Run log "Branch 3"; results "Branch 3 judged runs".
+
+
 ### 2026-11-22 — Branch 2 AC14 residual carried in
 
 **Source.** Owner steering after the branch 2 authorization judge retry: one more judged

@@ -273,3 +273,57 @@ questions' confirmed rule: the request selects the record, the guard is inadequa
 absent, and the entry's access is inadequate. `SYM-LOCAL-02` is the address-only list of
 accounts. `SYM-AUTHZ-R01` is the reset-token write. Neither row is a required positive
 or a required control.
+
+## Branch 3 judged runs
+
+[Branch 3](../specifications/symfony-more-analyzers-3.md) adds the `account` family and
+carries the branch 2 authorization residual (§11.1). Provider OpenAI `gpt-6-luna`, default
+candidate limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, only the provider key passed. The
+sample stayed at `086f81f941501bd1170b249e01107ba99beb2962` and `git status --porcelain --ignored`
+was empty before and after each run. Six of the eight-run budget were used.
+
+| Run ID | Scanner | Scope | Requests | Input tokens | Key outcome |
+|---|---|---|---:|---:|---|
+| `b3-j1-authz` (`run-2654450697`) | `f495fa7` (`authorization-components-v3`) | `--only-family authorization` | 18 | 66,818 | Five positives Confirmed; `N01`, `N05` Protected; `N03` delete `AdminController.php:53` Confirmed (`ROLE_ADMIN` judged inadequate) |
+| `b3-j2-authz` (`run-2130417123`) | `bd92606` (`v4`) | `--only-family authorization` | 18 | 67,628 | Five positives Confirmed; `N01`, `N03` (template, delete), `N05` Protected; `N03` create needs evidence |
+| `b3-j3-account-s1` (`run-2048667208`) | `fab81d8` | `--only-family account` | 3 | 8,632 | `SYM-ENUM-01` (`:76`, `:83`), `SYM-ENUM-02` Confirmed |
+| `b3-j4-account-s3` (`run-4175915011`) | `48e66a6` | `--only-family account` | 4 | 12,096 | `SYM-RESET-01` Confirmed (`request_controlled`, `partial`) |
+| `b3-j5-account-s4` (`run-3183312456`) | `86f1211` | `--only-family account` | 10 | 27,493 | `SYM-HASH-01` Confirmed at all five anchors |
+| `b3-j6-full` (`run-37424552`) | `94c5138` (`authorization-components-v5`, `account-components-v1`) | Full | 78 | 318,286 | **25 of 25 positives Confirmed, 0 control findings** |
+
+The authorization residual was question wording: v3 said listed roles alone never cover a
+request-selected write, so a role only administrators hold was judged inadequate too. v4 judges
+listed roles by who holds them (the role every signed-in user holds is inadequate for a
+request-selected write or delete; a role only some users hold is adequate unless a peer writer
+of the same key requires a role the entry lacks). v5 aligns the judge instruction with that
+prose. Only authorization request digests changed in the baseline.
+
+### Branch 3 keyed outcomes (run `b3-j6-full`)
+
+| Case | Outcome |
+|---|---|
+| The 14 PR #39 positives, `SYM-INFO-01`, `SYM-MASS-01`, `SYM-AUTHZ-01`–`04`, `SYM-LOCAL-01` | Confirmed |
+| `SYM-ENUM-01`, `SYM-ENUM-02`, `SYM-RESET-01`, `SYM-HASH-01` (every anchor) | Confirmed |
+| `SYM-SQL-N01`, `SYM-XSS-N05`, `SYM-AUTHZ-N01`, `SYM-AUTHZ-N03`, `SYM-AUTHZ-N05` | Protected |
+| `SYM-XSS-N01`, `-N02`, `-N08` | Review (unchanged) |
+| The other PR #39 controls, `SYM-INFO-N01`, `SYM-MASS-N01`, `-N02`, `SYM-AUTHZ-N02`, `-N04`, `-N06`, `-N07`, `SYM-LOCAL-N01`, `-N02`, `SYM-ENUM-N01`, `-N02`, `SYM-RESET-N01`, `SYM-HASH-N01` | No record |
+| `SYM-XSS-R01`, `-R02`, `SYM-VAL-R01`, `SYM-LOCAL-02`, `SYM-AUTHZ-R01` | Confirmed (assessment-dependent) |
+
+The configuration record at `config/packages/security.yaml:5` (the `id` naming the md5 hasher
+class) is not a key anchor. It was Protected in run `b3-j5` (`password_input: not_password`)
+and is recorded here as an observation, not a criterion.
+
+### Offline
+
+`check.py` on `b3-s4-offline` and on the judged report: `vuln-symfony: 25 of 25 positives
+witnessed`, no control failure. The 68 records the sample produced before this branch are
+byte-identical, including their component selections.
+
+### Follow-ups
+
+- `secret_check` reads a getter named `get…`; a getter with another name (`currentToken()`)
+  is not classified, so its stored field gets no `recovery_secret` role. Changing it is a
+  branch 2 guard-engine change.
+- Hasher-class and configuration records need a firewall `form_login` or `json_login` route.
+  A project with neither records no such claim.
+- Array-typed parameters that are neither iterated nor spread are not array uses.

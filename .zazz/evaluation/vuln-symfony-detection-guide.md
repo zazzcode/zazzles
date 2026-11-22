@@ -180,11 +180,10 @@ completeness blocker meets it.
 
 **Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
 Mass assignment, `phpinfo()`, and missing authorization are covered by branches 1 and 2 of the
-lane (rows above). The wildcard write stays modeled as a storage writer (D-15) as well.
+lane, and user enumeration, the recovery-secret delivery and MD5 password hashing by branch 3
+(rows above). The wildcard write stays modeled as a storage writer (D-15) as well.
 
-- User enumeration (including the request-shaped `email` lookup at `PasswordResetController.php:34`,
-  previously listed with mass assignment), MD5 password hashing, directory listing,
-  secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
+- Directory listing, secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
   privilege escalation.
 - The request made by `curl` inside `SYM-CMD-01`. It is covered by the command claim. A URL passed
   to a shell program is not an `ssrf` operand.

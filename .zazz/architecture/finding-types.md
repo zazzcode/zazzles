@@ -32,6 +32,9 @@ registry as `finding_types`; schema-v1 raw evidence remains unchanged and compat
 | `information-exposure` | Information Exposure | Bounded PHP diagnostic-output analysis (CWE-200, CWE-215); listed only when a record of the kind exists |
 | `mass-assignment` | Mass Assignment | Bounded PHP key-controlled write analysis (CWE-915); listed only when a record of the kind exists |
 | `missing-authorization` | Missing Authorization | Bounded PHP authorization analysis (CWE-862, CWE-639); listed only when a record of the kind exists |
+| `account-enumeration` | Account Enumeration | Bounded PHP lookup-branch-response analysis (CWE-204); listed only when a record of the kind exists |
+| `weak-password-recovery` | Weak Password Recovery | Bounded PHP recovery-secret delivery analysis (CWE-640, CWE-1287); listed only when a record of the kind exists |
+| `weak-password-hash` | Weak Password Hash | Bounded PHP password-digest analysis (CWE-916); listed only when a record of the kind exists |
 | `address-based-access` | Address-Based Access | An operation limited by the caller's network address (CWE-291); listed only when the only guard is an address check |
 
 XSS is cross-site scripting; the spelling is XSS, not XXS. NoSQL remains one word. Use neutral

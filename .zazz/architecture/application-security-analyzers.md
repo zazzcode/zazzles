@@ -130,7 +130,7 @@ authorization (branch 2).
 Record shape (`analysis.AuthorizationFacts`): facets, subject class and provenance, the
 operation, census fields, guards, `method_safe`, peer access and, for an address guard,
 the ids of SSRF uses in the same report. One candidate per operation per entry. Protocol
-`authorization-components-v3`. Required roles: `subject_selection`, `protected_operation`,
+`authorization-components-v5` (branch 3 judges listed roles by who holds them). Required roles: `subject_selection`, `protected_operation`,
 `entry_access`, `control_flow`. Contract `php-authorization-operation-v1`.
 
 Entry access is context. It is computed from `access_control`, firewalls and
@@ -142,8 +142,57 @@ configuration, no command-execution claim. A role name is a string.
 
 ## Account security (branch 3)
 
-Filled by [branch 3](../specifications/symfony-more-analyzers-3.md): account enumeration,
-recovery-secret delivery and weak password hashing.
+[Branch 3](../specifications/symfony-more-analyzers-3.md) adds family `account` with three
+kinds and protocol `account-components-v1`. The registration gains `KindQuestions`, set by
+this family only, so each kind is asked its own questions from one claim component. The
+operation contract is optional per kind, as for `pollution`: enumeration has none.
+
+**Why enumeration is not validation.** The `account-creation-validation` type asks whether
+required fields are enforced before an account is stored. Enumeration asks whether two
+responses differ, and it also occurs in recovery flows where no account is created.
+
+**Lookup-branch-response model** (`langphp/account_enumeration.go`). At a Doctrine finder
+on an account class (a `UserInterface` class or a provider entity) whose criteria hold a
+request value, the reader finds the first `if` on the result variable (truthiness, a null
+test, `count`, `empty`, `mysqli_num_rows` for plain PHP) and reads each side's responses in
+order until the action returns, continuing after the `if` when a side does not return. A
+record is made only when the two lists differ. *Why compare responses with each other:*
+the scanner does not know which wording reveals an account; a phrase list would encode one
+application's vocabulary. The model weighs the difference. Entries with access `required`
+are skipped; `unresolved` access and `response_unresolved` are blocking gaps. A lookup that
+includes the `credential` field is a login and is out of scope.
+
+**Secret-to-mail model** (`langphp/mailer.go`, `recovery_delivery.go`). A D-5 source marks
+its value with a secret side fact that survives encoding, URL generation and concatenation
+and changes no other claim's value. Message objects record recipient and content operands
+(`api.symfony-mailer-v1`, `api.php-mail-v1`); a send whose content carries a secret records
+the recipient's origin:
+
+| Recipient origin | Result |
+| --- | --- |
+| Stored field of the looked-up account | No record |
+| The scalar lookup criterion | `recipient_validated: full` |
+| A request value used as an array (foreach, spread) while the lookup read one element | `partial`, both use sites, `recipient_count: request_controlled` |
+| A request value with no lookup | `none` |
+
+*Array-shape fact:* a framework request reader returns an array for `name[]=`, so a check
+of element zero says nothing about the rest. A post-pass after every entry fills the stored
+field, adds census role `recovery_secret` when a recorded `secret_check` compares that field
+through its getter, and keeps a stored-address record only for a weak secret. The census
+role is added after the other families copied their facts, so no earlier record changes.
+Mail contracts are a delivery sink for this claim only, never an XSS, header or SSRF sink.
+
+**How a password is established** (`langphp/password_hash.go`). A fast digest marks its
+value; the record is made when the value is written to a census `credential` field, when a
+password-hasher class returns it from `hash()`, when `security.password_hashers` selects a
+fast algorithm or names such a class by `id`, or (plain PHP) when a digest of a request
+value reaches a SQL column that a `SELECT` compares. Class and configuration records belong
+to the firewall's form-login check-path entry, where Symfony verifies passwords. A variable
+name establishes nothing.
+
+**Gaps.** `response_unresolved`, the entry-access gaps of branch 2 (blocking for
+enumeration), `password_digest_unmodeled` for `crypt` and `hash_pbkdf2` (blocking).
+Recovery has no specific gap; an unmodeled mail client makes no record.
 
 ## Configuration (branch 4)
 

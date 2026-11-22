@@ -141,7 +141,7 @@ func (r *AnalysisReport) FilterEntries(scope EntrySelection) error {
 		ids[e.ID] = true
 	}
 	if len(ids) == 0 {
-		return fmt.Errorf("selected entry scope was not found in the supported entry inventory")
+		return fmt.Errorf("selected entry scope is absent from the supported entry inventory")
 	}
 	r.SelectedScope = &scope
 	r.SelectedRoute = scope.Route

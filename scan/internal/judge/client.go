@@ -285,7 +285,7 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 			"Answer inadequate for address_check alone, or when a recorded guard does not cover this operation or this record. An address_check is a property of the connection, not of the user. " +
 			"For access_adequacy: when access.authentication is none, answer inadequate. " +
 			"For data_exposure of census fields when authentication is required with listed roles, answer adequate. " +
-			"For object_level or function_level writes or deletes on a request_selected subject, listed entry roles alone are not adequate: any caller who holds those roles could still pick another caller's record. Answer inadequate unless peer_access shows that every other writer of the same storage key requires no stronger authentication or roles than this entry AND the operation is not a credential, login_identifier or role_source write under a weaker rule than those peers. " +
+			"For object_level or function_level writes or deletes on a request_selected subject, judge the listed entry roles by who holds them. A role every signed-in user holds (ROLE_USER, which Symfony's user contract gives every user, or an IS_AUTHENTICATED_* attribute) is inadequate: any user could pick another user's record. A role that only some users hold is adequate unless peer_access shows another writer of the same storage key that requires a role this entry does not. " +
 			"When peer_access shows the same privilege field written under a stronger role while this entry is weaker, answer inadequate. " +
 			"A role name is only the string the entry requires. Do not invent guards, roles, hierarchy or bindings."
 	}

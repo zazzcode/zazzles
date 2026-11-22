@@ -7,8 +7,9 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 // request-selected object-level writes (AUTHZ-02/-04). v3 restored that listed
 // roles alone do not cover request-selected writes or deletes, and the judge
 // then treated a restricted role as inadequate too (N03 delete). v4 separates
-// the role every signed-in user holds from a role only some users hold.
-const AuthorizationProtocol = "authorization-components-v4"
+// the role every signed-in user holds from a role only some users hold. v5
+// aligns the judge instruction with the v4 question prose.
+const AuthorizationProtocol = "authorization-components-v5"
 
 // PHPAuthorizationOperation is the verified operation this family judges.
 const PHPAuthorizationOperation = "php-authorization-operation-v1"

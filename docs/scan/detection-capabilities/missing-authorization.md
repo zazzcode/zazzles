@@ -68,7 +68,7 @@ report. Those requests are not changed.
 | `authenticator_unmodeled` | The firewall uses `custom_authenticators` |
 | `guard_unclassified` | A private helper's check has no modeled kind |
 | `symfony_config_unread` | `security.yaml` could not be read |
-| `address_trust_configuration_unread` | A framework client address depends on trusted-proxy configuration, which is not read. This gap does not by itself block the claim |
+| `address_trust_configuration_unread` | A framework client address depends on trusted-proxy configuration that was not readable. When the files are readable, `address_trust` is `configured`, `not_configured` or `partial` from `trusted_proxies`, Apache `remoteip` and nginx `real_ip`. The gap does not by itself block the claim |
 
 ## Not recorded
 

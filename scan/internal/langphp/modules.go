@@ -84,6 +84,9 @@ type phpSet struct {
 	authzChanges []authzChange
 	// account is the account adapter's state.
 	account *phpAccountState
+	// configFiles, deployFiles and unreadFiles are the branch 4 allow-lists.
+	configFiles, deployFiles, unreadFiles []string
+	trustCache                            map[string]*addressTrustFacts
 }
 
 type phpWrite struct {
@@ -114,6 +117,9 @@ func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 		return nil, err
 	}
 	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
+	s.configFiles = append([]string{}, inv.Config...)
+	s.deployFiles = append([]string{}, inv.Deploy...)
+	s.unreadFiles = append([]string{}, inv.Unread...)
 	s.loadSymfonyProjects(inv.Config)
 	s.twig = newTwigInventory(inv.Templates, root)
 	s.doctrine = newDoctrineStorage()
@@ -420,6 +426,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 	s.assemblePHPInputs(out)
 	s.finishAuthorization(out)
 	s.finishAccount(out)
+	s.finishConfiguration(out)
 	if err := parse.FinalizeEntries(out); err != nil {
 		return nil, err
 	}

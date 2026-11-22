@@ -26,10 +26,15 @@ const OutboundSlotDestination = "destination"
 // derived destination; each is one source-to-destination path with its own
 // controls (use.Context indices) and never a global safe bit.
 type OutboundFacts struct {
-	Operation         string        `json:"operation,omitempty"`
-	ContractID        string        `json:"contract_id,omitempty"`
-	DestinationOrigin string        `json:"destination_origin"`
-	Paths             []CommandPath `json:"paths,omitempty"`
+	Operation         string `json:"operation,omitempty"`
+	ContractID        string `json:"contract_id,omitempty"`
+	DestinationOrigin string `json:"destination_origin"`
+	// Transport is shell_client when the destination is a curl or wget
+	// argument. Empty for every earlier contract, so those records stay put.
+	Transport string `json:"transport,omitempty"`
+	// Operand is proxy or url when the shell token is a proxy or --url value.
+	Operand string        `json:"operand,omitempty"`
+	Paths   []CommandPath `json:"paths,omitempty"`
 }
 
 // Validate checks every path index and enumerated value against the use.

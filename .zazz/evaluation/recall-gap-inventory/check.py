@@ -31,7 +31,7 @@ ASSESSMENT = {'validation_defect', 'not_confirmed', 'validation_enforced'}
 # Operation-centered kinds have no request source (lane contract section 2.7):
 # a positive is met by a candidate at its anchor with no completeness blocker.
 # A row with each_anchor needs that at every listed anchor, not at any one.
-SOURCELESS_KINDS = {'info_exposure_candidate', 'password_hash_candidate'}
+SOURCELESS_KINDS = {'info_exposure_candidate', 'password_hash_candidate', 'configuration_candidate'}
 
 
 def evaluator():

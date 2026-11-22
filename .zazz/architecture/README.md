@@ -258,6 +258,7 @@ Shared records do not depend on Tree-sitter nodes or HTTP clients.
   template scripts reuse browser analysis through one bridge, `langjs.AnalyzeInlineScripts`; template
   text comes from the core `TextSources`. See [Python coverage](../../docs/scan/python-support.md).
 - `scan/internal/langphp` (PHP) owns server-mapped PHP entries and bounded value, control and include flow.
+- `scan/internal/deployconf` reads allow-listed deployment files (Apache, nginx, Dockerfile, cron, php.ini and the two environment keys). It is not a language adapter.
 - Import direction: `langjs`, `langpy` and `langphp` import `parse`; `langpy` also imports `langjs`
   for the inline-script bridge only; no adapter imports `pipeline`.
 - `pipeline.Analyze` discovers supported registration files across languages when `--entry` is

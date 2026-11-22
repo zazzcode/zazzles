@@ -189,6 +189,12 @@ func Families() []Family {
 			Pack: "pack.account", Claim: "claim.account", Evidence: "evidence.account", PolicyOwner: "internal/judge/account.go",
 		},
 		{
+			// A setting in a deployment file needs no HTTP entry.
+			Name: "configuration", Label: "Insecure configuration", Kinds: []string{analysis.ConfigurationKind},
+			QuestionNames: configurationQuestionNames(), Languages: []lang.Language{lang.PHP},
+			Pack: "pack.configuration", Claim: "claim.configuration", Evidence: "evidence.configuration", PolicyOwner: "internal/judge/configuration.go",
+		},
+		{
 			Name: "validation", Label: "Standalone validation", Kinds: []string{"input_validation_candidate"}, QuestionNames: validationQuestionNames(),
 			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.Python, lang.PHP},
 			// A standalone field claim needs an explicit/source-backed
@@ -258,6 +264,8 @@ func familyProtocol(name string) string {
 		return AuthorizationProtocol
 	case accountFamilyName:
 		return AccountProtocol
+	case "configuration":
+		return ConfigurationProtocol
 	}
 	return ""
 }
@@ -322,6 +330,8 @@ func contractIDs(f *Family) []string {
 		return authorizationContracts
 	case accountFamilyName:
 		return accountContracts
+	case "configuration":
+		return nil
 	}
 	return noSQLContractIDs
 }

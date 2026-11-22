@@ -21,6 +21,7 @@ should improve its analysis. They belong outside `.zazz/`, alongside user docume
 | [Mass assignment](mass-assignment.md) | Request-chosen property names, key origin, key guards and the security-field census |
 | [Authorization](authorization.md) | Subject, operation, entry access and the guards that dominate a protected operation |
 | [Account security](account-security.md) | Account lookups and their branch responses, recovery secrets delivered by mail, and fast password digests |
+| [Insecure configuration](configuration.md) | Allow-listed framework and deployment settings joined to application facts |
 | [Open redirect](open-redirect.md) | Verified redirect destinations and effective origin restrictions |
 | [Input validation](input-validation.md) | Business requirements, enforcing checks, and separate destination protection |
 | [Sensitive-data logging](sensitive-data-logging.md) | Logger bindings, data classes, content versus derived facts, and outcomes |

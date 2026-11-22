@@ -208,6 +208,8 @@ var symfonyLaneRows = []string{
 	"SYM-LOCAL-N01", "SYM-LOCAL-N02", "SYM-LOCAL-02", "SYM-AUTHZ-R01",
 	"SYM-ENUM-01", "SYM-ENUM-02", "SYM-RESET-01", "SYM-HASH-01",
 	"SYM-ENUM-N01", "SYM-ENUM-N02", "SYM-RESET-N01", "SYM-HASH-N01",
+	"SYM-CONF-01", "SYM-CONF-02", "SYM-CONF-03", "SYM-CONF-04", "SYM-SSRF-02",
+	"SYM-CONF-N01", "SYM-CONF-N02", "SYM-CONF-N03", "SYM-CONF-N04", "SYM-SSRF-N02",
 }
 
 func readSymfonyKey(t *testing.T) []symfonyKeyRow {
@@ -273,6 +275,8 @@ func symfonyPositive(t *testing.T, row symfonyKeyRow, uses []analysis.CandidateU
 		"SYM-LOCAL-01": {"ANY /local/promote/{user}"},
 		"SYM-ENUM-01":  {"POST /register"}, "SYM-ENUM-02": {"ANY /reset"}, "SYM-RESET-01": {"ANY /reset"},
 		"SYM-HASH-01": {"ANY /admin/create", "POST /register", "ANY /reset/{email}/{token}", "POST /user/password/{user}", "POST /login"},
+		"SYM-CONF-01": {"ANY /admin"}, "SYM-CONF-02": {"ANY /admin"}, "SYM-CONF-03": {"ANY /admin"}, "SYM-CONF-04": {"ANY /admin"},
+		"SYM-SSRF-02": {"ANY /", "ANY /post/{post}"},
 	}
 	storage := map[string]string{
 		"SYM-XSS-02": "php-sql:comment.content", "SYM-XSS-03": "php-sql:user.about_me",
@@ -348,6 +352,14 @@ func symfonyPositiveEvidence(id string, u analysis.CandidateUse, sourceFile stri
 	}
 	if detail, ok := symfonyAccountEvidence(id, u); ok {
 		return detail
+	}
+	if u.Kind == analysis.ConfigurationKind {
+		return symfonyConfigurationEvidence(id, u)
+	}
+	if id == "SYM-SSRF-02" {
+		if u.Outbound == nil || u.Outbound.Transport != "shell_client" || u.Outbound.Operation != "curl" {
+			return "missing shell URL client facts"
+		}
 	}
 	if u.Kind == analysis.ExposureKind {
 		// An operation-centered claim has no request source (lane contract 2.7).
@@ -528,6 +540,40 @@ func symfonyAuthorizationEvidence(id string, u analysis.CandidateUse, report *an
 		}
 		if !symfonyListsSSRF(f, report) {
 			return "server_side_requests lacks the avatar URL request"
+		}
+		if len(f.Guards) == 0 || f.Guards[0].AddressTrust == nil || f.Guards[0].AddressTrust.Status == "" || f.Guards[0].AddressTrust.Status == "unread" {
+			return "address trust was not read"
+		}
+	}
+	return ""
+}
+
+func symfonyConfigurationEvidence(id string, u analysis.CandidateUse) string {
+	c := u.Configuration
+	if c == nil {
+		return "missing configuration facts"
+	}
+	joined := func(kind, text string) bool {
+		return slices.ContainsFunc(c.Joined, func(e analysis.Evidence) bool {
+			return e.Kind == kind && strings.Contains(e.Text, text)
+		})
+	}
+	switch id {
+	case "SYM-CONF-01":
+		if c.Check != analysis.CheckDirectoryListing || !joined("scope_mapping", "public") || !joined("upload_destination", "uploads") {
+			return "directory listing is missing its scope or upload join"
+		}
+	case "SYM-CONF-02":
+		if c.Check != analysis.CheckScheduledPrivileged || !joined("schedule", "bin/script") || !joined("chain", "bin/console") || !joined("ownership", "www-data") {
+			return "scheduled command is missing an anchor"
+		}
+	case "SYM-CONF-03":
+		if c.Check != analysis.CheckCSRFDisabled || !joined("state_changing_entry", "/user") || !joined("state_changing_entry", "/admin") {
+			return "csrf setting is missing state-changing entries"
+		}
+	case "SYM-CONF-04":
+		if c.Check != analysis.CheckSessionCookieScript || !joined("session_authenticated", "yes") {
+			return "cookie setting is missing the session join"
 		}
 	}
 	return ""

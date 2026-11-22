@@ -194,6 +194,7 @@ func descriptors() ([]Component, error) {
 	out = append(out, applicationDescriptors("mass-assignment")...)
 	out = append(out, applicationDescriptors("authorization")...)
 	out = append(out, applicationDescriptors(accountFamilyName)...)
+	out = append(out, applicationDescriptors("configuration")...)
 	out = append(out, outboundDescriptors()...)
 	out = append(out, nodeInputComponent(), pythonInputComponent(), phpInputComponent(), symfonyInputComponent())
 	return out, nil
@@ -210,7 +211,7 @@ func ownsComponents(f Family) bool {
 // families of the Symfony lane. Each owns every component it selects, so no
 // existing component's bytes or selected digest changes.
 func applicationFamily(name string) bool {
-	return name == "exposure" || name == "mass-assignment" || name == "authorization" || name == accountFamilyName
+	return name == "exposure" || name == "mass-assignment" || name == "authorization" || name == accountFamilyName || name == "configuration"
 }
 
 func applicationQuestions(name string) ([]Question, func(string) []map[string]string, []string) {
@@ -222,6 +223,8 @@ func applicationQuestions(name string) ([]Question, func(string) []map[string]st
 	case accountFamilyName:
 		// Evidence roles differ per kind; the policy checks them by kind.
 		return AccountQuestions(), AccountChoices, nil
+	case "configuration":
+		return ConfigurationQuestions(), ConfigurationChoices, ConfigurationRoles()
 	default:
 		return MassAssignmentQuestions(), MassAssignmentChoices, MassAssignmentRoles()
 	}
@@ -262,6 +265,8 @@ func applicationDescriptors(name string) []Component {
 		body += "An authorization candidate is one protected operation on a record the request may select. Judge whether the request selects the record, whether each recorded guard is enough for that operation, and whether the entry's access is enough given the other writers of the same field. A role name is a string. An address check is a property of the connection, not of the user. Do not decide that a guard is enough merely because it is present."
 	case accountFamilyName:
 		body += "An account candidate is one of three claims. Enumeration: an entry that needs no login looks up an account by a request value and the found and not-found branches answer; compare the two recorded responses with each other, never with expected wording. Recovery delivery: a generated secret reaches mail content; judge who chooses the recipients and whether a check covered every recipient. Password hashing: judge whether the digest input is a password from the recorded basis and whether the stored form is one fast digest. Mail content is delivered, not rendered."
+	case "configuration":
+		body += "A configuration candidate is one recorded setting joined to application facts. Judge whether the setting is in effect for the deployed application, whether those facts make it a weakness, and whether a recorded mitigation removes it. A hardened value is not recorded. Do not treat a file outside the allow-list as evidence, and do not infer values that were not recorded."
 	default:
 		body += "Mass assignment is a write whose property names the request chooses. A whole request bag iterated into dynamic property writes, dynamic setter calls or a property accessor lets the request name any property. A literal allow-list of keys is the fix; property_exists restricts nothing. Census roles from framework contracts (credential, login identifier, role source) mark fields a request should not choose; a name hint is only a hint."
 	}

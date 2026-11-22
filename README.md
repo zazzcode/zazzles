@@ -33,8 +33,10 @@ against its source facts before assigning an outcome.
 - **Data handling** includes unsafe deserialization, prototype pollution, and sensitive data in logs.
 - **Application security** includes information exposure through diagnostic output, mass
   assignment of request-chosen properties, missing authorization of a stored write,
-  a file change, or a census-field read, and the account claims: account enumeration,
-  weak password recovery and weak password hashing.
+  a file change, or a census-field read, the account claims (account enumeration,
+  weak password recovery and weak password hashing), and insecure configuration of
+  allow-listed framework and deployment files. Symfony website support covers these
+  families together with SSRF through a `curl` or `wget` shell URL.
 
 **Code smells and poor practices** include building queries from untrusted strings, failing to
 enforce declared input rules on the server, returning stack traces from Next.js API handlers,

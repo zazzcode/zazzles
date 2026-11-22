@@ -15,11 +15,13 @@ type Inventory struct {
 	Files     []walk.File
 	Config    []string
 	Templates []string
+	Deploy    []string
+	Unread    []string
 }
 
 // WalkInventory preserves every inventory list from a single repository walk.
 func WalkInventory(result *walk.Result) Inventory {
-	return Inventory{Root: result.Root, Files: result.Files, Config: result.Config, Templates: result.Templates}
+	return Inventory{Root: result.Root, Files: result.Files, Config: result.Config, Templates: result.Templates, Deploy: result.Deploy, Unread: result.Unread}
 }
 
 // Options controls optional acquisition discovery without changing Python adapters.

@@ -163,3 +163,97 @@ func TestWalkConfigAndTemplates(t *testing.T) {
 		t.Fatalf("changed source inventory: %+v", got)
 	}
 }
+
+func TestWalkDeployList(t *testing.T) {
+	root := tree(t,
+		"Dockerfile", "Dockerfile.dev", "app.dockerfile", "public/.htaccess",
+		"docker/apache.conf", "docker/php.ini", "cron.d/app", "crontab",
+		"project/composer.json", "project/config/packages/framework.yaml",
+		"project/.env", "project/public/index.php",
+		"vendor/docker/php.ini", "project/vendor/hidden.conf",
+	)
+	if err := os.Symlink("apache.conf", filepath.Join(root, "docker", "link.conf")); err != nil {
+		t.Fatal(err)
+	}
+	big := filepath.Join(root, "docker", "big.conf")
+	if err := os.WriteFile(big, make([]byte, (256<<10)+1), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// The cap is 200. Extra .htaccess files past the files above must not be listed.
+	for i := 0; i < 210; i++ {
+		name := filepath.Join(root, "zzz", fmtHt(i), ".htaccess")
+		if err := os.MkdirAll(filepath.Dir(name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(name, []byte("Options None\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := Walk(root, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Dockerfile", "Dockerfile.dev", "app.dockerfile", "public/.htaccess", "docker/apache.conf", "docker/php.ini", "cron.d/app", "crontab"} {
+		if !slices.Contains(got.Deploy, want) {
+			t.Errorf("deploy missing %s in %v", want, got.Deploy)
+		}
+	}
+	for _, banned := range got.Deploy {
+		if stringsHas(banned, "vendor/") || stringsHas(banned, "link.conf") || stringsHas(banned, "big.conf") {
+			t.Errorf("deploy read %s", banned)
+		}
+	}
+	if len(got.Deploy) != 200 || !got.DeployTruncated {
+		t.Fatalf("deploy cap: %d truncated %v", len(got.Deploy), got.DeployTruncated)
+	}
+	if !slices.Contains(got.Unread, "docker/link.conf") || !slices.Contains(got.Unread, "docker/big.conf") {
+		t.Fatalf("unread %v", got.Unread)
+	}
+	if !slices.Contains(got.Config, "project/composer.json") || !slices.Contains(got.Config, "project/config/packages/framework.yaml") || !slices.Contains(got.Config, "project/.env") {
+		t.Fatalf("config %v", got.Config)
+	}
+	if !slices.Equal(paths(got.Files), []string{"project/public/index.php"}) || got.ByLanguage[lang.PHP] != 1 {
+		t.Fatalf("source inventory changed: files %v lang %v", paths(got.Files), got.ByLanguage)
+	}
+
+	// An existing fixture gains no deploy files and keeps its source inventory.
+	existing := filepath.Join("..", "langphp", "testdata", "symfony", "authorization")
+	prev, err := Walk(existing, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(prev.Deploy) != 0 || len(prev.Files) == 0 || prev.ByLanguage[lang.PHP] == 0 {
+		t.Fatalf("existing fixture deploy=%v files=%d", prev.Deploy, len(prev.Files))
+	}
+}
+
+func fmtHt(i int) string {
+	return "h" + strconvI(i)
+}
+
+func strconvI(i int) string {
+	if i == 0 {
+		return "0"
+	}
+	var b [8]byte
+	n := len(b)
+	for i > 0 {
+		n--
+		b[n] = byte('0' + i%10)
+		i /= 10
+	}
+	return string(b[n:])
+}
+
+func stringsHas(s, part string) bool {
+	return len(s) >= len(part) && (s == part || len(s) > 0 && contains(s, part))
+}
+
+func contains(s, part string) bool {
+	for i := 0; i+len(part) <= len(s); i++ {
+		if s[i:i+len(part)] == part {
+			return true
+		}
+	}
+	return false
+}

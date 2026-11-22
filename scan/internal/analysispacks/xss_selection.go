@@ -12,6 +12,10 @@ import (
 // Template sinks retain their actual file/span. Their compiled rendering contract
 // identifies the source adapter; browser inline scripts can live in HTML files.
 func sourceLanguage(u analysis.CandidateUse, f *Family) (lang.Language, bool) {
+	if f.Name == "configuration" {
+		// Deployment and framework files are still this PHP adapter's claim.
+		return lang.PHP, true
+	}
 	if f.Name == "exposure" && filepath.Ext(u.Sink.Span.File) == ".twig" {
 		// A diagnostic value interpolated into a template is still the PHP
 		// adapter's claim: the operation that produced it is PHP source.

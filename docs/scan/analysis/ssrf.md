@@ -14,6 +14,7 @@ destination control.
 | `axios-url-v1` | `axios` (or `axios.default`) imported or required from `axios` | argument 0 of `axios(url)` and `get/delete/head/options/post/put/patch`; a config object stays an observation |
 | `node-http-url-v1` | verified Node `http` or `https` `get` and `request` bindings | first URL argument or recognized destination fields in a literal options object |
 | `python-http-url-v1` | existing `requests`, `httpx` or `urllib.request.urlopen` binding | `url` argument or keyword (`requests.request` argument 1) |
+| `php-shell-url-client-v1` | a shell command whose literal program token is `curl` or `wget` | a URL position: not the value of a value-taking option, except `-x`, `--proxy` and `--url` |
 
 ## Destination origin
 

@@ -6034,10 +6034,22 @@
         "signature_sha256": "e27bbb3f58d178b039b5c4adc432be3e3829573767e125037b7383bed6ac9107"
       },
       {
+        "id": "candidate:v1:23354563c55af5b3345dd6590d90acb843c46283d175286159272d9a955098e8",
+        "kind": "ssrf_candidate",
+        "request_sha256": "0abe13bd668cb2a1f60fb669d96a60df8cdd62116bef320ef96ef1292b9df396",
+        "signature_sha256": "05f67a4536f01e53be8a72060b2dae960e25577eb875ab7ac92257b2b4f26a04"
+      },
+      {
         "id": "candidate:v1:df101b2ebe6a6711e1cf19c3297a101d4e50a5d0f4ac7e9ab57421d1acdeefd4",
         "kind": "command_execution_candidate",
         "request_sha256": "cd94548f923780530295221051695fbcfef8ec2bf1f9799f2f590d31d4711807",
         "signature_sha256": "0756abbef96d043a0861aa55be9151be88b6f4af8282b99be6a87e6a91468c6f"
+      },
+      {
+        "id": "candidate:v1:5fbdea122ea8b81b082d3eb4a7b000d4640628c7bcbca3eb4fec2db22f4b4b2b",
+        "kind": "ssrf_candidate",
+        "request_sha256": "a0898f7f2589db441b7f7c20ce2fcc81d7d98e850b8a734e2b90c14531443d90",
+        "signature_sha256": "727fd304d4468b3795d6f79f6a15f422308d72da446f9836bfce613e83f6027d"
       },
       {
         "id": "candidate:v1:c0455da124b5cb4ade1e458a0fc0a0cf7ee64830ddd98e233e2598dce004bddf",
@@ -6154,14 +6166,14 @@
         "signature_sha256": "3afe340773e927285a4aec3a72b79d367151f2347b544c48eec49765ab7e1d82"
       }
     ],
-    "report_sha256": "7193ea400ec22aff02621400a26dfa1469fd2df277e103129c4613a06fad8e68",
-    "sarif_sha256": "81136af81b7b1a6140e651082c4adb41a52dd2aca9eba073363a54ee6eb1886b",
+    "report_sha256": "3079a491932d9398d7200f92d461bb72f4e57a58f7f66abf6b77d916f995bb0e",
+    "sarif_sha256": "87db8c6152d8841e062ce2457efb7aeda62472cdeee067b2e8042a500fb2dca2",
     "entries": 16,
     "registrations": 16,
     "dispatch_bindings": 16,
     "callables": 16,
     "invocation_contexts": 16,
-    "uses_count": 21,
+    "uses_count": 23,
     "gaps": 0
   },
   "internal/langphp/testdata/symfony/twig": {

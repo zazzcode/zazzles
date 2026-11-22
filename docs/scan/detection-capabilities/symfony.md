@@ -104,9 +104,9 @@ in Review with `storage_origin_unresolved`.
 
 ## Outside these claims
 
-Cross-site request forgery, session cookie policy, secrets, debug-mode and profiler
-configuration and server configuration are not analyzed.
-A clean report says nothing about them. Authorization of a stored write, a file write or
-delete, and a census-field read is the [missing authorization](missing-authorization.md)
-claim. Account enumeration, recovery-secret delivery and password hashing are the
-[account](account-enumeration.md) claims. Entry access is recorded for every route.
+Committed secrets, voters and custom authenticators, Form and serializer mass assignment,
+and the exclusions on each family page stay outside. A clean report says nothing about
+them. Information exposure, mass assignment, missing authorization, account enumeration,
+recovery-secret delivery, weak password hashing, insecure configuration and SSRF
+(including a `curl` or `wget` shell URL) are the website claims. Entry access is recorded
+for every route. Address trust is filled when the proxy configuration was readable.

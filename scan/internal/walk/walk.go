@@ -56,6 +56,14 @@ type Result struct {
 	// Config and Templates are allow-listed project artifacts, sorted by path.
 	Config    []string
 	Templates []string
+	// Deploy is the deployment-file allow-list, sorted by path.
+	Deploy []string
+	// Unread are allow-listed paths that were not opened: a symlink or a
+	// file over the size limit.
+	Unread []string
+	// ConfigTruncated and DeployTruncated record a list that passed 200 files.
+	ConfigTruncated bool
+	DeployTruncated bool
 	// ByLanguage counts the supported files per language.
 	ByLanguage map[lang.Language]int
 	// Examined counts every regular file considered, supported or not.
@@ -107,24 +115,37 @@ func Walk(root string, opts Options) (*Result, error) {
 		if entry.Name() == "composer.json" {
 			composers[filepath.ToSlash(filepath.Dir(rel))] = true
 		}
+		if entry.Type()&fs.ModeSymlink != 0 && (deployPath(rel) || configFileName(pathBase(rel))) {
+			result.Unread = append(result.Unread, rel)
+			return nil
+		}
 		switch filepath.Ext(rel) {
 		case ".json", ".yaml", ".twig":
+			artifacts = append(artifacts, rel)
+		}
+		if configFileName(pathBase(rel)) && filepath.Ext(rel) != ".yaml" && entry.Type().IsRegular() {
 			artifacts = append(artifacts, rel)
 		}
 		if !entry.Type().IsRegular() {
 			return nil
 		}
 		result.Examined++
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		if info.Size() > fileCap && (deployPath(rel) || configFileName(pathBase(rel))) {
+			result.Unread = append(result.Unread, rel)
+			return nil
+		}
+		if deployPath(rel) {
+			noteList(&result.Deploy, &result.DeployTruncated, &result.Unread, rel, info.Size())
+		}
 
 		language, ok := lang.Detect(rel)
 		if !ok {
 			result.Unsupported++
 			return nil
-		}
-
-		info, err := entry.Info()
-		if err != nil {
-			return err
 		}
 
 		result.Files = append(result.Files, File{Path: rel, Language: language, Size: info.Size()})
@@ -138,6 +159,8 @@ func Walk(root string, opts Options) (*Result, error) {
 
 	sort.Slice(result.Files, func(i, j int) bool { return result.Files[i].Path < result.Files[j].Path })
 	sort.Strings(result.SkippedDirs)
+	sort.Strings(result.Deploy)
+	sort.Strings(result.Unread)
 	return result, nil
 }
 
@@ -163,7 +186,26 @@ func (r *Result) projectArtifacts(files []string, composers map[string]bool) {
 		}
 	}
 	sort.Strings(r.Config)
+	if len(r.Config) > listCap {
+		r.ConfigTruncated = true
+		r.Config = r.Config[:listCap]
+	}
 	sort.Strings(r.Templates)
+}
+
+const listCap = 200
+const fileCap = 256 << 10
+
+func noteList(list *[]string, truncated *bool, unread *[]string, rel string, size int64) {
+	if size > fileCap {
+		*unread = append(*unread, rel)
+		return
+	}
+	if len(*list) >= listCap {
+		*truncated = true
+		return
+	}
+	*list = append(*list, rel)
 }
 
 func underComposerVar(dir string, composers map[string]bool) bool {
@@ -180,8 +222,51 @@ func underComposerVar(dir string, composers map[string]bool) bool {
 func projectConfig(rel string) bool {
 	switch rel {
 	case "composer.json", "config/routes.yaml", "config/services.yaml", "config/packages/twig.yaml",
-		"config/packages/doctrine.yaml", "config/packages/security.yaml":
+		"config/packages/doctrine.yaml", "config/packages/security.yaml",
+		"config/packages/framework.yaml", "config/packages/web_profiler.yaml",
+		".env", ".env.local", ".env.prod", ".env.prod.local":
 		return true
 	}
 	return path.Dir(rel) == "config/routes" && path.Ext(rel) == ".yaml"
+}
+
+func configFileName(base string) bool {
+	switch base {
+	case ".env", ".env.local", ".env.prod", ".env.prod.local", "framework.yaml", "web_profiler.yaml":
+		return true
+	}
+	return false
+}
+
+func pathBase(rel string) string {
+	if i := strings.LastIndex(rel, "/"); i >= 0 {
+		return rel[i+1:]
+	}
+	return rel
+}
+
+// deployPath is the deployment allow-list. A schedule's script is opened
+// later, only when a parsed line names a project file.
+func deployPath(rel string) bool {
+	base := pathBase(rel)
+	if base == "Dockerfile" || strings.HasPrefix(base, "Dockerfile.") || strings.HasSuffix(base, ".dockerfile") || base == ".htaccess" || base == "crontab" || strings.HasSuffix(base, ".cron") {
+		return true
+	}
+	dir := path.Dir(rel)
+	if pathBase(dir) == "cron.d" {
+		return true
+	}
+	if (strings.HasSuffix(base, ".conf") || base == "php.ini") && deployDir(dir) {
+		return true
+	}
+	return false
+}
+
+func deployDir(dir string) bool {
+	for _, root := range []string{"docker", ".docker", "deploy", "config/apache", "config/nginx", "apache", "nginx", "etc"} {
+		if dir == root || strings.HasPrefix(dir, root+"/") {
+			return true
+		}
+	}
+	return false
 }

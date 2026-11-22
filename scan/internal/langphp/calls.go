@@ -54,6 +54,12 @@ func (f *phpFlow) callValues(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if qname == "" {
 		return all
 	}
+	if f.phpLoggingFunction(n, qname, nodes, values) {
+		return phpValue{}
+	}
+	if v, ok := f.symfonyUploadNameCall(n, qname, nodes, values); ok {
+		return v
+	}
 
 	suppressSymfonyPath := f.symfonyURLBuiltin(n, qname, nodes, values)
 
@@ -427,6 +433,15 @@ func (f *phpFlow) methodCall(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	if v, ok := f.requestCall(n, receiver, method, values); ok {
 		return v
 	}
+	if f.phpLoggingMethod(n, receiver, method, nodes, values) {
+		return phpValue{}
+	}
+	if f.symfonyUploadMove(n, receiver, method, nodes, values) {
+		return phpValue{unknown: true}
+	}
+	if v, ok := f.symfonyRedirectCall(n, receiver, method, nodes, values); ok {
+		return v
+	}
 	if v, ok := f.symfonyControllerCall(n, receiver, method, values); ok {
 		return v
 	}
@@ -620,6 +635,9 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	}
 	cls := phpText(m, clsNode)
 	if v, ok := f.symfonyOperationObject(n, clsNode, cls); ok {
+		return v
+	}
+	if v, ok := f.symfonyRedirectCreation(n, clsNode, cls); ok {
 		return v
 	}
 	if v, ok := f.symfonyObjectCreation(n, clsNode, cls); ok {

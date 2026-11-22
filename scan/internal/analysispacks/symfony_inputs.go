@@ -9,6 +9,6 @@ func symfonyInputComponent() Component {
 		Compatibility: []string{SQLProtocol, ValidationProtocol, XSSProtocol, CommandProtocol, PathProtocol, CodeProtocol, RedirectProtocol, UploadProtocol, DeserializationProtocol, SSRFProtocol, familyProtocol("outbound"), LoggingProtocol},
 		Tests:         []string{"TestSymfonyInputs"},
 		Limits:        []string{"source-only Symfony route and argument binding; runtime container and framework validation are not inferred"},
-		Material:      "Symfony Request bags distinguish path, query, form, body, cookie, header and upload acquisition. Request::get reads path attributes, then query, then form. A named acquisition identifies a field, and a typed conversion describes a transformation whose security impact depends on the sink operand. A route entity argument or session user supplies stored fields. A request-chosen identifier does not establish who wrote those fields.",
+		Material:      "Symfony Request bags distinguish path, query, form, body, cookie, header and upload acquisition. Request::get reads path attributes, then query, then form. A named acquisition identifies a field, and a typed conversion describes a transformation whose security impact depends on the sink operand. A route entity argument or session user supplies stored fields. A request-chosen identifier does not establish who wrote those fields. Reference: https://symfony.com/doc/6.4/components/http_foundation.html#accessing-request-data",
 	}
 }

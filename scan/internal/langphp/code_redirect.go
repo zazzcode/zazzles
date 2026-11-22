@@ -82,6 +82,11 @@ func (f *phpFlow) headerUse(n *sitter.Node, node *sitter.Node, v phpValue) {
 	if !phpIsLocationHeader(f.module, node) {
 		return
 	}
+	f.recordPHPRedirect(n, phpCallee(n), node, v, "header", "php-header-redirect-v1",
+		"PHP Location header destination claim; PHP makes a Location header an implied 302 redirect.")
+}
+
+func (f *phpFlow) recordPHPRedirect(n, callee, node *sitter.Node, v phpValue, operation, contract, scope string) {
 	u := f.addUse("open_redirect_candidate", n, v)
 	paths := []analysis.CommandPath{}
 	for i := range u.Dependencies {
@@ -89,15 +94,15 @@ func (f *phpFlow) headerUse(n *sitter.Node, node *sitter.Node, v phpValue) {
 		paths = append(paths, analysis.CommandPath{Dependency: i, Operand: "destination", Protection: phpCodeProtection(v.deps, i)})
 	}
 	phpCiteGuards(u, paths, f.module.evidence("redirect_operand", node))
-	u.Redirect = &analysis.RedirectFacts{Operation: "header", ContractID: "php-header-redirect-v1", DestinationOrigin: analysis.DestinationRequest, Paths: paths}
-	u.APIModel = analysispacks.RedirectContract("php-header-redirect-v1")
-	u.Context = append(u.Context, f.module.evidence("sink_binding", phpCallee(n)))
+	u.Redirect = &analysis.RedirectFacts{Operation: operation, ContractID: contract, DestinationOrigin: analysis.DestinationRequest, Paths: paths}
+	u.APIModel = analysispacks.RedirectContract(contract)
+	u.Context = append(u.Context, f.module.evidence("sink_binding", callee))
 	c := &analysis.Completeness{ClaimKind: "redirect", Required: []string{"input_source", "sink_binding", "invoked_callable", "control_flow", "redirect_operand"}, Evidence: map[string][]analysis.Evidence{
-		"sink_binding":     {f.module.evidence("sink_binding", phpCallee(n))},
+		"sink_binding":     {f.module.evidence("sink_binding", callee)},
 		"invoked_callable": {f.entryEvidence()},
 		"redirect_operand": {f.module.evidence("redirect_operand", node)},
 		"control_flow":     append([]analysis.Evidence{f.module.evidence("operation", n)}, f.context...),
-	}, Blockers: []analysis.Gap{}, Coverage: append([]analysis.Gap{}, u.Gaps...), Scope: "PHP Location header destination claim; PHP makes a Location header an implied 302 redirect."}
+	}, Blockers: []analysis.Gap{}, Coverage: append([]analysis.Gap{}, u.Gaps...), Scope: scope}
 	for _, d := range u.Dependencies {
 		if d.Source.Kind == "input_source" || d.Source.Kind == "storage_source" {
 			c.Evidence["input_source"] = append(c.Evidence["input_source"], d.Source)

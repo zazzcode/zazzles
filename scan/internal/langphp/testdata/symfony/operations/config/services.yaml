@@ -1,0 +1,3 @@
+parameters:
+  incoming_directory: '%kernel.project_dir%/public/incoming'
+  private_directory: '%kernel.project_dir%/private/incoming'

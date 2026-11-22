@@ -45,6 +45,9 @@ func pathDescriptors() ([]Component, error) {
 		out = append(out, v)
 	}
 	for _, id := range pathContractIDs {
+		if id == SymfonyUploadedFileMove {
+			continue // Registered once by the upload family.
+		}
 		model := PathContract(id)
 		v := base("api."+id, "api_contract", "internal/analysispacks/path.go", []string{model.Library}, encoded(model))
 		v.CompiledOwner = pathOwners[id]

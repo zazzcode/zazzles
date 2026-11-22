@@ -11,7 +11,7 @@ import (
 // never a request path source; the destination argument is the path operand.
 func phpPathSlots(op string) []string {
 	switch op {
-	case "move_uploaded_file":
+	case "move_uploaded_file", symfonyUploadOperation:
 		return []string{"path", "destination"}
 	case "file_put_contents":
 		return []string{"path", "content"}
@@ -43,6 +43,9 @@ func phpPathRole(op string) string {
 func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, values []phpValue, contract, role string) {
 	m := f.module
 	slots := phpPathSlots(op)
+	if op == symfonyUploadOperation && len(nodes) == 1 {
+		slots = slots[:1]
+	}
 	if role == "" {
 		role = phpPathRole(op)
 	}
@@ -118,6 +121,18 @@ func (f *phpFlow) pathUse(n *sitter.Node, op string, nodes []*sitter.Node, value
 	u := f.addUse("path_traversal_candidate", n, phpValue{deps: deps, gaps: all.gaps})
 	u.Path = facts
 	u.APIModel = analysispacks.PathContract(contract)
+	if op == symfonyUploadOperation {
+		// Path facts refer to the final context, which begins with the
+		// invocation and branch evidence recorded by addUse.
+		for i := range facts.Operands {
+			for j := range facts.Operands[i].Context {
+				facts.Operands[i].Context[j] += len(u.Context)
+			}
+		}
+		for i := range facts.Guards {
+			facts.Guards[i].Context += len(u.Context)
+		}
+	}
 	u.Context = append(u.Context, context...)
 	u.Context = append(u.Context, m.evidence("sink_binding", phpCallee(n)))
 	sinkGaps := []analysis.Gap{}

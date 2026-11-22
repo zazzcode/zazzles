@@ -27,3 +27,5 @@ Consider all supported paths reaching the destination. Use redirect restrictions
 ## Do not claim
 
 Do not infer enabled wrappers, DNS results, redirect targets, network topology, or deployment policy. Data in body, headers, or other cURL options does not control the destination on those operands.
+
+References: https://www.php.net/manual/en/wrappers.php and https://symfony.com/doc/6.4/http_client.html.

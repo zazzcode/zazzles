@@ -45,7 +45,9 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		if operandFamily(family.Name) && (language == lang.Python) != strings.HasPrefix(contract.ID, "python-") {
 			return nil, fmt.Errorf("language and interpreter/redirect API conflict")
 		}
-		phpContract := strings.HasPrefix(contract.ID, "php-") || contract.ID == SymfonyProcessContract || contract.ID == SymfonyFileResponseContract || contract.ID == SymfonyHTTPClientContract
+		phpContract := strings.HasPrefix(contract.ID, "php-") || contract.ID == SymfonyProcessContract ||
+			contract.ID == SymfonyFileResponseContract || contract.ID == SymfonyHTTPClientContract ||
+			contract.ID == SymfonyUploadedFileMove || contract.ID == SymfonyRedirectContract
 		if family.RequiresAPI && language == lang.PHP && !phpContract {
 			return nil, fmt.Errorf("PHP %s candidate requires a php- contract", family.Label)
 		}

@@ -28,7 +28,7 @@ const (
 	SymfonyFileResponseContract = "symfony-file-response-v1"
 )
 
-var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract, PHPIncludeContract, PHPUploadMoveContract, PHPFilesystemContract, SymfonyFileResponseContract}
+var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlibContract, PythonArchiveContract, PythonSaveContract, ExpressSendContract, AdmZipContract, PythonOSFileContract, FlaskSendContract, StarletteFileContract, PythonShutilContract, PythonTarExtractContract, UnzipperEntryContract, HbsLayoutContract, PHPIncludeContract, PHPUploadMoveContract, PHPFilesystemContract, SymfonyFileResponseContract, SymfonyUploadedFileMove}
 
 // PathContract returns a copy of the supported operation contract by verified ID.
 // Semantics follow the cited official documentation; the declared platform is a
@@ -36,6 +36,8 @@ var pathContractIDs = []string{NodeFSContract, PythonOpenContract, PythonPathlib
 // version is evidence of the target's deployed runtime.
 func PathContract(id string) *analysis.APIModel {
 	switch id {
+	case SymfonyUploadedFileMove:
+		return UploadContract(id)
 	case UnzipperEntryContract:
 		return &analysis.APIModel{ID: id, Library: "unzipper", Reference: "https://github.com/ZJONSSON/node-unzipper#openbuffer", Semantics: "unzipper.Open.buffer(buffer) returns the ZIP central directory with a files array. Each entry.path is the stored archive name and entry.stream() is content. When a request supplies buffer, entry names are request-derived path text. Caller code that passes an entry name to fs.createWriteStream writes the selected path; Open.buffer does not validate that caller's destination. A substring includes(root) check is not component containment: a normalized path can still leave the intended extraction directory or enter a sibling sharing text. A path.join/resolve alone is not containment. Only the write path, not stream content, is the path operand. This is the caller-controlled ZIP entry write (Zip Slip) contract, not a claim that unzipper's extract helper or every release is vulnerable. POSIX is a declared assumption; no symlink/race state is inferred."}
 	case HbsLayoutContract:

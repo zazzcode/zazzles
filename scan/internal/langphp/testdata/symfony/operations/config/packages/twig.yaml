@@ -1,0 +1,3 @@
+twig:
+  globals:
+    settings: '@App\Settings'

@@ -4,7 +4,7 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // ConfigurationProtocol versions the configuration claim: its questions,
 // the meaning of its evidence roles and the instruction sent with them.
-const ConfigurationProtocol = "configuration-components-v5"
+const ConfigurationProtocol = "configuration-components-v6"
 
 // ConfigurationRoles are the evidence obligations of a configuration claim.
 func ConfigurationRoles() []string { return []string{"setting", "scope"} }

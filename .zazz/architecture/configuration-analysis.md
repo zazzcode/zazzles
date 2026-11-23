@@ -36,7 +36,7 @@ project root under one of those names, in order.
 ## Why the records are judged
 
 Each record carries the setting, its scope and the joined application facts. The model
-answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v5`).
+answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v6`).
 A hardened value makes no record. The scanner does not decide that a setting is a defect.
 The request instruction states what each joined fact kind means and what the check's
 directive does as documented, and prescribes no answer. Whether the setting is in effect

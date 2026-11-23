@@ -3,10 +3,36 @@
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json.gz) ·
 [SARIF](findings.sarif.gz) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
-[Results](../../../.zazz/evaluation/command-bypass-support-results.md) ·
+[Results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run) ·
+[Command bypass results](../../../.zazz/evaluation/command-bypass-support-results.md) ·
 [PHP evaluation](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (2026-11-20, command bypass support)
+## Current report (2026-11-23, application-security analyzers)
+
+A full static scan of DVWA revision `a1978a2` with scanner `8d97b93` and OpenAI `gpt-6-luna`
+produced 249 records across 174 entries. The report presents 146 Confirmed, 39 practice findings,
+46 Review (34 needs-review and 12 needs-evidence), and 18 Protected.
+
+- **Two new findings, both information exposure.** `phpinfo.php:8` calls `phpinfo()` for any
+  logged-in user. `setup.php` prints the PHP version and server state through
+  `dvwa/includes/dvwaPage.inc.php:388`. Both are Confirmed. They come from the information
+  exposure analyzer, which is newer than the previous report.
+- **Nothing else moved.** The other 247 records have the same status as the previous report,
+  so the answer key stands: all 11 keyed positives Confirmed and no protected control a finding.
+- **What the newer analyzers do not record here.** DVWA stores passwords as MD5
+  (`login.php:27`, `vulnerabilities/csrf/source/low.php:12`), and its authorisation bypass
+  pages update any user's record (`vulnerabilities/authbypass/change_user_details.php:47`).
+  The weak password hashing and missing authorization analyzers record no candidate for
+  either. The configuration analyzer reads nothing that matters: the root `php.ini` is
+  outside the listed deployment directories, the Dockerfile has no schedule, and the one
+  `.htaccess` holds rewrite rules. These are recall gaps of the scanner, not clean results.
+- **Usage:** 192 assessments from 189 requests, three shared across equivalent contexts,
+  1,659,153 input tokens, zero failures. 57 records stay in Review without a request because
+  their blockers have no model-resolvable question. Offline replay was not repeated.
+
+The evidence is in the [Symfony results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run).
+
+## Previous report (2026-11-20, command bypass support)
 
 A full static scan of DVWA revision `a1978a2` with scanner `ea8640a` and OpenAI `gpt-6-luna`
 produced 247 records across 174 entries. The report presents 144 Confirmed, 39 practice findings,

@@ -370,6 +370,47 @@ because a format check is not a destination restriction. Existing URL-open reque
 unchanged. `services-ops` gains two `ssrf_candidate` records for `shell_exec('curl ' . $origin)`.
 Their command candidates' request digests are unchanged.
 
+### PR #46 review resolution
+
+Scanner `8d97b93` on `symfony-more-analyzers-4`, sample pin
+`086f81f941501bd1170b249e01107ba99beb2962`, clean before and after. OpenAI `gpt-6-luna`,
+default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, on the owner's word of
+2026-11-23.
+
+The review found that the `configuration-components-v4` instruction told the model which
+answer each recorded shape gets. Protocol `v5` states what each joined fact kind means and
+what the check's directive does, and prescribes no answer.
+
+| Run | ID | Scope | Requests | Input tokens | Result |
+|---|---|---|---:|---:|---|
+| 9 | `b4-review-full` (`run-943780282`), scanner `ffc8c2b` | Full scan | 84 | 335,174 | `27 of 30 positives confirmed, 0 control findings`. `SYM-CONF-01`, `-03` and `-04` in Review with `setting_effect: unknown` |
+| 10 | `b4-review-conf1` | `--only-family configuration` | 4 | — | After the enablement and environment facts: `SYM-CONF-01`, `-03`, `-04` Confirmed. `SYM-CONF-02` in Review with `weakness: unknown` |
+| 11, 12 | `b4-review-conf2`, `b4-review-conf3` | `--only-family configuration` | 4 each | — | After the schedule check's documented effect: all four Confirmed, with the same answer probabilities in both runs |
+| 13 | `b4-review-accept` (`run-1810616125`), scanner `8d97b93` | Full scan, no family, entry or route scope | 84 | 335,720 | `30 of 30 positives confirmed, 0 control findings` |
+
+Run 9 is the evidence for the change between runs 9 and 10. Nothing recorded that
+`a2enconf z-app` enables the Apache file the Dockerfile copies to `conf-available`, or that a
+top-level `framework.yaml` setting is loaded in every environment, so "in effect" was not
+established. The scanner now records both facts. No answer is written into the request.
+
+Run 13 against `b4-j7-full`: 84 records in both, and no record has a different presented
+status. 55 Confirmed, 22 Protected, 7 Review. The weakest confirmed answer is `SYM-CONF-02`
+`weakness: weakens` at probability 0.56.
+
+Offline, `b4-review-accept` against `b4-entropy-offline` (`run-2084328028`): 84 records in
+both. The four configuration records and the two shell-client SSRF records have new
+content and ids. Three authorization records change only in the ids of the SSRF records
+they link to and the byte span of the `address_trust` evidence. The other 75 are identical.
+Two scans of the sample are byte-identical.
+
+Before and after on the review's cases, with binaries built from `763b9c3` and from the fix:
+
+| Case | Before | After |
+|---|---|---|
+| `shell_exec('convert -s ' . file_get_contents($_GET['u']))` | 2 `path_traversal_candidate` (one a duplicate) | 1 |
+| `.env` with `APP_ENV=dev\` then `APP_SECRET=s3cr3t-marker` | Setting text `APP_ENV=dev APP_SECRET=s3cr3t-marker`; the marker is in the JSON report 9 times | No `APP_ENV` record from the malformed line, and the marker is absent |
+| `RUN set -eux; chown -R web:web /srv/site/tools; true` with a root cron line | No `scheduled_privileged_writable` record | Recorded |
+
 ### DVWA offline review
 
 Offline scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and after,
@@ -387,9 +428,39 @@ Root `php.ini` is outside the deploy directories, so it is not read. The command
 `ping`, not `curl` or `wget`. No candidate was wrong, and none was missing for a check the
 lists cover.
 
+### DVWA judged run
+
+One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
+after, on the owner's word of 2026-11-23: `b4-review-accept` (`run-3336289847`), scanner
+`8d97b93`, OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`.
+189 requests, 192 assessments, 1,659,153 input tokens, zero failures. 57 records were not
+sent because their blockers have no model-resolvable question.
+
+249 records: 146 Confirmed, 39 practice, 34 needs-review, 12 needs-evidence, 18 Protected.
+Against the published report of 2026-11-20 (`run-2645224166`, 247 records), every one of
+the 247 keeps its status. The two new records are `info_exposure_candidate` and both are
+Confirmed after source review: `phpinfo.php:8` (`phpinfo()` behind login) and
+`dvwa/includes/dvwaPage.inc.php:388` under `setup.php` (the PHP version and server state).
+
+No `configuration_candidate`, `authorization_candidate`, `password_hash_candidate`,
+`account_enumeration_candidate`, `recovery_delivery_candidate`, `mass_assignment_candidate`
+or shell-client `ssrf_candidate` is recorded. Source review of what DVWA holds in those
+classes:
+
+| DVWA defect | Location | Recorded | Why |
+|---|---|---|---|
+| Passwords stored as MD5 | `login.php:27`, `vulnerabilities/csrf/source/low.php:12`, `vulnerabilities/brute/source/low.php:9` | No | The plain-PHP rule needs a digest written to a column and that column compared at login. Both exist in DVWA, and the rule still records nothing. Cause not yet established |
+| Authorisation bypass | `vulnerabilities/authbypass/change_user_details.php:47`, `get_user_data.php` | No | A raw `UPDATE users … where user_id = <request id>` with no ownership or role check below the `impossible` level. The plain-PHP authorization adapter records no subject for it |
+| PHP settings | Root `php.ini` (`allow_url_include = on`) | No | The file is outside the listed deployment directories, and `allow_url_include` is not a check |
+| CSRF, weak session ids, brute force, CAPTCHA, CSP, cryptography | `vulnerabilities/csrf`, `weak_id`, `brute`, `captcha`, `csp`, `cryptography` | No | No analyzer for these classes in plain PHP |
+
+The first two rows are recall gaps of analyzers this lane delivered. They are follow-up
+work and are not fixed in PR #46. The sample report in `docs/samples/dvwa/` is this run.
+
 ### Closing table — sample README, 21 entries
 
-Judged on `b4-j7-full` at scanner `54dd0b0`. Entry 8 is not in the source at the pin. Committed
+Judged on `b4-j7-full` at scanner `54dd0b0`, and again on `b4-review-accept` at scanner
+`8d97b93` with the same status in every row. Entry 8 is not in the source at the pin. Committed
 secrets stay outside the lane.
 
 | # | README entry | Row | Judged status |

@@ -214,3 +214,19 @@ the [Python refactor verification](../evaluation/python-input-refactor-results.m
 Update a row only from a fresh scan and record the run in that analyzer's results document. Change an expectation only with
 source evidence, and keep the old label in that reference's corrections. The saved reports under
 [docs/samples](../../docs/samples/README.md) are separate snapshots and can lag this table.
+
+### vuln-symfony
+
+The [detection guide](../evaluation/vuln-symfony-detection-guide.md) keys 30 required
+positives and the controls beside them. They cover the 21 entries of the sample's README,
+except entry 8, which is not in the source at the pin, plus source-reviewed rows the README
+does not list. Committed secrets are outside the scanner's scope.
+
+| Expected | Actual |
+|---|---|
+| 30 required positives | 30 Confirmed in the judged scan of 2026-11-23 (`b4-review-accept`, scanner `8d97b93`) |
+| Controls | No control is a finding |
+
+The Symfony application-security lane (PRs #42, #43, #45 and #46) delivered the analyzers
+behind these rows. The [results](../evaluation/symfony-results.md) hold each run and the
+closing table per README entry.

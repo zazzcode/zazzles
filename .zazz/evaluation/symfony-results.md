@@ -538,7 +538,7 @@ Answer probabilities of the four records in Review:
 | | `weakness` | `unknown` | unknown 0.88, weakens 0.06, benign 0.06 |
 | | `mitigation` | `none` | 0.99 |
 
-What the evidence lacks, as read from the requests. No answer was scripted and no second run
+What the evidence lacks, as read from the recorded facts of each record. No answer was scripted and no second run
 was made.
 
 - **Authorization.** A plain-PHP entry has no access record, so `entry_access` holds only the

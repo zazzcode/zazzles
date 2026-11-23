@@ -932,6 +932,101 @@
       "lines": [63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84]
     },
     {
+      "id": "SYM-CONF-01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "docker/apache.conf",
+      "line": 2,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-CONF-02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "anchors": {"Dockerfile": [50, 47], "bin/script": [3]},
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-CONF-03",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "config/packages/framework.yaml",
+      "line": 4,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-CONF-04",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "config/packages/framework.yaml",
+      "line": 13,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-SSRF-02",
+      "entry_names": ["ANY /", "ANY /post/{post}"],
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "expect": "positive",
+      "file": "src/Services/Analytics.php",
+      "line": 32,
+      "source": ["src/Services/Analytics.php", 25],
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "SYM-CONF-N01",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "no_record",
+      "file": "docker/apache.conf",
+      "lines": [3, 4, 5, 6, 7, 8]
+    },
+    {
+      "id": "SYM-CONF-N02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "no_record",
+      "file": "Dockerfile",
+      "lines": [43, 45]
+    },
+    {
+      "id": "SYM-CONF-N03",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "no_record",
+      "anchors": {"docker/php.ini": [15, 16], ".env": [18], "docker/.env.local": [2]}
+    },
+    {
+      "id": "SYM-CONF-N04",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "no_record",
+      "file": "config/packages/framework.yaml",
+      "line": 12
+    },
+    {
+      "id": "SYM-SSRF-N02",
+      "app": "vuln-symfony",
+      "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "expect": "no_record",
+      "file": "src/Controller/UserController.php",
+      "line": 195
+    },
+    {
       "id": "SYM-HASH-N01",
       "app": "vuln-symfony",
       "key": ".zazz/evaluation/vuln-symfony-detection-guide.md",

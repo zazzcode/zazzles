@@ -69,6 +69,7 @@ type CandidateUse struct {
 	Enumeration     *EnumerationFacts     `json:"enumeration,omitempty"`
 	Recovery        *RecoveryFacts        `json:"recovery,omitempty"`
 	PasswordHash    *PasswordHashFacts    `json:"password_hash,omitempty"`
+	Configuration   *ConfigurationFacts   `json:"configuration,omitempty"`
 	// StoredOrigin is write-set evidence for a record whose stored origin is
 	// unresolved (blocked by storage_origin_unresolved). It is evidence, not a
 	// verdict: the record stays Review.

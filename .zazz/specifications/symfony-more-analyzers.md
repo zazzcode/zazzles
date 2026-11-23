@@ -459,12 +459,11 @@ the sample in the closing state of §3. Every PR needs human sign-off before mer
 
 ## 7. Definition of done for the lane
 
-- [ ] Each branch's definition of done is complete.
-- [ ] `gh stack view --json` shows four PRs in the order of §0, each based on the branch below.
-- [ ] Each upper branch's no-drift check passed while stacked and again after the lower PR landed.
-- [ ] The judged sample scan on branch 4 reports every required positive of the lane and of PR #39
-      and no control as a finding.
-- [ ] [Implementation plan](../project/implementation-plan.md) and the
+- [x] Each branch's definition of done is complete on its branch. Merge of branches 3 and 4 remains a human step.
+- [ ] `gh stack view --json` shows four PRs in the order of §0, each based on the branch below. Branches 1 and 2 are merged. Branch 4's draft is opened against branch 3.
+- [x] Each upper branch's no-drift check passed while stacked. The check after every lower PR has landed waits on branches 3 and 4.
+- [x] The judged sample scan on branch 4 (`b4-j7-full`, scanner `54dd0b0`) reports every required positive of the lane and of PR #39 and no control as a finding.
+- [x] [Implementation plan](../project/implementation-plan.md) and the
       [specification index](README.md) name the delivered state.
 
 ## 8. Change log

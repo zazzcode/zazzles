@@ -20,7 +20,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 The [delivery-ordered index](spec-index.md) lists every specification in the order it was
 delivered or is planned. The entries below describe each one.
 
-- [Symfony application-security analyzers](symfony-more-analyzers.md) — specified, a stacked lane of four PRs in the `symfony-more-analyzers` worktree that closes Symfony website support with general PHP analyzers: [1 information exposure, mass assignment and the security-field census](symfony-more-analyzers-1.md), [2 entry access and authorization](symfony-more-analyzers-2.md), [3 account enumeration, recovery-secret delivery and weak password hashing](symfony-more-analyzers-3.md), [4 configuration, SSRF through a shell URL client and lane closure](symfony-more-analyzers-4.md). Each branch is implemented in its own session and validated by paid judged runs on `vuln-symfony`.
+- [Symfony application-security analyzers](symfony-more-analyzers.md) — implemented as a stacked lane of four PRs in the `symfony-more-analyzers` worktree. Branches 1, 2 and 3 are merged (PRs #42, #43 and #45). Branch 4 is in review (PR #46) and delivers configuration, SSRF through a shell URL client and lane closure: [1](symfony-more-analyzers-1.md), [2](symfony-more-analyzers-2.md), [3](symfony-more-analyzers-3.md), [4](symfony-more-analyzers-4.md). Paid judged runs on `vuln-symfony` are recorded in [symfony-results.md](../evaluation/symfony-results.md).
 
 - [Scan, Fix, and Probe repository layout](scan-fix-probe-repository-layout.md) — proposed module migration, CLI and report compatibility, and a full documentation audit.
 

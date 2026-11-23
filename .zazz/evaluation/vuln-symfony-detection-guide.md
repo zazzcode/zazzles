@@ -178,12 +178,26 @@ completeness blocker meets it.
 | `SYM-RESET-N01` | `recovery_delivery_candidate` | `ANY /reset/{email}/{token}` | `PasswordResetController.php:63`–`84` | `no_record` | No secret is generated or mailed. Its authorization control is `SYM-AUTHZ-N05` |
 | `SYM-HASH-N01` | `password_hash_candidate` | `POST /user/avatar/{user}`, `POST /user/avatar/url/{user}` | `UserController.php:98`, `:138` | `no_record` | `md5(uniqid())` names a file. The input is not a password and the output is not a credential |
 
-**Not covered by any analyzer.** Recorded in the guide so a clean report is not read as a pass.
-Mass assignment, `phpinfo()`, and missing authorization are covered by branches 1 and 2 of the
-lane, and user enumeration, the recovery-secret delivery and MD5 password hashing by branch 3
-(rows above). The wildcard write stays modeled as a storage writer (D-15) as well.
+### Branch 4 rows
 
-- Directory listing, secrets in `.env`, disabled CSRF protection, the `httponly`-less session cookie, and the cron
-  privilege escalation.
-- The request made by `curl` inside `SYM-CMD-01`. It is covered by the command claim. A URL passed
-  to a shell program is not an `ssrf` operand.
+Owned by [branch 4](../specifications/symfony-more-analyzers-4.md#11-sample-rows-owned-by-this-branch).
+The five positives have expected status `confirmed_vulnerability`. `configuration_candidate` has no
+request source, so a candidate at its anchor with no completeness blocker meets it. `SYM-CONF-02`
+lists the schedule, the script line and the ownership line in `anchors`. The sink is the schedule
+line; the other two lines are joined evidence, so `each_anchor` is not set.
+
+| ID | Kind | Entry | Anchor | Offline expectation | Source evidence |
+|---|---|---|---|---|---|
+| `SYM-CONF-01` | `configuration_candidate` | — | `docker/apache.conf:2` | Positive, check `directory_listing` | `Options +Indexes` on `/app/public`, mapped by the Dockerfile to `public/`. Uploads land in `public/uploads/avatars` |
+| `SYM-CONF-02` | `configuration_candidate` | — | `Dockerfile:50`, `bin/script:3`, `Dockerfile:47` | Positive, check `scheduled_privileged_writable` | A `root` cron line runs `bash bin/script`, which runs `php bin/console`. `bin/console` is owned by `www-data` |
+| `SYM-CONF-03` | `configuration_candidate` | — | `config/packages/framework.yaml:4` | Positive, check `csrf_disabled` | `csrf_protection: false`, with the session-authenticated state-changing entries |
+| `SYM-CONF-04` | `configuration_candidate` | — | `config/packages/framework.yaml:13` | Positive, check `session_cookie_script_readable` | `cookie_httponly: false` |
+| `SYM-SSRF-02` | `ssrf_candidate` | `ANY /`, `ANY /post/{post}` | Sink `src/Services/Analytics.php:32`, source `:25` | Positive, contract `api.php-shell-url-client-v1` | The `Referer` header is the URL argument of `curl`. The only check is `FILTER_VALIDATE_URL` (`:40`) |
+| `SYM-CONF-N01` | `configuration_candidate` | — | `docker/apache.conf:3`–`8` | `no_record` | `AllowOverride`, `Require`, `ServerTokens Prod` and `ServerSignature Off` are not checks. `+FollowSymLinks` is the same Options directive as `SYM-CONF-01`, not a second record |
+| `SYM-CONF-N02` | `configuration_candidate` | — | `Dockerfile:43`, `:45` | `no_record` | Ownership of `var/` and `public/uploads` changes, and no scheduled command executes a file there |
+| `SYM-CONF-N03` | `configuration_candidate` | — | `docker/php.ini:15`–`16`, `.env:18`, `docker/.env.local:2` | `no_record` | `display_errors = Off` and `APP_ENV=prod` |
+| `SYM-CONF-N04` | `configuration_candidate` | — | `config/packages/framework.yaml:12` | `no_record` | `cookie_secure: auto` |
+| `SYM-SSRF-N02` | `ssrf_candidate` | `GET /user/avatar/resize/{user}` | `src/Controller/UserController.php:195` | `no_record` | The program is `convert`, not a URL client. Its command claim is `SYM-CMD-02` |
+
+**Not covered by any analyzer.** Committed secrets in `.env` stay outside the lane. Voters, custom
+authenticators, and Form and serializer mass assignment stay outside the claims this lane makes.

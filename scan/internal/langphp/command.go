@@ -163,6 +163,8 @@ func (f *phpFlow) phpProcessUse(n *sitter.Node, op, contract, shellMode, argvSha
 	}
 	c.Blockers = append(c.Blockers, phpStoredOnlyBlockers(deps, u.Sink.Span)...)
 	u.Completeness = c
+	// The shell URL client adds a second record. It does not change this one.
+	f.shellURLClient(n, shellMode, argvShape, values, nodes)
 	return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
 }
 

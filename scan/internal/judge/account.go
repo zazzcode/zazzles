@@ -159,6 +159,9 @@ func recoveryPolicy(use analysis.CandidateUse, a *analysis.Assessment, gap func(
 	case quality == "weak" && f.SecretStrength == analysis.SecretCSPRNG:
 		gap("answers_inconsistent", "secret_quality weak contradicts secret_strength csprng.")
 		return
+	case quality == "adequate" && f.SecretBits.Known && f.SecretBits.Bits < 64:
+		gap("answers_inconsistent", "secret_quality adequate contradicts secret_bits below 64.")
+		return
 	case control == "account_bound" && f.RecipientOrigin == analysis.RecipientRequestValue:
 		gap("answers_inconsistent", "account_bound contradicts a recipient that is a request value.")
 		return
@@ -235,7 +238,7 @@ func wireRecovery(f *analysis.RecoveryFacts, ref func(analysis.Evidence) string)
 	for _, e := range f.ShapeUses {
 		uses = append(uses, ref(e))
 	}
-	out := map[string]any{"secret_source": ref(f.SecretSource), "secret_strength": f.SecretStrength, "recipient": ref(f.Recipient),
+	out := map[string]any{"secret_source": ref(f.SecretSource), "secret_strength": f.SecretStrength, "secret_bits": f.SecretBits, "recipient": ref(f.Recipient),
 		"recipient_origin": f.RecipientOrigin, "recipient_validated": f.RecipientValidated, "recipient_count": f.RecipientCount,
 		"shape_uses": uses, "content": ref(f.Content), "mail_contract": f.MailContract, "security_fields": wireFields(f.SecurityFields, ref)}
 	if f.StoredField != "" {

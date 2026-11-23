@@ -207,6 +207,14 @@ class AccountKindsTest(unittest.TestCase):
         report['findings'][1] = finding('b', 'confirmed_vulnerability')
         self.assertEqual(check.judged_outcome(row, report), 'confirmed')
 
+    def test_configuration_is_sourceless_at_a_non_php_anchor(self):
+        report = {'entries': [], 'uses': [use('c', 'configuration_candidate', 'Dockerfile', 50)]}
+        row = {'kind': 'configuration_candidate', 'expect': 'positive',
+               'anchors': {'Dockerfile': [50, 47], 'bin/script': [3]}}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_with_witness')
+        report['uses'][0]['completeness'] = {'blockers': [{'kind': 'deploy_mapping_unresolved'}]}
+        self.assertEqual(check.classify(row, report)['outcome'], 'candidate_evidence_gap')
+
     def test_password_hash_is_sourceless(self):
         report = {'entries': [], 'uses': [use('h', 'password_hash_candidate', 'Hasher.php', 15)]}
         row = {'kind': 'password_hash_candidate', 'expect': 'positive', 'anchors': {'Hasher.php': [15]}, 'each_anchor': True}

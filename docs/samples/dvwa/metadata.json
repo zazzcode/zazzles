@@ -1,25 +1,25 @@
 {
-  "date": "2026-11-20",
+  "date": "2026-11-23",
   "target_revision": "a1978a2fed195acd093010af6395f86a281537ca",
   "upstream": "https://github.com/digininja/DVWA",
   "detection_guide": "../../../.zazz/evaluation/dvwa-detection-guide.md",
-  "source_run": "run-2645224166",
-  "source_json_sha256": "8fb801750e121e8e5de97240290404d1a32bae29d530289c10448ade0c6fceb3",
-  "scanner_revision": "ea8640a421eea39ea31649ee35c23e80a3e25ee8",
+  "source_run": "run-3336289847",
+  "source_json_sha256": "062f623850553220fa9fce6be8fa847a1d597ef912b8649bcc366bd857d91a6d",
+  "scanner_revision": "8d97b93 (symfony-more-analyzers-4, PR #46)",
   "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
-  "provider_requests": 187,
-  "assessment_requests": 187,
+  "provider_requests": 189,
+  "assessment_requests": 189,
   "follow_ups_sent": 0,
-  "completed_assessments": 190,
+  "completed_assessments": 192,
   "derived_assessments": 3,
-  "input_tokens": 1645909,
+  "input_tokens": 1659153,
   "entries": 174,
-  "published_records": 247,
+  "published_records": 249,
   "records_not_sent_blocker_unresolvable": 57,
   "outcomes": {
-    "confirmed_vulnerability": 144,
+    "confirmed_vulnerability": 146,
     "poor_practice": 39,
     "needs_review": 34,
     "needs_evidence": 12,
@@ -31,32 +31,32 @@
     "expected": 11,
     "found": 11,
     "review": 0,
-    "control_false_positives": 0
+    "control_false_positives": 0,
+    "basis": "all 247 records of the previous report keep their status; the key was not re-scored"
   },
   "runtime_confirmation": "none; static source judgments only",
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-  "results": "../../../.zazz/evaluation/command-bypass-support-results.md",
+  "results": "../../../.zazz/evaluation/symfony-results.md",
   "previous": {
     "date": "2026-11-20",
-    "source_run": "run-729503128",
+    "source_run": "run-2645224166",
     "provider_requests": 187,
-    "input_tokens": 1644037,
+    "input_tokens": 1645909,
     "published_records": 247,
     "outcomes": {
-      "confirmed_vulnerability": 145,
+      "confirmed_vulnerability": 144,
       "poor_practice": 39,
       "needs_review": 34,
-      "needs_evidence": 15,
-      "protected_for_claim": 14
+      "needs_evidence": 12,
+      "protected_for_claim": 18
     },
-    "scanner_revision": "judge-request-size-reduction ebf366a",
+    "scanner_revision": "ea8640a421eea39ea31649ee35c23e80a3e25ee8",
     "answer_key": {
       "expected": 11,
       "found": 11,
       "review": 0,
-      "control_false_positives": 1
+      "control_false_positives": 0
     }
   },
-  "not_sent_over_wire_limit": 0,
-  "exact_replays": 190
+  "not_sent_over_wire_limit": 0
 }

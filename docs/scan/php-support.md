@@ -40,7 +40,8 @@ and troubleshooting, use [offline evidence inspection](running-scans.md#offline-
 | Authorization | A plain PHP file whose only guard is an address check on a modeled SQL write or a file write or delete ([analysis rules](analysis/authorization.md)). Symfony route entries carry the fuller claim |
 | Account | Enumeration from a literal SQL `SELECT` on a credential table with `echo`, `header`, `http_response_code` and `die` answers, recovery secrets sent with `mail()`, and digests of request values stored in a compared column (family `account`, [analysis rules](analysis/account-security.md)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
-| SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects ([SSRF rules](analysis/ssrf.md)) |
+| SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects, and a request value in a URL position of literal `curl` or `wget` ([SSRF rules](analysis/ssrf.md)) |
+| Configuration | Allow-listed Apache, nginx, Dockerfile, cron, php.ini and the two environment keys, plus Symfony framework files ([analysis rules](analysis/configuration.md)) |
 | Logging | Verified PSR-3 and PHP log emission in Symfony projects ([logging rules](analysis/sensitive-data-logging.md)) |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 

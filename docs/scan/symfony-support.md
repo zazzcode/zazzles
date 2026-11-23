@@ -76,7 +76,9 @@ Library references for [Doctrine DBAL](https://www.doctrine-project.org/projects
 - Twig macro bodies, `embed` overrides, dynamic template names, sandbox policy, and mail HTML are
   outside the supported render subset. A macro definition and a macro call are recorded as gaps. Doctrine XML and YAML mappings, custom naming strategies,
   full DQL parsing and lifecycle listeners are outside the storage model.
-- Other frameworks use their own adapters. CSRF, user enumeration, secrets, session cookie
-  policy, cryptography, and server configuration are outside these claims.
+- Other frameworks use their own adapters. The Symfony website claims are information exposure,
+  mass assignment, authorization, account security, insecure configuration, and SSRF including a
+  `curl` or `wget` shell URL. Committed secrets, voters, custom authenticators, and Form or
+  serializer mass assignment stay outside.
   [Symfony coverage](detection-capabilities/symfony.md#outside-these-claims) Security configuration supplies
   entry access for the authorization claim. Protection evidence belongs to the actual sink and value path.

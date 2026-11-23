@@ -36,7 +36,7 @@ func Enrich(r *analysis.AnalysisReport) {
 			present[id] = true
 		}
 	}
-	for _, t := range append(append([]analysis.FindingType{}, applicationFindingTypes...), accountFindingTypes...) {
+	for _, t := range append(append(append([]analysis.FindingType{}, applicationFindingTypes...), accountFindingTypes...), configurationFindingTypes...) {
 		if present[t.ID] {
 			r.FindingTypes = append(r.FindingTypes, t)
 		}
@@ -312,6 +312,9 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 	}
 	if u.Enumeration != nil || u.Recovery != nil || u.PasswordHash != nil {
 		describeAccount(u, &f)
+	}
+	if u.Configuration != nil {
+		describeConfiguration(u, &f)
 	}
 	f.Recommendations = scopedGuidance(u, f)
 	if u.Code != nil || u.Redirect != nil {

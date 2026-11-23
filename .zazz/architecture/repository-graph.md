@@ -79,7 +79,8 @@ The implemented Node slice uses this pattern for bounded Express/Fastify/Hapi HT
 existing GraphQL/gRPC records. Python adapters remain unchanged pending the root proposal. Each
 acquisition adapter lives in its language package (`scan/internal/langjs`, `scan/internal/langpy`,
 `scan/internal/langphp`) and reaches shared registration and finalization only through `parse`'s language
-core API (`core_api.go`); route inventory is assembled by `pipeline.Routes`. Optional
+core API (`core_api.go`); route inventory is assembled by `pipeline.Routes`. The walk also
+returns a `Deploy` list of allow-listed deployment files for configuration analysis. Optional
 model-assisted discovery produces source-referenced proposals outside the trusted graph. Verified
 source existence is not verified dispatch; unknown wrappers remain provisional, not new edges.
 

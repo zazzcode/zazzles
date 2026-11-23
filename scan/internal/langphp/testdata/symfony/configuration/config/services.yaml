@@ -1,0 +1,2 @@
+parameters:
+  media_directory: '%kernel.project_dir%/public/media'

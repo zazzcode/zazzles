@@ -4,7 +4,7 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // AccountProtocol versions the account claim questions. The
 // protocol carries one question set per kind.
-const AccountProtocol = "account-components-v1"
+const AccountProtocol = "account-components-v2"
 
 // Account operation contracts: the mail sinks and the password digests.
 // Enumeration has no operation contract: its record is a finder, a branch
@@ -86,7 +86,7 @@ func AccountQuestions() []Question {
 		{"existence_disclosure", "Does that difference tell a caller with no login whether an account exists for the value sent (discloses, does_not_disclose, unknown)? Judge from enumeration.lookup, the two response lists and the entry's access."},
 		{"recipient_control", "Does the request choose who receives the secret, as recovery.recipient_origin states (request_controlled, account_bound, unknown)?"},
 		{"validation_coverage", "Did a check tie every recipient to the account the secret is for, given recovery.recipient_validated and recovery.shape_uses (none, partial, complete, unknown)?"},
-		{"secret_quality", "Is the secret unpredictable, given recovery.secret_strength (adequate, weak, unknown)?"},
+		{"secret_quality", "Is the secret unpredictable, given recovery.secret_strength and recovery.secret_bits (adequate, weak, unknown)?"},
 		{"password_input", "Is the digest's input a user password, given password_hash.basis and its evidence (password, not_password, unknown)?"},
 		{"hash_strength", "Is the stored form a single fast digest, given password_hash.algorithm, salted and iterated (fast_digest, adaptive, unknown)?"},
 	}

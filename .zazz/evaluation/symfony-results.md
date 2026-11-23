@@ -332,3 +332,161 @@ their `authorization-components-v5` selection (spec §11.1).
   project's first entry when no login route resolves, and a request value passed to an
   `array`-typed parameter is an array use. Offline, the sample's records are unchanged except
   the three enumeration records' `lookup.method`, now in declared case.
+- Hasher-class and configuration records need a firewall `form_login` or `json_login` route.
+  A project with neither records no such claim.
+- Array-typed parameters that are neither iterated nor spread are not array uses.
+
+## Branch 4 — configuration, shell URL client, lane closure
+
+Scanner commit `54dd0b0` on `symfony-more-analyzers-4`. Sample pin
+`086f81f941501bd1170b249e01107ba99beb2962`, clean before and after. Provider OpenAI
+`gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`. Seven judged
+runs. The lane acceptance run is the last one.
+
+| Run | ID | Scope | Requests | Input tokens | Result |
+|---|---|---|---:|---:|---|
+| 1 | `b4-j1-configuration` (`run-3058996910`) | `--only-family configuration` | 4 | — | All four stayed `needs_evidence` (`setting_effect: unknown`) |
+| 2 | `b4-j2-configuration` (`run-2884673080`) | `--only-family configuration` | 4 | — | CSRF and cookie Confirmed. Listing and schedule still open |
+| 3 | `b4-j3-configuration` (`run-2226124914`) | `--only-family configuration` | 4 | — | Listing judged benign. Schedule weakness unknown |
+| 4 | `b4-j4-configuration` (`run-1686484977`) | `--only-family configuration` | 4 | — | All four configuration positives Confirmed. Protocol `configuration-components-v4` |
+| 5 | `b4-j5-ssrf` (`run-3168265217`) | `--only-family ssrf` | 3 | — | `SYM-SSRF-01` Confirmed. Shell-client path was `guarded`, so `SYM-SSRF-02` stayed in Review |
+| 6 | `b4-j6-ssrf` (`run-594135459`) | `--only-family ssrf` | 3 | — | `SYM-SSRF-01` and both `SYM-SSRF-02` anchors Confirmed. `UserController.php:195` has no `ssrf_candidate` |
+| 7 | `b4-j7-full` (`run-348970572`) | Full scan, no family, entry or route scope | 84 | 334,571 | `30 of 30 positives confirmed, 0 control findings` |
+
+### Follow-on — recovery secret bits
+
+After the rebase onto `97a16e3`, one judged scan of the whole sample: `b4-entropy-judge`
+(`run-3873252071`). OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`,
+`JUDGE_TPM=1800000`. 84 requests, 334,593 input tokens. Protocol
+`account-components-v2`. `SYM-RESET-01` is `confirmed_vulnerability` with
+`secret_bits` 128 (`PasswordResetController.php:40`, `bin2hex(random_bytes(16))`,
+`secret_quality` adequate). `check.py --judged`: `30 of 30 positives confirmed, 0 control
+findings`. Every keyed outcome matches `b4-j7-full`. Other families keep their protocols.
+Enumeration and password-hash request digests in the architecture fixtures do not move;
+their stored component digests do, because the report carries the account protocol id.
+
+The URL-format filter stays on the shell-client candidate as evidence. The path stays raw,
+because a format check is not a destination restriction. Existing URL-open requests are
+unchanged. `services-ops` gains two `ssrf_candidate` records for `shell_exec('curl ' . $origin)`.
+Their command candidates' request digests are unchanged.
+
+### PR #46 review resolution
+
+Scanner `8d97b93` on `symfony-more-analyzers-4`, sample pin
+`086f81f941501bd1170b249e01107ba99beb2962`, clean before and after. OpenAI `gpt-6-luna`,
+default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, on the owner's word of
+2026-11-23.
+
+The review found that the `configuration-components-v4` instruction told the model which
+answer each recorded shape gets. Protocol `v5` states what each joined fact kind means and
+what the check's directive does, and prescribes no answer.
+
+| Run | ID | Scope | Requests | Input tokens | Result |
+|---|---|---|---:|---:|---|
+| 9 | `b4-review-full` (`run-943780282`), scanner `ffc8c2b` | Full scan | 84 | 335,174 | `27 of 30 positives confirmed, 0 control findings`. `SYM-CONF-01`, `-03` and `-04` in Review with `setting_effect: unknown` |
+| 10 | `b4-review-conf1` | `--only-family configuration` | 4 | — | After the enablement and environment facts: `SYM-CONF-01`, `-03`, `-04` Confirmed. `SYM-CONF-02` in Review with `weakness: unknown` |
+| 11, 12 | `b4-review-conf2`, `b4-review-conf3` | `--only-family configuration` | 4 each | — | After the schedule check's documented effect: all four Confirmed, with the same answer probabilities in both runs |
+| 13 | `b4-review-accept` (`run-1810616125`), scanner `8d97b93` | Full scan, no family, entry or route scope | 84 | 335,720 | `30 of 30 positives confirmed, 0 control findings` |
+
+Run 9 is the evidence for the change between runs 9 and 10. Nothing recorded that
+`a2enconf z-app` enables the Apache file the Dockerfile copies to `conf-available`, or that a
+top-level `framework.yaml` setting is loaded in every environment, so "in effect" was not
+established. The scanner now records both facts. No answer is written into the request.
+
+Run 13 against `b4-j7-full`: 84 records in both, and no record has a different presented
+status. 55 Confirmed, 22 Protected, 7 Review. The weakest confirmed answer is `SYM-CONF-02`
+`weakness: weakens` at probability 0.56.
+
+Offline, `b4-review-accept` against `b4-entropy-offline` (`run-2084328028`): 84 records in
+both. The four configuration records and the two shell-client SSRF records have new
+content and ids. Three authorization records change only in the ids of the SSRF records
+they link to and the byte span of the `address_trust` evidence. The other 75 are identical.
+Two scans of the sample are byte-identical.
+
+Before and after on the review's cases, with binaries built from `763b9c3` and from the fix:
+
+| Case | Before | After |
+|---|---|---|
+| `shell_exec('convert -s ' . file_get_contents($_GET['u']))` | 2 `path_traversal_candidate` (one a duplicate) | 1 |
+| `.env` with `APP_ENV=dev\` then `APP_SECRET=s3cr3t-marker` | Setting text `APP_ENV=dev APP_SECRET=s3cr3t-marker`; the marker is in the JSON report 9 times | No `APP_ENV` record from the malformed line, and the marker is absent |
+| `RUN set -eux; chown -R web:web /srv/site/tools; true` with a root cron line | No `scheduled_privileged_writable` record | Recorded |
+
+### DVWA offline review
+
+Offline scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and after,
+`b4-offline` (`run-3455210590`). `TestDVWASourceKey` still passes.
+
+| Kind | Candidates |
+|---|---:|
+| `configuration_candidate` | 0 |
+| `ssrf_candidate` with `transport: shell_client` | 0 |
+
+Source review of the files the allow-lists opened: `Dockerfile` copies the tree with
+`--chown=www-data` and enables `rewrite`, and it has no cron line, so the scheduled-writable
+check correctly records nothing. `vulnerabilities/api/.htaccess` is rewrite rules only.
+Root `php.ini` is outside the deploy directories, so it is not read. The command sinks are
+`ping`, not `curl` or `wget`. No candidate was wrong, and none was missing for a check the
+lists cover.
+
+### DVWA judged run
+
+One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
+after, on the owner's word of 2026-11-23: `b4-review-accept` (`run-3336289847`), scanner
+`8d97b93`, OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`.
+189 requests, 192 assessments, 1,659,153 input tokens, zero failures. 57 records were not
+sent because their blockers have no model-resolvable question.
+
+249 records: 146 Confirmed, 39 practice, 34 needs-review, 12 needs-evidence, 18 Protected.
+Against the published report of 2026-11-20 (`run-2645224166`, 247 records), every one of
+the 247 keeps its status. The two new records are `info_exposure_candidate` and both are
+Confirmed after source review: `phpinfo.php:8` (`phpinfo()` behind login) and
+`dvwa/includes/dvwaPage.inc.php:388` under `setup.php` (the PHP version and server state).
+
+No `configuration_candidate`, `authorization_candidate`, `password_hash_candidate`,
+`account_enumeration_candidate`, `recovery_delivery_candidate`, `mass_assignment_candidate`
+or shell-client `ssrf_candidate` is recorded. Source review of what DVWA holds in those
+classes:
+
+| DVWA defect | Location | Recorded | Why |
+|---|---|---|---|
+| Passwords stored as MD5 | `login.php:27`, `vulnerabilities/csrf/source/low.php:12`, `vulnerabilities/brute/source/low.php:9` | No | The plain-PHP rule needs a digest written to a column and that column compared at login. Both exist in DVWA, and the rule still records nothing. Cause not yet established |
+| Authorisation bypass | `vulnerabilities/authbypass/change_user_details.php:47`, `get_user_data.php` | No | A raw `UPDATE users … where user_id = <request id>` with no ownership or role check below the `impossible` level. The plain-PHP authorization adapter records no subject for it |
+| PHP settings | Root `php.ini` (`allow_url_include = on`) | No | The file is outside the listed deployment directories, and `allow_url_include` is not a check |
+| CSRF, weak session ids, brute force, CAPTCHA, CSP, cryptography | `vulnerabilities/csrf`, `weak_id`, `brute`, `captcha`, `csp`, `cryptography` | No | No analyzer for these classes in plain PHP |
+
+The first two rows are recall gaps of analyzers this lane delivered. They are follow-up
+work and are not fixed in PR #46. The sample report in `docs/samples/dvwa/` is this run.
+
+### Closing table — sample README, 21 entries
+
+Judged on `b4-j7-full` at scanner `54dd0b0`, and again on `b4-review-accept` at scanner
+`8d97b93` with the same status in every row. Entry 8 is not in the source at the pin. Committed
+secrets stay outside the lane.
+
+| # | README entry | Row | Judged status |
+|---:|---|---|---|
+| 1 | SSRF and remote code execution in the referer header | `SYM-SSRF-02` and `SYM-CMD-01` | Confirmed |
+| 2 | Stored XSS on the comment parameter | `SYM-XSS-02` | Confirmed |
+| 3 | Reflected XSS and SQL injection on search | `SYM-XSS-01`, `SYM-SQL-01` | Confirmed |
+| 4 | Local file inclusion on `legal/content` | `SYM-PATH-01` | Confirmed |
+| 5 | SQL injection on login email | `SYM-SQL-02` | Confirmed |
+| 6 | User enumeration on `/register` | `SYM-ENUM-01` | Confirmed |
+| 7 | Missing right control on `/user/role/{user}` | `SYM-AUTHZ-01` | Confirmed |
+| 8 | Missing right control on `/user/delete/{user}` | Not in source. The delete action is `SYM-AUTHZ-N03` under `^/admin` | Not a finding (Protected) |
+| 9 | Missing right control on `/user/password/{user}` | `SYM-AUTHZ-02` | Confirmed |
+| 10 | Missing right control on `/user/email/{user}` | `SYM-AUTHZ-03` | Confirmed |
+| 11 | File upload without an extension check | `SYM-UPLOAD-01` | Confirmed |
+| 12 | SSRF on the avatar URL parameter | `SYM-SSRF-01` | Confirmed |
+| 13 | Missing right control on `/user/avatar/delete/{user}` | `SYM-AUTHZ-04` | Confirmed |
+| 14 | Command injection on the uploaded extension | `SYM-CMD-02` | Confirmed |
+| 15 | Server-side template injection on `/user/about` | `SYM-SSTI-01` | Confirmed |
+| 16 | Sensitive endpoint intended for SSRF on `/local` | `SYM-LOCAL-01`, `SYM-LOCAL-02` | Confirmed |
+| 17 | Technical information disclosure on `/info.php` | `SYM-INFO-01` | Confirmed |
+| 18 | Directory listing | `SYM-CONF-01` | Confirmed |
+| 19 | Mass assignment on `/user/edit/` | `SYM-MASS-01` | Confirmed |
+| 20 | Recovery token delivered to request-chosen recipients | `SYM-RESET-01` | Confirmed |
+| 21 | Privilege escalation through a cron job | `SYM-CONF-02` | Confirmed |
+
+Unlisted source-reviewed rows `SYM-CONF-03` (disabled CSRF) and `SYM-CONF-04` (script-readable
+session cookie) are also Confirmed. `SYM-DESER-01`, `SYM-PATH-02`, `SYM-PATH-03` and `SYM-XSS-03`
+remain Confirmed with the PR #39 positives. No control is a finding.

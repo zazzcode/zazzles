@@ -35,7 +35,10 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		all = phpCombine(all, values[i])
 	}
 	f.massAssignmentCall(n, nodes, values)
-	return f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.accountCall(n, nodes, values, f.callValues(n, nodes, values, all))))
+	v := f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.accountCall(n, nodes, values, f.callValues(n, nodes, values, all))))
+	// A call result is not the string its argument was built as.
+	v.pieces = nil
+	return v
 }
 
 // callValues shares the native API models with compiled witness recipes; only

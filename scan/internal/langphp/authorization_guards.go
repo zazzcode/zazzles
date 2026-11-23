@@ -234,10 +234,7 @@ func (f *phpFlow) addressGuard(n *sitter.Node) (analysis.AuthorizationGuard, boo
 		g.LiteralClass = append(g.LiteralClass, addressLiteralClass(lit))
 	}
 	if src == analysis.AddressFrameworkIP {
-		g.AddressTrust = &analysis.AddressTrust{Status: "unread"}
-		g.Gaps = []analysis.Gap{{
-			Kind: "address_trust_configuration_unread", Detail: "framework client IP trust is not read", At: g.Evidence.Span,
-		}}
+		f.attachAddressTrust(&g)
 	}
 	return g, true
 }

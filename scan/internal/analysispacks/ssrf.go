@@ -18,9 +18,10 @@ const (
 	NodeHTTPURLContract       = "node-http-url-v1"
 	PHPURLOpenContract        = "php-url-open-v1"
 	SymfonyHTTPClientContract = "symfony-http-client-v1"
+	PHPShellURLClient         = "php-shell-url-client-v1"
 )
 
-var ssrfContractIDs = []string{FetchURLContract, AxiosURLContract, PythonHTTPURLContract, NodeHTTPURLContract, PHPURLOpenContract, SymfonyHTTPClientContract}
+var ssrfContractIDs = []string{FetchURLContract, AxiosURLContract, PythonHTTPURLContract, NodeHTTPURLContract, PHPURLOpenContract, SymfonyHTTPClientContract, PHPShellURLClient}
 
 // SSRFContract returns a copy of the supported operation contract by verified ID.
 func SSRFContract(id string) *analysis.APIModel {
@@ -41,6 +42,9 @@ func SSRFContract(id string) *analysis.APIModel {
 	case SymfonyHTTPClientContract:
 		return &analysis.APIModel{ID: id, Library: "symfony/http-client", Reference: "https://symfony.com/doc/6.4/http_client.html#making-requests",
 			Semantics: "HttpClientInterface::request uses argument 0 for the HTTP method and argument 1 for the URL. The client can supply a base URI for a relative destination and follows redirects according to its max_redirects setting. Request options carry body and headers separately from the destination URL." + common}
+	case PHPShellURLClient:
+		return &analysis.APIModel{ID: id, Library: "curl", Reference: "https://curl.se/docs/manpage.html",
+			Semantics: "A shell command whose program token is curl or wget requests the URL in a URL position: an argument that is not the value of a value-taking option, the value of -x or --proxy, or the value that follows --url. Quoting the argument with escapeshellarg removes shell syntax and leaves the request to the chosen host. Option values (-o, -H, -d and the rest of the option list) are not destinations. A non-literal program token is not this contract." + common}
 	case NodeHTTPURLContract:
 		return &analysis.APIModel{ID: id, Library: "http", Reference: "https://nodejs.org/api/http.html#httpgeturl-options-callback",
 			Semantics: "Node.js http.get/request and https.get/request (including node:http / node:https) request the destination given by a URL string, a WHATWG URL object, or options.href/url/host/hostname/path/port/protocol. Forms: get/request(url[, options][, callback]) and get/request(options[, callback]). Method, headers and body/Agent options do not change the destination host by themselves. An options object spread or dynamic Agent is unresolved. Absolute URL strings choose scheme and host; relative URLs are not valid for these APIs without a host in options. Redirects are not followed by default." + common}
@@ -93,6 +97,7 @@ var ssrfOwners = map[string]string{
 	NodeHTTPURLContract:       "internal/parse/outbound_ssrf.go",
 	PHPURLOpenContract:        "internal/langphp/php_url_open.go",
 	SymfonyHTTPClientContract: "internal/langphp/php_url_open.go",
+	PHPShellURLClient:         "internal/langphp/php_shell_url_client.go",
 }
 
 // ssrfDescriptors creates every SSRF component. They are separate from the
@@ -145,5 +150,12 @@ func ssrfDescriptors() ([]Component, error) {
 	input.Applicability = []string{"ssrf_candidate"}
 	input.Compatibility = protocols
 	input.Tests = []string{"TestSSRFComponentSelection"}
-	return append(out, input), nil
+	// Plain PHP selects its own copy of the PHP input interpretation, so the
+	// shared one keeps its applicability and no earlier request changes.
+	php := phpInputComponent()
+	php.ID = "source.php-input-ssrf-v1"
+	php.Applicability = []string{"ssrf_candidate"}
+	php.Compatibility = protocols
+	php.Tests = []string{"TestPHPShellURLClient", "TestArchitectureBaseline"}
+	return append(out, input, php), nil
 }

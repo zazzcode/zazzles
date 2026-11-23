@@ -2,7 +2,7 @@
 
 Zazzles emits three kinds in the `account` family: `account_enumeration_candidate`,
 `recovery_delivery_candidate` and `password_hash_candidate`. A judged scan uses protocol
-`account-components-v1`, which asks each kind its own questions. Contracts:
+`account-components-v2`, which asks each kind its own questions. Contracts:
 `api.symfony-mailer-v1`, `api.php-mail-v1`, `api.php-password-digest-v1`. Enumeration has
 no operation contract.
 
@@ -37,9 +37,10 @@ block it.
 
 Recovery is confirmed for `request_controlled` with coverage `none` or `partial`, or for
 `weak`; protected for `complete` with `adequate`. `complete` contradicts
-`recipient_validated` `partial` or `none`, `adequate` contradicts `secret_strength` `weak`,
-`weak` contradicts `secret_strength` `csprng`, and `account_bound` contradicts a
-request-value recipient.
+`recipient_validated` `partial` or `none`, `adequate` contradicts `secret_strength` `weak`
+and a known `secret_bits` below 64, `weak` contradicts `secret_strength` `csprng`, and
+`account_bound` contradicts a request-value recipient. 64 is the OWASP session-identifier
+entropy minimum. Unknown bits add no contradiction.
 
 Hashing is confirmed for `password` and `fast_digest`, protected for `not_password`.
 `adaptive` contradicts one call of a fast digest. `password_digest_unmodeled` blocks it.
@@ -51,6 +52,7 @@ Hashing is confirmed for `password` and `fast_digest`, protected for `not_passwo
 | `enumeration.lookup` | class, method, criteria fields, lookup and branch evidence |
 | `enumeration.found`, `enumeration.not_found` | response lists: `flash`, `body`, `status`, `redirect`, `template`, `exception`, `response_unresolved` |
 | `recovery.secret_strength` | `csprng`, `weak` |
+| `recovery.secret_bits` | an integer or one decimal place, or `unknown` |
 | `recovery.recipient_origin` | `request_value`, `stored_field` |
 | `recovery.recipient_validated` | `full`, `partial`, `none` |
 | `recovery.recipient_count` | `one`, `request_controlled` |

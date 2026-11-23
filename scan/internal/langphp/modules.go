@@ -84,6 +84,16 @@ type phpSet struct {
 	authzChanges []authzChange
 	// account is the account adapter's state.
 	account *phpAccountState
+	// configFiles and deployFiles are the allow-listed framework and
+	// deployment files. unreadFiles are allow-listed paths the walk did not
+	// open, and truncatedLists names a list that passed its file limit.
+	configFiles, deployFiles, unreadFiles, truncatedLists []string
+	// textFiles, deployViews, sourceSettings and trustCache hold what the
+	// configuration checks read, so each file is read and parsed once.
+	textFiles      map[string]textFile
+	deployViews    map[string]*deployView
+	sourceSettings map[string]*phpSourceSettings
+	trustCache     map[string]*addressTrustFacts
 }
 
 type phpWrite struct {
@@ -114,6 +124,10 @@ func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 		return nil, err
 	}
 	s := &phpSet{root: root, parser: p, modules: map[string]*phpModule{}, writes: map[string][]phpWrite{}, sessionWrites: map[string][]phpWrite{}, storedOnly: map[string][]string{}}
+	s.configFiles = append([]string{}, inv.Config...)
+	s.deployFiles = append([]string{}, inv.Deploy...)
+	s.unreadFiles = append([]string{}, inv.Unread...)
+	s.truncatedLists = append([]string{}, inv.Truncated...)
 	s.loadSymfonyProjects(inv.Config)
 	s.twig = newTwigInventory(inv.Templates, root)
 	s.doctrine = newDoctrineStorage()
@@ -420,6 +434,7 @@ func (s *phpSet) report(entry string, checks []analysis.Check) (*analysis.Analys
 	s.assemblePHPInputs(out)
 	s.finishAuthorization(out)
 	s.finishAccount(out)
+	s.finishConfiguration(out)
 	if err := parse.FinalizeEntries(out); err != nil {
 		return nil, err
 	}

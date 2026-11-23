@@ -1,0 +1,5 @@
+framework:
+  csrf_protection: false
+  session:
+    cookie_httponly: false
+    cookie_secure: false

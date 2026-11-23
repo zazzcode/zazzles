@@ -2,8 +2,10 @@ package langphp
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -16,9 +18,13 @@ import (
 // recipient to the account.
 
 // phpSecret is the generated secret a value derives from.
+// bits is negative when the entropy cannot be computed from literal arguments.
+// encoding is hex or base64 when a later substr can scale the bit count.
 type phpSecret struct {
 	source   analysis.Evidence
 	strength string // csprng | weak
+	bits     float64
+	encoding string
 }
 
 // phpAccountLookup is a lookup whose criteria hold request values.
@@ -62,8 +68,8 @@ func depKey(d phpDep) string {
 }
 
 // Secret sources: a CSPRNG, or a predictable value. A value computed from a
-// secret (an encoding, a digest, a string function) keeps its source and
-// strength through the generic value join, so no call needs a case here.
+// secret keeps its source and strength. Bits change only for the modeled
+// transforms, and only on a copy of the secret.
 var (
 	csprngFunctions = map[string]bool{"random_bytes": true, "random_int": true, "openssl_random_pseudo_bytes": true}
 	weakFunctions   = map[string]bool{"uniqid": true, "mt_rand": true, "rand": true, "lcg_value": true, "microtime": true, "time": true}
@@ -83,27 +89,199 @@ func (f *phpFlow) accountCall(n *sitter.Node, nodes []*sitter.Node, values []php
 		if !f.builtin(name) {
 			return v
 		}
+		fresh := false
 		switch {
 		case csprngFunctions[name]:
-			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG}
+			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG, bits: f.csprngBits(name, nodes)}
+			fresh = true
 		case weakFunctions[name]:
-			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretWeak}
+			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretWeak, bits: -1}
+			fresh = true
 		case name == "mail":
 			f.phpMailCall(n, nodes, values)
 		}
 		f.plainAccountCall(n, values)
 		f.plainDigest(n)
 		v = f.digestCall(n, name, nodes, v)
+		if !fresh {
+			v = f.adjustSecret(name, nodes, v)
+		}
 	case "member_call_expression":
 		f.plainAccountCall(n, values)
 	case "scoped_call_expression":
 		class := strings.TrimPrefix(f.set.classIndex().qualify(f.module, phpText(f.module, phpField(n, "scope")), n.StartByte()), `\`)
 		method := strings.ToLower(phpText(f.module, phpField(n, "name")))
-		if strings.EqualFold(class, `Symfony\Component\Uid\Uuid`) && method == "v4" || strings.EqualFold(class, `Symfony\Component\String\ByteString`) && method == "fromrandom" {
-			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG}
+		switch {
+		case strings.EqualFold(class, `Symfony\Component\Uid\Uuid`) && method == "v4":
+			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG, bits: 122}
+		case strings.EqualFold(class, `Symfony\Component\String\ByteString`) && method == "fromrandom":
+			v.secret = &phpSecret{source: f.module.evidence("secret_source", n), strength: analysis.SecretCSPRNG, bits: f.fromRandomBits(nodes)}
 		}
 	}
 	return v
+}
+
+// adjustSecret copies a joined secret and applies one modeled transform.
+// An unrecognized call leaves the bits unknown. The shared secret is not written.
+func (f *phpFlow) adjustSecret(name string, nodes []*sitter.Node, v phpValue) phpValue {
+	if v.secret == nil {
+		return v
+	}
+	sec := *v.secret
+	switch name {
+	case "bin2hex":
+		sec.encoding = "hex"
+	case "base64_encode":
+		sec.encoding = "base64"
+	case "md5":
+		sec.bits = capBits(sec.bits, 128)
+		sec.encoding = f.digestEncoding(nodes, 1)
+	case "sha1":
+		sec.bits = capBits(sec.bits, 160)
+		sec.encoding = f.digestEncoding(nodes, 1)
+	case "hash", "hash_hmac":
+		algo, ok := "", false
+		if len(nodes) > 0 {
+			algo, ok = phpStringLiteral(f.module, nodes[0])
+		}
+		if !ok {
+			sec.bits = -1
+		} else if out, known := hashOutputBits(algo); known {
+			sec.bits = capBits(sec.bits, out)
+		}
+		binary := 2
+		if name == "hash_hmac" {
+			binary = 3
+		}
+		sec.encoding = f.digestEncoding(nodes, binary)
+	case "substr":
+		length, ok := literalInt(f.module, nthNode(nodes, 2))
+		scale := 4.0
+		if sec.encoding == "base64" {
+			scale = 6
+		}
+		if ok && length >= 0 && (sec.encoding == "hex" || sec.encoding == "base64") {
+			sec.bits = capBits(sec.bits, float64(length)*scale)
+		} else {
+			sec.bits = -1
+		}
+		sec.encoding = ""
+	default:
+		sec.bits = -1
+		sec.encoding = ""
+	}
+	v.secret = &sec
+	return v
+}
+
+// digestEncoding is "hex" for a digest function's default output. The
+// argument at binary asks for raw bytes, and then a later substr no longer
+// counts four bits a character.
+func (f *phpFlow) digestEncoding(nodes []*sitter.Node, binary int) string {
+	if n := nthNode(nodes, binary); n != nil && !strings.EqualFold(phpText(f.module, n), "false") {
+		return ""
+	}
+	return "hex"
+}
+
+func (f *phpFlow) csprngBits(name string, nodes []*sitter.Node) float64 {
+	switch name {
+	case "random_bytes", "openssl_random_pseudo_bytes":
+		n, ok := literalInt(f.module, nthNode(nodes, 0))
+		if !ok || n < 0 {
+			return -1
+		}
+		return float64(8 * n)
+	case "random_int":
+		a, aok := literalInt(f.module, nthNode(nodes, 0))
+		b, bok := literalInt(f.module, nthNode(nodes, 1))
+		if !aok || !bok || b < a {
+			return -1
+		}
+		span := b - a + 1
+		if span <= 1 {
+			return 0
+		}
+		return floorTenths(math.Log2(float64(span)))
+	}
+	return -1
+}
+
+func (f *phpFlow) fromRandomBits(nodes []*sitter.Node) float64 {
+	n, ok := literalInt(f.module, nthNode(nodes, 0))
+	if !ok || n < 0 {
+		return -1
+	}
+	alphabet := 62
+	if len(nodes) > 1 {
+		text, ok := phpStringLiteral(f.module, nodes[1])
+		if !ok {
+			return -1
+		}
+		alphabet = len(text)
+	}
+	if alphabet <= 1 {
+		return 0
+	}
+	return floorTenths(float64(n) * math.Log2(float64(alphabet)))
+}
+
+func hashOutputBits(algo string) (float64, bool) {
+	switch strings.ToLower(algo) {
+	case "md5":
+		return 128, true
+	case "sha1":
+		return 160, true
+	case "sha256":
+		return 256, true
+	case "sha384":
+		return 384, true
+	case "sha512":
+		return 512, true
+	}
+	return 0, false
+}
+
+func capBits(in, out float64) float64 {
+	if in < 0 {
+		return -1
+	}
+	if out < in {
+		return out
+	}
+	return in
+}
+
+func floorTenths(v float64) float64 {
+	return math.Floor(v*10) / 10
+}
+
+func literalInt(m *phpModule, n *sitter.Node) (int, bool) {
+	if n == nil {
+		return 0, false
+	}
+	for n.Kind() == "parenthesized_expression" && n.NamedChildCount() == 1 {
+		n = n.NamedChild(0)
+	}
+	if n.Kind() != "integer" {
+		return 0, false
+	}
+	v, err := strconv.Atoi(strings.TrimSpace(phpText(m, n)))
+	return v, err == nil
+}
+
+func nthNode(nodes []*sitter.Node, i int) *sitter.Node {
+	if i < 0 || i >= len(nodes) {
+		return nil
+	}
+	return nodes[i]
+}
+
+func secretBitsOf(s *phpSecret) analysis.SecretBits {
+	if s == nil || s.bits < 0 {
+		return analysis.SecretBits{}
+	}
+	return analysis.SecretBits{Known: true, Bits: s.bits}
 }
 
 // noteArrayUse records a request value used as an array: iterated by
@@ -210,7 +388,7 @@ func (f *phpFlow) noteRecovery(n *sitter.Node, s phpMailSend) {
 			break
 		}
 	}
-	facts := &analysis.RecoveryFacts{SecretSource: secret.source, SecretStrength: secret.strength, Recipient: recipient.at, Content: content.at,
+	facts := &analysis.RecoveryFacts{SecretSource: secret.source, SecretStrength: secret.strength, SecretBits: secretBitsOf(secret), Recipient: recipient.at, Content: content.at,
 		MailContract: s.contract, SecurityFields: []analysis.SecurityFieldFact{}}
 	f.recipientFacts(facts, deps)
 	f.emitRecovery(s, facts, deps)

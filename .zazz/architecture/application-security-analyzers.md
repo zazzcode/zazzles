@@ -143,7 +143,7 @@ configuration, no command-execution claim. A role name is a string.
 ## Account security (branch 3)
 
 [Branch 3](../specifications/symfony-more-analyzers-3.md) adds family `account` with three
-kinds and protocol `account-components-v1`. The registration gains `KindQuestions`, set by
+kinds and protocol `account-components-v2`. The registration gains `KindQuestions`, set by
 this family only, so each kind is asked its own questions from one claim component. The
 operation contract is optional per kind, as for `pollution`: enumeration has none.
 
@@ -163,9 +163,18 @@ are skipped; `unresolved` access and `response_unresolved` are blocking gaps. A 
 includes the `credential` field is a login and is out of scope; in plain PHP the credential
 fields are the columns a statement writes from a password hash or digest.
 
-**Secret-to-mail model** (`langphp/mailer.go`, `recovery_delivery.go`). A D-5 source marks
+**Secret-to-mail model** (`langphp/mailer.go`, `recovery_delivery.go`). A source marks
 its value with a secret side fact that survives encoding, digests, string functions, URL
-generation and concatenation, keeps the source's strength, and changes no other claim's value. Message objects record recipient and content operands
+generation and concatenation, keeps the source's strength, and changes no other claim's value.
+The same fact carries `secret_bits`, computed only from literal arguments: `8n` for
+`random_bytes` and `openssl_random_pseudo_bytes`, `log2` of a `random_int` span rounded down
+to one decimal, 122 for `Uuid::v4`, and `len * log2(alphabet size)` for
+`ByteString::fromRandom` (default alphabet 62). `bin2hex` and `base64_encode` keep the count.
+A digest caps it at the output size (`md5` 128, `sha1` 160, `sha256` 256, `sha384` 384,
+`sha512` 512). `substr` with a literal length over a hex or base64 value caps it at `len*4`
+or `len*6`. Concatenating two secrets adds the counts; joining a secret with a non-secret
+keeps the secret's count. Any other call sets the bits unknown unless the secret is returned
+unchanged. The transform copies the secret before writing bits. Message objects record recipient and content operands
 (`api.symfony-mailer-v1`, `api.php-mail-v1`); a send whose content carries a secret records
 the recipient's origin:
 

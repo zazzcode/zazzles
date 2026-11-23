@@ -48,5 +48,13 @@ Role names are strings. The scanner does not treat one role as stronger than ano
 One private helper of the same class is followed. Outside that case, unclassified
 early-exit conditions are not recorded as authorization guards.
 Command execution is not an authorization operation.
+Plain PHP has two shapes. An address check that is the only guard on a constant SQL write or
+a file write or delete records a candidate with no facet. A SQL `UPDATE` or `DELETE` whose
+`WHERE` clause compares a column with a request value records an `object_level` candidate
+with subject `table:<name>`; a `WHERE` part read from `$_SESSION` is recorded as an
+`ownership_check` guard of form `query_scope`, and a row selected only by a session value is
+not recorded. That shape also records pages that are anonymous by design, such as a recovery
+page that stores a token on the row a submitted address selects; the model judges them.
+`SELECT`, `INSERT`, bound parameters and comparisons other than `=` are not read.
 Trusted-proxy configuration is unread. The SSRF request is not modified when an
 authorization record points at it.

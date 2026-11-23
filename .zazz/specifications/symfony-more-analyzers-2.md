@@ -138,8 +138,9 @@ Out of scope:
   language in `allow_if` or `#[IsGranted(new Expression(…))]`. Each is a recorded gap (D-3).
 - API Platform `security` attributes, Sonata and EasyAdmin permission systems.
 - Tenant isolation through Doctrine filters.
-- Object-level claims in plain PHP. There is no entity binding to establish the selected record.
-  Plain PHP gets the address-guard and session-check facts only (D-9).
+- Object-level claims in plain PHP beyond D-9: there is no entity binding, so the selected record
+  is established only by a SQL `WHERE` clause
+  ([branch 5 D-2](symfony-more-analyzers-5.md#2-decisions)).
 - CSRF. Branch 4 reads this branch's state-change facts for it.
 - Building the full SSRF-to-internal-endpoint attack chain. The record link of D-12 is the only
   step taken.
@@ -278,6 +279,12 @@ a modeled SQL `INSERT`, `UPDATE` or `DELETE`, a file write or delete, or a comma
 `$_SESSION` test with an early exit is recorded as `authenticated_check` and, when present, means
 the shape does not apply. *Why so narrow:* it is the part that needs no framework fact, and a
 wider plain-PHP claim would rest on guesses about what a record is.
+
+*Amended 2026-11-22 by [branch 5 D-2](symfony-more-analyzers-5.md#2-decisions).* A second
+shape is recorded with facet `object_level`: a SQL `UPDATE` or `DELETE` built from request
+values whose `WHERE` clause compares a column with a request value. The `WHERE` clause states
+which row changes, so the selected record is not a guess. The address-guard shape above is
+unchanged.
 
 **D-10. Facts.** `authorization.facets`, `authorization.subject` (class, provenance, selecting
 source), `authorization.operation` (kind and storage keys), `security_fields` for the fields

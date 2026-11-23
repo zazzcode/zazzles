@@ -3,7 +3,9 @@ package langphp
 import (
 	"cmp"
 	"fmt"
+	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -265,6 +267,7 @@ func (f *phpFlow) notePlainSQL(n *sitter.Node, text phpValue) {
 	}
 	constant, ok := phpSQLText(text)
 	if !ok {
+		f.notePlainSelected(n, text)
 		return
 	}
 	up := strings.ToUpper(constant)
@@ -281,6 +284,83 @@ func (f *phpFlow) notePlainSQL(n *sitter.Node, text phpValue) {
 	}
 	sink := f.module.evidence(analysis.AuthorizationKind, n)
 	f.notePlainOperation(n, analysis.StateChange{Operation: op, Span: sink.Span})
+}
+
+var (
+	plainUpdateWhere = regexp.MustCompile("(?is)^\\s*UPDATE\\s+`?(\\w+)`?\\s+SET\\s.+?\\bWHERE\\b(.*)$")
+	plainDeleteWhere = regexp.MustCompile("(?is)^\\s*DELETE\\s+FROM\\s+`?(\\w+)`?\\s+WHERE\\b(.*)$")
+	plainWherePart   = regexp.MustCompile("(?i)\\w`?\\s*=\\s*['\"]?\x00(\\d+)\x00")
+)
+
+// notePlainSelected records a plain-PHP UPDATE or DELETE whose WHERE clause
+// compares a column with a request value: the request selects the row. A
+// WHERE part read from the session is recorded as a query-scope guard. The
+// scanner does not decide that a guard is enough.
+func (f *phpFlow) notePlainSelected(n *sitter.Node, text phpValue) {
+	if len(text.pieces) == 0 {
+		return
+	}
+	var b strings.Builder
+	for i, p := range text.pieces {
+		if p.dynamic {
+			fmt.Fprintf(&b, "\x00%d\x00", i)
+		} else {
+			b.WriteString(p.text)
+		}
+	}
+	op, g := "update", plainUpdateWhere.FindStringSubmatch(b.String())
+	if g == nil {
+		op, g = "delete", plainDeleteWhere.FindStringSubmatch(b.String())
+	}
+	if g == nil {
+		return
+	}
+	var selecting []phpDep
+	scoped := false
+	for _, part := range plainWherePart.FindAllStringSubmatch(g[2], -1) {
+		i, err := strconv.Atoi(part[1])
+		if err != nil || i >= len(text.pieces) {
+			continue
+		}
+		request, session := plainPartDeps(text.pieces[i].val)
+		if session {
+			scoped = true
+			continue
+		}
+		selecting = append(selecting, request...)
+	}
+	if len(selecting) == 0 {
+		return
+	}
+	sub := &phpAuthz{provenance: analysis.SubjectRequestSelected, class: "table:" + strings.ToLower(g[1]), selecting: selecting}
+	if scoped {
+		sub.queryScope, sub.finder = true, n
+	}
+	sink := f.module.evidence(analysis.AuthorizationKind, n)
+	change := analysis.StateChange{Operation: op, Span: sink.Span}
+	f.addAuthzChange(change)
+	f.emitAuthz(sink, n, sub, change, []string{analysis.FacetObjectLevel}, nil, nil)
+}
+
+// plainPartDeps returns the request dependencies of one statement part that
+// did not pass through storage, and whether the part reads the session.
+func plainPartDeps(v phpValue) (request []phpDep, session bool) {
+	var walk func(v phpValue)
+	walk = func(v phpValue) {
+		for _, d := range v.deps {
+			switch {
+			case d.container == "_SESSION" || strings.HasPrefix(d.dep.StorageKey, "php-session:"):
+				session = true
+			case d.dep.Source.Kind == "input_source" && d.dep.StorageKey == "":
+				request = append(request, d)
+			}
+		}
+		for _, child := range v.fields {
+			walk(child)
+		}
+	}
+	walk(v)
+	return request, session
 }
 
 func (f *phpFlow) notePlainOperation(n *sitter.Node, change analysis.StateChange) {

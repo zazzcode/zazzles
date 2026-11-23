@@ -3976,6 +3976,12 @@
         "signature_sha256": "465e695864cfb90300a8c811148c3b14f9a35df046892c224e4e17820bff2bf7"
       },
       {
+        "id": "candidate:v1:3cb348d90703fa39e00ab8cf93687ce9b0ee10ac7bdc45a7678eb5962428c374",
+        "kind": "authorization_candidate",
+        "request_sha256": "5a31c540035346fe6e074e565b996664763237670bc9e1fac5dc55b70bc26968",
+        "signature_sha256": "d1949bf8b94746ad7ab45d202d8bdd2404223723da7790569c4d6bba0b82d4f3"
+      },
+      {
         "id": "candidate:v1:cb26e4ff490b774a6acfee824ba1e20aa94fe5dbf58832ae8caeeb1886b0e195",
         "kind": "sql_query_candidate",
         "request_sha256": "667e8f1f5d9da1dc1805ad200dad3c8c3bb854ecb3555219063b9beda2eb7174",
@@ -4030,14 +4036,14 @@
         "signature_sha256": "4f63f18bf871fe29afb01440136164dcc27fa7857443a9b8d619aab652aea06a"
       }
     ],
-    "report_sha256": "fdd11cdcb6b7441161f10631d5b9ea7eb15e40f2b663d6bbe21c5de444829119",
-    "sarif_sha256": "0d0d85f5e3b3a0f1a393afea2962825bc5bfd096b56321bbb4a41a74d4909cda",
+    "report_sha256": "1791a153beb23fa3e9a6b35791371c9ff14e8976ffe94e3bca30d4d965c09b4f",
+    "sarif_sha256": "060375e91379c0467e205202fa677f2c8391074180bcf8bdd5c8a40bbf55c8e4",
     "entries": 7,
     "registrations": 7,
     "dispatch_bindings": 7,
     "callables": 7,
     "invocation_contexts": 7,
-    "uses_count": 10,
+    "uses_count": 11,
     "gaps": 0
   },
   "internal/langphp/testdata/account-plain-variable": {
@@ -4078,16 +4084,58 @@
         "kind": "authorization_candidate",
         "request_sha256": "394fe502d5824af12fc44490bca19f73f508e0729a0710c5f032f64cccfb078c",
         "signature_sha256": "bf20b09d8e1367c399fb0aafab689ec3148bef02b4b9e16b7ce3ef605b52d0ae"
+      },
+      {
+        "id": "candidate:v1:6f6d496deb704809c078d386f02c690b6ec4144a961893156c428b09375b7028",
+        "kind": "sql_query_candidate",
+        "request_sha256": "86ead98e978ca1852cd715e249a656b6ab14bcaa853f9bc6aeeffc1428368aeb",
+        "signature_sha256": "c4704c808cf573e433c8334f360a68374b9e35c99e625f5d534ec470da20feda"
+      },
+      {
+        "id": "candidate:v1:1fcec3cc64dda469daf68b5d8da3c34f18e0b1fdc56b105d794f647834b41641",
+        "kind": "authorization_candidate",
+        "request_sha256": "9e592c263f0c591e2b2fe65819132cdeb7c6a077c5c715eb687295ebae2748b4",
+        "signature_sha256": "673869b1b2ade8f9966574adfc0e8f721eca169a024770de05f40c59c40995ce"
+      },
+      {
+        "id": "candidate:v1:ba874c0a1aa6e286f79d75f95ade2e25e210cbb2db283a586fddb0ee9acf5287",
+        "kind": "sql_query_candidate",
+        "request_sha256": "a7d42ce54e9556521789680ba2ac89656d28074b42edb55f9794b0c71757affc",
+        "signature_sha256": "1212169711647d9e96be2595a57a6d05a18f3087d4b288a44f45ecf404f64c0b"
+      },
+      {
+        "id": "candidate:v1:19654fedb46924d7e5241a626e64ddd5a2107e520f0fbd37cc91b29e92c2287e",
+        "kind": "authorization_candidate",
+        "request_sha256": "be5fab61c551809a0fcfd83d415ee545d297db995478bae2d58e478c5544174f",
+        "signature_sha256": "2c8db3ca815d5b57184f337da4d6686aaff082f974ca51ec4d8bc71069e131d4"
+      },
+      {
+        "id": "candidate:v1:c09ba0f8b13d2d96ccb57857c13263e16c4b7e1a21a73856b4d90b5e940b5aa0",
+        "kind": "sql_query_candidate",
+        "request_sha256": "7960986223bf0ad6d980f51727bf631b03f966832176a1c7a85b1df23af17c06",
+        "signature_sha256": "a53e23bba5be84640d948ebd503c76ef5a3963635f9455363a5a20c9a19de4d3"
+      },
+      {
+        "id": "candidate:v1:7704e074f1bfea650d61b284b74d096d0391e31812204e9de0c9b0e99e55c194",
+        "kind": "authorization_candidate",
+        "request_sha256": "4f1877b55b67093cf092591bbd3b646a9eebf57a58d81f5d8c3f5793a62c8153",
+        "signature_sha256": "9035a26f49ffa6bcc5d48862a7edb8d6d346762d3ca03128dd0f0fc0f1f56903"
+      },
+      {
+        "id": "candidate:v1:6b6c940431cc6e17d203a6c0f6ece5792d7d4b706991fabaf451548761c32c5a",
+        "kind": "sql_query_candidate",
+        "request_sha256": "bb092fb24b0d3be503e9b1ba9179b47ca33e9ba04549c068ee28a0677a8020cd",
+        "signature_sha256": "8f8053c0c1b7f9141d0d1aaa655c2a0410be5fc5a010815707a90db06fbbfa39"
       }
     ],
-    "report_sha256": "65d99b70fe0e2ad1cfba6848c59cdbaf7aa21c97e110e1547b0386052ef572b5",
-    "sarif_sha256": "a90122a9d0e927341a871688e5784648f0b7ab59694b94e875c0ea8d0a8fa0e5",
-    "entries": 3,
-    "registrations": 3,
-    "dispatch_bindings": 3,
-    "callables": 3,
-    "invocation_contexts": 3,
-    "uses_count": 1,
+    "report_sha256": "3dc07b33d9ff70eb502ccab6d31beb06b6496844f768a20d165b604a0a5fc2a4",
+    "sarif_sha256": "4f15c6125b295398ab5fefe247ad5337e6fde75765634723672fc0ef3b5b5088",
+    "entries": 7,
+    "registrations": 7,
+    "dispatch_bindings": 7,
+    "callables": 7,
+    "invocation_contexts": 7,
+    "uses_count": 8,
     "gaps": 0
   },
   "internal/langphp/testdata/classes": {

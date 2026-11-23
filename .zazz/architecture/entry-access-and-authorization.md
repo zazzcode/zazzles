@@ -109,11 +109,27 @@ snapshot hash.
 
 ## Plain PHP
 
-A plain PHP script gets an authorization candidate only when an `address_check` is the
-only guard on a modeled SQL `INSERT`, `UPDATE` or `DELETE`, or on a file write or
-delete. A `$_SESSION` test is an `authenticated_check` and the shape does not apply.
-There is no object-level claim in plain PHP. Command execution is not in the operation
-list, so it is not recorded.
+A plain PHP script gets an authorization candidate in two shapes.
+
+**Address guard.** An `address_check` is the only guard on a modeled SQL `INSERT`,
+`UPDATE` or `DELETE` with constant text, or on a file write or delete. A `$_SESSION` test
+is an `authenticated_check` and the shape does not apply. Command execution is not in the
+operation list, so it is not recorded.
+
+**Request-selected row** (`notePlainSelected` in `langphp/authorization.go`). A SQL
+`UPDATE` or `DELETE` is built by concatenation or interpolation, and a part its `WHERE`
+clause compares to a column by `=` carries a request dependency that did not pass through
+session storage. The statement's parts are read in order, so a request value in `SET`
+alone selects nothing. The record has facet `object_level`, subject `table:<name>` with
+provenance `request_selected`, and the request sources of that part as its selecting
+sources. Dominating guards are recorded and none suppresses the record. A `WHERE` part
+read from `$_SESSION` adds an `ownership_check` guard of form `query_scope`. A row
+selected only by a session value is not recorded.
+
+This shape also records flows that are anonymous by design, such as a recovery page that
+stores a token on the row a submitted address selects. The model judges them from the
+recorded guards and source. `SELECT`, `INSERT`, bound parameters and comparisons other
+than `=` are not read.
 
 ## Gaps
 

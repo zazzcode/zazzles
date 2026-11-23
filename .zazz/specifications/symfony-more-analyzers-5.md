@@ -71,6 +71,11 @@ and the dependency path states that the request chose it. *Not covered:* `SELECT
 no census to say which columns are sensitive), `INSERT`, statements with bound parameters, and
 a `WHERE` value compared by anything other than `=`.
 
+*Consequence:* a page that is anonymous by design and updates the row a request names, such as
+a recovery page that stores a token for a submitted address, is recorded too. The scanner does
+not tell it from a defect; the model judges it. The fixture `testdata/account-plain/forgot.php`
+gains one such record.
+
 **D-3. The address-guard shape of D-9 is unchanged.** A constant-text write still records only
 under an address check. Cases `AZ-22` to `AZ-24` keep their expectations.
 
@@ -81,7 +86,7 @@ under an address check. Cases `AZ-22` to `AZ-24` keep their expectations.
    `sql_credential_column` candidate at the digest. `PH-11` is unchanged.
 2. **AC2.** `EN-18`: a login `SELECT` held in a variable that compares the credential column
    records no enumeration candidate.
-3. **AC3.** `AZ-26` to `AZ-29` of §4 pass. `AZ-22` to `AZ-24` are unchanged.
+3. **AC3.** `AZ-26` to `AZ-30` of §4 pass. `AZ-22` to `AZ-24` are unchanged.
 4. **AC4.** The new cases fail before the change and pass after it.
 5. **AC5.** `TestDVWASourceKey`, `TestSymfonySourceKey` and `TestArchitectureBaseline` pass.
    Every baseline row that moves is explained in the PR.
@@ -96,9 +101,10 @@ under an address check. Cases `AZ-22` to `AZ-24` keep their expectations.
 | `PH-14` | `testdata/account-plain-variable/` | `md5` of a request value, `$sql = "UPDATE … SET <column> = '$digest' …"`, query call on `$sql`; a login file assigns `$sql` twice and compares the column | Candidate at the digest, `sql_credential_column` |
 | `EN-18` | same | the login file | No enumeration record |
 | `AZ-26` | `testdata/authorization-plain/selected.php` | `UPDATE … WHERE id = <request value>` by concatenation, no guard | Candidate, `object_level`, `request_selected`, subject `table:members`, no guard |
-| `AZ-27` | `…/selected_session.php` | the same after a `$_SESSION` test with exit | Candidate with an `authenticated_check` guard |
+| `AZ-27` | `…/selected_signed.php` | the same after a `$_SESSION` test with exit | Candidate with an `authenticated_check` guard |
 | `AZ-28` | `…/own.php` | `UPDATE … WHERE id = <session value>`, request values only in `SET` | No record |
 | `AZ-29` | `…/removed.php` | `DELETE … WHERE id = <request value> AND owner = <session value>` by interpolation | Candidate with an `ownership_check` guard of form `query_scope` |
+| `AZ-30` | `testdata/account-plain/forgot.php` | `UPDATE … SET token = <generated> WHERE mail = <request value>` | Candidate (D-2 consequence), no guard |
 
 ## 5. Other lane analyzers on the sample
 

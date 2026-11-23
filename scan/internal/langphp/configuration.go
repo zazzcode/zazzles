@@ -23,6 +23,7 @@ func (s *phpSet) finishConfiguration(out *analysis.AnalysisReport) {
 		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_list_truncated", Detail: "the " + list + " file list passed 200 files; the files after the limit were not read"})
 	}
 	if len(s.symfony) == 0 {
+		s.emitPlainSource(out, ".")
 		s.emitDeploy(out, ".", nil)
 		return
 	}
@@ -375,6 +376,9 @@ func (s *phpSet) sessionJoin(out *analysis.AnalysisReport, root, file string, li
 	text := "session_authenticated: no"
 	if s.hasSessionEntry(out, root) {
 		text = "session_authenticated: yes"
+	} else if len(s.symfony) == 0 {
+		// Plain PHP has no entry access model to answer this.
+		text = "session_authenticated: unknown"
 	}
 	return s.lineEvidence(file, "session_authenticated", text, line)
 }

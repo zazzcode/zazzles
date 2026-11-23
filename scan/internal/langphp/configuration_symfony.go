@@ -15,6 +15,7 @@ func (s *phpSet) emitSymfonyChecks(out *analysis.AnalysisReport, p *symfonyProje
 	for _, ev := range s.projectSourceSettings(p.root).iniSets["session.cookie_httponly"] {
 		s.emitCookie(out, p, analysis.CheckSessionCookieScript, ev.Span.File, ev.Text, ev.Span.StartLine, s.projectScope(p))
 	}
+	s.emitSourceCookies(out, p.root, func(string) analysis.Evidence { return s.projectScope(p) })
 }
 
 // configDocument parses one allow-listed YAML file of a project. A listed
@@ -200,6 +201,8 @@ type phpSourceSettings struct {
 	csrf []analysis.Evidence
 	// iniSets are ini_set calls with a literal false value, by directive.
 	iniSets map[string][]analysis.Evidence
+	// cookies are the session cookie flags a call sets to false.
+	cookies []sourceCookie
 }
 
 // projectSourceSettings walks each module of a project once.
@@ -230,6 +233,7 @@ func (s *phpSet) projectSourceSettings(root string) *phpSourceSettings {
 				if key, ok := falseIniSet(m, n); ok {
 					got.iniSets[key] = append(got.iniSets[key], m.evidence("setting", n))
 				}
+				got.cookies = append(got.cookies, sourceCookies(m, n)...)
 			}
 		})
 	}

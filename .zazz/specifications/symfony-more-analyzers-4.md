@@ -140,7 +140,9 @@ Out of scope:
 - `curl` or `wget` reached through `-K` config files, `xargs`, or a URL read from a file.
 - HTTP clients run through a shell other than `curl` and `wget` (`http`, `aria2c`, `lynx`).
 - Security response headers and cookie attributes set in PHP code. The roadmap item "cookie,
-  session and header configuration" owns them.
+  session and header configuration" owns them. *Amended 2026-11-22:*
+  [branch 5 D-5](symfony-more-analyzers-5.md#2-decisions) reads the `secure` and `httponly`
+  flags of the session cookie from PHP code. Other cookies and headers stay with the roadmap item.
 
 ## 5. Decisions
 

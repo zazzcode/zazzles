@@ -493,3 +493,44 @@ func TestRemoteIncludeConfiguration(t *testing.T) {
 			overlay: map[string]string{"notes/php.ini": "\n\nallow_url_include = On\n", "page.php": page}},
 	})
 }
+
+// TestSourceCookieConfiguration covers session cookie flags set in PHP code
+// (branch 5 D-5).
+func TestSourceCookieConfiguration(t *testing.T) {
+	cookies := []string{analysis.CheckSessionCookieScript, analysis.CheckSessionCookieTransport}
+	script, transport := "session_cookie_script_readable boot.php:", "session_cookie_insecure_transport boot.php:"
+	boot := func(body string) map[string]string { return map[string]string{"boot.php": "<?php\n" + body} }
+	runConfigurationCases(t, []configurationCase{
+		{name: "SC-01 options array with both flags false", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("session_set_cookie_params(['lifetime' => 0, 'secure' => false, 'httponly' => false]);\nsession_start();\n"),
+			want:    []string{transport + "2", script + "2"},
+			joined: map[string][]string{script + "2": {
+				"session_authenticated boot.php:2 session_authenticated: unknown",
+				"config_installed Dockerfile:2 copied . to /var/www/html including boot.php"}},
+			scope: map[string]string{script + "2": "boot.php:1 application source boot.php"},
+			gaps:  map[string][]string{script + "2": nil}},
+		{name: "SC-02 a flag variable that is false on one branch", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("function start($strict) {\n    if ($strict) {\n        $flag = true;\n    } else {\n        $flag = false;\n    }\n    session_set_cookie_params(['secure' => true, 'httponly' => $flag]);\n}\n"),
+			want:    []string{script + "8"},
+			joined:  map[string][]string{script + "8": {"value_assignment boot.php:6 $flag = false"}}},
+		{name: "SC-02 a flag variable that is always false", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("$safe = false;\nsession_set_cookie_params(['secure' => $safe, 'httponly' => true]);\n"),
+			want:    []string{transport + "3"},
+			joined:  map[string][]string{transport + "3": {"value_assignment boot.php:2 $safe = false"}}},
+		{name: "SC-03 positional form", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("session_set_cookie_params(0, '/', '', false, 0);\n"),
+			want:    []string{transport + "2", script + "2"}},
+		{name: "SC-04 setcookie of the session cookie", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("setcookie(session_name(), session_id(), 0, '/', '', false, false);\n\nsetcookie(session_name(), session_id(), ['secure' => true, 'httponly' => false]);\n"),
+			want:    []string{transport + "2", script + "2", script + "4"}},
+		{name: "SC-05 hardened, absent and always-true flags", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("$on = true;\nsession_set_cookie_params(['secure' => true, 'httponly' => $on]);\nsession_set_cookie_params(['lifetime' => 0]);\nsession_set_cookie_params(0, '/');\nsetcookie(session_name(), session_id(), 0, '/', '', true, true);\n")},
+		{name: "SC-05 a variable assigned in another function is not read", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("function other() {\n    $flag = false;\n}\nfunction start() {\n    session_set_cookie_params(['httponly' => $flag]);\n}\n")},
+		{name: "SC-06 a cookie that is not the session cookie", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("setcookie('theme', $_GET['theme'], 0, '/', '', false, false);\n")},
+		{name: "SC-07 plain PHP ini_set with a literal false", fixture: plainConfiguration, checks: cookies,
+			overlay: boot("ini_set('session.cookie_httponly', '0');\n"),
+			want:    []string{script + "2"}},
+	})
+}

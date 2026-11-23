@@ -32,9 +32,11 @@ A confirmed record is `weak-password-recovery`.
 `bin2hex` and `base64_encode` keep the bits. `md5` and `sha1` cap them at 128 and 160.
 `hash` and `hash_hmac` with a literal `sha256`, `sha384` or `sha512` cap them at 256, 384
 or 512; any other literal algorithm leaves the bits as they are. `substr` with a literal
-length over a `bin2hex` or `base64_encode` value caps them at `len*4` or `len*6`.
-Concatenating two secrets adds the counts. A secret joined with a non-secret keeps its
-count. Any other call leaves the bits `unknown` unless the secret is returned unchanged.
+length over a `bin2hex` or `base64_encode` value caps them at `len*4` or `len*6`. The
+default output of `md5`, `sha1`, `hash` and `hash_hmac` is hexadecimal too, so
+`substr(sha1(random_bytes(16)), 0, 6)` is 24 bits. A digest asked for raw bytes leaves a
+later `substr` `unknown`. Concatenating two secrets adds the counts. A secret joined with
+itself or with a non-secret keeps its count. Any other call leaves the bits `unknown` unless the secret is returned unchanged.
 The source's strength is kept through all of these.
 
 Mail sinks are Symfony Mailer (`to`, `addTo`, `cc`, `addCc`, `bcc`, `addBcc` recipients;

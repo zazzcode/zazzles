@@ -16,20 +16,44 @@ The claim has no request source. A file outside the lists below is not read.
 | Framework | `config/packages/framework.yaml`, `config/packages/web_profiler.yaml`, `.env`, `.env.local`, `.env.prod`, `.env.prod.local`, and a Dockerfile `COPY` that places a project file as one of those |
 | Deployment | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` in any directory; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; files named `crontab` or `*.cron`, and files under `cron.d/`; a script a schedule line executes when it is a project file |
 
-Each file is at most 256 KiB. Each list holds at most 200 files. Symbolic links are not
-opened. `vendor/`, `var/` and `node_modules/` are not read. An environment file
-contributes only `APP_ENV` and `APP_DEBUG`.
+Each file is at most 256 KiB. Each list holds at most 200 files, and a list that passes
+the limit records `config_list_truncated`. Symbolic links are not opened, including a
+link in the path of a file that a deployment file names. `vendor/`, `var/` and
+`node_modules/` are not read. A path that a `COPY` or a schedule line names is read only
+when it stays inside the scanned project.
+
+An environment file contributes only `APP_ENV` and `APP_DEBUG`. Each line is read on its
+own, and a value that is not one plain word is discarded, so no other variable's value
+can reach a report or a model request.
 
 ## Checks
 
 | Check | Recorded when |
 | --- | --- |
 | Directory listing | Apache `Options` whose effective list includes `Indexes`, or nginx `autoindex on` |
-| CSRF disabled | `framework.csrf_protection: false` or `{ enabled: false }`, outside `when@test` and `when@dev` |
+| CSRF disabled | `framework.csrf_protection: false` or `{ enabled: false }` at the top level or under `when@prod` |
 | Session cookie readable by script | `cookie_httponly: false`, `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set('session.cookie_httponly', …)` with a literal false |
 | Session cookie on an insecure transport | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off` |
-| Debug enabled | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled outside `when@dev` and `when@test` |
+| Debug enabled | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled |
 | Scheduled privileged writable file | A cron line, a command chain and a file in that chain that a less privileged user can write |
+
+### How each file is read
+
+| File | Forms read |
+| --- | --- |
+| Apache `*.conf`, `.htaccess` | `Options` in a `<Directory>` block, a virtual host or the server scope. A list of `+` and `-` names edits the list in force, and a bare list replaces it. `All` includes `Indexes`. Names are compared without case. An `.htaccess` applies to its own directory. `Options` inside `<Location>`, `<Files>` or a pattern block is not read |
+| nginx `*.conf` | `autoindex` and `root`, with statements split at `;` and blocks by braces. A prefix `location` resolves under the `root` in force. A pattern `location` and an `alias` are not resolved |
+| Symfony YAML | A `when@prod` block overrides the top level. `when@dev` and `when@test` are not deployed and are not read. Any other `when@` block is read as an environment of its own |
+| `Dockerfile` | The last build stage. `WORKDIR`, `USER`, `COPY` and `ADD` with literal operands, in shell or JSON form. `RUN` commands separated by `&&`, `||` or `;`: `chown`, `chmod`, `a2enmod`, `crontab <file>`, and `echo "…" > /etc/cron.d/<name>` |
+| Cron files | Five schedule fields or one `@` nickname. A file installed with `crontab <file>` runs as the Dockerfile user in force. Any other cron file has a user field after the schedule |
+| `php.ini` | `display_errors`, `session.cookie_httponly`, `session.cookie_secure` |
+
+A deployed environment value is the project's `.env`, then `.env.local` over it, then
+each file a `COPY` places at the project root under one of those names, in order.
+
+A scheduled command's relative path resolves only after a leading `cd <dir>`. The last
+`chown` that covers a file names its owner. A `chmod` counts when it gives group or
+other write, in octal (`777`, `0664`) or symbolic (`o+w`, `a+rwx`, `go=rwx`) form.
 
 ## Recorded and decidable
 
@@ -44,8 +68,13 @@ whether a recorded mitigation removes it.
 
 | Gap | Meaning |
 | --- | --- |
-| `deploy_mapping_unresolved` | A scope path or a `COPY` operand could not be mapped. A build argument or a glob is not expanded |
+| `deploy_mapping_unresolved` | A scope path or a `COPY` operand could not be mapped. A build argument or a glob is not expanded, a `COPY --from` takes files from another build stage, and a source outside the project is not followed |
 | `config_file_unread` | An allow-listed file was over the size limit, unreadable, or not valid YAML |
+| `config_list_truncated` | A file list passed 200 files, and the files after the limit were not read |
+| `configuration_entry_missing` | A setting was read in a project with no entry to report it under |
+
+A record whose scope has no evidence, such as a server-wide `Options` in a file that
+states no document root in a plain PHP project, also stays in Review.
 
 ## Not recorded
 
@@ -53,7 +82,9 @@ Kubernetes manifests, Helm, Terraform, Ansible, docker-compose service definitio
 files, and systemd units. Apache and nginx beyond the check list. Dockerfile practice
 checks such as an unpinned base image. Shell script analysis beyond one level from a
 scheduled command. Security headers and cookie attributes set in PHP code. Committed
-secrets. A file that is not on the lists above.
+secrets. A file that is not on the lists above. A Dockerfile build stage other than the
+last one. A cron line whose relative path has no `cd`. A `curl` or `wget` reached through
+`-K`, `xargs` or a URL read from a file.
 
 ## Remediation
 

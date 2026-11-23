@@ -10,7 +10,14 @@ It is not an infrastructure-as-code scanner. Nothing is executed and no variable
 `Result.Config` holds framework files of a detected project. `Result.Deploy` holds
 deployment files. Each file is at most 256 KiB. Each list holds at most 200 files.
 Symbolic links are not opened. Paths under `vendor/`, `var/` and `node_modules/` are
-not read. An over-limit or unreadable file records `config_file_unread`.
+not read. An over-limit or unreadable file records `config_file_unread`, and a list past
+200 files records `config_list_truncated`.
+
+A deployment file can name another file: a `COPY` source, the script of a schedule line.
+Such a path is opened through `containedPath`, the same rule as a walked file. It is
+cleaned, it must stay inside the scan root, and no component may be a symbolic link or a
+skipped directory. Each file is read once per scan (`fileText`) and parsed once per
+project (`deployment`), and every check and the address-trust reader share that view.
 
 | List | Paths |
 | --- | --- |
@@ -20,20 +27,36 @@ not read. An over-limit or unreadable file records `config_file_unread`.
 ## Environment files
 
 An environment file contributes `APP_ENV` and `APP_DEBUG` only. Every other line is
-discarded before a value is stored.
+discarded before a value is stored. The reader takes one physical line at a time, because
+dotenv has no line continuation, and keeps a value only when it is one plain word. Joining
+a continuation line would put the next variable's value into the kept key. The deployed
+value is the project's `.env`, then `.env.local`, then each file a `COPY` places at the
+project root under one of those names, in order.
 
 ## Why the records are judged
 
 Each record carries the setting, its scope and the joined application facts. The model
-answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v4`).
+answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v5`).
 A hardened value makes no record. The scanner does not decide that a setting is a defect.
+The request instruction states what each joined fact kind means and prescribes no answer.
+
+The `scope` evidence role is the place that fixes where a setting applies: the
+`<Directory>` or `location` line, the `.htaccess` file, the `when@` block or the project
+manifest, the `COPY` that deploys an environment file, the image or cron file of a
+schedule. A setting with no such place keeps the role empty, and the policy holds the
+claim for evidence. Each setting is anchored at its own line and byte range, so two
+settings of one file are two findings.
+
+The policy follows the order of every family: protocol, facts and evidence, an answer
+that contradicts a recorded fact, a blocking gap, then the status. Each check has its own
+SARIF rule, `scan/insecure-configuration/<check>`.
 
 ## Checks
 
 | Check | Recorded when | Joined facts | No record when |
 | --- | --- | --- | --- |
 | `directory_listing` | Apache `Options` whose effective list includes `Indexes`, or nginx `autoindex on` | Scope directory, whether it maps to the document root, upload destinations inside it | `-Indexes`, `Options None`, `autoindex off`, or the directive absent |
-| `csrf_disabled` | `framework.csrf_protection: false` outside `when@test` and `when@dev` | Up to eight session-authenticated state-changing entries, and any `isCsrfTokenValid` or `csrf_token_id` mitigation | `true`, `~`, or the key absent |
+| `csrf_disabled` | `framework.csrf_protection: false` at the top level or under `when@prod`, which overrides the top level for every framework key. `when@dev` and `when@test` are not read | Up to eight session-authenticated state-changing entries, and any `isCsrfTokenValid` or `csrf_token_id` mitigation | `true`, `~`, or the key absent |
 | `session_cookie_script_readable` | `cookie_httponly: false`, or `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set` of a literal false | Whether a session-authenticated entry exists | `true`, absent, or `On` |
 | `session_cookie_insecure_transport` | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off` | The same | `true`, `auto`, absent |
 | `debug_enabled` | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled outside `when@dev` and `when@test` | Which file is the deployed one | `prod`, `0`, `Off`, or a `when@dev` block |
@@ -42,18 +65,37 @@ A hardened value makes no record. The scanner does not decide that a setting is 
 ## Deployment mapping
 
 `WORKDIR`, `COPY` and `ADD` with literal operands map container paths to project paths.
-A build argument or a glob records `deploy_mapping_unresolved`. A web-server file copied
+The mappings are a list in `COPY` order. The longest destination wins and, between equal
+ones, the later `COPY`. A Go map here made the output depend on iteration order. Only the
+last build stage is read. A build argument, a glob, a `COPY --from` or a source outside
+the build context records `deploy_mapping_unresolved`. A web-server file copied
 under `/etc/apache2/`, `/etc/httpd/`, `/usr/local/apache2/conf/` or `/etc/nginx/`, or a
-`.htaccess` under the document root, is `config_installed`. With no Dockerfile, a scope
-path matches a project directory by its trailing segments or the record carries
-`deploy_mapping_unresolved`.
+`.htaccess` under the document root, is `config_installed`. An `.htaccess` scope is its own
+directory, a project path that needs no mapping. With no Dockerfile, a scope path matches
+an existing project directory by its trailing segments, longest first, or the record
+carries `deploy_mapping_unresolved`. The document root is a stated `DocumentRoot` or
+server-level nginx `root` that maps to the project, else the framework's public
+directory, else the project root, which plain PHP serves whole.
+
+## Readers
+
+`deployconf` has one file per format over a shared lexer. The formats differ in ways a
+single reader got wrong. `;` is a comment only in `php.ini`; it ends a statement in nginx
+and separates commands in a `RUN`. A trailing backslash continues a line in Apache and
+Dockerfile syntax and nowhere else. Apache `Options` merges a relative list with the list
+in force in the same scope, compares names without case and expands `All`. nginx is read
+as statements and nested blocks, and a prefix `location` resolves under the `root` in
+force wherever in the block that `root` is written.
 
 ## Scheduled commands
 
 A system crontab line has six fields, the sixth a user. A five-field line installed by
 `crontab` runs as the Dockerfile `USER`, default `root`. `cd <dir> &&` sets the working
 directory for the rest of the line and for one level of `bash`, `sh`, `php` or `./`
-script. A link is writable when the same Dockerfile `chown`s it, or a directory that
+script. A relative path with no `cd` is not resolved, because cron's own directory is not
+in the files. Only a word that is a plain path counts as a file of the chain. The last
+`chown` that covers a file names its owner, so a later `chown` back to the schedule user
+removes the link. A link is writable when the same Dockerfile `chown`s it, or a directory that
 contains it with `-R`, to a user other than the schedule user, or `chmod` gives group
 or other write, or `COPY --chown=` names such a user. `root` against any other name is
 the privileged case. Two equal names record nothing.
@@ -72,7 +114,15 @@ evidence text. The authorization protocol does not change. The gap
 is `curl` or `wget` and whose request value is in a URL position. Quoting the argument
 does not remove the request. The command candidate and its request are unchanged.
 
+A string value built by concatenation or interpolation keeps its parts in order, each
+literal text or a value (`phpValue.pieces`). The contract splits those parts into shell
+words and reads the option table. It evaluates nothing, so a sink inside the command
+argument is recorded once, and a command held in a variable keeps each word's own value.
+A join of two branches and the result of a call drop the parts. Plain PHP selects the
+input component `source.php-input-ssrf-v1`.
+
 ## Gaps
 
-`config_file_unread`, `deploy_mapping_unresolved`, and `address_trust_configuration_unread`
-when the trust files could not be read.
+`config_file_unread`, `config_list_truncated`, `deploy_mapping_unresolved`,
+`configuration_entry_missing` when a project has no entry to report a setting under, and
+`address_trust_configuration_unread` when the trust files could not be read.

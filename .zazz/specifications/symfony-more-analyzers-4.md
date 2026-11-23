@@ -109,14 +109,14 @@ Beyond the lane contract's §1:
 |---|---|---|
 | `scan/internal/walk/walk.go`, `walk_test.go` | Modified | Extend `Result.Config`; add the `Result.Deploy` allow-list (D-1) |
 | `scan/internal/parse/inventory.go`, `scan/internal/pipeline/pipeline.go` | Modified | Carry the deploy list to the adapter |
-| `scan/internal/deployconf/` (`apache.go`, `nginx.go`, `dockerfile.go`, `cron.go`, `phpini.go`, `envfile.go`, tests, `testdata/`) | New | Line-oriented readers, each returning directives with spans. No language adapter imports are needed |
+| `scan/internal/deployconf/` (`deployconf.go` for the shared types, `lex.go` for lines, comments and words, `apache.go`, `nginx.go`, `dockerfile.go`, `cron.go`, `phpini.go`, `envfile.go`, tests, `testdata/`) | New | One reader per format, each returning directives with spans. No language adapter imports are needed |
 | `scan/internal/analysis/configuration.go`, `analysis.go`, `json.go` | New, modified | `ConfigurationKind`, `ConfigurationFacts` |
-| `scan/internal/langphp/configuration.go`, `configuration_symfony.go`, `configuration_deploy.go` | New | Checks, joins to application facts, candidate assembly |
+| `scan/internal/langphp/configuration.go`, `configuration_symfony.go`, `configuration_deploy.go`, `configuration_schedule.go` | New | Contained reads, the per-project deployment view, checks, joins to application facts, candidate assembly |
 | `scan/internal/langphp/address_trust.go` | New | Fills `address_trust` on address-guard records |
 | `scan/internal/langphp/php_shell_url_client.go` | New | The `curl` and `wget` URL-argument contract |
-| `scan/internal/langphp/command.go`, `symfony_process.go`, `calls.go`, `modules.go`, `symfony_project.go`, `authorization_guards.go` | Modified | Dispatch lines; hand the parsed command text to the new contract; `address_trust` hook (the one branch 2 file changed) |
+| `scan/internal/langphp/command.go`, `symfony_process.go`, `calls.go`, `flow.go`, `values.go`, `modules.go`, `symfony_project.go`, `authorization_guards.go` | Modified | Dispatch lines; a concatenated string value keeps its parts, which the new contract reads; `address_trust` hook (the one branch 2 file changed) |
 | `scan/internal/langphp/*_test.go`, `testdata/configuration/`, `testdata/symfony/configuration/`, `testdata/symfony/configuration-transfer/`, `testdata/shell-url-client/` | New | Fixtures and tests of §8 |
-| `scan/internal/analysispacks/configuration.go`, `ssrf.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `configuration-components-v1`, contract `api.php-shell-url-client-v1` |
+| `scan/internal/analysispacks/configuration.go`, `ssrf.go`, `families.go`, `descriptors.go`, `select.go`, `contracts.go`, tests | New, modified | Family, protocol `configuration-components-v5`, contract `api.php-shell-url-client-v1`, and the plain-PHP input component `source.php-input-ssrf-v1` |
 | `scan/internal/judge/configuration.go`, `policy.go`, `components.go`, `client.go`, `bundle.go`, `budget.go`, `wire_facts.go`, tests | New, modified | Policy and wire facts |
 | `scan/internal/report/finding_types.go`, `findings.go`, `sarif.go`, `guidance.go`, `html.go`, tests | Modified | `insecure-configuration` type; findings anchored at non-source files |
 | `scan/cli/main.go`, `architecture_baseline_test.go`, `testdata/architecture-baseline.json` | Modified | Family name; rows for new fixtures |
@@ -152,6 +152,9 @@ Each table is a closed list. A name outside a table is unmodeled.
 project. `Result.Deploy` is new and holds deployment files. Neither is a language. Limits: 256 KiB
 per file, 200 files per list, no symbolic links, and paths under `vendor/`, `var/` and
 `node_modules/` are never read. An over-limit or unreadable file records `config_file_unread`.
+A list that passes 200 files records `config_list_truncated`. A path that a deployment file
+names (a `COPY` source, a script of a schedule line) is opened through the same rules: it is
+cleaned, it must stay inside the scan root, and no component of it may be a symbolic link.
 
 | List | Paths, relative to a project root |
 |---|---|
@@ -163,7 +166,10 @@ results depend on directory noise. The lists are the common locations, and a fil
 simply not covered, which the user page states.
 
 **D-2. Environment files give two keys.** `APP_ENV` and `APP_DEBUG`. The reader discards every
-other line before any value is stored. *Why:* these files hold secrets, and this branch has no
+other line before any value is stored. It reads one physical line at a time, because a dotenv
+file has no line continuation. It keeps a value only when the value is one plain word of
+letters, digits, `_`, `-` and `.`, so nothing of another variable can ride along. Each kept
+key carries its line, which is the setting's anchor. *Why:* these files hold secrets, and this branch has no
 reason to carry them.
 
 ### The configuration claim
@@ -176,9 +182,19 @@ directory of static assets and on a directory that receives uploads are differen
 that distinction is context the model is here to weigh. *Rejected:* model-free practice
 observations in the style of the Next.js checks, which cannot weigh the join.
 
-Protocol `configuration-components-v1`, claim kind `configuration`. The shared policy order is
-the lane contract §2.7. Required evidence roles: `setting`, `scope`. A candidate has no request
-source and needs no entry.
+Protocol `configuration-components-v5`, claim kind `configuration`. The shared policy order is
+the lane contract §2.7: a contradiction is reported before a blocking gap. Required evidence
+roles: `setting`, `scope`. A candidate has no request source. It is reported under an entry of
+its project, because every record rides an invocation context. A project with no entry
+records the gap `configuration_entry_missing` for the setting.
+
+The `scope` evidence is the place that fixes where the setting applies: the `<Directory>` or
+`location` line, the `.htaccess` file, the `when@` block or the project manifest, the `COPY`
+that deploys an environment file, the image a schedule is built into or the cron file. A
+setting with no such place has no `scope` evidence, and the policy holds it for evidence.
+
+The instruction sent with a request states what each joined fact kind means. It does not
+state which answer a recorded shape gets. That judgment is the model's.
 
 | Question | Answers | Asks |
 |---|---|---|
@@ -197,21 +213,26 @@ source and needs no entry.
 
 | Check | Recorded when | Joined application facts | No record when |
 |---|---|---|---|
-| `directory_listing` | Apache `Options` whose effective list includes `Indexes` in a `<Directory>`, `<VirtualHost>`, server or `.htaccess` scope; nginx `autoindex on` | The scope directory; whether it maps to the project's document root (D-5); upload candidates whose destination is inside it | `-Indexes`, `Options None`, `autoindex off`, or the directive absent |
-| `csrf_disabled` | `framework.csrf_protection: false` or `{ enabled: false }` outside a `when@test` or `when@dev` block | Up to eight entries with `access.authentication: required` and a `state_changes` entry, sorted by name, with their methods; every `isCsrfTokenValid` call and `csrf_token_id` form option in project source as mitigation evidence | `true`, `~`, or the key absent |
+| `directory_listing` | Apache `Options` whose effective list includes `Indexes` in a `<Directory>`, `<VirtualHost>`, server or `.htaccess` scope; nginx `autoindex on`. A list of `+` and `-` names edits the list in force in that scope, a bare list replaces it, `All` includes `Indexes`, and names compare without case | The scope directory; whether it maps to the project's document root (D-5); upload candidates whose destination is inside it | `-Indexes`, `Options None`, `autoindex off`, or the directive absent |
+| `csrf_disabled` | `framework.csrf_protection: false` or `{ enabled: false }` outside a `when@test` or `when@dev` block. A `when@prod` block overrides the top level, for this check and for every other framework key. Another `when@` block is an environment of its own | Up to eight entries with `access.authentication: required` and a `state_changes` entry, sorted by name, with their methods; every `isCsrfTokenValid` call and `csrf_token_id` form option in project source as mitigation evidence | `true`, `~`, or the key absent |
 | `session_cookie_script_readable` | `framework.session.cookie_httponly: false`; `session.cookie_httponly = 0`, `Off` or `false` in a read `php.ini`; `ini_set('session.cookie_httponly', …)` with a literal false value | Whether the project has a session-authenticated entry | `true`, absent, or `On` |
 | `session_cookie_insecure_transport` | `framework.session.cookie_secure: false`; `session.cookie_secure = 0` or `Off` | Same | `true`, `auto`, absent |
 | `debug_enabled` | `APP_DEBUG` of `1` or `true`, or `APP_ENV=dev`, in an environment file the deployment uses (D-5); `display_errors = On`, `1` or `stdout` in a read `php.ini`; `web_profiler` enabled outside `when@dev` and `when@test` | Which file is the deployed one and the evidence for it | `prod`, `0`, `Off`, or a `when@dev` block |
 | `scheduled_privileged_writable` | D-6 | The schedule, the execution chain, the writable file and who can write it | No link of the chain is writable by a lower-privileged user |
 
 **D-5. Deployment mapping is read from the Dockerfile, literally.** `WORKDIR`, `COPY <src> <dst>`
-and `ADD` with literal operands give a map from container paths to project paths. Apache
+and `ADD` with literal operands give a map from container paths to project paths. The map
+keeps `COPY` order. The longest destination wins and, between equal ones, the later `COPY`,
+so the result does not depend on map iteration. Only the last build stage is read. A `COPY`
+into a directory (a trailing slash, several sources, the working directory) keeps each
+source's base name. A `COPY --from` and a source outside the build context are unresolved.
+An `.htaccess` scope is already a project directory and needs no mapping. Apache
 `DocumentRoot` and `<Directory>` paths are resolved through it. A web-server configuration file
 is recorded as installed (`config_installed` evidence) when a `COPY` places it under a server
 configuration directory (`/etc/apache2/`, `/etc/httpd/`, `/usr/local/apache2/conf/`,
 `/etc/nginx/`), or when it is a `.htaccess` under the document root. With no Dockerfile, the
-record carries `deploy_mapping_unresolved` only when the scope path cannot be matched to a
-project directory by its trailing path segments. An environment file is "deployed"
+record carries `deploy_mapping_unresolved` only when the scope path cannot be matched to an existing
+project directory by its trailing path segments, longest first. An environment file is "deployed"
 when a `COPY` places it at the project root as `.env` or `.env.local`, or when it is the project's
 `.env` and nothing overrides it. An operand with a build argument or a glob is recorded as
 `deploy_mapping_unresolved`, and the record depending on it carries that gap. *Why literal only:*
@@ -222,8 +243,8 @@ resolving build arguments needs the build context, which the scanner does not ha
 | Fact | Accepted evidence |
 |---|---|
 | Schedule and user | A system-crontab line (six fields, the sixth a user) in a `cron.d/` file, a `crontab` file, or the literal text a Dockerfile `RUN echo "…" > /etc/cron.d/<name>` writes. A five-field line installed by `crontab <file>` runs as the Dockerfile's current `USER`, default `root` |
-| Execution chain | The command's program and literal path arguments. A leading `cd <dir> &&` sets the working directory for the rest of the line and for the script it runs, so a relative path in the script resolves against it. When an argument is a project script (`bash x`, `sh x`, `php x`, or `./x`), that script is read and each line's program and literal path arguments are added, one level only |
-| Writable link | In the same Dockerfile: `chown` of a chain file, or of a directory containing it with `-R`, to a user other than the schedule's user; or `chmod` giving group or other write (`o+w`, `g+w`, `a+w`, or an octal mode with those bits). `COPY --chown=` to such a user counts |
+| Execution chain | The command's program and literal path arguments. A leading `cd <dir> &&` sets the working directory for the rest of the line and for the script it runs, so a relative path in the script resolves against it. A relative path with no such `cd` is not resolved. When an argument is a project script (`bash x`, `sh x`, `php x`, or `./x`), that script is read and each line's program and literal path arguments are added, one level only |
+| Writable link | In the same Dockerfile: `chown` of a chain file, or of a directory containing it with `-R`, to a user other than the schedule's user; or `chmod` giving group or other write (`o+w`, `g+w`, `a+w`, a clause such as `a+rwx` or `go=rwx`, or an octal mode with those bits). `COPY --chown=` to such a user counts. The last `chown` that covers a file names its owner. `RUN` commands are separated by `&&`, `||` and `;` |
 
 The candidate is recorded when all three exist. The schedule user is compared by name with the
 owner; `root` against any other name is the privileged case, and two equal names record nothing.
@@ -256,14 +277,18 @@ when the existing command model has a shell command whose literal program token 
 
 | Command form | URL position |
 |---|---|
-| Shell text built by concatenation or interpolation (`shell_exec`, `exec`, `system`, `passthru`, `popen`, `proc_open`, backticks, `Process::fromShellCommandline`) | A non-literal piece that follows the program token and is not the value of a value-taking option. The piece directly after one of these literal tokens is that option's value: curl `-o`, `-O` excluded, `-d`, `--data*`, `-H`, `-u`, `-A`, `-e`, `-b`, `-c`, `-x`, `-X`, `-w`, `-T`, `-F`, `--output`, `--header`, `--user`, `--proxy`, `--request`, `--write-out`, `--connect-timeout`, `-m`, `--max-time`; wget `-O`, `-o`, `-P`, `-U`, `--header`, `--user`, `--password`, `--post-data`, `--output-document`, `-t`, `-T` |
+| Shell text built by concatenation or interpolation (`shell_exec`, `exec`, `system`, `passthru`, `popen`, `proc_open`, backticks, `Process::fromShellCommandline`) | A non-literal piece that follows the program token and is not the value of a value-taking option. The piece directly after one of these literal tokens is that option's value: curl `-o`, `-O` excluded, `-d`, `--data*`, `-H`, `-u`, `-A`, `-e`, `-b`, `-c`, `-x`, `-X`, `-w`, `-T`, `-F`, `--output`, `--header`, `--user`, `--proxy`, `--request`, `--write-out`, `--connect-timeout`, `-m`, `--max-time`; wget `-O`, `-o`, `-P`, `-U`, `--header`, `--user`, `--password`, `--post-data`, `--output-document`, `-t`, `-T`. The long alias of a listed short option counts (`--user-agent`, `--referer`, `--cookie`, `--cookie-jar`, `--form`, `--upload-file`, `--output-file`, `--directory-prefix`, `--tries`, `--timeout`), with the further value-taking options in `curlValueOptions` and `wgetValueOptions`. An option written `--name=value` holds its value in the same word and takes no next word |
 | Argument array (`new Process([...])`, `proc_open` with an array) | An element after the program that is not an option and not the value of an option in the same list |
 | A piece that is the value of `-x`, `--proxy`, or follows `--url` | Recorded as a URL position with `operand: proxy` or `url` |
 | The program token is not literal, or is another program | No `ssrf` record |
 
 The candidate has the kind `ssrf_candidate`, the same source and guard evidence the command
 candidate has (including an existing `filter_var` guard contract), and
-`ssrf.transport: shell_client` with the program. *Why extend `ssrf` and not report under
+`ssrf.transport: shell_client` with the program. The contract reads the parts of the command
+string that the command candidate was evaluated from. It evaluates nothing itself, so a sink
+nested in the command argument is recorded once. A plain-PHP candidate selects the input
+component `source.php-input-ssrf-v1`, a copy of the PHP input interpretation that applies to
+`ssrf_candidate`. *Why extend `ssrf` and not report under
 `command`:* the two claims have different fixes. Quoting the argument with `escapeshellarg`
 removes the command injection and leaves the request to an attacker-chosen host. Today the
 report would go clean after that fix. *Why not a new family:* the claim is exactly SSRF, and the
@@ -342,14 +367,17 @@ The lane contract §4 applies in full. Additional for this branch:
    `TestExistingFamilyRequestsUnchanged` still passes with every lower-branch family included.
    `TestConfigurationPolicy` has one row per rule of the D-3 table.
    `TestConfigurationFindingsReport` asserts for one stubbed Confirmed candidate of each check:
-   `type_ids` is `insecure-configuration`, and the SARIF rule carries the check's CWE
+   `type_ids` is `insecure-configuration`, and the check's own SARIF rule
+   (`scan/insecure-configuration/<check>`) carries the check's CWE
    (`directory_listing` 548, `csrf_disabled` 352, `session_cookie_script_readable` 1004,
    `session_cookie_insecure_transport` 614, `debug_enabled` 489,
    `scheduled_privileged_writable` 732). `TestEnvValuesNeverReported` scans a fixture whose
    environment file holds a marker value under a third key and asserts the marker appears in no
    JSON, HTML, SARIF or request output.
 9. **AC9 (isolation and determinism).** `TestArchitectureBaseline` passes with every pre-existing
-   row byte-identical and one row per new fixture directory. `TestDVWASourceKey` passes. Two
+   row byte-identical and one row per new fixture directory. The §11.1 follow-on is the one
+   exception: rows of fixtures with a `recovery_delivery_candidate` move, and
+   `symfony/account` gains the entropy actions. `TestDVWASourceKey` passes. Two
    scans of each new fixture and of the sample are byte-identical.
 10. **AC10 (architecture documents).** `.zazz/architecture/configuration-analysis.md` exists and
     states: why configuration is in Code Scan and where it stops; the two allow-lists and their
@@ -381,7 +409,9 @@ The lane contract §4 applies in full. Additional for this branch:
 12. **AC12 (no drift).** While stacked,
     `git diff origin/symfony-more-analyzers-3...HEAD --stat -- scan/internal/langphp/exposure.go scan/internal/langphp/mass_assignment.go scan/internal/langphp/security_fields.go scan/internal/langphp/symfony_access.go scan/internal/langphp/authorization.go scan/internal/langphp/account_enumeration.go scan/internal/langphp/mailer.go scan/internal/langphp/recovery_delivery.go scan/internal/langphp/password_hash.go scan/internal/analysispacks/authorization.go scan/internal/analysispacks/account.go .zazz/specifications/symfony-more-analyzers-1.md .zazz/specifications/symfony-more-analyzers-2.md .zazz/specifications/symfony-more-analyzers-3.md`
     prints nothing, and the diff of `scan/internal/langphp/authorization_guards.go` only adds the
-    `address_trust` hook. After the lower PRs land and `gh stack sync` runs, the same check
+    `address_trust` hook. The §11.1 follow-on, which the owner approved after branch 3 merged,
+    is the one exception: the command lists `scan/internal/analysispacks/account.go`,
+    `scan/internal/langphp/mailer.go` and `scan/internal/langphp/recovery_delivery.go`. After the lower PRs land and `gh stack sync` runs, the same check
     against `origin/stage` holds.
 13. **AC13 (sample, offline and judged; lane acceptance).** `TestSymfonySourceKey` passes at the
     pin with all earlier assertions and the §1.1 rows: the four configuration candidates at their
@@ -451,6 +481,12 @@ prove.
 | `RD-13` | `.htaccess` with `Options +Indexes` | Directive scoped to the file's directory |
 | `RD-14` | A file over the size limit | `config_file_unread` |
 
+Beside the table, `TestEnvKeysKeepNothingElse` covers the forms that could carry another
+variable into a kept key (a continuation line, a value with spaces, a second assignment, a
+quoted sentence, a substitution). `TestApacheOptions`, `TestNginxStatements`,
+`TestDockerfileShapes`, `TestCronForms` and `TestGroupOrOtherWrite` cover the directive forms
+of D-4 to D-6.
+
 ### Symfony configuration (`testdata/symfony/configuration/`)
 
 | Case | Setting | Expected |
@@ -467,6 +503,12 @@ prove.
 | `CF-10` | `web_profiler: { toolbar: true }` at the top level | `debug_enabled` |
 | `CF-11` | The same under `when@dev` | No record |
 | `CF-12` | An unparseable `framework.yaml` | `config_file_unread`, no candidate |
+
+`CF-04` also has the `when@prod` rows: a setting only under `when@prod` is recorded with that
+block as its scope, and `when@prod: true` over a top-level `false` records nothing. `CF-01`
+asserts the eight-entry cap and the exclusion of the public entry. `CF-06` has the `ini_set`
+row. Each case is the `testdata/symfony/configuration/` project with the row's files
+overlaid on a copy.
 
 ### Deployment (`testdata/symfony/configuration/`, `…-transfer/`, `testdata/configuration/`)
 
@@ -488,6 +530,10 @@ prove.
 | `DP-14` | Transfer: `.htaccess` `Options +Indexes` in `public/files` | `directory_listing` scoped to that directory |
 | `DP-15` | Plain PHP: no framework, Apache listing and a `move_uploaded_file` destination in scope | `directory_listing` with the upload joined |
 | `DP-16` | `COPY ${SRC}` mapping and a listing | Candidate with `deploy_mapping_unresolved` |
+
+`TestDeployReadsStayInsideTheRoot` covers a `COPY` source and a cron script that leave the
+scan root and a script behind a symbolic link. `TestConfigurationDeterminism` scans a project
+with two `COPY` destinations for one file twenty times.
 
 ### Address trust (`testdata/symfony/configuration/`)
 
@@ -517,6 +563,13 @@ prove.
 | `SU-12` | `curl` with the request value after a `filter_var(…, FILTER_VALIDATE_URL)` guard | `ssrf_candidate` with the guard evidence |
 | `SU-13` | Backticks: `` `curl -s $url` `` | `ssrf_candidate` |
 | `SU-14` | Symfony service method reached from an action, value from a request header | `ssrf_candidate` under the action's entry |
+
+`SU-10` to `SU-12` and `SU-14` are in the nested Symfony project `app/`, because `Process`
+and the `filter_var` guard through a helper are Symfony forms. Further rows cover an option
+written with `=`, a long alias of a value option, a command held in a variable, `--proxy=`
+with the value attached, and a command whose argument holds another sink.
+`TestCommandCandidateUnchanged` compares every record other than the shell-client ones with
+the contract on and off, on this fixture, `symfony/services-ops` and `command`.
 
 ## 9. Execution sequence
 
@@ -563,19 +616,19 @@ type Directive struct {
 func Apache(file string, src []byte) ([]Directive, []Gap)
 func Nginx(file string, src []byte) ([]Directive, []Gap)
 type DockerImage struct {
-	PathMap   map[string]string // container path -> project path, literal operands only
+	Paths     []PathMapping     // container path <- project path, in COPY order, literal operands only
 	Owners    []Ownership       // chown, chmod and COPY --chown, with lines
 	Schedules []ScheduleLine    // from RUN echo ... > /etc/cron.d/<name> and copied cron files
 	Modules   []Directive       // a2enmod and similar
 	Gaps      []Gap
 }
-func Dockerfile(file string, src []byte) DockerImage
+func Dockerfile(file string, src []byte, isDir func(string) bool) DockerImage
 type ScheduleLine struct {
 	File, User, Command string
 	Line                int
 }
 func Cron(file string, src []byte, system bool) []ScheduleLine
-func EnvKeys(file string, src []byte) map[string]string // APP_ENV and APP_DEBUG only
+func EnvKeys(file string, src []byte) (map[string]EnvSetting, []Gap) // APP_ENV and APP_DEBUG only
 
 // analysis/configuration.go
 const ConfigurationKind = "configuration_candidate"
@@ -589,7 +642,7 @@ type ConfigurationFacts struct {
 }
 
 // langphp/php_shell_url_client.go
-func (f *phpFlow) shellURLClient(n *sitter.Node, command phpValue, argv []phpValue)
+func (f *phpFlow) shellURLClient(call *sitter.Node, shellMode, argvShape string, values []phpValue, nodes []*sitter.Node)
 ```
 
 ## 10. Definition of done
@@ -636,9 +689,11 @@ shared `phpSecret`.
   `md5` 128, `sha1` 160, `sha256` 256, `sha384` 384, `sha512` 512. Any other algorithm leaves
   the bits unchanged
 - `substr(x, start, len)` with a literal length over a `bin2hex` or `base64_encode` value takes
-  `min(in, len*4)` or `min(in, len*6)`. Otherwise the bits are unknown
-- concatenating two secrets adds the counts. A secret joined with a non-secret keeps the
-  secret's bits
+  `min(in, len*4)` or `min(in, len*6)`. The default output of `md5`, `sha1`, `hash` and
+  `hash_hmac` is hexadecimal and counts as `bin2hex` does. A digest asked for raw bytes, and
+  any other value, leaves the bits unknown
+- concatenating two secrets adds the counts. A secret joined with itself or with a non-secret
+  keeps the secret's bits
 - any other call sets the bits unknown, unless the result is the secret unchanged
 
 **Judge.** Protocol `account-components-v1` becomes `account-components-v2`. The
@@ -721,6 +776,42 @@ every file the two allow-lists opened on the sample.
 > Change no file."
 
 ## 14. Implementation and review change log
+
+### 2026-11-23 — PR #46 review resolution
+
+- **D-1.** Paths named by a deployment file go through the walked files' containment. A list
+  past 200 files records `config_list_truncated`.
+- **D-2.** One physical line at a time and plain-word values only. A continuation line had
+  joined another variable's value to `APP_ENV`. Each kept key carries its line.
+- **D-3.** Protocol `configuration-components-v5`. The history: `v1` was the first judged
+  checkpoint, where all four sample rows stayed in Review with `setting_effect: unknown`.
+  `v2` to `v4` added the `config_installed`, `scope_served` and ownership evidence and, in the
+  instruction, the answer each recorded shape should get (judged runs 2 to 4 in
+  `symfony-results.md`). The review found that the `v4` instruction held the scanner's
+  verdicts. `v5` replaces it with what each fact kind states, gives the `scope` role its own
+  evidence, and anchors each setting at its own line. The policy reports a contradiction
+  before a blocking gap. A candidate rides an entry; a project without one records
+  `configuration_entry_missing`.
+- **D-4.** `when@prod` overrides the top level. Apache `Options` merges in the current scope,
+  compares names without case and expands `All`.
+- **D-5.** An ordered path map replaces the Go map, whose iteration order changed the output
+  between runs. An `.htaccess` scope is a project path. Trailing-segment matching uses any
+  existing project directory.
+- **D-6.** `RUN` commands split on `;` as well as `&&`. Each `chown` and `chmod` has its own
+  line. A relative path needs a `cd`. Symbolic `chmod` clauses and `@` cron nicknames are read.
+- **D-9.** The contract reads the parts carried on the evaluated command value. The first
+  version evaluated the argument again and duplicated nested candidates. Long option aliases
+  and the `--name=value` form are handled. Plain PHP selects `source.php-input-ssrf-v1`;
+  without it a plain-PHP shell-client candidate could not build a request.
+- **AC8.** One SARIF rule per check. Two settings of one file are two presented findings: the
+  first version gave every setting the whole file as its byte span, and the report folded
+  them into one row.
+- **AC9, AC12.** The §11.1 exception is stated.
+- **§4, §8.** The file layout as delivered, and the tests beside each case table.
+- **§11.1.** Hexadecimal digest output and a secret joined with itself.
+- **Verification impact.** The §8 case tables are new tests with four new fixture
+  directories and baseline rows. Offline sample: 30 of 30. The judged evidence of the
+  configuration family predates `v5` and the lane acceptance run must be repeated.
 
 ### 2026-11-22 — Recovery secret bits
 

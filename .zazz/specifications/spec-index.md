@@ -87,11 +87,11 @@ with no merge recorded there reads "See specification".
 |---:|---|---|---|
 | 54 | [Phase 6: Symfony registration resolver](architecture-phase-6-symfony.md) | 2026-11-17 | Superseded by PHP Symfony support |
 | 55 | [PHP Symfony support](php-symfony-support.md) | 2026-11-19 | Merged (PR #39) |
-| 56 | [Symfony application-security analyzers: lane contract](symfony-more-analyzers.md) | 2026-11-22 | Specified. Stacked lane of four PRs |
-| 56.1 | [Branch 1: information exposure, mass assignment, security-field census](symfony-more-analyzers-1.md) | 2026-11-22 | Specified. Next to implement |
-| 56.2 | [Branch 2: entry access rules and authorization](symfony-more-analyzers-2.md) | 2026-11-22 | Specified. After 56.1 |
-| 56.3 | [Branch 3: account enumeration, recovery-secret delivery, weak password hashing](symfony-more-analyzers-3.md) | 2026-11-22 | Specified. After 56.2 |
-| 56.4 | [Branch 4: configuration, SSRF through a shell URL client, lane closure](symfony-more-analyzers-4.md) | 2026-11-22 | Specified. After 56.3 |
+| 56 | [Symfony application-security analyzers: lane contract](symfony-more-analyzers.md) | 2026-11-22 | Branches 1 to 3 merged. Branch 4 in review (PR #46) |
+| 56.1 | [Branch 1: information exposure, mass assignment, security-field census](symfony-more-analyzers-1.md) | 2026-11-22 | Merged (PR #42) |
+| 56.2 | [Branch 2: entry access rules and authorization](symfony-more-analyzers-2.md) | 2026-11-22 | Merged (PR #43) |
+| 56.3 | [Branch 3: account enumeration, recovery-secret delivery, weak password hashing](symfony-more-analyzers-3.md) | 2026-11-22 | Merged (PR #45) |
+| 56.4 | [Branch 4: configuration, SSRF through a shell URL client, lane closure](symfony-more-analyzers-4.md) | 2026-11-22 | In review (PR #46) |
 
 ## 5. Planned, in the plan's order
 

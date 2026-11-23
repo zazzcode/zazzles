@@ -87,6 +87,8 @@ func TestAccountEnumeration(t *testing.T) {
 		{"EN-16", "testdata/symfony/account", "POST /sign/magic", nil},
 		{"EN-17", "testdata/symfony/account", "POST /member/lookup", []want{{28, "redirect:member", "flash:No such member|redirect:home", ""}}},
 		{"EN-18", "testdata/account-plain-variable", "FILE /signin.php", nil},
+		{"EN-19", "testdata/account-plain-variable", "FILE /lookup.php", nil},
+		{"EN-20", "testdata/account-plain-variable", "FILE /append.php", nil},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
 			r := reports.get(t, tt.root)

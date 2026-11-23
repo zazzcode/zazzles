@@ -17,7 +17,8 @@ import (
 
 var (
 	sqlInsert  = regexp.MustCompile(`(?is)\bINSERT\s+INTO\s+` + "`?" + `(\w+)` + "`?" + `\s*\(([^)]*)\)\s*VALUES\s*\(([^)]*)\)`)
-	sqlUpdate  = regexp.MustCompile(`(?is)\bUPDATE\s+` + "`?" + `(\w+)` + "`?" + `\s+SET\s+(.+?)(?:\bWHERE\b|$)`)
+	sqlUpdate  = regexp.MustCompile(`(?is)\bUPDATE\s+` + "`?" + `(\w+)` + "`?" + `\s+SET\s+(.+?)(?:\bWHERE\b(.*)|$)`)
+	sqlDelete  = regexp.MustCompile(`(?is)\bDELETE\s+FROM\s+` + "`?" + `(\w+)` + "`?" + `\s+WHERE\b(.*)`)
 	sqlSelect  = regexp.MustCompile(`(?is)\bSELECT\b.+?\bFROM\s+` + "`?" + `(\w+)` + "`?" + `(.*)`)
 	sqlCompare = regexp.MustCompile(`(?i)\b(\w+)\s*=`)
 	sqlVar     = regexp.MustCompile(`\$(\w+)`)
@@ -156,26 +157,18 @@ func (out *plainAccountSQL) readStatements(m *phpModule, vars map[string]plainAs
 }
 
 // plainStatementText returns the SQL text of a query-call argument. A
-// variable reads the nearest preceding assignment of a string to it in the
-// same function or file scope; any other right side leaves it unread.
+// variable reads the string of the one assignment statement that reaches the
+// call; a later assignment in a branch, a compound assignment such as .=, or
+// any other right side leaves it unread.
 func plainStatementText(m *phpModule, arg *sitter.Node) string {
 	if arg.Kind() != "variable_name" {
 		return phpText(m, arg)
 	}
-	name, scope := phpText(m, arg), plainScope(arg)
-	var right *sitter.Node
-	phpWalk(scope, func(n *sitter.Node) {
-		if n.Kind() != "assignment_expression" || n.EndByte() > arg.StartByte() {
-			return
-		}
-		if right != nil && n.StartByte() < right.StartByte() {
-			return
-		}
-		if phpText(m, phpField(n, "left")) != name || plainScope(n).Id() != scope.Id() {
-			return
-		}
-		right = phpField(n, "right")
-	})
+	assign, branch := phpReachingWrites(m, arg)
+	if assign == nil || len(branch) > 0 {
+		return phpText(m, arg)
+	}
+	right := phpField(assign, "right")
 	for right != nil && right.Kind() == "parenthesized_expression" {
 		right = right.NamedChild(0)
 	}
@@ -189,16 +182,17 @@ func plainStatementText(m *phpModule, arg *sitter.Node) string {
 	return phpText(m, arg)
 }
 
-// plainScope returns the function body or file that holds n.
-func plainScope(n *sitter.Node) *sitter.Node {
-	for p := n.Parent(); p != nil; p = p.Parent() {
-		switch p.Kind() {
-		case "function_definition", "method_declaration", "anonymous_function", "anonymous_function_creation_expression", "arrow_function":
-			return p
-		}
-		n = p
+// sqlWriteWhere returns the operation, table and WHERE clause of a statement
+// that begins with UPDATE or DELETE and has a WHERE clause.
+func sqlWriteWhere(text string) (op, table, where string, ok bool) {
+	lead := len(text) - len(strings.TrimLeft(text, " \t\n\f\r"))
+	if g := sqlUpdate.FindStringSubmatchIndex(text); g != nil && g[0] == lead && g[6] >= 0 {
+		return "update", text[g[2]:g[3]], text[g[6]:g[7]], true
 	}
-	return n
+	if g := sqlDelete.FindStringSubmatchIndex(text); g != nil && g[0] == lead {
+		return "delete", text[g[2]:g[3]], text[g[4]:g[5]], true
+	}
+	return "", "", "", false
 }
 
 // plainWrites returns the table of an INSERT or UPDATE and the variable each

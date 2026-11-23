@@ -340,10 +340,12 @@ func TestAuthorizationPlainSelected(t *testing.T) {
 		id, file, operation, class string
 		line                       int
 		guard, form                string
+		// sources are the selecting request reads, all from the WHERE clause.
+		sources []string
 	}{
-		{"AZ-26", "selected.php", "update", "table:members", 5, "", ""},
-		{"AZ-27", "selected_signed.php", "update", "table:members", 7, analysis.GuardAuthenticated, ""},
-		{"AZ-29", "removed.php", "delete", "table:notes", 3, analysis.GuardOwnership, "query_scope"},
+		{"AZ-26", "selected.php", "update", "table:members", 5, "", "", []string{"file_get_contents('php://input')"}},
+		{"AZ-27", "selected_signed.php", "update", "table:members", 7, analysis.GuardAuthenticated, "", []string{"$_POST['id']"}},
+		{"AZ-29", "removed.php", "delete", "table:notes", 3, analysis.GuardOwnership, "query_scope", []string{"$_POST['id']"}},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
 			uses := byFile[tt.file]
@@ -360,8 +362,15 @@ func TestAuthorizationPlainSelected(t *testing.T) {
 			if len(f.Facets) != 1 || f.Facets[0] != analysis.FacetObjectLevel {
 				t.Fatalf("facets %v", f.Facets)
 			}
-			if len(u.Dependencies) == 0 || u.Dependencies[0].Source.Kind != "input_source" {
-				t.Fatalf("selecting sources %+v", u.Dependencies)
+			var sources []string
+			for _, d := range u.Dependencies {
+				if d.Source.Kind != "input_source" {
+					t.Fatalf("selecting source %+v", d.Source)
+				}
+				sources = append(sources, d.Source.Text)
+			}
+			if !slices.Equal(sources, tt.sources) {
+				t.Fatalf("selecting sources %q, want %q", sources, tt.sources)
 			}
 			if tt.guard == "" {
 				if len(f.Guards) != 0 {

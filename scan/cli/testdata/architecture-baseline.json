@@ -4049,6 +4049,12 @@
   "internal/langphp/testdata/account-plain-variable": {
     "uses": [
       {
+        "id": "candidate:v1:dc153703686eb9f207a24c5090a423526bc4b641734c8db77e57483444c3b5e1",
+        "kind": "sql_query_candidate",
+        "request_sha256": "a78ca065aa0b968c949a260df31789a88fc0e927bc09115a12df5f2c0c88de04",
+        "signature_sha256": "da044e1d405bda9bd7bc862a3d19de9d69010a8de7384e0e950be308dc35d8a3"
+      },
+      {
         "id": "candidate:v1:c802f21a5ac669eb6eb51a8039231cdbed709f04462803ce6cbd5bf3d610deee",
         "kind": "password_hash_candidate",
         "request_sha256": "a81e99f548ca3de8e04c995430e2b608e00ba1be090bed9ac272a04dcafb100c",
@@ -4061,20 +4067,26 @@
         "signature_sha256": "6cd50c30b3b6adf22ca5b7a91d13c3cb0880577e793e721fbf7fd9bf0151b03c"
       },
       {
+        "id": "candidate:v1:f3e955022cbd3f026762174e74d304988a7c963e63f67c7578befca97c9f45b7",
+        "kind": "sql_query_candidate",
+        "request_sha256": "de559762a4d1ebf996941e65b884fb243638c3dcd0546aaa2f89b23748627d2a",
+        "signature_sha256": "5ef4e313295c1648d7541b8946eca16b07d296f12461e5e196a0201b3016341a"
+      },
+      {
         "id": "candidate:v1:7b6e9a8dda2674d8cd728fc2966be1a8235d4a2d6c364d8601131e6c4bbf4817",
         "kind": "sql_query_candidate",
         "request_sha256": "a8020c983b74bb95f4d204230c1b86fb68f4c75dccb6880246d1a5501468eb65",
         "signature_sha256": "0611df4c00b0f7caa4adef912499ac5d9386ec44230f2d02280d44065c95e69c"
       }
     ],
-    "report_sha256": "b3c90400149d36d7fd2b11946bb6d5b3a8bc6c1c19e26a1ddff7f22872a4e0fd",
-    "sarif_sha256": "8f85552416ca0fb46f6942a0bd9ff7c398382cad3e62fe2a2227d5d4c6a9dfc0",
-    "entries": 3,
-    "registrations": 3,
-    "dispatch_bindings": 3,
-    "callables": 3,
-    "invocation_contexts": 3,
-    "uses_count": 3,
+    "report_sha256": "4b82f7ca34f8d3cbbb72c40171974e837ed396e529ddd68d0ba881d37ab1309e",
+    "sarif_sha256": "1b3c54027142839dd0caa06b6424d71738536148e4d66ec03c1031c1ef45809f",
+    "entries": 5,
+    "registrations": 5,
+    "dispatch_bindings": 5,
+    "callables": 5,
+    "invocation_contexts": 5,
+    "uses_count": 5,
     "gaps": 0
   },
   "internal/langphp/testdata/authorization-plain": {

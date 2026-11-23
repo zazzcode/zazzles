@@ -90,8 +90,9 @@ func falseText(text string) bool {
 }
 
 // falseFlag reports a flag that is the literal false or 0, or a variable
-// that an earlier assignment in the same function or file scope sets to one
-// of those. Each such assignment is returned as evidence.
+// that a write reaching the call sets to one of those. The value is "false"
+// when every reaching write is false and one dominates the call, and "false
+// on some path" otherwise. Each false write is returned as evidence.
 func falseFlag(m *phpModule, n *sitter.Node) (string, []analysis.Evidence, bool) {
 	if n == nil {
 		return "", nil, false
@@ -99,22 +100,21 @@ func falseFlag(m *phpModule, n *sitter.Node) (string, []analysis.Evidence, bool)
 	if n.Kind() != "variable_name" {
 		return "false", nil, falseText(phpText(m, n))
 	}
-	name, scope := phpText(m, n), plainScope(n)
+	assign, writes := phpReachingWrites(m, n)
+	// With no dominating assignment, a path that skips every branch keeps
+	// an earlier value.
+	other := assign == nil
+	if assign != nil {
+		writes = append([]*sitter.Node{assign}, writes...)
+	}
 	var assigns []analysis.Evidence
-	other := false
-	phpWalk(scope, func(a *sitter.Node) {
-		if a.Kind() != "assignment_expression" || a.EndByte() > n.StartByte() {
-			return
-		}
-		if phpText(m, phpField(a, "left")) != name || plainScope(a).Id() != scope.Id() {
-			return
-		}
-		if falseText(phpText(m, phpField(a, "right"))) {
-			assigns = append(assigns, m.evidence("value_assignment", a))
+	for _, w := range writes {
+		if w.Kind() == "assignment_expression" && falseText(phpText(m, phpField(w, "right"))) {
+			assigns = append(assigns, m.evidence("value_assignment", w))
 		} else {
 			other = true
 		}
-	})
+	}
 	if len(assigns) == 0 {
 		return "", nil, false
 	}

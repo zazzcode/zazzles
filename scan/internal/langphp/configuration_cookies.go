@@ -130,7 +130,7 @@ func (s *phpSet) emitSourceCookies(out *analysis.AnalysisReport, root string, sc
 		file, line := c.setting.Span.File, c.setting.Span.StartLine
 		facts := &analysis.ConfigurationFacts{
 			Check: c.check, Value: c.value, Scope: "project", Setting: c.setting,
-			Joined: append([]analysis.Evidence{s.sessionJoin(out, root, file, line)}, c.assigns...),
+			Joined: append(s.sessionJoins(out, root, file, line), c.assigns...),
 		}
 		if ev, ok := s.deployment(root).shipped(file); ok {
 			facts.Joined = append(facts.Joined, ev)
@@ -151,7 +151,7 @@ func (s *phpSet) emitPlainSource(out *analysis.AnalysisReport, root string) {
 		file, line := ev.Span.File, ev.Span.StartLine
 		facts := &analysis.ConfigurationFacts{
 			Check: analysis.CheckSessionCookieScript, Value: "false", Scope: "project", Setting: ev,
-			Joined: []analysis.Evidence{s.sessionJoin(out, root, file, line)},
+			Joined: s.sessionJoins(out, root, file, line),
 		}
 		if shipped, ok := s.deployment(root).shipped(file); ok {
 			facts.Joined = append(facts.Joined, shipped)

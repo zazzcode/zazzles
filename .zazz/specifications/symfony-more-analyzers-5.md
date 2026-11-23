@@ -7,7 +7,8 @@
   authorization claim and its facts) and [Branch 3](symfony-more-analyzers-3.md) D-7 (the
   `sql_credential_column` password basis).
 - **Worktree** `symfony-more-analyzers`.
-- **Review artifact** One draft PR whose base is `symfony-more-analyzers-4`.
+- **Review artifact** One draft PR, #47. Its base was `symfony-more-analyzers-4` and became
+  `stage` when PR #46 merged.
 - **Owner request** 2026-11-22: every lane analyzer that should record a defect of the DVWA
   sample does so. Extended the same day: every gap of the sample that an existing analyzer can
   be extended to cover is in scope; no analyzer is added.
@@ -127,6 +128,18 @@ Joined facts are those of the existing checks. In a project with no access model
 fact reads `session_authenticated: unknown`, because plain PHP has no entry access to answer it.
 The literal `ini_set` form of branch 4 D-4 is recorded for plain PHP as well as Symfony.
 
+**D-5b. Evidence added after the first judged run.** That run left the three configuration
+records in Review with `weakness` unknown. Two facts were missing, and both are now recorded.
+Neither states an answer.
+
+- A plain-PHP cookie record joins `session_started` (the first `session_start()` call) and
+  `session_checked` (the first condition that reads `$_SESSION`), in file order. Without them
+  nothing in the record says the application uses the session cookie.
+- A `request_include` fact names the request value and where it is read, taken from the path
+  candidate's first dependency.
+
+The authorization record needs a decision, not a fact: see §6.
+
 **D-5a. The configuration protocol is unchanged.** `configuration-components-v5` and its
 instruction are not edited, so every existing configuration request is byte-identical and the
 judged Symfony results stand. The two new fact kinds, `request_include` and `value_assignment`,
@@ -214,11 +227,30 @@ Source review at the pin, 2026-11-22. None of these needs a change.
 cookie), brute force, CAPTCHA bypass, CSP bypass, cryptography exercises, client-side-only
 controls, reads of other users' records (D-6) and the API module's defects (D-7).
 
-## 6. Change log
+## 6. Open question
+
+**OQ-1. What a plain-PHP entry's access is.** The judged run answered `access_adequacy` unknown
+for the request-selected write, because a plain-PHP entry carries no access record. Two facts
+could be recorded, and each changes results beyond the sample:
+
+- `authentication: none` when the entry's flow reads no `$_SESSION` value before the operation.
+  This is sound for a page with no session at all. It would also turn the recovery-page record
+  of D-2 (`AZ-30`) from Review into Confirmed, which is wrong for a page that is anonymous by
+  design. It needs D-2 narrowed first, for example to writes whose `SET` also takes a request
+  value.
+- The session-dependent early exit that dominates the operation, which is dropped today as
+  unclassified. The sample's page has one that applies at one security level only. Recording it
+  keeps the record in Review under branch 2's rule that an unclassified guard blocks, unless
+  that rule changes for plain PHP.
+
+Neither is built. The owner decides.
+
+## 7. Change log
 
 ### 2026-11-22 — Drafted and implemented
 
 Causes established by bisection on scratch copies of `testdata/account-plain` and by source
 review of `authorization.go`. Owner go-ahead the same day. The owner then widened the branch to
 every extension of an existing analyzer: D-4 and D-5 were added, and D-6 and D-7 record what
-was reviewed and not built.
+was reviewed and not built. After the judged run, D-5b added two facts to the configuration
+records, and §6 records the access question the authorization record raised.

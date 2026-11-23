@@ -383,6 +383,23 @@ func (s *phpSet) sessionJoin(out *analysis.AnalysisReport, root, file string, li
 	return s.lineEvidence(file, "session_authenticated", text, line)
 }
 
+// sessionJoins are the session facts of a cookie record. A project with no
+// access model also states where it starts a session and where a condition
+// reads it, because nothing else says the application uses the cookie.
+func (s *phpSet) sessionJoins(out *analysis.AnalysisReport, root, file string, line int) []analysis.Evidence {
+	joined := []analysis.Evidence{s.sessionJoin(out, root, file, line)}
+	if len(s.symfony) > 0 {
+		return joined
+	}
+	src := s.projectSourceSettings(root)
+	for _, ev := range []*analysis.Evidence{src.sessionStart, src.sessionCheck} {
+		if ev != nil {
+			joined = append(joined, *ev)
+		}
+	}
+	return joined
+}
+
 func falseLiteral(v string) bool {
 	switch strings.ToLower(strings.TrimSpace(v)) {
 	case "0", "false", "off", "":

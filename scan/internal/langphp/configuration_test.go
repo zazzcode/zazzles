@@ -474,7 +474,7 @@ func TestRemoteIncludeConfiguration(t *testing.T) {
 		{name: "DP-17 root php.ini allow_url_include On joins the request-reached include", fixture: plainConfiguration, checks: remote,
 			overlay: map[string]string{"php.ini": "; local overrides\nallow_url_fopen = On\nallow_url_include = On\n", "page.php": page},
 			want:    []string{key},
-			joined:  map[string][]string{key: {"request_include page.php:2 include operand reached by a request value"}},
+			joined:  map[string][]string{key: {"request_include page.php:2 include operand reached by the request value $_GET['page'] read at page.php:2"}},
 			scope:   map[string]string{key: "Dockerfile:2 copied . to /var/www/html including php.ini"},
 			gaps:    map[string][]string{key: nil}},
 		{name: "DP-17 with no Dockerfile the scope is the file", fixture: plainConfiguration, checks: remote,
@@ -502,10 +502,12 @@ func TestSourceCookieConfiguration(t *testing.T) {
 	boot := func(body string) map[string]string { return map[string]string{"boot.php": "<?php\n" + body} }
 	runConfigurationCases(t, []configurationCase{
 		{name: "SC-01 options array with both flags false", fixture: plainConfiguration, checks: cookies,
-			overlay: boot("session_set_cookie_params(['lifetime' => 0, 'secure' => false, 'httponly' => false]);\nsession_start();\n"),
+			overlay: boot("session_set_cookie_params(['lifetime' => 0, 'secure' => false, 'httponly' => false]);\nsession_start();\nif (!isset($_SESSION['uid'])) {\n    exit;\n}\n"),
 			want:    []string{transport + "2", script + "2"},
 			joined: map[string][]string{script + "2": {
 				"session_authenticated boot.php:2 session_authenticated: unknown",
+				"session_started boot.php:3 session_start()",
+				"session_checked boot.php:4 !isset($_SESSION['uid'])",
 				"config_installed Dockerfile:2 copied . to /var/www/html including boot.php"}},
 			scope: map[string]string{script + "2": "boot.php:1 application source boot.php"},
 			gaps:  map[string][]string{script + "2": nil}},
@@ -519,7 +521,8 @@ func TestSourceCookieConfiguration(t *testing.T) {
 			joined:  map[string][]string{transport + "3": {"value_assignment boot.php:2 $safe = false"}}},
 		{name: "SC-03 positional form", fixture: plainConfiguration, checks: cookies,
 			overlay: boot("session_set_cookie_params(0, '/', '', false, 0);\n"),
-			want:    []string{transport + "2", script + "2"}},
+			want:    []string{transport + "2", script + "2"},
+			lacks:   map[string][]string{script + "2": {"session_started", "session_checked"}}},
 		{name: "SC-04 setcookie of the session cookie", fixture: plainConfiguration, checks: cookies,
 			overlay: boot("setcookie(session_name(), session_id(), 0, '/', '', false, false);\n\nsetcookie(session_name(), session_id(), ['secure' => true, 'httponly' => false]);\n"),
 			want:    []string{transport + "2", script + "2", script + "4"}},

@@ -203,6 +203,9 @@ type phpSourceSettings struct {
 	iniSets map[string][]analysis.Evidence
 	// cookies are the session cookie flags a call sets to false.
 	cookies []sourceCookie
+	// sessionUse is the first session_start call and the first condition
+	// that reads $_SESSION, in file order.
+	sessionStart, sessionCheck *analysis.Evidence
 }
 
 // projectSourceSettings walks each module of a project once.
@@ -234,6 +237,19 @@ func (s *phpSet) projectSourceSettings(root string) *phpSourceSettings {
 					got.iniSets[key] = append(got.iniSets[key], m.evidence("setting", n))
 				}
 				got.cookies = append(got.cookies, sourceCookies(m, n)...)
+				if got.sessionStart == nil && len(phpArgs(n)) == 0 && strings.EqualFold(strings.TrimPrefix(phpText(m, phpField(n, "function")), `\`), "session_start") {
+					ev := m.evidence("session_started", n)
+					got.sessionStart = &ev
+				}
+			case "if_statement":
+				cond := phpField(n, "condition")
+				for cond != nil && cond.Kind() == "parenthesized_expression" {
+					cond = cond.NamedChild(0)
+				}
+				if got.sessionCheck == nil && cond != nil && readsSession(m, cond) {
+					ev := m.evidence("session_checked", cond)
+					got.sessionCheck = &ev
+				}
 			}
 		})
 	}
@@ -242,6 +258,24 @@ func (s *phpSet) projectSourceSettings(root string) *phpSourceSettings {
 	}
 	s.sourceSettings[root] = got
 	return got
+}
+
+// readsSession reports a $_SESSION element read inside n.
+func readsSession(m *phpModule, n *sitter.Node) bool {
+	found := false
+	phpWalk(n, func(c *sitter.Node) {
+		if c.Kind() != "subscript_expression" {
+			return
+		}
+		base := phpField(c, "variable")
+		if base == nil {
+			base = c.NamedChild(0)
+		}
+		if phpVarName(m, base) == "_SESSION" {
+			found = true
+		}
+	})
+	return found
 }
 
 // falseIniSet returns the directive of an ini_set call whose value is a

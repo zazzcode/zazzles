@@ -47,7 +47,8 @@ own line.
 | `state_changing_entry` | An entry that changes stored state, with the access it requires |
 | `session_authenticated` | Whether the application has entries that require a logged-in session. `unknown` in plain PHP, which has no entry access model |
 | `value_assignment` | An assignment that sets a cookie flag variable to false before the call that passes it |
-| `request_include` | An `include` or `require` whose operand a request reaches, or a statement that none is recorded |
+| `request_include` | An `include` or `require` whose operand a request reaches, with the request value and where it is read, or a statement that none is recorded |
+| `session_started`, `session_checked` | Plain PHP only: the first `session_start()` call and the first condition that reads `$_SESSION`, in file order. They show that the application uses the session the cookie carries |
 | `deployed_file` | The file the deployed application reads the setting from |
 | `schedule`, `chain`, `ownership` | The scheduled command and its user, a file it executes, and the instruction that lets another user rewrite that file |
 

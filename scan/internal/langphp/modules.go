@@ -84,9 +84,16 @@ type phpSet struct {
 	authzChanges []authzChange
 	// account is the account adapter's state.
 	account *phpAccountState
-	// configFiles, deployFiles and unreadFiles are the branch 4 allow-lists.
-	configFiles, deployFiles, unreadFiles []string
-	trustCache                            map[string]*addressTrustFacts
+	// configFiles and deployFiles are the allow-listed framework and
+	// deployment files. unreadFiles are allow-listed paths the walk did not
+	// open, and truncatedLists names a list that passed its file limit.
+	configFiles, deployFiles, unreadFiles, truncatedLists []string
+	// textFiles, deployViews, sourceSettings and trustCache hold what the
+	// configuration checks read, so each file is read and parsed once.
+	textFiles      map[string]textFile
+	deployViews    map[string]*deployView
+	sourceSettings map[string]*phpSourceSettings
+	trustCache     map[string]*addressTrustFacts
 }
 
 type phpWrite struct {
@@ -120,6 +127,7 @@ func openPHPSet(inv parse.Inventory) (*phpSet, error) {
 	s.configFiles = append([]string{}, inv.Config...)
 	s.deployFiles = append([]string{}, inv.Deploy...)
 	s.unreadFiles = append([]string{}, inv.Unread...)
+	s.truncatedLists = append([]string{}, inv.Truncated...)
 	s.loadSymfonyProjects(inv.Config)
 	s.twig = newTwigInventory(inv.Templates, root)
 	s.doctrine = newDoctrineStorage()

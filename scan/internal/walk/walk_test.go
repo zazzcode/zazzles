@@ -3,6 +3,7 @@ package walk
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -203,8 +204,8 @@ func TestWalkDeployList(t *testing.T) {
 			t.Errorf("deploy read %s", banned)
 		}
 	}
-	if len(got.Deploy) != 200 || !got.DeployTruncated {
-		t.Fatalf("deploy cap: %d truncated %v", len(got.Deploy), got.DeployTruncated)
+	if len(got.Deploy) != 200 || !reflect.DeepEqual(got.Truncated, []string{"deploy"}) {
+		t.Fatalf("deploy cap: %d truncated %v", len(got.Deploy), got.Truncated)
 	}
 	if !slices.Contains(got.Unread, "docker/link.conf") || !slices.Contains(got.Unread, "docker/big.conf") {
 		t.Fatalf("unread %v", got.Unread)

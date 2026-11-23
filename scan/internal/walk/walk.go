@@ -13,6 +13,7 @@ import (
 	"io/fs"
 	"path"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -61,9 +62,9 @@ type Result struct {
 	// Unread are allow-listed paths that were not opened: a symlink or a
 	// file over the size limit.
 	Unread []string
-	// ConfigTruncated and DeployTruncated record a list that passed 200 files.
-	ConfigTruncated bool
-	DeployTruncated bool
+	// Truncated names each allow-list ("config", "deploy") that passed 200
+	// files. The files after the limit are not read.
+	Truncated []string
 	// ByLanguage counts the supported files per language.
 	ByLanguage map[lang.Language]int
 	// Examined counts every regular file considered, supported or not.
@@ -115,7 +116,7 @@ func Walk(root string, opts Options) (*Result, error) {
 		if entry.Name() == "composer.json" {
 			composers[filepath.ToSlash(filepath.Dir(rel))] = true
 		}
-		if entry.Type()&fs.ModeSymlink != 0 && (deployPath(rel) || configFileName(pathBase(rel))) {
+		if entry.Type()&fs.ModeSymlink != 0 && (deployPath(rel) || configFileName(filepath.Base(rel))) {
 			result.Unread = append(result.Unread, rel)
 			return nil
 		}
@@ -123,7 +124,7 @@ func Walk(root string, opts Options) (*Result, error) {
 		case ".json", ".yaml", ".twig":
 			artifacts = append(artifacts, rel)
 		}
-		if configFileName(pathBase(rel)) && filepath.Ext(rel) != ".yaml" && entry.Type().IsRegular() {
+		if configFileName(filepath.Base(rel)) && filepath.Ext(rel) != ".yaml" && entry.Type().IsRegular() {
 			artifacts = append(artifacts, rel)
 		}
 		if !entry.Type().IsRegular() {
@@ -134,12 +135,12 @@ func Walk(root string, opts Options) (*Result, error) {
 		if err != nil {
 			return err
 		}
-		if info.Size() > fileCap && (deployPath(rel) || configFileName(pathBase(rel))) {
+		if info.Size() > fileCap && (deployPath(rel) || configFileName(filepath.Base(rel))) {
 			result.Unread = append(result.Unread, rel)
 			return nil
 		}
 		if deployPath(rel) {
-			noteList(&result.Deploy, &result.DeployTruncated, &result.Unread, rel, info.Size())
+			result.noteDeploy(rel)
 		}
 
 		language, ok := lang.Detect(rel)
@@ -187,7 +188,8 @@ func (r *Result) projectArtifacts(files []string, composers map[string]bool) {
 	}
 	sort.Strings(r.Config)
 	if len(r.Config) > listCap {
-		r.ConfigTruncated = true
+		r.Truncated = append(r.Truncated, "config")
+		sort.Strings(r.Truncated)
 		r.Config = r.Config[:listCap]
 	}
 	sort.Strings(r.Templates)
@@ -196,16 +198,14 @@ func (r *Result) projectArtifacts(files []string, composers map[string]bool) {
 const listCap = 200
 const fileCap = 256 << 10
 
-func noteList(list *[]string, truncated *bool, unread *[]string, rel string, size int64) {
-	if size > fileCap {
-		*unread = append(*unread, rel)
+func (r *Result) noteDeploy(rel string) {
+	if len(r.Deploy) < listCap {
+		r.Deploy = append(r.Deploy, rel)
 		return
 	}
-	if len(*list) >= listCap {
-		*truncated = true
-		return
+	if !slices.Contains(r.Truncated, "deploy") {
+		r.Truncated = append(r.Truncated, "deploy")
 	}
-	*list = append(*list, rel)
 }
 
 func underComposerVar(dir string, composers map[string]bool) bool {
@@ -238,22 +238,15 @@ func configFileName(base string) bool {
 	return false
 }
 
-func pathBase(rel string) string {
-	if i := strings.LastIndex(rel, "/"); i >= 0 {
-		return rel[i+1:]
-	}
-	return rel
-}
-
 // deployPath is the deployment allow-list. A schedule's script is opened
 // later, only when a parsed line names a project file.
 func deployPath(rel string) bool {
-	base := pathBase(rel)
+	base := path.Base(rel)
 	if base == "Dockerfile" || strings.HasPrefix(base, "Dockerfile.") || strings.HasSuffix(base, ".dockerfile") || base == ".htaccess" || base == "crontab" || strings.HasSuffix(base, ".cron") {
 		return true
 	}
 	dir := path.Dir(rel)
-	if pathBase(dir) == "cron.d" {
+	if path.Base(dir) == "cron.d" {
 		return true
 	}
 	if (strings.HasSuffix(base, ".conf") || base == "php.ini") && deployDir(dir) {

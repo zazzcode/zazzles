@@ -1,8 +1,10 @@
 package langphp
 
 import (
+	"slices"
 	"strings"
 
+	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"gopkg.in/yaml.v3"
 )
@@ -10,132 +12,151 @@ import (
 func (s *phpSet) emitSymfonyChecks(out *analysis.AnalysisReport, p *symfonyProject) {
 	s.emitFramework(out, p)
 	s.emitProfiler(out, p)
-	s.emitIniSets(out, p.root)
+	for _, ev := range s.projectSourceSettings(p.root).iniSets["session.cookie_httponly"] {
+		s.emitCookie(out, p, analysis.CheckSessionCookieScript, ev.Span.File, ev.Text, ev.Span.StartLine, s.projectScope(p))
+	}
+}
+
+// configDocument parses one allow-listed YAML file of a project. A listed
+// file that cannot be read or parsed is a gap, and no check runs on it.
+func (s *phpSet) configDocument(out *analysis.AnalysisReport, p *symfonyProject, name string) (string, *yaml.Node) {
+	file := joinRoot(p.root, "config/packages/"+name)
+	if slices.Contains(s.unreadFiles, file) || !slices.Contains(s.configFiles, file) {
+		// finishConfiguration already states an unread file.
+		return file, nil
+	}
+	if ev, ok := s.fileText(file); ok {
+		if doc, ok := symfonyYAML(ev.Text); ok {
+			return file, doc
+		}
+	}
+	out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_file_unread", Detail: name + " was not read", At: analysis.Span{File: file, StartLine: 1}})
+	return file, nil
+}
+
+// scopedNode is a setting and the environment block it was written in.
+type scopedNode struct {
+	node  *yaml.Node
+	scope string
+	line  int
+}
+
+// effectiveSettings returns the value of a key path as the deployed
+// application reads it. A when@prod block overrides the top level. Any
+// other when@ block except when@dev and when@test is an environment of its
+// own and is returned beside it. The development and test blocks are not
+// deployed and are not read.
+func effectiveSettings(doc *yaml.Node, keys ...string) []scopedNode {
+	lookup := func(node *yaml.Node) *yaml.Node {
+		for _, key := range keys {
+			node = symfonyYAMLValue(node, key)
+		}
+		return node
+	}
+	var out []scopedNode
+	top := scopedNode{node: lookup(doc), scope: "project"}
+	if doc == nil || doc.Kind != yaml.MappingNode {
+		return nil
+	}
+	for i := 0; i+1 < len(doc.Content); i += 2 {
+		key := doc.Content[i].Value
+		if !strings.HasPrefix(key, "when@") || key == "when@dev" || key == "when@test" {
+			continue
+		}
+		node := lookup(doc.Content[i+1])
+		if node == nil {
+			continue
+		}
+		if key == "when@prod" {
+			top = scopedNode{node: node, scope: key, line: doc.Content[i].Line}
+			continue
+		}
+		out = append(out, scopedNode{node: node, scope: key, line: doc.Content[i].Line})
+	}
+	if top.node != nil {
+		out = append([]scopedNode{top}, out...)
+	}
+	return out
+}
+
+// settingScope is the scope evidence of a YAML setting: the when@ block it
+// is in, else the project.
+func (s *phpSet) settingScope(p *symfonyProject, file string, n scopedNode) analysis.Evidence {
+	if n.line > 0 {
+		return s.lineEvidence(file, "scope", n.scope, n.line)
+	}
+	return s.projectScope(p)
 }
 
 func (s *phpSet) emitFramework(out *analysis.AnalysisReport, p *symfonyProject) {
-	file := joinRoot(p.root, "config/packages/framework.yaml")
-	if containsPath(s.unreadFiles, file) {
-		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_file_unread", Detail: "framework.yaml was not read", At: analysis.Span{File: file, StartLine: 1}})
+	file, doc := s.configDocument(out, p, "framework.yaml")
+	if doc == nil {
 		return
 	}
-	if !containsPath(s.configFiles, file) {
-		return
-	}
-	ev, ok := readSymfonyConfig(s.root, file)
-	if !ok {
-		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_file_unread", Detail: "framework.yaml was not read", At: analysis.Span{File: file, StartLine: 1}})
-		return
-	}
-	doc, ok := symfonyYAML(ev.Text)
-	if !ok {
-		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_file_unread", Detail: "framework.yaml was not read", At: analysis.Span{File: file, StartLine: 1}})
-		return
-	}
-	fw := symfonyYAMLValue(skipWhen(doc), "framework")
-	if fw == nil {
-		return
-	}
-	if node := symfonyYAMLValue(fw, "csrf_protection"); disabledCSRF(node) {
-		facts := &analysis.ConfigurationFacts{
-			Check: analysis.CheckCSRFDisabled, Value: "false", Scope: "project",
-			Setting: s.lineEvidence(file, "setting", "csrf_protection: false", node.Line),
+	for _, n := range effectiveSettings(doc, "framework", "csrf_protection") {
+		if !disabledCSRF(n.node) {
+			continue
 		}
-		if ev, ok := s.projectInstalled(p.root, file, s.projectImages(p.root)); ok {
+		facts := &analysis.ConfigurationFacts{
+			Check: analysis.CheckCSRFDisabled, Value: "false", Scope: n.scope,
+			Setting: s.lineEvidence(file, "setting", "csrf_protection: false", n.node.Line),
+		}
+		if ev, ok := s.deployment(p.root).shipped(file); ok {
 			facts.Joined = append(facts.Joined, ev)
 		}
 		for _, e := range s.sessionEntries(out, p.root) {
 			facts.Joined = append(facts.Joined, s.lineEvidence(e.Location.Span.File, "state_changing_entry", entryJoin(e), e.Location.Span.StartLine))
 		}
-		facts.Mitigations = s.csrfMitigations(p.root)
-		s.emitConfig(out, p.root, facts, nil)
+		facts.Mitigations = s.projectSourceSettings(p.root).csrf
+		s.emitConfig(out, p.root, facts, s.settingScope(p, file, n), nil)
 	}
-	session := symfonyYAMLValue(fw, "session")
-	if node := symfonyYAMLValue(session, "cookie_httponly"); falseScalar(node) {
-		s.emitCookie(out, p.root, analysis.CheckSessionCookieScript, file, "cookie_httponly: false", node.Line)
+	for _, n := range effectiveSettings(doc, "framework", "session", "cookie_httponly") {
+		if falseScalar(n.node) {
+			s.emitCookie(out, p, analysis.CheckSessionCookieScript, file, "cookie_httponly: false", n.node.Line, s.settingScope(p, file, n))
+		}
 	}
-	if node := symfonyYAMLValue(session, "cookie_secure"); falseScalar(node) {
-		s.emitCookie(out, p.root, analysis.CheckSessionCookieTransport, file, "cookie_secure: false", node.Line)
+	for _, n := range effectiveSettings(doc, "framework", "session", "cookie_secure") {
+		if falseScalar(n.node) {
+			s.emitCookie(out, p, analysis.CheckSessionCookieTransport, file, "cookie_secure: false", n.node.Line, s.settingScope(p, file, n))
+		}
 	}
 }
 
-func (s *phpSet) emitCookie(out *analysis.AnalysisReport, root, check, file, text string, line int) {
+func (s *phpSet) emitCookie(out *analysis.AnalysisReport, p *symfonyProject, check, file, text string, line int, scope analysis.Evidence) {
 	facts := &analysis.ConfigurationFacts{
 		Check: check, Value: "false", Scope: "project", Setting: s.lineEvidence(file, "setting", text, line),
+		Joined: []analysis.Evidence{s.sessionJoin(out, p.root, file, line)},
 	}
-	joined := "session_authenticated: no"
-	if s.hasSessionEntry(out, root) {
-		joined = "session_authenticated: yes"
-	}
-	facts.Joined = []analysis.Evidence{s.lineEvidence(file, "session_authenticated", joined, line)}
-	if ev, ok := s.projectInstalled(root, file, s.projectImages(root)); ok {
+	if ev, ok := s.deployment(p.root).shipped(file); ok {
 		facts.Joined = append(facts.Joined, ev)
 	}
-	s.emitConfig(out, root, facts, nil)
-}
-
-func (s *phpSet) emitIniSets(out *analysis.AnalysisReport, root string) {
-	for _, ev := range s.iniSetCookie(root, "session.cookie_httponly") {
-		s.emitCookie(out, root, analysis.CheckSessionCookieScript, ev.Span.File, ev.Text, ev.Span.StartLine)
-	}
+	s.emitConfig(out, p.root, facts, scope, nil)
 }
 
 func (s *phpSet) emitProfiler(out *analysis.AnalysisReport, p *symfonyProject) {
-	file := joinRoot(p.root, "config/packages/web_profiler.yaml")
-	if !containsPath(s.configFiles, file) {
+	file, doc := s.configDocument(out, p, "web_profiler.yaml")
+	if doc == nil {
 		return
 	}
-	ev, ok := readSymfonyConfig(s.root, file)
-	if !ok {
-		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_file_unread", Detail: "web_profiler.yaml was not read", At: analysis.Span{File: file, StartLine: 1}})
-		return
+	nodes := effectiveSettings(doc, "web_profiler", "toolbar")
+	if len(nodes) == 0 {
+		nodes = effectiveSettings(doc, "web_profiler", "enabled")
 	}
-	doc, ok := symfonyYAML(ev.Text)
-	if !ok {
-		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_file_unread", Detail: "web_profiler.yaml was not read", At: analysis.Span{File: file, StartLine: 1}})
-		return
-	}
-	node := symfonyYAMLValue(symfonyYAMLValue(skipWhen(doc), "web_profiler"), "toolbar")
-	if node == nil {
-		node = symfonyYAMLValue(symfonyYAMLValue(skipWhen(doc), "web_profiler"), "enabled")
-	}
-	if !trueScalar(node) {
-		return
-	}
-	facts := &analysis.ConfigurationFacts{
-		Check: analysis.CheckDebugEnabled, Value: "true",
-		Setting: s.lineEvidence(file, "setting", "web_profiler enabled", node.Line),
-		Joined:  []analysis.Evidence{s.lineEvidence(file, "deployed_file", file, node.Line)},
-	}
-	s.emitConfig(out, p.root, facts, nil)
-}
-
-// skipWhen drops when@test and when@dev blocks. Other when@ keys stay.
-func skipWhen(doc *yaml.Node) *yaml.Node {
-	if doc == nil || doc.Kind != yaml.MappingNode {
-		return doc
-	}
-	out := *doc
-	out.Content = nil
-	for i := 0; i+1 < len(doc.Content); i += 2 {
-		key := doc.Content[i].Value
-		if key == "when@test" || key == "when@dev" {
+	for _, n := range nodes {
+		if !trueScalar(n.node) {
 			continue
 		}
-		out.Content = append(out.Content, doc.Content[i], doc.Content[i+1])
+		facts := &analysis.ConfigurationFacts{
+			Check: analysis.CheckDebugEnabled, Value: "true", Scope: n.scope,
+			Setting: s.lineEvidence(file, "setting", "web_profiler enabled", n.node.Line),
+			Joined:  []analysis.Evidence{s.lineEvidence(file, "deployed_file", file, n.node.Line)},
+		}
+		s.emitConfig(out, p.root, facts, s.settingScope(p, file, n), nil)
 	}
-	return &out
 }
 
 func disabledCSRF(node *yaml.Node) bool {
-	if node == nil {
-		return false
-	}
-	if falseScalar(node) {
-		return true
-	}
-	enabled := symfonyYAMLValue(node, "enabled")
-	return falseScalar(enabled)
+	return falseScalar(node) || falseScalar(symfonyYAMLValue(node, "enabled"))
 }
 
 func falseScalar(node *yaml.Node) bool {
@@ -158,4 +179,75 @@ func trueScalar(node *yaml.Node) bool {
 		return true
 	}
 	return false
+}
+
+// phpSourceSettings is what one walk of a project's PHP source gives the
+// configuration checks.
+type phpSourceSettings struct {
+	// csrf are the isCsrfTokenValid calls and csrf_token_id form options.
+	csrf []analysis.Evidence
+	// iniSets are ini_set calls with a literal false value, by directive.
+	iniSets map[string][]analysis.Evidence
+}
+
+// projectSourceSettings walks each module of a project once.
+func (s *phpSet) projectSourceSettings(root string) *phpSourceSettings {
+	if got, ok := s.sourceSettings[root]; ok {
+		return got
+	}
+	got := &phpSourceSettings{iniSets: map[string][]analysis.Evidence{}}
+	for _, file := range s.files {
+		m := s.modules[file]
+		if !underRoot(root, file) || m == nil || m.tree == nil {
+			continue
+		}
+		phpWalk(m.tree.RootNode(), func(n *sitter.Node) {
+			switch n.Kind() {
+			case "member_call_expression", "scoped_call_expression":
+				if strings.EqualFold(phpText(m, phpField(n, "name")), "isCsrfTokenValid") {
+					got.csrf = append(got.csrf, m.evidence("mitigation", n))
+				}
+			case "array_element_initializer":
+				if n.NamedChildCount() == 0 {
+					return
+				}
+				if key, ok := phpStringLiteral(m, n.NamedChild(0)); ok && key == "csrf_token_id" {
+					got.csrf = append(got.csrf, m.evidence("mitigation", n))
+				}
+			case "function_call_expression":
+				if key, ok := falseIniSet(m, n); ok {
+					got.iniSets[key] = append(got.iniSets[key], m.evidence("setting", n))
+				}
+			}
+		})
+	}
+	if s.sourceSettings == nil {
+		s.sourceSettings = map[string]*phpSourceSettings{}
+	}
+	s.sourceSettings[root] = got
+	return got
+}
+
+// falseIniSet returns the directive of an ini_set call whose value is a
+// literal false: '0', 'off', 'false', ”, 0 or false.
+func falseIniSet(m *phpModule, n *sitter.Node) (string, bool) {
+	if !strings.EqualFold(strings.TrimPrefix(phpText(m, phpField(n, "function")), `\`), "ini_set") {
+		return "", false
+	}
+	args := phpArgs(n)
+	if len(args) < 2 {
+		return "", false
+	}
+	name, ok := phpStringLiteral(m, args[0])
+	if !ok {
+		return "", false
+	}
+	val, ok := phpStringLiteral(m, args[1])
+	if !ok {
+		switch text := strings.ToLower(phpText(m, args[1])); text {
+		case "false", "0":
+			val, ok = text, true
+		}
+	}
+	return name, ok && falseLiteral(val)
 }

@@ -1,26 +1,28 @@
 package langphp
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
-	"github.com/zazzcode/zazzles/scan/internal/deployconf"
 	"gopkg.in/yaml.v3"
 )
 
-// addressTrustFacts is the value branch 4 writes into the branch 2 field.
-// Proxy values ride evidence text so the field's JSON shape stays status
-// and evidence.
+// addressTrustFacts is the value written into an address guard's
+// address_trust field. The proxy values ride the evidence text, so the
+// field keeps its two members, status and evidence, and the authorization
+// protocol does not change.
 type addressTrustFacts struct {
 	status string
-	keep   bool
+	// unread is set when a file that could state the trust was not read.
+	unread bool
 	text   string
 	at     analysis.Evidence
 }
 
 func (f *phpFlow) attachAddressTrust(g *analysis.AuthorizationGuard) {
 	facts := f.set.trustFor(f.symfony)
-	if facts == nil || facts.keep {
+	if facts.unread {
 		g.AddressTrust = &analysis.AddressTrust{Status: "unread"}
 		g.Gaps = append(g.Gaps, analysis.Gap{
 			Kind: "address_trust_configuration_unread", Detail: "framework client IP trust is not read", At: g.Evidence.Span,
@@ -28,152 +30,119 @@ func (f *phpFlow) attachAddressTrust(g *analysis.AuthorizationGuard) {
 		return
 	}
 	ev := facts.at
-	ev.Kind = "address_trust"
-	ev.Text = facts.text
-	ev.ModelText = facts.text
+	ev.Kind, ev.Text, ev.ModelText = "address_trust", facts.text, facts.text
 	g.AddressTrust = &analysis.AddressTrust{Status: facts.status, Evidence: ev}
 }
 
 func (s *phpSet) trustFor(p *symfonyProject) *addressTrustFacts {
-	key := "."
-	if p != nil {
-		key = p.root
-	}
-	if s.trustCache == nil {
-		s.trustCache = map[string]*addressTrustFacts{}
-	}
-	if got, ok := s.trustCache[key]; ok {
-		return got
-	}
-	got := s.readTrust(p)
-	s.trustCache[key] = got
-	return got
-}
-
-func (s *phpSet) readTrust(p *symfonyProject) *addressTrustFacts {
 	root := "."
 	if p != nil {
 		root = p.root
 	}
+	if got, ok := s.trustCache[root]; ok {
+		return got
+	}
+	if s.trustCache == nil {
+		s.trustCache = map[string]*addressTrustFacts{}
+	}
+	s.trustCache[root] = s.readTrust(root)
+	return s.trustCache[root]
+}
+
+// proxyTrust is the proxy evidence of one project, by the place that
+// states it.
+type proxyTrust struct {
+	proxies, headers          string // framework.trusted_proxies and trusted_headers
+	remoteIP                  bool   // Apache remoteip module enabled
+	remoteHeader, remoteProxy string // RemoteIPHeader and RemoteIPTrustedProxy
+	realHeader, realFrom      string // nginx real_ip_header and set_real_ip_from
+}
+
+// readTrust reads the framework and web-server proxy settings of a project.
+// The value is unread when no file that could state them is on the
+// allow-lists, or when one of them could not be read or parsed.
+func (s *phpSet) readTrust(root string) *addressTrustFacts {
 	fw := joinRoot(root, "config/packages/framework.yaml")
-	listed := containsPath(s.configFiles, fw)
-	unreadable := containsPath(s.unreadFiles, fw)
-	var confs []string
-	for _, file := range s.deployFiles {
-		if !underRoot(root, file) {
-			continue
-		}
-		if strings.HasSuffix(file, ".conf") || strings.HasSuffix(file, ".htaccess") {
-			confs = append(confs, file)
-		}
+	listed := slices.Contains(s.configFiles, fw)
+	v := s.deployment(root)
+	if slices.Contains(s.unreadFiles, fw) || v.webUnread || (!listed && len(v.web) == 0) {
+		return &addressTrustFacts{unread: true}
 	}
-	if !listed && !unreadable && len(confs) == 0 {
-		// No trust file was on the allow-list. Leave the branch 2 value.
-		return &addressTrustFacts{keep: true}
-	}
-	if unreadable || (listed && !s.readable(fw)) {
-		return &addressTrustFacts{keep: true}
-	}
-	var parts []string
-	proxies, headers := "", ""
-	if listed {
-		if ev, ok := readSymfonyConfig(s.root, fw); ok {
-			if doc, ok := symfonyYAML(ev.Text); ok {
-				if node := symfonyYAMLValue(symfonyYAMLValue(doc, "framework"), "trusted_proxies"); node != nil {
-					proxies = yamlScalarList(node)
-				}
-				if node := symfonyYAMLValue(symfonyYAMLValue(doc, "framework"), "trusted_headers"); node != nil {
-					headers = yamlScalarList(node)
-				}
-			} else {
-				return &addressTrustFacts{keep: true}
-			}
-		}
-	}
-	remoteIP, remoteHeader, remoteProxy := false, "", ""
-	realHeader, realFrom := "", ""
-	for _, file := range confs {
-		raw, ok := s.readAllow(file)
-		if !ok {
-			return &addressTrustFacts{keep: true}
-		}
-		apache, _ := deployconf.Apache(file, raw)
-		nginx, _ := deployconf.Nginx(file, raw)
-		dirs := append(apache, nginx...)
-		for _, d := range dirs {
-			val := ""
-			if len(d.Values) > 0 {
-				val = d.Values[0]
-			}
-			switch strings.ToLower(d.Name) {
-			case "remoteipheader":
-				remoteHeader = val
-			case "remoteiptrustedproxy":
-				remoteProxy = val
-			case "real_ip_header":
-				realHeader = val
-			case "set_real_ip_from":
-				realFrom = val
-			}
-		}
-	}
-	for _, file := range s.deployFiles {
-		if !underRoot(root, file) || !dockerFile(file) {
-			continue
-		}
-		raw, ok := s.readAllow(file)
-		if !ok {
-			continue
-		}
-		img := deployconf.Dockerfile(file, raw)
-		for _, m := range img.Modules {
-			if len(m.Values) > 0 && m.Values[0] == "remoteip" {
-				remoteIP = true
-			}
-		}
-	}
-	if proxies != "" {
-		parts = append(parts, "trusted_proxies="+proxies)
-	}
-	if headers != "" {
-		parts = append(parts, "trusted_headers="+headers)
-	}
-	if remoteIP {
-		parts = append(parts, "remoteip=enabled")
-	}
-	if remoteHeader != "" {
-		parts = append(parts, "RemoteIPHeader="+remoteHeader)
-	}
-	if remoteProxy != "" {
-		parts = append(parts, "RemoteIPTrustedProxy="+remoteProxy)
-	}
-	if realHeader != "" {
-		parts = append(parts, "real_ip_header="+realHeader)
-	}
-	if realFrom != "" {
-		parts = append(parts, "set_real_ip_from="+realFrom)
-	}
-	status := "not_configured"
-	switch {
-	case proxies != "" && headers != "":
-		status = "configured"
-	case remoteHeader != "" && remoteProxy != "":
-		status = "configured"
-	case realHeader != "" && realFrom != "":
-		status = "configured"
-	case remoteIP && remoteHeader == "":
-		status = "partial"
-	case (proxies != "") != (headers != "") || (realHeader != "") != (realFrom != "") || (remoteHeader != "") != (remoteProxy != ""):
-		status = "partial"
-	}
+	var t proxyTrust
 	at := analysis.Evidence{Span: analysis.Span{File: fw, StartLine: 1, EndLine: 1}}
 	if listed {
-		if ev, ok := readSymfonyConfig(s.root, fw); ok {
-			at = ev
-			at.Span.StartLine, at.Span.EndLine = 1, 1
+		ev, ok := s.fileText(fw)
+		doc, parsed := symfonyYAML(ev.Text)
+		if !ok || !parsed {
+			return &addressTrustFacts{unread: true}
+		}
+		at = s.lineEvidence(fw, "address_trust", "", 1)
+		if n := effectiveSettings(doc, "framework", "trusted_proxies"); len(n) > 0 {
+			t.proxies = yamlScalarList(n[0].node)
+		}
+		if n := effectiveSettings(doc, "framework", "trusted_headers"); len(n) > 0 {
+			t.headers = yamlScalarList(n[0].node)
 		}
 	}
-	return &addressTrustFacts{status: status, text: strings.Join(parts, "; "), at: at}
+	t.readServer(v)
+	return &addressTrustFacts{status: t.status(), text: t.text(), at: at}
+}
+
+// readServer reads the Apache and nginx directives and the enabled modules.
+func (t *proxyTrust) readServer(v *deployView) {
+	for _, conf := range v.web {
+		for _, d := range conf.directives {
+			switch strings.ToLower(d.Name) {
+			case "remoteipheader":
+				t.remoteHeader = d.Values[0]
+			case "remoteiptrustedproxy":
+				t.remoteProxy = d.Values[0]
+			case "real_ip_header":
+				t.realHeader = d.Values[0]
+			case "set_real_ip_from":
+				t.realFrom = d.Values[0]
+			}
+		}
+	}
+	for _, img := range v.images {
+		for _, m := range img.Modules {
+			t.remoteIP = t.remoteIP || m.Values[0] == "remoteip"
+		}
+	}
+}
+
+func (t proxyTrust) text() string {
+	var parts []string
+	add := func(name, value string) {
+		if value != "" {
+			parts = append(parts, name+"="+value)
+		}
+	}
+	add("trusted_proxies", t.proxies)
+	add("trusted_headers", t.headers)
+	if t.remoteIP {
+		parts = append(parts, "remoteip=enabled")
+	}
+	add("RemoteIPHeader", t.remoteHeader)
+	add("RemoteIPTrustedProxy", t.remoteProxy)
+	add("real_ip_header", t.realHeader)
+	add("set_real_ip_from", t.realFrom)
+	return strings.Join(parts, "; ")
+}
+
+// status is configured when one mechanism names both the header and the
+// proxies it trusts, partial when a mechanism is half stated or a proxy
+// module is enabled without its header, and not_configured otherwise.
+func (t proxyTrust) status() string {
+	both := func(a, b string) bool { return a != "" && b != "" }
+	half := func(a, b string) bool { return (a != "") != (b != "") }
+	switch {
+	case both(t.proxies, t.headers), both(t.remoteHeader, t.remoteProxy), both(t.realHeader, t.realFrom):
+		return "configured"
+	case t.remoteIP && t.remoteHeader == "", half(t.proxies, t.headers), half(t.realHeader, t.realFrom), half(t.remoteHeader, t.remoteProxy):
+		return "partial"
+	}
+	return "not_configured"
 }
 
 func yamlScalarList(node *yaml.Node) string {

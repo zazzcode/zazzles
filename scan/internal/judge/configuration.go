@@ -5,7 +5,9 @@ import (
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
 )
 
-// applyConfigurationPolicy follows the lane policy order and D-3.
+// applyConfigurationPolicy sets the claim status in the order every family
+// uses: protocol, facts and evidence, answers that contradict a recorded
+// fact, blocking gaps, then the status the answers give.
 func applyConfigurationPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	a.FindingStatus, a.Protection = "needs_evidence", "uncertain"
 	gap := func(kind, detail string) {
@@ -27,13 +29,6 @@ func applyConfigurationPolicy(use analysis.CandidateUse, a *analysis.Assessment)
 			return
 		}
 	}
-	for _, g := range append(append([]analysis.Gap{}, use.Gaps...), c.Blockers...) {
-		if g.Kind == "deploy_mapping_unresolved" || g.Kind == "config_file_unread" {
-			gap("evidence_missing", "A blocking configuration gap is recorded.")
-			a.BlockingGaps[len(a.BlockingGaps)-1].Kind = g.Kind
-			return
-		}
-	}
 	facts := use.Configuration
 	answers := a.Answers
 	if answers["mitigation"] == "adequate" && len(facts.Mitigations) == 0 {
@@ -43,6 +38,13 @@ func applyConfigurationPolicy(use analysis.CandidateUse, a *analysis.Assessment)
 	if answers["setting_effect"] == "not_in_effect" && configInstalled(facts) && scopeMapped(use, facts) {
 		gap("answers_inconsistent", "not_in_effect contradicts a mapped installed setting.")
 		return
+	}
+	for _, g := range append(append([]analysis.Gap{}, use.Gaps...), c.Blockers...) {
+		if g.Kind == "deploy_mapping_unresolved" || g.Kind == "config_file_unread" {
+			gap("evidence_missing", "A blocking configuration gap is recorded.")
+			a.BlockingGaps[len(a.BlockingGaps)-1].Kind = g.Kind
+			return
+		}
 	}
 	switch {
 	case answers["setting_effect"] == "not_in_effect" || answers["weakness"] == "benign" || (answers["mitigation"] == "adequate" && len(facts.Mitigations) > 0):

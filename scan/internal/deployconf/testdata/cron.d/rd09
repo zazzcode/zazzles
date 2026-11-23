@@ -1,0 +1,3 @@
+# nightly
+MAILTO=ops@example.test
+*/5 * * * * root /srv/site/tools/tick.sh

@@ -59,4 +59,29 @@ class EntropyController extends AbstractController
         $mailer->send((new Email())->to($request->get('mail'))->text('Code: ' . $code));
         return new Response('done');
     }
+
+    #[Route('/entropy/digest-slice', methods: ['POST'])]
+    public function digestSlice(Request $request, MailerInterface $mailer): Response
+    {
+        $code = substr(sha1(random_bytes(16)), 0, 6);
+        $mailer->send((new Email())->to($request->get('mail'))->text('Code: ' . $code));
+        return new Response('done');
+    }
+
+    #[Route('/entropy/raw-digest-slice', methods: ['POST'])]
+    public function rawDigestSlice(Request $request, MailerInterface $mailer): Response
+    {
+        $code = substr(md5(random_bytes(16), true), 0, 6);
+        $mailer->send((new Email())->to($request->get('mail'))->text('Code: ' . $code));
+        return new Response('done');
+    }
+
+    #[Route('/entropy/twice', methods: ['POST'])]
+    public function twice(Request $request, MailerInterface $mailer): Response
+    {
+        $half = bin2hex(random_bytes(4));
+        $code = $half . $half;
+        $mailer->send((new Email())->to($request->get('mail'))->text('Code: ' . $code));
+        return new Response('done');
+    }
 }

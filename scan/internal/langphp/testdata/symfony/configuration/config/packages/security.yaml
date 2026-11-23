@@ -1,0 +1,4 @@
+security:
+  access_control:
+    - { path: ^/locked, roles: ROLE_MEMBER }
+    - { path: ^/open, roles: PUBLIC_ACCESS }

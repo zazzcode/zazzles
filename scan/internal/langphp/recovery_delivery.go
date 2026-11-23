@@ -135,10 +135,10 @@ func (f *phpFlow) adjustSecret(name string, nodes []*sitter.Node, v phpValue) ph
 		sec.encoding = "base64"
 	case "md5":
 		sec.bits = capBits(sec.bits, 128)
-		sec.encoding = ""
+		sec.encoding = f.digestEncoding(nodes, 1)
 	case "sha1":
 		sec.bits = capBits(sec.bits, 160)
-		sec.encoding = ""
+		sec.encoding = f.digestEncoding(nodes, 1)
 	case "hash", "hash_hmac":
 		algo, ok := "", false
 		if len(nodes) > 0 {
@@ -149,7 +149,11 @@ func (f *phpFlow) adjustSecret(name string, nodes []*sitter.Node, v phpValue) ph
 		} else if out, known := hashOutputBits(algo); known {
 			sec.bits = capBits(sec.bits, out)
 		}
-		sec.encoding = ""
+		binary := 2
+		if name == "hash_hmac" {
+			binary = 3
+		}
+		sec.encoding = f.digestEncoding(nodes, binary)
 	case "substr":
 		length, ok := literalInt(f.module, nthNode(nodes, 2))
 		scale := 4.0
@@ -168,6 +172,16 @@ func (f *phpFlow) adjustSecret(name string, nodes []*sitter.Node, v phpValue) ph
 	}
 	v.secret = &sec
 	return v
+}
+
+// digestEncoding is "hex" for a digest function's default output. The
+// argument at binary asks for raw bytes, and then a later substr no longer
+// counts four bits a character.
+func (f *phpFlow) digestEncoding(nodes []*sitter.Node, binary int) string {
+	if n := nthNode(nodes, binary); n != nil && !strings.EqualFold(phpText(f.module, n), "false") {
+		return ""
+	}
+	return "hex"
 }
 
 func (f *phpFlow) csprngBits(name string, nodes []*sitter.Node) float64 {

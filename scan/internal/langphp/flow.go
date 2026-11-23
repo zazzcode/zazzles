@@ -128,6 +128,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		v := phpValue{}
 		candidates := []phpLiteral{{}}
 		allLiteral, interpolated := true, false
+		var pieces []phpPiece
 		for i := uint(0); i < n.ChildCount(); i++ {
 			c := n.Child(i)
 			if c == nil {
@@ -138,6 +139,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 				for j := range candidates {
 					candidates[j].text += text
 				}
+				pieces = append(pieces, phpPiece{text: text})
 				continue
 			}
 			if !c.IsNamed() {
@@ -145,6 +147,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			}
 			interpolated = true
 			part := f.eval(c)
+			pieces = append(pieces, phpPiecesOf(part, m, c)...)
 			if len(part.deps) > 0 || len(part.literals) == 0 {
 				allLiteral = false
 				part.literals = nil
@@ -178,6 +181,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 			return v
 		}
 		v.built = true
+		v.pieces = phpBoundPieces(pieces)
 		if t := phpUnquote(v.template); phpInsertRe.MatchString(t) || phpUpdateRe.MatchString(t) {
 			v.sqlWrites = []phpSQLWrite{{template: v.template, deps: v.deps}}
 		}
@@ -254,7 +258,7 @@ func (f *phpFlow) eval(n *sitter.Node) phpValue {
 		}
 		return v
 	case "shell_command_expression":
-		v := f.evalChildren(n)
+		v := f.shellCommandValue(n)
 		f.commandUse(n, "shell_exec", []string{"shell_command"}, []phpValue{v}, []*sitter.Node{n})
 		return phpValue{unknown: true, evidence: []analysis.Evidence{m.evidence("command_output", n)}}
 	case "include_expression", "include_once_expression", "require_expression", "require_once_expression":
@@ -325,6 +329,7 @@ func (f *phpFlow) binaryValues(n *sitter.Node, op string, a, b phpValue) phpValu
 		if a.template != "" && b.template != "" {
 			v.template = a.template + b.template
 		}
+		v.pieces = phpBoundPieces(append(phpPiecesOf(a, m, phpField(n, "left")), phpPiecesOf(b, m, phpField(n, "right"))...))
 		return phpConcatTransfer(v, m.evidence("string_construction", n))
 	case "==", "===", "!=", "!==", "<", ">", "<=", ">=", "<=>":
 		return phpTransfer(phpProtect(phpCombine(a, b), "non_content"), m.evidence("comparison", n))
@@ -343,8 +348,12 @@ func (f *phpFlow) assign(n *sitter.Node) phpValue {
 		if phpConstantText(base) {
 			prefix += phpPrefixOf(v)
 		}
+		pieces := append(phpPiecesOf(base, f.module, left), phpPiecesOf(v, f.module, right)...)
 		v = phpCombine(base, v)
 		v.built, v.prefix = true, prefix
+		if strings.Contains(phpText(f.module, n), ".=") {
+			v.pieces = phpBoundPieces(pieces)
+		}
 	}
 	return f.assignValue(n, left, v)
 }

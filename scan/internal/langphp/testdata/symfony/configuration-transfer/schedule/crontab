@@ -1,0 +1,3 @@
+# m h dom mon dow command
+0 * * * * /srv/app/jobs/report.sh
+30 * * * * sh /srv/app/tasks/sweep.sh

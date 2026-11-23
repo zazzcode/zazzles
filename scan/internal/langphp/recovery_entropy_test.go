@@ -20,6 +20,9 @@ func TestRecoveryEntropy(t *testing.T) {
 		{"POST /entropy/digest", "128", analysis.SecretCSPRNG},
 		{"POST /entropy/uuid", "122", analysis.SecretCSPRNG},
 		{"POST /entropy/weak", `"unknown"`, analysis.SecretWeak},
+		{"POST /entropy/digest-slice", "24", analysis.SecretCSPRNG},
+		{"POST /entropy/raw-digest-slice", `"unknown"`, analysis.SecretCSPRNG},
+		{"POST /entropy/twice", "32", analysis.SecretCSPRNG},
 	} {
 		t.Run(tt.entry, func(t *testing.T) {
 			uses := accountUses(r, analysis.RecoveryDeliveryKind, tt.entry)

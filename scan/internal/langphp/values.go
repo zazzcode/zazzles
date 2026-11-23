@@ -70,6 +70,10 @@ type phpValue struct {
 	objectID int
 	// prefix is the literal text a concatenated string starts with.
 	prefix string
+	// pieces are the parts of a concatenated or interpolated string in
+	// order, each literal text or a value. Only the shell URL client reads
+	// them. Any join or call other than concatenation drops them.
+	pieces []phpPiece
 	// table/columns carry SQL read provenance for storage linking.
 	table   string
 	columns []string
@@ -179,11 +183,13 @@ func phpJoinSide(a, b phpValue, join func(a, b phpValue) phpValue, concat bool) 
 
 // mergedSecret keeps one secret pointer when only one side has one.
 // Concatenating two secrets allocates a new one and adds the bit counts.
+// A secret joined with itself is still one secret: repeating a value adds
+// no entropy.
 func mergedSecret(a, b *phpSecret, concat bool) *phpSecret {
 	if a == nil {
 		return b
 	}
-	if b == nil || !concat {
+	if b == nil || !concat || a == b || a.source.Span == b.source.Span {
 		return a
 	}
 	bits := -1.0
@@ -217,6 +223,7 @@ func phpCombine(a, b phpValue) phpValue {
 	if phpEmpty(b) {
 		return a
 	}
+	a.pieces = nil
 	if len(a.literals) == 1 && len(b.literals) == 1 && a.constant && b.constant {
 		a.literals = []phpLiteral{{text: a.literals[0].text + b.literals[0].text}}
 	} else {

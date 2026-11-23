@@ -25,17 +25,21 @@ func TestConfigurationPolicy(t *testing.T) {
 		installed                                     bool
 		haveMitigation                                bool
 		blocking                                      string
+		noScope                                       bool
 	}{
-		{"confirmed none", "in_effect", "weakens", "none", "confirmed_vulnerability", "", false, false, ""},
-		{"confirmed inadequate", "in_effect", "weakens", "inadequate", "confirmed_vulnerability", "", false, false, ""},
-		{"protected not in effect", "not_in_effect", "weakens", "none", "protected_for_claim", "", false, false, ""},
-		{"protected benign", "in_effect", "benign", "none", "protected_for_claim", "", false, false, ""},
-		{"protected adequate", "in_effect", "weakens", "adequate", "protected_for_claim", "", false, true, ""},
-		{"inconsistent adequate without mitigation", "in_effect", "weakens", "adequate", "needs_evidence", "configuration_answers_inconsistent", false, false, ""},
-		{"inconsistent not in effect when installed", "not_in_effect", "weakens", "none", "needs_evidence", "configuration_answers_inconsistent", true, false, ""},
-		{"blocking mapping", "in_effect", "weakens", "none", "needs_evidence", "deploy_mapping_unresolved", false, false, "deploy_mapping_unresolved"},
-		{"blocking unread", "in_effect", "weakens", "none", "needs_evidence", "config_file_unread", false, false, "config_file_unread"},
-		{"protocol missing", "in_effect", "weakens", "none", "needs_evidence", "configuration_protocol_missing", false, false, ""},
+		{"confirmed none", "in_effect", "weakens", "none", "confirmed_vulnerability", "", false, false, "", false},
+		{"confirmed inadequate", "in_effect", "weakens", "inadequate", "confirmed_vulnerability", "", false, false, "", false},
+		{"protected not in effect", "not_in_effect", "weakens", "none", "protected_for_claim", "", false, false, "", false},
+		{"protected benign", "in_effect", "benign", "none", "protected_for_claim", "", false, false, "", false},
+		{"protected adequate", "in_effect", "weakens", "adequate", "protected_for_claim", "", false, true, "", false},
+		{"inconsistent adequate without mitigation", "in_effect", "weakens", "adequate", "needs_evidence", "configuration_answers_inconsistent", false, false, "", false},
+		{"inconsistent not in effect when installed", "not_in_effect", "weakens", "none", "needs_evidence", "configuration_answers_inconsistent", true, false, "", false},
+		{"blocking mapping", "in_effect", "weakens", "none", "needs_evidence", "deploy_mapping_unresolved", false, false, "deploy_mapping_unresolved", false},
+		{"blocking unread", "in_effect", "weakens", "none", "needs_evidence", "config_file_unread", false, false, "config_file_unread", false},
+		{"protocol missing", "in_effect", "weakens", "none", "needs_evidence", "configuration_protocol_missing", false, false, "", false},
+		{"a contradiction is reported before a blocking gap", "in_effect", "weakens", "adequate", "needs_evidence", "configuration_answers_inconsistent", false, false, "deploy_mapping_unresolved", false},
+		{"scope evidence missing", "in_effect", "weakens", "none", "needs_evidence", "configuration_evidence_missing", false, false, "", true},
+		{"unknown effect stays in review", "unknown", "weakens", "none", "needs_evidence", "", false, false, "", false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			u := base()
@@ -48,6 +52,9 @@ func TestConfigurationPolicy(t *testing.T) {
 			if tt.blocking != "" {
 				u.Gaps = []analysis.Gap{{Kind: tt.blocking}}
 			}
+			if tt.noScope {
+				delete(u.Completeness.Evidence, "scope")
+			}
 			a := &analysis.Assessment{QuestionVersion: analysispacks.ConfigurationProtocol, Answers: map[string]string{
 				"setting_effect": tt.effect, "weakness": tt.weakness, "mitigation": tt.mitigation,
 			}}
@@ -57,6 +64,9 @@ func TestConfigurationPolicy(t *testing.T) {
 			applyConfigurationPolicy(u, a)
 			if a.FindingStatus != tt.want {
 				t.Fatalf("status %s, want %s (%s)", a.FindingStatus, tt.want, a.Reason)
+			}
+			if tt.gap != "" && len(a.BlockingGaps) > 0 && a.BlockingGaps[0].Kind != tt.gap {
+				t.Fatalf("first gap %s, want %s", a.BlockingGaps[0].Kind, tt.gap)
 			}
 			if tt.gap != "" {
 				found := false

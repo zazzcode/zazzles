@@ -12,12 +12,13 @@ var configurationFindingTypes = []analysis.FindingType{
 		Remediation:    "Change the setting, or keep the joined condition from applying: disable directory listing where uploads are stored, keep CSRF protection on for state-changing entries, mark the session cookie HttpOnly and Secure, and do not run a writable project file from a privileged schedule."},
 }
 
+// configurationRule gives each check its own SARIF rule, so a result carries
+// the CWE and the help text of its own check.
 func configurationRule(u analysis.CandidateUse) (string, string) {
-	check := ""
-	if u.Configuration != nil {
-		check = u.Configuration.Check
+	if u.Configuration == nil || analysispacks.ConfigurationCheckCWE(u.Configuration.Check) == "" {
+		return "scan/insecure-configuration", ""
 	}
-	return "scan/insecure-configuration", analysispacks.ConfigurationCheckCWE(check)
+	return "scan/insecure-configuration/" + u.Configuration.Check, analysispacks.ConfigurationCheckCWE(u.Configuration.Check)
 }
 
 func configurationGuidance(u analysis.CandidateUse) Guidance {
@@ -51,9 +52,6 @@ func describeConfiguration(u analysis.CandidateUse, f *analysis.Finding) {
 	confirmed := a.Status == "completed" && a.QuestionVersion == analysispacks.ConfigurationProtocol && len(a.BlockingGaps) == 0 && a.FindingStatus == "confirmed_vulnerability"
 	f.Title = "Configuration setting needs review"
 	f.Summary = "Setting " + x.Check + " is recorded with the application facts it joins (" + analysispacks.ConfigurationCheckCWE(x.Check) + ")."
-	if f.Status != "protected_for_claim" {
-		f.Title = "Configuration setting needs review"
-	}
 	if confirmed {
 		f.RecordType, f.Status = "finding", "confirmed_vulnerability"
 		f.Title = "Insecure configuration supported by source analysis"

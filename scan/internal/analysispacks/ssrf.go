@@ -150,5 +150,12 @@ func ssrfDescriptors() ([]Component, error) {
 	input.Applicability = []string{"ssrf_candidate"}
 	input.Compatibility = protocols
 	input.Tests = []string{"TestSSRFComponentSelection"}
-	return append(out, input), nil
+	// Plain PHP selects its own copy of the PHP input interpretation, so the
+	// shared one keeps its applicability and no earlier request changes.
+	php := phpInputComponent()
+	php.ID = "source.php-input-ssrf-v1"
+	php.Applicability = []string{"ssrf_candidate"}
+	php.Compatibility = protocols
+	php.Tests = []string{"TestPHPShellURLClient", "TestArchitectureBaseline"}
+	return append(out, input, php), nil
 }

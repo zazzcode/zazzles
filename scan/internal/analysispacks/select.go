@@ -136,7 +136,7 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 			switch use.InputFacts.Framework {
 			case "php":
 				input = "source.php-input-v1"
-				if family.Name == "upload" || family.Name == "deserialization" {
+				if family.Name == "upload" || family.Name == "deserialization" || family.Name == "ssrf" {
 					input = "source.php-input-" + family.Name + "-v1"
 				}
 				if use.Kind == TemplateKind {

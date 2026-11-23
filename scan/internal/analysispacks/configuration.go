@@ -2,8 +2,9 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
-// ConfigurationProtocol versions the configuration claim questions (D-3).
-const ConfigurationProtocol = "configuration-components-v4"
+// ConfigurationProtocol versions the configuration claim: its questions,
+// the meaning of its evidence roles and the instruction sent with them.
+const ConfigurationProtocol = "configuration-components-v5"
 
 // ConfigurationRoles are the evidence obligations of a configuration claim.
 func ConfigurationRoles() []string { return []string{"setting", "scope"} }

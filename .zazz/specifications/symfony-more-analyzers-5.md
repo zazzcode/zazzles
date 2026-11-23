@@ -279,3 +279,10 @@ assignment, through one resolver for both, with cases `EN-19`, `EN-20` and the a
 `SC-05` rows; the new cases fail on the earlier code. D-5a moved the configuration protocol to
 `v6`, because D-5b changed the request after the judged run. Offline scans of both samples keep
 every record id.
+
+### 2026-11-23 — Judged run under `v6`
+
+On the owner's word, one judged DVWA run at the resolution (`run-4266343441`, 205 requests).
+With the session facts joined, `DVWA-CONF-03` is Confirmed. `DVWA-CONF-01`, `DVWA-CONF-02` and
+`DVWA-AUTHZ-01` stay in Review, and the other 264 records keep their status. The sample report
+is this run. [DVWA results](../evaluation/dvwa-results.md#judged-run-after-the-pr-47-review)

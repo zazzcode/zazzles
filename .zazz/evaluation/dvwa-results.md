@@ -170,5 +170,44 @@ before and after:
 | DVWA | `run-30307840` | `run-1929276367` | 265 | Same ids. Only the three configuration records change, in `analysis_components` (protocol `v6`); their values and joined facts are unchanged |
 | vuln-symfony | `run-2912914246` | `run-2779026670` | 84 | Same ids. Only the four configuration records change, in `analysis_components` |
 
-`TestDVWASourceKey` and `TestSymfonySourceKey` pass. The three DVWA configuration records have
-not been judged under `v6`. A judged run needs the owner's word.
+`TestDVWASourceKey` and `TestSymfonySourceKey` pass.
+
+## Judged run after the PR #47 review
+
+One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
+after, on the owner's word of 2026-11-23 (UTC): `b5-v6-judged` (`run-4266343441`), scanner
+`d368a68`, configuration protocol `configuration-components-v6`, OpenAI `gpt-6-luna`, default
+judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`. 205 requests, 208 assessments, 1,727,093
+input tokens, zero failures. 57 records were not sent because their blockers have no
+model-resolvable question. The sample report in `docs/samples/dvwa/` is this run.
+
+265 records: 159 Confirmed, 39 practice, 34 needs-review, 15 needs-evidence, 18 Protected.
+Against `run-3384633700`, 264 records keep their status and one moves:
+
+| Record | Before (`v5`) | Now (`v6`) | Source review |
+|---|---|---|---|
+| `session_cookie_script_readable` at `dvwa/includes/dvwaPage.inc.php:72` | needs-evidence | Confirmed | Correct. `$httponly = false` below the `impossible` level (`:55`); the application starts its session at `:98` and checks `$_SESSION['dvwa']` at `:125` |
+
+Answer probabilities of the three configuration records and the authorization record:
+
+| Record | Question | Answer | Probabilities |
+|---|---|---|---|
+| Cookie, script readable | `setting_effect` | `in_effect` | in_effect 0.72, unknown 0.20, not_in_effect 0.08 |
+| | `weakness` | `weakens` | weakens 0.82, unknown 0.17, benign 0.01 |
+| | `mitigation` | `none` | 0.96 |
+| Cookie, insecure transport | `setting_effect` | `in_effect` | in_effect 0.74, unknown 0.17, not_in_effect 0.09 |
+| | `weakness` | `unknown` | unknown 0.70, weakens 0.26, benign 0.04 |
+| | `mitigation` | `none` | 0.99 |
+| Remote include | `setting_effect` | `in_effect` | in_effect 0.63, unknown 0.31, not_in_effect 0.06 |
+| | `weakness` | `unknown` | unknown 0.50, weakens 0.34, benign 0.16 |
+| | `mitigation` | `none` | 0.98 |
+| Authorization | `subject_control` | `request_selected` | 1.00 |
+| | `guard_adequacy` | `none` | 1.00 |
+| | `access_adequacy` | `unknown` | unknown 0.87, inadequate 0.12, adequate 0.01 |
+
+The session facts moved the script-readable cookie: `weakness` went from unknown 0.84 to
+weakens 0.82. For the insecure-transport cookie, weakens fell from 0.44 to 0.26, with unknown
+at 0.70; no recorded fact states how the site is served.
+For the remote include, the request source in the join raised weakens from 0.06 to 0.34. The
+authorization record is unchanged; it waits on the contract's open question about plain-PHP
+entry access. No answer was scripted and no second run was made.

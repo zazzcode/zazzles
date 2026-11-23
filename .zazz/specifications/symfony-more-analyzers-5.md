@@ -127,6 +127,12 @@ Joined facts are those of the existing checks. In a project with no access model
 fact reads `session_authenticated: unknown`, because plain PHP has no entry access to answer it.
 The literal `ini_set` form of branch 4 D-4 is recorded for plain PHP as well as Symfony.
 
+**D-5a. The configuration protocol is unchanged.** `configuration-components-v5` and its
+instruction are not edited, so every existing configuration request is byte-identical and the
+judged Symfony results stand. The two new fact kinds, `request_include` and `value_assignment`,
+state what they are in their own text. Only the new check has a new effect statement.
+*Reviewer's call:* naming the two kinds in the instruction would be clearer and needs `v6`.
+
 **D-6. Reads stay out of the plain-PHP authorization claim.** Decided, not built. The existing
 read claim (branch 2 D-5, facet `data_exposure`) is bounded by the census: the response must
 carry a `credential`, `login_identifier` or `role_source` field. The sample's reads

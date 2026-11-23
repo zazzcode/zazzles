@@ -457,6 +457,48 @@ classes:
 The first two rows are recall gaps of analyzers this lane delivered. They are follow-up
 work and are not fixed in PR #46. The sample report in `docs/samples/dvwa/` is this run.
 
+### DVWA offline run after branch 5
+
+[Branch 5](../specifications/symfony-more-analyzers-5.md) closes the first three rows above.
+Offline scan (no model call) of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean
+before and after, 2026-11-22, run `run-1467553345`, scanner branch `symfony-more-analyzers-5`.
+
+265 records: the 249 of `run-3336289847` with unchanged ids, and 16 new. None of the 16 is
+judged yet, so the published sample report is unchanged.
+
+| DVWA defect | Cause of the gap | Now recorded |
+|---|---|---|
+| Passwords stored as MD5 | The plain-PHP rule matched the source text of the query-call argument. DVWA assigns each statement to a variable first, so the text was `$query` or `$insert` and neither the digest write nor the login comparison was read | 12 `password_hash_candidate` records, basis `sql_credential_column`: the `md5` call in `vulnerabilities/csrf/source/low.php:12`, `medium.php:14`, `high.php:39` and `vulnerabilities/captcha/source/low.php:57`, `medium.php:65`, `high.php:27`, each under its `index.php` entry and its own file entry. The compared column is read at `login.php:46` |
+| Authorisation bypass | By design: branch 2 D-9 limited plain PHP to an address check over a constant-text write | 1 `authorization_candidate`, `object_level`, subject `table:users`, at `vulnerabilities/authbypass/change_user_details.php:48`; the selecting source is the request body read at `:26`. No guard is recorded: the level-and-user test at `:11` is an unclassified check |
+| Remote file inclusion enabled | Root `php.ini` was outside the deployment directories, and `allow_url_include` was not a check | 1 `configuration_candidate`, check `remote_include_enabled`, at `php.ini:5`, joined to the request-reached include at `vulnerabilities/fi/index.php:36`; scope is `Dockerfile:20`, which copies the tree into the document root |
+| Session cookie flags | The cookie checks did not read flags set in PHP code | 2 `configuration_candidate` records at `dvwa/includes/dvwaPage.inc.php:72`: `session_cookie_insecure_transport` (`$secure = false` at `:60`) and `session_cookie_script_readable`, value `false on some path` (`$httponly = false` at `:55`, on every level but `impossible`) |
+
+Not recorded, and why:
+
+- `login.php:27` and `vulnerabilities/brute/source/*.php` hash the submitted password to compare
+  it. The record is made where a digest is written to the column, not where it is compared.
+- The `impossible` level files (`csrf`, `captcha`) write the digest through bound parameters,
+  which the static pass does not read.
+- `vulnerabilities/authbypass/get_user_data.php` and the `bac` module are reads of ids, names and
+  avatars. The read claim is bounded by census fields, and none of these is one (branch 5 D-6).
+- A password `UPDATE` whose `WHERE` names the session user (`csrf`, `captcha`) selects no row by
+  request and records no authorization candidate.
+- `setcookie('security', …)` at `dvwaPage.inc.php:226` and the `dvwaSession` cookie of `weak_id`
+  are not the session cookie. A name does not establish that a cookie identifies a session.
+- The API module (`vulnerabilities/api/src/`): a password digest in version 1 responses, a
+  caller-set `level`, and user endpoints with no token. Its users are objects in memory, so no
+  census, storage or entry access anchors a claim (branch 5 D-7). Its command injection is
+  recorded.
+
+The Symfony sample at its pin is unchanged by branch 5: an offline scan records the same 84
+records as `b4-review-accept`, and `TestSymfonySourceKey` and `TestDVWASourceKey` pass.
+
+Other lane analyzers, by source review: account enumeration (every login failure gives one
+message), recovery delivery (no mail flow) and mass assignment (no request bag copied to a row)
+have nothing to record. Information exposure keeps its two records. CSRF, weak session
+identifiers, brute force, CAPTCHA, CSP, cryptography and client-side-only controls have no
+analyzer and stay not covered.
+
 ### Closing table — sample README, 21 entries
 
 Judged on `b4-j7-full` at scanner `54dd0b0`, and again on `b4-review-accept` at scanner

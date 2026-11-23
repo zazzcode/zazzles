@@ -45,7 +45,9 @@ own line.
 | `scope_mapping`, `scope_served` | The project directory the scope resolves to, and whether it is inside the document root |
 | `upload_destination` | A directory inside the scope where the application stores request-supplied files |
 | `state_changing_entry` | An entry that changes stored state, with the access it requires |
-| `session_authenticated` | Whether the application has entries that require a logged-in session |
+| `session_authenticated` | Whether the application has entries that require a logged-in session. `unknown` in plain PHP, which has no entry access model |
+| `value_assignment` | An assignment that sets a cookie flag variable to false before the call that passes it |
+| `request_include` | An `include` or `require` whose operand a request reaches, or a statement that none is recorded |
 | `deployed_file` | The file the deployed application reads the setting from |
 | `schedule`, `chain`, `ownership` | The scheduled command and its user, a file it executes, and the instruction that lets another user rewrite that file |
 

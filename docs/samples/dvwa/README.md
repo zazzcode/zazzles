@@ -3,13 +3,13 @@
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json.gz) ·
 [SARIF](findings.sarif.gz) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
-[Results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run-after-branch-5) ·
+[Results](../../../.zazz/evaluation/dvwa-results.md#judged-run-after-branch-5) ·
 [Command bypass results](../../../.zazz/evaluation/command-bypass-support-results.md) ·
 [PHP evaluation](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (2026-11-22, plain-PHP recall)
+## Current report (2026-11-23, plain-PHP recall)
 
-A full static scan of DVWA revision `a1978a2` with scanner `681843f` and OpenAI `gpt-6-luna`
+A full static scan of DVWA revision `a1978a2` with scanner `63835df` (formerly `681843f`) and OpenAI `gpt-6-luna`
 produced 265 records across 174 entries. The report presents 158 Confirmed, 39 practice findings,
 50 Review (34 needs-review and 16 needs-evidence), and 18 Protected.
 
@@ -35,7 +35,14 @@ produced 265 records across 174 entries. The report presents 158 Confirmed, 39 p
   1,726,639 input tokens, zero failures. 57 records stay in Review without a request because
   their blockers have no model-resolvable question. Offline replay was not repeated.
 
-The evidence is in the [Symfony results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run-after-branch-5).
+The evidence is in the [DVWA results](../../../.zazz/evaluation/dvwa-results.md#judged-run-after-branch-5).
+
+**Since this report.** The scanner now also joins where the application starts and checks its
+session to the two cookie records, and the request value that reaches the include to the
+remote-include record. The configuration protocol is now `configuration-components-v6`, whose
+instruction states those facts. An offline scan keeps all 265 record ids. The three
+configuration records have not been judged with the new facts, so this report still shows them
+in Review. [Offline runs after the review](../../../.zazz/evaluation/dvwa-results.md#offline-runs-after-the-pr-47-review)
 
 ## Previous report (2026-11-23, application-security analyzers)
 
@@ -60,7 +67,7 @@ produced 249 records across 174 entries. The report presents 146 Confirmed, 39 p
   1,659,153 input tokens, zero failures. 57 records stay in Review without a request because
   their blockers have no model-resolvable question. Offline replay was not repeated.
 
-The evidence is in the [Symfony results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run).
+The evidence is in the [DVWA results](../../../.zazz/evaluation/dvwa-results.md#judged-run-after-branch-4).
 
 ## Previous report (2026-11-20, command bypass support)
 

@@ -1,11 +1,11 @@
 {
-  "date": "2026-11-22",
+  "date": "2026-11-23",
   "target_revision": "a1978a2fed195acd093010af6395f86a281537ca",
   "upstream": "https://github.com/digininja/DVWA",
   "detection_guide": "../../../.zazz/evaluation/dvwa-detection-guide.md",
   "source_run": "run-3384633700",
   "source_json_sha256": "b48adadaee39f062caa17937b68d92e4ee7fa35a2d9d2840e3ad548e3faa37b8",
-  "scanner_revision": "681843f (symfony-more-analyzers-5, PR #47)",
+  "scanner_revision": "63835df (symfony-more-analyzers-5, PR #47; formerly 681843f)",
   "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
@@ -36,7 +36,7 @@
   },
   "runtime_confirmation": "none; static source judgments only",
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-  "results": "../../../.zazz/evaluation/symfony-results.md",
+  "results": "../../../.zazz/evaluation/dvwa-results.md",
   "previous": {
     "date": "2026-11-23",
     "source_run": "run-3336289847",

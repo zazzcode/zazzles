@@ -41,7 +41,7 @@ and troubleshooting, use [offline evidence inspection](running-scans.md#offline-
 | Account | Enumeration from a literal SQL `SELECT` on a credential table with `echo`, `header`, `http_response_code` and `die` answers, recovery secrets sent with `mail()`, and digests of request values stored in a compared column (family `account`, [analysis rules](analysis/account-security.md)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects, and a request value in a URL position of literal `curl` or `wget` ([SSRF rules](analysis/ssrf.md)) |
-| Configuration | Allow-listed Apache, nginx, Dockerfile, cron, php.ini and the two environment keys, plus Symfony framework files ([analysis rules](analysis/configuration.md)) |
+| Configuration | Allow-listed Apache, nginx, Dockerfile, cron, php.ini (including a `php.ini` at the scan root) and the two environment keys, Symfony framework files, and the session cookie flags PHP code passes to `session_set_cookie_params` or a session `setcookie` ([analysis rules](analysis/configuration.md)) |
 | Logging | Verified PSR-3 and PHP log emission in Symfony projects ([logging rules](analysis/sensitive-data-logging.md)) |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 

@@ -34,9 +34,10 @@ open branch now. The last column says how close the two are:
 | `8d97b93` | `23cbb0e` | Establish that a configuration setting is in effect from recorded facts | Same tree |
 | `681843f` | `63835df` (branch `symfony-more-analyzers-5`) | Record the offline DVWA run after branch 5 | Same tree |
 
-The sample notes and provenance files under `docs/samples/dvwa/` and
-`docs/samples/vuln-symfony/` cite `8d97b93` and `681843f`. Both are "same tree", so the
-published reports come from the scanner that is on `stage` and on the open branch.
+The sample notes and provenance files under `docs/samples/vuln-symfony/` cite `8d97b93`, which
+is "same tree" as `23cbb0e` on `stage`. Those under `docs/samples/dvwa/` cite `63835df` (formerly
+`681843f`): the branch 5 scanner before the facts added after its judged run and before the
+review resolution. See the [DVWA results](dvwa-results.md#judged-run-after-branch-5).
 
 ## Offline baseline
 
@@ -446,156 +447,9 @@ Before and after on the review's cases, with binaries built from `763b9c3` and f
 | `.env` with `APP_ENV=dev\` then `APP_SECRET=s3cr3t-marker` | Setting text `APP_ENV=dev APP_SECRET=s3cr3t-marker`; the marker is in the JSON report 9 times | No `APP_ENV` record from the malformed line, and the marker is absent |
 | `RUN set -eux; chown -R web:web /srv/site/tools; true` with a root cron line | No `scheduled_privileged_writable` record | Recorded |
 
-### DVWA offline review
+### DVWA
 
-Offline scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and after,
-`b4-offline` (`run-3455210590`). `TestDVWASourceKey` still passes.
-
-| Kind | Candidates |
-|---|---:|
-| `configuration_candidate` | 0 |
-| `ssrf_candidate` with `transport: shell_client` | 0 |
-
-Source review of the files the allow-lists opened: `Dockerfile` copies the tree with
-`--chown=www-data` and enables `rewrite`, and it has no cron line, so the scheduled-writable
-check correctly records nothing. `vulnerabilities/api/.htaccess` is rewrite rules only.
-Root `php.ini` is outside the deploy directories, so it is not read. The command sinks are
-`ping`, not `curl` or `wget`. No candidate was wrong, and none was missing for a check the
-lists cover.
-
-### DVWA judged run
-
-One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
-after, on the owner's word of 2026-11-23: `b4-review-accept` (`run-3336289847`), scanner
-`8d97b93`, OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`.
-189 requests, 192 assessments, 1,659,153 input tokens, zero failures. 57 records were not
-sent because their blockers have no model-resolvable question.
-
-249 records: 146 Confirmed, 39 practice, 34 needs-review, 12 needs-evidence, 18 Protected.
-Against the published report of 2026-11-20 (`run-2645224166`, 247 records), every one of
-the 247 keeps its status. The two new records are `info_exposure_candidate` and both are
-Confirmed after source review: `phpinfo.php:8` (`phpinfo()` behind login) and
-`dvwa/includes/dvwaPage.inc.php:388` under `setup.php` (the PHP version and server state).
-
-No `configuration_candidate`, `authorization_candidate`, `password_hash_candidate`,
-`account_enumeration_candidate`, `recovery_delivery_candidate`, `mass_assignment_candidate`
-or shell-client `ssrf_candidate` is recorded. Source review of what DVWA holds in those
-classes:
-
-| DVWA defect | Location | Recorded | Why |
-|---|---|---|---|
-| Passwords stored as MD5 | `login.php:27`, `vulnerabilities/csrf/source/low.php:12`, `vulnerabilities/brute/source/low.php:9` | No | The plain-PHP rule needs a digest written to a column and that column compared at login. Both exist in DVWA, and the rule still records nothing. Cause not yet established |
-| Authorisation bypass | `vulnerabilities/authbypass/change_user_details.php:47`, `get_user_data.php` | No | A raw `UPDATE users … where user_id = <request id>` with no ownership or role check below the `impossible` level. The plain-PHP authorization adapter records no subject for it |
-| PHP settings | Root `php.ini` (`allow_url_include = on`) | No | The file is outside the listed deployment directories, and `allow_url_include` is not a check |
-| CSRF, weak session ids, brute force, CAPTCHA, CSP, cryptography | `vulnerabilities/csrf`, `weak_id`, `brute`, `captcha`, `csp`, `cryptography` | No | No analyzer for these classes in plain PHP |
-
-The first two rows are recall gaps of analyzers this lane delivered. They are follow-up
-work and are not fixed in PR #46. The sample report in `docs/samples/dvwa/` is this run.
-
-### DVWA offline run after branch 5
-
-[Branch 5](../specifications/symfony-more-analyzers-5.md) closes the first three rows above.
-Offline scan (no model call) of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean
-before and after, 2026-11-22, run `run-1467553345`, scanner branch `symfony-more-analyzers-5`.
-
-265 records: the 249 of `run-3336289847` with unchanged ids, and 16 new. None of the 16 is
-judged yet, so the published sample report is unchanged.
-
-| DVWA defect | Cause of the gap | Now recorded |
-|---|---|---|
-| Passwords stored as MD5 | The plain-PHP rule matched the source text of the query-call argument. DVWA assigns each statement to a variable first, so the text was `$query` or `$insert` and neither the digest write nor the login comparison was read | 12 `password_hash_candidate` records, basis `sql_credential_column`: the `md5` call in `vulnerabilities/csrf/source/low.php:12`, `medium.php:14`, `high.php:39` and `vulnerabilities/captcha/source/low.php:57`, `medium.php:65`, `high.php:27`, each under its `index.php` entry and its own file entry. The compared column is read at `login.php:46` |
-| Authorisation bypass | By design: branch 2 D-9 limited plain PHP to an address check over a constant-text write | 1 `authorization_candidate`, `object_level`, subject `table:users`, at `vulnerabilities/authbypass/change_user_details.php:48`; the selecting source is the request body read at `:26`. No guard is recorded: the level-and-user test at `:11` is an unclassified check |
-| Remote file inclusion enabled | Root `php.ini` was outside the deployment directories, and `allow_url_include` was not a check | 1 `configuration_candidate`, check `remote_include_enabled`, at `php.ini:5`, joined to the request-reached include at `vulnerabilities/fi/index.php:36`; scope is `Dockerfile:20`, which copies the tree into the document root |
-| Session cookie flags | The cookie checks did not read flags set in PHP code | 2 `configuration_candidate` records at `dvwa/includes/dvwaPage.inc.php:72`: `session_cookie_insecure_transport` (`$secure = false` at `:60`) and `session_cookie_script_readable`, value `false on some path` (`$httponly = false` at `:55`, on every level but `impossible`) |
-
-Not recorded, and why:
-
-- `login.php:27` and `vulnerabilities/brute/source/*.php` hash the submitted password to compare
-  it. The record is made where a digest is written to the column, not where it is compared.
-- The `impossible` level files (`csrf`, `captcha`) write the digest through bound parameters,
-  which the static pass does not read.
-- `vulnerabilities/authbypass/get_user_data.php` and the `bac` module are reads of ids, names and
-  avatars. The read claim is bounded by census fields, and none of these is one (branch 5 D-6).
-- A password `UPDATE` whose `WHERE` names the session user (`csrf`, `captcha`) selects no row by
-  request and records no authorization candidate.
-- `setcookie('security', …)` at `dvwaPage.inc.php:226` and the `dvwaSession` cookie of `weak_id`
-  are not the session cookie. A name does not establish that a cookie identifies a session.
-- The API module (`vulnerabilities/api/src/`): a password digest in version 1 responses, a
-  caller-set `level`, and user endpoints with no token. Its users are objects in memory, so no
-  census, storage or entry access anchors a claim (branch 5 D-7). Its command injection is
-  recorded.
-
-The Symfony sample at its pin is unchanged by branch 5: an offline scan records the same 84
-records as `b4-review-accept`, and `TestSymfonySourceKey` and `TestDVWASourceKey` pass.
-
-Other lane analyzers, by source review: account enumeration (every login failure gives one
-message), recovery delivery (no mail flow) and mass assignment (no request bag copied to a row)
-have nothing to record. Information exposure keeps its two records. CSRF, weak session
-identifiers, brute force, CAPTCHA, CSP, cryptography and client-side-only controls have no
-analyzer and stay not covered.
-
-### DVWA judged run after branch 5
-
-One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
-after, on the owner's word of 2026-11-22: `b5-judged` (`run-3384633700`), scanner `681843f`
-(PR #47), OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`.
-205 requests, 208 assessments, 1,726,639 input tokens, zero failures. 57 records were not
-sent because their blockers have no model-resolvable question. The sample report in
-`docs/samples/dvwa/` is this run.
-
-265 records: 158 Confirmed, 39 practice, 34 needs-review, 16 needs-evidence, 18 Protected.
-Against `run-3336289847` (249 records), every one of the 249 keeps its status. None moved.
-
-The 16 new records, each source-reviewed:
-
-| Record | Count | Judged | Source review |
-|---|---:|---|---|
-| `password_hash_candidate` at `vulnerabilities/csrf/source/low.php:12`, `medium.php:14`, `high.php:39` and `vulnerabilities/captcha/source/low.php:57`, `medium.php:65`, `high.php:27`, each under two entries | 12 | Confirmed | Correct. Each is `md5` of the submitted password written to `users.password`, which `login.php:46` compares |
-| `authorization_candidate` at `vulnerabilities/authbypass/change_user_details.php:48` | 1 | needs-evidence | Correct finding left in Review. The page has no login check and updates the user id the body names |
-| `configuration_candidate` `session_cookie_insecure_transport` at `dvwa/includes/dvwaPage.inc.php:72` | 1 | needs-evidence | Correct finding left in Review. `$secure` is always `false` (`:60`) |
-| `configuration_candidate` `session_cookie_script_readable` at `dvwa/includes/dvwaPage.inc.php:72` | 1 | needs-evidence | Correct finding left in Review. `$httponly` is `false` below the `impossible` level (`:55`) |
-| `configuration_candidate` `remote_include_enabled` at `php.ini:5` | 1 | needs-evidence | Correct finding left in Review. The file-inclusion module includes a request-chosen file (`vulnerabilities/fi/index.php:36`) |
-
-Answer probabilities of the four records in Review:
-
-| Record | Question | Answer | Probabilities |
-|---|---|---|---|
-| Authorization | `subject_control` | `request_selected` | 1.00 |
-| | `guard_adequacy` | `none` | 1.00 |
-| | `access_adequacy` | `unknown` | unknown 0.87, inadequate 0.12, adequate 0.01 |
-| Cookie, insecure transport | `setting_effect` | `in_effect` | in_effect 0.74, unknown 0.19, not_in_effect 0.07 |
-| | `weakness` | `unknown` | unknown 0.55, weakens 0.44, benign 0.01 |
-| | `mitigation` | `none` | 0.98 |
-| Cookie, script readable | `setting_effect` | `in_effect` | in_effect 0.77, unknown 0.17, not_in_effect 0.06 |
-| | `weakness` | `unknown` | unknown 0.84, weakens 0.14, benign 0.02 |
-| | `mitigation` | `none` | 0.98 |
-| Remote include | `setting_effect` | `in_effect` | in_effect 0.73, unknown 0.18, not_in_effect 0.09 |
-| | `weakness` | `unknown` | unknown 0.88, weakens 0.06, benign 0.06 |
-| | `mitigation` | `none` | 0.99 |
-
-What the evidence lacks, as read from the recorded facts of each record. No answer was scripted and no second run
-was made.
-
-- **Authorization.** A plain-PHP entry has no access record, so `entry_access` holds only the
-  entry's location. The model cannot tell from it that the page calls no login check.
-- **Cookies.** The joined fact reads `session_authenticated: unknown`, because plain PHP has no
-  entry access model. Nothing in the request states that the application authenticates by this
-  session cookie.
-- **Remote include.** The joined fact is one line naming the include. It does not carry the
-  include's operand or its request source, which the path candidate at the same line does.
-
-**After the run** (not judged; the published sample predates it). On the owner's word the two
-configuration gaps were closed in the scanner, with facts only:
-
-- The cookie records now join `session_started` (`dvwa/includes/dvwaPage.inc.php:98`) and
-  `session_checked` (`:125`).
-- The remote-include record's join now reads: include operand reached by the request value
-  `$_GET[ 'page' ]` read at `vulnerabilities/fi/source/low.php:4`.
-
-An offline scan keeps all 265 record ids. Whether the three records now leave Review needs a
-judged run, which needs the owner's word. The authorization record is unchanged: what a
-plain-PHP entry's access is, is an open question of the
-[branch 5 contract](../specifications/symfony-more-analyzers-5.md#6-open-question).
+The DVWA runs of branches 4 and 5 are in the [DVWA results](dvwa-results.md).
 
 ### Closing table — sample README, 21 entries
 

@@ -32,7 +32,7 @@ can reach a report or a model request.
 | --- | --- |
 | Directory listing | Apache `Options` whose effective list includes `Indexes`, or nginx `autoindex on` |
 | CSRF disabled | `framework.csrf_protection: false` or `{ enabled: false }` at the top level or under `when@prod` |
-| Session cookie readable by script | `cookie_httponly: false`, `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set('session.cookie_httponly', …)` with a literal false. In PHP code: `session_set_cookie_params` and a `setcookie` whose name is `session_name()`, when the flag is `false` or `0`, or a variable an earlier assignment in the same scope sets to one of those |
+| Session cookie readable by script | `cookie_httponly: false`, `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set('session.cookie_httponly', …)` with a literal false. In PHP code: `session_set_cookie_params` and a `setcookie` whose name is `session_name()`, when the flag is `false` or `0`, or a variable that an assignment reaching the call sets to one of those |
 | Session cookie on an insecure transport | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off`. The same PHP calls as the row above, for the `secure` flag |
 | Debug enabled | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled |
 | Remote include enabled | `allow_url_include` of `On`, `1`, `true` or `yes` in a read `php.ini`, joined to the `include` and `require` operations a request reaches |
@@ -47,7 +47,7 @@ can reach a report or a model request.
 | Symfony YAML | A `when@prod` block overrides the top level. `when@dev` and `when@test` are not deployed and are not read. Any other `when@` block is read as an environment of its own |
 | `Dockerfile` | The last build stage. `WORKDIR`, `USER`, `COPY` and `ADD` with literal operands, in shell or JSON form. `RUN` commands separated by `&&`, `||` or `;`: `chown`, `chmod`, `a2enmod`, `crontab <file>`, and `echo "…" > /etc/cron.d/<name>` |
 | Cron files | Five schedule fields or one `@` nickname. A file installed with `crontab <file>` runs as the Dockerfile user in force. Any other cron file has a user field after the schedule |
-| PHP source | `session_set_cookie_params` with an options array or five positional arguments. `setcookie` and `setrawcookie` only when the name argument is a `session_name()` call. A variable flag is read from the assignments before the call in the same function or file; one that is false on only some of them is recorded as `false on some path`. An absent flag is not recorded |
+| PHP source | `session_set_cookie_params` with an options array or five positional arguments. `setcookie` and `setrawcookie` only when the name argument is a `session_name()` call. A variable flag is read from the assignments that reach the call in the same function or file: the nearest earlier assignment statement in an enclosing block and each later assignment in a branch. A later assignment overrides an earlier one. A flag that is false on only some paths is recorded as `false on some path`. An absent flag is not recorded |
 | `php.ini` | `display_errors`, `session.cookie_httponly`, `session.cookie_secure`, `allow_url_include`. `allow_url_fopen` is PHP's default and is not a check |
 
 A deployed environment value is the project's `.env`, then `.env.local` over it, then

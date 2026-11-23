@@ -14,7 +14,7 @@ A confirmed record is `weak-password-hash`.
 | `credential_field` | `md5`, `sha1`, `crc32`, or `hash`/`hash_hmac` with a literal algorithm is written to a census `credential` field |
 | `hasher_class` | A class implementing `PasswordHasherInterface` or `LegacyPasswordHasherInterface` returns such a digest from `hash()` |
 | `configuration` | `security.password_hashers` selects `md5`, `sha1`, `sha256`, `sha512` or `plaintext`, or an `id` naming a `hasher_class` record. The record is at the configuration line |
-| `sql_credential_column` | Plain PHP: a digest of a request value reaches a SQL column that a `SELECT` compares |
+| `sql_credential_column` | Plain PHP: a digest of a request value reaches a SQL column that a `SELECT` compares. Each statement is read from the query call or from the one string assignment to its variable that reaches the call |
 
 The algorithm, `salted` (a concatenation with another non-literal value) and `iterated`
 (`no` for one call) are recorded. A salt does not make a fast digest adaptive.

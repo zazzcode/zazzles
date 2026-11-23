@@ -15,7 +15,7 @@
 
 ## 1. Capability
 
-The judged DVWA run recorded in [symfony-results.md](../evaluation/symfony-results.md#dvwa-judged-run)
+The judged DVWA run recorded in [dvwa-results.md](../evaluation/dvwa-results.md#judged-run-after-branch-4)
 found two defects that lane analyzers own and did not record. This branch closes both, and
 extends the configuration family to two settings the sample holds. It adds no analyzer family
 and no claim kind.
@@ -57,11 +57,15 @@ record no `account_enumeration_candidate`.
 ## 2. Decisions
 
 **D-1. A SQL statement held in a variable.** When the SQL argument of a modeled query call is a
-variable, the static pass reads the text of the nearest preceding assignment to that variable in
-the same function or file scope. The right side must be a string, an interpolated string, a
-concatenation, or one of those in parentheses. Anything else leaves the statement unread, as
-before. *Why by position:* one file commonly reuses `$query` for several statements. *Bound:* an
-assignment in another branch, function or file is not followed, and `.=` is not followed.
+variable, the static pass reads the text of the one assignment that reaches the call: the
+nearest earlier assignment statement in one of the call's enclosing blocks, in the same function
+or file scope. The right side must be a string, an interpolated string, a concatenation, or one
+of those in parentheses. Anything else leaves the statement unread, as before. *Why the nearest
+dominating assignment:* one file commonly reuses `$query` for several statements, and only the
+last one before the call in its own block chain runs on every path to it. *Bound:* an assignment
+in a branch that does not enclose the call, in another function or in another file is not
+followed. A branch assignment or a compound assignment such as `.=` after the dominating one
+leaves the statement unread.
 
 **D-2. A request-selected row in plain PHP.** This amends
 [Branch 2 D-9](symfony-more-analyzers-2.md). A plain-PHP `authorization_candidate` with facet
@@ -117,10 +121,12 @@ code" from branch 4 §4's exclusions for the session cookie only. Checks
 | `session_set_cookie_params(lifetime, path, domain, secure, httponly)` | Arguments 4 and 5 |
 | `setcookie` or `setrawcookie` whose name argument is a `session_name()` call | Arguments 6 and 7, or elements `secure` and `httponly` of an options array in argument 3 |
 
-A flag is recorded when its value is the literal `false` or `0`, or a variable that an
-assignment earlier in the same function or file scope sets to one of those. A variable with
-both a false and a true assignment is recorded with value `false on some path`, and each false
-assignment is a joined `value_assignment` fact. An absent flag is not recorded: its value comes
+A flag is recorded when its value is the literal `false` or `0`, or a variable that a write
+reaching the call sets to one of those. The writes that reach the call are those of D-1: the
+nearest dominating assignment statement and each later branch or compound assignment. A write
+before the dominating assignment is overwritten. The value is `false` when every reaching write
+is false and one of them dominates the call, and `false on some path` otherwise. Each false
+reaching write is a joined `value_assignment` fact. An absent flag is not recorded: its value comes
 from `php.ini`, which has its own row. A `setcookie` of any other cookie is not recorded: that a
 cookie identifies a session is not established by its name.
 
@@ -140,11 +146,17 @@ Neither states an answer.
 
 The authorization record needs a decision, not a fact: see §6.
 
-**D-5a. The configuration protocol is unchanged.** `configuration-components-v5` and its
-instruction are not edited, so every existing configuration request is byte-identical and the
-judged Symfony results stand. The two new fact kinds, `request_include` and `value_assignment`,
-state what they are in their own text. Only the new check has a new effect statement.
-*Reviewer's call:* naming the two kinds in the instruction would be clearer and needs `v6`.
+**D-5a. The configuration protocol is `configuration-components-v6`.** D-5 and D-5b change
+what a configuration request carries: four fact kinds (`value_assignment`, `request_include`,
+`session_started` and `session_checked`), a setting read from application source, and
+`session_authenticated: unknown` for a project with no access model. The lane rule (§4.1 of the
+[lane contract](symfony-more-analyzers.md#41-judged-checkpoint-protocol)) gives a change of request composition a new protocol
+identifier before the next run. The instruction now says what each of the four kinds states,
+that a setting can come from application source, and when `session_authenticated` reads
+`unknown`. It states no answer. Every configuration request changes, so the judged `v5` results
+stay as recorded under `v5`: the Symfony sample and the first judged DVWA run (`b5-judged`). An
+offline scan of each sample keeps every record id; only the configuration records'
+`analysis_components` change.
 
 **D-6. Reads stay out of the plain-PHP authorization claim.** Decided, not built. The existing
 read claim (branch 2 D-5, facet `data_exposure`) is bounded by the census: the response must
@@ -172,7 +184,8 @@ The command injection in `HealthController.php:88` is already recorded.
    variables first, with the variable reused for an unrelated statement, record one
    `sql_credential_column` candidate at the digest. `PH-11` is unchanged.
 2. **AC2.** `EN-18`: a login `SELECT` held in a variable that compares the credential column
-   records no enumeration candidate.
+   records no enumeration candidate. `EN-19` and `EN-20`: a statement assigned in a branch, or
+   completed by `.=`, is not read.
 3. **AC3.** `AZ-26` to `AZ-30` of §4 pass. `AZ-22` to `AZ-24` are unchanged.
 4. **AC4.** The new cases fail before the change and pass after it.
 5. **AC5.** `TestDVWASourceKey`, `TestSymfonySourceKey` and `TestArchitectureBaseline` pass.
@@ -189,8 +202,10 @@ The command injection in `HealthController.php:88` is already recorded.
 |---|---|---|---|
 | `PH-14` | `testdata/account-plain-variable/` | `md5` of a request value, `$sql = "UPDATE … SET <column> = '$digest' …"`, query call on `$sql`; a login file assigns `$sql` twice and compares the column | Candidate at the digest, `sql_credential_column` |
 | `EN-18` | same | the login file | No enumeration record |
+| `EN-19` | same, `lookup.php` | `$sql` set to an unrelated `SELECT` on one branch and to a credential-table lookup on the other, then queried | No enumeration record: no assignment dominates the call |
+| `EN-20` | same, `append.php` | `$sql = "SELECT … FROM members"; $sql .= " WHERE mail = '$mail'";` | No enumeration record: the compound assignment leaves the statement unread |
 | `AZ-26` | `testdata/authorization-plain/selected.php` | `UPDATE … WHERE id = <request value>` by concatenation, no guard | Candidate, `object_level`, `request_selected`, subject `table:members`, no guard |
-| `AZ-27` | `…/selected_signed.php` | the same after a `$_SESSION` test with exit | Candidate with an `authenticated_check` guard |
+| `AZ-27` | `…/selected_signed.php` | the same after a `$_SESSION` test with exit; `SET` takes another request value | Candidate with an `authenticated_check` guard; the only selecting source is the `WHERE` value |
 | `AZ-28` | `…/own.php` | `UPDATE … WHERE id = <session value>`, request values only in `SET` | No record |
 | `AZ-29` | `…/removed.php` | `DELETE … WHERE id = <request value> AND owner = <session value>` by interpolation | Candidate with an `ownership_check` guard of form `query_scope` |
 | `AZ-30` | `testdata/account-plain/forgot.php` | `UPDATE … SET token = <generated> WHERE mail = <request value>` | Candidate (D-2 consequence), no guard |
@@ -204,10 +219,10 @@ Configuration cases use the overlay harness of `configuration_test.go` on
 | `DP-18` | The same with no include of a request value | Recorded, joined fact states none |
 | `DP-19` | `allow_url_include = Off`; only `allow_url_fopen = On`; a `php.ini` in an unlisted directory | No record |
 | `SC-01` | `session_set_cookie_params(['secure' => false, 'httponly' => false])` | Both checks at the call |
-| `SC-02` | `'httponly' => $flag` with `$flag = true` on one branch and `false` on the other | `session_cookie_script_readable`, value `false on some path`, joined `value_assignment` |
+| `SC-02` | `'httponly' => $flag` with `$flag = true` on one branch and `false` on the other; `$flag = true` then a branch that sets it `false`; a flag always `false` | `session_cookie_script_readable`, value `false on some path`, joined `value_assignment`; the always-false flag has value `false` |
 | `SC-03` | Positional form with `false, false` | Both checks |
 | `SC-04` | `setcookie(session_name(), $id, 0, '/', '', false, false)` | Both checks |
-| `SC-05` | Flags `true`; flags absent; a variable only ever assigned `true` | No record |
+| `SC-05` | Flags `true`; flags absent; a variable only ever assigned `true`; a variable set `false` and then `true` before the call | No record |
 | `SC-06` | `setcookie('theme', $v, 0, '/', '', false, false)` | No record |
 | `SC-07` | Plain PHP `ini_set('session.cookie_httponly', '0')` | `session_cookie_script_readable` |
 
@@ -254,3 +269,13 @@ review of `authorization.go`. Owner go-ahead the same day. The owner then widene
 every extension of an existing analyzer: D-4 and D-5 were added, and D-6 and D-7 record what
 was reviewed and not built. After the judged run, D-5b added two facts to the configuration
 records, and §6 records the access question the authorization record raised.
+
+### 2026-11-23 — Review resolution
+
+The PR review found that the variable reads of D-1 and D-5 took any earlier assignment in the
+scope, not one that reaches the call. A branch-assigned statement was read by branch order, and
+a flag set `false` and then `true` was recorded. D-1 and D-5 now follow the dominating
+assignment, through one resolver for both, with cases `EN-19`, `EN-20` and the added `SC-02` and
+`SC-05` rows; the new cases fail on the earlier code. D-5a moved the configuration protocol to
+`v6`, because D-5b changed the request after the judged run. Offline scans of both samples keep
+every record id.

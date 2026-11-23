@@ -57,7 +57,7 @@ its change log.
 | 2 | `symfony-more-analyzers-2` | [-2](symfony-more-analyzers-2.md) | Entry access rules and the authorization family, including address-based guards | Branch 1 |
 | 3 | `symfony-more-analyzers-3` | [-3](symfony-more-analyzers-3.md) | Account enumeration, recovery-secret delivery, weak password hashing, the mailer sink | Branch 2 |
 | 4 | `symfony-more-analyzers-4` | [-4](symfony-more-analyzers-4.md) | Framework and deployment configuration, SSRF through a shell URL client, whole-sample acceptance, closing documentation | Branch 3 |
-| 5 | `symfony-more-analyzers-5` | [-5](symfony-more-analyzers-5.md) | Plain-PHP recall on the PHP sample: a SQL statement held in a variable, and a request-selected row as an authorization subject | Branch 4 |
+| 5 | `symfony-more-analyzers-5` | [-5](symfony-more-analyzers-5.md) | Plain-PHP recall on the PHP sample: a SQL statement held in a variable, a request-selected row as an authorization subject, remote include enabled in a root `php.ini`, and session cookie flags set in PHP code | Branch 4, then `stage` |
 
 All five branches live in this one worktree. No branch gets its own worktree.
 

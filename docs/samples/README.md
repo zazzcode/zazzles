@@ -100,7 +100,7 @@ site root (`https://zazzcode.github.io/zazzles/<app>/findings.html`). To use it,
 - [Python support](../../.zazz/evaluation/python-support-results.md) records offline discovery and live judgment at its sample pins.
 - [VulnPy coverage](../../.zazz/evaluation/vulnpy-detection-guide.md) records generated routes, source-backed expectations and registration controls.
 - [PHP support](../../.zazz/evaluation/php-support-results.md) and [command bypass support](../../.zazz/evaluation/command-bypass-support-results.md) record the DVWA evaluations.
-- [Symfony results](../../.zazz/evaluation/symfony-results.md) record the VulnerableSymfony evaluations and the latest DVWA run. The VulnerableSymfony excerpts are under CC BY-NC-SA 4.0; see the [sample notes](vuln-symfony/README.md#licence-of-the-source-excerpts).
+- [Symfony results](../../.zazz/evaluation/symfony-results.md) record the VulnerableSymfony evaluations, and the [DVWA results](../../.zazz/evaluation/dvwa-results.md) the latest DVWA runs. The VulnerableSymfony excerpts are under CC BY-NC-SA 4.0; see the [sample notes](vuln-symfony/README.md#licence-of-the-source-excerpts).
 
 For oversized reports, `refresh.py --compress` stores complete JSON/SARIF as gzip; existing gzip
 samples retain that format on subsequent refreshes, including when fresh plain canonical JSON is copied in.

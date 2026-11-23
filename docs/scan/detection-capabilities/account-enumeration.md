@@ -16,7 +16,7 @@ A confirmed record is `account-enumeration`.
 | Shape | Reported when | Remediation |
 | --- | --- | --- |
 | Symfony finder | `find`, `findOneBy`, `findBy` or `count` on an account class (a `UserInterface` class or the entity of a `security.yaml` user provider) whose criteria hold a request value, under an entry with access `none` or `unresolved` | Answer the found and not-found branches the same way |
-| Plain PHP lookup | A literal SQL `SELECT` on a table that a statement writes from `password_hash` or a fast digest, with a request value in the query | The same |
+| Plain PHP lookup | A literal SQL `SELECT`, in the query call or in the one string assignment to its variable that reaches the call, on a table that a statement writes from `password_hash` or a fast digest, with a request value in the query | The same |
 | Responses | On each side, in order until the action returns: an `addFlash` literal, a `Response`, `JsonResponse`, `json()` or `echo` literal, a status code, a `redirectToRoute` name, a `render` template, a thrown exception, `header('Location: …')`, `http_response_code` and `die` | Identical lists record nothing |
 
 ## Recorded and decidable

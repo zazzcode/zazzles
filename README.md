@@ -35,7 +35,8 @@ against its source facts before assigning an outcome.
   assignment of request-chosen properties, missing authorization of a stored write,
   a file change, or a census-field read, the account claims (account enumeration,
   weak password recovery and weak password hashing), and insecure configuration of
-  allow-listed framework and deployment files. Symfony website support covers these
+  allow-listed framework and deployment files (including `allow_url_include` in a root
+  `php.ini`) and of session cookie flags set in PHP code. Symfony website support covers these
   families together with SSRF through a `curl` or `wget` shell URL.
 
 **Code smells and poor practices** include building queries from untrusted strings, failing to

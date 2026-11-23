@@ -50,6 +50,21 @@ candidate.
 | `address_check` | The peer address is compared with literal addresses |
 | `guard_unclassified` | A private helper was followed and its body is not one of those kinds |
 
+## Plain PHP
+
+A plain PHP file has no access configuration, so its entry access is not recorded and
+`access_adequacy` rests on the source alone. Two shapes are recorded:
+
+| Shape | Record |
+| --- | --- |
+| An address check is the only guard of a constant SQL write, or of a file write or delete | A candidate with no facet; a confirmed record is `address-based-access` |
+| A SQL `UPDATE` or `DELETE` whose `WHERE` clause compares a column with a request value | An `object_level` candidate on subject `table:<name>`. A `WHERE` part read from `$_SESSION` is an `ownership_check` guard of form `query_scope` |
+
+A row selected only by a session value is not recorded. Pages that are anonymous by design,
+such as a recovery page that stores a token on the row a submitted address selects, are
+recorded too; the model judges them. `SELECT` and `INSERT`, statements with bound parameters,
+and `WHERE` comparisons other than `=` are not read.
+
 ## Recorded and decidable
 
 An entry rule that matches, a modeled guard, the subject, the operation and the census

@@ -31,7 +31,7 @@ means Zazzles has no analyzer for that family yet, so no result says nothing abo
 | OSS OopsSec Store | TypeScript (Next.js 15 App Router, Prisma, better-sqlite3, pino, zod) | [kOaDT/oss-oopssec-store](https://github.com/kOaDT/oss-oopssec-store) | `2d530ef` (v2.25.0) | [Detection guide](../evaluation/oss-oopssec-store-detection-guide.md), [sample report](../../docs/samples/oss-oopssec-store/README.md), [contract](../specifications/nextjs-support.md#5-acceptance-evidence) |
 | vuln-nextjs (owner-maintained lab) | JavaScript (Next.js 13 Pages Router, PGlite, zod, DOMPurify) | [zazzcode/vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) | `ea10efb` (living; re-pin when rows are added) | [Detection guide](../evaluation/vuln-nextjs-detection-guide.md), [sample report](../../docs/samples/vuln-nextjs/README.md); lab `tests/expected-scanner-findings.json` |
 | VulnPy | Python (11 framework adapters) | [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy) | `b81885e` | [Detection guide](../evaluation/vulnpy-detection-guide.md) |
-| vuln-symfony | PHP (Symfony 6.4, Doctrine ORM 2, Twig 3) | [zazzcode/vuln-symfony](https://github.com/zazzcode/vuln-symfony) | `086f81f941501bd1170b249e01107ba99beb2962` | [Detection guide](../evaluation/vuln-symfony-detection-guide.md), [results](../evaluation/symfony-results.md) |
+| vuln-symfony | PHP (Symfony 6.4, Doctrine ORM 2, Twig 3) | [zazzcode/vuln-symfony](https://github.com/zazzcode/vuln-symfony) | `086f81f941501bd1170b249e01107ba99beb2962` | [Detection guide](../evaluation/vuln-symfony-detection-guide.md), [results](../evaluation/symfony-results.md), [sample report](../../docs/samples/vuln-symfony/README.md) |
 
 ## Expected versus actual
 

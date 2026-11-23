@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-23",
+  "target_revision": "086f81f941501bd1170b249e01107ba99beb2962",
+  "upstream": "https://github.com/Secureaks/VulnerableSymfony",
+  "upstream_license": "CC BY-NC-SA 4.0 (UPSTREAM-LICENSE.txt)",
+  "detection_guide": "../../../.zazz/evaluation/vuln-symfony-detection-guide.md",
+  "source_run": "run-1810616125",
+  "source_json_sha256": "0342d03a02b1c2118b62e61a567168eae509651ce36781beb64be30eef03f785",
+  "scanner_revision": "8d97b93 (symfony-more-analyzers-4, PR #46)",
+  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "provider_requests": 84,
+  "input_tokens": 335720,
+  "entries": 34,
+  "published_records": 84,
+  "outcomes": {
+    "confirmed_vulnerability": 55,
+    "protected_for_claim": 22,
+    "needs_evidence": 7
+  },
+  "not_run": 0,
+  "failed": 0,
+  "answer_key": {
+    "expected": 30,
+    "found": 30,
+    "review": 0,
+    "control_false_positives": 0
+  },
+  "runtime_confirmation": "none; static source judgments only",
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "results": "../../../.zazz/evaluation/symfony-results.md"
+}

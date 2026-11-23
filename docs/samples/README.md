@@ -18,6 +18,7 @@ locally. GitHub's file view displays HTML source; it does not run the report.
 | [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
 | [vuln-nextjs JavaScript and TypeScript lab](vuln-nextjs/README.md) | [Full app](vuln-nextjs/findings.html) · [Prototype pollution fixtures](vuln-nextjs/reports/prototype-pollution/findings.html) | [Full app](vuln-nextjs/findings.json) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.json) | [Full app](vuln-nextjs/findings.sarif) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.sarif) |
 | [DVWA (PHP)](dvwa/README.md) | [findings.html](dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
+| [VulnerableSymfony (PHP, Symfony)](vuln-symfony/README.md) | [findings.html](vuln-symfony/findings.html) | [findings.json](vuln-symfony/findings.json) | [findings.sarif](vuln-symfony/findings.sarif) |
 
 Each sample represents one application. An application’s notes list its published scans with
 the target revision, scanner revision, assessment scope and observed outcomes. Use those notes when comparing a report with its
@@ -99,6 +100,7 @@ site root (`https://zazzcode.github.io/zazzles/<app>/findings.html`). To use it,
 - [Python support](../../.zazz/evaluation/python-support-results.md) records offline discovery and live judgment at its sample pins.
 - [VulnPy coverage](../../.zazz/evaluation/vulnpy-detection-guide.md) records generated routes, source-backed expectations and registration controls.
 - [PHP support](../../.zazz/evaluation/php-support-results.md) and [command bypass support](../../.zazz/evaluation/command-bypass-support-results.md) record the DVWA evaluations.
+- [Symfony results](../../.zazz/evaluation/symfony-results.md) record the VulnerableSymfony evaluations and the latest DVWA run. The VulnerableSymfony excerpts are under CC BY-NC-SA 4.0; see the [sample notes](vuln-symfony/README.md#licence-of-the-source-excerpts).
 
 For oversized reports, `refresh.py --compress` stores complete JSON/SARIF as gzip; existing gzip
 samples retain that format on subsequent refreshes, including when fresh plain canonical JSON is copied in.

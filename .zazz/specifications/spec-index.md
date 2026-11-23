@@ -92,6 +92,7 @@ with no merge recorded there reads "See specification".
 | 56.2 | [Branch 2: entry access rules and authorization](symfony-more-analyzers-2.md) | 2026-11-22 | Merged (PR #43) |
 | 56.3 | [Branch 3: account enumeration, recovery-secret delivery, weak password hashing](symfony-more-analyzers-3.md) | 2026-11-22 | Merged (PR #45) |
 | 56.4 | [Branch 4: configuration, SSRF through a shell URL client, lane closure](symfony-more-analyzers-4.md) | 2026-11-22 | In review (PR #46) |
+| 56.5 | [Branch 5: plain-PHP recall on the PHP sample](symfony-more-analyzers-5.md) | 2026-11-22 | In progress |
 
 ## 5. Planned, in the plan's order
 

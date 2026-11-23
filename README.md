@@ -165,7 +165,7 @@ and Protected claims. Protection applies to the specific operation and paths sho
 ## Saved results
 
 Browse saved HTML reports or download their JSON and SARIF evidence. Each sample lists its target
-revision, assessment scope and scored results. [Hosted reports](https://zazzcode.github.io/zazzles/docs/samples/) · [Sample index](docs/samples/README.md) · [Verify a sample finding](docs/samples/README.md#verify-a-sample-finding)
+revision, assessment scope and scored results. [Hosted reports](https://zazzcode.github.io/zazzles/) · [Sample index](docs/samples/README.md) · [Verify a sample finding](docs/samples/README.md#verify-a-sample-finding)
 
 ## Contributing
 

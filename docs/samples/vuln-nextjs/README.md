@@ -12,8 +12,8 @@ compare results as the lab grows.
 
 | Scan scope | Lab pin and date | HTML | JSON | SARIF | Provenance and results |
 |---|---|---|---|---|---|
-| Full Pages Router app | `ea10efb` · 2026-11-19 | [HTML](findings.html) | [JSON](findings.json) | [SARIF](findings.sarif) | [Metadata](metadata.json) · [13 of 13 expected findings](#full-application-scan) |
-| Prototype pollution fixture export | `8d26f52` · 2026-11-21 | [HTML](reports/prototype-pollution/findings.html) | [JSON](reports/prototype-pollution/findings.json) | [SARIF](reports/prototype-pollution/findings.sarif) | [Metadata](reports/prototype-pollution/metadata.json) · [14 of 15 in-scope cases Confirmed](#prototype-pollution-fixture-scan) |
+| Full Pages Router app | `ea10efb` · 2026-11-19 | [HTML](https://zazzcode.github.io/zazzles/vuln-nextjs/findings.html) | [JSON](findings.json) | [SARIF](findings.sarif) | [Metadata](metadata.json) · [13 of 13 expected findings](#full-application-scan) |
+| Prototype pollution fixture export | `8d26f52` · 2026-11-21 | [HTML](https://zazzcode.github.io/zazzles/vuln-nextjs/reports/prototype-pollution/findings.html) | [JSON](reports/prototype-pollution/findings.json) | [SARIF](reports/prototype-pollution/findings.sarif) | [Metadata](reports/prototype-pollution/metadata.json) · [14 of 15 in-scope cases Confirmed](#prototype-pollution-fixture-scan) |
 
 <a id="current-report-rebuilt-2026-11-19"></a>
 

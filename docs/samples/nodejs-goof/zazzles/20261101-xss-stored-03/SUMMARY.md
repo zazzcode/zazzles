@@ -1,6 +1,6 @@
 # Stored rendering increment
 
-2026-11-01; offline, no live model calls. Open [HTML](findings.html), [JSON](findings.json),
+2026-11-01; offline, no live model calls. Open [HTML](https://zazzcode.github.io/zazzles/nodejs-goof/zazzles/20261101-xss-stored-03/findings.html), [JSON](findings.json),
 or [SARIF](findings.sarif); [metadata](metadata.json) records exact source hashes.
 
 Goof login remains a finding. Todo Markdown rendering now has a stored-XSS finding with

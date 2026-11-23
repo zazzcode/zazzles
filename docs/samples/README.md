@@ -3,22 +3,24 @@
 [Project introduction](../../README.md) · [User documentation](../README.md) · [Interpret results](../scan/interpreting-results.md)
 
 Explore actual scan output without installing the targets, configuring keys, or calling a model.
-Open the [hosted samples](https://zazzcode.github.io/zazzles/docs/samples/) in your browser, or download a standalone HTML file and open it
-locally. GitHub's file view displays HTML source; it does not run the report.
+Open the [hosted samples](https://zazzcode.github.io/zazzles/) in your browser: each HTML link
+below opens the rendered report on GitHub Pages. GitHub's file view shows HTML source and does
+not run the report, so to read a report from the repository itself, download the standalone HTML
+file and open it locally.
 
 | Sample | HTML report | Agent-readable evidence | Standard interchange |
 |---|---|---|---|
-| [OWASP Juice Shop](juice-shop/README.md) | [findings.html](juice-shop/findings.html) | [findings.json](juice-shop/findings.json) | [findings.sarif](juice-shop/findings.sarif) |
-| [Vulnerable TypeScript app](vulnerable-typescript-app/README.md) | [findings.html](vulnerable-typescript-app/findings.html) | [findings.json](vulnerable-typescript-app/findings.json) | [findings.sarif](vulnerable-typescript-app/findings.sarif) |
-| [Node.js Goof](nodejs-goof/README.md) | [findings.html](nodejs-goof/findings.html) | [findings.json](nodejs-goof/findings.json) | [findings.sarif](nodejs-goof/findings.sarif) |
-| [ThreatByte (Python)](ThreatByte/README.md) | [findings.html](ThreatByte/findings.html) | [findings.json](ThreatByte/findings.json) | [findings.sarif](ThreatByte/findings.sarif) |
-| [Python insecure app](python-insecure-app/README.md) | [findings.html](python-insecure-app/findings.html) | [findings.json](python-insecure-app/findings.json) | [findings.sarif](python-insecure-app/findings.sarif) |
-| [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
-| [VulnPy](vulnpy/README.md) | [findings.html](vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
-| [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
-| [vuln-nextjs JavaScript and TypeScript lab](vuln-nextjs/README.md) | [Full app](vuln-nextjs/findings.html) · [Prototype pollution fixtures](vuln-nextjs/reports/prototype-pollution/findings.html) | [Full app](vuln-nextjs/findings.json) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.json) | [Full app](vuln-nextjs/findings.sarif) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.sarif) |
-| [DVWA (PHP)](dvwa/README.md) | [findings.html](dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
-| [VulnerableSymfony (PHP, Symfony)](vuln-symfony/README.md) | [findings.html](vuln-symfony/findings.html) | [findings.json](vuln-symfony/findings.json) | [findings.sarif](vuln-symfony/findings.sarif) |
+| [OWASP Juice Shop](juice-shop/README.md) | [findings.html](https://zazzcode.github.io/zazzles/juice-shop/findings.html) | [findings.json](juice-shop/findings.json) | [findings.sarif](juice-shop/findings.sarif) |
+| [Vulnerable TypeScript app](vulnerable-typescript-app/README.md) | [findings.html](https://zazzcode.github.io/zazzles/vulnerable-typescript-app/findings.html) | [findings.json](vulnerable-typescript-app/findings.json) | [findings.sarif](vulnerable-typescript-app/findings.sarif) |
+| [Node.js Goof](nodejs-goof/README.md) | [findings.html](https://zazzcode.github.io/zazzles/nodejs-goof/findings.html) | [findings.json](nodejs-goof/findings.json) | [findings.sarif](nodejs-goof/findings.sarif) |
+| [ThreatByte (Python)](ThreatByte/README.md) | [findings.html](https://zazzcode.github.io/zazzles/ThreatByte/findings.html) | [findings.json](ThreatByte/findings.json) | [findings.sarif](ThreatByte/findings.sarif) |
+| [Python insecure app](python-insecure-app/README.md) | [findings.html](https://zazzcode.github.io/zazzles/python-insecure-app/findings.html) | [findings.json](python-insecure-app/findings.json) | [findings.sarif](python-insecure-app/findings.sarif) |
+| [Vulnerable Flask App](vulnerable-flask-app/README.md) | [findings.html](https://zazzcode.github.io/zazzles/vulnerable-flask-app/findings.html) | [findings.json](vulnerable-flask-app/findings.json) | [findings.sarif](vulnerable-flask-app/findings.sarif) |
+| [VulnPy](vulnpy/README.md) | [findings.html](https://zazzcode.github.io/zazzles/vulnpy/findings.html) | [JSON, gzip](vulnpy/findings.json.gz) | [SARIF, gzip](vulnpy/findings.sarif.gz) |
+| [OSS OopsSec Store (Next.js App Router)](oss-oopssec-store/README.md) | [findings.html](https://zazzcode.github.io/zazzles/oss-oopssec-store/findings.html) | [findings.json](oss-oopssec-store/findings.json) | [findings.sarif](oss-oopssec-store/findings.sarif) |
+| [vuln-nextjs JavaScript and TypeScript lab](vuln-nextjs/README.md) | [Full app](https://zazzcode.github.io/zazzles/vuln-nextjs/findings.html) · [Prototype pollution fixtures](https://zazzcode.github.io/zazzles/vuln-nextjs/reports/prototype-pollution/findings.html) | [Full app](vuln-nextjs/findings.json) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.json) | [Full app](vuln-nextjs/findings.sarif) · [Fixtures](vuln-nextjs/reports/prototype-pollution/findings.sarif) |
+| [DVWA (PHP)](dvwa/README.md) | [findings.html](https://zazzcode.github.io/zazzles/dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
+| [VulnerableSymfony (PHP, Symfony)](vuln-symfony/README.md) | [findings.html](https://zazzcode.github.io/zazzles/vuln-symfony/findings.html) | [findings.json](vuln-symfony/findings.json) | [findings.sarif](vuln-symfony/findings.sarif) |
 
 Each sample represents one application. An application’s notes list its published scans with
 the target revision, scanner revision, assessment scope and observed outcomes. Use those notes when comparing a report with its
@@ -84,14 +86,12 @@ checked in. Keep the affected sample applications current when analysis or repor
 
 ## Browser-hosted previews
 
-GitHub Pages currently deploys the `stage` branch (Settings → Pages → *Deploy from a branch*, `stage`,
-root), so the reports are served under https://zazzcode.github.io/zazzles/docs/samples/, with an index linking the sample apps.
-Changes reach the site when a feature branch merges into `stage`; nothing is published from feature branches.
+The **Publish sample findings** GitHub Actions workflow publishes this directory at the site root
+when a change to `docs/samples/` merges into `stage`: `https://zazzcode.github.io/zazzles/` serves
+the sample index, and each report is at `https://zazzcode.github.io/zazzles/<app>/findings.html`.
+The HTML links in the sample notes use those addresses, so they open the rendered report. Nothing
+is published from feature branches, so a report refreshed on a branch is hosted only after merge.
 No scan execution or provider keys are needed.
-
-The **Publish sample findings** GitHub Actions workflow can instead publish only this directory at the
-site root (`https://zazzcode.github.io/zazzles/<app>/findings.html`). To use it, a maintainer selects
-**GitHub Actions** under Settings → Pages; the README links must then drop the `docs/samples/` segment.
 
 <a id="vulnpy-coverage-corpus"></a>
 

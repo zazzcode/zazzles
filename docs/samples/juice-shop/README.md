@@ -15,7 +15,7 @@ source judgments, not runtime exploit confirmation.
 
 ## Previous report (rebuilt 2026-11-15)
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+[HTML](https://zazzcode.github.io/zazzles/juice-shop/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
 All analyzers were run at pinned revision `f189f521266f` with OpenAI `gpt-6-luna`. Express middleware
 stages, URL and upload inputs, and Node `http`/`https` SSRF are included. The target remained clean.
@@ -40,7 +40,7 @@ and [metadata](metadata.json). Earlier sections below describe previous publishe
 
 ## Previous published snapshot
 
-[All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
+[All samples](../README.md) · [HTML](https://zazzcode.github.io/zazzles/juice-shop/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
 [Source-reviewed reference](xss-answer-key.md) · [Provenance](metadata.json)
 
 Refreshed 2026-11-01 from the [upstream application](https://github.com/juice-shop/juice-shop), revision

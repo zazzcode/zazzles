@@ -1,6 +1,6 @@
 # VulnPy Python sample
 
-[Samples](../README.md) · [Full HTML](findings.html) · [JSON, gzip](findings.json.gz) · [SARIF, gzip](findings.sarif.gz) · [Provenance](metadata.json)
+[Samples](../README.md) · [Full HTML](https://zazzcode.github.io/zazzles/vulnpy/findings.html) · [JSON, gzip](findings.json.gz) · [SARIF, gzip](findings.sarif.gz) · [Provenance](metadata.json)
 
 ## Current report (rebuilt 2026-11-19)
 

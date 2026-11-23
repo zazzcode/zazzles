@@ -1,6 +1,6 @@
 # VulnerableSymfony (PHP, Symfony) sample
 
-[All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) ·
+[All samples](../README.md) · [HTML](https://zazzcode.github.io/zazzles/vuln-symfony/findings.html) · [JSON](findings.json) ·
 [SARIF](findings.sarif) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/vuln-symfony-detection-guide.md) ·
 [Results](../../../.zazz/evaluation/symfony-results.md)

@@ -22,7 +22,7 @@ The API returned choices, per-answer confidence and option probabilities. It ret
 explanations. `Assessment.reason` is the scanner's policy explanation, not model-written reasoning.
 Scores are uncalibrated provider metadata and never replace evidence or required policy gates.
 
-These decisions are replayed into the [current report](../../findings.html) only where the complete
+These decisions are replayed into the [current report](https://zazzcode.github.io/zazzles/nodejs-goof/findings.html) only where the complete
 request still matches: source/evidence, model, rules, questions and protocol. Replay/decoding is
 offline. Since hardening 08, the stored Markdown request carries separate create/update path
 evidence. It no longer matches its saved trace, so that answer is not applied to the current report.

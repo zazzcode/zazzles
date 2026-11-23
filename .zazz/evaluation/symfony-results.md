@@ -3,6 +3,41 @@
 The [detection guide](vuln-symfony-detection-guide.md) defines the expected outcomes for
 `vuln-symfony` at `086f81f941501bd1170b249e01107ba99beb2962`.
 
+## Scanner commit hashes after the rebases
+
+Each stacked branch of the lane was rebased when the branch below it merged, so the scanner
+commits this record cites have new hashes on `stage`. The old hashes stay reachable through
+the merged pull requests on GitHub. The runs below keep the hash that was current when the
+run was made.
+
+The table pairs each cited hash with the commit of the same title that is on `stage` or the
+open branch now. The last column says how close the two are:
+
+- **Same tree:** the whole source tree is identical, so the scanner is the same.
+- **Same change:** the commit's own diff is identical. The tree under it also holds review
+  fixes that landed on a lower branch after the run.
+- **Changed in the rebase:** the diff itself differs, because the rebase had to resolve a
+  conflict or regenerate a golden file. The run's scanner is the cited hash, not the new one.
+
+| Cited in this record | Commit now | Title | Relation |
+|---|---|---|---|
+| `c963f5d` | `9b73450` | Tighten authorization judge questions to v2 | Changed in the rebase |
+| `c72ff1c` | `9618e06` | Tell the authorization judge to weigh guard kind | Same change |
+| `bd92606` | `178c4fb` | Separate baseline and restricted roles in authorization v4 | Changed in the rebase |
+| `fab81d8` | `7a9ad97` | Record account lookups whose branches answer differently | Same change |
+| `48e66a6` | `0d48d07` | Model mail sinks and recovery-secret delivery | Same change |
+| `86f1211` | `e33f449` | Record fast digests that store a password | Changed in the rebase |
+| `94c5138` | `ea7e89a` | Check the account rows on the sample and in the reports | Same change |
+| `54dd0b0` | `b207c88` | Record configuration settings and shell URL client SSRF | Changed in the rebase |
+| `763b9c3` | `5556fe0` | Record the recovery secret-bits follow-on in the branch 4 spec | Same tree |
+| `ffc8c2b` | `e416890` | Bring the branch 4 spec, architecture and user pages in step with the review fixes | Same tree |
+| `8d97b93` | `23cbb0e` | Establish that a configuration setting is in effect from recorded facts | Same tree |
+| `681843f` | `63835df` (branch `symfony-more-analyzers-5`) | Record the offline DVWA run after branch 5 | Same tree |
+
+The sample notes and provenance files under `docs/samples/dvwa/` and
+`docs/samples/vuln-symfony/` cite `8d97b93` and `681843f`. Both are "same tree", so the
+published reports come from the scanner that is on `stage` and on the open branch.
+
 ## Offline baseline
 
 The 2026-11-21 run `run-1210193297` used scanner checkpoint `2ccc908`, whose scanner code

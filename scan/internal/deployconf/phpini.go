@@ -16,7 +16,7 @@ func PHPIni(file string, src []byte) ([]Directive, []Gap) {
 		}
 		name = strings.ToLower(strings.TrimSpace(name))
 		switch name {
-		case "display_errors", "session.cookie_httponly", "session.cookie_secure":
+		case "display_errors", "session.cookie_httponly", "session.cookie_secure", "allow_url_include":
 			out = append(out, Directive{File: file, Line: row.num, Name: name, Values: []string{unquote(strings.TrimSpace(val))}})
 		}
 	}

@@ -14,7 +14,7 @@ The claim has no request source. A file outside the lists below is not read.
 | List | Paths, relative to a project |
 | --- | --- |
 | Framework | `config/packages/framework.yaml`, `config/packages/web_profiler.yaml`, `.env`, `.env.local`, `.env.prod`, `.env.prod.local`, and a Dockerfile `COPY` that places a project file as one of those |
-| Deployment | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` in any directory; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; files named `crontab` or `*.cron`, and files under `cron.d/`; a script a schedule line executes when it is a project file |
+| Deployment | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` in any directory; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; a `php.ini` at the scan root; files named `crontab` or `*.cron`, and files under `cron.d/`; a script a schedule line executes when it is a project file |
 
 Each file is at most 256 KiB. Each list holds at most 200 files, and a list that passes
 the limit records `config_list_truncated`. Symbolic links are not opened, including a
@@ -35,6 +35,7 @@ can reach a report or a model request.
 | Session cookie readable by script | `cookie_httponly: false`, `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set('session.cookie_httponly', …)` with a literal false |
 | Session cookie on an insecure transport | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off` |
 | Debug enabled | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled |
+| Remote include enabled | `allow_url_include` of `On`, `1`, `true` or `yes` in a read `php.ini`, joined to the `include` and `require` operations a request reaches |
 | Scheduled privileged writable file | A cron line, a command chain and a file in that chain that a less privileged user can write |
 
 ### How each file is read
@@ -46,7 +47,7 @@ can reach a report or a model request.
 | Symfony YAML | A `when@prod` block overrides the top level. `when@dev` and `when@test` are not deployed and are not read. Any other `when@` block is read as an environment of its own |
 | `Dockerfile` | The last build stage. `WORKDIR`, `USER`, `COPY` and `ADD` with literal operands, in shell or JSON form. `RUN` commands separated by `&&`, `||` or `;`: `chown`, `chmod`, `a2enmod`, `crontab <file>`, and `echo "…" > /etc/cron.d/<name>` |
 | Cron files | Five schedule fields or one `@` nickname. A file installed with `crontab <file>` runs as the Dockerfile user in force. Any other cron file has a user field after the schedule |
-| `php.ini` | `display_errors`, `session.cookie_httponly`, `session.cookie_secure` |
+| `php.ini` | `display_errors`, `session.cookie_httponly`, `session.cookie_secure`, `allow_url_include`. `allow_url_fopen` is PHP's default and is not a check |
 
 A deployed environment value is the project's `.env`, then `.env.local` over it, then
 each file a `COPY` places at the project root under one of those names, in order.
@@ -95,4 +96,5 @@ last one. A cron line whose relative path has no `cd`. A `curl` or `wget` reache
 | Script-readable session cookie | Set `cookie_httponly` to true |
 | Insecure session cookie | Set `cookie_secure` to true or auto |
 | Debug enabled | Deploy with `APP_ENV=prod` and `APP_DEBUG=0`, and leave `display_errors` off |
+| Remote include enabled | Set `allow_url_include` to `Off`, and choose included files from a fixed list |
 | Scheduled writable file | Run the job as the user that owns the file, or remove the write bit for every other user |

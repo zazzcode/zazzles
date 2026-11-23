@@ -1,8 +1,10 @@
 package langphp
 
 import (
+	"cmp"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
@@ -251,6 +253,10 @@ func (s *phpSet) emitIni(out *analysis.AnalysisReport, v *deployView) {
 			continue
 		}
 		scope := s.lineEvidence(file, "scope", "deployment file "+file, 1)
+		if ev, ok := v.shipped(file); ok && len(v.images) > 0 && file == joinRoot(v.root, "php.ini") {
+			// A php.ini beside the application is shipped with its directory.
+			scope = ev
+		}
 		for _, img := range v.images {
 			for _, m := range img.Paths {
 				if m.Src == relRoot(v.root, file) {
@@ -272,12 +278,52 @@ func (s *phpSet) emitIni(out *analysis.AnalysisReport, v *deployView) {
 			case d.Name == "session.cookie_secure" && falseLiteral(val):
 				facts.Check = analysis.CheckSessionCookieTransport
 				facts.Joined = []analysis.Evidence{s.sessionJoin(out, v.root, file, d.Line)}
+			case d.Name == "allow_url_include" && iniOn(val):
+				facts.Check = analysis.CheckRemoteInclude
+				facts.Joined = s.requestIncludes(out, v.root, file, d.Line)
 			default:
 				continue
 			}
 			s.emitConfig(out, v.root, facts, scope, nil)
 		}
 	}
+}
+
+// iniOn reports a php.ini boolean that is on.
+func iniOn(v string) bool {
+	switch strings.ToLower(v) {
+	case "on", "1", "true", "yes":
+		return true
+	}
+	return false
+}
+
+// requestIncludes are up to eight include or require operations whose
+// operand a request reaches, sorted by location, or one fact stating that
+// none is recorded.
+func (s *phpSet) requestIncludes(out *analysis.AnalysisReport, root, file string, line int) []analysis.Evidence {
+	seen := map[string]bool{}
+	var spans []analysis.Span
+	for _, u := range out.Uses {
+		if u.Kind != "path_traversal_candidate" || u.APIModel == nil || u.APIModel.ID != "php-include-v1" || !underRoot(root, u.Sink.Span.File) {
+			continue
+		}
+		if key := u.Sink.Span.File + ":" + strconv.Itoa(u.Sink.Span.StartLine); !seen[key] {
+			seen[key] = true
+			spans = append(spans, u.Sink.Span)
+		}
+	}
+	if len(spans) == 0 {
+		return []analysis.Evidence{s.lineEvidence(file, "request_include", "no include or require operand reached by a request value is recorded", line)}
+	}
+	slices.SortFunc(spans, func(a, b analysis.Span) int {
+		return cmp.Or(strings.Compare(a.File, b.File), cmp.Compare(a.StartLine, b.StartLine))
+	})
+	var joined []analysis.Evidence
+	for _, sp := range spans[:min(len(spans), 8)] {
+		joined = append(joined, s.lineEvidence(sp.File, "request_include", "include operand reached by a request value", sp.StartLine))
+	}
+	return joined
 }
 
 func debugOn(v string) bool {

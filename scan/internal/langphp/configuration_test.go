@@ -463,3 +463,33 @@ func mustRead(t *testing.T, file string) string {
 	}
 	return string(raw)
 }
+
+// TestRemoteIncludeConfiguration covers a php.ini at the scan root and the
+// remote_include_enabled check (branch 5 D-4).
+func TestRemoteIncludeConfiguration(t *testing.T) {
+	remote := []string{analysis.CheckRemoteInclude}
+	page := "<?php\ninclude $_GET['page'];\n"
+	key := "remote_include_enabled php.ini:3"
+	runConfigurationCases(t, []configurationCase{
+		{name: "DP-17 root php.ini allow_url_include On joins the request-reached include", fixture: plainConfiguration, checks: remote,
+			overlay: map[string]string{"php.ini": "; local overrides\nallow_url_fopen = On\nallow_url_include = On\n", "page.php": page},
+			want:    []string{key},
+			joined:  map[string][]string{key: {"request_include page.php:2 include operand reached by a request value"}},
+			scope:   map[string]string{key: "Dockerfile:2 copied . to /var/www/html including php.ini"},
+			gaps:    map[string][]string{key: nil}},
+		{name: "DP-17 with no Dockerfile the scope is the file", fixture: plainConfiguration, checks: remote,
+			overlay: map[string]string{"php.ini": "\n\nallow_url_include=1\n", "page.php": page, "Dockerfile": removed},
+			want:    []string{key},
+			scope:   map[string]string{key: "php.ini:1 deployment file php.ini"}},
+		{name: "DP-18 no include of a request value", fixture: plainConfiguration, checks: remote,
+			overlay: map[string]string{"php.ini": "\n\nallow_url_include = yes\n"},
+			want:    []string{key},
+			joined:  map[string][]string{key: {"request_include php.ini:3 no include or require operand reached by a request value is recorded"}}},
+		{name: "DP-19 allow_url_include Off", fixture: plainConfiguration, checks: remote,
+			overlay: map[string]string{"php.ini": "allow_url_fopen = On\n\nallow_url_include = Off\n", "page.php": page}},
+		{name: "DP-19 allow_url_fopen alone", fixture: plainConfiguration, checks: remote,
+			overlay: map[string]string{"php.ini": "allow_url_fopen = On\n", "page.php": page}},
+		{name: "DP-19 a php.ini in an unlisted directory is not read", fixture: plainConfiguration, checks: remote,
+			overlay: map[string]string{"notes/php.ini": "\n\nallow_url_include = On\n", "page.php": page}},
+	})
+}

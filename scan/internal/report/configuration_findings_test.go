@@ -61,6 +61,7 @@ var configurationReportCases = []struct {
 	{analysis.CheckSessionCookieTransport, "CWE-614", "deploy/php.ini", "only over HTTPS", 7},
 	{analysis.CheckDebugEnabled, "CWE-489", "deploy/env.stage", "debug output", 2},
 	{analysis.CheckScheduledPrivileged, "CWE-732", "Dockerfile", "less privileged user", 50},
+	{analysis.CheckRemoteInclude, "CWE-98", "php.ini", "loading a URL", 5},
 }
 
 func confirmedConfiguration() *analysis.AnalysisReport {

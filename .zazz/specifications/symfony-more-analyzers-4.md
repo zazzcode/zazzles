@@ -161,6 +161,9 @@ cleaned, it must stay inside the scan root, and no component of it may be a symb
 | `Config` (added) | `config/packages/framework.yaml`, `config/packages/web_profiler.yaml`, `.env`, `.env.local`, `.env.prod`, `.env.prod.local`, and a file a Dockerfile `COPY` places as one of those |
 | `Deploy` | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` in any directory; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; files named `crontab` or `*.cron`, and files under a `cron.d/` directory; a script a schedule line executes, when it resolves to a project file |
 
+*Amended 2026-11-22 by [branch 5 D-4](symfony-more-analyzers-5.md#2-decisions):* the `Deploy`
+list also holds a `php.ini` at the scan root.
+
 *Why allow-lists:* an open-ended search for configuration would read arbitrary files and make
 results depend on directory noise. The lists are the common locations, and a file outside them is
 simply not covered, which the user page states.
@@ -221,6 +224,11 @@ choices of `setting_effect` name the recorded facts that establish each answer.
 | `session_cookie_insecure_transport` | `framework.session.cookie_secure: false`; `session.cookie_secure = 0` or `Off` | Same | `true`, `auto`, absent |
 | `debug_enabled` | `APP_DEBUG` of `1` or `true`, or `APP_ENV=dev`, in an environment file the deployment uses (D-5); `display_errors = On`, `1` or `stdout` in a read `php.ini`; `web_profiler` enabled outside `when@dev` and `when@test` | Which file is the deployed one and the evidence for it | `prod`, `0`, `Off`, or a `when@dev` block |
 | `scheduled_privileged_writable` | D-6 | The schedule, the execution chain, the writable file and who can write it | No link of the chain is writable by a lower-privileged user |
+
+*Amended 2026-11-22 by [branch 5 D-4 and D-5](symfony-more-analyzers-5.md#2-decisions):* check
+`remote_include_enabled` is added for `allow_url_include` in a read `php.ini`, and the two
+session-cookie checks also read `session_set_cookie_params` and a `setcookie` of the session
+cookie in PHP code.
 
 **D-5. Deployment mapping is read from the Dockerfile, literally.** `WORKDIR`, `COPY <src> <dst>`
 and `ADD` with literal operands give a map from container paths to project paths. The map

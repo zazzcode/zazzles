@@ -59,4 +59,4 @@ one level of script, and a `chown`, `chmod` or `COPY --chown` in the same Docker
 Finding type `insecure-configuration`. Each check has its own SARIF rule,
 `scan/insecure-configuration/<check>`, which carries the check's CWE and help text:
 directory listing 548, CSRF 352, script-readable cookie 1004, insecure cookie 614,
-debug 489, scheduled writable file 732.
+debug 489, remote include 98, scheduled writable file 732.

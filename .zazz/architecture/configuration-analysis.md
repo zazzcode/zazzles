@@ -22,7 +22,7 @@ project (`deployment`), and every check and the address-trust reader share that 
 | List | Paths |
 | --- | --- |
 | Config | `config/packages/framework.yaml`, `config/packages/web_profiler.yaml`, `.env`, `.env.local`, `.env.prod`, `.env.prod.local`, and a file a Dockerfile `COPY` places as one of those |
-| Deploy | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` anywhere; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; `crontab`, `*.cron` and `cron.d/`; a script a schedule line executes when it resolves to a project file |
+| Deploy | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` anywhere; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; a `php.ini` at the scan root; `crontab`, `*.cron` and `cron.d/`; a script a schedule line executes when it resolves to a project file |
 
 ## Environment files
 
@@ -64,6 +64,7 @@ SARIF rule, `scan/insecure-configuration/<check>`.
 | `session_cookie_script_readable` | `cookie_httponly: false`, or `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set` of a literal false | Whether a session-authenticated entry exists | `true`, absent, or `On` |
 | `session_cookie_insecure_transport` | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off` | The same | `true`, `auto`, absent |
 | `debug_enabled` | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled outside `when@dev` and `when@test` | Which file is the deployed one | `prod`, `0`, `Off`, or a `when@dev` block |
+| `remote_include_enabled` | `allow_url_include` of `On`, `1`, `true` or `yes` in a read `php.ini` | Up to eight `include` or `require` operations whose operand a request reaches (`php-include-v1` path candidates), or a fact that none is recorded | `Off`, `0`, absent. `allow_url_fopen` is not a check |
 | `scheduled_privileged_writable` | A schedule, an execution chain and a writable link all exist | The schedule, the chain and the ownership line | No link is writable by a lower-privileged user |
 
 ## Deployment mapping

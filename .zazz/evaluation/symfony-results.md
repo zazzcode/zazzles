@@ -549,8 +549,18 @@ was made.
 - **Remote include.** The joined fact is one line naming the include. It does not carry the
   include's operand or its request source, which the path candidate at the same line does.
 
-These are evidence gaps in three plain-PHP records, not instruction gaps. Closing them is
-further work and a further paid run, both for the owner to decide.
+**After the run** (not judged; the published sample predates it). On the owner's word the two
+configuration gaps were closed in the scanner, with facts only:
+
+- The cookie records now join `session_started` (`dvwa/includes/dvwaPage.inc.php:98`) and
+  `session_checked` (`:125`).
+- The remote-include record's join now reads: include operand reached by the request value
+  `$_GET[ 'page' ]` read at `vulnerabilities/fi/source/low.php:4`.
+
+An offline scan keeps all 265 record ids. Whether the three records now leave Review needs a
+judged run, which needs the owner's word. The authorization record is unchanged: what a
+plain-PHP entry's access is, is an open question of the
+[branch 5 contract](../specifications/symfony-more-analyzers-5.md#6-open-question).
 
 ### Closing table — sample README, 21 entries
 

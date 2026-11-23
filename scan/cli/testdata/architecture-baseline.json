@@ -4040,6 +4040,37 @@
     "uses_count": 10,
     "gaps": 0
   },
+  "internal/langphp/testdata/account-plain-variable": {
+    "uses": [
+      {
+        "id": "candidate:v1:c802f21a5ac669eb6eb51a8039231cdbed709f04462803ce6cbd5bf3d610deee",
+        "kind": "password_hash_candidate",
+        "request_sha256": "a81e99f548ca3de8e04c995430e2b608e00ba1be090bed9ac272a04dcafb100c",
+        "signature_sha256": "42b1e6cb9ad57c791bc263f023488dbddaed7bdb1d98377b854c00f63a9aea44"
+      },
+      {
+        "id": "candidate:v1:cb032f7c1ca8e8361e7dd3298ed4274d3daa7b85fa4e18a8b1ab8352cda11100",
+        "kind": "sql_query_candidate",
+        "request_sha256": "6f832b5acc325ece8ffa496b062f8c27112b3c41576bdb6637b32f0724e03376",
+        "signature_sha256": "6cd50c30b3b6adf22ca5b7a91d13c3cb0880577e793e721fbf7fd9bf0151b03c"
+      },
+      {
+        "id": "candidate:v1:7b6e9a8dda2674d8cd728fc2966be1a8235d4a2d6c364d8601131e6c4bbf4817",
+        "kind": "sql_query_candidate",
+        "request_sha256": "a8020c983b74bb95f4d204230c1b86fb68f4c75dccb6880246d1a5501468eb65",
+        "signature_sha256": "0611df4c00b0f7caa4adef912499ac5d9386ec44230f2d02280d44065c95e69c"
+      }
+    ],
+    "report_sha256": "b3c90400149d36d7fd2b11946bb6d5b3a8bc6c1c19e26a1ddff7f22872a4e0fd",
+    "sarif_sha256": "8f85552416ca0fb46f6942a0bd9ff7c398382cad3e62fe2a2227d5d4c6a9dfc0",
+    "entries": 3,
+    "registrations": 3,
+    "dispatch_bindings": 3,
+    "callables": 3,
+    "invocation_contexts": 3,
+    "uses_count": 3,
+    "gaps": 0
+  },
   "internal/langphp/testdata/authorization-plain": {
     "uses": [
       {

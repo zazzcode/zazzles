@@ -35,6 +35,7 @@ func TestPasswordHash(t *testing.T) {
 		{"PH-13", "testdata/symfony/account-defaults", []want{{"src/Security/QuickDigest.php", "md5", analysis.BasisHasherClass, "no", `App\Security\QuickDigest`, "", 10},
 			{"config/packages/security.yaml", "md5", analysis.BasisConfiguration, "no", "", "", 3},
 			{"config/packages/security.yaml", "md5", analysis.BasisConfiguration, "no", `App\Security\QuickDigest`, "", 5}}, nil},
+		{"PH-14", "testdata/account-plain-variable", []want{{"change.php", "md5", analysis.BasisSQLCredentialColumn, "no", "", "", 4}}, []string{"FILE /signin.php"}},
 	} {
 		t.Run(tt.id, func(t *testing.T) {
 			r := reports.get(t, tt.root)

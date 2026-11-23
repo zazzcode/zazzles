@@ -66,7 +66,8 @@ Hashing is confirmed for `password` and `fast_digest`, protected for `not_passwo
 Responses are read straight-line on each side until the action returns; a nested
 condition is not entered. Hasher-class and configuration records belong to the entry of
 the firewall's `form_login` or `json_login` check path, or to the project's first entry
-when no check path resolves. Plain PHP reads literal SQL text; a `SELECT` that compares a
+when no check path resolves. Plain PHP reads literal SQL text, in the query call or in the nearest earlier
+assignment of a string to the variable the call passes; a `SELECT` that compares a
 column written from a password hash or digest is a login and records no enumeration.
 Timing, rate limits, token lifetime, Notifier and Messenger mail, `crypt` and
 `hash_pbkdf2` parameters and password policy are out of scope.

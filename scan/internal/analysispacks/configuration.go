@@ -4,7 +4,7 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // ConfigurationProtocol versions the configuration claim: its questions,
 // the meaning of its evidence roles and the instruction sent with them.
-const ConfigurationProtocol = "configuration-components-v5"
+const ConfigurationProtocol = "configuration-components-v6"
 
 // ConfigurationRoles are the evidence obligations of a configuration claim.
 func ConfigurationRoles() []string { return []string{"setting", "scope"} }
@@ -63,6 +63,8 @@ func ConfigurationCheckEffect(check string) string {
 		return "A session cookie without Secure is also sent over plain HTTP."
 	case analysis.CheckDebugEnabled:
 		return "APP_ENV=dev, APP_DEBUG, display_errors and the web profiler show internal state, such as stack traces and configuration, in responses."
+	case analysis.CheckRemoteInclude:
+		return "allow_url_include on lets include and require load and run PHP code from a URL, such as http:// or data://, so an include whose operand a request controls can run code the requester supplies. PHP reads php.ini from its configuration path; whether it reads one in another directory depends on the server interface."
 	case analysis.CheckScheduledPrivileged:
 		return "cron runs the scheduled command as the named user, and each file that command executes runs with that user's privileges, so a user who can rewrite one of those files chooses what runs with them."
 	}
@@ -82,6 +84,8 @@ func ConfigurationCheckCWE(check string) string {
 		return "CWE-614"
 	case analysis.CheckDebugEnabled:
 		return "CWE-489"
+	case analysis.CheckRemoteInclude:
+		return "CWE-98"
 	case analysis.CheckScheduledPrivileged:
 		return "CWE-732"
 	}

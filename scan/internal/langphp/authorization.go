@@ -3,6 +3,7 @@ package langphp
 import (
 	"cmp"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 
@@ -164,21 +165,25 @@ func fieldValues(v phpValue) []phpValue {
 
 func phpInputDeps(values []phpValue) []phpDep {
 	var out []phpDep
-	var walk func(v phpValue)
-	walk = func(v phpValue) {
-		for _, d := range v.deps {
+	for _, v := range values {
+		phpEachDep(v, func(d phpDep) {
 			if d.dep.Source.Kind == "input_source" {
 				out = append(out, d)
 			}
-		}
-		for _, f := range v.fields {
-			walk(f)
-		}
-	}
-	for _, v := range values {
-		walk(v)
+		})
 	}
 	return out
+}
+
+// phpEachDep calls fn for each dependency of v and of its fields, the
+// fields in key order.
+func phpEachDep(v phpValue, fn func(phpDep)) {
+	for _, d := range v.deps {
+		fn(d)
+	}
+	for _, key := range slices.Sorted(maps.Keys(v.fields)) {
+		phpEachDep(v.fields[key], fn)
+	}
 }
 
 func (f *phpFlow) noteAuthzProperty(object phpValue, key string, v phpValue, at *sitter.Node) {
@@ -257,39 +262,6 @@ func (f *phpFlow) noteAuthzOutput(sink analysis.Evidence, guardAt *sitter.Node, 
 		change := analysis.StateChange{StorageKey: d.dep.StorageKey, Operation: "read", Span: sink.Span}
 		f.emitAuthz(sink, guardAt, sub, change, []string{analysis.FacetDataExposure}, facts, nil)
 	}
-}
-
-func (f *phpFlow) notePlainSQL(n *sitter.Node, text phpValue) {
-	if f.symfony != nil || n == nil {
-		return
-	}
-	constant, ok := phpSQLText(text)
-	if !ok {
-		return
-	}
-	up := strings.ToUpper(constant)
-	op := ""
-	switch {
-	case strings.Contains(up, "INSERT"):
-		op = "create"
-	case strings.Contains(up, "UPDATE"):
-		op = "update"
-	case strings.Contains(up, "DELETE"):
-		op = "delete"
-	default:
-		return
-	}
-	sink := f.module.evidence(analysis.AuthorizationKind, n)
-	f.notePlainOperation(n, analysis.StateChange{Operation: op, Span: sink.Span})
-}
-
-func (f *phpFlow) notePlainOperation(n *sitter.Node, change analysis.StateChange) {
-	guards := f.dominatingGuards(n, nil)
-	if len(guards) != 1 || guards[0].Kind != analysis.GuardAddress {
-		return
-	}
-	f.addAuthzChange(change)
-	f.emitAuthz(f.module.evidence(analysis.AuthorizationKind, n), n, &phpAuthz{}, change, nil, nil, nil)
 }
 
 func (f *phpFlow) writeFacets(sub *phpAuthz, key string, v phpValue) []string {

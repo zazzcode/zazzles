@@ -17,7 +17,8 @@ import (
 
 var (
 	sqlInsert  = regexp.MustCompile(`(?is)\bINSERT\s+INTO\s+` + "`?" + `(\w+)` + "`?" + `\s*\(([^)]*)\)\s*VALUES\s*\(([^)]*)\)`)
-	sqlUpdate  = regexp.MustCompile(`(?is)\bUPDATE\s+` + "`?" + `(\w+)` + "`?" + `\s+SET\s+(.+?)(?:\bWHERE\b|$)`)
+	sqlUpdate  = regexp.MustCompile(`(?is)\bUPDATE\s+` + "`?" + `(\w+)` + "`?" + `\s+SET\s+(.+?)(?:\bWHERE\b(.*)|$)`)
+	sqlDelete  = regexp.MustCompile(`(?is)\bDELETE\s+FROM\s+` + "`?" + `(\w+)` + "`?" + `\s+WHERE\b(.*)`)
 	sqlSelect  = regexp.MustCompile(`(?is)\bSELECT\b.+?\bFROM\s+` + "`?" + `(\w+)` + "`?" + `(.*)`)
 	sqlCompare = regexp.MustCompile(`(?i)\b(\w+)\s*=`)
 	sqlVar     = regexp.MustCompile(`\$(\w+)`)
@@ -35,6 +36,7 @@ type plainAccountSQL struct {
 	credentialColumns map[string]bool               // table.column written from a password hash or digest
 	compared          map[string]analysis.Evidence  // table.column -> SELECT
 	digestWrites      map[string][]plainDigestWrite // digest call file:byte -> writes in column order
+	statements        map[string]string             // SQL argument file:byte -> statement text
 }
 
 // plainAssigned is a variable assigned from password_hash or a fast digest.
@@ -70,7 +72,7 @@ func (s *phpSet) plainAccount() *plainAccountSQL {
 	if st.plain != nil {
 		return st.plain
 	}
-	out := &plainAccountSQL{credentialTables: map[string]bool{}, credentialColumns: map[string]bool{}, compared: map[string]analysis.Evidence{}, digestWrites: map[string][]plainDigestWrite{}}
+	out := &plainAccountSQL{credentialTables: map[string]bool{}, credentialColumns: map[string]bool{}, compared: map[string]analysis.Evidence{}, digestWrites: map[string][]plainDigestWrite{}, statements: map[string]string{}}
 	st.plain = out
 	for _, file := range s.files {
 		m := s.modules[file]
@@ -125,7 +127,8 @@ func (out *plainAccountSQL) readStatements(m *phpModule, vars map[string]plainAs
 		if sqlNode == nil {
 			return
 		}
-		text := phpText(m, sqlNode)
+		text := plainStatementText(m, sqlNode)
+		out.statements[spanKey(parse.Span(m.file, sqlNode))] = text
 		at := m.evidence("sql_statement", n)
 		if g := sqlSelect.FindStringSubmatch(text); g != nil && sqlInsert.FindStringSubmatch(text) == nil && sqlUpdate.FindStringSubmatch(text) == nil {
 			table := strings.ToLower(g[1])
@@ -151,6 +154,45 @@ func (out *plainAccountSQL) readStatements(m *phpModule, vars map[string]plainAs
 			}
 		}
 	})
+}
+
+// plainStatementText returns the SQL text of a query-call argument. A
+// variable reads the string of the one assignment statement that reaches the
+// call; a later assignment in a branch, a compound assignment such as .=, or
+// any other right side leaves it unread.
+func plainStatementText(m *phpModule, arg *sitter.Node) string {
+	if arg.Kind() != "variable_name" {
+		return phpText(m, arg)
+	}
+	assign, branch := phpReachingWrites(m, arg)
+	if assign == nil || len(branch) > 0 {
+		return phpText(m, arg)
+	}
+	right := phpField(assign, "right")
+	for right != nil && right.Kind() == "parenthesized_expression" {
+		right = right.NamedChild(0)
+	}
+	if right == nil {
+		return phpText(m, arg)
+	}
+	switch right.Kind() {
+	case "string", "encapsed_string", "binary_expression", "heredoc", "nowdoc":
+		return phpText(m, right)
+	}
+	return phpText(m, arg)
+}
+
+// sqlWriteWhere returns the operation, table and WHERE clause of a statement
+// that begins with UPDATE or DELETE and has a WHERE clause.
+func sqlWriteWhere(text string) (op, table, where string, ok bool) {
+	lead := len(text) - len(strings.TrimLeft(text, " \t\n\f\r"))
+	if g := sqlUpdate.FindStringSubmatchIndex(text); g != nil && g[0] == lead && g[6] >= 0 {
+		return "update", text[g[2]:g[3]], text[g[6]:g[7]], true
+	}
+	if g := sqlDelete.FindStringSubmatchIndex(text); g != nil && g[0] == lead {
+		return "delete", text[g[2]:g[3]], text[g[4]:g[5]], true
+	}
+	return "", "", "", false
 }
 
 // plainWrites returns the table of an INSERT or UPDATE and the variable each
@@ -231,12 +273,12 @@ func (f *phpFlow) plainAccountCall(n *sitter.Node, values []phpValue) {
 	if sqlNode == nil {
 		return
 	}
-	g := sqlSelect.FindStringSubmatch(phpText(m, sqlNode))
+	plain := f.set.plainAccount()
+	g := sqlSelect.FindStringSubmatch(plain.statements[spanKey(parse.Span(m.file, sqlNode))])
 	if g == nil {
 		return
 	}
 	table := strings.ToLower(g[1])
-	plain := f.set.plainAccount()
 	if !plain.credentialTables[table] {
 		return
 	}

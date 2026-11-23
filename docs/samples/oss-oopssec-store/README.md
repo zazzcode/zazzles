@@ -1,6 +1,6 @@
 # OSS OopsSec Store sample
 
-[All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) ·
+[All samples](../README.md) · [HTML](https://zazzcode.github.io/zazzles/oss-oopssec-store/findings.html) · [JSON](findings.json) ·
 [SARIF](findings.sarif) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/oss-oopssec-store-detection-guide.md)
 

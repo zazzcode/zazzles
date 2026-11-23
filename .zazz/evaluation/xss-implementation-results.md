@@ -8,9 +8,9 @@ The [handoff](../ephemeral/xss-analysis-handoff.md) is the entry point for that 
 
 | Target | Server entries | Client entries | Use records | Findings | Review | Protected |
 |---|---:|---:|---:|---:|---:|---:|
-| [Goof](../../docs/samples/nodejs-goof/findings.html) | 19 | 0 | 33 | 2 | 29 | 2 |
-| [Juice Shop](../../docs/samples/juice-shop/findings.html) | 152 | 9 | 208 | 8 | 200 | 0 |
-| [Vulnerable TypeScript app](../../docs/samples/vulnerable-typescript-app/findings.html) | 19 | 0 | 20 | 1 | 19 | 0 |
+| [Goof](https://zazzcode.github.io/zazzles/nodejs-goof/findings.html) | 19 | 0 | 33 | 2 | 29 | 2 |
+| [Juice Shop](https://zazzcode.github.io/zazzles/juice-shop/findings.html) | 152 | 9 | 208 | 8 | 200 | 0 |
+| [Vulnerable TypeScript app](https://zazzcode.github.io/zazzles/vulnerable-typescript-app/findings.html) | 19 | 0 | 20 | 1 | 19 | 0 |
 
 These are use-level results, not confirmed-vulnerability totals. Categories overlap. Goof's login
 has a source-complete static Luna XSS judgment; its stored Markdown output is an orange construction

@@ -35,7 +35,8 @@ against its source facts before assigning an outcome.
   assignment of request-chosen properties, missing authorization of a stored write,
   a file change, or a census-field read, the account claims (account enumeration,
   weak password recovery and weak password hashing), and insecure configuration of
-  allow-listed framework and deployment files. Symfony website support covers these
+  allow-listed framework and deployment files (including `allow_url_include` in a root
+  `php.ini`) and of session cookie flags set in PHP code. Symfony website support covers these
   families together with SSRF through a `curl` or `wget` shell URL.
 
 **Code smells and poor practices** include building queries from untrusted strings, failing to
@@ -164,7 +165,7 @@ and Protected claims. Protection applies to the specific operation and paths sho
 ## Saved results
 
 Browse saved HTML reports or download their JSON and SARIF evidence. Each sample lists its target
-revision, assessment scope and scored results. [Hosted reports](https://zazzcode.github.io/zazzles/docs/samples/) · [Sample index](docs/samples/README.md) · [Verify a sample finding](docs/samples/README.md#verify-a-sample-finding)
+revision, assessment scope and scored results. [Hosted reports](https://zazzcode.github.io/zazzles/) · [Sample index](docs/samples/README.md) · [Verify a sample finding](docs/samples/README.md#verify-a-sample-finding)
 
 ## Contributing
 

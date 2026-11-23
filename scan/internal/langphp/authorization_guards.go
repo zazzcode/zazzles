@@ -356,7 +356,7 @@ func (f *phpFlow) isAuthenticatedGuard(n *sitter.Node) bool {
 	if n == nil {
 		return false
 	}
-	if f.mentionsSession(n) {
+	if phpMentionsSession(f.module, n) {
 		return true
 	}
 	if n.Kind() == "member_call_expression" && strings.EqualFold(phpText(f.module, phpField(n, "name")), "getUser") {
@@ -388,7 +388,8 @@ func (f *phpFlow) mentionsGetUser(n *sitter.Node) bool {
 	return found
 }
 
-func (f *phpFlow) mentionsSession(n *sitter.Node) bool {
+// phpMentionsSession reports a $_SESSION element read inside n.
+func phpMentionsSession(m *phpModule, n *sitter.Node) bool {
 	found := false
 	phpWalk(n, func(c *sitter.Node) {
 		if c.Kind() == "subscript_expression" {
@@ -396,7 +397,7 @@ func (f *phpFlow) mentionsSession(n *sitter.Node) bool {
 			if base == nil {
 				base = c.NamedChild(0)
 			}
-			if phpVarName(f.module, base) == "_SESSION" || phpText(f.module, base) == "$_SESSION" {
+			if phpVarName(m, base) == "_SESSION" || phpText(m, base) == "$_SESSION" {
 				found = true
 			}
 		}

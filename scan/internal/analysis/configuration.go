@@ -11,6 +11,7 @@ const (
 	CheckSessionCookieTransport = "session_cookie_insecure_transport"
 	CheckDebugEnabled           = "debug_enabled"
 	CheckScheduledPrivileged    = "scheduled_privileged_writable"
+	CheckRemoteInclude          = "remote_include_enabled"
 )
 
 // ConfigurationFacts is one setting, its scope and the application facts it

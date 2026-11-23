@@ -28,7 +28,7 @@ source judgments, not runtime exploit confirmation.
 
 ## Previous report (rebuilt 2026-11-15)
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+[HTML](https://zazzcode.github.io/zazzles/vulnerable-typescript-app/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
 All analyzers were run at pinned revision `7f8b240a2f02` with OpenAI `gpt-6-luna`, including
 standalone input validation and Node `http`/`https` SSRF where those sinks exist. The target remained
@@ -52,7 +52,7 @@ and [metadata](metadata.json). Earlier sections below describe previous publishe
 
 ## Previous published snapshot
 
-[All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
+[All samples](../README.md) · [HTML](https://zazzcode.github.io/zazzles/vulnerable-typescript-app/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) ·
 [Expected vulnerabilities and file/line locations](../../../.zazz/evaluation/vulnerable-typescript-app-detection-guide.md) · [XSS/source controls](xss-answer-key.md) · [Provenance](metadata.json)
 
 Refreshed 2026-11-01 from the [upstream application](https://github.com/ryanmcmorrowsnyk/vulnerable-typescript-app), revision

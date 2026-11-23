@@ -325,3 +325,82 @@ func authzSummary(r *analysis.AnalysisReport) string {
 	}
 	return b.String()
 }
+
+// A plain-PHP UPDATE or DELETE whose WHERE clause selects the row by a
+// request value is an object-level candidate; guards are facts, not filters.
+func TestAuthorizationPlainSelected(t *testing.T) {
+	report := phpAnalyze(t, "testdata/authorization-plain", "")
+	byFile := map[string][]analysis.CandidateUse{}
+	for _, u := range report.Uses {
+		if u.Kind == analysis.AuthorizationKind {
+			byFile[u.Sink.Span.File] = append(byFile[u.Sink.Span.File], u)
+		}
+	}
+	for _, tt := range []struct {
+		id, file, operation, class string
+		line                       int
+		guard, form                string
+		// sources are the selecting request reads, all from the WHERE clause.
+		sources []string
+	}{
+		{"AZ-26", "selected.php", "update", "table:members", 5, "", "", []string{"file_get_contents('php://input')"}},
+		{"AZ-27", "selected_signed.php", "update", "table:members", 7, analysis.GuardAuthenticated, "", []string{"$_POST['id']"}},
+		{"AZ-29", "removed.php", "delete", "table:notes", 3, analysis.GuardOwnership, "query_scope", []string{"$_POST['id']"}},
+	} {
+		t.Run(tt.id, func(t *testing.T) {
+			uses := byFile[tt.file]
+			if len(uses) != 1 {
+				t.Fatalf("%d candidates in %s", len(uses), tt.file)
+			}
+			u, f := uses[0], uses[0].Authorization
+			if err := f.Validate(); err != nil {
+				t.Fatal(err)
+			}
+			if u.Sink.Span.StartLine != tt.line || f.Operation.Operation != tt.operation || f.SubjectClass != tt.class || f.SubjectProvenance != analysis.SubjectRequestSelected {
+				t.Fatalf("line %d facts %+v", u.Sink.Span.StartLine, f)
+			}
+			if len(f.Facets) != 1 || f.Facets[0] != analysis.FacetObjectLevel {
+				t.Fatalf("facets %v", f.Facets)
+			}
+			var sources []string
+			for _, d := range u.Dependencies {
+				if d.Source.Kind != "input_source" {
+					t.Fatalf("selecting source %+v", d.Source)
+				}
+				sources = append(sources, d.Source.Text)
+			}
+			if !slices.Equal(sources, tt.sources) {
+				t.Fatalf("selecting sources %q, want %q", sources, tt.sources)
+			}
+			if tt.guard == "" {
+				if len(f.Guards) != 0 {
+					t.Fatalf("guards %+v", f.Guards)
+				}
+				return
+			}
+			if len(f.Guards) != 1 || f.Guards[0].Kind != tt.guard || f.Guards[0].Form != tt.form {
+				t.Fatalf("guards %+v", f.Guards)
+			}
+		})
+	}
+	t.Run("AZ-28", func(t *testing.T) {
+		if n := len(byFile["own.php"]); n != 0 {
+			t.Fatalf("%d candidates for a session-selected row", n)
+		}
+	})
+}
+
+// AZ-30: a recovery page that updates the row a submitted address selects is
+// recorded like any other request-selected row. The model judges it.
+func TestAuthorizationPlainAnonymousFlow(t *testing.T) {
+	report := phpAnalyze(t, "testdata/account-plain", "")
+	var got []analysis.CandidateUse
+	for _, u := range report.Uses {
+		if u.Kind == analysis.AuthorizationKind {
+			got = append(got, u)
+		}
+	}
+	if len(got) != 1 || got[0].Sink.Span.File != "forgot.php" || got[0].Sink.Span.StartLine != 7 || len(got[0].Authorization.Guards) != 0 {
+		t.Fatalf("candidates %+v", got)
+	}
+}

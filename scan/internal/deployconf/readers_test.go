@@ -98,6 +98,13 @@ func TestReaders(t *testing.T) {
 			t.Fatalf("%+v", got)
 		}
 	})
+	t.Run("RD-11 allow_url_include is kept and allow_url_fopen is not", func(t *testing.T) {
+		got, _ := PHPIni("php.ini", []byte("allow_url_fopen = on\nallow_url_include = on ; remote\n"))
+		want := []Directive{{File: "php.ini", Line: 2, Name: "allow_url_include", Values: []string{"on"}}}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("%+v", got)
+		}
+	})
 	t.Run("RD-12", func(t *testing.T) {
 		got, _ := EnvKeys(".env", fixture(t, "rd12.env"))
 		raw, _ := json.Marshal(got)

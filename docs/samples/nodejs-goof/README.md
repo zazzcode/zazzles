@@ -33,7 +33,7 @@ source judgments, not runtime exploit confirmation.
 
 ## Previous report (rebuilt 2026-11-15)
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+[HTML](https://zazzcode.github.io/zazzles/nodejs-goof/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
 All analyzers were run at pinned revision `add14ba59e98` with OpenAI `gpt-6-luna`, including
 standalone input validation and upload/URL acquisition. The target remained clean. These are static
@@ -80,7 +80,7 @@ a new full paid scan. Protection of ID lookup does not establish authorization o
 
 ## Previous published report
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+[HTML](https://zazzcode.github.io/zazzles/nodejs-goof/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
 The current source scan has **19 route entries and 33 use records** across XSS, input validation,
 Mongoose NoSQL and logging. It includes the mounted `/users` routes. Two records are Findings

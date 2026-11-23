@@ -15,6 +15,7 @@ func (s *phpSet) emitSymfonyChecks(out *analysis.AnalysisReport, p *symfonyProje
 	for _, ev := range s.projectSourceSettings(p.root).iniSets["session.cookie_httponly"] {
 		s.emitCookie(out, p, analysis.CheckSessionCookieScript, ev.Span.File, ev.Text, ev.Span.StartLine, s.projectScope(p))
 	}
+	s.emitSourceCookies(out, p.root, func(string) analysis.Evidence { return s.projectScope(p) })
 }
 
 // configDocument parses one allow-listed YAML file of a project. A listed
@@ -200,6 +201,11 @@ type phpSourceSettings struct {
 	csrf []analysis.Evidence
 	// iniSets are ini_set calls with a literal false value, by directive.
 	iniSets map[string][]analysis.Evidence
+	// cookies are the session cookie flags a call sets to false.
+	cookies []sourceCookie
+	// sessionStart and sessionCheck are the first session_start call and
+	// the first condition that reads $_SESSION, in file order.
+	sessionStart, sessionCheck *analysis.Evidence
 }
 
 // projectSourceSettings walks each module of a project once.
@@ -229,6 +235,20 @@ func (s *phpSet) projectSourceSettings(root string) *phpSourceSettings {
 			case "function_call_expression":
 				if key, ok := falseIniSet(m, n); ok {
 					got.iniSets[key] = append(got.iniSets[key], m.evidence("setting", n))
+				}
+				got.cookies = append(got.cookies, sourceCookies(m, n)...)
+				if got.sessionStart == nil && len(phpArgs(n)) == 0 && strings.EqualFold(strings.TrimPrefix(phpText(m, phpField(n, "function")), `\`), "session_start") {
+					ev := m.evidence("session_started", n)
+					got.sessionStart = &ev
+				}
+			case "if_statement":
+				cond := phpField(n, "condition")
+				for cond != nil && cond.Kind() == "parenthesized_expression" {
+					cond = cond.NamedChild(0)
+				}
+				if got.sessionCheck == nil && cond != nil && phpMentionsSession(m, cond) {
+					ev := m.evidence("session_checked", cond)
+					got.sessionCheck = &ev
 				}
 			}
 		})

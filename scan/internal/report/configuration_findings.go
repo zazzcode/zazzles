@@ -7,7 +7,7 @@ import (
 
 var configurationFindingTypes = []analysis.FindingType{
 	{ID: "insecure-configuration", Label: "Insecure Configuration", Coverage: "bounded framework and deployment configuration analysis",
-		Description:    "A framework or deployment setting weakens the application in a way the joined facts make concrete (CWE-548, CWE-352, CWE-1004, CWE-614, CWE-489, CWE-732, CWE-269).",
+		Description:    "A framework or deployment setting weakens the application in a way the joined facts make concrete (CWE-548, CWE-352, CWE-1004, CWE-614, CWE-489, CWE-98, CWE-732, CWE-269).",
 		Interpretation: "The record holds one setting, its scope and the application facts it joins. The scanner does not decide that the setting is a defect. A hardened value is not recorded.",
 		Remediation:    "Change the setting, or keep the joined condition from applying: disable directory listing where uploads are stored, keep CSRF protection on for state-changing entries, mark the session cookie HttpOnly and Secure, and do not run a writable project file from a privileged schedule."},
 }
@@ -37,6 +37,8 @@ func configurationGuidance(u analysis.CandidateUse) Guidance {
 		return Guidance{Title: "Send the session cookie only over HTTPS", Actions: []string{"Set cookie_secure to true or auto."}}
 	case analysis.CheckDebugEnabled:
 		return Guidance{Title: "Keep debug output out of the deployed application", Actions: []string{"Deploy with APP_ENV=prod and APP_DEBUG=0.", "Leave display_errors off and the web profiler in the dev and test environments."}}
+	case analysis.CheckRemoteInclude:
+		return Guidance{Title: "Keep include and require from loading a URL", Actions: []string{"Set allow_url_include to Off.", "Choose included files from a fixed list instead of a request value."}}
 	case analysis.CheckScheduledPrivileged:
 		return Guidance{Title: "Do not schedule a file a less privileged user can rewrite", Actions: []string{"Run the scheduled command as the user that owns the file, or make that file writable only by the schedule user."}}
 	}

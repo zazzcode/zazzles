@@ -31,7 +31,7 @@ These are single local timings with different analysis coverage, not a speed ben
 
 - [Bearer findings and run summary](../../docs/samples/nodejs-goof/bearer/20261101-goof-baseline-02/SUMMARY.md).
 - [Zazzles JSON](../../docs/samples/nodejs-goof/zazzles/20261101-goof-baseline-02/findings.json),
-  [HTML](../../docs/samples/nodejs-goof/zazzles/20261101-goof-baseline-02/findings.html),
+  [HTML](https://zazzcode.github.io/zazzles/nodejs-goof/zazzles/20261101-goof-baseline-02/findings.html),
   [SARIF](../../docs/samples/nodejs-goof/zazzles/20261101-goof-baseline-02/findings.sarif).
 - [Syntactic route inventory](../../docs/samples/nodejs-goof/zazzles/20261101-goof-baseline-02/scan-routes-nodejs-goof.json).
 

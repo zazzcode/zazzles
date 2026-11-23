@@ -23,6 +23,7 @@ func (s *phpSet) finishConfiguration(out *analysis.AnalysisReport) {
 		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "config_list_truncated", Detail: "the " + list + " file list passed 200 files; the files after the limit were not read"})
 	}
 	if len(s.symfony) == 0 {
+		s.emitPlainSource(out, ".")
 		s.emitDeploy(out, ".", nil)
 		return
 	}
@@ -375,8 +376,28 @@ func (s *phpSet) sessionJoin(out *analysis.AnalysisReport, root, file string, li
 	text := "session_authenticated: no"
 	if s.hasSessionEntry(out, root) {
 		text = "session_authenticated: yes"
+	} else if len(s.symfony) == 0 {
+		// Plain PHP has no entry access model to answer this.
+		text = "session_authenticated: unknown"
 	}
 	return s.lineEvidence(file, "session_authenticated", text, line)
+}
+
+// sessionJoins are the session facts of a cookie record. A project with no
+// access model also states where it starts a session and where a condition
+// reads it, because nothing else says the application uses the cookie.
+func (s *phpSet) sessionJoins(out *analysis.AnalysisReport, root, file string, line int) []analysis.Evidence {
+	joined := []analysis.Evidence{s.sessionJoin(out, root, file, line)}
+	if len(s.symfony) > 0 {
+		return joined
+	}
+	src := s.projectSourceSettings(root)
+	for _, ev := range []*analysis.Evidence{src.sessionStart, src.sessionCheck} {
+		if ev != nil {
+			joined = append(joined, *ev)
+		}
+	}
+	return joined
 }
 
 func falseLiteral(v string) bool {

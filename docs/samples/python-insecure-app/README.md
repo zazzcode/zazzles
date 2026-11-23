@@ -1,6 +1,6 @@
 # Python insecure app sample
 
-[Samples](../README.md) · [HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
+[Samples](../README.md) · [HTML](https://zazzcode.github.io/zazzles/python-insecure-app/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif)
 
 ## Current report (rebuilt 2026-11-19)
 
@@ -15,7 +15,7 @@ source judgments, not runtime exploit confirmation.
 
 ## Previous report (rebuilt 2026-11-15)
 
-[HTML](findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
+[HTML](https://zazzcode.github.io/zazzles/python-insecure-app/findings.html) · [JSON](findings.json) · [SARIF](findings.sarif) · [Provenance](metadata.json)
 
 Fresh **all-family** OpenAI `gpt-6-luna` assessment after the shared Python input refactor,
 including standalone input validation, at pinned target revision `b188493768ca`.

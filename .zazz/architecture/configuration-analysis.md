@@ -22,7 +22,7 @@ project (`deployment`), and every check and the address-trust reader share that 
 | List | Paths |
 | --- | --- |
 | Config | `config/packages/framework.yaml`, `config/packages/web_profiler.yaml`, `.env`, `.env.local`, `.env.prod`, `.env.prod.local`, and a file a Dockerfile `COPY` places as one of those |
-| Deploy | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` anywhere; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; `crontab`, `*.cron` and `cron.d/`; a script a schedule line executes when it resolves to a project file |
+| Deploy | `Dockerfile`, `Dockerfile.*`, `*.dockerfile`; `.htaccess` anywhere; `*.conf` and `php.ini` under `docker/`, `.docker/`, `deploy/`, `config/apache/`, `config/nginx/`, `apache/`, `nginx/` and `etc/`; a `php.ini` at the scan root; `crontab`, `*.cron` and `cron.d/`; a script a schedule line executes when it resolves to a project file |
 
 ## Environment files
 
@@ -36,7 +36,7 @@ project root under one of those names, in order.
 ## Why the records are judged
 
 Each record carries the setting, its scope and the joined application facts. The model
-answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v5`).
+answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v6`).
 A hardened value makes no record. The scanner does not decide that a setting is a defect.
 The request instruction states what each joined fact kind means and what the check's
 directive does as documented, and prescribes no answer. Whether the setting is in effect
@@ -61,9 +61,10 @@ SARIF rule, `scan/insecure-configuration/<check>`.
 | --- | --- | --- | --- |
 | `directory_listing` | Apache `Options` whose effective list includes `Indexes`, or nginx `autoindex on` | Scope directory, whether it maps to the document root, upload destinations inside it | `-Indexes`, `Options None`, `autoindex off`, or the directive absent |
 | `csrf_disabled` | `framework.csrf_protection: false` at the top level or under `when@prod`, which overrides the top level for every framework key. `when@dev` and `when@test` are not read | Up to eight session-authenticated state-changing entries, and any `isCsrfTokenValid` or `csrf_token_id` mitigation | `true`, `~`, or the key absent |
-| `session_cookie_script_readable` | `cookie_httponly: false`, or `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set` of a literal false | Whether a session-authenticated entry exists | `true`, absent, or `On` |
-| `session_cookie_insecure_transport` | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off` | The same | `true`, `auto`, absent |
+| `session_cookie_script_readable` | `cookie_httponly: false`, or `session.cookie_httponly` of `0`, `Off` or `false`, or `ini_set` of a literal false, or the `httponly` flag of `session_set_cookie_params` or of a `setcookie` named by `session_name()` when it is false or a variable assigned false earlier in the same scope | Whether a session-authenticated entry exists (`unknown` in plain PHP, which has no access model), and each false assignment of a variable flag | `true`, absent, or `On` |
+| `session_cookie_insecure_transport` | `cookie_secure: false`, or `session.cookie_secure` of `0` or `Off`, or the `secure` flag of the same PHP calls | The same | `true`, `auto`, absent |
 | `debug_enabled` | Deployed `APP_DEBUG` of `1` or `true`, `APP_ENV=dev`, `display_errors` of `On`, `1` or `stdout`, or `web_profiler` enabled outside `when@dev` and `when@test` | Which file is the deployed one | `prod`, `0`, `Off`, or a `when@dev` block |
+| `remote_include_enabled` | `allow_url_include` of `On`, `1`, `true` or `yes` in a read `php.ini` | Up to eight `include` or `require` operations whose operand a request reaches (`php-include-v1` path candidates), or a fact that none is recorded | `Off`, `0`, absent. `allow_url_fopen` is not a check |
 | `scheduled_privileged_writable` | A schedule, an execution chain and a writable link all exist | The schedule, the chain and the ownership line | No link is writable by a lower-privileged user |
 
 ## Deployment mapping

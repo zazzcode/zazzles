@@ -3,6 +3,42 @@
 The [detection guide](vuln-symfony-detection-guide.md) defines the expected outcomes for
 `vuln-symfony` at `086f81f941501bd1170b249e01107ba99beb2962`.
 
+## Scanner commit hashes after the rebases
+
+Each stacked branch of the lane was rebased when the branch below it merged, so the scanner
+commits this record cites have new hashes on `stage`. The old hashes stay reachable through
+the merged pull requests on GitHub. The runs below keep the hash that was current when the
+run was made.
+
+The table pairs each cited hash with the commit of the same title that is on `stage` or the
+open branch now. The last column says how close the two are:
+
+- **Same tree:** the whole source tree is identical, so the scanner is the same.
+- **Same change:** the commit's own diff is identical. The tree under it also holds review
+  fixes that landed on a lower branch after the run.
+- **Changed in the rebase:** the diff itself differs, because the rebase had to resolve a
+  conflict or regenerate a golden file. The run's scanner is the cited hash, not the new one.
+
+| Cited in this record | Commit now | Title | Relation |
+|---|---|---|---|
+| `c963f5d` | `9b73450` | Tighten authorization judge questions to v2 | Changed in the rebase |
+| `c72ff1c` | `9618e06` | Tell the authorization judge to weigh guard kind | Same change |
+| `bd92606` | `178c4fb` | Separate baseline and restricted roles in authorization v4 | Changed in the rebase |
+| `fab81d8` | `7a9ad97` | Record account lookups whose branches answer differently | Same change |
+| `48e66a6` | `0d48d07` | Model mail sinks and recovery-secret delivery | Same change |
+| `86f1211` | `e33f449` | Record fast digests that store a password | Changed in the rebase |
+| `94c5138` | `ea7e89a` | Check the account rows on the sample and in the reports | Same change |
+| `54dd0b0` | `b207c88` | Record configuration settings and shell URL client SSRF | Changed in the rebase |
+| `763b9c3` | `5556fe0` | Record the recovery secret-bits follow-on in the branch 4 spec | Same tree |
+| `ffc8c2b` | `e416890` | Bring the branch 4 spec, architecture and user pages in step with the review fixes | Same tree |
+| `8d97b93` | `23cbb0e` | Establish that a configuration setting is in effect from recorded facts | Same tree |
+| `681843f` | `63835df` (branch `symfony-more-analyzers-5`) | Record the offline DVWA run after branch 5 | Same tree |
+
+The sample notes and provenance files under `docs/samples/vuln-symfony/` cite `8d97b93`, which
+is "same tree" as `23cbb0e` on `stage`. Those under `docs/samples/dvwa/` cite `63835df` (formerly
+`681843f`): the branch 5 scanner before the facts added after its judged run and before the
+review resolution. See the [DVWA results](dvwa-results.md#judged-run-after-branch-5).
+
 ## Offline baseline
 
 The 2026-11-21 run `run-1210193297` used scanner checkpoint `2ccc908`, whose scanner code
@@ -411,51 +447,9 @@ Before and after on the review's cases, with binaries built from `763b9c3` and f
 | `.env` with `APP_ENV=dev\` then `APP_SECRET=s3cr3t-marker` | Setting text `APP_ENV=dev APP_SECRET=s3cr3t-marker`; the marker is in the JSON report 9 times | No `APP_ENV` record from the malformed line, and the marker is absent |
 | `RUN set -eux; chown -R web:web /srv/site/tools; true` with a root cron line | No `scheduled_privileged_writable` record | Recorded |
 
-### DVWA offline review
+### DVWA
 
-Offline scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and after,
-`b4-offline` (`run-3455210590`). `TestDVWASourceKey` still passes.
-
-| Kind | Candidates |
-|---|---:|
-| `configuration_candidate` | 0 |
-| `ssrf_candidate` with `transport: shell_client` | 0 |
-
-Source review of the files the allow-lists opened: `Dockerfile` copies the tree with
-`--chown=www-data` and enables `rewrite`, and it has no cron line, so the scheduled-writable
-check correctly records nothing. `vulnerabilities/api/.htaccess` is rewrite rules only.
-Root `php.ini` is outside the deploy directories, so it is not read. The command sinks are
-`ping`, not `curl` or `wget`. No candidate was wrong, and none was missing for a check the
-lists cover.
-
-### DVWA judged run
-
-One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
-after, on the owner's word of 2026-11-23: `b4-review-accept` (`run-3336289847`), scanner
-`8d97b93`, OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`.
-189 requests, 192 assessments, 1,659,153 input tokens, zero failures. 57 records were not
-sent because their blockers have no model-resolvable question.
-
-249 records: 146 Confirmed, 39 practice, 34 needs-review, 12 needs-evidence, 18 Protected.
-Against the published report of 2026-11-20 (`run-2645224166`, 247 records), every one of
-the 247 keeps its status. The two new records are `info_exposure_candidate` and both are
-Confirmed after source review: `phpinfo.php:8` (`phpinfo()` behind login) and
-`dvwa/includes/dvwaPage.inc.php:388` under `setup.php` (the PHP version and server state).
-
-No `configuration_candidate`, `authorization_candidate`, `password_hash_candidate`,
-`account_enumeration_candidate`, `recovery_delivery_candidate`, `mass_assignment_candidate`
-or shell-client `ssrf_candidate` is recorded. Source review of what DVWA holds in those
-classes:
-
-| DVWA defect | Location | Recorded | Why |
-|---|---|---|---|
-| Passwords stored as MD5 | `login.php:27`, `vulnerabilities/csrf/source/low.php:12`, `vulnerabilities/brute/source/low.php:9` | No | The plain-PHP rule needs a digest written to a column and that column compared at login. Both exist in DVWA, and the rule still records nothing. Cause not yet established |
-| Authorisation bypass | `vulnerabilities/authbypass/change_user_details.php:47`, `get_user_data.php` | No | A raw `UPDATE users … where user_id = <request id>` with no ownership or role check below the `impossible` level. The plain-PHP authorization adapter records no subject for it |
-| PHP settings | Root `php.ini` (`allow_url_include = on`) | No | The file is outside the listed deployment directories, and `allow_url_include` is not a check |
-| CSRF, weak session ids, brute force, CAPTCHA, CSP, cryptography | `vulnerabilities/csrf`, `weak_id`, `brute`, `captcha`, `csp`, `cryptography` | No | No analyzer for these classes in plain PHP |
-
-The first two rows are recall gaps of analyzers this lane delivered. They are follow-up
-work and are not fixed in PR #46. The sample report in `docs/samples/dvwa/` is this run.
+The DVWA runs of branches 4 and 5 are in the [DVWA results](dvwa-results.md).
 
 ### Closing table — sample README, 21 entries
 

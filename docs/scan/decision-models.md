@@ -169,7 +169,9 @@ from verified source facts. Fresh schema-4 JSON reports identify the selected pa
 versions and digests; a selection alone does not mean a model assessment ran. Current protocols
 are `sql-components-v4`, `nosql-components-v2`, `validation-components-v2`, `xss-components-v4`,
 `command-components-v5`, `path-components-v3`, `ssrf-components-v2`, `code-components-v2`, `upload-components-v2`,
-`redirect-components-v1` and `log-components-v2`. A component shared by several families is
+`redirect-components-v1`, `log-components-v2`, `deserialization-components-v1`,
+`pollution-components-v1`, `exposure-components-v1`, `mass-assignment-components-v1`,
+`authorization-components-v5`, `account-components-v2` and `configuration-components-v6`. A component shared by several families is
 referenced per family, so a protocol change re-judges only its own family. Mandatory evidence and
 consistency gates remain in Go.
 

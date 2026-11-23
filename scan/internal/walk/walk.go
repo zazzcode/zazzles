@@ -245,6 +245,10 @@ func deployPath(rel string) bool {
 	if base == "Dockerfile" || strings.HasPrefix(base, "Dockerfile.") || strings.HasSuffix(base, ".dockerfile") || base == ".htaccess" || base == "crontab" || strings.HasSuffix(base, ".cron") {
 		return true
 	}
+	if rel == "php.ini" {
+		// A php.ini at the scan root sits beside the application it configures.
+		return true
+	}
 	dir := path.Dir(rel)
 	if path.Base(dir) == "cron.d" {
 		return true

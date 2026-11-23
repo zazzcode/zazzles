@@ -172,6 +172,7 @@ func TestWalkDeployList(t *testing.T) {
 		"project/composer.json", "project/config/packages/framework.yaml",
 		"project/.env", "project/public/index.php",
 		"vendor/docker/php.ini", "project/vendor/hidden.conf",
+		"php.ini", "notes/php.ini",
 	)
 	if err := os.Symlink("apache.conf", filepath.Join(root, "docker", "link.conf")); err != nil {
 		t.Fatal(err)
@@ -194,13 +195,13 @@ func TestWalkDeployList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Dockerfile", "Dockerfile.dev", "app.dockerfile", "public/.htaccess", "docker/apache.conf", "docker/php.ini", "cron.d/app", "crontab"} {
+	for _, want := range []string{"Dockerfile", "Dockerfile.dev", "app.dockerfile", "public/.htaccess", "docker/apache.conf", "docker/php.ini", "cron.d/app", "crontab", "php.ini"} {
 		if !slices.Contains(got.Deploy, want) {
 			t.Errorf("deploy missing %s in %v", want, got.Deploy)
 		}
 	}
 	for _, banned := range got.Deploy {
-		if stringsHas(banned, "vendor/") || stringsHas(banned, "link.conf") || stringsHas(banned, "big.conf") {
+		if stringsHas(banned, "vendor/") || stringsHas(banned, "link.conf") || stringsHas(banned, "big.conf") || banned == "notes/php.ini" {
 			t.Errorf("deploy read %s", banned)
 		}
 	}

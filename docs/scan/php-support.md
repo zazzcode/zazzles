@@ -37,11 +37,11 @@ and troubleshooting, use [offline evidence inspection](running-scans.md#offline-
 | Deserialization | Global `unserialize` and Symfony `Yaml::parse` with source-backed options, request byte paths, and object-injection outcomes ([analysis rules](analysis/deserialization.md#php)) |
 | Information exposure | `phpinfo()`, `debug_print_backtrace()`, dumps of `$_SERVER`/`$_ENV`/`$GLOBALS`, and output of `getenv()`, `php_uname()` or `phpversion()` in served files ([analysis rules](analysis/information-exposure.md)) |
 | Mass assignment | `foreach ($_POST as $k => $v) { $obj->$k = $v; }` and the `set…` forms on a project class; field roles are name hints only ([analysis rules](analysis/mass-assignment.md)) |
-| Authorization | A plain PHP file whose only guard is an address check on a modeled SQL write or a file write or delete ([analysis rules](analysis/authorization.md)). Symfony route entries carry the fuller claim |
+| Authorization | A plain PHP file whose only guard is an address check on a modeled SQL write or a file write or delete, and a SQL `UPDATE` or `DELETE` whose `WHERE` clause selects the row by a request value ([analysis rules](analysis/authorization.md)). Symfony route entries carry the fuller claim |
 | Account | Enumeration from a literal SQL `SELECT` on a credential table with `echo`, `header`, `http_response_code` and `die` answers, recovery secrets sent with `mail()`, and digests of request values stored in a compared column (family `account`, [analysis rules](analysis/account-security.md)) |
 | Redirect | `header('Location: …')` (prefix case-insensitive) with destination facts; non-Location headers are not redirects |
 | SSRF and outbound | Verified URL-capable PHP operations, cURL and Symfony HttpClient in Symfony projects, and a request value in a URL position of literal `curl` or `wget` ([SSRF rules](analysis/ssrf.md)) |
-| Configuration | Allow-listed Apache, nginx, Dockerfile, cron, php.ini and the two environment keys, plus Symfony framework files ([analysis rules](analysis/configuration.md)) |
+| Configuration | Allow-listed Apache, nginx, Dockerfile, cron, php.ini (including a `php.ini` at the scan root) and the two environment keys, Symfony framework files, and the session cookie flags PHP code passes to `session_set_cookie_params` or a session `setcookie` ([analysis rules](analysis/configuration.md)) |
 | Logging | Verified PSR-3 and PHP log emission in Symfony projects ([logging rules](analysis/sensitive-data-logging.md)) |
 | Validation | Superglobal-to-field policy from source-backed forms; a browser constraint is not server enforcement. Missing business requirements stay uncertain. |
 

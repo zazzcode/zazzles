@@ -3,11 +3,41 @@
 [All samples](../README.md) · [HTML](findings.html) · [JSON](findings.json.gz) ·
 [SARIF](findings.sarif.gz) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/dvwa-detection-guide.md) ·
-[Results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run) ·
+[Results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run-after-branch-5) ·
 [Command bypass results](../../../.zazz/evaluation/command-bypass-support-results.md) ·
 [PHP evaluation](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (2026-11-23, application-security analyzers)
+## Current report (2026-11-22, plain-PHP recall)
+
+A full static scan of DVWA revision `a1978a2` with scanner `681843f` and OpenAI `gpt-6-luna`
+produced 265 records across 174 entries. The report presents 158 Confirmed, 39 practice findings,
+50 Review (34 needs-review and 16 needs-evidence), and 18 Protected.
+
+- **Twelve new findings, all weak password hashing.** DVWA stores passwords as MD5. The
+  password-change pages of the `csrf` and `captcha` modules (`low.php`, `medium.php`,
+  `high.php`) write `md5` of the submitted password to `users.password`, which `login.php:46`
+  compares. Each page is recorded under its `index.php` entry and its own file entry, and all
+  twelve are Confirmed.
+- **Four new records are in Review, and all four are real defects.**
+  `vulnerabilities/authbypass/change_user_details.php:48` updates the user a request names with
+  no ownership check; the model found the row request-selected and unguarded, and could not
+  establish who may call the page, because plain PHP has no access model.
+  `dvwa/includes/dvwaPage.inc.php:72` sets the session cookie without `Secure` and, below the
+  `impossible` level, without `HttpOnly`. Root `php.ini:5` turns on `allow_url_include`. For
+  those three the model found the setting in effect and left its weakness unknown.
+- **Nothing else moved.** The 249 earlier records have the same status as the previous report,
+  so the answer key stands: all 11 keyed positives Confirmed and no protected control a finding.
+- **Still not recorded.** Reads of other users' records (`authbypass/get_user_data.php`, the
+  `bac` module), the API module's defects, CSRF, weak session identifiers, brute force, CAPTCHA
+  bypass, CSP bypass and cryptography have no analyzer that covers them. These are recall gaps
+  of the scanner, not clean results.
+- **Usage:** 208 assessments from 205 requests, three shared across equivalent contexts,
+  1,726,639 input tokens, zero failures. 57 records stay in Review without a request because
+  their blockers have no model-resolvable question. Offline replay was not repeated.
+
+The evidence is in the [Symfony results](../../../.zazz/evaluation/symfony-results.md#dvwa-judged-run-after-branch-5).
+
+## Previous report (2026-11-23, application-security analyzers)
 
 A full static scan of DVWA revision `a1978a2` with scanner `8d97b93` and OpenAI `gpt-6-luna`
 produced 249 records across 174 entries. The report presents 146 Confirmed, 39 practice findings,

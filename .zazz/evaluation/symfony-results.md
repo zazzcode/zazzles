@@ -499,6 +499,59 @@ have nothing to record. Information exposure keeps its two records. CSRF, weak s
 identifiers, brute force, CAPTCHA, CSP, cryptography and client-side-only controls have no
 analyzer and stay not covered.
 
+### DVWA judged run after branch 5
+
+One judged scan of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean before and
+after, on the owner's word of 2026-11-22: `b5-judged` (`run-3384633700`), scanner `681843f`
+(PR #47), OpenAI `gpt-6-luna`, default judge limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`.
+205 requests, 208 assessments, 1,726,639 input tokens, zero failures. 57 records were not
+sent because their blockers have no model-resolvable question. The sample report in
+`docs/samples/dvwa/` is this run.
+
+265 records: 158 Confirmed, 39 practice, 34 needs-review, 16 needs-evidence, 18 Protected.
+Against `run-3336289847` (249 records), every one of the 249 keeps its status. None moved.
+
+The 16 new records, each source-reviewed:
+
+| Record | Count | Judged | Source review |
+|---|---:|---|---|
+| `password_hash_candidate` at `vulnerabilities/csrf/source/low.php:12`, `medium.php:14`, `high.php:39` and `vulnerabilities/captcha/source/low.php:57`, `medium.php:65`, `high.php:27`, each under two entries | 12 | Confirmed | Correct. Each is `md5` of the submitted password written to `users.password`, which `login.php:46` compares |
+| `authorization_candidate` at `vulnerabilities/authbypass/change_user_details.php:48` | 1 | needs-evidence | Correct finding left in Review. The page has no login check and updates the user id the body names |
+| `configuration_candidate` `session_cookie_insecure_transport` at `dvwa/includes/dvwaPage.inc.php:72` | 1 | needs-evidence | Correct finding left in Review. `$secure` is always `false` (`:60`) |
+| `configuration_candidate` `session_cookie_script_readable` at `dvwa/includes/dvwaPage.inc.php:72` | 1 | needs-evidence | Correct finding left in Review. `$httponly` is `false` below the `impossible` level (`:55`) |
+| `configuration_candidate` `remote_include_enabled` at `php.ini:5` | 1 | needs-evidence | Correct finding left in Review. The file-inclusion module includes a request-chosen file (`vulnerabilities/fi/index.php:36`) |
+
+Answer probabilities of the four records in Review:
+
+| Record | Question | Answer | Probabilities |
+|---|---|---|---|
+| Authorization | `subject_control` | `request_selected` | 1.00 |
+| | `guard_adequacy` | `none` | 1.00 |
+| | `access_adequacy` | `unknown` | unknown 0.87, inadequate 0.12, adequate 0.01 |
+| Cookie, insecure transport | `setting_effect` | `in_effect` | in_effect 0.74, unknown 0.19, not_in_effect 0.07 |
+| | `weakness` | `unknown` | unknown 0.55, weakens 0.44, benign 0.01 |
+| | `mitigation` | `none` | 0.98 |
+| Cookie, script readable | `setting_effect` | `in_effect` | in_effect 0.77, unknown 0.17, not_in_effect 0.06 |
+| | `weakness` | `unknown` | unknown 0.84, weakens 0.14, benign 0.02 |
+| | `mitigation` | `none` | 0.98 |
+| Remote include | `setting_effect` | `in_effect` | in_effect 0.73, unknown 0.18, not_in_effect 0.09 |
+| | `weakness` | `unknown` | unknown 0.88, weakens 0.06, benign 0.06 |
+| | `mitigation` | `none` | 0.99 |
+
+What the evidence lacks, as read from the requests. No answer was scripted and no second run
+was made.
+
+- **Authorization.** A plain-PHP entry has no access record, so `entry_access` holds only the
+  entry's location. The model cannot tell from it that the page calls no login check.
+- **Cookies.** The joined fact reads `session_authenticated: unknown`, because plain PHP has no
+  entry access model. Nothing in the request states that the application authenticates by this
+  session cookie.
+- **Remote include.** The joined fact is one line naming the include. It does not carry the
+  include's operand or its request source, which the path candidate at the same line does.
+
+These are evidence gaps in three plain-PHP records, not instruction gaps. Closing them is
+further work and a further paid run, both for the owner to decide.
+
 ### Closing table — sample README, 21 entries
 
 Judged on `b4-j7-full` at scanner `54dd0b0`, and again on `b4-review-accept` at scanner

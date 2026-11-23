@@ -79,6 +79,17 @@ func effectiveSettings(doc *yaml.Node, keys ...string) []scopedNode {
 	return out
 }
 
+// loadedFact states which environments read a YAML setting. Symfony loads
+// every file under config/packages in every environment, and a when@ block
+// limits its content to the named one.
+func (s *phpSet) loadedFact(file string, n scopedNode) analysis.Evidence {
+	text := "top level of " + file + ", which Symfony loads in every environment; no when@prod block overrides it"
+	if n.line > 0 {
+		text = "inside " + n.scope + " of " + file + ", which Symfony loads in that environment"
+	}
+	return s.lineEvidence(file, "environment", text, n.node.Line)
+}
+
 // settingScope is the scope evidence of a YAML setting: the when@ block it
 // is in, else the project.
 func (s *phpSet) settingScope(p *symfonyProject, file string, n scopedNode) analysis.Evidence {
@@ -101,6 +112,7 @@ func (s *phpSet) emitFramework(out *analysis.AnalysisReport, p *symfonyProject) 
 			Check: analysis.CheckCSRFDisabled, Value: "false", Scope: n.scope,
 			Setting: s.lineEvidence(file, "setting", "csrf_protection: false", n.node.Line),
 		}
+		facts.Joined = append(facts.Joined, s.loadedFact(file, n))
 		if ev, ok := s.deployment(p.root).shipped(file); ok {
 			facts.Joined = append(facts.Joined, ev)
 		}
@@ -112,20 +124,20 @@ func (s *phpSet) emitFramework(out *analysis.AnalysisReport, p *symfonyProject) 
 	}
 	for _, n := range effectiveSettings(doc, "framework", "session", "cookie_httponly") {
 		if falseScalar(n.node) {
-			s.emitCookie(out, p, analysis.CheckSessionCookieScript, file, "cookie_httponly: false", n.node.Line, s.settingScope(p, file, n))
+			s.emitCookie(out, p, analysis.CheckSessionCookieScript, file, "cookie_httponly: false", n.node.Line, s.settingScope(p, file, n), s.loadedFact(file, n))
 		}
 	}
 	for _, n := range effectiveSettings(doc, "framework", "session", "cookie_secure") {
 		if falseScalar(n.node) {
-			s.emitCookie(out, p, analysis.CheckSessionCookieTransport, file, "cookie_secure: false", n.node.Line, s.settingScope(p, file, n))
+			s.emitCookie(out, p, analysis.CheckSessionCookieTransport, file, "cookie_secure: false", n.node.Line, s.settingScope(p, file, n), s.loadedFact(file, n))
 		}
 	}
 }
 
-func (s *phpSet) emitCookie(out *analysis.AnalysisReport, p *symfonyProject, check, file, text string, line int, scope analysis.Evidence) {
+func (s *phpSet) emitCookie(out *analysis.AnalysisReport, p *symfonyProject, check, file, text string, line int, scope analysis.Evidence, loaded ...analysis.Evidence) {
 	facts := &analysis.ConfigurationFacts{
 		Check: check, Value: "false", Scope: "project", Setting: s.lineEvidence(file, "setting", text, line),
-		Joined: []analysis.Evidence{s.sessionJoin(out, p.root, file, line)},
+		Joined: append([]analysis.Evidence{s.sessionJoin(out, p.root, file, line)}, loaded...),
 	}
 	if ev, ok := s.deployment(p.root).shipped(file); ok {
 		facts.Joined = append(facts.Joined, ev)
@@ -149,7 +161,7 @@ func (s *phpSet) emitProfiler(out *analysis.AnalysisReport, p *symfonyProject) {
 		facts := &analysis.ConfigurationFacts{
 			Check: analysis.CheckDebugEnabled, Value: "true", Scope: n.scope,
 			Setting: s.lineEvidence(file, "setting", "web_profiler enabled", n.node.Line),
-			Joined:  []analysis.Evidence{s.lineEvidence(file, "deployed_file", file, n.node.Line)},
+			Joined:  []analysis.Evidence{s.lineEvidence(file, "deployed_file", file, n.node.Line), s.loadedFact(file, n)},
 		}
 		s.emitConfig(out, p.root, facts, s.settingScope(p, file, n), nil)
 	}

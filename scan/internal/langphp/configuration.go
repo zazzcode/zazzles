@@ -305,13 +305,20 @@ func (v *deployView) mappingGaps() []analysis.Gap {
 	return out
 }
 
-// installed returns the COPY that places a project file under a web-server
-// configuration directory.
+// installed returns the COPY that puts a project file in force in the web
+// server configuration, with the instruction that enables it when one is
+// needed.
 func (v *deployView) installed(file string) (analysis.Evidence, bool) {
 	for _, img := range v.images {
-		if line, ok := img.Installed(relRoot(v.root, file)); ok {
-			return v.set.lineEvidence(img.File, "config_installed", file+" is copied into the web server configuration", line), true
+		in, ok := img.Installed(relRoot(v.root, file))
+		if !ok {
+			continue
 		}
+		text := file + " is copied to " + in.Dst + " in the web server configuration"
+		if in.EnabledBy != "" {
+			text += " and enabled by " + in.EnabledBy
+		}
+		return v.set.lineEvidence(img.File, "config_installed", text, in.Line), true
 	}
 	return analysis.Evidence{}, false
 }

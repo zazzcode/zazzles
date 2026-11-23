@@ -193,8 +193,10 @@ The `scope` evidence is the place that fixes where the setting applies: the `<Di
 that deploys an environment file, the image a schedule is built into or the cron file. A
 setting with no such place has no `scope` evidence, and the policy holds it for evidence.
 
-The instruction sent with a request states what each joined fact kind means. It does not
-state which answer a recorded shape gets. That judgment is the model's.
+The instruction sent with a request states what each joined fact kind means and what the
+check's directive does as its documentation describes it (`ConfigurationCheckEffect`). It
+does not state which answer a recorded shape gets. That judgment is the model's. The answer
+choices of `setting_effect` name the recorded facts that establish each answer.
 
 | Question | Answers | Asks |
 |---|---|---|
@@ -230,7 +232,11 @@ An `.htaccess` scope is already a project directory and needs no mapping. Apache
 `DocumentRoot` and `<Directory>` paths are resolved through it. A web-server configuration file
 is recorded as installed (`config_installed` evidence) when a `COPY` places it under a server
 configuration directory (`/etc/apache2/`, `/etc/httpd/`, `/usr/local/apache2/conf/`,
-`/etc/nginx/`), or when it is a `.htaccess` under the document root. With no Dockerfile, the
+`/etc/nginx/`), or when it is a `.htaccess` under the document root. A file copied under an
+Apache `conf-available` or `sites-available` directory is installed only when an `a2enconf`
+or `a2ensite` in the same Dockerfile names it; the distribution's `000-default` site is
+enabled as shipped. A framework setting also joins an `environment` fact: the top level of a
+`config/packages` file is loaded in every environment. With no Dockerfile, the
 record carries `deploy_mapping_unresolved` only when the scope path cannot be matched to an existing
 project directory by its trailing path segments, longest first. An environment file is "deployed"
 when a `COPY` places it at the project root as `.env` or `.env.local`, or when it is the project's
@@ -791,7 +797,11 @@ every file the two allow-lists opened on the sample.
   verdicts. `v5` replaces it with what each fact kind states, gives the `scope` role its own
   evidence, and anchors each setting at its own line. The policy reports a contradiction
   before a blocking gap. A candidate rides an entry; a project without one records
-  `configuration_entry_missing`.
+  `configuration_entry_missing`. The first judged run on that instruction left three sample
+  rows in Review with `setting_effect: unknown` (`b4-review-full`). The fix was evidence, not
+  answers: the `a2enconf` that enables a copied Apache file, the `environment` fact, the
+  answer choices of `setting_effect` in terms of recorded facts, and each check's documented
+  effect. Two configuration checkpoints then confirmed all four rows.
 - **D-4.** `when@prod` overrides the top level. Apache `Options` merges in the current scope,
   compares names without case and expands `All`.
 - **D-5.** An ordered path map replaces the Go map, whose iteration order changed the output

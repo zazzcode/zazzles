@@ -8,7 +8,10 @@ protocol is `configuration-components-v5`. There is no request source.
 
 The scanner reads the setting and joins the facts. It does not decide that the setting
 is a defect. The instruction sent with a request says what each joined fact kind states
-and leaves each answer to the model.
+and leaves each answer to the model. It also carries what the check's directive does as
+its documentation describes it, for example that `Options Indexes` answers a request for
+a directory with a list of its files. Whether that is a weakness in this application is
+the question.
 
 ## Questions
 
@@ -37,7 +40,8 @@ own line.
 
 | Joined fact | States |
 | --- | --- |
-| `config_installed` | The instruction that puts the file into the deployed application or the web server configuration |
+| `config_installed` | The instruction that puts the file into the deployed application or the web server configuration. A file copied under Apache `conf-available` or `sites-available` is installed only when an `a2enconf` or `a2ensite` in the same Dockerfile enables it, and the fact names that instruction |
+| `environment` | Which environments load a framework setting: every one for the top level of a `config/packages` file, or the named one inside a `when@` block |
 | `scope_mapping`, `scope_served` | The project directory the scope resolves to, and whether it is inside the document root |
 | `upload_destination` | A directory inside the scope where the application stores request-supplied files |
 | `state_changing_entry` | An entry that changes stored state, with the access it requires |

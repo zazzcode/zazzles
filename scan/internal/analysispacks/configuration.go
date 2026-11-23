@@ -27,9 +27,9 @@ func ConfigurationChoices(question string) []map[string]string {
 	switch question {
 	case "setting_effect":
 		return choicePairs(
-			[2]string{"in_effect", "The recorded setting is applied to the deployed application."},
-			[2]string{"not_in_effect", "The recorded setting is not applied to the deployed application."},
-			[2]string{"unknown", "The supplied evidence does not establish whether the setting is applied."},
+			[2]string{"in_effect", "A recorded fact puts the file in the deployed application (config_installed, deployed_file or schedule), and the setting's scope applies there."},
+			[2]string{"not_in_effect", "A recorded fact shows the setting is overridden, or its scope is not part of the deployed application."},
+			[2]string{"unknown", "No recorded fact puts the file in the deployed application, or its scope is not mapped."},
 		)
 	case "weakness":
 		return choicePairs(
@@ -46,6 +46,27 @@ func ConfigurationChoices(question string) []map[string]string {
 		)
 	}
 	return nil
+}
+
+// ConfigurationCheckEffect states what a check's directive does, as its
+// documentation describes it. It says nothing about a particular
+// application: whether the effect is a weakness there is the claim.
+func ConfigurationCheckEffect(check string) string {
+	switch check {
+	case analysis.CheckDirectoryListing:
+		return "Apache Options Indexes and nginx autoindex on make the server answer a request for a directory that has no index file with a list of the files in it."
+	case analysis.CheckCSRFDisabled:
+		return "framework.csrf_protection false turns off Symfony's CSRF token support, so a state-changing request is accepted without a token unless the code validates one itself."
+	case analysis.CheckSessionCookieScript:
+		return "A session cookie without HttpOnly can be read by scripts running in the page."
+	case analysis.CheckSessionCookieTransport:
+		return "A session cookie without Secure is also sent over plain HTTP."
+	case analysis.CheckDebugEnabled:
+		return "APP_ENV=dev, APP_DEBUG, display_errors and the web profiler show internal state, such as stack traces and configuration, in responses."
+	case analysis.CheckScheduledPrivileged:
+		return "cron runs the scheduled command as the named user, and each file that command executes runs with that user's privileges, so a user who can rewrite one of those files chooses what runs with them."
+	}
+	return ""
 }
 
 // ConfigurationCheckCWE is the CWE of one configuration check.

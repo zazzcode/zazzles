@@ -38,7 +38,11 @@ project root under one of those names, in order.
 Each record carries the setting, its scope and the joined application facts. The model
 answers `setting_effect`, `weakness` and `mitigation` (`configuration-components-v5`).
 A hardened value makes no record. The scanner does not decide that a setting is a defect.
-The request instruction states what each joined fact kind means and prescribes no answer.
+The request instruction states what each joined fact kind means and what the check's
+directive does as documented, and prescribes no answer. Whether the setting is in effect
+rests on recorded facts: the `COPY` that ships the file, the `a2enconf` or `a2ensite` that
+enables an Apache file under an `-available` directory, and the `environment` fact for a
+framework setting.
 
 The `scope` evidence role is the place that fixes where a setting applies: the
 `<Directory>` or `location` line, the `.htaccess` file, the `when@` block or the project

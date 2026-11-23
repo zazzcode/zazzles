@@ -13,10 +13,13 @@ type DockerImage struct {
 	// FromLine is the line of the FROM that starts the deployed stage.
 	FromLine int
 	// Paths are COPY and ADD destinations in instruction order.
-	Paths       []PathMapping
-	Owners      []Ownership
-	Schedules   []ScheduleLine
-	Modules     []Directive
+	Paths     []PathMapping
+	Owners    []Ownership
+	Schedules []ScheduleLine
+	Modules   []Directive
+	// Enabled are the a2enconf and a2ensite names, which turn on a file
+	// under conf-available or sites-available.
+	Enabled     []Directive
 	EnvFiles    []PathMapping
 	User        string
 	WorkDir     string
@@ -178,18 +181,41 @@ func (img DockerImage) ProjectPath(container string) (string, bool) {
 	return path.Join(m.Src, rest), true
 }
 
+// Installation is how a project file reaches the web server: the COPY that
+// places it and, for a file under conf-available or sites-available, the
+// a2enconf or a2ensite that turns it on.
+type Installation struct {
+	Dst       string
+	Line      int
+	EnabledBy string
+}
+
 // Installed reports whether a project file is copied under a web-server
-// configuration directory, and the line of that COPY.
-func (img DockerImage) Installed(file string) (int, bool) {
+// configuration directory and is in force there. A file under an
+// "-available" directory is in force only when the image enables it; the
+// distribution's default site is enabled as shipped.
+func (img DockerImage) Installed(file string) (Installation, bool) {
 	for _, m := range img.Paths {
-		if !serverConfDir(m.Dst) {
+		if !serverConfDir(m.Dst) || (file != m.Src && !strings.HasPrefix(file, m.Src+"/")) {
 			continue
 		}
-		if file == m.Src || strings.HasPrefix(file, m.Src+"/") {
-			return m.Line, true
+		dst := path.Join(m.Dst, strings.TrimPrefix(file, m.Src))
+		in := Installation{Dst: dst, Line: m.Line}
+		if !strings.Contains(dst, "-available/") {
+			return in, true
+		}
+		name := strings.TrimSuffix(path.Base(dst), ".conf")
+		if name == "000-default" {
+			return in, true
+		}
+		for _, e := range img.Enabled {
+			if e.Values[0] == name {
+				in.EnabledBy = e.Name + " " + name
+				return in, true
+			}
 		}
 	}
-	return 0, false
+	return Installation{}, false
 }
 
 // run reads one shell command of a RUN instruction.
@@ -203,6 +229,12 @@ func (img *DockerImage) run(line int, text string) {
 		for _, tok := range toks[1:] {
 			if tok != "" && !strings.HasPrefix(tok, "-") {
 				img.Modules = append(img.Modules, Directive{File: img.File, Line: line, Name: "a2enmod", Values: []string{tok}})
+			}
+		}
+	case "a2enconf", "a2ensite":
+		for _, tok := range toks[1:] {
+			if tok != "" && !strings.HasPrefix(tok, "-") {
+				img.Enabled = append(img.Enabled, Directive{File: img.File, Line: line, Name: toks[0], Values: []string{strings.TrimSuffix(tok, ".conf")}})
 			}
 		}
 	case "chown", "chmod":

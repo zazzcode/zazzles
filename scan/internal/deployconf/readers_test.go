@@ -246,11 +246,23 @@ func TestDockerfileShapes(t *testing.T) {
 		if !reflect.DeepEqual(img.Paths, want) || len(img.EnvFiles) != 1 {
 			t.Fatalf("%+v", img.Paths)
 		}
-		if line, ok := img.Installed("b.conf"); !ok || line != 3 {
-			t.Fatalf("installed %d %v", line, ok)
+		if in, ok := img.Installed("b.conf"); !ok || in.Line != 3 || in.Dst != "/etc/nginx/conf.d/b.conf" {
+			t.Fatalf("installed %+v %v", in, ok)
 		}
 		if _, ok := img.Installed(".env.prod"); ok {
 			t.Fatal("an application file is not installed server configuration")
+		}
+	})
+	t.Run("a file under an -available directory is in force only when enabled", func(t *testing.T) {
+		img := Dockerfile("Dockerfile", []byte("FROM x\nCOPY a.conf /etc/apache2/conf-available/site.conf\nCOPY b.conf /etc/apache2/conf-available/other.conf\nCOPY v.conf /etc/apache2/sites-available/000-default.conf\nRUN a2enmod rewrite && a2enconf site\n"), nil)
+		if in, ok := img.Installed("a.conf"); !ok || in.EnabledBy != "a2enconf site" || in.Line != 2 {
+			t.Fatalf("enabled file: %+v %v", in, ok)
+		}
+		if _, ok := img.Installed("b.conf"); ok {
+			t.Fatal("a file that no a2enconf names is not in force")
+		}
+		if in, ok := img.Installed("v.conf"); !ok || in.EnabledBy != "" {
+			t.Fatalf("default site: %+v %v", in, ok)
 		}
 	})
 	t.Run("a source outside the build context is not mapped", func(t *testing.T) {

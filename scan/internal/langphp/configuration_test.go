@@ -118,6 +118,7 @@ func TestSymfonyConfiguration(t *testing.T) {
 			want: []string{"csrf_disabled " + frameworkYAML + ":2"},
 			joined: map[string][]string{"csrf_disabled " + frameworkYAML + ":2": {
 				"config_installed Dockerfile:3 copied . to /srv/site including " + frameworkYAML,
+				"environment " + frameworkYAML + ":2 top level of " + frameworkYAML + ", which Symfony loads in every environment; no when@prod block overrides it",
 				"state_changing_entry src/Controller/NoteController.php:13 POST /locked/{note}/write authentication required",
 				"state_changing_entry src/Controller/NoteController.php:20 POST /locked/{note}/rename authentication required",
 			}},
@@ -210,11 +211,20 @@ func TestDeployConfiguration(t *testing.T) {
 			joined: map[string][]string{"directory_listing deploy/site.conf:2": {
 				"scope_mapping deploy/site.conf:2 public",
 				"scope_served deploy/site.conf:2 served yes directory public",
-				"config_installed Dockerfile:4 deploy/site.conf is copied into the web server configuration",
+				"config_installed Dockerfile:4 deploy/site.conf is copied to /etc/apache2/conf-enabled/site.conf in the web server configuration",
 				"upload_destination src/Controller/NoteController.php:38 upload destination /public/media is inside public",
 			}},
 			scope: map[string]string{"directory_listing deploy/site.conf:2": "deploy/site.conf:1 /srv/site/public"},
 			gaps:  map[string][]string{"directory_listing deploy/site.conf:2": nil}},
+		{name: "DP-01 a file under conf-available is installed by the a2enconf that enables it", fixture: symfonyConfiguration, checks: listing,
+			overlay: map[string]string{"Dockerfile": strings.Replace(base, "conf-enabled/site.conf\n", "conf-available/site.conf\nRUN a2enconf site\n", 1)},
+			want:    []string{"directory_listing deploy/site.conf:2", "directory_listing deploy/site.conf:5"},
+			joined: map[string][]string{"directory_listing deploy/site.conf:2": {
+				"config_installed Dockerfile:4 deploy/site.conf is copied to /etc/apache2/conf-available/site.conf in the web server configuration and enabled by a2enconf site"}}},
+		{name: "DP-01 a file under conf-available that nothing enables is not installed", fixture: symfonyConfiguration, checks: listing,
+			overlay: map[string]string{"Dockerfile": strings.Replace(base, "conf-enabled/site.conf", "conf-available/site.conf", 1)},
+			want:    []string{"directory_listing deploy/site.conf:2", "directory_listing deploy/site.conf:5"},
+			lacks:   map[string][]string{"directory_listing deploy/site.conf:2": {"config_installed"}}},
 		{name: "DP-02 the same listing with no upload action", fixture: symfonyConfiguration, checks: listing,
 			overlay: map[string]string{"config/services.yaml": removed, "src/Controller/NoteController.php": "<?php\nnamespace App\\Controller;\nuse Symfony\\Component\\HttpFoundation\\Response;\nuse Symfony\\Component\\Routing\\Attribute\\Route;\nclass NoteController {\n  #[Route('/')]\n  public function home(): Response { return new Response(''); }\n}\n"},
 			want:    []string{"directory_listing deploy/site.conf:2", "directory_listing deploy/site.conf:5"},
@@ -274,7 +284,7 @@ func TestDeployConfiguration(t *testing.T) {
 			want: []string{"directory_listing nginx/site.conf:3", "directory_listing public/files/.htaccess:1"},
 			joined: map[string][]string{"directory_listing nginx/site.conf:3": {
 				"scope_served nginx/site.conf:3 served yes directory public",
-				"config_installed Dockerfile:4 nginx/site.conf is copied into the web server configuration"}}},
+				"config_installed Dockerfile:4 nginx/site.conf is copied to /etc/nginx/conf.d/site.conf in the web server configuration"}}},
 		{name: "DP-12 transfer: crontab file installed for the default user, script made chmod 777", fixture: transferConfiguration, checks: schedule,
 			want: []string{"scheduled_privileged_writable schedule/crontab:2", "scheduled_privileged_writable schedule/crontab:3"},
 			joined: map[string][]string{"scheduled_privileged_writable schedule/crontab:2": {

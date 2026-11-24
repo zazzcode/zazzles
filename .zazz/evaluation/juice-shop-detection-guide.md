@@ -43,10 +43,27 @@ evidence for each is in the
 | `JS-MASS-05` | same | `server.ts:529`, `POST /api/PrivacyRequests` | Login required, `UserId` and `deletionRequested` from the body |
 | `JS-MASS-06` | same | `server.ts:529`, `POST /api/SecurityAnswers` | No middleware for `POST`; `UserId` and `answer` from the body. `UserId` is unique, so the write succeeds only for a user with no answer |
 
+### Added for hardening 3 (2026-11-24)
+
+Rows of [hardening 3 §3](../specifications/juiceshop-nextjs-hardening-3.md#3-key-rows). The first
+seven are the documented vulnerabilities the [scanner comparison](../../docs/scan/scanner-comparison.md)
+listed outside the key; each was read against the source at the pin.
+
+| ID | Kind | Anchor | Evidence |
+|---|---|---|---|
+| `JS-REDIR-01` | `open_redirect_candidate` | `routes/redirect.ts:18` | `res.redirect(query.to)` after an allow-list test that matches a substring of the URL |
+| `JS-PATH-01` | `path_traversal_candidate` | `routes/fileServer.ts:32` | `res.sendFile(path.resolve('ftp/', file))`. The file-type test at `:26` runs before the name is cut at a null byte (`:27`), so the test does not hold for the name that is read |
+| `JS-PATH-02` | same | `routes/fileUpload.ts:34` | An archive entry's path is joined to the upload directory and written; the test at `:33` is a substring test on the resolved path |
+| `JS-PATH-03` | same | `routes/dataErasure.ts:107` | `req.body.layout` selects the template file that is rendered |
+| `JS-SSRF-01` | `ssrf_candidate` | `routes/profileImageUrlUpload.ts:24` | `fetch(req.body.imageUrl)` with no destination test |
+| `JS-CODE-01` | `code_execution_candidate` | `routes/userProfile.ts:65` | `eval` of a substring of the stored username |
+| `JS-CODE-02` | same | `routes/b2bOrder.ts:23` | `body.orderLinesData` evaluated in a `vm` context. A practice finding today; the judged criterion exempts it (hardening 3 §6) |
+| `JS-AUTHZ-05` | `authorization_candidate`, read | `routes/basket.ts:19` | `findOne({ where: { id } })` with `id` from `req.params`, result sent; the basket model belongs to the user model and no owner key is in the selector |
+
 ## Known false positives
 
-Reported as Confirmed by the judged scan of 2026-11-24 and judged safe on source review. They
-are not key rows; they are listed so a comparison counts them against the scanner.
+Reported as Confirmed by the judged scan of 2026-11-24 and judged safe on source review. Since
+hardening 3 they are the control rows `JS-AUTHZ-N05` and `JS-CONF-N01` below.
 
 | Record | Anchor | Why it is safe |
 |---|---|---|
@@ -65,6 +82,11 @@ None may be a finding. `guarded` rows must end Protected.
 | `JS-AUTHZ-N04` | `routes/updateUserProfile.ts:38` | No record: same reason |
 | `JS-ENUM-N01` | `routes/login.ts:34` | No enumeration record: a login |
 | `JS-MASS-N01` | `routes/updateUserProfile.ts:38` | No record: object literal with one named property |
+| `JS-PATH-N01` | `routes/keyServer.ts:14` | Recorded, not a finding: the handler rejects a name that contains `/` before `path.resolve('encryptionkeys/', name)` |
+| `JS-PATH-N02` | `routes/logfileServer.ts:14` | Same, directory `logs/` |
+| `JS-PATH-N03` | `routes/quarantineServer.ts:14` | Same, directory `ftp/quarantine/` |
+| `JS-AUTHZ-N05` | `routes/likeProductReviews.ts:35` | Recorded, not a finding: the update increments a counter by a constant, and liking another user's review is the feature |
+| `JS-CONF-N01` | `server.ts:294` | Recorded, not a finding: `.well-known` holds only files published on purpose |
 
 ## Recorded, any status
 
@@ -77,5 +99,5 @@ record.
 
 XML external entities, token verification without an algorithm list, committed keys, YAML and XML
 expansion, password reset by security answer, authentication cookie flags, CORS, missing rate
-limits, business-rule validation, vulnerable dependencies and reads of another user's record have
-no analyzer. See decision D-11 of the lane specification.
+limits, business-rule validation and vulnerable dependencies have no analyzer. See decision D-11
+of the lane specification. A read of a record another user owns is row `JS-AUTHZ-05`.

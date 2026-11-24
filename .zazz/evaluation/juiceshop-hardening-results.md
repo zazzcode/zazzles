@@ -109,8 +109,9 @@ Judged run 10 (`r10-acceptance-juice-shop`, scanner `29ce9aa`, full scan, 76 req
 input tokens) repeats the acceptance scan on the fixed code. 299 records: 45 Confirmed, 3
 Protected, 2 poor practice and 249 Review. Every required positive of the key is Confirmed and
 no control is a finding. Against run 7, the only record present in both whose status differs is
-`DELETE /api/BasketItems/:id` (Confirmed to Review); the other 16 Confirmed records of run 7 that
-are absent here are the false positives above. Before this branch the sample had 22 Confirmed
+`DELETE /api/BasketItems/:id` (Confirmed to Review); the other 15 Confirmed records of run 7 that
+are absent here are the false positives above (three of them are recorded again without the
+overwritten attribute, as Review). Before this branch the sample had 22 Confirmed
 records, so the branch adds 23: 5 configuration, 3 exposure, 3 password hashing, 1 account
 enumeration, 5 authorization and 6 mass assignment. This run replaces run 7 as the acceptance
 result.

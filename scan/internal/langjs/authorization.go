@@ -36,6 +36,10 @@ type authzSelector struct {
 	call      *sitter.Node
 	pairs     map[string]*sitter.Node // selector key -> value node
 	order     []string
+	// written holds the value nodes an update writes; document is set when the
+	// first of them is a Mongo-style update document (hardening 3 D-8).
+	written  []*sitter.Node
+	document bool
 }
 
 func (s *moduleSet) authorizationCandidates(out *analysis.AnalysisReport) {
@@ -114,7 +118,11 @@ func (s *moduleSet) authzSelectorOf(m *sourceModule, call *sitter.Node, p handle
 		if i := strings.LastIndex(name, "."); i >= 0 {
 			name = name[i+1:]
 		}
-		return selectorFrom(m, "collection:"+name, op, call, firstArg(args)), true
+		sel := selectorFrom(m, "collection:"+name, op, call, firstArg(args))
+		if doc := nthArg(args, 1); op == "update" && doc != nil {
+			sel.written, sel.document = []*sitter.Node{doc}, true
+		}
+		return sel, true
 	}
 	if obj.Kind() != "identifier" {
 		return authzSelector{}, false
@@ -125,7 +133,15 @@ func (s *moduleSet) authzSelectorOf(m *sourceModule, call *sitter.Node, p handle
 		for i := uint(0); i < args.NamedChildCount(); i++ {
 			if o := unwrapTS(args.NamedChild(i)); o != nil && o.Kind() == "object" {
 				if w := property(o, "where", m.src); w != nil {
-					return selectorFrom(m, "model:"+name, op, call, w), true
+					sel := selectorFrom(m, "model:"+name, op, call, w)
+					// Every argument before the options object is a written value
+					// (update) or names the column and amount (increment, decrement).
+					for j := uint(0); j < i && op == "update"; j++ {
+						if v := args.NamedChild(j); v.Kind() != "comment" {
+							sel.written = append(sel.written, v)
+						}
+					}
+					return sel, true
 				}
 			}
 		}
@@ -148,14 +164,25 @@ func (s *moduleSet) authzSelectorOf(m *sourceModule, call *sitter.Node, p handle
 		if model == nil || model.Kind() != "identifier" || shadowed(init, model.Utf8Text(m.src), m.src) || !strings.HasPrefix(s.modelIdentity(m, model.Utf8Text(m.src), 0), "sequelize:") {
 			return authzSelector{}, false
 		}
+		var written []*sitter.Node
+		switch method {
+		case "update":
+			if v := firstArg(args); v != nil {
+				written = []*sitter.Node{v}
+			}
+		case "save":
+			written = instanceAssignments(m, call, name)
+		}
 		switch memberName(m, ifn) {
 		case "findByPk":
-			sel := authzSelector{subject: "model:" + model.Utf8Text(m.src), operation: op, call: call, pairs: map[string]*sitter.Node{"primary key": firstArg(iargs)}, order: []string{"primary key"}}
+			sel := authzSelector{subject: "model:" + model.Utf8Text(m.src), operation: op, call: call, pairs: map[string]*sitter.Node{"primary key": firstArg(iargs)}, order: []string{"primary key"}, written: written}
 			return sel, true
 		case "findOne":
 			if o := unwrapTS(firstArg(iargs)); o != nil && o.Kind() == "object" {
 				if w := property(o, "where", m.src); w != nil {
-					return selectorFrom(m, "model:"+model.Utf8Text(m.src), op, call, w), true
+					sel := selectorFrom(m, "model:"+model.Utf8Text(m.src), op, call, w)
+					sel.written = written
+					return sel, true
 				}
 			}
 		}
@@ -306,6 +333,9 @@ func (s *moduleSet) recordAuthorization(out *analysis.AnalysisReport, e analysis
 		Operation:      analysis.StateChange{StorageKey: "js-" + sel.subject, Operation: sel.operation, Span: sink.Span},
 		SecurityFields: []analysis.SecurityFieldFact{}, Guards: append([]analysis.AuthorizationGuard{}, guards...), MethodSafe: safe,
 	}
+	if sel.operation == "update" {
+		facts.Written = s.writtenValues(m, p, sel)
+	}
 	evidence := map[string][]analysis.Evidence{
 		"subject_selection": {subject}, "protected_operation": {operation}, "entry_access": accessEvidence,
 		"control_flow": flowEvidence, "sink_binding": {asEvidenceKind(sink, "sink_binding")},
@@ -382,4 +412,113 @@ func instanceWritten(m *sourceModule, handler, read *sitter.Node) bool {
 		}
 	})
 	return written
+}
+
+// instanceAssignments returns the values assigned to members of the instance
+// name before a save call in the same function.
+func instanceAssignments(m *sourceModule, save *sitter.Node, name string) []*sitter.Node {
+	fn := enclosingFunction(save)
+	if fn == nil {
+		return nil
+	}
+	var out []*sitter.Node
+	var walk func(*sitter.Node)
+	walk = func(x *sitter.Node) {
+		if x == nil || (x != fn && isFunction(x)) || x.StartByte() >= save.StartByte() {
+			return
+		}
+		if x.Kind() == "assignment_expression" || x.Kind() == "augmented_assignment_expression" {
+			if left := x.ChildByFieldName("left"); left != nil && left.Kind() == "member_expression" && chainRoot(left, m.src) == name {
+				if right := x.ChildByFieldName("right"); right != nil {
+					out = append(out, right)
+				}
+			}
+		}
+		for i := uint(0); i < x.NamedChildCount(); i++ {
+			walk(x.NamedChild(i))
+		}
+	}
+	walk(fn)
+	return out
+}
+
+// writtenValues is the D-8 fact of an update: whether any written value
+// depends on the request, and the operators of an update document. "no" is
+// stated only when every written value is built from literals; a value the
+// scanner cannot follow to the request or to a literal is "unknown".
+func (s *moduleSet) writtenValues(m *sourceModule, p handlerParams, sel authzSelector) *analysis.WrittenValues {
+	w := &analysis.WrittenValues{RequestDependent: "unknown"}
+	if sel.document && len(sel.written) > 0 {
+		if doc := unwrapTS(sel.written[0]); doc != nil && doc.Kind() == "object" {
+			for i := uint(0); i < doc.NamedChildCount(); i++ {
+				if k := doc.NamedChild(i).ChildByFieldName("key"); k != nil {
+					if key := strings.Trim(k.Utf8Text(m.src), `"'`); strings.HasPrefix(key, "$") {
+						w.Operators = append(w.Operators, key)
+					}
+				}
+			}
+			sort.Strings(w.Operators)
+		}
+	}
+	if len(sel.written) == 0 {
+		if method := memberName(m, sel.call.ChildByFieldName("function")); method == "increment" || method == "decrement" {
+			// Model.increment(column, { where }) adds the default amount of 1.
+			w.RequestDependent = "no"
+		}
+		return w
+	}
+	constant := true
+	for _, v := range sel.written {
+		if s.requestValue(m, v, p, 0) != nil {
+			w.RequestDependent = "yes"
+			return w
+		}
+		constant = constant && literalTree(unwrapTS(v))
+	}
+	if constant {
+		w.RequestDependent = "no"
+	}
+	return w
+}
+
+// literalTree reports a value built only from literals, objects and arrays.
+func literalTree(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	switch n.Kind() {
+	case "object", "array":
+		for i := uint(0); i < n.NamedChildCount(); i++ {
+			c := n.NamedChild(i)
+			if c.Kind() == "pair" {
+				if k := c.ChildByFieldName("key"); k == nil || k.Kind() == "computed_property_name" {
+					return false
+				}
+				c = unwrapTS(c.ChildByFieldName("value"))
+			}
+			if !literalTree(c) {
+				return false
+			}
+		}
+		return true
+	case "unary_expression":
+		return n.NamedChildCount() == 1 && literalTree(n.NamedChild(0))
+	}
+	return isLiteralNode(n)
+}
+
+// nthArg returns the argument at index n, not counting comments.
+func nthArg(args *sitter.Node, n int) *sitter.Node {
+	if args == nil {
+		return nil
+	}
+	for i := uint(0); i < args.NamedChildCount(); i++ {
+		if c := args.NamedChild(i); c.Kind() != "comment" {
+			if n == 0 {
+				return c
+			}
+			n--
+		}
+	}
+	return nil
 }

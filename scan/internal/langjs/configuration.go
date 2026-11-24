@@ -1,6 +1,12 @@
 package langjs
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 )
@@ -75,6 +81,9 @@ func (s *moduleSet) directoryListing(out *analysis.AnalysisReport, m *sourceModu
 	}
 	if dir := listing.ChildByFieldName("arguments"); dir != nil && dir.NamedChildCount() > 0 {
 		joined = append(joined, m.evidence("directory", dir.NamedChild(0)))
+		if contents, ok := s.directoryContents(m, dir.NamedChild(0)); ok {
+			joined = append(joined, contents)
+		}
 	}
 	access := s.expressAccessFor(m, use, rel, nil, first, index)
 	mount := m.evidence("mount_access", use)
@@ -204,4 +213,55 @@ func (s *moduleSet) recordConfiguration(out *analysis.AnalysisReport, m *sourceM
 			Scope: "One allow-listed setting joined to the application facts that give it meaning. The scanner does not decide that the setting is a defect.",
 		},
 	})
+}
+
+// maxListedEntries bounds the names a directory_contents fact carries.
+const maxListedEntries = 8
+
+// directoryContents is the D-9 fact of hardening 3: what the listed directory
+// holds in the scanned tree. serve-index lists the entries of the directory it
+// is given, so the fact names its immediate entries, sorted, at most eight,
+// with the total; a subdirectory ends in a slash. The directory argument must
+// be a literal relative path inside the scan root, which is read as the
+// directory the application starts in.
+func (s *moduleSet) directoryContents(m *sourceModule, arg *sitter.Node) (analysis.Evidence, bool) {
+	dir, ok := stringLiteral(arg, m.src)
+	if !ok || dir == "" || filepath.IsAbs(dir) {
+		return analysis.Evidence{}, false
+	}
+	clean := filepath.Clean(filepath.FromSlash(dir))
+	if clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+		return analysis.Evidence{}, false
+	}
+	e := m.evidence("directory_contents", arg)
+	entries, err := os.ReadDir(filepath.Join(s.root, clean))
+	switch {
+	case os.IsNotExist(err):
+		e.ModelText = "The directory " + dir + " is not in the scanned tree. What it holds when the application runs is not known from the source."
+		return e, true
+	case err != nil:
+		return analysis.Evidence{}, false
+	case len(entries) == 0:
+		e.ModelText = "The directory " + dir + " is empty in the scanned tree."
+		return e, true
+	}
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() {
+			name += "/"
+		}
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	noun, shown := "entries", "its entries: "
+	if len(names) == 1 {
+		noun, shown = "entry", "its entry: "
+	}
+	if len(names) > maxListedEntries {
+		shown = fmt.Sprintf("the first %d by name: ", maxListedEntries)
+		names = names[:maxListedEntries]
+	}
+	e.ModelText = fmt.Sprintf("The directory %s holds %d %s in the scanned tree; %s%s.", dir, len(entries), noun, shown, strings.Join(names, ", "))
+	return e, true
 }

@@ -425,6 +425,10 @@ func (s *moduleSet) recordGeneratedAuthorization(out *analysis.AnalysisReport, e
 		Operation:      analysis.StateChange{StorageKey: "js-model:" + info.class, Operation: op, Span: sink.Span},
 		SecurityFields: []analysis.SecurityFieldFact{}, Guards: []analysis.AuthorizationGuard{}, MethodSafe: "no",
 	}
+	if op == "update" {
+		// A generated update writes the attributes the request body names.
+		facts.Written = &analysis.WrittenValues{RequestDependent: "yes"}
+	}
 	out.Uses = append(out.Uses, analysis.CandidateUse{
 		EntryID: e.ID, Kind: analysis.AuthorizationKind, Sink: sink, Authorization: facts,
 		Dependencies: []analysis.Dependency{{Source: asEvidenceKind(selection, "input_source")}},

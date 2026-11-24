@@ -121,6 +121,16 @@ type AuthorizationFacts struct {
 	MethodSafe         string               `json:"method_safe"`
 	PeerAccess         []PeerAccess         `json:"peer_access,omitempty"`
 	ServerSideRequests []string             `json:"server_side_requests,omitempty"`
+	// Written is recorded for an update: what the operation writes. It is a
+	// fact about the write and says nothing about who may perform it.
+	Written *WrittenValues `json:"written_values,omitempty"`
+}
+
+// WrittenValues states whether any value an update writes depends on the
+// request, and the update operators of a Mongo-style update document.
+type WrittenValues struct {
+	RequestDependent string   `json:"request_dependent"` // yes | no | unknown
+	Operators        []string `json:"operators,omitempty"`
 }
 
 // Validate rejects a record outside the closed lists.
@@ -152,6 +162,13 @@ func (f *AuthorizationFacts) Validate() error {
 	case "yes", "no":
 	default:
 		return fmt.Errorf("invalid method_safe")
+	}
+	if f.Written != nil {
+		switch f.Written.RequestDependent {
+		case "yes", "no", "unknown":
+		default:
+			return fmt.Errorf("invalid written_values")
+		}
 	}
 	for _, g := range f.Guards {
 		switch g.Kind {

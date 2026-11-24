@@ -8,8 +8,9 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 // delete, which also rejected a role only some users hold. v4 judges a role by
 // who holds it: one every signed-in user holds is inadequate, one only some
 // users hold is adequate unless a peer writer needs a role the entry lacks. v5
-// aligns the judge instruction with the v4 question prose.
-const AuthorizationProtocol = "authorization-components-v5"
+// aligns the judge instruction with the v4 question prose. v6 adds the
+// written_values fact of an update and says what it means.
+const AuthorizationProtocol = "authorization-components-v6"
 
 // PHPAuthorizationOperation is the verified operation this family judges.
 const PHPAuthorizationOperation = "php-authorization-operation-v1"

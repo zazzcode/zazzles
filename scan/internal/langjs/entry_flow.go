@@ -1,6 +1,9 @@
 package langjs
 
 import (
+	"sort"
+
+	sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"github.com/zazzcode/zazzles/scan/internal/parse"
 )
@@ -38,6 +41,21 @@ func (f *flow) seedInvocation() {
 			}
 			f.env[input.Parameter] = v
 		}
+	}
+}
+
+// seedRequestFields binds the names of a nested request pattern
+// (({ query: { leaf } })) to request sources, in name order.
+func (f *flow) seedRequestFields(bindings map[string]*sitter.Node) {
+	names := make([]string, 0, len(bindings))
+	for name := range bindings {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		source := f.module.evidence("input_source", bindings[name])
+		f.rememberInput(source)
+		f.env[name] = value{deps: []analysis.Dependency{{Source: source, Transfers: []analysis.Evidence{}}}}
 	}
 }
 

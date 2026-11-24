@@ -41,6 +41,14 @@ func (s *moduleSet) resolveCall(m *sourceModule, call *sitter.Node) (*sourceModu
 
 func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req string, fields []string) []analysis.Gap {
 	gaps := []analysis.Gap{}
+	// A destructured request parameter names the same members without the request
+	// object (hardening 3 D-1).
+	var pattern handlerParams
+	if req == "" && body.Parent() != nil {
+		if pattern = plainOrDestructuredParameters(body.Parent(), m.src); pattern.unsupported {
+			pattern = handlerParams{}
+		}
+	}
 	sinkStart := uint(0)
 	sinkEnd := uint(0)
 	walkCalls(body, func(call *sitter.Node) {
@@ -74,8 +82,14 @@ func (s *moduleSet) inputHelperGaps(m *sourceModule, body *sitter.Node, req stri
 			if n.Kind() == "identifier" && n.Utf8Text(m.src) == req {
 				relevant = true
 			}
+			if n.Kind() == "identifier" && pattern.relevant(n.Utf8Text(m.src), "", fields) {
+				relevant = true
+			}
 			if n.Kind() == "member_expression" {
 				text := n.Utf8Text(m.src)
+				if obj, prop := n.ChildByFieldName("object"), n.ChildByFieldName("property"); obj != nil && prop != nil && obj.Kind() == "identifier" && pattern.relevant(obj.Utf8Text(m.src), prop.Utf8Text(m.src), fields) {
+					relevant = true
+				}
 				for _, f := range fields {
 					if text == f || text == req+".body."+f || text == req+".query."+f || text == req+".payload."+f {
 						relevant = true
@@ -132,4 +146,26 @@ func (m *sourceModule) cachedShadowed(n *sitter.Node, name string) bool {
 	v := shadowed(n, name, m.src)
 	m.shadowQueries[k] = v
 	return v
+}
+
+// relevant mirrors the plain-parameter rule of inputHelperGaps for a name bound
+// by a request pattern: the whole body, or a checked field of the body, query or
+// payload. member is the property read on the name, "" for the bare name.
+func (p handlerParams) relevant(name, member string, fields []string) bool {
+	chain := p.projections[name]
+	if chain == "" {
+		return false
+	}
+	if member != "" {
+		chain += "." + member
+	}
+	if chain == "body" {
+		return true
+	}
+	for _, f := range fields {
+		if chain == "body."+f || chain == "query."+f || chain == "payload."+f {
+			return true
+		}
+	}
+	return false
 }

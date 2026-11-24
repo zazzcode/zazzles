@@ -86,10 +86,23 @@ type handlerParams struct {
 	containers map[string]bool // request container names: req, or destructured query/body/params
 	request    string
 	response   map[string]bool
+	// projections maps each local name bound by a destructured request parameter
+	// to the request member chain it reads: "params" for ({ params }) and
+	// ({ params: p }), "body.name" for ({ body: { name } }). bindings holds the
+	// pattern node that binds the name.
+	projections map[string]string
+	bindings    map[string]*sitter.Node
+	// unsupported marks a pattern with a rest element, a computed key, a default
+	// value or more than one level of nesting; destructured marks any object pattern.
+	destructured, unsupported bool
 }
 
+// plainOrDestructuredParameters reads a handler's request and response
+// parameters. An object pattern in the request position binds request members
+// (hardening 3 D-1): each property is a projection of the request object, and a
+// nested pattern binds one level further.
 func plainOrDestructuredParameters(fn *sitter.Node, src []byte) handlerParams {
-	p := handlerParams{containers: map[string]bool{}, response: map[string]bool{}}
+	p := handlerParams{containers: map[string]bool{}, response: map[string]bool{}, projections: map[string]string{}, bindings: map[string]*sitter.Node{}}
 	params := fn.ChildByFieldName("parameters")
 	if params == nil {
 		return p
@@ -106,16 +119,58 @@ func plainOrDestructuredParameters(fn *sitter.Node, src []byte) handlerParams {
 		case i == 0 && n.Kind() == "identifier":
 			p.request = n.Utf8Text(src)
 		case i == 0 && n.Kind() == "object_pattern":
+			p.destructured = true
 			for j := uint(0); j < n.NamedChildCount(); j++ {
-				if c := n.NamedChild(j); c.Kind() == "shorthand_property_identifier_pattern" {
+				c := n.NamedChild(j)
+				if c.Kind() == "shorthand_property_identifier_pattern" {
 					p.containers[c.Utf8Text(src)] = true
 				}
+				p.project(c, "", src)
 			}
 		case i == 1 && n.Kind() == "identifier":
 			p.response[n.Utf8Text(src)] = true
 		}
 	}
 	return p
+}
+
+// project records the names one property of a request pattern binds. prefix is
+// the member the enclosing pattern reads, "" at the top level.
+func (p *handlerParams) project(c *sitter.Node, prefix string, src []byte) {
+	chain := func(member string) string {
+		if prefix == "" {
+			return member
+		}
+		return prefix + "." + member
+	}
+	switch c.Kind() {
+	case "shorthand_property_identifier_pattern":
+		name := c.Utf8Text(src)
+		p.projections[name], p.bindings[name] = chain(name), c
+	case "pair_pattern":
+		key, value := c.ChildByFieldName("key"), c.ChildByFieldName("value")
+		if key == nil || value == nil || key.Kind() != "property_identifier" {
+			p.unsupported = true
+			return
+		}
+		switch value.Kind() {
+		case "identifier":
+			p.projections[value.Utf8Text(src)], p.bindings[value.Utf8Text(src)] = chain(key.Utf8Text(src)), c
+		case "object_pattern":
+			if prefix != "" {
+				p.unsupported = true
+				return
+			}
+			for j := uint(0); j < value.NamedChildCount(); j++ {
+				p.project(value.NamedChild(j), key.Utf8Text(src), src)
+			}
+		default:
+			p.unsupported = true
+		}
+	default:
+		// rest_pattern, object_assignment_pattern (a default value) and anything else.
+		p.unsupported = true
+	}
 }
 
 // requestValue returns the first node under n that reads the request: a member

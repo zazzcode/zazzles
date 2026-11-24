@@ -1202,7 +1202,10 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	// Method results may depend on their receiver (for example input.trim()).
 	if fn.Kind() == "member_expression" {
 		obj := fn.ChildByFieldName("object")
-		if obj != nil && obj.Kind() != "call_expression" {
+		if f.namespaceCallee(n, fn) {
+			// A function exported by a scanned module and called through a namespace
+			// import is a known callee, not a method of a value (hardening 3 D-2).
+		} else if obj != nil && obj.Kind() != "call_expression" {
 			v = combine(v, f.eval(obj))
 		} else if obj != nil {
 			v = combine(v, chained)

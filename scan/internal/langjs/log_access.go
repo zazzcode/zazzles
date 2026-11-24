@@ -24,8 +24,9 @@ type credentialDestination struct {
 }
 
 // requestParts resolves a destructured request parameter such as
-// ({ query, headers }) so its container members become request sources.
-// Other destructured members stay explicit as a partial-projection gap.
+// ({ query, headers }) or ({ body: b }) so its container members become request
+// sources (hardening 3 D-1). Other destructured members stay explicit as a
+// partial-projection gap.
 func requestParts(m *sourceModule, body *sitter.Node, gaps []analysis.Gap) (map[string]string, []analysis.Gap) {
 	fn := body.Parent()
 	if fn == nil {
@@ -42,18 +43,26 @@ func requestParts(m *sourceModule, body *sitter.Node, gaps []analysis.Gap) (map[
 	if p == nil || p.Kind() != "object_pattern" {
 		return nil, gaps
 	}
+	read := plainOrDestructuredParameters(fn, m.src)
 	parts := map[string]string{}
 	var other []string
 	for i := uint(0); i < p.NamedChildCount(); i++ {
 		c := p.NamedChild(i)
 		name := c.Utf8Text(m.src)
-		if c.Kind() == "shorthand_property_identifier_pattern" && requestContainers[name] {
+		switch {
+		case c.Kind() == "shorthand_property_identifier_pattern" && requestContainers[name]:
 			parts[name] = name
-		} else {
+		case c.Kind() == "pair_pattern" && !read.unsupported && requestPatternMember(c, m.src) != "":
+			// A renamed container is a part under its local name; a nested pattern
+			// binds fields, which requestFieldBindings seeds.
+			if value := c.ChildByFieldName("value"); value.Kind() == "identifier" {
+				parts[value.Utf8Text(m.src)] = requestPatternMember(c, m.src)
+			}
+		default:
 			other = append(other, name)
 		}
 	}
-	if len(parts) == 0 {
+	if len(parts) == 0 && (read.unsupported || len(other) == 0) {
 		return nil, gaps
 	}
 	out := make([]analysis.Gap, 0, len(gaps)+1)
@@ -65,7 +74,45 @@ func requestParts(m *sourceModule, body *sitter.Node, gaps []analysis.Gap) (map[
 	if len(other) > 0 {
 		out = append(out, analysis.Gap{Kind: "request_projection_partial", Detail: "destructured request members other than body/query/params/headers/cookies are not modeled as sources: " + strings.Join(other, ", "), At: parse.Span(m.file, p)})
 	}
+	if len(parts) == 0 {
+		return nil, out
+	}
 	return parts, out
+}
+
+// requestPatternMember returns the request container a pair of a request
+// pattern reads ({ body: b } and { body: { name } } read "body"), or "".
+func requestPatternMember(pair *sitter.Node, src []byte) string {
+	key, value := pair.ChildByFieldName("key"), pair.ChildByFieldName("value")
+	if key == nil || value == nil || key.Kind() != "property_identifier" || !requestContainers[key.Utf8Text(src)] {
+		return ""
+	}
+	if value.Kind() != "identifier" && value.Kind() != "object_pattern" {
+		return ""
+	}
+	return key.Utf8Text(src)
+}
+
+// requestFieldBindings returns the names a nested request pattern binds to a
+// field of a request container, such as leaf in ({ query: { leaf } }), with the
+// pattern node that binds each. The node's text starts with the field name, so
+// field selection reads it like a member read of the container.
+func requestFieldBindings(m *sourceModule, body *sitter.Node) map[string]*sitter.Node {
+	fn := body.Parent()
+	if fn == nil {
+		return nil
+	}
+	read := plainOrDestructuredParameters(fn, m.src)
+	if !read.destructured || read.unsupported {
+		return nil
+	}
+	out := map[string]*sitter.Node{}
+	for name, chain := range read.projections {
+		if container, _, nested := strings.Cut(chain, "."); nested && requestContainers[container] {
+			out[name] = read.bindings[name]
+		}
+	}
+	return out
 }
 
 // partField returns the first-level member (query.x) of a destructured request

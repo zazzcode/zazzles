@@ -315,3 +315,26 @@ func singleDeclaration(name string, scope *sitter.Node, src []byte) *sitter.Node
 	}
 	return decl
 }
+
+// namespaceCallee reports a call ns.name(...) whose receiver is a namespace
+// import (import * as ns from './module') of a scanned module and whose member
+// resolves to a function that module exports. The binding must be the import:
+// a local of the same name is a value.
+func (f *flow) namespaceCallee(call, fn *sitter.Node) bool {
+	if f.set == nil {
+		return false
+	}
+	obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+	if obj == nil || prop == nil || obj.Kind() != "identifier" || prop.Kind() != "property_identifier" {
+		return false
+	}
+	name := obj.Utf8Text(f.module.src)
+	if _, local := f.env[name]; local {
+		return false
+	}
+	if imp, ok := f.module.imports[name]; !ok || imp.name != "*" {
+		return false
+	}
+	hm, helper := f.set.resolveCall(f.module, call)
+	return hm != nil && hm != f.module && helper != nil && supportedCallee(helper)
+}

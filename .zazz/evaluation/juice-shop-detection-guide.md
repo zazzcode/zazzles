@@ -25,6 +25,34 @@ Each is a witnessed candidate offline and a Confirmed finding in the judged acce
 | `JS-AUTHZ-02` | same | `routes/updateProductReviews.ts:17` | Collection `update` selected by `req.body.id`, no ownership key |
 | `JS-ENUM-01` | `account_enumeration_candidate` | `routes/securityQuestion.ts:15` | Lookup by `query.email`; `{ question }` or `{}` |
 
+### Added after source review (2026-11-24)
+
+Each row was Confirmed by the judged scan and then read against the source at the pin. The
+evidence for each is in the
+[results](juiceshop-hardening-results.md#source-review-of-the-confirmed-records-outside-the-key).
+
+| ID | Kind | Anchor | Evidence |
+|---|---|---|---|
+| `JS-CONF-04` | `configuration_candidate`, directory listing | `server.ts:269` | `serve-index` of `infrastructure`: Dockerfile, compose file and Terraform |
+| `JS-HASH-02` | `password_hash_candidate` | `lib/insecurity.ts:42` | HMAC-SHA256 with a constant key, stored by the security answer's accessor |
+| `JS-AUTHZ-03` | `authorization_candidate`, `object_level` | `routes/coupon.ts:24` | `findByPk(params.id)` then `update`; login required, no owner comparison |
+| `JS-AUTHZ-04` | same | `server.ts:529`, `PUT /api/Hints/:id` | Generated update with no middleware registered for `PUT` |
+| `JS-MASS-02` | `mass_assignment_candidate` | `server.ts:529`, `POST /api/Feedbacks` | `UserId` from the body; the sample's forged-feedback challenge (`routes/verify.ts:30`) |
+| `JS-MASS-03` | same | `server.ts:529`, `POST /api/Complaints` | Login required, `UserId` from the body |
+| `JS-MASS-04` | same | `server.ts:529`, `POST /api/Recycles` | Login required, `UserId` and `AddressId` from the body |
+| `JS-MASS-05` | same | `server.ts:529`, `POST /api/PrivacyRequests` | Login required, `UserId` and `deletionRequested` from the body |
+| `JS-MASS-06` | same | `server.ts:529`, `POST /api/SecurityAnswers` | No middleware for `POST`; `UserId` and `answer` from the body. `UserId` is unique, so the write succeeds only for a user with no answer |
+
+## Known false positives
+
+Reported as Confirmed by the judged scan of 2026-11-24 and judged safe on source review. They
+are not key rows; they are listed so a comparison counts them against the scanner.
+
+| Record | Anchor | Why it is safe |
+|---|---|---|
+| `authorization_candidate` | `routes/likeProductReviews.ts:35` | Liking another user's review is the feature; the review is not the caller's to own |
+| `configuration_candidate`, directory listing | `server.ts:294` | `.well-known` holds only files published on purpose (`security.txt`, advisories) |
+
 ## Controls
 
 None may be a finding. `guarded` rows must end Protected.
@@ -40,8 +68,8 @@ None may be a finding. `guarded` rows must end Protected.
 
 ## Recorded, any status
 
-Counted in the results and binding no criterion: the other `serve-index` mounts (`server.ts:269`,
-`:294`), `swagger-ui-express` at `server.ts:307`, the generated resources of the other fifteen
+Counted in the results and binding no criterion: the other `serve-index` mount (`server.ts:294`, a
+known false positive above), `swagger-ui-express` at `server.ts:307`, the generated resources of the other fifteen
 models, the upload routes at `server.ts:337` to `:340`, and whatever the deployment-file readers
 record.
 

@@ -2419,6 +2419,114 @@
       "expect": "no_record",
       "file": "routes/updateUserProfile.ts",
       "line": 38
+    },
+    {
+      "id": "JS-CONF-04",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 269,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-HASH-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "password_hash_candidate",
+      "expect": "positive",
+      "file": "lib/insecurity.ts",
+      "line": 42,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-AUTHZ-03",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "routes/coupon.ts",
+      "line": 24,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-AUTHZ-04",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "PUT /api/Hints/:id"
+      ]
+    },
+    {
+      "id": "JS-MASS-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "POST /api/Feedbacks"
+      ]
+    },
+    {
+      "id": "JS-MASS-03",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "POST /api/Complaints"
+      ]
+    },
+    {
+      "id": "JS-MASS-04",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "POST /api/Recycles"
+      ]
+    },
+    {
+      "id": "JS-MASS-05",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "POST /api/PrivacyRequests"
+      ]
+    },
+    {
+      "id": "JS-MASS-06",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "POST /api/SecurityAnswers"
+      ]
     }
   ],
   "tags": {

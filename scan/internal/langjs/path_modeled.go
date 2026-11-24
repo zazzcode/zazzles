@@ -390,7 +390,7 @@ func (s *moduleSet) pathModeledGap(u *analysis.CandidateUse, g analysis.Gap) boo
 // base or the consumer of the file result is covered; every other gap on the
 // operand path stays a blocker.
 func (s *moduleSet) pathGapCovered(u *analysis.CandidateUse, g analysis.Gap, controlComplete bool, complete, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
-	if g.Kind == "path_unrelated_helper_limit" {
+	if g.Kind == "path_unrelated_helper_limit" || s.literalWriteBesideOperand(u, g) {
 		return true
 	}
 	if s.pathModeledGap(u, g) {

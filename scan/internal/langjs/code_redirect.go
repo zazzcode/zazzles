@@ -342,6 +342,9 @@ func (s *moduleSet) assembleInterpreterClaims(report *analysis.AnalysisReport) {
 						}
 					}
 				}
+				if family == "code" && s.literalWriteBesideOperand(u, g) {
+					return true
+				}
 				return s.commandGapCovered(u, g, complete, bodies, transforms, extra)
 			},
 			complete: func(u *analysis.CandidateUse, extra map[string][]analysis.Evidence, blockers, coverage []analysis.Gap) *analysis.Completeness {

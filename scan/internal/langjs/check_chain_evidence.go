@@ -129,6 +129,11 @@ func (s *moduleSet) chainEvidence(report *analysis.AnalysisReport, check analysi
 					context = append(context, adapter...)
 					continue
 				}
+				if s.verifiedMiddlewareCall(m, arg) {
+					// The registration evidence above already shows the call. No
+					// evidence is added: a record's identifier covers its context.
+					continue
+				}
 				context = append(context, s.wrapperContext(m, arg)...)
 				hm, body, req, more := s.handler(m, arg)
 				gaps = append(gaps, more...)
@@ -146,4 +151,23 @@ func (s *moduleSet) chainEvidence(report *analysis.AnalysisReport, check analysi
 
 func fieldDependency(d analysis.Dependency, fields []string) bool {
 	return analysis.MatchesFields(d, fields)
+}
+
+// verifiedMiddlewareCall reports a registration argument that is middleware
+// with known behavior (hardening 3 D-3): a verified multer binding call
+// (path_upload_binding.go), or a call on the closed authentication list of
+// express_access.go. Such a call builds middleware from its arguments by the
+// library's contract; it is not a handler factory whose arguments need binding.
+// Every other call keeps the resolver's gap.
+func (s *moduleSet) verifiedMiddlewareCall(m *sourceModule, arg *sitter.Node) bool {
+	if arg == nil || arg.Kind() != "call_expression" {
+		return false
+	}
+	// A custom fileFilter is a callback this resolver has not read; such a
+	// binding stays an unresolved predecessor (pathUploadAdapter's rule).
+	if b, ok := multerMiddleware(m, arg); ok && b.filter == nil {
+		return true
+	}
+	_, ok := s.authMiddleware(m, arg, 0)
+	return ok
 }

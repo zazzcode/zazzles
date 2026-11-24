@@ -25,7 +25,9 @@
 Both branches live in this worktree. Branch 2 is stacked because its Zazzles columns are the
 judged results of branch 1.
 
-**Lane setup**, done once by the branch 1 session before any other work:
+**Lane setup. Done on 2026-11-24.** Both branches exist and are pushed. The branch 1 session
+verifies this with `gh stack view --json` and `git log` and does not repeat it. The commands
+that were run:
 
 ```bash
 git config rerere.enabled true
@@ -33,9 +35,11 @@ git branch -m juiceshop-nextjs-hardening juiceshop-nextjs-hardening-1
 gh stack init --base stage juiceshop-nextjs-hardening-1
 ```
 
-The first commit of branch 1 is the documentation written with this lane: both specifications,
-the [specification index](spec-index.md) rows and the [README](README.md) entry. The branch 2
-session adds its branch with `gh stack add juiceshop-nextjs-hardening-2`.
+The first commit of branch 1 (`586ee97`) is the documentation written with this lane: both
+specifications, the [specification index](spec-index.md) rows and the [README](README.md)
+entry. Branch 2 was added with `gh stack add juiceshop-nextjs-hardening-2` and holds the
+scanner detail documents of its Part A. After each commit on branch 1, run
+`gh stack rebase --upstack` so branch 2 follows.
 
 **Rules taken from the Symfony lane.** These sections of the
 [Symfony lane contract](symfony-more-analyzers.md) apply to both branches with "the sample" read
@@ -294,7 +298,7 @@ and Mongoose where the first uses Sequelize.
 
 | Slice | Delivers | Criteria |
 |---|---|---|
-| S0 | Lane setup, documentation checkpoint, key freeze | AC1 |
+| S0 | Verify the lane setup, key freeze | AC1 |
 | S1 | Entry access for Express (D-2) | AC2 |
 | S2 | `configuration` and `exposure` (D-8, D-9) | AC3, AC4 |
 | S3 | Census, `account` (D-6, D-7) | AC5, AC6 |

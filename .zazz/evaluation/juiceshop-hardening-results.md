@@ -276,6 +276,15 @@ became findings, each read against the source:
 The new read at `routes/address.ts:18` is Protected (its selector carries the owner key a chain
 middleware sets). The four upload records are in Review.
 
+### Lead review after the acceptance runs
+
+Two fixes, each with a test and no judged run. An earlier handler for the same method and path
+that declares no `next` parameter always answers, so the generated endpoint behind it makes no
+claim: the generated `DELETE /api/Addresss/:id` record, a false positive of run 5, is no longer
+recorded (Juice Shop 306 records to 305, nothing else changed). An environment guard written
+with Express's `app.get('env')` setting is recorded, which a scan of nodejs-goof showed was
+missed. The comparison counts four Code Scan false positives after this, not five.
+
 ### Open rows
 
 Each was stopped under the blocked item protocol. None was relabeled and no rule was written to

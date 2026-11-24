@@ -126,7 +126,7 @@ nothing is claimed for any scanner.
 | Languages run here | JavaScript, TypeScript, PHP | The same | The same |
 | Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; the cross-file engine is Semgrep Pro, not run | Not shown: it found no row that needs it |
 | Access rules read from framework configuration and middleware | Yes: the authorization, mass-assignment and enumeration rows depend on it | No such rule fired | No such rule fired |
-| Known-safe code left unreported | 5 false positives | 7 | 21 and two grouped rules |
+| Known-safe code left unreported | 4 false positives | 7 | 21 and two grouped rules |
 | Committed secrets | No analyzer | Found the keyed row | Found the keyed row |
 | Infrastructure files (Terraform, package-manager policy) | Dockerfile, web-server and cron files for PHP projects | Terraform and npm/pnpm rules fired | None fired |
 | Output | JSON, HTML, SARIF | JSON, SARIF, text | JSON; SARIF not produced in this run |

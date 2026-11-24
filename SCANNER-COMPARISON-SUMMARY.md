@@ -12,7 +12,7 @@ Four intentionally vulnerable applications, scored against their known vulnerabi
 | | Code Scan | Bearer CLI | Semgrep CE |
 |---|---:|---:|---:|
 | Known vulnerabilities found, of 97 | 94 | 33 | 19 |
-| False positives on known-safe code | 5 | 21, and two noisy rules | 7 |
+| False positives on known-safe code | 4 | 21, and two noisy rules | 7 |
 
 | Application | Known | Code Scan | Bearer | Semgrep CE |
 |---|---:|---:|---:|---:|
@@ -41,11 +41,10 @@ a head-to-head result.
   practice finding rather than a confirmed one.
 - **Committed secrets.** Both other scanners found the hardcoded JWT key. Code Scan has no
   analyzer for it.
-- **Five false positives:** two records of liking a review, a `.well-known` directory listing,
-  a generated delete that an explicit handler answers first, and vuln-nextjs's redirect control.
-  The first comparison had three; the hardening 3 run added the second like record and the
-  generated delete. The redirect control is counted as its lab labels it, although its guard
-  admits `/\host`.
+- **Four false positives:** two records of liking a review, a `.well-known` directory listing,
+  and vuln-nextjs's redirect control. The redirect control is counted as its lab labels it,
+  although its guard admits `/\host`. A fifth, a generated delete that an explicit handler
+  answers first, was fixed after the judged run and is no longer recorded.
 - **GitHub Actions workflows** are not read.
 
 ## Read the numbers with these in mind
@@ -81,5 +80,5 @@ needs in the [results](.zazz/evaluation/juiceshop-hardening-results.md#hardening
    test that the scanner records as a guard, and the code policy confirms only an unguarded path.
 2. The null-byte file read stays in Review. On source review it cannot leave its directory; what
    it defeats is a file-type allow-list.
-3. The like-counter and `.well-known` false positives remain, and two more appeared.
+3. The like-counter and `.well-known` false positives remain, and a second like record appeared.
 4. vuln-nextjs's redirect control is still reported. Its guard is bypassable by `/\host`.

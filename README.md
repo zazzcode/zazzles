@@ -58,7 +58,7 @@ scored against each application's known vulnerabilities, with false positives co
 | DVWA | 11 | 11 | 5 | 6 |
 | vuln-symfony | 30 | 30 | 2 | 5 |
 
-False positives on known-safe code: Code Scan 5, Semgrep CE 7, Bearer 21 and two grouped rules.
+False positives on known-safe code: Code Scan 4, Semgrep CE 7, Bearer 21 and two grouped rules.
 These are development reference applications and the answer keys favor the classes Code Scan
 analyzes, so this is not a general accuracy claim.
 [Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)

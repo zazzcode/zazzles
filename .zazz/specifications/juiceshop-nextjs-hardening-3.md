@@ -207,15 +207,35 @@ Recorded so it is not lost. Each needs its own decision before it is built.
 |---|---|
 | Practice findings that are real vulnerabilities | `routes/b2bOrder.ts:23` (code run in a `vm` context) and the password in a logged URL (`server.ts:366`) are reported below Confirmed. Whether the policy or the evidence is at fault is not established |
 | Entry access outside Express | Authorization, mass assignment and enumeration record nothing on Next.js, Fastify or Hapi. Each framework needs its own access contract |
+| Authorization on raw SQL | Held-out test: vuln-demo-app has a documented missing admin check on a `DELETE` built as SQL text and records nothing. The JavaScript rule reads Sequelize and Mongo operations only. PHP already reads a request-selected row from a `WHERE` clause ([Symfony branch 5 D-2](symfony-more-analyzers-5.md)) |
+| Mass assignment without an ORM | Held-out test: vulnerable-typescript-app spreads `req.body` into an object pushed onto an in-memory array and records nothing. The rule reads ORM writes only |
+| Access facts on Next.js | Held-out test: oss-oopssec-store has documented broken access control and records nothing from the five families |
 | Upload records | Built on branch 1, never judged. Four Juice Shop records wait for a run |
 | Deployment-file checks for JavaScript projects | Branch 1 D-9, third row: not built |
 | Password-hash record on an unrelated entry | A digest in a model accessor rides the lowest-numbered entry |
-| A generated endpoint behind an explicit handler | Recorded, in Review. Whether the explicit handler ends the response is not read |
+| A generated endpoint behind an explicit handler | Fixed on this branch after the judged run: an earlier handler for the same method and path that declares no `next` parameter always answers, so the generated endpoint makes no claim. A handler that declares `next` is still not read |
 | A verdict that changes between runs | `DELETE /api/BasketItems/:id`: Confirmed, then Review, on identical evidence |
 | Census roles for JavaScript | `login_identifier` and `role_source` are not established, so function-level authorization claims are not made |
 | Wider keys for DVWA and vuln-symfony | About 190 results of the other scanners there are unreviewed. Reviewing them is how Code Scan's misses on PHP would show |
 | Curated copies of the comparison's raw outputs | `docs/samples/<sample>/{semgrep,bearer,zizmor}/` (branch 2 D-6) |
 | Classes with no analyzer | Committed secrets, token verification without an algorithm list, XML external entities, GitHub Actions workflows. Out of scope while no analyzer is added |
+
+### Held-out test
+
+Offline scans of four applications that were not used to develop the lane, baseline `4fb2ea8`
+against this branch. No earlier record is missing or changed in any of them.
+
+| Application | Stack | Records | New records |
+|---|---|---|---|
+| oss-oopssec-store | Next.js, Prisma | 128 to 128 | None |
+| vulnerable-typescript-app | Express, in-memory data | 27 to 29 | Two session-cookie flags (`secure: false`, `httpOnly: false`), a documented defect of that application |
+| nodejs-goof | Express, Mongoose | 36 to 37 | The `errorhandler` registration, under `app.get('env') == 'development'` |
+| vuln-demo-app | Express, raw SQL | 19 to 19 | None |
+
+The test found one defect, fixed here: an environment guard written with Express's
+`app.get('env')` setting was not recorded, so the nodejs-goof record carried no guard. It also
+shows that the five families reach little beyond Express with an ORM. That is the subject of
+the [generality review proposal](../../DETECTION-GENERALITY-REVIEW-PROPOSAL.md).
 
 ## 7. Scope
 
@@ -239,6 +259,16 @@ Everything in §6.
 - [x] Samples are unchanged.
 
 ## 9. Change log
+
+### 2026-11-24 — Lead review
+
+Two fixes after the acceptance runs, each with a test and no judged run: an environment guard
+written as `app.get('env')` is recorded (`TestExpressEnvSettingGuard`), and a generated
+endpoint that an earlier handler without a `next` parameter answers makes no claim
+(`TestExpressGeneratedAnsweredFirst`). The second removes the generated
+`DELETE /api/Addresss/:id` record, one of the two false positives the acceptance run added.
+Offline, Juice Shop goes from 306 records to 305 and nothing else changes. §6 gains three gaps
+and the held-out test.
 
 ### 2026-11-24 — Drafted
 

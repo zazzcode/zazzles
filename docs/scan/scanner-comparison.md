@@ -19,13 +19,15 @@ these scanner versions. They are not a general accuracy claim.
 
 | Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found | Code Scan false positives | Semgrep CE false positives | Bearer false positives |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| OWASP Juice Shop | 43 | 40 | 10 | 15 | 4 | 4 | 13 and two grouped rules |
+| OWASP Juice Shop | 43 | 40 | 10 | 15 | 3 | 4 | 13 and two grouped rules |
 | vuln-nextjs | 13 | 13 | 2 | 7 | 1 | 1 | 4 |
 | DVWA | 11 | 11 | 5 | 6 | 0 | 2 | 2 |
 | vuln-symfony | 30 | 30 | 2 | 5 | 0 | 0 | 2 |
-| **Total** | **97** | **94** | **19** | **33** | **5** | **7** | **21 and two grouped rules** |
+| **Total** | **97** | **94** | **19** | **33** | **4** | **7** | **21 and two grouped rules** |
 
-False positives are counted by location. Code Scan's found count includes three Juice Shop rows
+False positives are counted by location. A fourth Juice Shop false positive of the judged run,
+a generated delete that an explicit handler answers first, is no longer recorded after a fix
+made on the same branch and is not counted. Code Scan's found count includes three Juice Shop rows
 it reports as a practice finding rather than a confirmed vulnerability. It misses three Juice
 Shop rows: two it records but leaves in Review, and one class (a committed secret) it has no
 analyzer for. The Juice Shop and vuln-nextjs columns are from the runs of
@@ -134,7 +136,6 @@ owns a committed secret.
 | Scanner | What was flagged | Location | Why it is safe |
 |---|---|---|---|
 | Code Scan | Missing authorization | `routes/likeProductReviews.ts:35`, `:50` | Liking another user's review is the feature. The second record, the update of the review's list of likers, was Protected in the earlier run |
-| Code Scan | Missing authorization | `server.ts:529`, generated `DELETE /api/Addresss/:id` | An explicit handler registered first (`server.ts:479`) deletes only the caller's own address and always answers, so the generated delete is not reached. In Review in the earlier run |
 | Code Scan, Semgrep CE, Bearer | Directory listing | `server.ts:294` | `.well-known` holds only files published on purpose |
 | Semgrep CE, Bearer | Path traversal | `routes/keyServer.ts:14`, `routes/logfileServer.ts:14`, `routes/quarantineServer.ts:14` | The handler rejects any name containing `/` before `path.resolve(<directory>, name)` |
 | Bearer | Unsafe deserialization | `routes/vulnCodeFixes.ts:83`, `routes/vulnCodeSnippet.ts:90` | `yaml.load` of the application's own files; `js-yaml` 4 constructs no objects |

@@ -48,17 +48,19 @@ Coverage varies by language, framework, and library. [Full detection coverage](d
 
 ## Scanner comparison
 
-Code Scan, Semgrep CE and Bearer were run on four intentionally vulnerable applications and
-scored against each application's known vulnerabilities, with false positives counted.
+Code Scan, Semgrep CE, Bearer and zizmor were run on four intentionally vulnerable applications
+and scored against each application's known vulnerabilities, with false positives counted.
 
-| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found |
-|---|---:|---:|---:|---:|
-| OWASP Juice Shop | 42 | 41 | 9 | 14 |
-| vuln-nextjs | 13 | 13 | 2 | 7 |
-| DVWA | 11 | 11 | 5 | 6 |
-| vuln-symfony | 30 | 30 | 2 | 5 |
+| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found | zizmor found |
+|---|---:|---:|---:|---:|---:|
+| OWASP Juice Shop | 42 | 41 | 9 | 14 | 0 |
+| vuln-nextjs | 13 | 13 | 2 | 7 | 0 |
+| DVWA | 11 | 11 | 5 | 6 | 0 |
+| vuln-symfony | 30 | 30 | 2 | 5 | 0 |
 
 False positives on known-safe code: Code Scan 3, Semgrep CE 8, Bearer 22 and two grouped rules.
+zizmor reads GitHub Actions workflow files, not application code: it reported 140 findings in
+the workflows of three of the applications, a surface Code Scan does not read.
 These are development reference applications and the answer keys favor the classes Code Scan
 analyzes, so this is not a general accuracy claim.
 [Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)

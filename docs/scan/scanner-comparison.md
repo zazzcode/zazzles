@@ -17,21 +17,34 @@ these scanner versions. They are not a general accuracy claim.
 
 ## Summary
 
-| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found | Code Scan false positives | Semgrep CE false positives | Bearer false positives |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| OWASP Juice Shop | 42 | 41 | 9 | 14 | 3 | 5 | 14 and two grouped rules |
-| vuln-nextjs | 13 | 13 | 2 | 7 | 0 | 1 | 4 |
-| DVWA | 11 | 11 | 5 | 6 | 0 | 2 | 2 |
-| vuln-symfony | 30 | 30 | 2 | 5 | 0 | 0 | 2 |
-| **Total** | **96** | **95** | **18** | **32** | **3** | **8** | **22 and two grouped rules** |
+| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found | zizmor found | Code Scan false positives | Semgrep CE false positives | Bearer false positives |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| OWASP Juice Shop | 42 | 41 | 9 | 14 | 0 | 3 | 5 | 14 and two grouped rules |
+| vuln-nextjs | 13 | 13 | 2 | 7 | 0 | 0 | 1 | 4 |
+| DVWA | 11 | 11 | 5 | 6 | 0 | 0 | 2 | 2 |
+| vuln-symfony | 30 | 30 | 2 | 5 | 0 | 0 | 0 | 2 |
+| **Total** | **96** | **95** | **18** | **32** | **0** | **3** | **8** | **22 and two grouped rules** |
+
+zizmor finds none of the application vulnerabilities because it does not read application
+code: it audits GitHub Actions workflow files, which the other three scanners did not read in
+this comparison. On that surface the result is the reverse:
+
+| Application | Workflow files | zizmor findings | Code Scan | Semgrep CE | Bearer |
+|---|---:|---:|---|---|---|
+| OWASP Juice Shop | 15 | 108 (28 high) | Not read | Not run on workflows | Not run on workflows |
+| DVWA | 5 | 28 (15 high) | Not read | Not run on workflows | Not run on workflows |
+| vuln-nextjs | 1 | 4 (2 high) | Not read | Not run on workflows | Not run on workflows |
+| vuln-symfony | 0 | — | — | — | — |
+
+Code Scan excludes `.github/` from its source scope. Semgrep CE and Bearer were run with the
+same exclusion so that their file sets matched Code Scan's; neither was tested on workflows.
+zizmor's findings were not reviewed. [Details](#github-actions-workflows)
 
 False positives are counted by location. A fourth Juice Shop false positive of the judged run,
 a generated delete that an explicit handler answers first, is no longer recorded after a fix
 made on the same branch and is not counted. Code Scan's found count includes three Juice Shop rows
 it reports as a practice finding rather than a confirmed vulnerability. It misses one Juice
-Shop row, a committed secret, a class it has no analyzer for. The profile-page `eval` row is Confirmed by a code-family run made after a policy
-change on the same branch (`r7-code-juice-shop`); the other Juice Shop cells are from the full
-run before it. The Juice Shop and vuln-nextjs columns are from the runs of
+Shop row, a committed secret, a class it has no analyzer for. The Juice Shop and vuln-nextjs columns are from the runs of
 [hardening 3](../../.zazz/specifications/juiceshop-nextjs-hardening-3.md), which added the read
 of another user's basket as a known vulnerability and as a Code Scan finding, moved the
 profile-image SSRF from Review to a practice finding, and added two Code Scan false positives.
@@ -70,16 +83,18 @@ have no keyed case in these four applications.
 
 | Scanner | Version | Rules |
 |---|---|---|
-| Zazzles Code Scan | Branch `juiceshop-nextjs-hardening-3` at `ee777f4` for Juice Shop and vuln-nextjs; `d368a68` for DVWA; `8d97b93` for vuln-symfony | All analyzer families, judged with OpenAI `gpt-6-luna` |
+| Zazzles Code Scan | Branch `juiceshop-nextjs-hardening-3` at `3318e27` for Juice Shop and `ee777f4` for vuln-nextjs; `d368a68` for DVWA; `8d97b93` for vuln-symfony | All analyzer families, judged with OpenAI `gpt-6-luna` |
 | Semgrep CE | 1.183.0 | `p/javascript`, `p/typescript`, `p/php`, `p/xss`, `p/owasp-top-ten` (564 rules) |
 | Bearer CLI | Source build at `a7a8752` | `bearer-rules` at `82c335f`, default rules off |
+| zizmor | 1.33.1 | Built-in audits, offline, default persona. Workflow files only |
 
 Semgrep CE analyzes one file at a time; its cross-file engine is a paid product and was not run.
 Bearer Pro was not run.
 
 ## OWASP Juice Shop
 
-Pin `f189f52`. Code Scan run `a1-acceptance-juice-shop`.
+Pin `f189f52`. Code Scan run `a3-acceptance-juice-shop`, one full scan of 84 requests on the final
+code of the branch.
 
 | ID | Class | Location | Code Scan | Semgrep CE | Bearer |
 |---|---|---|---|---|---|

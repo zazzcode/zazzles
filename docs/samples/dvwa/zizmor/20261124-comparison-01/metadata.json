@@ -1,0 +1,11 @@
+{
+  "tool": "zizmor",
+  "version": "1.33.1",
+  "rules": "built-in audits, default persona",
+  "options": "--offline",
+  "date": "2026-11-24",
+  "target_revision": "a1978a2fed195acd093010af6395f86a281537ca",
+  "results": 28,
+  "results_sha256": "4bc5a7066cd8afa9994302082ea79ce92c8f9adfae05bebb4f68eafc5b1aebc2",
+  "note": "Curated copy: target paths are relative to the sample root. Raw output, with SARIF where the tool wrote it, is under <TEST_FINDINGS>/dvwa/zizmor-20261124-1/."
+}

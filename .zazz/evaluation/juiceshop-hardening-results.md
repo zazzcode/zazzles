@@ -313,6 +313,17 @@ defeats the file-type allow-list. vuln-nextjs's redirect control is reported cor
 its guard `/^\/[^/]/` admits `/\host`; it is not a false positive, and the control in the lab
 needs a fix.
 
+### Final full run
+
+Judged run 8 (`a3-acceptance-juice-shop`, scanner `3318e27`, full scan, 84 requests, 381,728
+input tokens), made after the lead review and the code policy change so that every Juice Shop
+cell of the comparison comes from one run. 305 records: 51 Confirmed, 3 practice findings, 3
+Protected and 248 in Review. Of the 41 keyed positives, 38 are Confirmed and 3 are practice
+findings (`JS-LOG-01`, `JS-SSRF-01`, `JS-CODE-02`). `JS-PATH-01` is in Review, as keyed. Against
+run 5 the only record whose status differs is `routes/userProfile.ts:65`, now Confirmed, and the
+generated `DELETE /api/Addresss/:id` record is absent. The two keyed controls that are findings
+are the false positives already listed: `JS-AUTHZ-N05` and `JS-CONF-N01`.
+
 ### Open rows
 
 Each was stopped under the blocked item protocol. None was relabeled and no rule was written to

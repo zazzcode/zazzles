@@ -1,0 +1,601 @@
+{
+ "critical": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        return unserialize($data);",
+   "cwe_ids": [
+    "502"
+   ],
+   "filename": "src/Services/UserPref.php",
+   "fingerprint": "b7bb6838528a63a5acc9967fcf813525_0",
+   "full_filename": "src/Services/UserPref.php",
+   "id": "php_lang_deserialization_of_user_input",
+   "line_number": 36,
+   "old_fingerprint": "e6a10f81a4265eeecfd8583badf8a266_0",
+   "parent_line_number": 36,
+   "sink": {
+    "column": {
+     "end": 34,
+     "start": 16
+    },
+    "content": "",
+    "end": 36,
+    "start": 36
+   },
+   "source": {
+    "column": {
+     "end": 34,
+     "start": 16
+    },
+    "end": 36,
+    "start": 36
+   },
+   "title": "Unsanitized user input in deserialization method"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $stmt = $conn->prepare($rawSql);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "src/Repository/PostRepository.php",
+   "fingerprint": "ded94356a25b5e658c83a650fc30d0c4_0",
+   "full_filename": "src/Repository/PostRepository.php",
+   "id": "php_symfony_sql_injection",
+   "line_number": 66,
+   "old_fingerprint": "66845d36f0d0a31517cf5ffa069d150b_0",
+   "parent_line_number": 66,
+   "sink": {
+    "column": {
+     "end": 40,
+     "start": 17
+    },
+    "content": "",
+    "end": 66,
+    "start": 66
+   },
+   "source": {
+    "column": {
+     "end": 40,
+     "start": 17
+    },
+    "end": 66,
+    "start": 66
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $stmt = $conn->prepare($rawSql);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "src/Repository/UserRepository.php",
+   "fingerprint": "876e112f773a07c4470ab040b5b4b02a_0",
+   "full_filename": "src/Repository/UserRepository.php",
+   "id": "php_symfony_sql_injection",
+   "line_number": 76,
+   "old_fingerprint": "30dcff499af9cd0223eb4ed1b8a6d8dd_1",
+   "parent_line_number": 76,
+   "sink": {
+    "column": {
+     "end": 40,
+     "start": 17
+    },
+    "content": "",
+    "end": 76,
+    "start": 76
+   },
+   "source": {
+    "column": {
+     "end": 40,
+     "start": 17
+    },
+    "end": 76,
+    "start": 76
+   },
+   "title": "Unsanitized external input in SQL query"
+  }
+ ],
+ "medium": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        setcookie('USER_PREF', $data, time() + 3600 * 24 * 365);",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "src/Services/UserPref.php",
+   "fingerprint": "1a5c27e5d30e2d078f703bed8c1d8845_0",
+   "full_filename": "src/Services/UserPref.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 41,
+   "old_fingerprint": "685f44ddc3371b9b0090185bf708c03f_0",
+   "parent_line_number": 41,
+   "sink": {
+    "column": {
+     "end": 64,
+     "start": 9
+    },
+    "content": "",
+    "end": 41,
+    "start": 41
+   },
+   "source": {
+    "column": {
+     "end": 64,
+     "start": 9
+    },
+    "end": 41,
+    "start": 41
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        setcookie('USER_PREF', $data, time() + 3600 * 24 * 365);",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "src/Services/UserPref.php",
+   "fingerprint": "29738b7ebabf4b7107bffd75200410d9_0",
+   "full_filename": "src/Services/UserPref.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 41,
+   "old_fingerprint": "d2e0c6f89db7e0192c31676cc0542782_0",
+   "parent_line_number": 41,
+   "sink": {
+    "column": {
+     "end": 64,
+     "start": 9
+    },
+    "content": "",
+    "end": 41,
+    "start": 41
+   },
+   "source": {
+    "column": {
+     "end": 64,
+     "start": 9
+    },
+    "end": 41,
+    "start": 41
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "echo phpinfo();",
+   "cwe_ids": [
+    "200"
+   ],
+   "filename": "public/info.php",
+   "fingerprint": "6b05e3d91e8e29eb4dab5fb34e2fe587_0",
+   "full_filename": "public/info.php",
+   "id": "php_lang_phpinfo",
+   "line_number": 2,
+   "old_fingerprint": "31b264b4a94c89b35e89866688ca2d5e_0",
+   "parent_line_number": 2,
+   "sink": {
+    "column": {
+     "end": 15,
+     "start": 6
+    },
+    "content": "",
+    "end": 2,
+    "start": 2
+   },
+   "source": {
+    "column": {
+     "end": 15,
+     "start": 6
+    },
+    "end": 2,
+    "start": 2
+   },
+   "title": "Leakage of sensitive information with 'phpinfo' function"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $adminUser->setPassword(md5(\"P@ssw0rd07\"));",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Command/BlogInitCommand.php",
+   "fingerprint": "faf2c7a586f47e56c5d7bb13600a1fe4_0",
+   "full_filename": "src/Command/BlogInitCommand.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 91,
+   "old_fingerprint": "ccc73da0f6159cedebbee1a3f63f1a6f_5",
+   "parent_line_number": 91,
+   "sink": {
+    "column": {
+     "end": 50,
+     "start": 33
+    },
+    "content": "",
+    "end": 91,
+    "start": 91
+   },
+   "source": {
+    "column": {
+     "end": 50,
+     "start": 33
+    },
+    "end": 91,
+    "start": 91
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $normalUser->setPassword(md5(\"user\"));",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Command/BlogInitCommand.php",
+   "fingerprint": "faf2c7a586f47e56c5d7bb13600a1fe4_1",
+   "full_filename": "src/Command/BlogInitCommand.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 101,
+   "old_fingerprint": "ccc73da0f6159cedebbee1a3f63f1a6f_7",
+   "parent_line_number": 101,
+   "sink": {
+    "column": {
+     "end": 45,
+     "start": 34
+    },
+    "content": "",
+    "end": 101,
+    "start": 101
+   },
+   "source": {
+    "column": {
+     "end": 45,
+     "start": 34
+    },
+    "end": 101,
+    "start": 101
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $user->setPassword(md5($password));",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Controller/AdminController.php",
+   "fingerprint": "0da4389cb1e2486e17d28f6f62d99d13_0",
+   "full_filename": "src/Controller/AdminController.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 105,
+   "old_fingerprint": "952ec29fca69805fb6aaec35fdcfe3f7_8",
+   "parent_line_number": 105,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 28
+    },
+    "content": "",
+    "end": 105,
+    "start": 105
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 28
+    },
+    "end": 105,
+    "start": 105
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            $user->setPassword(md5($password));",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Controller/LoginController.php",
+   "fingerprint": "7eafa0ef7a49b1ad3d9639cb110f544b_0",
+   "full_filename": "src/Controller/LoginController.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 106,
+   "old_fingerprint": "a30071bbc88a1d7aee4545d03dc60f54_9",
+   "parent_line_number": 106,
+   "sink": {
+    "column": {
+     "end": 46,
+     "start": 32
+    },
+    "content": "",
+    "end": 106,
+    "start": 106
+   },
+   "source": {
+    "column": {
+     "end": 46,
+     "start": 32
+    },
+    "end": 106,
+    "start": 106
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            $user->setPassword(md5($password));",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Controller/PasswordResetController.php",
+   "fingerprint": "01581070f763790add7ea5da1759c10c_0",
+   "full_filename": "src/Controller/PasswordResetController.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 78,
+   "old_fingerprint": "a5602aabbe36bb775aacfacbeff3a51f_4",
+   "parent_line_number": 78,
+   "sink": {
+    "column": {
+     "end": 46,
+     "start": 32
+    },
+    "content": "",
+    "end": 78,
+    "start": 78
+   },
+   "source": {
+    "column": {
+     "end": 46,
+     "start": 32
+    },
+    "end": 78,
+    "start": 78
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $user->setPassword(md5($password));",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Controller/UserController.php",
+   "fingerprint": "788de6cad1e70f7a0cb1f2d4eabee192_0",
+   "full_filename": "src/Controller/UserController.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 41,
+   "old_fingerprint": "35b2a9d0b752c40dec1010f0c0c00440_2",
+   "parent_line_number": 41,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 28
+    },
+    "content": "",
+    "end": 41,
+    "start": 41
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 28
+    },
+    "end": 41,
+    "start": 41
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $avatarName = md5(uniqid()) . '.' . $avatar->getClientOriginalExtension();",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Controller/UserController.php",
+   "fingerprint": "788de6cad1e70f7a0cb1f2d4eabee192_1",
+   "full_filename": "src/Controller/UserController.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 98,
+   "old_fingerprint": "35b2a9d0b752c40dec1010f0c0c00440_6",
+   "parent_line_number": 98,
+   "sink": {
+    "column": {
+     "end": 36,
+     "start": 23
+    },
+    "content": "",
+    "end": 98,
+    "start": 98
+   },
+   "source": {
+    "column": {
+     "end": 36,
+     "start": 23
+    },
+    "end": 98,
+    "start": 98
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $avatarName = md5(uniqid()) . '.png';",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Controller/UserController.php",
+   "fingerprint": "788de6cad1e70f7a0cb1f2d4eabee192_2",
+   "full_filename": "src/Controller/UserController.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 138,
+   "old_fingerprint": "35b2a9d0b752c40dec1010f0c0c00440_10",
+   "parent_line_number": 138,
+   "sink": {
+    "column": {
+     "end": 36,
+     "start": 23
+    },
+    "content": "",
+    "end": 138,
+    "start": 138
+   },
+   "source": {
+    "column": {
+     "end": 36,
+     "start": 23
+    },
+    "end": 138,
+    "start": 138
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $hashedPassword = md5($password);",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Repository/UserRepository.php",
+   "fingerprint": "67c95ba37f65820109c4ca472d6269d1_0",
+   "full_filename": "src/Repository/UserRepository.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 73,
+   "old_fingerprint": "d28e26a2d2b574840cc713fc93d50d7d_3",
+   "parent_line_number": 73,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 27
+    },
+    "content": "",
+    "end": 73,
+    "start": 73
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 27
+    },
+    "end": 73,
+    "start": 73
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        return md5($plainPassword);",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Security/Hasher/Md5Hasher.php",
+   "fingerprint": "d935947862f5cc59c9ba160497e03bf9_0",
+   "full_filename": "src/Security/Hasher/Md5Hasher.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 15,
+   "old_fingerprint": "d49b8a4689b201b0c2b0ffca4b1010d8_0",
+   "parent_line_number": 15,
+   "sink": {
+    "column": {
+     "end": 35,
+     "start": 16
+    },
+    "content": "",
+    "end": 15,
+    "start": 15
+   },
+   "source": {
+    "column": {
+     "end": 35,
+     "start": 16
+    },
+    "end": 15,
+    "start": 15
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        return $hashedPassword === md5($plainPassword);",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "src/Security/Hasher/Md5Hasher.php",
+   "fingerprint": "d935947862f5cc59c9ba160497e03bf9_1",
+   "full_filename": "src/Security/Hasher/Md5Hasher.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 24,
+   "old_fingerprint": "d49b8a4689b201b0c2b0ffca4b1010d8_1",
+   "parent_line_number": 24,
+   "sink": {
+    "column": {
+     "end": 55,
+     "start": 36
+    },
+    "content": "",
+    "end": 24,
+    "start": 24
+   },
+   "source": {
+    "column": {
+     "end": 55,
+     "start": 36
+    },
+    "end": 24,
+    "start": 24
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  }
+ ]
+}

@@ -19,7 +19,7 @@ Contract: [hardening lane, branch 2](../specifications/juiceshop-nextjs-hardenin
 
 | Application | Pin | Answer key | Code Scan report |
 |---|---|---|---|
-| OWASP Juice Shop | `f189f52` | `recall-gap-inventory/cases.json` (42 positives), [guide](juice-shop-detection-guide.md), and the committed key added in the summary | `a1-acceptance-juice-shop`, scanner `ee777f4`, 85 requests |
+| OWASP Juice Shop | `f189f52` | `recall-gap-inventory/cases.json` (41 positives), [guide](juice-shop-detection-guide.md), and the committed key added in the summary | `a3-acceptance-juice-shop`, scanner `3318e27`, 84 requests |
 | vuln-nextjs | `f5d47de` | The lab's `tests/expected-scanner-findings.json` (13 positives) | `a2-acceptance-vuln-nextjs`, scanner `ee777f4`, 27 requests |
 | DVWA | `a1978a2` | `cases.json` (11 positives), [guide](dvwa-detection-guide.md) | `run-4266343441`, scanner `d368a68`, 205 requests ([published copy](../../docs/samples/dvwa/README.md)) |
 | vuln-symfony | `086f81f` | `cases.json` (30 positives), [guide](vuln-symfony-detection-guide.md) | `run-1810616125`, scanner `8d97b93`, 84 requests ([published copy](../../docs/samples/vuln-symfony/README.md)) |
@@ -30,11 +30,11 @@ runs are the acceptance runs of hardening 3, recorded in the
 Juice Shop were judged in that run and are in Review; they are in no table.
 
 Tool outputs are under `<DEV_ROOT>/zazzcode/zazzles/_test-findings/<application>/` in
-`semgrep-20261124-1/` and `bearer-20261124-1/`.
-
-**zizmor is not part of the comparison.** It was run on the four samples on 2026-11-24 and then
-removed by the owner's decision: it audits GitHub Actions workflow files and does not read
-application code, so it cannot be scored against application vulnerabilities.
+`semgrep-20261124-1/`, `bearer-20261124-1/` and `zizmor-20261124-1/`. Curated copies with paths
+relative to each sample root are committed under
+`docs/samples/<sample>/{semgrep,bearer,zizmor}/20261124-comparison-01/`, each with a
+`metadata.json` that gives the tool version, the rules and the result count. vuln-symfony has
+no zizmor copy because it has no workflow files.
 
 ## Counting rules
 

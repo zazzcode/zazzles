@@ -217,7 +217,7 @@ Recorded so it is not lost. Each needs its own decision before it is built.
 | A verdict that changes between runs | `DELETE /api/BasketItems/:id`: Confirmed, then Review, on identical evidence |
 | Census roles for JavaScript | `login_identifier` and `role_source` are not established, so function-level authorization claims are not made |
 | Wider keys for DVWA and vuln-symfony | About 190 results of the other scanners there are unreviewed. Reviewing them is how Code Scan's misses on PHP would show |
-| Curated copies of the comparison's raw outputs | `docs/samples/<sample>/{semgrep,bearer,zizmor}/` (branch 2 D-6) |
+| Curated copies of the comparison's raw outputs | Done on this branch: `docs/samples/<sample>/{semgrep,bearer,zizmor}/20261124-comparison-01/` |
 | Classes with no analyzer | Committed secrets, token verification without an algorithm list, XML external entities, GitHub Actions workflows. Out of scope while no analyzer is added |
 
 ### Held-out test

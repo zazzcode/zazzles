@@ -122,6 +122,8 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	s.pathConfiguredMounts(out, selected)
 	s.exposureCandidates(out, selected)
 	s.configurationCandidates(out, selected)
+	s.passwordHashCandidates(out, selected)
+	s.enumerationCandidates(out)
 	if err := s.browser(out); err != nil {
 		return nil, err
 	}

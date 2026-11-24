@@ -301,6 +301,8 @@ func javascriptApplicationGuidance(name string) string {
 	switch name {
 	case "exposure":
 		return " Node.js: an error-handling middleware that sends stack traces, a metrics endpoint, an API description page, or a response body that is the process environment, an error stack or process memory state discloses internal state. An environment condition around a registration is a guard to weigh, not a fact that the code is absent in production."
+	case accountFamilyName:
+		return " Node.js: a digest computed by crypto.createHash or crypto.createHmac with a constant key is one fast digest. It is a password hash claim only where the recorded basis shows its result stored as, or compared with, a credential."
 	case "configuration":
 		return " Node.js: a middleware registration or cookie option in the source that builds an Express application is applied by that application whenever it handles requests, so it needs no deployment mapping and its scope is the recorded mount path. A directory-listing middleware mounted on a path serves a listing of the directory it is given to every caller the mount reaches, unless a recorded middleware before it on the same call or an earlier mount ends the request; a session cookie option without httpOnly or secure weakens that cookie."
 	}

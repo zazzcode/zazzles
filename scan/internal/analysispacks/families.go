@@ -185,7 +185,7 @@ func Families() []Family {
 			// A hasher class or a configuration line can anchor a password-hash
 			// claim, so the family names no entry capability.
 			Name: accountFamilyName, Label: "Account security", Kinds: []string{analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind},
-			QuestionNames: accountQuestionNames(), KindQuestions: accountKindQuestions(), Languages: []lang.Language{lang.PHP},
+			QuestionNames: accountQuestionNames(), KindQuestions: accountKindQuestions(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP},
 			Pack: "pack.account", Claim: "claim.account", Evidence: "evidence.account", PolicyOwner: "internal/judge/account.go",
 		},
 		{

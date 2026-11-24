@@ -13,11 +13,12 @@ const (
 	SymfonyMailerContract  = "symfony-mailer-v1"
 	PHPMailContract        = "php-mail-v1"
 	PHPPasswordDigest      = "php-password-digest-v1"
+	NodePasswordDigest     = "node-password-digest-v1"
 	accountFamilyName      = "account"
 	accountEnumerationRole = "account_lookup"
 )
 
-var accountContracts = []string{SymfonyMailerContract, PHPMailContract, PHPPasswordDigest}
+var accountContracts = []string{SymfonyMailerContract, PHPMailContract, PHPPasswordDigest, NodePasswordDigest}
 
 // PasswordDigestUnmodeled reports a digest algorithm of contract
 // php-password-digest-v1 whose parameters are not modeled: crypt and
@@ -59,6 +60,9 @@ func AccountContract(id string) *analysis.APIModel {
 	case PHPMailContract:
 		return &analysis.APIModel{ID: id, Library: "php", Reference: "https://www.php.net/manual/en/function.mail.php",
 			Semantics: "mail(to, subject, message) sends the message to the recipients in argument 1. Arguments 2 and 3 are the subject and the body. The call is the send."}
+	case NodePasswordDigest:
+		return &analysis.APIModel{ID: id, Library: "node", Reference: "https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options",
+			Semantics: "crypto.createHash(algorithm).update(data).digest(encoding) computes one digest of its input with the named algorithm (md5, sha1, sha224, sha256, sha384 and sha512 are fast digests); crypto.createHmac(algorithm, key) with a constant key does the same with a fixed key. A single fast digest is not an adaptive password hash: bcrypt, argon2, scrypt and crypto.pbkdf2 are."}
 	case PHPPasswordDigest:
 		return &analysis.APIModel{ID: id, Library: "php", Reference: "https://www.php.net/manual/en/function.password-hash.php",
 			Semantics: "md5, sha1, crc32, and hash or hash_hmac with a literal algorithm compute one fast digest of their input. A single fast digest is not an adaptive password hash: password_hash, sodium_crypto_pwhash_str and the Symfony password hashers are. crypt and hash_pbkdf2 are recorded but their parameters are not modeled."}

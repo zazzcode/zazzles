@@ -244,5 +244,5 @@ func (f *flow) nodeFieldAvailable(n *sitter.Node) bool {
 // whose claim has no request source (lane contract section 2.7): its facts are
 // the operation and its entry, so no input binding is attached.
 func operationCentered(u *analysis.CandidateUse) bool {
-	return u.Exposure != nil || u.Configuration != nil || u.PasswordHash != nil
+	return u.Exposure != nil || u.Configuration != nil || u.PasswordHash != nil || u.Enumeration != nil
 }

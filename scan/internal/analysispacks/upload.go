@@ -13,11 +13,16 @@ const (
 	SymfonyUploadedFileMove = "symfony-uploaded-file-move-v1"
 	NodeExpressFileupload   = "node-express-fileupload-mv-v1"
 	NodeMulterDisk          = "node-multer-disk-v1"
-	PythonWerkzeugSave      = "python-werkzeug-save-v1"
-	PythonStarletteUpload   = "python-starlette-upload-v1"
+	// NodeMulterMemory is its own contract because neither Node contract above
+	// describes it: express-fileupload's mv and multer's diskStorage both write
+	// a file, and memoryStorage writes none. A record that cited the disk
+	// contract would tell the reader a file was stored under a callback's name.
+	NodeMulterMemory      = "node-multer-memory-v1"
+	PythonWerkzeugSave    = "python-werkzeug-save-v1"
+	PythonStarletteUpload = "python-starlette-upload-v1"
 )
 
-var uploadContracts = []string{PHPMoveUploadedFile, NodeExpressFileupload, NodeMulterDisk, PythonWerkzeugSave, PythonStarletteUpload, SymfonyUploadedFileMove}
+var uploadContracts = []string{PHPMoveUploadedFile, NodeExpressFileupload, NodeMulterDisk, PythonWerkzeugSave, PythonStarletteUpload, SymfonyUploadedFileMove, NodeMulterMemory}
 
 // operandFamily reports the operand-path families that share the
 // interpreter descriptor and selection shape.
@@ -35,6 +40,7 @@ func UploadContract(id string) *analysis.APIModel {
 		PHPMoveUploadedFile:   "PHP move_uploaded_file(tmp, destination) stores a file the client uploaded at the destination path. $_FILES[f]['name'] and its extension and $_FILES[f]['type'] are client-supplied; basename() removes directories but keeps the client extension.",
 		NodeExpressFileupload: "express-fileupload req.files.<field>.mv(path) stores the client upload at path. file.name and file.mimetype are client-supplied.",
 		NodeMulterDisk:        "multer diskStorage stores each upload under the name its filename callback returns. file.originalname and file.mimetype are client-supplied.",
+		NodeMulterMemory:      "multer memoryStorage keeps each upload in memory as a Buffer (file.buffer) and writes no file. file.originalname and file.mimetype are client-supplied. Whether and where the upload is stored is decided by the handlers that run after the middleware.",
 		PythonWerkzeugSave:    "Werkzeug FileStorage.save(dst) (Flask request.files) stores the client upload at dst. FileStorage.filename and mimetype are client-supplied; secure_filename removes path syntax but keeps the client extension.",
 		PythonStarletteUpload: "A Starlette/FastAPI UploadFile written to a path stores the client upload there. UploadFile.filename and content_type are client-supplied.",
 	}

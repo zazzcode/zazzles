@@ -146,12 +146,47 @@ attached to an unrelated entry; the Confirmed records outside the key
 (`routes/coupon.ts:24`, `routes/likeProductReviews.ts:35`, `PUT /api/Hints/:id`, and the generated
 creates that accept `UserId`) have not been source-reviewed.
 
+## Upload
+
+Built after the judged runs (D-10, AC9). **Not judged:** the eight runs of §6 were used before
+the producer existed, so the statuses below are offline. A judged `--only-family upload` run
+(four requests) is the owner's to start.
+
+Offline scan of Juice Shop at the pin, compared with a scan by the scanner one commit earlier
+(`22c4407`): 299 records become 303, every earlier record keeps its identifier and content, the
+195 entries are unchanged. Offline reports of DVWA and vuln-symfony are byte-identical after the
+run identifier is removed. The four added records:
+
+| Route | Anchor | Operation | Stored name | Extension | Type controls | Destination served | Offline status |
+|---|---|---|---|---|---|---|---|
+| `POST /file-upload` | `server.ts:337` | `multer.memoryStorage.single` | unknown | unknown | none | unknown | Review |
+| `POST /profile/image/file` | `server.ts:338` | `multer.memoryStorage.single` | unknown | unknown | none | unknown | Review |
+| `POST /profile/image/url` | `server.ts:339` | `multer.memoryStorage.single` | unknown | unknown | none | unknown | Review |
+| `POST /rest/memories` | `server.ts:340` | `multer.diskStorage.single` | mixed | allow_listed | `client_declared_type` (`server.ts:733`) | yes (`frontend/dist/frontend/assets/public/images/uploads`, under the static mount at `server.ts:316`) | Review |
+
+One row of `scan/cli/testdata/architecture-baseline.json` moves, as AC11 allows for a JavaScript
+row: `internal/langjs/testdata/typescript/path-traversal-expanded`. That fixture has two `multer`
+memory-storage routes, so it gains two `file_upload_candidate` records (29 uses become 31) and
+its report and SARIF hashes change. Its 29 earlier uses keep identifier, request digest,
+signature and order, and no other row changes.
+
+What the records do not say:
+
+- **Memory storage writes no file.** The three memory records carry the handlers that receive
+  the buffer as evidence and a coverage note; the handler's own write (`routes/fileUpload.ts:34`,
+  `routes/profileImageFileUpload.ts:42`) is a path record, as before. The policy cannot confirm
+  or protect a record whose three facts are unknown, so these stay Review in a judged run too.
+- **The report summary** reads "stored by multer.memoryStorage.single" for a memory record. The
+  sentence is shared by every language and was not changed.
+- **`POST /rest/memories`** stores under a table extension (`png` or `jpg`), so the policy has
+  no path to Confirmed for it. A file with client-chosen bytes and an image extension is served.
+
+Not recorded: a `multer` instance imported from another module, an option spread, a third-party
+storage engine, `express-fileupload`, and a middleware on a mount with no route entry (an
+`upload_entry_missing` gap).
+
 ## Not built, and deviations
 
-- **Upload (D-10, AC9 second half).** Cause established: the family is registered for JavaScript and
-  TypeScript but `langjs` has no producer of `file_upload_candidate`
-  ([§1.2](../specifications/juiceshop-nextjs-hardening-1.md#12-causes)). The producer, a memory-storage
-  contract and its fixtures are not built.
 - **Deployment-file readers for a JavaScript project (D-9, third row).** Not built; binds no
   criterion.
 - **Entry access `none`.** Stored as no record, so existing reports are unchanged (spec halt 1);

@@ -3955,16 +3955,28 @@
         "kind": "input_validation_candidate",
         "request_sha256": "bc1ed0c1589b57431f5b84d352462ada0669e4b6a7261feb6a3e63dd70291336",
         "signature_sha256": "0f9313990a48b7d750acb5713d7c76b17b8757328e617cbd52e27b2f63425bea"
+      },
+      {
+        "id": "candidate:v1:f2a37350e2d77584cf7301cd0dfb5b996287016e7de11665b7a2c44a42e4a5f5",
+        "kind": "file_upload_candidate",
+        "request_sha256": "e54383f5d5910433009970b08a4e2026faf8015c814140d15a0ac6cf8b1fcdcc",
+        "signature_sha256": "97740745fec3f7f6d19a7b8c1149360b0b8b1bed19481a3ba4077af95901e938"
+      },
+      {
+        "id": "candidate:v1:50e95065787371c34cc02e9f1fdf8148f963d13c4eb7967288f1b7e0e15bb4a6",
+        "kind": "file_upload_candidate",
+        "request_sha256": "ce4a012e01a92aff0dd9f65f2429383b5f14235f5302d09e7d253c9222a027f5",
+        "signature_sha256": "70f2a9ca5b980be84f18c31f9c788497d9c16fe6d8a0b494ccf1fcbebb0b9c42"
       }
     ],
-    "report_sha256": "942c14181a7824e6afcaa0bac4d199c1fdfa5ca243b26d6f48019a15108ae156",
-    "sarif_sha256": "e3e4f276379d734916abbae6870bbf07093eb27e2c8add0e358603da37421eac",
+    "report_sha256": "d1acd87c65d9c294fe6e47e999112be5c2362482ac37493ddb02a6419018dece",
+    "sarif_sha256": "e99908a2c060349f8463e65b59a1b776d96a9df0265dd8b948bfbc733e7980d6",
     "entries": 18,
     "registrations": 18,
     "dispatch_bindings": 18,
     "callables": 12,
     "invocation_contexts": 18,
-    "uses_count": 29,
+    "uses_count": 31,
     "gaps": 0
   },
   "internal/langphp/testdata/account-plain": {

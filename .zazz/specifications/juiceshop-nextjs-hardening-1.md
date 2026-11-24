@@ -97,7 +97,7 @@ regression measure and is re-pinned (§3 AC12).
 | Gap | Cause | Kind |
 |---|---|---|
 | No `exposure`, `mass-assignment`, `authorization`, `account` or `configuration` record | The families list `lang.PHP` only and `langjs` has no code that builds their facts | Scope limit, widened here |
-| No `file_upload_candidate` on Juice Shop | **Established 2026-11-24 (slice S6).** `Families()` registers `upload` for JavaScript and TypeScript with the contracts `node-express-fileupload` and `node-multer-disk`, but no code in `scan/internal/langjs` builds a `file_upload_candidate`. `grep -rn file_upload_candidate scan/internal` finds producers in `langphp/upload.go` and `langpy/upload.go` only. `scan/internal/langjs/path_upload_binding.go` verifies a memory-storage `multer.single` binding for the path family and records nothing for the upload family. The registration is a scope claim that no adapter fulfils; it is not a filter or a gate. A JavaScript producer needs the facts of `analysis.UploadFacts` (stored-name and extension origins, type controls, destination served, operand paths over a request dependency for the uploaded content) built from the multer binding and the handler, and a contract for memory storage, which neither existing Node contract describes | Missing producer |
+| No `file_upload_candidate` on Juice Shop | **Established 2026-11-24 (slice S6).** `Families()` registers `upload` for JavaScript and TypeScript with the contracts `node-express-fileupload` and `node-multer-disk`, but no code in `scan/internal/langjs` builds a `file_upload_candidate`. `grep -rn file_upload_candidate scan/internal` finds producers in `langphp/upload.go` and `langpy/upload.go` only. `scan/internal/langjs/path_upload_binding.go` verifies a memory-storage `multer.single` binding for the path family and records nothing for the upload family. The registration is a scope claim that no adapter fulfils; it is not a filter or a gate. A JavaScript producer needs the facts of `analysis.UploadFacts` (stored-name and extension origins, type controls, destination served, operand paths over a request dependency for the uploaded content) built from the multer binding and the handler, and a contract for memory storage, which neither existing Node contract describes. **Closed 2026-11-24:** `scan/internal/langjs/upload_multer.go` is that producer and `node-multer-memory-v1` that contract (D-10) | Missing producer, built |
 
 ## 2. Decisions
 
@@ -246,6 +246,22 @@ allowed only if no PHP request changes; otherwise it is halt 1.
 `destination_served` from an `express.static` or `serve-index` mount that covers the
 destination.
 
+As built. The [upload analysis guide](../../docs/scan/analysis/file-upload.md#express-and-multer)
+owns the rules; the decisions made here are:
+
+- **One record per `multer` middleware per route,** on the entry of the route's last handler.
+  The binding is verified from the `multer` import to the one `multer(...)` call. An imported
+  instance, an option spread and a third-party storage engine record nothing.
+- **Memory storage gets the one new contract, `node-multer-memory-v1`,** and facts of `unknown`.
+  *Why:* `multer` writes no file there, and both existing Node contracts describe a write. The
+  handler's write of the buffer is not followed, so the record stays in Review.
+- **`destination_served` is `no` only when every `express.static` and `serve-index` directory in
+  the project can be compared with the destination.** *Why:* where the process starts is not in
+  the source, so a path relative to it and one built from `__dirname` do not compare.
+- **Context evidence uses the kinds `upload_callable` and `upload_type_test`.** *Why:* the
+  invocation context collects `invoked_callable` and `branch_precondition` context evidence as
+  its controls, and every record on the entry derives its identifier from it (halt 2).
+
 **D-11. Reviewed and not built.** Source review of Juice Shop at the pin. No existing analyzer
 owns these, and none is added:
 
@@ -351,7 +367,10 @@ and Mongoose where the first uses Sequelize.
 9. **AC9.** The cause of the upload gap is in §1.2 and the run log. Upload cases: memory and
    disk storage on `single`, `array`, `fields` and `any`; a destination under an
    `express.static` mount (`destination_served`); a route with no `multer` middleware (no
-   record).
+   record). **Met 2026-11-24** by `TestExpressUpload` over
+   `scan/internal/langjs/testdata/upload-express/`. The transfer project uses CommonJS, a
+   `serve-index` mount, a `fileFilter` and the `dest` shorthand. Not judged: the eight judged runs
+   of §6 were used before the producer existed.
 10. **AC10.** Every new case fails before its slice's change and passes after it. The failing
     output is in the run log.
 11. **AC11.** `TestArchitectureBaseline`, `TestDVWASourceKey`, `TestSymfonySourceKey` and the
@@ -465,3 +484,11 @@ mount with no path gets one `USE /` entry so a claim about it has an entry to ri
 positives of §3 are Confirmed, the guarded controls are Protected, and no control is a finding.
 Eight of eight judged runs are used.
 
+### 2026-11-24 — Upload producer built
+
+D-10 and AC9 are implemented: `scan/internal/langjs/upload_multer.go` and
+`upload_multer_callbacks.go` record a `file_upload_candidate` for a verified `multer` middleware,
+and `node-multer-memory-v1` is the one added contract. An offline Juice Shop scan keeps its 299
+records and adds four, at `server.ts:337` to `:340`; offline DVWA and vuln-symfony reports are
+byte-identical. No judged run was made for the family; the [results](../evaluation/juiceshop-hardening-results.md#upload)
+hold the offline record.

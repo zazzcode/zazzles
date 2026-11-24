@@ -13,10 +13,11 @@ contain the path while the file type stays unrestricted.
 |---|---|---|
 | PHP | `move_uploaded_file($tmp, $destination)` | `php-move-uploaded-file-v1` |
 | Python | Werkzeug `FileStorage.save(dst)` on a `request.files` value (Flask) | `python-werkzeug-save-v1` |
+| JavaScript, TypeScript | A `multer` disk-storage middleware (`single`, `array`, `fields`, `any`) on an Express route | `node-multer-disk-v1` |
+| JavaScript, TypeScript | A `multer` memory-storage middleware on an Express route | `node-multer-memory-v1` |
 
-Node `express-fileupload` `mv` and `multer` disk storage, Starlette/FastAPI `UploadFile` writes and
-Symfony `UploadedFile::move` have registered contracts but no adapter yet; they produce no upload
-record.
+Node `express-fileupload` `mv` and Starlette/FastAPI `UploadFile` writes have registered contracts
+but no adapter yet; they produce no upload record.
 
 ## Facts
 
@@ -39,6 +40,31 @@ Each `file_upload_candidate` records, from source:
 
 The uploaded content (`$_FILES[...]['tmp_name']`, the `FileStorage` value) is the claim's source
 path; request-derived parts of the destination are its `stored_name` paths.
+
+## Express and multer
+
+The operation is the middleware, not a call in the handler: `multer` reads the multipart body
+before the handlers run. One record is made per middleware per route. The binding is verified from
+the `multer` import to the one `multer(...)` call the middleware's receiver is bound to.
+
+- **Disk storage.** The stored name is the value the `filename` callback passes to its `cb`.
+  `file.originalname` alone is `client`, `path.basename` of it is `client_basename`, a name with a
+  part computed from `file.originalname` or `file.mimetype` is `mixed`. The extension is the last
+  piece of that value: a literal extension is `fixed`, a lookup in a module table whose values are
+  string literals is `allow_listed`, a piece computed from a client field is `client`. With no
+  `filename` callback, and with the `dest` shorthand, `multer` generates a name with no extension
+  (`server_generated`, `fixed`).
+- **Type controls** are the `if` and conditional tests inside the `destination`, `filename` and
+  `fileFilter` callbacks. A test that reads `file.mimetype` is `client_declared_type`. A test that
+  compares `file.originalname` with a regular expression, a string or a list is
+  `extension_allow_list`.
+- **`destination_served`** is `yes` when the directory given to an `express.static` or
+  `serve-index` call covers the destination. It is `no` when every such directory in the project
+  can be compared with the destination and none covers it. Directories compare only when both are
+  relative to the working directory, both start at `__dirname`, or both are absolute.
+- **Memory storage** writes no file. The three facts are `unknown`, the handlers after the
+  middleware are attached as evidence, and the record stays in Review. A write of `file.buffer`
+  by a handler is a [path](path-traversal.md) record of its own.
 
 ## Outcomes
 

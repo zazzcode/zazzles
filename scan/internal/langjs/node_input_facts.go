@@ -120,6 +120,14 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 				}
 			}
 		}
+		if u.Upload != nil && u.Kind == "file_upload_candidate" {
+			// A multer record's sources are the multipart body the middleware
+			// reads and the file fields its callbacks read (upload_multer.go).
+			v.Origin = "http.upload_content"
+			if d.SinkSlot == "stored_name" {
+				v.Origin = nodeURLUploadOrigin("file", strings.TrimPrefix(d.Source.Text[strings.LastIndex(d.Source.Text, ".")+1:], "?"))
+			}
+		}
 		if typ := s.nativeSinkInputType(*u); typ != "" && len(u.Dependencies) == 1 {
 			v.SinkType = typ
 		}

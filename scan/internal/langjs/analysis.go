@@ -160,6 +160,8 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	} else {
 		s.automaticQueries(out)
 	}
+	// After check assembly, which rebuilds the use list, and before input facts.
+	s.uploadCandidates(out, selected)
 	s.assembleNodeInputs(out)
 	// After check assembly: a generated endpoint is an entry of its own, and an
 	// explicit check must keep matching the entries registered in source.

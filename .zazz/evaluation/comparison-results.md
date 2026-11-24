@@ -30,11 +30,13 @@ runs are the acceptance runs of hardening 3, recorded in the
 Juice Shop were judged in that run and are in Review; they are in no table.
 
 Tool outputs are under `<DEV_ROOT>/zazzcode/zazzles/_test-findings/<application>/` in
-`semgrep-20261124-1/`, `bearer-20261124-1/` and `zizmor-20261124-1/`. Curated copies with paths
-relative to each sample root are committed under
-`docs/samples/<sample>/{semgrep,bearer,zizmor}/20261124-comparison-01/`, each with a
-`metadata.json` that gives the tool version, the rules and the result count. vuln-symfony has
-no zizmor copy because it has no workflow files.
+`semgrep-20261124-1/` and `bearer-20261124-1/`. Curated copies with paths relative to each
+sample root are committed under `docs/samples/<sample>/{semgrep,bearer}/20261124-comparison-01/`,
+each with a `metadata.json` that gives the tool version, the rules and the result count.
+
+**zizmor is not part of the comparison.** It was run on the four samples on 2026-11-24 and then
+removed by the owner's decision: it audits GitHub Actions workflow files and does not read
+application code, so it cannot be scored against application vulnerabilities.
 
 ## Counting rules
 

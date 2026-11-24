@@ -1,4 +1,4 @@
-# Zazzles Code Scan compared with Semgrep CE, Bearer and zizmor
+# Zazzles Code Scan compared with Semgrep CE and Bearer
 
 **2026-11-24.** A short summary. The full tables, with every known vulnerability as a row and
 every false positive listed, are in the
@@ -9,23 +9,17 @@ every false positive listed, are in the
 
 Four intentionally vulnerable applications, scored against their known vulnerabilities.
 
-| | Code Scan | Bearer CLI | Semgrep CE | zizmor |
+| | Code Scan | Bearer CLI | Semgrep CE |
+|---|---:|---:|---:|
+| Known vulnerabilities found, of 96 | 95 | 32 | 18 |
+| False positives on known-safe code | 3 | 22, and two noisy rules | 8 |
+
+| Application | Known | Code Scan | Bearer | Semgrep CE |
 |---|---:|---:|---:|---:|
-| Known application vulnerabilities found, of 96 | 95 | 32 | 18 | 0 |
-| False positives on known-safe code | 3 | 22, and two noisy rules | 8 | Not reviewed |
-| GitHub Actions workflow findings | Not read | Not run on workflows | Not run on workflows | 140 |
-
-| Application | Known | Code Scan | Bearer | Semgrep CE | zizmor | zizmor workflow findings |
-|---|---:|---:|---:|---:|---:|---:|
-| OWASP Juice Shop (TypeScript, Express, Angular) | 42 | 41 | 14 | 9 | 0 | 108 in 15 files |
-| vuln-nextjs (Next.js) | 13 | 13 | 7 | 2 | 0 | 4 in 1 file |
-| DVWA (PHP) | 11 | 11 | 6 | 5 | 0 | 28 in 5 files |
-| vuln-symfony (PHP, Symfony) | 30 | 30 | 5 | 2 | 0 | No workflow files |
-
-zizmor audits GitHub Actions workflow files and does not read application code, so it finds
-none of the application vulnerabilities, and the other three found none of its workflow issues
-because none of them read workflows in this comparison. The two halves of the table measure
-different things; neither is a miss by the other.
+| OWASP Juice Shop (TypeScript, Express, Angular) | 42 | 41 | 14 | 9 |
+| vuln-nextjs (Next.js) | 13 | 13 | 7 | 2 |
+| DVWA (PHP) | 11 | 11 | 6 | 5 |
+| vuln-symfony (PHP, Symfony) | 30 | 30 | 5 | 2 |
 
 ## Where Code Scan is ahead
 
@@ -43,7 +37,6 @@ different things; neither is a miss by the other.
   analyzer for it.
 - **Three false positives:** two records of liking a review and a `.well-known` directory
   listing.
-- **GitHub Actions workflows** are not read.
 
 ## Read the numbers with these in mind
 

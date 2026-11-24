@@ -11,8 +11,9 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 // aligns the judge instruction with the v4 question prose. v6 adds the
 // written_values fact of an update and says what it means. v7 names an
 // object-level read beside a write or delete in the access question, and says
-// that access is judged for the operation as written_values describes it.
-const AuthorizationProtocol = "authorization-components-v7"
+// that access is judged for the operation as written_values describes it. v8
+// says that authentication with no listed role admits every signed-in user.
+const AuthorizationProtocol = "authorization-components-v8"
 
 // PHPAuthorizationOperation is the verified operation this family judges.
 const PHPAuthorizationOperation = "php-authorization-operation-v1"
@@ -51,7 +52,7 @@ func AuthorizationQuestions() []Question {
 	return []Question{
 		{"subject_control", "Does the request choose which record the operation acts on, or which records are returned, as authorization.subject states (request_selected, not_selected, unknown)?"},
 		{"guard_adequacy", "Do the recorded authorization.guards, judged by kind, limit the operation to a caller who should be allowed to perform it on this record (none, adequate, inadequate, unknown)? Answer none only when no guard is recorded. An ownership_check, role_check, authenticated_check or secret_check that dominates this operation on this subject is adequate; a secret_check is a stored-field comparison with a request value not written back on the same path. An address_check is a property of the connection, not of the user."},
-		{"access_adequacy", "Is the entry's recorded access enough for the fields in security_fields and the operation, given peer_access (adequate, inadequate, unknown)? When authentication is none, answer inadequate. Required roles are adequate for data_exposure of census fields. For an object_level or function_level write or delete, or an object_level read, on a request_selected subject, judge the listed roles by who holds them. A role every signed-in user holds (ROLE_USER, which Symfony's user contract gives every user, or an IS_AUTHENTICATED_* attribute) is inadequate: any user can pick another user's record. A role that only some users hold is adequate unless peer_access shows another writer of the same key that requires a role this entry does not."},
+		{"access_adequacy", "Is the entry's recorded access enough for the fields in security_fields and the operation, given peer_access (adequate, inadequate, unknown)? When authentication is none, answer inadequate. Required roles are adequate for data_exposure of census fields. For an object_level or function_level write or delete, or an object_level read, on a request_selected subject, judge the listed roles by who holds them. A role every signed-in user holds (ROLE_USER, which Symfony's user contract gives every user, or an IS_AUTHENTICATED_* attribute) is inadequate: any user can pick another user's record. Authentication with no listed role admits every signed-in user in the same way. A role that only some users hold is adequate unless peer_access shows another writer of the same key that requires a role this entry does not."},
 	}
 }
 

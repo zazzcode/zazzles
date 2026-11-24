@@ -4,9 +4,10 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
 // ConfigurationProtocol versions the configuration claim: its questions,
 // the meaning of its evidence roles and the instruction sent with them. v7
-// adds the directory_contents fact of a directory listing. v8 says that the
-// weakness of a listing is judged from that fact.
-const ConfigurationProtocol = "configuration-components-v8"
+// adds the directory_contents fact of a directory listing. (A v8 that tied
+// the weakness answer to that fact was tried in one judged run and withdrawn:
+// it made a listing of a directory absent from the source tree unknown.)
+const ConfigurationProtocol = "configuration-components-v7"
 
 // ConfigurationRoles are the evidence obligations of a configuration claim.
 func ConfigurationRoles() []string { return []string{"setting", "scope"} }

@@ -68,8 +68,7 @@ have no keyed case in these four applications.
 | Bearer CLI | Source build at `a7a8752` | `bearer-rules` at `82c335f`, default rules off |
 
 Semgrep CE analyzes one file at a time; its cross-file engine is a paid product and was not run.
-Bearer Pro was not run. [zizmor](#github-actions-workflows) audits a different surface and has
-its own section.
+Bearer Pro was not run.
 
 ## OWASP Juice Shop
 
@@ -249,22 +248,6 @@ Pin `086f81f`. Code Scan run `run-1810616125`.
 
 Unreviewed: Semgrep CE 3 results and Bearer 6 (MD5 in a seeding command, two cookie flags, one
 Dockerfile rule).
-
-## GitHub Actions workflows
-
-[zizmor](https://docs.zizmor.sh/) 1.33.1 audits GitHub Actions workflow files. Code Scan reads
-application source and does not read `.github/`, so this is coverage Code Scan does not have,
-not a comparison of the same thing.
-
-| Application | Workflow files | Findings | High | Medium | Low or informational |
-|---|---:|---:|---:|---:|---:|
-| OWASP Juice Shop | 15 | 108 | 28 | 58 | 22 |
-| DVWA | 5 | 28 | 15 | 8 | 5 |
-| vuln-nextjs | 1 | 4 | 2 | 2 | 0 |
-| vuln-symfony | 0 | — | — | — | — |
-
-zizmor ran offline with its built-in audits, so audits that query GitHub did not run. No finding
-was reviewed.
 
 ## Method and limits
 

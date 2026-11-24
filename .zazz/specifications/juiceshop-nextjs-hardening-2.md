@@ -186,6 +186,14 @@ Written from the two existing result documents, the capability inventory and the
 checkouts under `<DEV_ROOT>/scanners`. The owner then proposed running the three tools in the
 authoring session; Part A was separated from Part B so that it does not wait for branch 1.
 
+### 2026-11-24 — zizmor removed
+
+Owner decision. zizmor audits GitHub Actions workflow files and does not read application
+code, so it does not belong in a comparison scored against application vulnerabilities. D-5,
+the zizmor row of D-4, its detail document and its curated copies are withdrawn. The run is
+noted in the [run record](../evaluation/comparison-results.md). The text above is kept as the
+contract that was written.
+
 ### 2026-11-24 — Part B delivered
 
 The summary, the run record, the matcher with its test and the README section are written. The
@@ -207,7 +215,7 @@ the decisions above that follow from it:
 
 The three tools ran on the four samples and the detail documents were written:
 [Semgrep](../evaluation/semgrep-results.md), [Bearer](../evaluation/bearer-results.md) and
-[zizmor](../evaluation/zizmor-results.md). The earlier results moved to
+zizmor (`.zazz/evaluation/zizmor-results.md`, since removed). The earlier results moved to
 [comparison-history.md](../evaluation/comparison-history.md). Still open from Part A: the
 curated copies of D-6 under `docs/samples/`, and Bearer SARIF output. The registry has no
 `p/symfony` pack (OQ-2). The owner stated that the Zazzles columns of Part B come from paid

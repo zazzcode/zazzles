@@ -12,7 +12,6 @@ Contract: [hardening lane, branch 2](../specifications/juiceshop-nextjs-hardenin
 | [Scanner comparison](../../docs/scan/scanner-comparison.md) | The summary: one table per application, false positives, totals by class |
 | [Semgrep results](semgrep-results.md) | Semgrep CE run identity, rule packs and hashes, results by rule |
 | [Bearer results](bearer-results.md) | Bearer build and rule revision, results by rule |
-| [zizmor results](zizmor-results.md) | zizmor version and mode, findings by audit |
 | [Comparison history](comparison-history.md) | The 2026-10-31 and 2026-11-01 results and the authored-controls comparison |
 | [Repeat protocol](bearer-comparison.md) | How a comparison run is set up |
 
@@ -31,7 +30,11 @@ producer added after `29ce9aa` records four more Juice Shop candidates that no r
 they are in no table.
 
 Tool outputs are under `<DEV_ROOT>/zazzcode/zazzles/_test-findings/<application>/` in
-`semgrep-20261124-1/`, `bearer-20261124-1/` and `zizmor-20261124-1/`.
+`semgrep-20261124-1/` and `bearer-20261124-1/`.
+
+**zizmor is not part of the comparison.** It was run on the four samples on 2026-11-24 and then
+removed by the owner's decision: it audits GitHub Actions workflow files and does not read
+application code, so it cannot be scored against application vulnerabilities.
 
 ## Counting rules
 
@@ -116,7 +119,6 @@ nothing is claimed for any scanner.
 | Access rules read from framework configuration and middleware | Yes: the authorization, mass-assignment and enumeration rows depend on it | No such rule fired | No such rule fired |
 | Known-safe code left unreported | 3 false positives | 7 | 21 and two grouped rules |
 | Committed secrets | No analyzer | Found the keyed row | Found the keyed row |
-| GitHub Actions workflows | Not read | Not run on workflows | Not run on workflows |
 | Infrastructure files (Terraform, package-manager policy) | Dockerfile, web-server and cron files for PHP projects | Terraform and npm/pnpm rules fired | None fired |
 | Output | JSON, HTML, SARIF | JSON, SARIF, text | JSON; SARIF not produced in this run |
 

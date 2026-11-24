@@ -3,8 +3,7 @@
 The comparison results of 2026-10-31 (Bearer) and 2026-11-01 (Semgrep CE), moved here unchanged
 on 2026-11-24 when the comparison was rerun on four samples. They describe the scanner as it was
 then: SQL, NoSQL and XSS analysis on three JavaScript samples. Current results are in the
-[Semgrep](semgrep-results.md), [Bearer](bearer-results.md) and [zizmor](zizmor-results.md)
-detail documents. Headings are one level deeper than in the original documents.
+[Semgrep](semgrep-results.md) and [Bearer](bearer-results.md) detail documents. Headings are one level deeper than in the original documents.
 
 ## Semgrep CE baseline and XSS comparison
 

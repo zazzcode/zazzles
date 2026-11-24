@@ -231,10 +231,12 @@ Everything in §6.
 
 ## 8. Definition of done
 
-- [ ] Every criterion of §4 is met with its command output in the run log.
-- [ ] The contributor gate passes.
-- [ ] The draft PR is open on branch 2's head with the before-and-after table.
-- [ ] Samples are unchanged.
+- [ ] Every criterion of §4 is met with its command output in the run log. **Not met.** AC1 to
+  AC7 and AC10 are met. AC8 is met except the offline witness of `JS-PATH-01`. AC9 is not met:
+  see the [results](../evaluation/juiceshop-hardening-results.md#open-rows).
+- [x] The contributor gate passes.
+- [x] The draft PR is open on branch 2's head with the before-and-after table.
+- [x] Samples are unchanged.
 
 ## 9. Change log
 
@@ -245,3 +247,28 @@ acceptance report and the code at `80fff0c`. One claim made before the diagnosis
 here: the records blocked on middleware are 5, not "many", and their cause is a handler or
 factory the resolver cannot read, not a missing access chain. The larger group is the 5 path
 records blocked on a destructured request parameter (D-1). No code changed.
+
+### 2026-11-24 — Implemented; judged acceptance not met
+
+Slices S0 to S6 are committed. Scanner commit of the acceptance runs: `ee777f4`. The judged-run
+bound of §5 is used (four family runs, two full runs). Results and every open row are in the
+[results](../evaluation/juiceshop-hardening-results.md#hardening-3).
+
+What the implementation found that this document states differently:
+
+- **§1.1, blocked path records.** D-1 sends one path record, not four. The three controls keep
+  `applicable_middleware_unresolved` from the `serve-index` mount on their prefix.
+- **§1.1 and D-5, `routes/userProfile.ts:65`.** The `try` is not the cause. `tryStatement` runs
+  only for a Next.js project; in Express the statement is explored and leaves coverage gaps.
+  Every operand path is guarded by the enclosing regular-expression test, and the code policy
+  confirms only a raw path.
+- **D-6.** Neither sample construct is one of the two the decision allows, and both of those
+  already resolve. `isAuthorized()` is a factory whose body is a library middleware call; the
+  `serve-index` middleware is a constant of the enclosing function.
+- **D-10.** The classification existed in `redirect_normalization.go` for `RegExp.test`, and it
+  records that `/^\/[^/]/` admits `/\host`. Only `String.match` was added. The vuln-nextjs
+  control this decision was written for is bypassable on source review.
+- **D-8 and D-9.** Both facts reach the model and neither changed the false positive it was
+  written for. Two further false positives appeared in the acceptance run.
+
+Deviations, each with its reason, are in the run log sections S0 to S5 and summarized in the PR.

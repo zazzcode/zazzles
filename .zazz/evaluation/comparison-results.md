@@ -19,15 +19,15 @@ Contract: [hardening lane, branch 2](../specifications/juiceshop-nextjs-hardenin
 
 | Application | Pin | Answer key | Code Scan report |
 |---|---|---|---|
-| OWASP Juice Shop | `f189f52` | `recall-gap-inventory/cases.json` (34 positives), [guide](juice-shop-detection-guide.md), and eight rows added in the summary | `r10-acceptance-juice-shop`, scanner `29ce9aa`, 76 requests |
-| vuln-nextjs | `f5d47de` | The lab's `tests/expected-scanner-findings.json` (13 positives) | `s7-acceptance-vuln-nextjs`, scanner `97709ad`, 27 requests |
+| OWASP Juice Shop | `f189f52` | `recall-gap-inventory/cases.json` (42 positives), [guide](juice-shop-detection-guide.md), and the committed key added in the summary | `a1-acceptance-juice-shop`, scanner `ee777f4`, 85 requests |
+| vuln-nextjs | `f5d47de` | The lab's `tests/expected-scanner-findings.json` (13 positives) | `a2-acceptance-vuln-nextjs`, scanner `ee777f4`, 27 requests |
 | DVWA | `a1978a2` | `cases.json` (11 positives), [guide](dvwa-detection-guide.md) | `run-4266343441`, scanner `d368a68`, 205 requests ([published copy](../../docs/samples/dvwa/README.md)) |
 | vuln-symfony | `086f81f` | `cases.json` (30 positives), [guide](vuln-symfony-detection-guide.md) | `run-1810616125`, scanner `8d97b93`, 84 requests ([published copy](../../docs/samples/vuln-symfony/README.md)) |
 
 Every Code Scan report is a judged run with OpenAI `gpt-6-luna`. The Juice Shop and vuln-nextjs
-runs are recorded in the [hardening results](juiceshop-hardening-results.md). The upload
-producer added after `29ce9aa` records four more Juice Shop candidates that no run has judged;
-they are in no table.
+runs are the acceptance runs of hardening 3, recorded in the
+[hardening results](juiceshop-hardening-results.md#hardening-3). The four upload candidates of
+Juice Shop were judged in that run and are in Review; they are in no table.
 
 Tool outputs are under `<DEV_ROOT>/zazzcode/zazzles/_test-findings/<application>/` in
 `semgrep-20261124-1/` and `bearer-20261124-1/`.
@@ -54,9 +54,18 @@ application code, so it cannot be scored against application vulnerabilities.
 **Rows added to the Juice Shop table.** Eight documented Juice Shop vulnerabilities that a
 compared scanner reported and the key did not hold: the open redirect, the profile-image SSRF,
 the two code-execution routes, three file-read and file-write paths, and the committed signing
-key. Each was read against the source before it was added. They are not yet rows of
-`cases.json`; adding them is a key change for a later branch, and the three that Code Scan
-leaves in Review are the first candidates for analyzer work.
+key. Each was read against the source before it was added. Hardening 3 made seven of them rows
+of `cases.json` and added the read of another user's basket (`JS-AUTHZ-05`). The committed key
+stays a row of the summary only: no analyzer owns it.
+
+**False positives added by the hardening 3 run.** Two Code Scan records that the earlier run
+did not report as findings were read against the source and are counted: the second record of
+the like route (`routes/likeProductReviews.ts:50`) and the generated
+`DELETE /api/Addresss/:id` (`server.ts:529`, behind the explicit handler at `:479`). Three
+other records newly Confirmed in that run were read and are real: the read at
+`routes/recycles.ts:12` (no authentication on `GET /api/Recycles/:id`) and the generated
+deletes of `/api/BasketItems/:id` and `/api/Feedbacks/:id` (sign-in only, no owner test). They
+are not key rows and are in no table.
 
 **Corrections made by hand.** The control row `SYM-INFO-N01` is a whole-sample count, not a
 location, and is left out of the false-positive table. Bearer's XSS result at
@@ -92,13 +101,13 @@ nothing is claimed for any scanner.
 |---|---:|---:|---:|---:|
 | Cross-site scripting | 18 | 18 | 1 | 5 |
 | SQL injection | 10 | 10 | 5 | 7 |
-| Missing authorization | 9 | 9 | 0 | 0 |
+| Missing authorization | 10 | 10 | 0 | 0 |
 | Insecure configuration | 8 | 8 | 4 | 4 |
 | Path traversal | 8 | 7 | 1 | 3 |
 | Mass assignment | 7 | 7 | 0 | 0 |
 | Code and template injection | 6 | 5 | 2 | 4 |
 | OS command injection | 5 | 5 | 2 | 2 |
-| Server-side request forgery | 4 | 3 | 0 | 1 |
+| Server-side request forgery | 4 | 4 | 0 | 1 |
 | NoSQL injection | 3 | 3 | 0 | 0 |
 | Information exposure | 3 | 3 | 1 | 1 |
 | Weak password hashing | 3 | 3 | 1 | 2 |
@@ -110,14 +119,14 @@ nothing is claimed for any scanner.
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Hardcoded secret | 1 | 0 | 1 | 1 |
 | Prototype pollution, argument injection | No keyed case | — | — | — |
-| **Total** | **96** | **92** | **19** | **33** |
+| **Total** | **97** | **94** | **19** | **33** |
 
 | Capability | Code Scan | Semgrep CE | Bearer CLI |
 |---|---|---|---|
 | Languages run here | JavaScript, TypeScript, PHP | The same | The same |
 | Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; the cross-file engine is Semgrep Pro, not run | Not shown: it found no row that needs it |
 | Access rules read from framework configuration and middleware | Yes: the authorization, mass-assignment and enumeration rows depend on it | No such rule fired | No such rule fired |
-| Known-safe code left unreported | 3 false positives | 7 | 21 and two grouped rules |
+| Known-safe code left unreported | 5 false positives | 7 | 21 and two grouped rules |
 | Committed secrets | No analyzer | Found the keyed row | Found the keyed row |
 | Infrastructure files (Terraform, package-manager policy) | Dockerfile, web-server and cron files for PHP projects | Terraform and npm/pnpm rules fired | None fired |
 | Output | JSON, HTML, SARIF | JSON, SARIF, text | JSON; SARIF not produced in this run |

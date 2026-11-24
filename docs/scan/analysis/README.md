@@ -76,7 +76,7 @@ analyzer uses it.
   join only when both arms carry them, so a guard on one arm never protects a sibling arm or later code.
 - **Ambiguity.** Binding, model, origin and response content-type metadata stay verified only when the
   arms agree; otherwise an `unknown_control_effect` gap records the ambiguity.
-- **Heap writes.** An unmodeled heap write inside an arm stays an `unsupported_write` gap for later code.
+- **Heap writes.** An unmodeled heap write inside an arm stays an `unsupported_write` gap for later code. For an SSRF, path or code claim the gap is coverage, not a blocker, when the write assigns a literal to a member of a handler parameter and no step of the operand's dependencies reads that member, a member of it or an object that holds it at or after the write. A read through a local built by a call keeps the blocker. Prototype pollution and the query families do not apply this rule.
 - **Block scope.** `let`, `const` and `class` bindings are block scoped; `var` keeps function scope.
 
 These statements keep the conservative fallback and its `unsupported_control_flow` gap: loops,

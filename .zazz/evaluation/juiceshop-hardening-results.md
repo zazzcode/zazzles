@@ -195,3 +195,99 @@ storage engine, `express-fileupload`, and a middleware on a mount with no route 
 - **Account enumeration** records any verified model, so a delivery-method lookup is recorded.
 - Every other reading is under "Deviations" of the run log
   (`.zazz/ephemeral/juiceshop-nextjs-hardening-run-log.md`, not committed).
+
+## Hardening 3
+
+Branch `juiceshop-nextjs-hardening-3` of the
+[specification](../specifications/juiceshop-nextjs-hardening-3.md), draft
+[PR #50](https://github.com/zazzcode/zazzles/pull/50). Scanner commit of the acceptance runs:
+`ee777f4`; later commits change documents only. Samples, provider, model and limits as above.
+Protocols after this branch: `authorization-components-v9`, `configuration-components-v7`.
+
+### What was built
+
+| Decision | Built | Effect on Juice Shop |
+|---|---|---|
+| D-1 destructured request parameter | Yes | Five path records lose `request_projection_unresolved`. One, `routes/fileServer.ts:32`, is sent. The three path controls stay blocked by the `serve-index` mount on their prefix |
+| D-2 namespace import callee | Yes | 70 records lose an `unknown_value` gap on a namespace binding |
+| D-3 verified middleware | Yes, for a `multer` binding without a custom `fileFilter` and the authentication list | Three records on the upload routes lose `unresolved_factory` |
+| D-4 literal heap write | Yes, for ssrf, path and code | The SSRF record at `routes/profileImageUrlUpload.ts:24` has no blocker and is sent |
+| D-5 sink inside `try` | Cause recorded, no change | The `try` is coverage, not a blocker. The record is held by a guard and the code policy |
+| D-6 middleware the resolver cannot read | Cause recorded, no change | Neither sample construct is one the decision allows; both allowed constructs already resolve |
+| D-7 reads of an owned record | Yes | Three new records: `routes/basket.ts:19`, `routes/address.ts:18`, `routes/recycles.ts:12` |
+| D-8 what an update writes | Yes (`written_values`) | Ten update records carry the fact |
+| D-9 what a listed directory holds | Yes (`directory_contents`) | Five `serve-index` records carry the fact |
+| D-10 anchored redirect pattern | `String.match` now classified like `RegExp.test`; no new form | None on these samples |
+| D-11 protocol identifiers | Yes | DVWA and vuln-symfony keep every record identifier; only `analysis_components` of the two families changes. Thirteen PHP rows of the architecture baseline move in request and signature digest only |
+
+### Judged runs
+
+Four family runs and two full runs, the bound of §5 of the specification. Folders are under
+`_test-findings/juiceshop-nextjs-hardening/h3/judged/`.
+
+| # | Folder | Scanner | Scope | Requests | Input tokens | Result |
+|---:|---|---|---|---:|---:|---|
+| 1 | `f1-path-ssrf-code-authz-conf` | `c121a58` | path, ssrf, code, authorization, configuration | 32 | 130,998 | PATH-01 and CODE-01 Review; SSRF-01 practice finding; basket read `access_adequacy` unknown; both false positives still Confirmed |
+| 2 | `f2-authz-conf` | `b959d26` | authorization, configuration | 24 | 71,926 | Basket read Confirmed, both like records Protected; the coupon update and the `logs` listing became unknown |
+| 3 | `f3-authz` | `e94682c` | authorization | 19 | 60,527 | Coupon Confirmed; like records Confirmed; basket read unknown (0.45 against 0.45) |
+| 4 | `f4-authz` | `ee777f4` | authorization | 19 | 60,926 | Basket read (0.86), coupon (0.65) and `JS-AUTHZ-02` Confirmed; like records Confirmed |
+| 5 | `a1-acceptance-juice-shop` | `ee777f4` | Full scan | 85 | 384,674 | 37 of 42 keyed positives Confirmed, 3 practice findings, 2 in Review; 2 keyed controls are findings |
+| 6 | `a2-acceptance-vuln-nextjs` | `ee777f4` | Full scan | 27 | 121,218 | 13 of 13 Confirmed; no record changed status; the redirect control is still a practice finding |
+
+For an entry that requires sign-in and lists no role, the model's `access_adequacy` answer is
+close to a three-way tie, and small changes of wording move rows across it. Runs 1 to 4 tried
+four wordings. The one kept makes every owned-record row firm and leaves the like records
+findings; the wording of run 2 did the opposite. None held both.
+
+### Key rows, before and after
+
+Before is `r10-acceptance-juice-shop` (scanner `29ce9aa`); after is `a1-acceptance-juice-shop`.
+
+| Row | Anchor | Before | After |
+|---|---|---|---|
+| `JS-REDIR-01` | `routes/redirect.ts:18` | Confirmed | Confirmed |
+| `JS-PATH-01` | `routes/fileServer.ts:32` | Review, not sent | Review, sent |
+| `JS-PATH-02` | `routes/fileUpload.ts:34` | Confirmed | Confirmed |
+| `JS-PATH-03` | `routes/dataErasure.ts:107` | Confirmed | Confirmed |
+| `JS-SSRF-01` | `routes/profileImageUrlUpload.ts:24` | Review, not sent | Practice finding |
+| `JS-CODE-01` | `routes/userProfile.ts:65` | Review | Review |
+| `JS-CODE-02` | `routes/b2bOrder.ts:23` | Practice finding | Practice finding |
+| `JS-AUTHZ-05` | `routes/basket.ts:19` | No record | Confirmed |
+| `JS-PATH-N01` to `N03` | `keyServer.ts:14`, `logfileServer.ts:14`, `quarantineServer.ts:14` | Review, not sent | Review, not sent |
+| `JS-AUTHZ-N05` | `routes/likeProductReviews.ts:35` | Confirmed (false positive) | Confirmed (false positive) |
+| `JS-CONF-N01` | `server.ts:294` | Confirmed (false positive) | Confirmed (false positive) |
+
+The 34 rows keyed before this branch keep their status: 33 Confirmed and `JS-LOG-01` a practice
+finding. On vuln-nextjs the 13 keyed cases are Confirmed as before.
+
+Findings went from 44 Confirmed and 2 practice to 50 Confirmed and 3 practice. The records that
+became findings, each read against the source:
+
+| Record | Status | Source review |
+|---|---|---|
+| `routes/basket.ts:19`, `GET /rest/basket/:id` | Confirmed | `JS-AUTHZ-05` |
+| `routes/profileImageUrlUpload.ts:24` | Practice finding | `JS-SSRF-01` |
+| `routes/recycles.ts:12`, `GET /api/Recycles/:id` | Confirmed | Real: the route has no authentication middleware (`server.ts:416`) and returns the recycle row a request id selects |
+| `server.ts:529`, `DELETE /api/BasketItems/:id` | Confirmed | Real: sign-in only (`server.ts:387`), no owner test. In Review before; Confirmed in an earlier run of branch 1 |
+| `server.ts:529`, `DELETE /api/Feedbacks/:id` | Confirmed | Real: sign-in only (`server.ts:389`), any user deletes any feedback |
+| `routes/likeProductReviews.ts:50` | Confirmed | **False positive.** The second update of the like route. Protected before |
+| `server.ts:529`, `DELETE /api/Addresss/:id` | Confirmed | **False positive.** The explicit handler at `server.ts:479` deletes only the caller's address and always answers, so the generated delete is not reached. In Review before |
+
+The new read at `routes/address.ts:18` is Protected (its selector carries the owner key a chain
+middleware sets). The four upload records are in Review.
+
+### Open rows
+
+Each was stopped under the blocked item protocol. None was relabeled and no rule was written to
+pass it.
+
+| Row | First failing stage | Evidence | Decision needed |
+|---|---|---|---|
+| `JS-CODE-01` | Policy gate | Every operand path is `guarded` by the enclosing test `username?.match(/#{(.*)}/) !== null`; `judge/code_redirect.go` confirms only a `raw` path. The model answers `whole_program / none / incomplete`. The `try` statements are coverage gaps | A guard classification for an unanchored pattern in the code family, or a policy rule for a path guarded only by controls the model answers `none` for |
+| `JS-PATH-01` | Model answer | The flow-gap question on the null-byte helper is answered `value_constrained`; `containment_control` is split between `none` (0.34) and `finite_allowlist` (0.31). On source review the handler rejects `/` before `path.resolve('ftp/', name)`, as the three controls do; the null byte defeats the file-type allow-list inside `ftp/` | Whether the row is a path-traversal positive |
+| `JS-SSRF-01` | Model answer | The flow is `raw` with no guard recorded; the model answers `destination_restriction: prefix_only`, reading the `url.match(...)` condition of an unrelated statement as a restriction. Reported as a practice finding, not Confirmed | A change to the ssrf request, which D-11 excludes from this branch |
+| `JS-AUTHZ-N05` | Question wording, then model answer | The record carries `request_dependent: no, operators: [$inc]`. The three questions have no answer for "any signed-in caller may do this to any record" | A question or a policy rule that separates a fixed write from an owned-record write |
+| `JS-CONF-N01` | Model answer | The record carries "holds 2 entries: csaf/, security.txt"; the model answers `weakens` | Whether the scanner may state what `.well-known` is (RFC 8615), or the model is to judge from names |
+| vuln-nextjs `REDIR-001-safeControl` | Key row | The guard `/^\/[^/]/` admits `/\host`; a browser resolves that to another origin (WHATWG URL, relative-slash state). The scanner has recorded `redirect_predicate_bypass: slash_backslash` on this record since before this branch | Whether the lab's row is a safe control |
+| Three path controls | Not sent | Each keeps `applicable_middleware_unresolved` from the `serve-index` mount. If sent, `judge/path.go` treats a separator-only guard as an unsafe witness, so a `vulnerable` answer would be Confirmed | Whether a separator test on a file read is containment |
+| Generated `DELETE /api/Addresss/:id` | Evidence missing | Whether an explicit handler registered first ends the response is not read (§6 of the specification) | Follow-on work |

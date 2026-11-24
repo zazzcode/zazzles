@@ -171,7 +171,7 @@ are `sql-components-v4`, `nosql-components-v2`, `validation-components-v2`, `xss
 `command-components-v5`, `path-components-v3`, `ssrf-components-v2`, `code-components-v2`, `upload-components-v2`,
 `redirect-components-v1`, `log-components-v2`, `deserialization-components-v1`,
 `pollution-components-v1`, `exposure-components-v1`, `mass-assignment-components-v1`,
-`authorization-components-v5`, `account-components-v2` and `configuration-components-v6`. A component shared by several families is
+`authorization-components-v9`, `account-components-v2` and `configuration-components-v7`. A component shared by several families is
 referenced per family, so a protocol change re-judges only its own family. Mandatory evidence and
 consistency gates remain in Go.
 

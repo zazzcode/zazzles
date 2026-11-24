@@ -57,6 +57,8 @@ For JS/TS validator predicates the scanner records which destination forms each 
 `percent_encoded_after_decode`, `reassigned_after_check`) and what it excludes
 (`redirect_predicate_excludes`). A `same_site_relative` or `parsed_origin_check` answer is not
 effective while a bypass form is recorded, so `^\/[^/]` (which permits `/\host`) stays Review.
+A literal pattern is classified the same way in `/pattern/.test(value)` and `value.match(/pattern/)`;
+a class that excludes both the slash and the backslash after `^\/` records no bypass form.
 `new URL(x, base).origin|host|hostname` compared with a literal, a `const` literal or the base's own
 origin is a parsed-origin check only for the same unreassigned value. Python predicates are not yet
 classified this way.

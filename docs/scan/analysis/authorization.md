@@ -3,7 +3,7 @@
 Zazzles emits an `authorization_candidate` for one protected operation: a stored write,
 a file write or delete, or a response that carries a census field. The facts are the
 subject, the operation, the entry's access and the guards that dominate the operation.
-A judged scan uses protocol `authorization-components-v5`.
+A judged scan uses protocol `authorization-components-v9`.
 
 ## Questions
 
@@ -62,3 +62,7 @@ authorization record points at it.
 ## JavaScript and TypeScript
 
 A Node entry has no roles; its access is whether an authentication middleware precedes the handler. A selector key filled from a keyed store or overwritten by a chain middleware scopes the write to the caller and is recorded as `ownership_check` / `query_scope`.
+
+**Reads of an owned record.** A Sequelize `findOne`, `findByPk` or `findAll`, or a Mongoose `findById` or `findOne`, is recorded with the facets `object_level` and `data_exposure` and the operation `read` when a request value selects the record, the entry sends the result in a response, and the model is owned: a Sequelize `belongsTo` association or a Mongoose `ref` path links it to a model that holds a credential attribute. The association and the response call are evidence (`owner_association`, `response_emission`). A selector key read from a member that a listed authentication middleware fills from the verified token (`req.auth`, `req.user`, `req.oidc`) is a guard, not a request key. A model with no such association, a list with no selector, a selector that a constant narrows and a result that is not sent are not recorded.
+
+**What an update writes.** An update record carries `written_values`: `request_dependent` is `yes` when a written value reads the request, `no` when every written value is built from literals, and `unknown` otherwise. For a Mongo-style update document `operators` names the operators used (`$set`, `$inc`, `$push`). The fact describes the write; it does not decide who may perform it. PHP records do not carry it.

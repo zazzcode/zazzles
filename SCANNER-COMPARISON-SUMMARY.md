@@ -11,12 +11,12 @@ Four intentionally vulnerable applications, scored against their known vulnerabi
 
 | | Code Scan | Bearer CLI | Semgrep CE |
 |---|---:|---:|---:|
-| Known vulnerabilities found, of 96 | 92 | 33 | 19 |
-| False positives on known-safe code | 3 | 21, and two noisy rules | 7 |
+| Known vulnerabilities found, of 97 | 94 | 33 | 19 |
+| False positives on known-safe code | 5 | 21, and two noisy rules | 7 |
 
 | Application | Known | Code Scan | Bearer | Semgrep CE |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop (TypeScript, Express, Angular) | 42 | 38 | 15 | 10 |
+| OWASP Juice Shop (TypeScript, Express, Angular) | 43 | 40 | 15 | 10 |
 | vuln-nextjs (Next.js) | 13 | 13 | 7 | 2 |
 | DVWA (PHP) | 11 | 11 | 6 | 5 |
 | vuln-symfony (PHP, Symfony) | 30 | 30 | 5 | 2 |
@@ -29,27 +29,30 @@ a head-to-head result.
 
 - **Flows across files and through storage.** The other two found 6 of 18 XSS cases between
   them; most of the rest pass through a database or from backend to frontend.
-- **Access rules.** Neither other scanner found any of the 22 missing-authorization,
+- **Access rules.** Neither other scanner found any of the 23 missing-authorization,
   mass-assignment, account-enumeration or NoSQL cases.
 - **Noise.** Bearer reported 675 results on Juice Shop, 541 of them from two rules that are
-  almost all false or in test files. Code Scan reported 45 confirmed findings there.
+  almost all false or in test files. Code Scan reported 50 confirmed findings there.
 
 ## Where Code Scan is behind
 
-- **Three Juice Shop vulnerabilities left in Review** that Semgrep CE or Bearer finds: the
-  profile-image SSRF, the `eval` in the profile page, and the null-byte file read.
+- **Two Juice Shop vulnerabilities left in Review** that Semgrep CE or Bearer finds: the `eval`
+  in the profile page and the null-byte file read. The profile-image SSRF is now reported, as a
+  practice finding rather than a confirmed one.
 - **Committed secrets.** Both other scanners found the hardcoded JWT key. Code Scan has no
   analyzer for it.
-- **Reads of another user's record.** Viewing another user's basket is not reported.
-- **Three false positives:** liking a review, a `.well-known` directory listing, and
-  vuln-nextjs's safe redirect control.
+- **Five false positives:** two records of liking a review, a `.well-known` directory listing,
+  a generated delete that an explicit handler answers first, and vuln-nextjs's redirect control.
+  The first comparison had three; the hardening 3 run added the second like record and the
+  generated delete. The redirect control is counted as its lab labels it, although its guard
+  admits `/\host`.
 - **GitHub Actions workflows** are not read.
 
 ## Read the numbers with these in mind
 
 - The answer keys were written for Code Scan's own evaluation and favor the classes it
   analyzes. Only the Juice Shop key was widened with what the other scanners surfaced, and all
-  four of Code Scan's misses appeared there.
+  of Code Scan's misses appeared there.
 - The DVWA key covers its low security level only. About 190 results of the other scanners on
   DVWA and vuln-symfony were counted as unreviewed, not as false positives.
 - Semgrep CE analyzes one file at a time; its cross-file engine is a paid product and was not
@@ -63,12 +66,20 @@ assignment, missing authorization, account security, insecure configuration) to 
 applications in JavaScript and TypeScript, and built the missing upload producer. Juice Shop
 went from 22 confirmed findings to 45. No analyzer was added.
 
-## Next improvements to the existing analyzers
+[Hardening 3](.zazz/specifications/juiceshop-nextjs-hardening-3.md) then improved the existing
+analyzers again, with no new analyzer:
 
-Specified in
-[hardening 3](.zazz/specifications/juiceshop-nextjs-hardening-3.md). No new analyzer.
+- A read of a record another user owns is reported. The basket read is Confirmed.
+- The profile-image SSRF is sent to the model and reported as a practice finding.
+- An update record says whether it writes a request value, and a directory-listing record says
+  what the directory holds.
 
-1. Close the three Juice Shop misses.
-2. Resolve the handler and middleware forms that keep path and query records in Review.
-3. Report reads of a record another user owns.
-4. Remove the three false positives.
+It did not reach four of its goals. Each is recorded with its evidence and the decision it
+needs in the [results](.zazz/evaluation/juiceshop-hardening-results.md#hardening-3):
+
+1. The `eval` in the profile page stays in Review: its operand sits under a regular-expression
+   test that the scanner records as a guard, and the code policy confirms only an unguarded path.
+2. The null-byte file read stays in Review. On source review it cannot leave its directory; what
+   it defeats is a file-type allow-list.
+3. The like-counter and `.well-known` false positives remain, and two more appeared.
+4. vuln-nextjs's redirect control is still reported. Its guard is bypassable by `/\host`.

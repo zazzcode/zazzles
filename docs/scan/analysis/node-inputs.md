@@ -20,6 +20,17 @@ as an `unsupported_binding` gap.
 ## Supported HTTP boundary
 
 - Express retains its existing bounded direct/mounted/finite-registration analysis and middleware context.
+  A handler may destructure its request parameter: `({ params })` binds `params` to the request's
+  `params`, `({ body: b })` binds `b` to its `body`, and a nested pattern such as
+  `({ query: { page } })` binds one level further. The read keeps the origin of the member it names.
+  A rest element, a computed key, a default value or deeper nesting keeps the
+  `request_projection_unresolved` blocker.
+  On a route registration, a verified `multer` middleware call without a custom `fileFilter` and a
+  call of a listed authentication middleware are middleware with known behavior and record no
+  `unresolved_factory` gap; any other call with arguments does.
+  A function a scanned module exports, called through a namespace import (`import * as ns`), is a
+  known callee: the helper flow follows it under its usual limits and the namespace binding is not
+  an unknown value. A module outside the scan keeps both gaps.
   A handler reference `ns.obj.method` resolves when `obj` is an exported object literal and `method`
   is a shorthand method, a function-valued property or an arrow function of it. A computed key, a
   spread in the literal, a duplicate key, an accessor, or any later assignment of the export or of

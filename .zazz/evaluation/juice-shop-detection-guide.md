@@ -70,6 +70,10 @@ hardening 3 they are the control rows `JS-AUTHZ-N05` and `JS-CONF-N01` below.
 | `authorization_candidate` | `routes/likeProductReviews.ts:35` | Liking another user's review is the feature; the review is not the caller's to own |
 | `configuration_candidate`, directory listing | `server.ts:294` | `.well-known` holds only files published on purpose (`security.txt`, advisories) |
 
+The hardening 3 acceptance run added two more, neither a key row: the second update of the like
+route (`routes/likeProductReviews.ts:50`) and the generated `DELETE /api/Addresss/:id`
+(`server.ts:529`), which the explicit handler at `server.ts:479` answers first.
+
 ## Controls
 
 None may be a finding. `guarded` rows must end Protected.

@@ -38,8 +38,19 @@ gh stack init --base stage juiceshop-nextjs-hardening-1
 The first commit of branch 1 (`586ee97`) is the documentation written with this lane: both
 specifications, the [specification index](spec-index.md) rows and the [README](README.md)
 entry. Branch 2 was added with `gh stack add juiceshop-nextjs-hardening-2` and holds the
-scanner detail documents of its Part A. After each commit on branch 1, run
-`gh stack rebase --upstack` so branch 2 follows.
+scanner detail documents of its Part A. `gh stack rebase` fails in this repository
+("branch stage is checked out in multiple worktrees"), so this lane rebases with Git. Before
+branch 1's PR is marked for review, move branch 2 onto it and return:
+
+```bash
+OLD=$(git merge-base juiceshop-nextjs-hardening-1 juiceshop-nextjs-hardening-2)
+git rebase --onto juiceshop-nextjs-hardening-1 "$OLD" juiceshop-nextjs-hardening-2
+git push --force-with-lease origin juiceshop-nextjs-hardening-2
+git checkout juiceshop-nextjs-hardening-1
+```
+
+This replaces the `gh stack rebase` and `gh stack sync` steps of the Symfony lane's rebase rule.
+Branch 2 touches no file branch 1 touches except the two specification indexes.
 
 **Rules taken from the Symfony lane.** These sections of the
 [Symfony lane contract](symfony-more-analyzers.md) apply to both branches with "the sample" read

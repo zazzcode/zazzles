@@ -2544,10 +2544,10 @@
       "app": "juice-shop",
       "key": ".zazz/evaluation/juice-shop-detection-guide.md",
       "kind": "path_traversal_candidate",
-      "expect": "positive",
+      "expect": "review",
       "file": "routes/fileServer.ts",
       "line": 32,
-      "expect_status": "confirmed_vulnerability"
+      "note": "Owner decision 2026-11-24: not a path-traversal positive. The name is rejected when it contains a slash, so the read stays in its directory; the null byte defeats the file-type allow-list"
     },
     {
       "id": "JS-PATH-02",

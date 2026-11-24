@@ -11,12 +11,12 @@ Four intentionally vulnerable applications, scored against their known vulnerabi
 
 | | Code Scan | Bearer CLI | Semgrep CE |
 |---|---:|---:|---:|
-| Known vulnerabilities found, of 97 | 95 | 33 | 19 |
-| False positives on known-safe code | 4 | 21, and two noisy rules | 7 |
+| Known vulnerabilities found, of 96 | 95 | 32 | 18 |
+| False positives on known-safe code | 3 | 22, and two noisy rules | 8 |
 
 | Application | Known | Code Scan | Bearer | Semgrep CE |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop (TypeScript, Express, Angular) | 43 | 41 | 15 | 10 |
+| OWASP Juice Shop (TypeScript, Express, Angular) | 42 | 41 | 14 | 9 |
 | vuln-nextjs (Next.js) | 13 | 13 | 7 | 2 |
 | DVWA (PHP) | 11 | 11 | 6 | 5 |
 | vuln-symfony (PHP, Symfony) | 30 | 30 | 5 | 2 |
@@ -36,15 +36,11 @@ a head-to-head result.
 
 ## Where Code Scan is behind
 
-- **One Juice Shop row left in Review** that Semgrep CE or Bearer reports: the null-byte file
-  read, which on source review is a file-type allow-list bypass and not a path traversal. The
-  profile-image SSRF is reported as a practice finding rather than a confirmed one.
+- **The profile-image SSRF** is reported as a practice finding rather than a confirmed one.
 - **Committed secrets.** Both other scanners found the hardcoded JWT key. Code Scan has no
   analyzer for it.
-- **Four false positives:** two records of liking a review, a `.well-known` directory listing,
-  and vuln-nextjs's redirect control. The redirect control is counted as its lab labels it,
-  although its guard admits `/\host`. A fifth, a generated delete that an explicit handler
-  answers first, was fixed after the judged run and is no longer recorded.
+- **Three false positives:** two records of liking a review and a `.well-known` directory
+  listing.
 - **GitHub Actions workflows** are not read.
 
 ## Read the numbers with these in mind
@@ -79,7 +75,8 @@ needs in the [results](.zazz/evaluation/juiceshop-hardening-results.md#hardening
 1. The `eval` in the profile page stayed in Review under the code policy. The owner then
    decided that the model's answer settles whether a condition on the path restricts the
    operand; with that change the row is Confirmed.
-2. The null-byte file read stays in Review. On source review it cannot leave its directory; what
-   it defeats is a file-type allow-list.
+2. The null-byte file read stays in Review, and that is now the keyed answer: on source review
+   it cannot leave its directory, so it is not a path-traversal row.
 3. The like-counter and `.well-known` false positives remain, and a second like record appeared.
-4. vuln-nextjs's redirect control is still reported. Its guard is bypassable by `/\host`.
+4. vuln-nextjs's redirect control is still reported, correctly: its guard is bypassable by
+   `/\host`. The lab's control needs a fix; it is not counted against Code Scan.

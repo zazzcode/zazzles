@@ -260,6 +260,15 @@ Everything in §6.
 
 ## 9. Change log
 
+### 2026-11-24 — Two key decisions by the owner
+
+`JS-PATH-01` is not a path-traversal positive: the name is rejected when it contains `/`, so the
+read cannot leave its directory, and what the null byte defeats is a file-type allow-list. The
+row's expectation is Review. vuln-nextjs's `REDIR-001-safeControl` is reported correctly, since
+its guard admits `/\host`; it is no longer counted as a false positive, and the lab's control is
+the owner's to fix. The comparison now reads 95 of 96 known vulnerabilities with three Code
+Scan false positives.
+
 ### 2026-11-24 — Code policy, owner decision
 
 D-5 said "Do not change the code-family policy". The owner lifted that after the acceptance

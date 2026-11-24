@@ -71,6 +71,12 @@ are not key rows and are in no table.
 location, and is left out of the false-positive table. Bearer's XSS result at
 `routes/userProfile.ts:90` is the same output as the keyed row at `:101` and is counted once.
 
+**Owner decisions of 2026-11-24.** The null-byte file read (`routes/fileServer.ts:32`) is not a
+path-traversal row: the read cannot leave its directory. It left the Juice Shop table, and the
+other scanners' path-traversal results on that line are counted with the three sibling handlers
+as false positives. vuln-nextjs's redirect control is not counted as a Code Scan false positive:
+its guard admits `/\\host`, so the report is correct.
+
 ## Reproduce
 
 ```bash
@@ -103,7 +109,7 @@ nothing is claimed for any scanner.
 | SQL injection | 10 | 10 | 5 | 7 |
 | Missing authorization | 10 | 10 | 0 | 0 |
 | Insecure configuration | 8 | 8 | 4 | 4 |
-| Path traversal | 8 | 7 | 1 | 3 |
+| Path traversal | 7 | 7 | 0 | 2 |
 | Mass assignment | 7 | 7 | 0 | 0 |
 | Code and template injection | 6 | 6 | 2 | 4 |
 | OS command injection | 5 | 5 | 2 | 2 |
@@ -119,14 +125,14 @@ nothing is claimed for any scanner.
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Hardcoded secret | 1 | 0 | 1 | 1 |
 | Prototype pollution, argument injection | No keyed case | — | — | — |
-| **Total** | **97** | **95** | **19** | **33** |
+| **Total** | **96** | **95** | **18** | **32** |
 
 | Capability | Code Scan | Semgrep CE | Bearer CLI |
 |---|---|---|---|
 | Languages run here | JavaScript, TypeScript, PHP | The same | The same |
 | Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; the cross-file engine is Semgrep Pro, not run | Not shown: it found no row that needs it |
 | Access rules read from framework configuration and middleware | Yes: the authorization, mass-assignment and enumeration rows depend on it | No such rule fired | No such rule fired |
-| Known-safe code left unreported | 4 false positives | 7 | 21 and two grouped rules |
+| Known-safe code left unreported | 3 false positives | 8 | 22 and two grouped rules |
 | Committed secrets | No analyzer | Found the keyed row | Found the keyed row |
 | Infrastructure files (Terraform, package-manager policy) | Dockerfile, web-server and cron files for PHP projects | Terraform and npm/pnpm rules fired | None fired |
 | Output | JSON, HTML, SARIF | JSON, SARIF, text | JSON; SARIF not produced in this run |

@@ -52,7 +52,7 @@ listed outside the key; each was read against the source at the pin.
 | ID | Kind | Anchor | Evidence |
 |---|---|---|---|
 | `JS-REDIR-01` | `open_redirect_candidate` | `routes/redirect.ts:18` | `res.redirect(query.to)` after an allow-list test that matches a substring of the URL |
-| `JS-PATH-01` | `path_traversal_candidate` | `routes/fileServer.ts:32` | `res.sendFile(path.resolve('ftp/', file))`. The file-type test at `:26` runs before the name is cut at a null byte (`:27`), so the test does not hold for the name that is read |
+| `JS-PATH-01` | `path_traversal_candidate` | `routes/fileServer.ts:32` | **Review, not a positive (owner decision, 2026-11-24).** `res.sendFile(path.resolve('ftp/', file))` after the name is rejected when it contains `/`, so the read cannot leave `ftp/`. The cut at a null byte runs after the file-type test and defeats that allow-list; that is a file-type bypass, which no analyzer claims |
 | `JS-PATH-02` | same | `routes/fileUpload.ts:34` | An archive entry's path is joined to the upload directory and written; the test at `:33` is a substring test on the resolved path |
 | `JS-PATH-03` | same | `routes/dataErasure.ts:107` | `req.body.layout` selects the template file that is rendered |
 | `JS-SSRF-01` | `ssrf_candidate` | `routes/profileImageUrlUpload.ts:24` | `fetch(req.body.imageUrl)` with no destination test |

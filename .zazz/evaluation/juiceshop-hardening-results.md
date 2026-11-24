@@ -305,6 +305,14 @@ another sample moves. A wrong `none` answer on a path whose guard does restrict 
 would now be Confirmed; the anchored allow-list case of the policy test is answered
 `allowlist_grammar` by the model and stays Protected.
 
+### Two key decisions (owner, 2026-11-24)
+
+`JS-PATH-01` (`routes/fileServer.ts:32`) is keyed as Review, not as a path-traversal positive:
+the handler rejects a name containing `/`, so the read stays in `ftp/`, and the null byte
+defeats the file-type allow-list. vuln-nextjs's redirect control is reported correctly, because
+its guard `/^\/[^/]/` admits `/\host`; it is not a false positive, and the control in the lab
+needs a fix.
+
 ### Open rows
 
 Each was stopped under the blocked item protocol. None was relabeled and no rule was written to
@@ -312,10 +320,8 @@ pass it.
 
 | Row | First failing stage | Evidence | Decision needed |
 |---|---|---|---|
-| `JS-PATH-01` | Model answer | The flow-gap question on the null-byte helper is answered `value_constrained`; `containment_control` is split between `none` (0.34) and `finite_allowlist` (0.31). On source review the handler rejects `/` before `path.resolve('ftp/', name)`, as the three controls do; the null byte defeats the file-type allow-list inside `ftp/` | Whether the row is a path-traversal positive |
 | `JS-SSRF-01` | Model answer | The flow is `raw` with no guard recorded; the model answers `destination_restriction: prefix_only`, reading the `url.match(...)` condition of an unrelated statement as a restriction. Reported as a practice finding, not Confirmed | A change to the ssrf request, which D-11 excludes from this branch |
 | `JS-AUTHZ-N05` | Question wording, then model answer | The record carries `request_dependent: no, operators: [$inc]`. The three questions have no answer for "any signed-in caller may do this to any record" | A question or a policy rule that separates a fixed write from an owned-record write |
 | `JS-CONF-N01` | Model answer | The record carries "holds 2 entries: csaf/, security.txt"; the model answers `weakens` | Whether the scanner may state what `.well-known` is (RFC 8615), or the model is to judge from names |
-| vuln-nextjs `REDIR-001-safeControl` | Key row | The guard `/^\/[^/]/` admits `/\host`; a browser resolves that to another origin (WHATWG URL, relative-slash state). The scanner has recorded `redirect_predicate_bypass: slash_backslash` on this record since before this branch | Whether the lab's row is a safe control |
 | Three path controls | Not sent | Each keeps `applicable_middleware_unresolved` from the `serve-index` mount. If sent, `judge/path.go` treats a separator-only guard as an unsafe witness, so a `vulnerable` answer would be Confirmed | Whether a separator test on a file read is containment |
 | Generated `DELETE /api/Addresss/:id` | Evidence missing | Whether an explicit handler registered first ends the response is not read (§6 of the specification) | Follow-on work |

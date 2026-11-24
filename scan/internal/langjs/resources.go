@@ -139,7 +139,7 @@ func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceMod
 		}
 		for _, ep := range eps {
 			access, chain := s.generatedAccess(m, call, ep)
-			if access.RejectsAll {
+			if access.RejectsAll || s.answeredFirst(m, chain) {
 				// No request reaches the generated handler through this
 				// endpoint, so it makes no claim.
 				continue
@@ -380,6 +380,24 @@ func (s *moduleSet) generatedAccess(m *sourceModule, call *sitter.Node, ep gener
 		}
 	})
 	return s.expressAccessForNodes(m, call, ep.path, nil, 0, 0, extra), extra
+}
+
+// answeredFirst reports whether a handler registered earlier for the same
+// method and path always ends the request. Express passes a request on to the
+// next handler only when the current one calls next() (Express guide,
+// "Routing", route handlers). A resolved handler that declares no third
+// parameter cannot call it, so nothing registered after it is reached.
+func (s *moduleSet) answeredFirst(m *sourceModule, chain []*sitter.Node) bool {
+	for _, arg := range chain {
+		hm, body, _, gaps := s.handler(m, arg)
+		if body == nil || len(gaps) > 0 || body.Parent() == nil {
+			continue
+		}
+		if n := len(plainParameters(body.Parent(), hm.src)); n == 1 || n == 2 {
+			return true
+		}
+	}
+	return false
 }
 
 // routeChainPath returns the literal path of the receiver.route(path) call at

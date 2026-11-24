@@ -72,3 +72,7 @@ statement in an enclosing block, with no later branch or compound assignment; a 
 column written from a password hash or digest is a login and records no enumeration.
 Timing, rate limits, token lifetime, Notifier and Messenger mail, `crypt` and
 `hash_pbkdf2` parameters and password policy are out of scope.
+
+## JavaScript and TypeScript
+
+A digest from `crypto.createHash` or `createHmac` with a constant key is one fast digest. It is a password hash claim only where a set accessor stores it or a SQL statement compares it. An enumeration lookup excludes a lookup that also compares a credential.

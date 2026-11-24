@@ -20,7 +20,7 @@ func applyExposurePolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		return
 	}
 	f, c := use.Exposure, use.Completeness
-	if f == nil || c == nil || c.ClaimKind != "exposure" || use.APIModel == nil || use.APIModel.ID != analysispacks.PHPDiagnosticOutput {
+	if f == nil || c == nil || c.ClaimKind != "exposure" || use.APIModel == nil || use.APIModel.ID != analysispacks.PHPDiagnosticOutput && use.APIModel.ID != analysispacks.NodeDiagnosticOutput {
 		gap("claim_missing", "Exposure requires source-backed facts, completeness and a verified diagnostic contract.")
 		return
 	}

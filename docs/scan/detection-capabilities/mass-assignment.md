@@ -64,3 +64,21 @@ not a confirmed privilege defect.
 Write each permitted field through a named setter from a named request field. If a generic copy
 is required, intersect the request keys with a literal allow-list that excludes privilege,
 credential and identity fields.
+
+## JavaScript and TypeScript (Express)
+
+A whole request bag (`req.body`, `req.query`, a constant alias, or a spread of one that does not
+override every model attribute) that reaches a model write records a candidate with shape
+`dynamic_property_write`:
+
+- Sequelize `Model.create`, `build`, `bulkCreate`, `update`, and an instance `update` or `set`;
+- Mongoose `new Model(x)`, `Model.create`, `findByIdAndUpdate` and `updateOne`;
+- `Object.assign(instance, x)` on a model instance;
+- a [finale-rest](https://github.com/tommybananas/finale#readme) or epilogue `resource({ model, endpoints })`:
+  each generated create and update endpoint, including a resource in a loop over a literal
+  array. `excludeAttributes` hides attributes from reads and is not a write limit.
+
+A `fields` option with a literal array, or a bag built as an object literal of named properties,
+records nothing. Attributes whose names are on the hint list are carried as `name_hint`; an
+attribute that a set accessor fills from a fast digest is a `credential`. A resource whose model
+or endpoints cannot be resolved records gap `generated_resource_unresolved`.

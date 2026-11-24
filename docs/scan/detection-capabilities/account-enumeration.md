@@ -43,3 +43,11 @@ rate limiting and lockout.
 
 Return the same message, status and redirect whether or not the account exists, and send
 account-specific information to the address stored for the account.
+
+## JavaScript and TypeScript (Express)
+
+An entry with no authentication that looks a record up by a request value through a Sequelize or
+Mongoose finder, and whose branches on the result answer with a different status or body, records a
+candidate. A lookup that also compares a credential (an attribute a set accessor fills from a fast
+digest, or a digest value) is a login and records nothing. The finder may be on any verified
+model, so a lookup of a non-account record can also be recorded; the decision model judges it.

@@ -120,6 +120,12 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	}
 	s.mountedRoutes(out, selected)
 	s.pathConfiguredMounts(out, selected)
+	s.exposureCandidates(out, selected)
+	s.configurationCandidates(out, selected)
+	s.passwordHashCandidates(out, selected)
+	s.enumerationCandidates(out)
+	s.authorizationCandidates(out)
+	s.massAssignmentCandidates(out)
 	if err := s.browser(out); err != nil {
 		return nil, err
 	}
@@ -154,7 +160,12 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	} else {
 		s.automaticQueries(out)
 	}
+	// After check assembly, which rebuilds the use list, and before input facts.
+	s.uploadCandidates(out, selected)
 	s.assembleNodeInputs(out)
+	// After check assembly: a generated endpoint is an entry of its own, and an
+	// explicit check must keep matching the entries registered in source.
+	s.generatedResources(out, selected)
 	s.nextPractice(out, selected)
 	keys := make([]string, 0, len(s.modules))
 	for k := range s.modules {

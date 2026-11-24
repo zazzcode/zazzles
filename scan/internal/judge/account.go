@@ -69,7 +69,7 @@ func accountContractOK(use analysis.CandidateUse) bool {
 	case analysis.RecoveryDeliveryKind:
 		return use.APIModel != nil && (use.APIModel.ID == analysispacks.SymfonyMailerContract || use.APIModel.ID == analysispacks.PHPMailContract) && use.Recovery != nil && use.Recovery.MailContract == "api."+use.APIModel.ID
 	case analysis.PasswordHashKind:
-		return use.APIModel != nil && use.APIModel.ID == analysispacks.PHPPasswordDigest
+		return use.APIModel != nil && (use.APIModel.ID == analysispacks.PHPPasswordDigest || use.APIModel.ID == analysispacks.NodePasswordDigest)
 	}
 	return false
 }
@@ -226,6 +226,10 @@ func wireEnumeration(use analysis.CandidateUse, ref func(analysis.Evidence) stri
 	}
 	if use.EntryFacts != nil && use.EntryFacts.Access != nil {
 		out["access"] = use.EntryFacts.Access
+	} else if use.EntryFacts != nil && use.EntryFacts.HTTP != nil && use.EntryFacts.HTTP.Framework == "express" {
+		// An Express entry whose chain holds no authentication middleware stores
+		// no access record (authentication none); the request still states it.
+		out["access"] = analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{}}
 	}
 	return out
 }

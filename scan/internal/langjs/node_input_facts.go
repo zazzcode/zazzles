@@ -24,6 +24,9 @@ func (s *moduleSet) assembleNodeInputs(r *analysis.AnalysisReport) {
 	}
 	for i := range r.Uses {
 		u := &r.Uses[i]
+		if operationCentered(u) {
+			continue
+		}
 		if c := s.nodeHTTP[u.EntryID]; c != nil {
 			s.nodeInputFacts(u, c)
 			continue
@@ -115,6 +118,14 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 						}
 					}
 				}
+			}
+		}
+		if u.Upload != nil && u.Kind == "file_upload_candidate" {
+			// A multer record's sources are the multipart body the middleware
+			// reads and the file fields its callbacks read (upload_multer.go).
+			v.Origin = "http.upload_content"
+			if d.SinkSlot == "stored_name" {
+				v.Origin = nodeURLUploadOrigin("file", strings.TrimPrefix(d.Source.Text[strings.LastIndex(d.Source.Text, ".")+1:], "?"))
 			}
 		}
 		if typ := s.nativeSinkInputType(*u); typ != "" && len(u.Dependencies) == 1 {
@@ -235,4 +246,11 @@ func (f *flow) nodeFieldAvailable(n *sitter.Node) bool {
 		}
 	}
 	return true
+}
+
+// operationCentered reports a candidate of an application-security family
+// whose claim has no request source (lane contract section 2.7): its facts are
+// the operation and its entry, so no input binding is attached.
+func operationCentered(u *analysis.CandidateUse) bool {
+	return u.Exposure != nil || u.Configuration != nil || u.PasswordHash != nil || u.Enumeration != nil || u.Authorization != nil || u.MassAssignment != nil
 }

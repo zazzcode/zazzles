@@ -42,3 +42,7 @@ Debug-mode and profiler configuration, exception output and Twig `dump()` are no
 diagnostic value returned through a helper keeps its marker; one stored and read back does not.
 
 See [coverage and remediation](../detection-capabilities/information-exposure.md).
+
+## JavaScript and TypeScript
+
+The Node contract `node-diagnostic-output-v1` states what `errorhandler`, prom-client `register.metrics()`, swagger-ui-express `setup`, `process.env`, `process.memoryUsage()` and an error `stack` send. A `process.env.NODE_ENV` condition is a guard to weigh, not a fact that the code is absent in production.

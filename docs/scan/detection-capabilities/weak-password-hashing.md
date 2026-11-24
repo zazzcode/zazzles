@@ -41,3 +41,12 @@ parameter adequacy and pepper handling.
 
 Hash passwords with `password_hash` or a Symfony password hasher with `algorithm: auto`,
 and rehash stored digests when each user next signs in.
+
+## JavaScript and TypeScript
+
+`crypto.createHash` with `md5`, `sha1`, `sha224`, `sha256`, `sha384` or `sha512`, and
+`crypto.createHmac` with a constant key, are recorded where the result reaches a credential,
+followed through one helper function: a model attribute whose Sequelize `setDataValue` or Mongoose
+`set` option stores the digest, or a column that a SQL statement compares with it. `bcrypt`,
+`argon2`, `scrypt` and `crypto.pbkdf2` record nothing, and a digest that reaches neither form (a
+file checksum) records nothing. Contract: `node-password-digest-v1`.

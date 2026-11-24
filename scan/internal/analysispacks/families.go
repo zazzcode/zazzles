@@ -168,30 +168,30 @@ func Families() []Family {
 		},
 		{
 			Name: "exposure", Label: "Information exposure", Kinds: []string{analysis.ExposureKind}, QuestionNames: exposureQuestionNames(),
-			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, PHPHTTPOnly: true,
+			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, PHPHTTPOnly: true,
 			Pack: "pack.exposure", Claim: "claim.exposure", Evidence: "evidence.exposure", PolicyOwner: "internal/judge/exposure.go",
 		},
 		{
 			Name: "mass-assignment", Label: "Mass assignment", Kinds: []string{analysis.MassAssignmentKind}, QuestionNames: massAssignmentQuestionNames(),
-			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, PHPHTTPOnly: true,
+			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP}, Entries: []string{"entry.http"}, PHPHTTPOnly: true,
 			Pack: "pack.mass-assignment", Claim: "claim.mass-assignment", Evidence: "evidence.mass-assignment", PolicyOwner: "internal/judge/mass_assignment.go",
 		},
 		{
 			Name: "authorization", Label: "Missing authorization", Kinds: []string{analysis.AuthorizationKind}, QuestionNames: authorizationQuestionNames(),
-			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true,
+			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true,
 			Pack: "pack.authorization", Claim: "claim.authorization", Evidence: "evidence.authorization", PolicyOwner: "internal/judge/authorization.go",
 		},
 		{
 			// A hasher class or a configuration line can anchor a password-hash
 			// claim, so the family names no entry capability.
 			Name: accountFamilyName, Label: "Account security", Kinds: []string{analysis.AccountEnumerationKind, analysis.RecoveryDeliveryKind, analysis.PasswordHashKind},
-			QuestionNames: accountQuestionNames(), KindQuestions: accountKindQuestions(), Languages: []lang.Language{lang.PHP},
+			QuestionNames: accountQuestionNames(), KindQuestions: accountKindQuestions(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP},
 			Pack: "pack.account", Claim: "claim.account", Evidence: "evidence.account", PolicyOwner: "internal/judge/account.go",
 		},
 		{
 			// A setting in a deployment file needs no HTTP entry.
 			Name: "configuration", Label: "Insecure configuration", Kinds: []string{analysis.ConfigurationKind},
-			QuestionNames: configurationQuestionNames(), Languages: []lang.Language{lang.PHP},
+			QuestionNames: configurationQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP},
 			Pack: "pack.configuration", Claim: "claim.configuration", Evidence: "evidence.configuration", PolicyOwner: "internal/judge/configuration.go",
 		},
 		{

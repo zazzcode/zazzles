@@ -9,7 +9,11 @@ const ExposureProtocol = "exposure-components-v1"
 // branch 1 D-1.
 const PHPDiagnosticOutput = "php-diagnostic-output-v1"
 
-var exposureContracts = []string{PHPDiagnosticOutput}
+// NodeDiagnosticOutput identifies the Node.js diagnostic-output operations of
+// the Juice Shop and Next.js hardening lane (decision D-8).
+const NodeDiagnosticOutput = "node-diagnostic-output-v1"
+
+var exposureContracts = []string{PHPDiagnosticOutput, NodeDiagnosticOutput}
 
 // ExposureRoles are the evidence obligations of the operation-centered claim.
 // The claim has no request source (lane contract section 2.7).
@@ -19,6 +23,10 @@ func ExposureRoles() []string {
 
 // ExposureContract returns the semantics of the verified diagnostic operations.
 func ExposureContract(id string) *analysis.APIModel {
+	if id == NodeDiagnosticOutput {
+		return &analysis.APIModel{ID: id, Library: "node", Reference: "https://github.com/expressjs/errorhandler#readme",
+			Semantics: "The errorhandler package's middleware is documented as a development error handler: it sends the stack trace of the error to the client. prom-client's register.metrics() returns the Prometheus exposition of every registered metric, which includes process and runtime metrics when the default metrics are collected. swagger-ui-express's setup(document) serves an interactive page of the API description it is given. process.env is the environment of the server process, process.memoryUsage() and process.versions describe its runtime state, and an Error's stack property is its stack trace: a response whose body is one of these sends that state to the caller. Sending a constant, or a value that carries none of these, is not this claim. An environment condition around the registration is recorded as a guard and is not a decision."}
+	}
 	if id != PHPDiagnosticOutput {
 		return nil
 	}

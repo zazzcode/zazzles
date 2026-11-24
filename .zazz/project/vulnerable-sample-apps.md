@@ -29,7 +29,7 @@ means Zazzles has no analyzer for that family yet, so no result says nothing abo
 | nodejs-goof | JavaScript (Express, Mongoose) | [snyk-labs/nodejs-goof](https://github.com/snyk-labs/nodejs-goof) | `add14ba` | [XSS and reference key](../../docs/samples/nodejs-goof/xss-answer-key.md) |
 | OWASP Juice Shop | TypeScript (Express, Sequelize, Angular) | [juice-shop/juice-shop](https://github.com/juice-shop/juice-shop) | `f189f52` (v20.3.0) | [XSS key](../../docs/samples/juice-shop/xss-answer-key.md), [evaluation index](../evaluation/juice-shop/README.md) |
 | OSS OopsSec Store | TypeScript (Next.js 15 App Router, Prisma, better-sqlite3, pino, zod) | [kOaDT/oss-oopssec-store](https://github.com/kOaDT/oss-oopssec-store) | `2d530ef` (v2.25.0) | [Detection guide](../evaluation/oss-oopssec-store-detection-guide.md), [sample report](../../docs/samples/oss-oopssec-store/README.md), [contract](../specifications/nextjs-support.md#5-acceptance-evidence) |
-| vuln-nextjs (owner-maintained lab) | JavaScript (Next.js 13 Pages Router, PGlite, zod, DOMPurify) | [zazzcode/vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) | `ea10efb` (living; re-pin when rows are added) | [Detection guide](../evaluation/vuln-nextjs-detection-guide.md), [sample report](../../docs/samples/vuln-nextjs/README.md); lab `tests/expected-scanner-findings.json` |
+| vuln-nextjs (owner-maintained lab) | JavaScript (Next.js 13 Pages Router, PGlite, zod, DOMPurify) | [zazzcode/vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) | `f5d47de` (living; re-pinned 2026-11-24 for the JavaScript hardening lane; the judged report below is at `ea10efb`) | [Detection guide](../evaluation/vuln-nextjs-detection-guide.md), [sample report](../../docs/samples/vuln-nextjs/README.md); lab `tests/expected-scanner-findings.json` |
 | VulnPy | Python (11 framework adapters) | [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy) | `b81885e` | [Detection guide](../evaluation/vulnpy-detection-guide.md) |
 | vuln-symfony | PHP (Symfony 6.4, Doctrine ORM 2, Twig 3) | [zazzcode/vuln-symfony](https://github.com/zazzcode/vuln-symfony) | `086f81f941501bd1170b249e01107ba99beb2962` | [Detection guide](../evaluation/vuln-symfony-detection-guide.md), [results](../evaluation/symfony-results.md), [sample report](../../docs/samples/vuln-symfony/README.md) |
 
@@ -156,6 +156,16 @@ safe controls is red.
 | SQL injection | `routes/login.ts:34`, `routes/search.ts:23` | Confirmed |
 | NoSQL injection | `showProductReviews.ts:36`, `trackOrder.ts:18`, `updateProductReviews.ts:17` | Confirmed. `likeProductReviews.ts:25`, `:35`, `:43` are also confirmed; `orderHistory.ts:36` (confirmed in core v7) and the other query records stay Review |
 | Sensitive logging | `server.ts:366` | Confirmed in one context; the second context is Review |
+| Directory listing (`JS-CONF-01` to `03`) | `server.ts:290`, `:298`, `:302` (`serve-index`) | Confirmed. `:269` and `:294` are also Confirmed |
+| Error handler with stack traces (`JS-EXPO-01`) | `server.ts:710` | Confirmed |
+| Metrics endpoint (`JS-EXPO-02`) | `routes/metrics.ts:92` | Confirmed |
+| Weak password hash (`JS-HASH-01`) | `lib/insecurity.ts:41` | Confirmed on both bases (model accessor and SQL login) |
+| Generated user create (`JS-MASS-01`) | `server.ts:529` | Confirmed (`POST /api/Users`, `role` as a name hint) |
+| Generated product update (`JS-AUTHZ-01`) | `server.ts:529` | Confirmed (`PUT /api/Products/:id`) |
+| Collection update (`JS-AUTHZ-02`) | `routes/updateProductReviews.ts:17` | Confirmed |
+| Account enumeration (`JS-ENUM-01`) | `routes/securityQuestion.ts:15` | Confirmed |
+| Guarded controls (`JS-AUTHZ-N01`, `N02`) | `routes/address.ts:29`, `routes/payment.ts:70` | Protected |
+| No-record controls (`JS-AUTHZ-N03`, `N04`, `JS-ENUM-N01`, `JS-MASS-N01`) | `changePassword.ts:51`, `updateUserProfile.ts:38`, `login.ts:34` | No record |
 
 The XSS paths depend on `isChallengeEnabled` branches, which stay attached as preconditions. Juice Shop has many more
 [challenge categories](../evaluation/juice-shop/README.md) than Zazzles covers; a challenge's existence is not a SAST label.

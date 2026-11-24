@@ -14,7 +14,12 @@ const AuthorizationProtocol = "authorization-components-v5"
 // PHPAuthorizationOperation is the verified operation this family judges.
 const PHPAuthorizationOperation = "php-authorization-operation-v1"
 
-var authorizationContracts = []string{PHPAuthorizationOperation}
+// NodeAuthorizationOperation is the verified operation set of the Node.js
+// adapter: a Sequelize write with a where selector, an instance write on a
+// found record, and a Mongo-style collection update or remove.
+const NodeAuthorizationOperation = "node-authorization-operation-v1"
+
+var authorizationContracts = []string{PHPAuthorizationOperation, NodeAuthorizationOperation}
 
 // AuthorizationRoles are the evidence obligations of D-13.
 func AuthorizationRoles() []string {
@@ -23,6 +28,10 @@ func AuthorizationRoles() []string {
 
 // AuthorizationContract returns the semantics of one protected operation.
 func AuthorizationContract(id string) *analysis.APIModel {
+	if id == NodeAuthorizationOperation {
+		return &analysis.APIModel{ID: id, Library: "node", Reference: "https://sequelize.org/docs/v6/core-concepts/model-querying-basics/",
+			Semantics: "An authorization candidate is one protected operation: a Sequelize Model.update, destroy, increment or decrement, which acts on every row its where option matches; an update, destroy or save on an instance that findByPk or findOne returned; or an update or remove on a Mongo-style collection, which acts on every document its selector matches. The scanner records the subject (the model or collection and the keys that select the record), the operation, the entry's access and the conditions that dominate the operation. It does not decide that a condition or an access record is enough."}
+	}
 	if id != PHPAuthorizationOperation {
 		return nil
 	}

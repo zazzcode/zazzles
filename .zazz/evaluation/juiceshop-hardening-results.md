@@ -95,7 +95,7 @@ Judged run 9 (`r9-review-authz-mass-account`, `--only-family mass-assignment,aut
 
 | Family | Run 7 Confirmed | Run 9 Confirmed | Removed as false positives |
 |---|---:|---:|---|
-| Mass assignment | 16 | 6 | `PUT` on Users, Feedbacks, Complaints, Recycles, SecurityAnswers, PrivacyRequests and Cards (all unreachable); `POST` Addresss and Cards (the privileged field is overwritten) |
+| Mass assignment | 16 | 6 | `PUT` on Users, Feedbacks, Complaints, Recycles, SecurityAnswers, PrivacyRequests and Cards (all unreachable); `POST` Addresss and Cards and `PUT` Addresss (the privileged field is overwritten) |
 | Authorization | 10 | 5 | `PUT` and `DELETE` on Users, `DELETE` on Hints and PrivacyRequests (unreachable) |
 | Account enumeration | 2 | 1 | The delivery-method lookup |
 | Password hashing | 3 | 3 | — |

@@ -83,6 +83,9 @@ func (s *moduleSet) authorizationCandidates(out *analysis.AnalysisReport) {
 			}
 			sel, ok := s.authzSelectorOf(m, call, params, nosqlCalls)
 			if !ok {
+				if read, found := s.authzReadOf(m, fn, call, params); found && !instanceWritten(m, fn, call) {
+					s.recordAuthorizationRead(out, e, m, params, overwritten, read)
+				}
 				return
 			}
 			s.recordAuthorization(out, e, m, params, overwritten, sel)
@@ -349,4 +352,34 @@ func firstArg(args *sitter.Node) *sitter.Node {
 		}
 	}
 	return nil
+}
+
+// instanceWritten reports that the record a read returned is also the receiver
+// of an instance write in the handler. That write is an authorization
+// candidate of its own and carries the claim on the record.
+func instanceWritten(m *sourceModule, handler, read *sitter.Node) bool {
+	parent := read.Parent()
+	for parent != nil && (parent.Kind() == "await_expression" || parent.Kind() == "parenthesized_expression" || parent.Kind() == "as_expression") {
+		parent = parent.Parent()
+	}
+	if parent == nil || parent.Kind() != "variable_declarator" {
+		return false
+	}
+	id := parent.ChildByFieldName("name")
+	if id == nil || id.Kind() != "identifier" {
+		return false
+	}
+	written := false
+	walkCalls(handler, func(call *sitter.Node) {
+		fn := call.ChildByFieldName("function")
+		if fn == nil || fn.Kind() != "member_expression" {
+			return
+		}
+		if obj := fn.ChildByFieldName("object"); obj != nil && obj.Kind() == "identifier" && obj.Utf8Text(m.src) == id.Utf8Text(m.src) {
+			if _, ok := instanceWrites[memberName(m, fn)]; ok {
+				written = true
+			}
+		}
+	})
+	return written
 }

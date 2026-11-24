@@ -199,7 +199,8 @@ func (s *moduleSet) requestValue(m *sourceModule, n *sitter.Node, p handlerParam
 					return
 				}
 			}
-		case "identifier":
+		case "identifier", "shorthand_property_identifier":
+			// { id } in an object is a read of the constant id.
 			if depth == 0 {
 				name := x.Utf8Text(m.src)
 				if v := unwrapTS(localConst(m, x, name)); v != nil {

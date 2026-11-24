@@ -73,6 +73,44 @@ revision (54 records, 37 entries).
 | nodejs-goof | One added `info_exposure_candidate` (the `errorhandler` registration); no existing record changed |
 | `TestNextJSVulnLab` at `f5d47de` | Pass |
 
+## Lead review after the acceptance run (2026-11-24)
+
+A source review of acceptance run 7 against the access rules of the sample found Confirmed
+records on endpoints that reject every caller, and one enumeration record on a catalog lookup.
+Three causes, each fixed with a fixture:
+
+| Cause | Fix | Test |
+|---|---|---|
+| An `express-jwt` middleware whose `secret` is a fresh random value accepts no request, but was read as ordinary authentication. Generated update and delete endpoints behind it were recorded and Confirmed | `EntryAccess.rejects_all` is set from that library contract. An unreachable generated endpoint makes no claim, and the handler producers skip such an entry | `TestExpressRejectsAll`, `TestExpressGeneratedReachability` |
+| A registration written as `app.route(path).put(mw)`, and an `app.use` on the same path pattern as the endpoint, were not read as covering a generated endpoint | Both forms are read | the same tests |
+| An attribute that a registered middleware overwrites was listed as request-chosen in a generated mass-assignment record | The attribute is left out of the writable fields | `TestExpressGeneratedReachability` |
+| Account enumeration recorded a lookup by primary key alone | A lookup must name an attribute other than the surrogate key | `account-express/primary/lookups.ts`, `/ticket-number/:id` |
+
+Offline effect on Juice Shop: 332 records become 299 (the 255 baseline records are unchanged).
+33 records are gone: 32 generated-resource records on unreachable endpoints and the delivery
+lookup.
+
+Judged run 9 (`r9-review-authz-mass-account`, `--only-family mass-assignment,authorization,account`,
+35 requests, 90,373 input tokens), made on the owner's word that focused runs may continue:
+
+| Family | Run 7 Confirmed | Run 9 Confirmed | Removed as false positives |
+|---|---:|---:|---|
+| Mass assignment | 16 | 6 | `PUT` on Users, Feedbacks, Complaints, Recycles, SecurityAnswers, PrivacyRequests and Cards (all unreachable); `POST` Addresss and Cards (the privileged field is overwritten) |
+| Authorization | 10 | 5 | `PUT` and `DELETE` on Users, `DELETE` on Hints and PrivacyRequests (unreachable) |
+| Account enumeration | 2 | 1 | The delivery-method lookup |
+| Password hashing | 3 | 3 | — |
+
+Every required positive of the key is still Confirmed and `JS-AUTHZ-N01` and `N02` are still
+Protected. `DELETE /api/BasketItems/:id` moved from Confirmed to Review between the two runs with
+no change to its evidence. The full acceptance scan was not repeated after these fixes: the
+exposure and configuration results are those of run 7, whose code did not change.
+
+Still open: a generated endpoint that an explicit handler for the same method and path answers
+first is recorded (Review); a password-hash record whose digest lives in a model accessor is
+attached to an unrelated entry; the Confirmed records outside the key
+(`routes/coupon.ts:24`, `routes/likeProductReviews.ts:35`, `PUT /api/Hints/:id`, and the generated
+creates that accept `UserId`) have not been source-reviewed.
+
 ## Not built, and deviations
 
 - **Upload (D-10, AC9 second half).** Cause established: the family is registered for JavaScript and

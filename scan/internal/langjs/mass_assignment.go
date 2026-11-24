@@ -156,6 +156,9 @@ func (s *moduleSet) massAssignmentCandidates(out *analysis.AnalysisReport) {
 		if e.Kind != "http" || e.HTTP == nil || e.HTTP.Method == "USE" || e.HTTP.Framework != "express" {
 			continue
 		}
+		if e.Access != nil && e.Access.RejectsAll {
+			continue
+		}
 		def := callables[bindings[e.ID]].Definition.Span
 		m := s.modules[def.File]
 		if m == nil || def.File == "" {

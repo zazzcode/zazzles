@@ -41,3 +41,11 @@ app.post('/enter', async (req, res) => {
     res.status(401).json({})
   }
 })
+app.get('/ticket-number/:id', async (req, res) => {
+  const row = await Ticket.findOne({ where: { id: req.params.id } })
+  if (row != null) {
+    res.json({ ticket: row.id })
+  } else {
+    res.json({})
+  }
+})

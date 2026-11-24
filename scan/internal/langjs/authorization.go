@@ -59,6 +59,9 @@ func (s *moduleSet) authorizationCandidates(out *analysis.AnalysisReport) {
 		if e.Kind != "http" || e.HTTP == nil || e.HTTP.Method == "USE" || e.HTTP.Framework != "express" {
 			continue
 		}
+		if e.Access != nil && e.Access.RejectsAll {
+			continue
+		}
 		def := callables[bindings[e.ID]].Definition.Span
 		m := s.modules[def.File]
 		if m == nil || def.File == "" {
@@ -196,8 +199,19 @@ func (s *moduleSet) chainOverwrites(out *analysis.AnalysisReport, e analysis.Ent
 	if args == nil {
 		return fields
 	}
+	var chain []*sitter.Node
 	for i := uint(1); i+1 < args.NamedChildCount(); i++ {
-		hm, body, req, gaps := s.handler(m, args.NamedChild(i))
+		chain = append(chain, args.NamedChild(i))
+	}
+	return s.overwrittenFields(m, chain)
+}
+
+// overwrittenFields returns the request fields that the given middleware
+// arguments assign before the handler runs, keyed by the field's last name.
+func (s *moduleSet) overwrittenFields(m *sourceModule, chain []*sitter.Node) map[string]analysis.Evidence {
+	fields := map[string]analysis.Evidence{}
+	for _, arg := range chain {
+		hm, body, req, gaps := s.handler(m, arg)
 		if body == nil || len(gaps) > 0 || req == "" {
 			continue
 		}

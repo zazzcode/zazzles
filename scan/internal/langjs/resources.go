@@ -138,10 +138,28 @@ func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceMod
 			eps = append(eps, generatedEndpoint{"DELETE", singular, "delete"})
 		}
 		for _, ep := range eps {
-			entry := s.generatedEntry(out, m, call, ep)
+			access, chain := s.generatedAccess(m, call, ep)
+			if access.RejectsAll {
+				// No request reaches the generated handler through this
+				// endpoint, so it makes no claim.
+				continue
+			}
+			entry := s.generatedEntry(out, m, call, ep, access)
 			if ep.action == "create" || ep.action == "update" {
 				note := "finale-rest " + ep.action + " writes each field of the request body to the model attribute of the same name; the request chooses the attribute names."
-				s.recordMass(out, entry, m, call, call, info, nil, note)
+				writable, extra := info, []analysis.Evidence(nil)
+				if over := s.overwrittenFields(m, chain); len(over) > 0 {
+					writable.attrs = nil
+					for _, a := range info.attrs {
+						if ev, ok := over[a.name]; ok {
+							extra = append(extra, ev)
+							continue
+						}
+						writable.attrs = append(writable.attrs, a)
+					}
+					note += " A middleware registered for this endpoint overwrites some request fields before the write; those attributes are not request-chosen and are left out."
+				}
+				s.recordMass(out, entry, m, call, call, writable, extra, note)
 			}
 			if ep.action == "update" || ep.action == "delete" {
 				s.recordGeneratedAuthorization(out, entry, m, call, info, ep)
@@ -301,7 +319,7 @@ func literalStrings(m *sourceModule, n *sitter.Node) ([]string, bool) {
 // generatedEntry registers the HTTP entry of a generated endpoint, anchored at
 // the resource call, with the access of the chain registered for its method
 // and path before the call.
-func (s *moduleSet) generatedEntry(out *analysis.AnalysisReport, m *sourceModule, call *sitter.Node, ep generatedEndpoint) analysis.EntryPoint {
+func (s *moduleSet) generatedEntry(out *analysis.AnalysisReport, m *sourceModule, call *sitter.Node, ep generatedEndpoint, access analysis.EntryAccess) analysis.EntryPoint {
 	reg := m.evidence("entry_registration", call)
 	route := analysis.Route{
 		ID: fmt.Sprintf("route:%s:%d:%s:%s", m.file, call.StartByte(), ep.method, ep.path), Method: ep.method, PathPattern: ep.path,
@@ -310,7 +328,7 @@ func (s *moduleSet) generatedEntry(out *analysis.AnalysisReport, m *sourceModule
 	e := parse.HTTPEntry(route, reg, m.file+":"+m.hash+":generated")
 	e.HTTP.SourcePath = ep.path
 	e.Gaps = []analysis.Gap{}
-	if access := s.generatedAccess(m, call, ep); access.Authentication != analysis.AccessNone {
+	if access.Authentication != analysis.AccessNone {
 		e.Access = &access
 	}
 	parse.RegisterInvocation(out, e, nil, "direct_registration", nil, e.Gaps)
@@ -319,33 +337,72 @@ func (s *moduleSet) generatedEntry(out *analysis.AnalysisReport, m *sourceModule
 
 // generatedAccess reads the chain registered for the endpoint: earlier app.use
 // calls that cover the path, and earlier registrations of the same method and
-// path (middleware-only calls such as app.post(path, authenticate)).
-func (s *moduleSet) generatedAccess(m *sourceModule, call *sitter.Node, ep generatedEndpoint) analysis.EntryAccess {
+// path, written as app.post(path, middleware) or as a method of an
+// app.route(path) chain. It also returns those middleware argument nodes.
+func (s *moduleSet) generatedAccess(m *sourceModule, call *sitter.Node, ep generatedEndpoint) (analysis.EntryAccess, []*sitter.Node) {
 	var extra []*sitter.Node
 	walkCalls(m.tree.RootNode(), func(reg *sitter.Node) {
 		if reg.StartByte() >= call.StartByte() {
 			return
 		}
 		fn, args := reg.ChildByFieldName("function"), reg.ChildByFieldName("arguments")
-		if fn == nil || args == nil || fn.Kind() != "member_expression" || args.NamedChildCount() < 2 {
+		if fn == nil || args == nil || fn.Kind() != "member_expression" {
 			return
 		}
 		obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
-		if obj == nil || prop == nil || obj.Kind() != "identifier" || !receiverUsable(m, reg, obj.Utf8Text(m.src)) {
+		if obj == nil || prop == nil {
 			return
 		}
 		method := strings.ToUpper(prop.Utf8Text(m.src))
 		if method != ep.method && method != "ALL" {
 			return
 		}
-		if path, ok := stringLiteral(args.NamedChild(0), m.src); !ok || path != ep.path {
+		first := uint(1)
+		switch obj.Kind() {
+		case "identifier":
+			if args.NamedChildCount() < 2 || !receiverUsable(m, reg, obj.Utf8Text(m.src)) {
+				return
+			}
+			if path, ok := stringLiteral(args.NamedChild(0), m.src); !ok || path != ep.path {
+				return
+			}
+		case "call_expression":
+			// receiver.route(path).get(a).put(b): every argument is middleware.
+			if path, ok := routeChainPath(m, obj); !ok || path != ep.path {
+				return
+			}
+			first = 0
+		default:
 			return
 		}
-		for i := uint(1); i < args.NamedChildCount(); i++ {
+		for i := first; i < args.NamedChildCount(); i++ {
 			extra = append(extra, args.NamedChild(i))
 		}
 	})
-	return s.expressAccessForNodes(m, call, ep.path, nil, 0, 0, extra)
+	return s.expressAccessForNodes(m, call, ep.path, nil, 0, 0, extra), extra
+}
+
+// routeChainPath returns the literal path of the receiver.route(path) call at
+// the base of a chain of method calls.
+func routeChainPath(m *sourceModule, n *sitter.Node) (string, bool) {
+	for n != nil && n.Kind() == "call_expression" {
+		fn, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments")
+		if fn == nil || fn.Kind() != "member_expression" {
+			return "", false
+		}
+		obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+		if obj == nil || prop == nil {
+			return "", false
+		}
+		if obj.Kind() == "identifier" {
+			if prop.Utf8Text(m.src) != "route" || args == nil || args.NamedChildCount() != 1 || !receiverUsable(m, n, obj.Utf8Text(m.src)) {
+				return "", false
+			}
+			return stringLiteral(args.NamedChild(0), m.src)
+		}
+		n = obj
+	}
+	return "", false
 }
 
 func (s *moduleSet) recordGeneratedAuthorization(out *analysis.AnalysisReport, e analysis.EntryPoint, m *sourceModule, call *sitter.Node, info modelInfo, ep generatedEndpoint) {

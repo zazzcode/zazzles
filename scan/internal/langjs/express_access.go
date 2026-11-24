@@ -121,6 +121,11 @@ func (s *moduleSet) expressAccessForNodes(m *sourceModule, call *sitter.Node, re
 	case len(required) > 0:
 		access.Authentication = analysis.AccessRequired
 		access.Sources = required
+		for _, ev := range required {
+			if ev.Kind == accessRejectsAll {
+				access.RejectsAll = true
+			}
+		}
 	case len(guarded) > 0:
 		access.Authentication = analysis.AccessUnresolved
 		access.Sources = guarded
@@ -157,6 +162,8 @@ func (s *moduleSet) useChain(m *sourceModule, use *sitter.Node, rel string, unco
 		first = 1
 		if !unconditional {
 			switch {
+			case path == rel:
+				// The same pattern text matches the same requests.
 			case strings.ContainsAny(path, "*:?()+[]"):
 				prefix := path
 				for i, c := range path {
@@ -244,13 +251,13 @@ func (s *moduleSet) authMiddleware(m *sourceModule, n *sitter.Node, depth int) (
 			return nil, false
 		}
 		if imp, ok := m.imports[name]; ok && authContract(imp.module, imp.name) {
-			return []analysis.Evidence{m.evidence("access_library_call", n)}, true
+			return libraryCallEvidence(m, n, imp.module), true
 		}
 	case "member_expression":
 		obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
 		if obj != nil && prop != nil && obj.Kind() == "identifier" && !shadowed(n, obj.Utf8Text(m.src), m.src) {
 			if imp, ok := m.imports[obj.Utf8Text(m.src)]; ok && (imp.name == "default" || imp.name == "*") && authContract(imp.module, prop.Utf8Text(m.src)) && !bindingReassigned(m, obj.Utf8Text(m.src)) {
-				return []analysis.Evidence{m.evidence("access_library_call", n)}, true
+				return libraryCallEvidence(m, n, imp.module), true
 			}
 		}
 	default:
@@ -279,6 +286,76 @@ func (s *moduleSet) authMiddleware(m *sourceModule, n *sitter.Node, depth int) (
 	}
 	return evidence, true
 }
+
+// accessRejectsAll is the evidence kind of a listed middleware call that can
+// accept no request.
+const accessRejectsAll = "access_rejects_all"
+
+// libraryCallEvidence is the evidence of a listed authentication call. An
+// express-jwt middleware verifies a token against its `secret` option (README,
+// "Options": "the secret for HMAC algorithms, or the PEM encoded public key").
+// When that option is computed inline from a random source each time the
+// middleware is built, no signer holds the value, so no token verifies and the
+// middleware rejects every request. That is recorded as a second evidence.
+func libraryCallEvidence(m *sourceModule, call *sitter.Node, module string) []analysis.Evidence {
+	out := []analysis.Evidence{m.evidence("access_library_call", call)}
+	if module != "express-jwt" {
+		return out
+	}
+	opts := objectOf(m, firstArg(call.ChildByFieldName("arguments")))
+	if opts == nil {
+		return out
+	}
+	secret := property(opts, "secret", m.src)
+	if secret == nil || !inlineRandom(m, secret) {
+		return out
+	}
+	ev := m.evidence(accessRejectsAll, secret)
+	ev.ModelText = "The verification secret is a fresh random value each time this middleware is built, so no token verifies and every request is rejected."
+	return append(out, ev)
+}
+
+// inlineRandom reports whether an expression calls Math.random or a random
+// generator of node:crypto.
+func inlineRandom(m *sourceModule, n *sitter.Node) bool {
+	found := false
+	var walk func(*sitter.Node)
+	walk = func(x *sitter.Node) {
+		if x == nil || found || isFunction(x) {
+			return
+		}
+		if x.Kind() == "call_expression" {
+			if fn := x.ChildByFieldName("function"); fn != nil {
+				switch fn.Kind() {
+				case "member_expression":
+					obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+					if obj != nil && prop != nil && obj.Kind() == "identifier" && !shadowed(x, obj.Utf8Text(m.src), m.src) {
+						name, member := obj.Utf8Text(m.src), prop.Utf8Text(m.src)
+						if _, imported := m.imports[name]; name == "Math" && member == "random" && !imported {
+							found = true
+						}
+						if imp, ok := m.imports[name]; ok && cryptoModule(imp.module) && randomGenerators[member] {
+							found = true
+						}
+					}
+				case "identifier":
+					if imp, ok := m.imports[fn.Utf8Text(m.src)]; ok && cryptoModule(imp.module) && randomGenerators[imp.name] && !shadowed(x, fn.Utf8Text(m.src), m.src) {
+						found = true
+					}
+				}
+			}
+		}
+		for i := uint(0); i < x.NamedChildCount(); i++ {
+			walk(x.NamedChild(i))
+		}
+	}
+	walk(n)
+	return found
+}
+
+var randomGenerators = map[string]bool{"randomBytes": true, "randomUUID": true, "randomInt": true}
+
+func cryptoModule(module string) bool { return module == "crypto" || module == "node:crypto" }
 
 func authContract(module, name string) bool {
 	names := authMiddlewareContracts[module]

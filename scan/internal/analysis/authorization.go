@@ -64,6 +64,9 @@ type EntryAccess struct {
 	Roles          []string   `json:"roles,omitempty"`
 	Sources        []Evidence `json:"sources"`
 	Gaps           []Gap      `json:"gaps,omitempty"`
+	// RejectsAll is set when a middleware on the chain can accept no request,
+	// so the entry's operations are unreachable through it.
+	RejectsAll bool `json:"rejects_all,omitempty"`
 }
 
 // StateChange is one stored write an entry performs.

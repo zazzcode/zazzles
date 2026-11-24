@@ -222,11 +222,26 @@ func (s *moduleSet) enumerationLookupOf(m *sourceModule, call *sitter.Node, p ha
 		return enumerationLookup{}, false
 	}
 	l := enumerationLookup{call: call, result: id.Utf8Text(m.src), class: class, method: memberName(m, fn), source: src}
+	natural := false
 	for _, key := range criteriaKeys(m, firstArg(args)) {
 		l.criteria = append(l.criteria, key)
+		if !surrogateKeys[key] {
+			natural = true
+		}
+	}
+	// Account enumeration is about an identifier a person knows, such as an
+	// address or a name. A lookup by primary key alone (findByPk, findById, or
+	// criteria that name only the surrogate key) tells a caller whether a row
+	// number exists, which is not that claim.
+	if !natural {
+		return enumerationLookup{}, false
 	}
 	return l, true
 }
+
+// surrogateKeys are the default primary key attributes of Sequelize and
+// Mongoose models.
+var surrogateKeys = map[string]bool{"id": true, "_id": true}
 
 // criteriaKeys returns the property names of the innermost where object (or
 // of the argument object itself).

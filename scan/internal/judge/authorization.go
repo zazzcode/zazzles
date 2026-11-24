@@ -20,7 +20,7 @@ func applyAuthorizationPolicy(use analysis.CandidateUse, a *analysis.Assessment)
 		return
 	}
 	f, c := use.Authorization, use.Completeness
-	if f == nil || c == nil || c.ClaimKind != "authorization" || use.APIModel == nil || use.APIModel.ID != analysispacks.PHPAuthorizationOperation {
+	if f == nil || c == nil || c.ClaimKind != "authorization" || use.APIModel == nil || use.APIModel.ID != analysispacks.PHPAuthorizationOperation && use.APIModel.ID != analysispacks.NodeAuthorizationOperation {
 		gap("claim_missing", "Authorization requires source-backed facts, completeness and the operation contract.")
 		return
 	}
@@ -38,6 +38,8 @@ func applyAuthorizationPolicy(use analysis.CandidateUse, a *analysis.Assessment)
 	auth := ""
 	if use.EntryFacts != nil && use.EntryFacts.Access != nil {
 		auth = use.EntryFacts.Access.Authentication
+	} else if use.EntryFacts != nil && use.EntryFacts.HTTP != nil && use.EntryFacts.HTTP.Framework == "express" {
+		auth = analysis.AccessNone // an Express entry with no stored access record
 	}
 	routeSelected := f.SubjectProvenance == analysis.SubjectRequestSelected && routePlaceholder(use)
 	switch {
@@ -135,6 +137,8 @@ func wireAuthorization(use analysis.CandidateUse, ref func(analysis.Evidence) st
 	// request does not, so a judge payload never carries that hash.
 	if use.EntryFacts != nil && use.EntryFacts.Access != nil {
 		out["access"] = use.EntryFacts.Access
+	} else if use.EntryFacts != nil && use.EntryFacts.HTTP != nil && use.EntryFacts.HTTP.Framework == "express" {
+		out["access"] = analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{}}
 	}
 	return out
 }

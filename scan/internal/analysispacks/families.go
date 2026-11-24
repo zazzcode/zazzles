@@ -178,7 +178,7 @@ func Families() []Family {
 		},
 		{
 			Name: "authorization", Label: "Missing authorization", Kinds: []string{analysis.AuthorizationKind}, QuestionNames: authorizationQuestionNames(),
-			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true,
+			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true,
 			Pack: "pack.authorization", Claim: "claim.authorization", Evidence: "evidence.authorization", PolicyOwner: "internal/judge/authorization.go",
 		},
 		{

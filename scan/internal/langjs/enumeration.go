@@ -1,6 +1,7 @@
 package langjs
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 
@@ -54,11 +55,7 @@ func (s *moduleSet) enumerationCandidates(out *analysis.AnalysisReport) {
 		if body == nil {
 			continue
 		}
-		fn := body.Parent()
-		if isFunction(body) || body.Kind() == "function_declaration" {
-			// The callable definition is the whole function.
-			fn, body = body, body.ChildByFieldName("body")
-		}
+		fn, body := handlerFunction(body)
 		if body == nil || body.Kind() != "statement_block" || fn == nil {
 			continue
 		}
@@ -124,7 +121,7 @@ func plainOrDestructuredParameters(fn *sitter.Node, src []byte) handlerParams {
 // requestValue returns the first node under n that reads the request: a member
 // chain of the request parameter, a destructured container, or a constant that
 // is bound to one.
-func requestValue(m *sourceModule, n *sitter.Node, p handlerParams, depth int) *sitter.Node {
+func (s *moduleSet) requestValue(m *sourceModule, n *sitter.Node, p handlerParams, depth int) *sitter.Node {
 	var found *sitter.Node
 	var walk func(*sitter.Node)
 	walk = func(x *sitter.Node) {
@@ -132,7 +129,15 @@ func requestValue(m *sourceModule, n *sitter.Node, p handlerParams, depth int) *
 			return
 		}
 		switch x.Kind() {
+		case "call_expression":
+			if s.keyedStoreCall(m, x) {
+				return // the call returns what the server stored, not its key
+			}
 		case "member_expression", "subscript_expression":
+			if serverKeyedStore(m, x) {
+				// store[key] returns what the server wrote, not the key.
+				return
+			}
 			if root := chainRoot(x, m.src); root != "" {
 				if root == p.request || p.containers[root] {
 					found = x
@@ -143,7 +148,7 @@ func requestValue(m *sourceModule, n *sitter.Node, p handlerParams, depth int) *
 			if depth == 0 {
 				name := x.Utf8Text(m.src)
 				if v := unwrapTS(localConst(m, x, name)); v != nil {
-					if r := requestValue(m, v, p, 1); r != nil {
+					if r := s.requestValue(m, v, p, 1); r != nil {
 						found = x
 						return
 					}
@@ -187,7 +192,7 @@ func localConst(m *sourceModule, n *sitter.Node, name string) *sitter.Node {
 
 func (s *moduleSet) enumerationLookupOf(m *sourceModule, call *sitter.Node, p handlerParams) (enumerationLookup, bool) {
 	fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
-	if fn == nil || args == nil || fn.Kind() != "member_expression" || !enumerationFinders[memberName(m, fn)] || args.NamedChildCount() == 0 {
+	if fn == nil || args == nil || fn.Kind() != "member_expression" || !enumerationFinders[memberName(m, fn)] || firstArg(args) == nil {
 		return enumerationLookup{}, false
 	}
 	obj := fn.ChildByFieldName("object")
@@ -212,12 +217,12 @@ func (s *moduleSet) enumerationLookupOf(m *sourceModule, call *sitter.Node, p ha
 		return enumerationLookup{}, false
 	}
 	id := parent.ChildByFieldName("name")
-	src := requestValue(m, args.NamedChild(0), p, 0)
+	src := s.requestValue(m, firstArg(args), p, 0)
 	if id == nil || id.Kind() != "identifier" || src == nil {
 		return enumerationLookup{}, false
 	}
 	l := enumerationLookup{call: call, result: id.Utf8Text(m.src), class: class, method: memberName(m, fn), source: src}
-	for _, key := range criteriaKeys(m, args.NamedChild(0)) {
+	for _, key := range criteriaKeys(m, firstArg(args)) {
 		l.criteria = append(l.criteria, key)
 	}
 	return l, true
@@ -253,7 +258,7 @@ func criteriaKeys(m *sourceModule, arg *sitter.Node) []string {
 // digest (directly or through the one helper that returns it).
 func (s *moduleSet) isLogin(m *sourceModule, call *sitter.Node) bool {
 	args := call.ChildByFieldName("arguments")
-	obj := unwrapTS(args.NamedChild(0))
+	obj := unwrapTS(firstArg(args))
 	if obj == nil || obj.Kind() != "object" {
 		return false
 	}
@@ -482,4 +487,74 @@ func sameResponses(a, b []analysis.BranchResponse) bool {
 		}
 	}
 	return true
+}
+
+// serverKeyedStore reports a lookup `store[key]` on a module-level constant
+// initialized to an empty object that no code aliases (keyed_store_lookup.go).
+func serverKeyedStore(m *sourceModule, n *sitter.Node) bool {
+	if n.Kind() != "subscript_expression" {
+		return false
+	}
+	obj := n.ChildByFieldName("object")
+	if obj == nil || obj.Kind() != "identifier" || shadowed(n, obj.Utf8Text(m.src), m.src) {
+		return false
+	}
+	name := obj.Utf8Text(m.src)
+	return emptyStoreLiteral(m, topVariable(m, name)) && !bindingReassigned(m, name)
+}
+
+// handlerFunction returns the request handler function and its block for the
+// node a callable definition names: the function itself or its block. A
+// factory with no parameters whose whole body returns a function is followed to
+// that function.
+func handlerFunction(node *sitter.Node) (*sitter.Node, *sitter.Node) {
+	fn := node
+	if !isFunction(node) && node.Kind() != "function_declaration" {
+		fn = node.Parent()
+	}
+	for depth := 0; fn != nil && depth < 3; depth++ {
+		params := fn.ChildByFieldName("parameters")
+		if params != nil && params.NamedChildCount() > 0 {
+			break
+		}
+		inner := returnedFunction(fn)
+		if inner == nil {
+			break
+		}
+		fn = inner
+	}
+	if fn == nil {
+		return nil, nil
+	}
+	return fn, fn.ChildByFieldName("body")
+}
+
+var thisStoreIndex = regexp.MustCompile(`this\.([A-Za-z_$][\w$]*)\[`)
+
+// keyedStoreCall reports a call of a method of a const object literal whose
+// body indexes `this.<store>[...]`, where <store> is a property of that object
+// initialized to an empty object (keyed_store_lookup.go): the call returns what
+// the server wrote into the store.
+func (s *moduleSet) keyedStoreCall(m *sourceModule, call *sitter.Node) bool {
+	fn := call.ChildByFieldName("function")
+	if fn == nil || (fn.Kind() != "identifier" && fn.Kind() != "member_expression") {
+		return false
+	}
+	target, method := s.resolve(m, fn.Utf8Text(m.src))
+	if target == nil || method == nil {
+		return false
+	}
+	obj := method.Parent()
+	for i := 0; obj != nil && obj.Kind() != "object" && i < 3; i++ {
+		obj = obj.Parent()
+	}
+	if obj == nil || obj.Kind() != "object" {
+		return false
+	}
+	for _, match := range thisStoreIndex.FindAllStringSubmatch(method.Utf8Text(target.src), -1) {
+		if v := property(obj, match[1], target.src); v != nil && emptyStoreLiteral(target, v) {
+			return true
+		}
+	}
+	return false
 }

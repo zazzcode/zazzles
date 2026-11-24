@@ -301,6 +301,8 @@ func javascriptApplicationGuidance(name string) string {
 	switch name {
 	case "exposure":
 		return " Node.js: an error-handling middleware that sends stack traces, a metrics endpoint, an API description page, or a response body that is the process environment, an error stack or process memory state discloses internal state. An environment condition around a registration is a guard to weigh, not a fact that the code is absent in production."
+	case "authorization":
+		return " Node.js: a Sequelize write acts on every row its where option matches and a collection update or remove acts on every document its selector matches, so a selector key that a request value fills lets the request choose the rows. A second selector key filled from a source other than the request, or a request field that a middleware on the entry's chain overwrites before the handler, scopes the write to the caller. A Node.js entry has no roles: its access is whether an authentication middleware precedes the handler."
 	case accountFamilyName:
 		return " Node.js: a digest computed by crypto.createHash or crypto.createHmac with a constant key is one fast digest. It is a password hash claim only where the recorded basis shows its result stored as, or compared with, a credential."
 	case "configuration":

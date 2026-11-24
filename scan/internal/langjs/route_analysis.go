@@ -112,6 +112,17 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 	} else {
 		out.Entries[len(out.Entries)-1].Gaps = e.Gaps
 	}
+	if r.Framework == "express" && r.Method != "USE" {
+		rel := r.PathPattern
+		if mount != "" && sourcePath != "" {
+			rel = sourcePath
+		}
+		// A result of none is stored as no record (see expressEntryAccess), so
+		// the serialized report of an unguarded Express entry is unchanged.
+		if access := s.expressAccess(m, call, rel, context); access.Authentication != analysis.AccessNone {
+			out.Entries[len(out.Entries)-1].Access = &access
+		}
+	}
 	noteHTTPDeclaration(out, r, context)
 }
 

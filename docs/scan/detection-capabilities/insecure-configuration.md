@@ -99,3 +99,17 @@ last one. A cron line whose relative path has no `cd`. A `curl` or `wget` reache
 | Debug enabled | Deploy with `APP_ENV=prod` and `APP_DEBUG=0`, and leave `display_errors` off |
 | Remote include enabled | Set `allow_url_include` to `Off`, and choose included files from a fixed list |
 | Scheduled writable file | Run the job as the user that owns the file, or remove the write bit for every other user |
+
+## JavaScript and TypeScript (Express)
+
+Two checks read Express source. No deployment file is needed: a registration or cookie option in
+the source that builds the application is applied by that application.
+
+| Check | Recorded when |
+| --- | --- |
+| Directory listing (CWE-548) | A [`serve-index`](https://github.com/expressjs/serve-index#readme) call is passed to `app.use`. The record joins the mount path, the directory argument, the access of the mount and each middleware before it on the same call |
+| Session cookie readable by script, session cookie on insecure transport (CWE-1004, CWE-614) | The `cookie` option of `express-session`, or the options of `cookie-session`, set `httpOnly: false` or `secure: false`, as a literal or through a constant |
+
+An absent option and a `true` are not recorded, and a `res.cookie` call is not recorded because
+its name does not establish that it carries the session. The deployment-file readers do not yet
+run for a JavaScript project.

@@ -58,3 +58,7 @@ page that stores a token on the row a submitted address selects; the model judge
 `SELECT`, `INSERT`, bound parameters and comparisons other than `=` are not read.
 Trusted-proxy configuration is unread. The SSRF request is not modified when an
 authorization record points at it.
+
+## JavaScript and TypeScript
+
+A Node entry has no roles; its access is whether an authentication middleware precedes the handler. A selector key filled from a keyed store or overwritten by a chain middleware scopes the write to the caller and is recorded as `ownership_check` / `query_scope`.

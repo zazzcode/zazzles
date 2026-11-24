@@ -73,3 +73,7 @@ types, serializer groups, validation, Doctrine XML or YAML mappings and named-se
 authorization are not read.
 
 See [coverage and remediation](../detection-capabilities/mass-assignment.md).
+
+## JavaScript and TypeScript
+
+The ORM writes each key of a whole request bag to the attribute of the same name, so the shape is `dynamic_property_write`. A `fields` option with a literal array is the fix. A library option that only hides attributes from reads (`excludeAttributes`) is not.

@@ -453,3 +453,15 @@ access. Python. Any PHP behavior. The comparison documents of branch 2. Everythi
 
 Written from an offline scan of both samples at `4fb2ea8`, a source read of Juice Shop at its
 pin and the family registry. No code changed.
+
+### 2026-11-24 — Implemented, upload producer open
+
+Slices S0 to S5 and the first half of S6 are implemented on the branch. The upload family still
+has no JavaScript producer: §1.2 now records the cause (no `langjs` code builds
+`file_upload_candidate`), and D-10 and AC9's fixtures are open. Entry access `none` is stored as
+no record so existing report hashes and `architecture-baseline.json` do not change (halt 1); a
+mount with no path gets one `USE /` entry so a claim about it has an entry to ride. The
+[results](../evaluation/juiceshop-hardening-results.md) hold the judged runs: all ten required
+positives of §3 are Confirmed, the guarded controls are Protected, and no control is a finding.
+Eight of eight judged runs are used.
+

@@ -63,3 +63,7 @@ Finding type `insecure-configuration`. Each check has its own SARIF rule,
 `scan/insecure-configuration/<check>`, which carries the check's CWE and help text:
 directory listing 548, CSRF 352, script-readable cookie 1004, insecure cookie 614,
 debug 489, remote include 98, scheduled writable file 732.
+
+## JavaScript and TypeScript
+
+A registration or cookie option in the source that builds an Express application needs no deployment mapping; the adapter joins `deployed_file` evidence to say so. A directory listing is a weakness unless a recorded middleware before it on the same call, or an earlier mount, ends the request.

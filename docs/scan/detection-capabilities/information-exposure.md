@@ -48,3 +48,20 @@ restricts the caller.
 
 Remove the diagnostic call from served code. If a diagnostic page is required, restrict it to an
 authenticated administrator and disable it outside development.
+
+## JavaScript and TypeScript (Express)
+
+The family also records these operations in Express applications. Each is a documented contract
+of a library or of the Node.js `process` object, never a name.
+
+| Operation | Recorded when |
+| --- | --- |
+| The [`errorhandler`](https://github.com/expressjs/errorhandler#readme) middleware | Passed to `app.use` or a route. It sends the stack trace of an error |
+| prom-client `register.metrics()` | Sent as a response body. A constant bound to the registry one step away counts |
+| swagger-ui-express `setup(...)` | Passed to `app.use` or a route. It serves the API description |
+| `process.env`, `process.memoryUsage()` and its siblings, an error's `stack` | The whole response body |
+
+An `app.use(...)` call with no path is middleware, not a route; the scanner registers one
+`USE /` entry for it so the record has an entry. A condition on `process.env.NODE_ENV` that
+dominates the operation is recorded as a guard, never as a filter. Contract:
+`node-diagnostic-output-v1`.

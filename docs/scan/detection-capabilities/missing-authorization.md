@@ -92,3 +92,17 @@ request-derived. A key-controlled write, which mass assignment already owns. A r
 a field that is not a credential, a login identifier or a role source. Command
 execution guarded only by an address. Voters, expressions and custom authenticators
 beyond the gap. Access is not a protection for any other claim.
+
+## JavaScript and TypeScript (Express)
+
+An `object_level` candidate is recorded for a state change on a record the request selects:
+a Sequelize `Model.update`, `destroy`, `increment` or `decrement` with a `where` option, an
+instance `update`, `destroy` or `save` on a record `findByPk` or `findOne` returned, or an
+`update` or `remove` on a Mongo-style collection the NoSQL family models. A selector key carries a
+request value that reaches it without a server-side keyed store. A second key that is not the
+request's, or a request field that a middleware on the entry's chain overwrites, is recorded as an
+`ownership_check` guard in the `query_scope` form. Generated finale-rest update and delete
+endpoints are selected by their `:id` parameter. An Express entry's access is `required` when a
+verified authentication middleware (`express-jwt`, `passport.authenticate`, `requiresAuth()`)
+precedes the handler, `unresolved` when a local middleware ends the response on one branch and
+calls `next()` on another, and `none` otherwise. Reads are not covered.

@@ -125,6 +125,7 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	s.passwordHashCandidates(out, selected)
 	s.enumerationCandidates(out)
 	s.authorizationCandidates(out)
+	s.massAssignmentCandidates(out)
 	if err := s.browser(out); err != nil {
 		return nil, err
 	}
@@ -160,6 +161,9 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 		s.automaticQueries(out)
 	}
 	s.assembleNodeInputs(out)
+	// After check assembly: a generated endpoint is an entry of its own, and an
+	// explicit check must keep matching the entries registered in source.
+	s.generatedResources(out, selected)
 	s.nextPractice(out, selected)
 	keys := make([]string, 0, len(s.modules))
 	for k := range s.modules {

@@ -301,6 +301,8 @@ func javascriptApplicationGuidance(name string) string {
 	switch name {
 	case "exposure":
 		return " Node.js: an error-handling middleware that sends stack traces, a metrics endpoint, an API description page, or a response body that is the process environment, an error stack or process memory state discloses internal state. An environment condition around a registration is a guard to weigh, not a fact that the code is absent in production."
+	case "mass-assignment":
+		return " Node.js: a whole request bag passed to a model write (create, build, update, set, Object.assign, or a Mongoose constructor) lets the request name any attribute, because the ORM writes each key to the attribute of the same name; a fields option with a literal array is the fix, and a library option that only hides attributes from reads is not. A generated REST resource writes every body field of a create or update to the model."
 	case "authorization":
 		return " Node.js: a Sequelize write acts on every row its where option matches and a collection update or remove acts on every document its selector matches, so a selector key that a request value fills lets the request choose the rows. A second selector key filled from a source other than the request, or a request field that a middleware on the entry's chain overwrites before the handler, scopes the write to the caller. A Node.js entry has no roles: its access is whether an authentication middleware precedes the handler."
 	case accountFamilyName:

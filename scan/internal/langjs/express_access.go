@@ -46,6 +46,12 @@ func (s *moduleSet) expressAccess(m *sourceModule, call *sitter.Node, rel string
 // registration call given as the range [from, to). A mount (app.use) passes
 // the arguments that precede the middleware it asks about.
 func (s *moduleSet) expressAccessFor(m *sourceModule, call *sitter.Node, rel string, context []analysis.Evidence, from, to uint) analysis.EntryAccess {
+	return s.expressAccessForNodes(m, call, rel, context, from, to, nil)
+}
+
+// expressAccessForNodes also reads extra middleware argument nodes of the same
+// module, such as those of earlier registrations of the same method and path.
+func (s *moduleSet) expressAccessForNodes(m *sourceModule, call *sitter.Node, rel string, context []analysis.Evidence, from, to uint, extra []*sitter.Node) analysis.EntryAccess {
 	access := analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{}}
 	var required []analysis.Evidence
 	var guarded []analysis.Evidence
@@ -106,6 +112,11 @@ func (s *moduleSet) expressAccessFor(m *sourceModule, call *sitter.Node, rel str
 		}
 	}
 
+	for _, arg := range extra {
+		for _, item := range s.chainItems(m, arg, call) {
+			note(item)
+		}
+	}
 	switch {
 	case len(required) > 0:
 		access.Authentication = analysis.AccessRequired

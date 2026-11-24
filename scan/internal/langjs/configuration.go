@@ -199,7 +199,7 @@ func (s *moduleSet) recordConfiguration(out *analysis.AnalysisReport, m *sourceM
 		Assessment: analysis.Assessment{Status: "not_run"},
 		Completeness: &analysis.Completeness{
 			ClaimKind: "configuration", Required: []string{"setting", "scope"},
-			Evidence: map[string][]analysis.Evidence{"setting": {facts.Setting}, "scope": {scope}},
+			Evidence: map[string][]analysis.Evidence{"setting": {facts.Setting}, "scope": {scope}, "dispatch_binding": {e.Location}},
 			Blockers: []analysis.Gap{}, Coverage: []analysis.Gap{},
 			Scope: "One allow-listed setting joined to the application facts that give it meaning. The scanner does not decide that the setting is a defect.",
 		},

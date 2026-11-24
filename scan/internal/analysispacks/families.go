@@ -173,7 +173,7 @@ func Families() []Family {
 		},
 		{
 			Name: "mass-assignment", Label: "Mass assignment", Kinds: []string{analysis.MassAssignmentKind}, QuestionNames: massAssignmentQuestionNames(),
-			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, PHPHTTPOnly: true,
+			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP}, Entries: []string{"entry.http"}, PHPHTTPOnly: true,
 			Pack: "pack.mass-assignment", Claim: "claim.mass-assignment", Evidence: "evidence.mass-assignment", PolicyOwner: "internal/judge/mass_assignment.go",
 		},
 		{

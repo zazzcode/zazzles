@@ -13,7 +13,11 @@ import (
 // identifies the source adapter; browser inline scripts can live in HTML files.
 func sourceLanguage(u analysis.CandidateUse, f *Family) (lang.Language, bool) {
 	if f.Name == "configuration" {
-		// Deployment and framework files are still this PHP adapter's claim.
+		// A JavaScript or TypeScript source anchor is that adapter's claim.
+		// Deployment and framework files stay this PHP adapter's claim.
+		if l, ok := lang.Detect(u.Sink.Span.File); ok && (l == lang.JavaScript || l == lang.TypeScript) {
+			return l, true
+		}
 		return lang.PHP, true
 	}
 	if f.Name == "exposure" && filepath.Ext(u.Sink.Span.File) == ".twig" {

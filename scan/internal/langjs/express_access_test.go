@@ -49,6 +49,8 @@ app.get('/x', jwt({ secret: 's' }), (req, res) => { res.send('ok') })`}, "GET /x
 		{"openid requiresAuth", map[string]string{"server.ts": head + `app.get('/x', requiresAuth(), (req, res) => { res.send('ok') })`}, "GET /x", analysis.AccessRequired, "requiresAuth"},
 		{"local wrapper returns listed middleware", map[string]string{"server.ts": head + `const gate = () => expressjwt({ secret: 's', algorithms: ['HS256'] });
 app.get('/x', gate(), (req, res) => { res.send('ok') })`}, "GET /x", analysis.AccessRequired, "expressjwt"},
+		{"constant bound to listed middleware", map[string]string{"server.ts": head + `const gate = expressjwt({ secret: 's', algorithms: ['HS256'] });
+app.get('/x', gate, (req, res) => { res.send('ok') })`}, "GET /x", analysis.AccessRequired, "gate"},
 		{"wrapper in another module", map[string]string{"guards.ts": `import { expressjwt } from 'express-jwt';
 export const gate = () => expressjwt({ secret: 's', algorithms: ['HS256'] });`, "server.ts": `import express from 'express';
 import * as guards from './guards';

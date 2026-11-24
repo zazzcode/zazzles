@@ -24,6 +24,9 @@ func (s *moduleSet) assembleNodeInputs(r *analysis.AnalysisReport) {
 	}
 	for i := range r.Uses {
 		u := &r.Uses[i]
+		if operationCentered(u) {
+			continue
+		}
 		if c := s.nodeHTTP[u.EntryID]; c != nil {
 			s.nodeInputFacts(u, c)
 			continue
@@ -235,4 +238,11 @@ func (f *flow) nodeFieldAvailable(n *sitter.Node) bool {
 		}
 	}
 	return true
+}
+
+// operationCentered reports a candidate of an application-security family
+// whose claim has no request source (lane contract section 2.7): its facts are
+// the operation and its entry, so no input binding is attached.
+func operationCentered(u *analysis.CandidateUse) bool {
+	return u.Exposure != nil || u.Configuration != nil || u.PasswordHash != nil
 }

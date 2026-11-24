@@ -272,6 +272,12 @@ func applicationDescriptors(name string) []Component {
 	}
 	g := guidelines.AnalysisGuidelines{ID: name + "-php", Version: "1", Languages: []string{string(lang.PHP)}, Body: body}
 	out := []Component{pack, claim, evidence, flow, base(languageID(f, lang.PHP), "language_guidance", encoded(g), []string{string(lang.PHP)})}
+	// The JavaScript and TypeScript adapter registers the same claim with its
+	// own guidance. It adds components only: no PHP component changes.
+	if f.supports(lang.JavaScript) {
+		js := guidelines.AnalysisGuidelines{ID: name + "-javascript", Version: "1", Languages: []string{string(lang.JavaScript), string(lang.TypeScript)}, Body: body + javascriptApplicationGuidance(name)}
+		out = append(out, base(languageID(f, lang.JavaScript), "language_guidance", encoded(js), []string{string(lang.JavaScript), string(lang.TypeScript)}))
+	}
 	for _, id := range contractIDs(f) {
 		model := familyContract(f, id)
 		v := base("api."+id, "api_contract", encoded(model), []string{model.Library})
@@ -287,4 +293,16 @@ func applicationDescriptors(name string) []Component {
 	symfony.Applicability = f.Kinds
 	symfony.Compatibility = []string{protocol}
 	return append(out, php, symfony)
+}
+
+// javascriptApplicationGuidance names what the Node.js adapter records for a
+// family, in the family's own words. It never names an application.
+func javascriptApplicationGuidance(name string) string {
+	switch name {
+	case "exposure":
+		return " Node.js: an error-handling middleware that sends stack traces, a metrics endpoint, an API description page, or a response body that is the process environment, an error stack or process memory state discloses internal state. An environment condition around a registration is a guard to weigh, not a fact that the code is absent in production."
+	case "configuration":
+		return " Node.js: a middleware registration or cookie option in the source that builds an Express application is applied by that application whenever it handles requests, so it needs no deployment mapping and its scope is the recorded mount path. A directory-listing middleware mounted on a path serves a listing of the directory it is given to every caller the mount reaches, unless a recorded middleware before it on the same call or an earlier mount ends the request; a session cookie option without httpOnly or secure weakens that cookie."
+	}
+	return ""
 }

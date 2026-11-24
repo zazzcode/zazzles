@@ -35,6 +35,17 @@ const maxAuthWrapperDepth = 3
 // registration. rel is the route path relative to the registering receiver;
 // mounts are the router mount calls (outermost first) that carry the route.
 func (s *moduleSet) expressAccess(m *sourceModule, call *sitter.Node, rel string, context []analysis.Evidence) analysis.EntryAccess {
+	from, to := uint(1), uint(0)
+	if args := call.ChildByFieldName("arguments"); args != nil && args.NamedChildCount() > 1 {
+		to = args.NamedChildCount() - 1
+	}
+	return s.expressAccessFor(m, call, rel, context, from, to)
+}
+
+// expressAccessFor is expressAccess with the middleware arguments of the
+// registration call given as the range [from, to). A mount (app.use) passes
+// the arguments that precede the middleware it asks about.
+func (s *moduleSet) expressAccessFor(m *sourceModule, call *sitter.Node, rel string, context []analysis.Evidence, from, to uint) analysis.EntryAccess {
 	access := analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{}}
 	var required []analysis.Evidence
 	var guarded []analysis.Evidence
@@ -80,15 +91,15 @@ func (s *moduleSet) expressAccess(m *sourceModule, call *sitter.Node, rel string
 			return
 		}
 		obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
-		if obj == nil || prop == nil || prop.Utf8Text(m.src) != "use" || !m.receivers[obj.Utf8Text(m.src)] || shadowed(use, obj.Utf8Text(m.src), m.src) {
+		if obj == nil || prop == nil || prop.Utf8Text(m.src) != "use" || !receiverUsable(m, use, obj.Utf8Text(m.src)) {
 			return
 		}
 		for _, item := range s.useChain(m, use, rel, false) {
 			note(item)
 		}
 	})
-	if args := call.ChildByFieldName("arguments"); args != nil && args.NamedChildCount() > 2 {
-		for i := uint(1); i+1 < args.NamedChildCount(); i++ {
+	if args := call.ChildByFieldName("arguments"); args != nil {
+		for i := from; i < to && i < args.NamedChildCount(); i++ {
 			for _, item := range s.chainItems(m, args.NamedChild(i), call) {
 				note(item)
 			}
@@ -190,6 +201,14 @@ func (s *moduleSet) chainItems(m *sourceModule, arg, registration *sitter.Node) 
 	}
 	if evidence, ok := s.authMiddleware(m, arg, 0); ok {
 		return []chainItem{{kind: chainAuth, evidence: append([]analysis.Evidence{m.evidence("access_middleware", arg)}, evidence...)}}
+	}
+	if arg.Kind() == "identifier" && !shadowed(arg, arg.Utf8Text(m.src), m.src) && !bindingReassigned(m, arg.Utf8Text(m.src)) {
+		// A constant bound to a listed middleware call.
+		if v := unwrapTS(topVariable(m, arg.Utf8Text(m.src))); v != nil {
+			if evidence, ok := s.authMiddleware(m, v, 0); ok {
+				return []chainItem{{kind: chainAuth, evidence: append([]analysis.Evidence{m.evidence("access_middleware", arg)}, evidence...)}}
+			}
+		}
 	}
 	if s.respondsOrContinues(m, arg) {
 		return []chainItem{{kind: chainGuard, evidence: []analysis.Evidence{m.evidence("access_middleware", arg)}}}
@@ -357,4 +376,11 @@ func expressEntryAccess(e analysis.EntryPoint) (analysis.EntryAccess, bool) {
 		return analysis.EntryAccess{Authentication: analysis.AccessNone, Sources: []analysis.Evidence{}}, true
 	}
 	return analysis.EntryAccess{}, false
+}
+
+// receiverUsable reports whether name is a verified Express receiver at call:
+// not shadowed, or a parameter that every call of its declaring function binds
+// (the rule route analysis uses for the same receiver).
+func receiverUsable(m *sourceModule, call *sitter.Node, name string) bool {
+	return m.receivers[name] && (!shadowed(call, name, m.src) || parameterReceiver(m, call, name))
 }

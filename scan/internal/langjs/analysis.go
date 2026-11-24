@@ -120,6 +120,8 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 	}
 	s.mountedRoutes(out, selected)
 	s.pathConfiguredMounts(out, selected)
+	s.exposureCandidates(out, selected)
+	s.configurationCandidates(out, selected)
 	if err := s.browser(out); err != nil {
 		return nil, err
 	}

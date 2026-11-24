@@ -168,7 +168,7 @@ func Families() []Family {
 		},
 		{
 			Name: "exposure", Label: "Information exposure", Kinds: []string{analysis.ExposureKind}, QuestionNames: exposureQuestionNames(),
-			Languages: []lang.Language{lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, PHPHTTPOnly: true,
+			Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP}, Entries: []string{"entry.http"}, RequiresAPI: true, PHPHTTPOnly: true,
 			Pack: "pack.exposure", Claim: "claim.exposure", Evidence: "evidence.exposure", PolicyOwner: "internal/judge/exposure.go",
 		},
 		{
@@ -191,7 +191,7 @@ func Families() []Family {
 		{
 			// A setting in a deployment file needs no HTTP entry.
 			Name: "configuration", Label: "Insecure configuration", Kinds: []string{analysis.ConfigurationKind},
-			QuestionNames: configurationQuestionNames(), Languages: []lang.Language{lang.PHP},
+			QuestionNames: configurationQuestionNames(), Languages: []lang.Language{lang.JavaScript, lang.TypeScript, lang.PHP},
 			Pack: "pack.configuration", Claim: "claim.configuration", Evidence: "evidence.configuration", PolicyOwner: "internal/judge/configuration.go",
 		},
 		{

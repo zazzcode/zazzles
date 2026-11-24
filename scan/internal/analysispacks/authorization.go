@@ -13,7 +13,8 @@ import "github.com/zazzcode/zazzles/scan/internal/analysis"
 // object-level read beside a write or delete in the access question, and says
 // that access is judged for the operation as written_values describes it. v8
 // says that authentication with no listed role admits every signed-in user.
-const AuthorizationProtocol = "authorization-components-v8"
+// v9 says what request_dependent no and yes mean for the caller.
+const AuthorizationProtocol = "authorization-components-v9"
 
 // PHPAuthorizationOperation is the verified operation this family judges.
 const PHPAuthorizationOperation = "php-authorization-operation-v1"

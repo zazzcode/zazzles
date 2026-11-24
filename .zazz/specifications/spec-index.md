@@ -93,14 +93,16 @@ with no merge recorded there reads "See specification".
 | 56.3 | [Branch 3: account enumeration, recovery-secret delivery, weak password hashing](symfony-more-analyzers-3.md) | 2026-11-22 | Merged (PR #45) |
 | 56.4 | [Branch 4: configuration, SSRF through a shell URL client, lane closure](symfony-more-analyzers-4.md) | 2026-11-22 | Merged (PR #46) |
 | 56.5 | [Branch 5: plain-PHP recall on the PHP sample](symfony-more-analyzers-5.md) | 2026-11-23 | In review (PR #47) |
+| 57.1 | [Juice Shop and Next.js hardening, branch 1: existing analyzers on JavaScript and TypeScript](juiceshop-nextjs-hardening-1.md) | 2026-11-24 | Specified. Branch 1 of a two-branch stack |
+| 57.2 | [Branch 2: scanner comparison on four samples](juiceshop-nextjs-hardening-2.md) | 2026-11-24 | Specified |
 
 ## 5. Planned, in the plan's order
 
 | Order | Specification | First committed | State |
 |---:|---|---|---|
-| 57 | [Phase 7: npm corpus and direct-model baseline](architecture-phase-7-npm-corpus.md) | 2026-11-17 | Ready to assign (waypoint W2) |
-| 58 | [Phase 8: npm library mode](architecture-phase-8-npm-library-mode.md) | 2026-11-17 | Starts after phase 7 (waypoint W4) |
-| 59 | [Phase 9: Drupal](architecture-phase-9-drupal.md) | 2026-11-17 | Planned |
+| 58 | [Phase 7: npm corpus and direct-model baseline](architecture-phase-7-npm-corpus.md) | 2026-11-17 | Ready to assign (waypoint W2) |
+| 59 | [Phase 8: npm library mode](architecture-phase-8-npm-library-mode.md) | 2026-11-17 | Starts after phase 7 (waypoint W4) |
+| 60 | [Phase 9: Drupal](architecture-phase-9-drupal.md) | 2026-11-17 | Planned |
 
 ## Maintaining this index
 

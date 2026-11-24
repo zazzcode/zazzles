@@ -10,7 +10,7 @@ detail documents. Headings are one level deeper than in the original documents.
 
 **2026-11-01.** First Semgrep Community Edition baseline on the three pinned sample apps, compared with
 Zazzles (hardening 10, commit `83aa7bd`) and the existing [Bearer results](bearer-results.md) on the
-source-reviewed XSS answer keys. How to repeat it: [Semgrep CE cheat sheet](../../docs/semgrep-ce-cheat-sheet.md).
+source-reviewed XSS answer keys. How to repeat it: [Semgrep CE cheat sheet](../../docs/scan/semgrep-ce-cheat-sheet.md).
 
 ### Run
 
@@ -234,4 +234,4 @@ binding evidence instead of an empty use list. A declared SQL check with no cand
 Next, preserve case08's real guard body and distinguish a branch that cannot mutate the queried local
 from an unknown mutation (case11). Then run fresh capped Luna assessments on the changed bundles.
 Do not reuse saved judgments on new evidence. Broader rule families, languages, baseline/CI and Pro
-capabilities remain separate items in the [versioned inventory](bearer-capabilities.md).
+capabilities remain separate items in the [versioned inventory](comparison-results.md#capability-inventory).

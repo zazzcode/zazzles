@@ -1,7 +1,7 @@
 # Bearer comparison experiment
 
-**Initial pinned CLI experiment completed, 2026-10-31.** See [results](bearer-results.md), the
-[capability inventory](bearer-capabilities.md) and [complete Juice Shop challenge/review index](juice-shop/README.md).
+**Initial pinned CLI experiment completed, 2026-10-31** ([history](comparison-history.md)); rerun on four samples 2026-11-24. See the [scanner comparison](../../docs/scan/scanner-comparison.md), [Bearer results](bearer-results.md), the
+[capability inventory](comparison-results.md#capability-inventory) and [complete Juice Shop challenge/review index](juice-shop/README.md).
 The procedure below remains the repeat/extension protocol. Compare zazzles's AI-assisted route/evidence judgments
 with the local traditional SAST CLI on the same pinned source. Bearer is a comparator, not ground truth.
 The [long-term objective](../project.md#long-term-objectives) is equal-or-better SAST detection and
@@ -62,6 +62,9 @@ References: [original controls](corpus/README.md), [Juice Shop results](juice-sh
 [discovery/evidence design](../architecture/evidence-and-claims.md#discovery-on-novel-target-repositories).
 
 ## Capability-parity inventory
+
+The current inventory is in the [run record](comparison-results.md#capability-inventory). The
+paragraph below is the rule for extending it.
 
 Create a versioned matrix before claiming broad parity. For each capability record the verified
 Bearer version/edition and behavior, zazzles's implemented/planned/unsupported state, a corresponding

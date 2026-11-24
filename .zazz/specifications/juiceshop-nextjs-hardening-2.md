@@ -17,7 +17,7 @@ The comparison record is two documents from 2026-10-31 and 2026-11-01:
 [semgrep-results.md](../evaluation/semgrep-results.md). They compare a scanner that had SQL,
 NoSQL and XSS analysis on three JavaScript samples. Code Scan now has 21 vulnerability classes
 in three languages, and neither document covers a PHP sample. The capability inventory
-([bearer-capabilities.md](../evaluation/bearer-capabilities.md)) states "mostly outside sink
+(`.zazz/evaluation/bearer-capabilities.md`, since removed) states "mostly outside sink
 catalog" for families that are delivered.
 
 This branch reruns Semgrep CE and Bearer, adds zizmor, and publishes one summary a reader can
@@ -185,6 +185,23 @@ Adjudicating results that match no keyed case.
 Written from the two existing result documents, the capability inventory and the scanner
 checkouts under `<DEV_ROOT>/scanners`. The owner then proposed running the three tools in the
 authoring session; Part A was separated from Part B so that it does not wait for branch 1.
+
+### 2026-11-24 — Part B delivered
+
+The summary, the run record, the matcher with its test and the README section are written. The
+owner set the table shape: rows are every known vulnerability of an application, a miss is
+shown for every scanner including Code Scan, and each false positive is its own row. Changes to
+the decisions above that follow from it:
+
+- **D-2.** False positives are rows of a second table per application, not cell values, and
+  are counted by location. Results on application code in a class Code Scan covers were
+  source-reviewed for Juice Shop; eight documented vulnerabilities that the key lacked became
+  rows. The DVWA and vuln-symfony tables were not widened; their unreviewed results are counted.
+- **D-3.** The Juice Shop run is `r10-acceptance-juice-shop`, the full scan made after the lead
+  review of branch 1, not the session's first acceptance run.
+- **AC2.** The script reads each tool's JSON, not SARIF. Bearer SARIF was not produced.
+- **Not done.** The curated copies of D-6 under `docs/samples/`, and `doc-check` as a skill run;
+  links were checked by script.
 
 ### 2026-11-24 — Part A run
 

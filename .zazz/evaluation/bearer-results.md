@@ -2,8 +2,8 @@
 
 **2026-11-24.** Bearer CLI on the four comparison samples. This document records what the tool
 reported. Matching against the answer keys and the comparison with Zazzles are in the
-comparison summary, which [branch 2](../specifications/juiceshop-nextjs-hardening-2.md) of the
-hardening lane writes. The 2026-10-31 results, including the thirteen authored controls, are in
+[scanner comparison](../../docs/scan/scanner-comparison.md) and its
+[run record](comparison-results.md). The 2026-10-31 results, including the thirteen authored controls, are in
 the [comparison history](comparison-history.md). The repeat protocol is
 [bearer-comparison.md](bearer-comparison.md). Bearer is a comparator, not ground truth.
 

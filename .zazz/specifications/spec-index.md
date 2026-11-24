@@ -94,7 +94,7 @@ with no merge recorded there reads "See specification".
 | 56.4 | [Branch 4: configuration, SSRF through a shell URL client, lane closure](symfony-more-analyzers-4.md) | 2026-11-22 | Merged (PR #46) |
 | 56.5 | [Branch 5: plain-PHP recall on the PHP sample](symfony-more-analyzers-5.md) | 2026-11-23 | In review (PR #47) |
 | 57.1 | [Juice Shop and Next.js hardening, branch 1: existing analyzers on JavaScript and TypeScript](juiceshop-nextjs-hardening-1.md) | 2026-11-24 | Specified. Branch 1 of a two-branch stack |
-| 57.2 | [Branch 2: scanner comparison on four samples](juiceshop-nextjs-hardening-2.md) | 2026-11-24 | Specified |
+| 57.2 | [Branch 2: scanner comparison on four samples](juiceshop-nextjs-hardening-2.md) | 2026-11-24 | Implemented on its branch; curated sample copies open |
 
 ## 5. Planned, in the plan's order
 

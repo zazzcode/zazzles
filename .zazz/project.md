@@ -131,7 +131,7 @@ families; source-to-sink taint and control/dataflow analysis; interprocedural an
 sensitive-data classification and security/privacy impact; finding evidence and remediation guidance;
 and reporting, configuration, incremental/baseline and CI workflows. Verify each comparator capability
 and edition rather than assuming a marketing description establishes behavior. The detailed inventory
-is recorded in the [versioned capability inventory](evaluation/bearer-capabilities.md); phased
+is recorded in the [capability inventory](evaluation/comparison-results.md#capability-inventory); phased
 delivery contracts remain to be developed for unsupported capabilities.
 
 Measure equal-or-better detection on matched, pinned source scopes and independently labeled,

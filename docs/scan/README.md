@@ -27,6 +27,8 @@ answers against scanner evidence before classifying them.
 - [Finding categories and terminology](glossary.md) defines labels used in reports.
 - [Next.js](nextjs-support.md), [Python](python-support.md), [PHP](php-support.md), and
   [Symfony](symfony-support.md) describe their entry and language boundaries.
+- [Scanner comparison](scanner-comparison.md) scores Code Scan, Semgrep CE and Bearer against the
+  known vulnerabilities of four sample applications.
 - [Semgrep CE comparison](semgrep-ce-cheat-sheet.md) explains how to run a local comparison.
 
 ## Shared project guides

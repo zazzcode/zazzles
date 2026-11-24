@@ -1,9 +1,9 @@
 # Semgrep CE results on four samples
 
 **2026-11-24.** Semgrep Community Edition on the four comparison samples. This document records
-what the tool reported. Matching against the answer keys and the comparison with Zazzles are
-in the comparison summary, which
-[branch 2](../specifications/juiceshop-nextjs-hardening-2.md) of the hardening lane writes.
+what the tool reported. Matching against the answer keys and the comparison with Zazzles are in the
+[scanner comparison](../../docs/scan/scanner-comparison.md) and its
+[run record](comparison-results.md).
 The 2026-11-01 results on three JavaScript samples are in the
 [comparison history](comparison-history.md). How to repeat a run:
 [Semgrep CE cheat sheet](../../docs/scan/semgrep-ce-cheat-sheet.md).

@@ -2,7 +2,7 @@
 
 **Source-inspected 2026-11-01; initial baseline complete.** Target: Snyk Labs `nodejs-goof`, package
 `1.0.1`, revision `add14ba59e98240d9e00a235dd7d42cd61ae9912`, clean local checkout at
-`<DEV_ROOT>/nodejs-goof`. This extends the [comparator capability inventory](bearer-capabilities.md)
+`<DEV_ROOT>/nodejs-goof`. This extends the [comparator capability inventory](comparison-results.md#capability-inventory)
 with target-specific cases; it does not amend the historical two-target results.
 
 Sources inspected: target `README.md`, `package.json`, `app.js`, `routes/index.js`, and `views/`.

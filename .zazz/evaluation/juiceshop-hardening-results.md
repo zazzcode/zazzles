@@ -285,6 +285,26 @@ recorded (Juice Shop 306 records to 305, nothing else changed). An environment g
 with Express's `app.get('env')` setting is recorded, which a scan of nodejs-goof showed was
 missed. The comparison counts four Code Scan false positives after this, not five.
 
+### Code policy change (owner decision, 2026-11-24)
+
+`JS-CODE-01` was held by the code policy: every operand path is `guarded` by the enclosing test
+`username?.match(/#{(.*)}/) !== null`, and the policy confirmed only a `raw` path. The scanner
+records a path as guarded when a condition mentions the operand and states that it does not
+establish whether the condition restricts it. The owner decided that the model's restriction
+answer settles that. In the code family, when every path is guarded, none is unresolved, the
+model answers `code_restriction: none` and `protection_coverage` other than `complete`, and a
+guarded path has a request origin, the record is Confirmed
+(`scan/internal/judge/code_redirect.go`, six rows added to `TestCodeRedirectPolicy`). The
+redirect family is unchanged.
+
+Judged run 7 (`r7-code-juice-shop`, `--only-family code`, 2 requests, 17,625 input tokens):
+`routes/userProfile.ts:65` Confirmed; `routes/b2bOrder.ts:23` a practice finding as before. The
+same run on vuln-nextjs (`r7-code-vuln-nextjs`, 2 requests, 6,002 tokens): both keyed code rows
+Confirmed as before. The saved-replay tests of every sample pass, so no recorded outcome of
+another sample moves. A wrong `none` answer on a path whose guard does restrict the operand
+would now be Confirmed; the anchored allow-list case of the policy test is answered
+`allowlist_grammar` by the model and stays Protected.
+
 ### Open rows
 
 Each was stopped under the blocked item protocol. None was relabeled and no rule was written to
@@ -292,7 +312,6 @@ pass it.
 
 | Row | First failing stage | Evidence | Decision needed |
 |---|---|---|---|
-| `JS-CODE-01` | Policy gate | Every operand path is `guarded` by the enclosing test `username?.match(/#{(.*)}/) !== null`; `judge/code_redirect.go` confirms only a `raw` path. The model answers `whole_program / none / incomplete`. The `try` statements are coverage gaps | A guard classification for an unanchored pattern in the code family, or a policy rule for a path guarded only by controls the model answers `none` for |
 | `JS-PATH-01` | Model answer | The flow-gap question on the null-byte helper is answered `value_constrained`; `containment_control` is split between `none` (0.34) and `finite_allowlist` (0.31). On source review the handler rejects `/` before `path.resolve('ftp/', name)`, as the three controls do; the null byte defeats the file-type allow-list inside `ftp/` | Whether the row is a path-traversal positive |
 | `JS-SSRF-01` | Model answer | The flow is `raw` with no guard recorded; the model answers `destination_restriction: prefix_only`, reading the `url.match(...)` condition of an unrelated statement as a restriction. Reported as a practice finding, not Confirmed | A change to the ssrf request, which D-11 excludes from this branch |
 | `JS-AUTHZ-N05` | Question wording, then model answer | The record carries `request_dependent: no, operators: [$inc]`. The three questions have no answer for "any signed-in caller may do this to any record" | A question or a policy rule that separates a fixed write from an owned-record write |

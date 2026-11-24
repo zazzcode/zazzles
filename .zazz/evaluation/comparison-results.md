@@ -105,7 +105,7 @@ nothing is claimed for any scanner.
 | Insecure configuration | 8 | 8 | 4 | 4 |
 | Path traversal | 8 | 7 | 1 | 3 |
 | Mass assignment | 7 | 7 | 0 | 0 |
-| Code and template injection | 6 | 5 | 2 | 4 |
+| Code and template injection | 6 | 6 | 2 | 4 |
 | OS command injection | 5 | 5 | 2 | 2 |
 | Server-side request forgery | 4 | 4 | 0 | 1 |
 | NoSQL injection | 3 | 3 | 0 | 0 |
@@ -119,7 +119,7 @@ nothing is claimed for any scanner.
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Hardcoded secret | 1 | 0 | 1 | 1 |
 | Prototype pollution, argument injection | No keyed case | — | — | — |
-| **Total** | **97** | **94** | **19** | **33** |
+| **Total** | **97** | **95** | **19** | **33** |
 
 | Capability | Code Scan | Semgrep CE | Bearer CLI |
 |---|---|---|---|

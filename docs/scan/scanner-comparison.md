@@ -19,18 +19,20 @@ these scanner versions. They are not a general accuracy claim.
 
 | Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found | Code Scan false positives | Semgrep CE false positives | Bearer false positives |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| OWASP Juice Shop | 43 | 40 | 10 | 15 | 3 | 4 | 13 and two grouped rules |
+| OWASP Juice Shop | 43 | 41 | 10 | 15 | 3 | 4 | 13 and two grouped rules |
 | vuln-nextjs | 13 | 13 | 2 | 7 | 1 | 1 | 4 |
 | DVWA | 11 | 11 | 5 | 6 | 0 | 2 | 2 |
 | vuln-symfony | 30 | 30 | 2 | 5 | 0 | 0 | 2 |
-| **Total** | **97** | **94** | **19** | **33** | **4** | **7** | **21 and two grouped rules** |
+| **Total** | **97** | **95** | **19** | **33** | **4** | **7** | **21 and two grouped rules** |
 
 False positives are counted by location. A fourth Juice Shop false positive of the judged run,
 a generated delete that an explicit handler answers first, is no longer recorded after a fix
 made on the same branch and is not counted. Code Scan's found count includes three Juice Shop rows
-it reports as a practice finding rather than a confirmed vulnerability. It misses three Juice
-Shop rows: two it records but leaves in Review, and one class (a committed secret) it has no
-analyzer for. The Juice Shop and vuln-nextjs columns are from the runs of
+it reports as a practice finding rather than a confirmed vulnerability. It misses two Juice
+Shop rows: one it records but leaves in Review, and one class (a committed secret) it has no
+analyzer for. The profile-page `eval` row is Confirmed by a code-family run made after a policy
+change on the same branch (`r7-code-juice-shop`); the other Juice Shop cells are from the full
+run before it. The Juice Shop and vuln-nextjs columns are from the runs of
 [hardening 3](../../.zazz/specifications/juiceshop-nextjs-hardening-3.md), which added the read
 of another user's basket as a known vulnerability and as a Code Scan finding, moved the
 profile-image SSRF from Review to a practice finding, and added two Code Scan false positives.
@@ -47,7 +49,7 @@ Known vulnerabilities found, across the four applications.
 | Insecure configuration | 8 | 8 | 4 | 4 |
 | Path traversal | 8 | 7 | 1 | 3 |
 | Mass assignment | 7 | 7 | 0 | 0 |
-| Code and template injection | 6 | 5 | 2 | 4 |
+| Code and template injection | 6 | 6 | 2 | 4 |
 | OS command injection | 5 | 5 | 2 | 2 |
 | Server-side request forgery | 4 | 4 | 0 | 1 |
 | NoSQL injection | 3 | 3 | 0 | 0 |
@@ -60,7 +62,7 @@ Known vulnerabilities found, across the four applications.
 | Weak password recovery | 1 | 1 | 0 | 0 |
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Hardcoded secret | 1 | 0 | 1 | 1 |
-| **Total** | **97** | **94** | **19** | **33** |
+| **Total** | **97** | **95** | **19** | **33** |
 
 Code Scan has no analyzer for committed secrets. Prototype pollution and argument injection
 have no keyed case in these four applications.
@@ -121,7 +123,7 @@ Pin `f189f52`. Code Scan run `a1-acceptance-juice-shop`.
 | `JS-PATH-03` | path | `routes/dataErasure.ts:107` (layout file read) | Confirmed | Missed | Found |
 | `JS-CODE-02` | code | `routes/b2bOrder.ts:23` | Practice finding | Missed | Found |
 | `JS-SSRF-01` | ssrf | `routes/profileImageUrlUpload.ts:24` | Practice finding | Missed | Found |
-| `JS-CODE-01` | code | `routes/userProfile.ts:65` (`eval`) | **Review (missed)** | Found | Found |
+| `JS-CODE-01` | code | `routes/userProfile.ts:65` (`eval`) | Confirmed | Found | Found |
 | `JS-PATH-01` | path | `routes/fileServer.ts:32` (null-byte bypass) | **Review (missed)** | Found | Found |
 | `JS-AUTHZ-05` | authorization | `routes/basket.ts:19` (read of another user's basket) | Confirmed | Missed | Missed |
 | `JS-SECRET-01` | hardcoded secret | `lib/insecurity.ts:21`, used at `:54` | **Not covered** | Found | Found |

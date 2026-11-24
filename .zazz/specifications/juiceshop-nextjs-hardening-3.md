@@ -260,6 +260,13 @@ Everything in §6.
 
 ## 9. Change log
 
+### 2026-11-24 — Code policy, owner decision
+
+D-5 said "Do not change the code-family policy". The owner lifted that after the acceptance
+runs: in the code family the model's restriction answer settles whether a condition on a
+guarded path protects the operand. `JS-CODE-01` is Confirmed in a code-family run. The rule and
+its risk are in the [results](../evaluation/juiceshop-hardening-results.md#code-policy-change-owner-decision-2026-11-24).
+
 ### 2026-11-24 — Lead review
 
 Two fixes after the acceptance runs, each with a test and no judged run: an environment guard

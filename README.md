@@ -53,7 +53,7 @@ scored against each application's known vulnerabilities, with false positives co
 
 | Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop | 43 | 40 | 10 | 15 |
+| OWASP Juice Shop | 43 | 41 | 10 | 15 |
 | vuln-nextjs | 13 | 13 | 2 | 7 |
 | DVWA | 11 | 11 | 5 | 6 |
 | vuln-symfony | 30 | 30 | 2 | 5 |

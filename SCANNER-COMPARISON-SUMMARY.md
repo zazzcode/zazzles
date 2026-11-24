@@ -11,12 +11,12 @@ Four intentionally vulnerable applications, scored against their known vulnerabi
 
 | | Code Scan | Bearer CLI | Semgrep CE |
 |---|---:|---:|---:|
-| Known vulnerabilities found, of 97 | 94 | 33 | 19 |
+| Known vulnerabilities found, of 97 | 95 | 33 | 19 |
 | False positives on known-safe code | 4 | 21, and two noisy rules | 7 |
 
 | Application | Known | Code Scan | Bearer | Semgrep CE |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop (TypeScript, Express, Angular) | 43 | 40 | 15 | 10 |
+| OWASP Juice Shop (TypeScript, Express, Angular) | 43 | 41 | 15 | 10 |
 | vuln-nextjs (Next.js) | 13 | 13 | 7 | 2 |
 | DVWA (PHP) | 11 | 11 | 6 | 5 |
 | vuln-symfony (PHP, Symfony) | 30 | 30 | 5 | 2 |
@@ -36,9 +36,9 @@ a head-to-head result.
 
 ## Where Code Scan is behind
 
-- **Two Juice Shop vulnerabilities left in Review** that Semgrep CE or Bearer finds: the `eval`
-  in the profile page and the null-byte file read. The profile-image SSRF is now reported, as a
-  practice finding rather than a confirmed one.
+- **One Juice Shop row left in Review** that Semgrep CE or Bearer reports: the null-byte file
+  read, which on source review is a file-type allow-list bypass and not a path traversal. The
+  profile-image SSRF is reported as a practice finding rather than a confirmed one.
 - **Committed secrets.** Both other scanners found the hardcoded JWT key. Code Scan has no
   analyzer for it.
 - **Four false positives:** two records of liking a review, a `.well-known` directory listing,
@@ -76,8 +76,9 @@ analyzers again, with no new analyzer:
 It did not reach four of its goals. Each is recorded with its evidence and the decision it
 needs in the [results](.zazz/evaluation/juiceshop-hardening-results.md#hardening-3):
 
-1. The `eval` in the profile page stays in Review: its operand sits under a regular-expression
-   test that the scanner records as a guard, and the code policy confirms only an unguarded path.
+1. The `eval` in the profile page stayed in Review under the code policy. The owner then
+   decided that the model's answer settles whether a condition on the path restricts the
+   operand; with that change the row is Confirmed.
 2. The null-byte file read stays in Review. On source review it cannot leave its directory; what
    it defeats is a file-type allow-list.
 3. The like-counter and `.well-known` false positives remain, and a second like record appeared.

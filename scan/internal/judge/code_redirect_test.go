@@ -26,6 +26,14 @@ func TestCodeRedirectPolicy(t *testing.T) {
 		{"redirect", `if(!req.query.url.startsWith('https://trusted.example/'))return;if(!req.query.url.includes('trusted.example'))return;res.redirect(req.query.url)`, "full_url", "prefix_or_substring", "complete", "protected_for_claim"},
 		{"redirect", `let target;if(req.query.branch){const a=req.query.a;if(!a.startsWith('https://trusted.example/'))return;target=a}else{const b=req.query.b;if(!b.startsWith('https:'))return;target=b}res.redirect(target)`, "full_url", "prefix_or_substring", "complete", "poor_practice"},
 
+		// Every path guarded: the restriction answer decides whether the condition protects.
+		{"code", `if(req.body.code.match(/#\{(.*)\}/)!==null){eval(req.body.code)}`, "whole_program", "none", "incomplete", "confirmed_vulnerability"},
+		{"code", `if(req.body.code.length<50){eval(req.body.code)}`, "whole_program", "none", "incomplete", "confirmed_vulnerability"},
+		{"code", `if(req.body.code.match(/#\{(.*)\}/)!==null){eval(req.body.code)}`, "whole_program", "none", "complete", "needs_evidence"},
+		{"code", `if(req.body.code.match(/#\{(.*)\}/)!==null){eval(req.body.code)}`, "whole_program", "blacklist_only", "incomplete", "needs_evidence"},
+		{"code", `if(req.body.code.match(/#\{(.*)\}/)!==null){eval(req.body.code)}`, "data_only", "none", "incomplete", "needs_evidence"},
+		{"redirect", `if(req.query.url.length<50){res.redirect(req.query.url)}`, "full_url", "none", "incomplete", "needs_evidence"},
+
 		{"redirect", `res.redirect('/'+req.query.url)`, "path_only", "none", "incomplete", "confirmed_vulnerability"},
 		{"redirect", `res.redirect(req.query.url)`, "full_url", "host_allowlist", "complete", "needs_evidence"},
 		{"redirect", `if(!['good.example'].includes(new URL(req.query.url).hostname))return;res.redirect(req.query.url)`, "full_url", "host_allowlist", "complete", "protected_for_claim"},

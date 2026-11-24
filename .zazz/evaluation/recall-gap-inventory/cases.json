@@ -2254,6 +2254,171 @@
       "key": ".zazz/evaluation/dvwa-detection-guide.md",
       "expect": "excluded",
       "reason": "Impossible-level controls share each module's candidate and are decided by assessment; not offline-measurable"
+    },
+    {
+      "id": "JS-CONF-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 290,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-CONF-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 298,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-CONF-03",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 302,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-EXPO-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "info_exposure_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 710,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-EXPO-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "info_exposure_candidate",
+      "expect": "positive",
+      "file": "routes/metrics.ts",
+      "line": 92,
+      "expect_status": "confirmed_vulnerability",
+      "entry_names": [
+        "GET /metrics"
+      ]
+    },
+    {
+      "id": "JS-HASH-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "password_hash_candidate",
+      "expect": "positive",
+      "file": "lib/insecurity.ts",
+      "line": 41,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-MASS-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-AUTHZ-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "server.ts",
+      "line": 529,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-AUTHZ-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "routes/updateProductReviews.ts",
+      "line": 17,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-ENUM-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "account_enumeration_candidate",
+      "expect": "positive",
+      "file": "routes/securityQuestion.ts",
+      "line": 15,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-AUTHZ-N01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "guarded",
+      "anchors": {
+        "routes/address.ts": [
+          29
+        ]
+      },
+      "guard_kind": "ownership_check"
+    },
+    {
+      "id": "JS-AUTHZ-N02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "guarded",
+      "anchors": {
+        "routes/payment.ts": [
+          70
+        ]
+      },
+      "guard_kind": "ownership_check"
+    },
+    {
+      "id": "JS-AUTHZ-N03",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record",
+      "file": "routes/changePassword.ts",
+      "line": 51
+    },
+    {
+      "id": "JS-AUTHZ-N04",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "no_record",
+      "file": "routes/updateUserProfile.ts",
+      "line": 38
+    },
+    {
+      "id": "JS-ENUM-N01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "account_enumeration_candidate",
+      "expect": "no_record",
+      "file": "routes/login.ts",
+      "line": 34
+    },
+    {
+      "id": "JS-MASS-N01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "mass_assignment_candidate",
+      "expect": "no_record",
+      "file": "routes/updateUserProfile.ts",
+      "line": 38
     }
   ],
   "tags": {

@@ -116,6 +116,30 @@ records, so the branch adds 23: 5 configuration, 3 exposure, 3 password hashing,
 enumeration, 5 authorization and 6 mass assignment. This run replaces run 7 as the acceptance
 result.
 
+### Source review of the Confirmed records outside the key
+
+Run 10 has twelve Confirmed records of the new families that the key does not hold. Each was
+read against the sample's source at the pin.
+
+| Record | Source | Verdict |
+|---|---|---|
+| Authorization, `routes/coupon.ts:24` | `BasketModel.findByPk(params.id)` then `basket.update({ coupon })`; the chain requires a login and nothing compares the basket's owner | True positive: a signed-in user changes another user's basket |
+| Authorization, `routes/likeProductReviews.ts:35` | `$inc: { likesCount: 1 }` on the review `req.body.id` names | **False positive.** Liking another user's review is the feature; the review is not the caller's object to own |
+| Authorization, `PUT /api/Hints/:id` | No middleware is registered for `PUT`; `server.ts:403` says it is allowed | True positive, low impact: anyone rewrites a hint's `text` and `unlocked` without a login |
+| Mass assignment, `POST /api/Feedbacks` | `UserId` is a model attribute; `routes/verify.ts:30` shows the sample's own forged-feedback challenge is this write | True positive |
+| Mass assignment, `POST /api/Complaints` | Login required, `UserId` taken from the body | True positive: a complaint filed as another user |
+| Mass assignment, `POST /api/Recycles` | Login required, `UserId` and `AddressId` from the body | True positive |
+| Mass assignment, `POST /api/PrivacyRequests` | Login required, `UserId` and `deletionRequested` from the body | True positive |
+| Mass assignment, `POST /api/SecurityAnswers` | No middleware for `POST`; `UserId` and `answer` from the body | True positive: an answer is created for a chosen user id |
+| Configuration, `server.ts:269` | `serve-index` of `infrastructure` (Dockerfile, compose file, Terraform) | True positive |
+| Configuration, `server.ts:294` | `serve-index` of `.well-known` (`security.txt`, CSAF advisories) | **False positive** as a vulnerability: the listing is enabled, and the directory holds only files published on purpose |
+| Password hashing, `lib/insecurity.ts:42` | HMAC-SHA256 with a constant key, stored by the security answer's accessor | True positive for the weakness; the model called the input a password and it is a recovery answer |
+| Information exposure, `routes/metrics.ts:92` (second record) | The second registration of `GET /metrics` (`server.ts:704`, `:759`) | Duplicate of `JS-EXPO-02` |
+
+Ten are true positives, of which one is a duplicate, and two are false positives. The nine
+distinct true positives are candidates for the answer key; adding them is a key change with
+this table as its source evidence.
+
 Still open: a generated endpoint that an explicit handler for the same method and path answers
 first is recorded (Review); a password-hash record whose digest lives in a model accessor is
 attached to an unrelated entry; the Confirmed records outside the key

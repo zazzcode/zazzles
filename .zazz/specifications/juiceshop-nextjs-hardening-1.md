@@ -97,7 +97,7 @@ regression measure and is re-pinned (§3 AC12).
 | Gap | Cause | Kind |
 |---|---|---|
 | No `exposure`, `mass-assignment`, `authorization`, `account` or `configuration` record | The families list `lang.PHP` only and `langjs` has no code that builds their facts | Scope limit, widened here |
-| No `file_upload_candidate` on Juice Shop | Not established. `scan/internal/langjs/path_upload_binding.go` verifies a memory-storage `multer.single` binding for the path family. Slice S6 starts by finding why the upload family records nothing and writes the cause in the run log and in this table | To establish |
+| No `file_upload_candidate` on Juice Shop | **Established 2026-11-24 (slice S6).** `Families()` registers `upload` for JavaScript and TypeScript with the contracts `node-express-fileupload` and `node-multer-disk`, but no code in `scan/internal/langjs` builds a `file_upload_candidate`. `grep -rn file_upload_candidate scan/internal` finds producers in `langphp/upload.go` and `langpy/upload.go` only. `scan/internal/langjs/path_upload_binding.go` verifies a memory-storage `multer.single` binding for the path family and records nothing for the upload family. The registration is a scope claim that no adapter fulfils; it is not a filter or a gate. A JavaScript producer needs the facts of `analysis.UploadFacts` (stored-name and extension origins, type controls, destination served, operand paths over a request dependency for the uploaded content) built from the multer binding and the handler, and a contract for memory storage, which neither existing Node contract describes | Missing producer |
 
 ## 2. Decisions
 

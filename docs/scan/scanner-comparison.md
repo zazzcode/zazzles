@@ -32,7 +32,8 @@ it reports as a practice finding rather than a confirmed vulnerability. It misse
 Shop row, a committed secret, a class it has no analyzer for. The Juice Shop and vuln-nextjs columns are from the runs of
 [hardening 3](../../.zazz/specifications/juiceshop-nextjs-hardening-3.md), which added the read
 of another user's basket as a known vulnerability and as a Code Scan finding, moved the
-profile-image SSRF from Review to a practice finding, and added two Code Scan false positives.
+profile-image SSRF from Review to a practice finding, and added one Code Scan false positive
+that is counted (`routes/likeProductReviews.ts:50`).
 
 ### By weakness class
 
@@ -157,7 +158,7 @@ Pin `f5d47de`. The key is the lab's own `tests/expected-scanner-findings.json`. 
 | `JS-001` | code | `pages/vulnerable/eval-injection.js` | Confirmed | Missed | Missed |
 | `JS-002` | code | `pages/api/vulnerable-submit.js` | Confirmed | Found | Found |
 | `OS-001` | command | `pages/api/vulnerable-exec.js` | Confirmed | Missed | Found |
-| `REDIR-001` | redirect | `vulnerabilities/open_redirect/source/low.php:4` | Confirmed | Missed | Missed |
+| `REDIR-001` | redirect | `pages/vulnerable/redirect.js` | Confirmed | Missed | Missed |
 | `SQL-001` | sql | `pages/api/sql/unsafe/login.js` | Confirmed | Missed | Missed |
 | `SQL-002` | sql | `pages/api/sql/unsafe/products.js` | Confirmed | Missed | Missed |
 | `SQL-003` | sql | `pages/api/sql/unsafe/notes.js` | Confirmed | Missed | Missed |

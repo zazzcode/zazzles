@@ -81,9 +81,12 @@ change.
 - The selector carries a request-selected key, by the rule of branch 1 D-3.
 - The model is **owned**: a `belongsTo` association (Sequelize) or a `ref` path (Mongoose)
   links it to a model that holds a `credential` attribute (branch 1 D-6).
-- No other key of the selector takes a value that is not request-selected.
+- No other key of the selector is a constant. A key whose value is a verified token claim is
+  recorded as a guard and does not remove the record (AC5).
 
-Guards and access are recorded as in D-3 of branch 1; none suppresses the record. *Why owned
+Guards and access are recorded as in D-3 of branch 1; none suppresses the record. A comparison
+of a member of the result that decides whether the response is sent is also a guard (PR review,
+see the change log). *Why owned
 models only:* a read of a catalog row by id is not an access-control claim, and the association
 is a framework contract, not a name. *Not covered:* a model with no association to an account
 model, list endpoints with no selector, and reads whose result is not sent.
@@ -261,6 +264,29 @@ Everything in §6.
 - [x] Samples are unchanged.
 
 ## 9. Change log
+
+### 2026-11-24 — Independent PR review
+
+Seven blocking findings of the [review of PR #50](https://github.com/zazzcode/zazzles/pull/50),
+each fixed with a test that failed first and no judged run:
+
+- **Code policy.** The guarded-path rule requires `protection_coverage: incomplete` and an
+  operand no conversion constrains (`TestCodeRedirectPolicy`).
+- **D-8.** `request_dependent: no` is stated only when the listed values are the whole write:
+  the `by` option of an increment and every change of a saved instance are read
+  (`TestAuthorizationWrittenValues`).
+- **Generated endpoint answered first.** The earlier handler must always run before the
+  resource call, on the application `initialize({ app })` names
+  (`TestExpressGeneratedStillReached`).
+- **D-7.** A comparison of the result that decides whether it is sent is a guard, and a token
+  claim read through a destructured request parameter is one too
+  (`TestExpressAuthorizationReads`).
+- **`rejects_all`.** A secret that only falls back to a random value does not reject every
+  request (`TestExpressRejectsAll`).
+
+Offline, the reports of all four samples are byte-identical to those of `277f640`, so the
+judged runs stand. No judged run was made for the forms the new fixtures add. The findings left
+to the owner are in the review's resolution comment on the PR.
 
 ### 2026-11-24 — Two key decisions by the owner
 

@@ -200,8 +200,12 @@ storage engine, `express-fileupload`, and a middleware on a mount with no route 
 
 Branch `juiceshop-nextjs-hardening-3` of the
 [specification](../specifications/juiceshop-nextjs-hardening-3.md), draft
-[PR #50](https://github.com/zazzcode/zazzles/pull/50). Scanner commit of the acceptance runs:
-`ee777f4`; later commits change documents only. Samples, provider, model and limits as above.
+[PR #50](https://github.com/zazzcode/zazzles/pull/50). Scanner commit of the acceptance runs 5
+and 6: `ee777f4`. Two later commits changed scanner code (the lead review and the code policy),
+and the final Juice Shop run 8 is on `3318e27`. These hashes predate the rebase of the branch
+onto `stage` and are not reachable from it; the `scan/` and `cmd/` trees of `3318e27` and of
+branch commit `277f640` are identical. The fixes of the [PR review](#pr-review-fixes) came
+after every judged run. Samples, provider, model and limits as above.
 Protocols after this branch: `authorization-components-v9`, `configuration-components-v7`.
 
 ### What was built
@@ -338,4 +342,26 @@ pass it.
 | `JS-AUTHZ-N05` | Question wording, then model answer | The record carries `request_dependent: no, operators: [$inc]`. The three questions have no answer for "any signed-in caller may do this to any record" | A question or a policy rule that separates a fixed write from an owned-record write |
 | `JS-CONF-N01` | Model answer | The record carries "holds 2 entries: csaf/, security.txt"; the model answers `weakens` | Whether the scanner may state what `.well-known` is (RFC 8615), or the model is to judge from names |
 | Three path controls | Not sent | Each keeps `applicable_middleware_unresolved` from the `serve-index` mount. If sent, `judge/path.go` treats a separator-only guard as an unsafe witness, so a `vulnerable` answer would be Confirmed | Whether a separator test on a file read is containment |
-| Generated `DELETE /api/Addresss/:id` | Evidence missing | Whether an explicit handler registered first ends the response is not read (§6 of the specification) | Follow-on work |
+
+Closed since the acceptance runs: the generated `DELETE /api/Addresss/:id` record is no longer
+made (lead review, above).
+
+### PR review fixes
+
+The independent [review of PR #50](https://github.com/zazzcode/zazzles/pull/50) found seven
+blocking defects. Each is fixed with a test that failed first. No judged run was made.
+
+| Finding | Fix | Test |
+|---|---|---|
+| The guarded code rule confirmed on `protection_coverage: unknown` and on an operand a conversion constrains | Coverage must be `incomplete`; a constrained operand is not confirmed | `TestCodeRedirectPolicy`, four rows |
+| `written_values` said `request_dependent: no` for an increment whose `by` option reads the request, and for a save after other changes of the instance | The `by` option and every change of a saved instance are read; a call that can change the instance makes the write `unknown` | `TestAuthorizationWrittenValues`, eight rows |
+| An earlier handler under a condition, in another function, or on another application or router removed a generated endpoint | The registration must always run before the resource call, on the application `initialize({ app })` names | `TestExpressGeneratedStillReached` |
+| A read whose handler compares the owner after the fetch carried no guard and could be Confirmed | The comparison is a guard: `ownership_check` against a verified token claim, `guard_unclassified` with a blocker otherwise | `TestExpressAuthorizationReads`, six routes |
+| A token-claim owner key under a destructured request parameter was read as a request key | It is a guard, as for a plain parameter | Same test |
+| A random value used only as a fallback secret was read as `rejects_all` | A random call under a logical or conditional operator does not count | `TestExpressRejectsAll`, three rows |
+
+Offline evidence after the fixes: the reports of Juice Shop (305 records), vuln-nextjs, DVWA and
+vuln-symfony are byte-identical to the reports of `277f640`, so every request of the judged runs
+is unchanged and their outcomes stand. What no run has shown:
+how the model answers a read record that carries a `result_comparison` guard, since no sample
+has one.

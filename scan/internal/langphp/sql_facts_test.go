@@ -24,6 +24,8 @@ func phpSQLRecordFacts(t *testing.T, files map[string]string) (int, []string) {
 	return len(uses), facts
 }
 
+const digitQuery = `mysqli_query($db, "SELECT a FROM t WHERE id = $id");`
+
 const (
 	phpFactConnect = "<?php\n$db = mysqli_connect('h', 'u', 'p', 'd');\n"
 	phpFactEscape  = `$v = mysqli_real_escape_string($db, $_POST['v']); `
@@ -32,7 +34,7 @@ const (
 
 // TestPHPSQLFacts states operand facts for the plain pattern only.
 func TestPHPSQLFacts(t *testing.T) {
-	const escaped, hash = "escaped_in_quoted_literal: ", "hash_hex_result: "
+	const escaped, hash, integer, digits = "escaped_in_quoted_literal: ", "hash_hex_result: ", "integer_conversion_result: ", "digit_pattern_value: "
 	cases := []struct {
 		name, body string
 		want       []string
@@ -48,6 +50,12 @@ func TestPHPSQLFacts(t *testing.T) {
 			[]string{escaped + "$v", hash + "$p"}},
 		{"text alone before the query", `$q = "SELECT a FROM t WHERE b = '" . mysqli_real_escape_string($db, $_POST['v']) . "'"; mysqli_query($db, $q);`, []string{escaped + "mysqli_real_escape_string($db, $_POST['v'])"}},
 		{"plain parts of an argument", `$v = md5("a\n$x" . $_GET['g'] . $_REQUEST['r'] . $_COOKIE['c'] . SALT); ` + phpFactQuery, []string{hash + "$v"}},
+		{"integer compared", `$n = intval($_GET['n']); ` + "// id\n" + `$q = "SELECT a FROM t WHERE id = $n"; $r = mysqli_query($db, $q);`, []string{integer + "$n from intval($_GET['n']) at index.php"}},
+		{"integer cast, every bare place", `$n = (int) $_GET['n']; $m = (integer) trim($_POST['m']); mysqli_query($db, "SELECT a FROM t WHERE (id >= $n) AND c IN ($m, {$n}) ORDER BY a LIMIT $n OFFSET $m;");`, []string{integer + "$n from (int) $_GET['n']", integer + "$m", integer + "$n", integer + "$n", integer + "$m"}},
+		{"integer quoted, with others", `$n = intval($_GET['n']); ` + phpFactEscape + `$h = md5($_POST['h']); mysqli_query($db, "INSERT INTO t (a, b, c) VALUES ('$n', '$v', '$h'), ($n, '$v', '$h')");`, []string{integer + "$n", escaped + "$v", hash + "$h", integer + "$n", escaped + "$v", hash + "$h"}},
+		{"integer in the call", `mysqli_query($db, "SELECT a FROM t WHERE id = " . intval($_GET['n']) . ";");`, []string{integer + "intval($_GET['n'])"}},
+		{"digits checked, else branch", `if (!preg_match('/^\d+$/', $_GET['id'])) { exit; } else { ` + "// read\n" + `$id = $_GET['id']; $found = false; $q = "SELECT a FROM t WHERE id = '$id'"; $r = mysqli_query($db, $q); }`, []string{digits + `$id from preg_match('/^\d+$/', $_GET['id']) at index.php`}},
+		{"digits checked, then branch", `if (preg_match("/^[0-9]+$/D", $_POST["id"])) { $id = $_POST['id']; $e = null; $f = 0; mysqli_query($db, "SELECT a FROM t WHERE id = $id"); }`, []string{digits + "$id"}},
 		{"used twice", phpFactEscape + `mysqli_query($db, "SELECT a FROM t WHERE b = '$v' OR c LIKE '%$v%'");`, []string{escaped + "$v", escaped + "$v"}},
 		{"conditional", `$v = (isset($db) && !is_object($db) ? mysqli_real_escape_string($db, $_POST['v']) : (trigger_error("x", E_USER_ERROR) ? "" : '')); ` + phpFactQuery, []string{escaped + "$v"}},
 		{"conditional, call last", `$v = empty($_POST['v']) ? "" : mysqli_real_escape_string($db, $_POST['v']); ` + phpFactQuery, []string{escaped + "$v"}},
@@ -144,6 +152,62 @@ func TestPHPSQLFactTraps(t *testing.T) {
 		{"element under a built key", `$v = md5($_POST["a$k"]); ` + phpFactQuery},
 		{"other text ran", `$w = "SELECT a FROM t WHERE b = '$x'"; ` + phpFactEscape + `$q = "SELECT a FROM t WHERE b = '$v'"; mysqli_query($db, $w);`},
 
+		{"integer after a minus", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = 5-$n AND owner = 1");`},
+		{"integer after a minus and a space", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = 5 - $n AND owner = 1");`},
+		{"integer after a sign", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = -$n");`},
+		{"integer before letters", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = {$n}e5");`},
+		{"integer before a point", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = {$n}.5");`},
+		{"integer after a point", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = 1.$n");`},
+		{"integer after letters", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = id$n");`},
+		{"integer after digits", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = 1$n");`},
+		{"two integers together", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = $n$n");`},
+		{"integer as a name", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t ORDER BY $n");`},
+		{"integer as a column", `$n = intval($_GET['n']); mysqli_query($db, "SELECT $n FROM t");`},
+		{"integer in a function", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = run($n)");`},
+		{"integer as a second count", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t LIMIT 1, $n");`},
+		{"integer in an identifier", "$n = intval($_GET['n']); mysqli_query($db, \"SELECT a FROM `t$n`\");"},
+		{"integer before a word", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = $n UNION SELECT 1");`},
+		{"float", `$n = floatval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"float cast", `$n = (float) $_GET['n']; mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"string cast", `$n = (string) $_GET['n']; mysqli_query($db, "SELECT a FROM t WHERE x = '$n'");`},
+		{"integer of a call", `$n = (int) swap(); mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"integer in a base", `$n = intval($_GET['n'], 16); mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"integer glued", `$n = (int) $_GET['n'] . $_GET['x']; mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"integer or empty", `$n = $x ? intval($_GET['n']) : ""; mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"integer or empty, quoted", `$n = $x ? intval($_GET['n']) : ""; mysqli_query($db, "SELECT a FROM t WHERE x = '$n'");`},
+		{"integer changed after", `$n = intval($_GET['n']); $n = $_GET['n']; mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"integer of another variable used", `$raw = $_GET['id']; $n = (int) $raw; mysqli_query($db, "SELECT a FROM t WHERE id = " . $raw);`},
+		{"integer in a branch", `$n = $_GET['n']; if ($x) { $n = intval($n); } mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"own integer function", `function intval($x) { return $x; } $n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE x = $n");`},
+		{"digits, other element", `if (!preg_match('/^\d+$/', $_GET['id'])) { exit; } else { $id = $_GET['ix']; ` + digitQuery + ` }`},
+		{"digits, other array", `if (!preg_match('/^\d+$/', $_GET['id'])) { exit; } else { $id = $_POST['id']; ` + digitQuery + ` }`},
+		{"digits, element of a variable", `if (!preg_match('/^\d+$/', $a['id'])) { exit; } else { $id = $a['id']; ` + digitQuery + ` }`},
+		{"digits, not negated", `if (preg_match('/^\d+$/', $_GET['id'])) { exit; } else { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, negated then branch", `if (!preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, else if between", `if (!preg_match('/^\d+$/', $_GET['id'])) { exit; } elseif (swap()) { exit; } else { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, else of an else if", `if ($x) { exit; } elseif (!preg_match('/^\d+$/', $_GET['id'])) { exit; } else { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, positive with an else", `if (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` } else { exit; }`},
+		{"digits, loop body", `while (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, condition with more", `if (preg_match('/^\d+$/', $_GET['id']) || $x) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, not first in the block", `if (preg_match('/^\d+$/', $_GET['id'])) { $z = 1; $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, call first in the block", `if (preg_match('/^\d+$/', $_GET['id'])) { swap(); $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, unanchored", `if (preg_match('/\d+/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, start only", `if (preg_match('/^\d+/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, multiline", `if (preg_match('/^\d+$/m', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, unicode", `if (preg_match('/^\d+$/u', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, wider class", `if (preg_match('/^[0-9-]+$/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, pattern in a variable", `$p = '/^\d+$/'; if (preg_match($p, $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, interpolated pattern", `if (preg_match("/^\d+$p/", $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, matches written", `if (preg_match('/^\d+$/', $_GET['id'], $mm)) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, own preg_match", `function preg_match($p, $s) { return 1; } if (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, element replaced", `if (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; $id = $_GET['z']; ` + digitQuery + ` }`},
+		{"digits, superglobal by reference", `$r = &$_GET; if (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits after a minus", `if (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; mysqli_query($db, "SELECT a FROM t WHERE x = 5-$id"); }`},
+		{"digits, sign instead of not", `if (-preg_match('/^\d+$/', $_GET['id'])) { exit; } else { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"digits, complement instead of not", `if (~preg_match('/^\d+$/', $_GET['id'])) { exit; } else { $id = $_GET['id']; ` + digitQuery + ` }`},
+		{"request element in the text", `if (preg_match('/^\d+$/', $_GET['id'])) { mysqli_query($db, "SELECT a FROM t WHERE id = " . $_GET['id']); }`},
+		{"digits after a block", `if (preg_match('/^\d+$/', $_GET['id'])) { exit; } $id = $_GET['id']; ` + digitQuery},
+		{"non-operand text written after", phpFactEscape + `$w = 'x'; ` + phpFactQuery},
 		{"raw alternative", `$v = $x ? mysqli_real_escape_string($db, $_POST['v']) : $_POST['v']; ` + phpFactQuery},
 		{"raw first alternative", `$v = $x ? $_POST['v'] : mysqli_real_escape_string($db, $_POST['v']); ` + phpFactQuery},
 		{"unknown alternative", `$v = $x ? mysqli_real_escape_string($db, $_POST['v']) : $o->raw(); ` + phpFactQuery},

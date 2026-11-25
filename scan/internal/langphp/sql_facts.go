@@ -10,7 +10,7 @@ import (
 // phpPlainCalls are built-ins that write no variable and return a new value.
 var phpPlainCalls = map[string]bool{
 	"mysqli_real_escape_string": true, "md5": true, "sha1": true, "stripslashes": true, "trim": true,
-	"isset": true, "empty": true, "is_object": true, "trigger_error": true,
+	"intval": true, "isset": true, "empty": true, "is_object": true, "trigger_error": true,
 }
 
 // phpRequestArrays are the superglobals whose elements a plain expression reads.
@@ -28,8 +28,8 @@ var phpLocalName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 // phpPlainWrite is one plain assignment statement.
 type phpPlainWrite struct {
-	name  string
-	value *sitter.Node
+	name             string
+	value, statement *sitter.Node
 }
 
 // phpSQLPart is constant SQL text, or the node of an operand.
@@ -78,8 +78,7 @@ func (f *phpFlow) sqlOperandFacts(n *sitter.Node) []string {
 		if p.operand == nil {
 			continue
 		}
-		sql.WriteByte(phpOperandMark)
-		value := p.operand
+		value, statement := p.operand, (*sitter.Node)(nil)
 		if name := phpVarName(m, value); name != "" {
 			at := len(writes) - 1
 			for at >= 0 && writes[at].name != name {
@@ -88,26 +87,42 @@ func (f *phpFlow) sqlOperandFacts(n *sitter.Node) []string {
 			if at < 0 {
 				return nil
 			}
-			value, operands[name], names[name], first = writes[at].value, true, true, min(first, at)
+			value, statement, operands[name], names[name], first = writes[at].value, writes[at].statement, true, true, min(first, at)
 		}
 		if !f.plainExpression(value) {
 			return nil
 		}
 		kind, call, ok := f.operandValue(value, connection)
-		if !ok || call == nil {
+		// A request element is an operand only as the value of a write: the
+		// parts of the text hold variables and calls.
+		if object, _ := phpLiteralElement(m, value); phpRequestArrays[object] {
+			kind, call, ok = "digits", f.digitGuard(statement, value), true
+			names[object] = true
+		}
+		if !ok || call == nil || kind == "number" && phpUnparenthesized(value).Id() != call.Id() {
 			return nil
 		}
 		name, source := strings.TrimSpace(phpText(m, p.operand)), " from "+m.evidence("operation", call).Text+" at "+m.file
-		if kind == "hash" {
+		switch kind {
+		case "number":
+			sql.WriteByte(phpNumberMark)
+			facts = append(facts, "integer_conversion_result: "+name+source)
+		case "digits":
+			sql.WriteByte(phpNumberMark)
+			facts = append(facts, "digit_pattern_value: "+name+source)
+		case "hash":
+			sql.WriteByte(phpOperandMark)
 			facts = append(facts, "hash_hex_result: "+name+source)
-		} else {
+		default:
+			sql.WriteByte(phpOperandMark)
 			facts = append(facts, "escaped_in_quoted_literal: "+name+source+"; quoted literal")
 		}
 	}
-	// From the first operand on, only operands are written, so a variable that
-	// shares a value with another still ends on an operand's value.
+	// From the first operand on, only operands and constants that are safe in any
+	// position are written, so a variable that shares a value with another still
+	// ends on an operand's value or such a constant.
 	for _, w := range writes[first:] {
-		if !operands[w.name] {
+		if k := w.value.Kind(); !operands[w.name] && k != "boolean" && k != "null" && k != "integer" {
 			return nil
 		}
 	}
@@ -118,8 +133,8 @@ func (f *phpFlow) sqlOperandFacts(n *sitter.Node) []string {
 }
 
 // operandValue returns the kind and the call of a plain value that is the escape on the
-// connection or a hash. Every alternative of a conditional is the same kind of call,
-// or the empty string, which has no call.
+// connection, a hash or an integer conversion. Every alternative of a conditional is
+// the same kind of call, or the empty string, which has no call.
 func (f *phpFlow) operandValue(n *sitter.Node, connection string) (string, *sitter.Node, bool) {
 	n = phpUnparenthesized(n)
 	switch n.Kind() {
@@ -133,9 +148,14 @@ func (f *phpFlow) operandValue(n *sitter.Node, connection string) (string, *sitt
 			return other, otherCall, ok && also
 		}
 		return kind, call, ok && also && (otherCall == nil || kind == other)
+	case "cast_expression":
+		// A plain cast is an integer cast.
+		return "number", n, true
 	case "function_call_expression":
 		args := phpPlainArguments(n)
 		switch {
+		case len(args) == 1 && f.nativeCall(n, "intval"):
+			return "number", n, true
 		case len(args) == 2 && f.nativeCall(n, "mysqli_real_escape_string"):
 			return "escape", n, phpConnectionName(f.module, args[0]) == connection
 		case len(args) == 1 && (f.nativeCall(n, "md5") || f.nativeCall(n, "sha1")):
@@ -190,6 +210,12 @@ func phpLiteralElement(m *phpModule, n *sitter.Node) (string, string) {
 	return phpVarName(m, n.NamedChild(0)), parts[0].text
 }
 
+// phpIntegerCast reports an (int) or (integer) cast, whose result is an integer.
+func phpIntegerCast(m *phpModule, n *sitter.Node) bool {
+	kind := castKind(m, n)
+	return kind == "int" || kind == "integer"
+}
+
 func phpUnparenthesized(n *sitter.Node) *sitter.Node {
 	for n != nil && n.Kind() == "parenthesized_expression" {
 		n = n.NamedChild(0)
@@ -205,7 +231,7 @@ func (f *phpFlow) plainExpression(n *sitter.Node) bool {
 		return false
 	}
 	switch n.Kind() {
-	case "string", "name", "variable_name":
+	case "string", "name", "variable_name", "boolean", "null", "integer":
 		return true
 	case "encapsed_string":
 		for i := uint(0); i < n.NamedChildCount(); i++ {
@@ -217,6 +243,8 @@ func (f *phpFlow) plainExpression(n *sitter.Node) bool {
 	case "subscript_expression":
 		object, _ := phpLiteralElement(f.module, n)
 		return object == "GLOBALS" || phpRequestArrays[object]
+	case "cast_expression":
+		return phpIntegerCast(f.module, n) && f.plainExpression(phpField(n, "value"))
 	case "unary_op_expression":
 		return phpOperator(f.module, n) == "!" && f.plainExpression(phpField(n, "argument"))
 	case "binary_expression":
@@ -267,7 +295,7 @@ func (f *phpFlow) plainWrite(s *sitter.Node) (phpPlainWrite, bool) {
 		return phpPlainWrite{}, false
 	}
 	a := s.NamedChild(0)
-	w := phpPlainWrite{name: phpVarName(f.module, phpField(a, "left")), value: phpField(a, "right")}
+	w := phpPlainWrite{name: phpVarName(f.module, phpField(a, "left")), value: phpField(a, "right"), statement: s}
 	return w, phpLocalName.MatchString(w.name) && f.plainExpression(w.value)
 }
 

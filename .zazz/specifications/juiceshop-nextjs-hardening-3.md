@@ -184,7 +184,8 @@ sample name.
 10. **AC10.** The Juice Shop and vuln-nextjs tables, the totals and the README section of the
     [scanner comparison](../../docs/scan/scanner-comparison.md) are regenerated from the new
     runs with the commands of the [run record](../evaluation/comparison-results.md#reproduce),
-    and [SCANNER-COMPARISON-SUMMARY.md](../../SCANNER-COMPARISON-SUMMARY.md) agrees with them.
+    and the local summary in the project container root (`scanner-comparison-summary.md`, not
+    tracked) agrees with them.
 
 **A control that becomes a finding is a failed criterion.** D-1 sends four path records that
 are blocked today. Three of them are controls. If the model confirms one, find the missing
@@ -235,7 +236,8 @@ against this branch. No earlier record is missing or changed in any of them.
 The test found one defect, fixed here: an environment guard written with Express's
 `app.get('env')` setting was not recorded, so the nodejs-goof record carried no guard. It also
 shows that the five families reach little beyond Express with an ORM. That is the subject of
-the [generality review proposal](../../DETECTION-GENERALITY-REVIEW-PROPOSAL.md).
+the generality review proposal, a local planning document in the project container root
+(`detection-generality-review-proposal.md`, listed in `proposals-index.md`, not tracked).
 
 ## 7. Scope
 
@@ -244,7 +246,7 @@ the [generality review proposal](../../DETECTION-GENERALITY-REVIEW-PROPOSAL.md).
 | `scan/internal/langjs/` | Modified: `analysis.go`, the flow and helper files, `redirect_guards.go`, `authorization.go`, `configuration` producers, the `gapCovered` hooks of three families. New fixtures and tests |
 | `scan/internal/analysis/`, `scan/internal/judge/`, `scan/internal/analysispacks/` | Modified for the facts and instructions of D-8, D-9 and the identifiers of D-11 |
 | `scan/cli/testdata/architecture-baseline.json` | Rows that move are explained in the PR |
-| `.zazz/evaluation/`, `docs/scan/`, `README.md`, `SCANNER-COMPARISON-SUMMARY.md` | Key rows, results, class pages, the refreshed comparison |
+| `.zazz/evaluation/`, `docs/scan/`, `README.md` | Key rows, results, class pages, the refreshed comparison |
 
 **Out of scope.** A new analyzer family, kind or question. Python and PHP behavior beyond D-11.
 Everything in §6.

@@ -2,7 +2,7 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
-var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", PHPDoctrineDBALContract, PHPDoctrineORMContract, SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract, PackageSQLContract}
+var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", PHPDoctrineDBALContract, PHPDoctrineORMContract, SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
 
 const (
 	PHPDoctrineDBALContract = "php-doctrine-dbal-v1"
@@ -17,12 +17,6 @@ const BetterSQLite3Contract = "better-sqlite3-v1"
 
 // PGliteContract is the PGlite (embedded Postgres) query API.
 const PGliteContract = "pglite-v1"
-
-// PackageSQLContract is a call on a third-party package value the scanner has no
-// written contract for. It states no behavior: the model says what the callee
-// does with its argument and the record stays unverified until that answer's
-// citation verifies.
-const PackageSQLContract = "package-sql-call-v1"
 
 // SequelizeFinderContract is a Sequelize model finder whose where values are bound.
 const SequelizeFinderContract = "sequelize-model-finder-v1"
@@ -43,10 +37,6 @@ func SQLContract(id string) *analysis.APIModel {
 	if id == BetterSQLite3Contract {
 		return &analysis.APIModel{ID: id, Library: "better-sqlite3", Reference: "https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md",
 			Semantics: "Database.exec(sql) runs every statement in its SQL text argument and binds nothing (sql_multi_statement). Database.prepare(sql) compiles exactly one statement from its first argument and refuses multiple statements (sql_single_statement); values passed to the statement's run, get, all or iterate are bound to ?, @name, :name or $name placeholders and cannot protect SQL already interpolated into the prepared text. pragma(text) runs its argument as SQL like exec."}
-	}
-	if id == PackageSQLContract {
-		return &analysis.APIModel{ID: id, Library: "package", Reference: "https://cwe.mitre.org/data/definitions/89.html",
-			Semantics: "The scanner has no written contract for this imported package. It established only that a string built from request data, whose constant text begins a SQL statement, is passed to this call and that the callee's value starts at the cited import. What the call does with that argument is asked in resolve_sqlcall. Answer injection_protection for the operation as you answer it there; the scanner discards both unless the citation verifies."}
 	}
 	if id == PGliteContract {
 		return &analysis.APIModel{ID: id, Library: "pglite", Reference: "https://pglite.dev/docs/api",
@@ -71,7 +61,7 @@ func SQLContract(id string) *analysis.APIModel {
 
 // JavaScriptSQLLibrary reports a SQL contract that belongs to the JS/TS adapter.
 func JavaScriptSQLLibrary(library string) bool {
-	return library == "sequelize" || library == "sql.js" || library == "prisma" || library == "better-sqlite3" || library == "pglite" || library == "package"
+	return library == "sequelize" || library == "sql.js" || library == "prisma" || library == "better-sqlite3" || library == "pglite"
 }
 
 // PHPSQLContractIDs lists the PHP per-engine SQL contracts (D-5).

@@ -11,13 +11,15 @@ A full scan of revision `f189f52` with scanner `3318e27` (PR #50) and OpenAI `gp
 305 records across 194 entries. The report presents **51 Confirmed, 3 practice findings,
 3 Protected and 248 Review**. These are static source judgments, not runtime exploit confirmation.
 
-- **Answer key:** all 41 keyed positives are found. 38 are Confirmed and 3 are practice findings:
+- **Answer key:** all 41 positives of Code Scan's own key are found. The comparison's extended
+  Juice Shop key has 76 rows, of which this report finds 45
+  ([what it misses](../../scan/scanner-comparison.md#what-code-scan-misses)). 38 are Confirmed and 3 are practice findings:
   sensitive logging (`JS-LOG-01`), the profile-image SSRF (`JS-SSRF-01`) and the `b2bOrder` code
   execution (`JS-CODE-02`).
-- **False positives:** two keyed controls are findings. Liking another user's review
-  (`routes/likeProductReviews.ts`) is the feature, and the `.well-known` listing (`server.ts:294`)
-  holds only published files. Counted by location, as the
-  [comparison](../../scan/scanner-comparison.md#false-positives) does, there are three.
+- **False positives:** four locations in the
+  [source review](../../../.zazz/evaluation/scanner-false-positives.json) of 2026-11-25: liking
+  another user's review (`routes/likeProductReviews.ts:35` and `:50`), the `.well-known` listing
+  (`server.ts:294`), and a NoSQL finding whose value is always a string (`routes/orderHistory.ts:36`).
 - **New since the previous report:** insecure configuration, information exposure, weak password
   hashing, account enumeration, mass assignment, missing authorization, and path, code and SSRF
   cases that were in Review or had no record.

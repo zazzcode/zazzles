@@ -24,6 +24,10 @@ produced 265 records across 174 entries. The report presents 159 Confirmed, 39 p
   unguarded, but plain PHP has no access model, so who may call the page stays unknown (0.87).
 - **Nothing else moved.** The other 264 records have the same status as the previous report, so
   the answer key stands: all 11 keyed positives Confirmed and no protected control a finding.
+- **False positives:** nine SQL findings, by the
+  [source review](../../../.zazz/evaluation/scanner-false-positives.json) of 2026-11-25. Seven have
+  every request value escaped into a quoted literal, and two require digits only. They are outside
+  the key.
 - **Still not recorded.** Reads of other users' records (`authbypass/get_user_data.php`, the
   `bac` module), the API module's defects, CSRF, weak session identifiers, brute force, CAPTCHA
   bypass, CSP bypass and cryptography have no analyzer that covers them. These are recall gaps

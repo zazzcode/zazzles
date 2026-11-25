@@ -37,67 +37,78 @@ dd{margin:0}
 <p class="note">Each report is standalone, and viewing one makes no model call. Outcomes are static source judgments, not runtime exploit confirmation. <a href="https://github.com/zazzcode/zazzles">Project on GitHub</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/detection-capabilities.md">Detection capabilities</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/interpreting-results.md">How to read a report</a></p>
 
 <h2>Compared with other scanners</h2>
-<p>Known vulnerabilities found in four applications, scored against a source-reviewed answer key. Code Scan and Bearer ran on 2026-11-24, Semgrep CE on 2026-11-24 and 2026-11-25.</p>
+<p>Rows of each application’s source-reviewed answer key that each scanner found. Code Scan and Bearer ran on 2026-11-24, Semgrep CE on 2026-11-25.</p>
 <div class="scroll">
 <table>
-<thead><tr><th scope="col">Application</th><th scope="col" class="n">Known</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE, broad packs</th><th scope="col" class="n">Semgrep CE, focused packs</th><th scope="col" class="n">Bearer</th></tr></thead>
+<thead><tr><th scope="col">Application</th><th scope="col" class="n">In answer key</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">42</td><td class="n">41</td><td class="n">13</td><td class="n">9</td><td class="n">14</td></tr>
-<tr><th scope="row"><a href="https://github.com/zazzcode/vuln-nextjs">vuln-nextjs</a></th><td class="n">13</td><td class="n">13</td><td class="n">7</td><td class="n">2</td><td class="n">7</td></tr>
-<tr><th scope="row"><a href="https://github.com/digininja/DVWA">DVWA</a></th><td class="n">11</td><td class="n">11</td><td class="n">6</td><td class="n">5</td><td class="n">6</td></tr>
-<tr><th scope="row"><a href="https://github.com/Secureaks/VulnerableSymfony">VulnerableSymfony</a></th><td class="n">30</td><td class="n">30</td><td class="n">8</td><td class="n">2</td><td class="n">5</td></tr>
-<tr><th scope="row">Total</th><td class="n">96</td><td class="n">95</td><td class="n">34</td><td class="n">18</td><td class="n">32</td></tr>
+<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">76</td><td class="n">45</td><td class="n">19</td><td class="n">15</td></tr>
+<tr><th scope="row"><a href="https://github.com/zazzcode/vuln-nextjs">vuln-nextjs</a></th><td class="n">13</td><td class="n">13</td><td class="n">7</td><td class="n">7</td></tr>
+<tr><th scope="row"><a href="https://github.com/digininja/DVWA">DVWA</a></th><td class="n">11</td><td class="n">11</td><td class="n">6</td><td class="n">6</td></tr>
+<tr><th scope="row"><a href="https://github.com/Secureaks/VulnerableSymfony">VulnerableSymfony</a></th><td class="n">30</td><td class="n">30</td><td class="n">8</td><td class="n">5</td></tr>
+<tr><th scope="row">Total</th><td class="n">130</td><td class="n">99</td><td class="n">40</td><td class="n">33</td></tr>
 </tbody>
 </table>
 </div>
-<p class="note">Semgrep CE 1.183.0 ran twice: with 23 registry packs chosen to fit these applications (1,379 rules), and with five focused packs (564 rules). Broad packs find more and report more safe code. Its cross-function and cross-file engine is a paid product and was not run. Bearer CLI ran <code>bearer-rules</code>; Bearer Pro was not run.</p>
-<p class="note"><strong>These are different kinds of tool.</strong> Semgrep CE and Bearer run free and offline. A judged Code Scan calls a paid model provider. Code Scan was developed against these applications and the answer keys favor the classes it analyzes, so this is not a general accuracy claim. Its found count includes three Juice Shop cases reported as practice findings. It misses one committed secret, a class it has no analyzer for.</p>
+<p class="note">An answer key is not a complete list of an application’s vulnerabilities. Juice Shop’s was extended to 76 rows from its own documented challenges and markers and from results of any scanner. The other three were not extended and still favor the classes Code Scan analyzes.</p>
+<p class="note">Semgrep CE 1.183.0 ran with 23 registry packs (1,379 rules). Its cross-function and cross-file engine is a paid product and was not run. Bearer CLI ran <code>bearer-rules</code>; Bearer Pro was not run.</p>
+<p class="note"><strong>These are different kinds of tool.</strong> Semgrep CE and Bearer run free and offline. A judged Code Scan calls a paid model provider. Code Scan was developed against these applications, so this is not a general accuracy claim. Its found count includes three Juice Shop cases reported as practice findings.</p>
 
 <h3>False positives</h3>
 <p>Results on code that a source review shows to be safe, counted by location. Undecided results are not counted, so every count is a lower bound. Bearer’s review is the least complete. A result outside the answer key is not a false positive by itself.</p>
 <div class="scroll">
 <table>
-<thead><tr><th scope="col">Application</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE, broad packs</th><th scope="col" class="n">Semgrep CE, focused packs</th><th scope="col" class="n">Bearer</th></tr></thead>
+<thead><tr><th scope="col">Application</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">4</td><td class="n">50</td><td class="n">5</td><td class="n">36 and two grouped rules</td></tr>
-<tr><th scope="row"><a href="https://github.com/zazzcode/vuln-nextjs">vuln-nextjs</a></th><td class="n">0</td><td class="n">3</td><td class="n">1</td><td class="n">4</td></tr>
-<tr><th scope="row"><a href="https://github.com/digininja/DVWA">DVWA</a></th><td class="n">9</td><td class="n">17</td><td class="n">7</td><td class="n">31</td></tr>
-<tr><th scope="row"><a href="https://github.com/Secureaks/VulnerableSymfony">VulnerableSymfony</a></th><td class="n">0</td><td class="n">23</td><td class="n">0</td><td class="n">2</td></tr>
-<tr><th scope="row">Total</th><td class="n">13</td><td class="n">93</td><td class="n">13</td><td class="n">73 and two grouped rules</td></tr>
+<tr><th scope="row">OWASP Juice Shop</th><td class="n">4</td><td class="n">50</td><td class="n">36 and two grouped rules</td></tr>
+<tr><th scope="row">vuln-nextjs</th><td class="n">0</td><td class="n">3</td><td class="n">4</td></tr>
+<tr><th scope="row">DVWA</th><td class="n">9</td><td class="n">17</td><td class="n">31</td></tr>
+<tr><th scope="row">vuln-symfony</th><td class="n">0</td><td class="n">23</td><td class="n">2</td></tr>
+<tr><th scope="row">Total</th><td class="n">13</td><td class="n">93</td><td class="n">73 and two grouped rules</td></tr>
 </tbody>
 </table>
 </div>
 
 <h3>By weakness class</h3>
-<p>Known vulnerabilities found, across the four applications. Semgrep CE is the broad run.</p>
+<p>Rows of the answer keys found, across the four applications.</p>
 <div class="scroll">
 <table>
-<thead><tr><th scope="col">Weakness class</th><th scope="col" class="n">Known</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
+<thead><tr><th scope="col">Weakness class</th><th scope="col" class="n">In answer key</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
 <tbody>
-<tr><th scope="row">Cross-site scripting</th><td class="n">18</td><td class="n">18</td><td class="n">2</td><td class="n">5</td></tr>
+<tr><th scope="row">Cross-site scripting</th><td class="n">19</td><td class="n">18</td><td class="n">3</td><td class="n">5</td></tr>
+<tr><th scope="row">Missing authorization</th><td class="n">15</td><td class="n">13</td><td class="n">0</td><td class="n">0</td></tr>
 <tr><th scope="row">SQL injection</th><td class="n">10</td><td class="n">10</td><td class="n">10</td><td class="n">7</td></tr>
-<tr><th scope="row">Missing authorization</th><td class="n">10</td><td class="n">10</td><td class="n">0</td><td class="n">0</td></tr>
-<tr><th scope="row">Insecure configuration</th><td class="n">8</td><td class="n">8</td><td class="n">4</td><td class="n">4</td></tr>
+<tr><th scope="row">Insecure configuration</th><td class="n">10</td><td class="n">8</td><td class="n">5</td><td class="n">4</td></tr>
+<tr><th scope="row">Mass assignment</th><td class="n">8</td><td class="n">7</td><td class="n">0</td><td class="n">0</td></tr>
 <tr><th scope="row">Path traversal</th><td class="n">7</td><td class="n">7</td><td class="n">1</td><td class="n">2</td></tr>
-<tr><th scope="row">Mass assignment</th><td class="n">7</td><td class="n">7</td><td class="n">0</td><td class="n">0</td></tr>
 <tr><th scope="row">Code and template injection</th><td class="n">6</td><td class="n">6</td><td class="n">4</td><td class="n">4</td></tr>
+<tr><th scope="row">Information exposure</th><td class="n">5</td><td class="n">3</td><td class="n">1</td><td class="n">1</td></tr>
 <tr><th scope="row">OS command injection</th><td class="n">5</td><td class="n">5</td><td class="n">5</td><td class="n">2</td></tr>
+<tr><th scope="row">NoSQL injection</th><td class="n">4</td><td class="n">4</td><td class="n">3</td><td class="n">0</td></tr>
 <tr><th scope="row">Server-side request forgery</th><td class="n">4</td><td class="n">4</td><td class="n">0</td><td class="n">1</td></tr>
-<tr><th scope="row">NoSQL injection</th><td class="n">3</td><td class="n">3</td><td class="n">2</td><td class="n">0</td></tr>
-<tr><th scope="row">Information exposure</th><td class="n">3</td><td class="n">3</td><td class="n">1</td><td class="n">1</td></tr>
-<tr><th scope="row">Weak password hashing</th><td class="n">3</td><td class="n">3</td><td class="n">2</td><td class="n">2</td></tr>
+<tr><th scope="row">Unrestricted file upload</th><td class="n">4</td><td class="n">2</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Business logic</th><td class="n">4</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Weak password hashing</th><td class="n">3</td><td class="n">3</td><td class="n">3</td><td class="n">3</td></tr>
 <tr><th scope="row">Account enumeration</th><td class="n">3</td><td class="n">3</td><td class="n">0</td><td class="n">0</td></tr>
 <tr><th scope="row">Open redirect</th><td class="n">3</td><td class="n">3</td><td class="n">1</td><td class="n">2</td></tr>
-<tr><th scope="row">Unrestricted file upload</th><td class="n">2</td><td class="n">2</td><td class="n">0</td><td class="n">0</td></tr>
-<tr><th scope="row">Unsafe deserialization</th><td class="n">1</td><td class="n">1</td><td class="n">1</td><td class="n">1</td></tr>
-<tr><th scope="row">Weak password recovery</th><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Hardcoded secret</th><td class="n">3</td><td class="n">0</td><td class="n">3</td><td class="n">1</td></tr>
+<tr><th scope="row">Authentication flaws</th><td class="n">3</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Weak password recovery</th><td class="n">2</td><td class="n">1</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Rate limits and CAPTCHA</th><td class="n">2</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Input validation</th><td class="n">2</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
 <tr><th scope="row">Sensitive data in logs</th><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">0</td></tr>
-<tr><th scope="row">Hardcoded secret</th><td class="n">1</td><td class="n">0</td><td class="n">1</td><td class="n">1</td></tr>
-<tr><th scope="row">Total</th><td class="n">96</td><td class="n">95</td><td class="n">34</td><td class="n">32</td></tr>
+<tr><th scope="row">Cross-site request forgery</th><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">XML external entities</th><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Token verification</th><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Resource exhaustion</th><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Weak cryptography</th><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Race condition</th><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Unsafe deserialization</th><td class="n">1</td><td class="n">1</td><td class="n">1</td><td class="n">1</td></tr>
+<tr><th scope="row">Total</th><td class="n">130</td><td class="n">99</td><td class="n">40</td><td class="n">33</td></tr>
 </tbody>
 </table>
 </div>
-<p class="note"><a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison, every miss and every false positive</a></p>
+<p class="note">Code Scan misses 31 rows, all in Juice Shop: 18 in classes it has no analyzer for, and 13 where an existing analyzer falls short. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md#what-code-scan-misses">What Code Scan misses</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison</a></p>
 
 <h2>Reports</h2>
 <p>Counts are records in the report, and one defect can appear in several. Review means the evidence or the judgment is incomplete. It does not mean safe.</p>
@@ -105,7 +116,7 @@ dd{margin:0}
 <table>
 <thead><tr><th scope="col">Report</th><th scope="col">What it shows</th><th scope="col" class="n">Confirmed</th><th scope="col" class="n">Practice</th><th scope="col" class="n">Protected</th><th scope="col" class="n">Review</th><th scope="col">Scanned</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. All 41 keyed positives found.</td><td class="n">51</td><td class="n">3</td><td class="n">3</td><td class="n">248</td><td>2026-11-24</td></tr>
+<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. All 41 rows of Code Scan’s own key found, and 45 of 76 in the extended key.</td><td class="n">51</td><td class="n">3</td><td class="n">3</td><td class="n">248</td><td>2026-11-24</td></tr>
 <tr><th scope="row"><a href="vuln-nextjs/findings.html">vuln-nextjs</a></th><td>Next.js Pages Router. All 13 expected cases Confirmed, including PGlite SQL injection, cross-tier XSS and code injection.</td><td class="n">13</td><td class="n">1</td><td class="n">9</td><td class="n">31</td><td>2026-11-24</td></tr>
 <tr><th scope="row"><a href="vuln-nextjs/reports/prototype-pollution/findings.html">vuln-nextjs prototype pollution fixtures</a></th><td>Lodash by version and source-visible prototype writes. 14 of 15 in-scope cases Confirmed, one in Review. Two dependency-only cases have no record.</td><td class="n">14</td><td class="n">0</td><td class="n">2</td><td class="n">47</td><td>2026-11-21</td></tr>
 <tr><th scope="row"><a href="dvwa/findings.html">DVWA</a></th><td>Plain PHP. All 11 keyed positives Confirmed. Adds weak password hashing and session cookie settings.</td><td class="n">159</td><td class="n">39</td><td class="n">18</td><td class="n">49</td><td>2026-11-23</td></tr>

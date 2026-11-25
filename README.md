@@ -49,21 +49,23 @@ Coverage varies by language, framework, and library. [Full detection coverage](d
 ## Scanner comparison
 
 Code Scan, Semgrep CE and Bearer were run on four intentionally vulnerable applications and
-scored against each application's known vulnerabilities, with false positives counted.
+scored against an answer key for each application, with false positives counted.
 
-| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found |
+| Application | In answer key | Code Scan found | Semgrep CE found | Bearer found |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop | 42 | 41 | 13 | 14 |
+| OWASP Juice Shop | 76 | 45 | 19 | 15 |
 | vuln-nextjs | 13 | 13 | 7 | 7 |
 | DVWA | 11 | 11 | 6 | 6 |
 | vuln-symfony | 30 | 30 | 8 | 5 |
+| **Total** | **130** | **99** | **40** | **33** |
 
 Reviewed false positives: Code Scan 13, Semgrep CE 93, Bearer 73 and two grouped rules. Each is a
-lower bound. Semgrep CE is shown with 23 registry packs; with five focused packs it
-found 18 with 13 false positives. Semgrep CE and Bearer run free and offline, and a judged Code
-Scan calls a paid model provider. These are development reference applications that Code Scan was
-developed against, and the answer keys favor the classes it analyzes, so this is not a general
-accuracy claim.
+lower bound. An answer key is not a complete list of an application's vulnerabilities. Juice Shop's
+was extended from its own documented challenges; the other three were not and still favor the
+classes Code Scan analyzes. Code Scan misses 31 rows: 18 in classes it has no analyzer for and 13
+where an existing analyzer falls short. Semgrep CE and Bearer run free and offline, and a judged
+Code Scan calls a paid model provider. Code Scan was developed against these applications, so this
+is not a general accuracy claim.
 [Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)
 
 ## Modules

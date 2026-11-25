@@ -1,6 +1,9 @@
 package langphp
 
 import (
+	"io/fs"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -20,7 +23,7 @@ var phpRequestArrays = map[string]bool{"_GET": true, "_POST": true, "_REQUEST": 
 // stated: code the engine can run between two plain statements, a built-in that
 // is redefined, and SQL or server settings that change how a literal is read
 // without the client's knowledge.
-var phpSQLFactHazard = regexp.MustCompile(`(?i)\b(?:set_error_handler|register_tick_function|pcntl_\w+|extr_refs|php_errormsg|__destruct|__tostring|offsetget|offsetexists|(?:runkit7?|uopz)_\w+)\b` +
+var phpSQLFactHazard = regexp.MustCompile(`(?i)error_handler|tick_function|\b(?:pcntl_\w+|extr_refs|php_errormsg|__destruct|__tostring|offsetget|offsetexists|(?:runkit7?|uopz)_\w+)\b` +
 	`|\bset\b[^;]{0,60}(?:names|char)|sql_mode|no_backslash_escapes|character_set_|collation_connection|init_connect|init_command`)
 
 // phpLocalName is a variable whose references can be looked up in source text.
@@ -72,15 +75,15 @@ func (f *phpFlow) sqlOperandFacts(n *sitter.Node) []string {
 	}
 	var sql strings.Builder
 	var facts []string
-	operands, first := map[string]bool{}, len(writes)
+	operands, first, lastInteger, seen := map[string]bool{}, len(writes), -1, map[string]bool{}
 	for _, p := range parts {
 		sql.WriteString(p.text)
 		if p.operand == nil {
 			continue
 		}
-		value, statement := p.operand, (*sitter.Node)(nil)
+		value, statement, at := p.operand, (*sitter.Node)(nil), -1
 		if name := phpVarName(m, value); name != "" {
-			at := len(writes) - 1
+			at = len(writes) - 1
 			for at >= 0 && writes[at].name != name {
 				at--
 			}
@@ -103,19 +106,34 @@ func (f *phpFlow) sqlOperandFacts(n *sitter.Node) []string {
 			return nil
 		}
 		name, source := strings.TrimSpace(phpText(m, p.operand)), " from "+m.evidence("operation", call).Text+" at "+m.file
+		fact := ""
 		switch kind {
-		case "number":
+		case "number", "digits":
 			sql.WriteByte(phpNumberMark)
-			facts = append(facts, "integer_conversion_result: "+name+source)
-		case "digits":
-			sql.WriteByte(phpNumberMark)
-			facts = append(facts, "digit_pattern_value: "+name+source)
+			fact = "integer_conversion_result: " + name + source
+			if kind == "digits" {
+				fact = "digit_pattern_value: " + name + source
+			}
+			lastInteger = max(lastInteger, at)
 		case "hash":
 			sql.WriteByte(phpOperandMark)
-			facts = append(facts, "hash_hex_result: "+name+source)
+			fact = "hash_hex_result: " + name + source
 		default:
 			sql.WriteByte(phpOperandMark)
-			facts = append(facts, "escaped_in_quoted_literal: "+name+source+"; quoted literal")
+			fact = "escaped_in_quoted_literal: " + name + source + "; quoted literal"
+		}
+		if !seen[fact] {
+			seen[fact] = true
+			facts = append(facts, fact)
+		}
+	}
+	// Names that share a value through a reference end on the last value written
+	// to any of them. Every operand value is safe inside quotes, so only an integer,
+	// which may stand bare, is at risk: no operand is written after its last write.
+	// The other writes there are constants, which the loop below allows.
+	for _, w := range writes[lastInteger+1:] {
+		if lastInteger >= 0 && operands[w.name] {
+			return nil
 		}
 	}
 	// From the first operand on, only operands and constants that are safe in any
@@ -347,6 +365,9 @@ func phpSQLParts(m *phpModule, n *sitter.Node) ([]phpSQLPart, bool) {
 			}
 			at = c.EndByte()
 			switch {
+			case c.Kind() == "string_content" && strings.HasPrefix(phpText(m, c), "?->"):
+				// PHP 8 reads "$v?->p" as a nullsafe fetch, not $v and text.
+				return nil, false
 			case c.Kind() == "string_content":
 				parts = append(parts, phpSQLPart{text: phpText(m, c)})
 			case c.Kind() == "variable_name":
@@ -367,14 +388,36 @@ func phpSQLParts(m *phpModule, n *sitter.Node) ([]phpSQLPart, bool) {
 	return nil, false
 }
 
-// sqlFactHazard reports a program in which the plain pattern proves nothing.
+// phpSQLFactHazardBytes bounds the bytes read for the program check; a larger
+// tree states no fact. A variable, so a test can lower it.
+var phpSQLFactHazardBytes = 256 << 20
+
+// sqlFactHazard reports a program in which the plain pattern proves nothing. It reads
+// every file under the root, whatever its extension and whether or not the scan
+// skips it (vendor/ included), and every PHP file the scan could not parse.
 func (s *phpSet) sqlFactHazard() bool {
 	if s.sqlHazard == nil {
 		found := false
 		for _, file := range s.files {
-			m := s.modules[file]
-			found = found || m == nil || phpSQLFactHazard.Match(m.src)
+			found = found || s.modules[file] == nil
 		}
+		total := 0
+		err := filepath.WalkDir(s.root, func(path string, d fs.DirEntry, err error) error {
+			switch {
+			case err != nil || found:
+				return filepath.SkipAll
+			case d.IsDir() && d.Name() == ".git":
+				return filepath.SkipDir
+			case !d.Type().IsRegular():
+				return nil
+			}
+			src, err := os.ReadFile(path)
+			if total += len(src); err != nil || total > phpSQLFactHazardBytes || phpSQLFactHazard.Match(src) {
+				found = true
+			}
+			return nil
+		})
+		found = found || err != nil
 		s.sqlHazard = &found
 	}
 	return *s.sqlHazard

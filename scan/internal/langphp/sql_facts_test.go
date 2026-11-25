@@ -2,6 +2,7 @@ package langphp
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -51,12 +52,12 @@ func TestPHPSQLFacts(t *testing.T) {
 		{"text alone before the query", `$q = "SELECT a FROM t WHERE b = '" . mysqli_real_escape_string($db, $_POST['v']) . "'"; mysqli_query($db, $q);`, []string{escaped + "mysqli_real_escape_string($db, $_POST['v'])"}},
 		{"plain parts of an argument", `$v = md5("a\n$x" . $_GET['g'] . $_REQUEST['r'] . $_COOKIE['c'] . SALT); ` + phpFactQuery, []string{hash + "$v"}},
 		{"integer compared", `$n = intval($_GET['n']); ` + "// id\n" + `$q = "SELECT a FROM t WHERE id = $n"; $r = mysqli_query($db, $q);`, []string{integer + "$n from intval($_GET['n']) at index.php"}},
-		{"integer cast, every bare place", `$n = (int) $_GET['n']; $m = (integer) trim($_POST['m']); mysqli_query($db, "SELECT a FROM t WHERE (id >= $n) AND c IN ($m, {$n}) ORDER BY a LIMIT $n OFFSET $m;");`, []string{integer + "$n from (int) $_GET['n']", integer + "$m", integer + "$n", integer + "$n", integer + "$m"}},
-		{"integer quoted, with others", `$n = intval($_GET['n']); ` + phpFactEscape + `$h = md5($_POST['h']); mysqli_query($db, "INSERT INTO t (a, b, c) VALUES ('$n', '$v', '$h'), ($n, '$v', '$h')");`, []string{integer + "$n", escaped + "$v", hash + "$h", integer + "$n", escaped + "$v", hash + "$h"}},
+		{"integer cast, every bare place", `$n = (int) $_GET['n']; $m = (integer) trim($_POST['m']); mysqli_query($db, "SELECT a FROM t WHERE (id >= $n) AND c IN ($m, {$n}) ORDER BY a LIMIT $n OFFSET $m;");`, []string{integer + "$n from (int) $_GET['n']", integer + "$m"}},
+		{"integer quoted, with others", phpFactEscape + `$h = md5($_POST['h']); $n = intval($_GET['n']); $z = 0; $y = false; mysqli_query($db, "INSERT INTO t (a, b, c) VALUES ('$n', '$v', '$h'), ($n, '$v', '$h')");`, []string{integer + "$n", escaped + "$v", hash + "$h"}},
 		{"integer in the call", `mysqli_query($db, "SELECT a FROM t WHERE id = " . intval($_GET['n']) . ";");`, []string{integer + "intval($_GET['n'])"}},
 		{"digits checked, else branch", `if (!preg_match('/^\d+$/', $_GET['id'])) { exit; } else { ` + "// read\n" + `$id = $_GET['id']; $found = false; $q = "SELECT a FROM t WHERE id = '$id'"; $r = mysqli_query($db, $q); }`, []string{digits + `$id from preg_match('/^\d+$/', $_GET['id']) at index.php`}},
 		{"digits checked, then branch", `if (preg_match("/^[0-9]+$/D", $_POST["id"])) { $id = $_POST['id']; $e = null; $f = 0; mysqli_query($db, "SELECT a FROM t WHERE id = $id"); }`, []string{digits + "$id"}},
-		{"used twice", phpFactEscape + `mysqli_query($db, "SELECT a FROM t WHERE b = '$v' OR c LIKE '%$v%'");`, []string{escaped + "$v", escaped + "$v"}},
+		{"used twice", phpFactEscape + `mysqli_query($db, "SELECT a FROM t WHERE b = '$v' OR c LIKE '%$v%'");`, []string{escaped + "$v"}},
 		{"conditional", `$v = (isset($db) && !is_object($db) ? mysqli_real_escape_string($db, $_POST['v']) : (trigger_error("x", E_USER_ERROR) ? "" : '')); ` + phpFactQuery, []string{escaped + "$v"}},
 		{"conditional, call last", `$v = empty($_POST['v']) ? "" : mysqli_real_escape_string($db, $_POST['v']); ` + phpFactQuery, []string{escaped + "$v"}},
 		{"both alternatives", `$v = $x ? mysqli_real_escape_string($db, $_POST['v']) : mysqli_real_escape_string($db, $_GET['v']); ` + phpFactQuery, []string{escaped + "$v"}},
@@ -208,6 +209,13 @@ func TestPHPSQLFactTraps(t *testing.T) {
 		{"request element in the text", `if (preg_match('/^\d+$/', $_GET['id'])) { mysqli_query($db, "SELECT a FROM t WHERE id = " . $_GET['id']); }`},
 		{"digits after a block", `if (preg_match('/^\d+$/', $_GET['id'])) { exit; } $id = $_GET['id']; ` + digitQuery},
 		{"non-operand text written after", phpFactEscape + `$w = 'x'; ` + phpFactQuery},
+		{"integer, then an escape that an alias may share", `$GLOBALS['n'] = &$GLOBALS['e']; $n = (int) $_GET['id']; $e = mysqli_real_escape_string($db, $_GET['name']); mysqli_query($db, "SELECT a FROM t WHERE id = $n AND name = '$e'");`},
+		{"integer, then a hash", `$n = (int) $_GET['id']; $h = md5($_GET['p']); mysqli_query($db, "SELECT a FROM t WHERE id = $n AND p = '$h'");`},
+		{"integer, then a text written by a function that keeps a reference", `function keep(&$x) { $GLOBALS['n'] = &$x; } keep($e); $n = (int) $_GET['id']; $e = mysqli_real_escape_string($db, $_GET['name']); mysqli_query($db, "SELECT a FROM t WHERE id = $n AND name = '$e'");`},
+		{"integer, then extract by reference", `$a['n'] = &$GLOBALS['e']; extract($a, 256); $n = (int) $_GET['id']; $e = mysqli_real_escape_string($db, $_GET['name']); mysqli_query($db, "SELECT a FROM t WHERE id = $n AND name = '$e'");`},
+		{"digits, then an escape", `if (preg_match('/^\d+$/', $_GET['id'])) { $id = $_GET['id']; $e = mysqli_real_escape_string($db, $_GET['name']); mysqli_query($db, "SELECT a FROM t WHERE id = $id AND name = '$e'"); }`},
+		{"nullsafe fetch in the text", phpFactEscape + `mysqli_query($db, "SELECT a FROM t WHERE b = '$v?->x'");`},
+		{"nullsafe fetch of an integer", `$n = intval($_GET['n']); mysqli_query($db, "SELECT a FROM t WHERE b = '$n?->x'");`},
 		{"raw alternative", `$v = $x ? mysqli_real_escape_string($db, $_POST['v']) : $_POST['v']; ` + phpFactQuery},
 		{"raw first alternative", `$v = $x ? $_POST['v'] : mysqli_real_escape_string($db, $_POST['v']); ` + phpFactQuery},
 		{"unknown alternative", `$v = $x ? mysqli_real_escape_string($db, $_POST['v']) : $o->raw(); ` + phpFactQuery},
@@ -336,6 +344,11 @@ func TestPHPSQLFactPrograms(t *testing.T) {
 		{"own hash in a namespace", map[string]string{"index.php": strings.Replace(phpFactConnect, "<?php", "<?php\nnamespace App;", 1) + `$v = md5($_POST['v']); ` + phpFactQuery}, 0},
 		{"file too large to read", map[string]string{"index.php": index, "a.php": "<?php //" + strings.Repeat("x", 2<<20)}, 0},
 		{"reference with a space", map[string]string{"index.php": index, "a.php": "<?php f($a, & $v);"}, 0},
+		{"other files that are not PHP", map[string]string{"index.php": index, "notes.md": "Use extract ( and call_user_func with care.", "vendor/lib.php": "<?php class Lib {}"}, 1},
+		{"handler set by a computed name", map[string]string{"index.php": index, "a.php": "<?php call_user_func('set_' . 'error_handler', 'h');"}, 0},
+		{"handler in a file that is not PHP", map[string]string{"index.php": index, "handler.inc": "<?php set_error_handler('h');"}, 0},
+		{"destructor in vendor", map[string]string{"index.php": index, "vendor/lib.php": "<?php class Lib { function __destruct() {} }"}, 0},
+		{"character set in a data file", map[string]string{"index.php": index, "init.sql": "SET NAMES gbk;"}, 0},
 		{"file that does not parse", map[string]string{"index.php": index + "if ("}, 0},
 		{"reference in another file", map[string]string{"index.php": index, "other.php": "<?php foreach ($a as &$v) {}"}, 0},
 	}
@@ -356,6 +369,41 @@ func TestPHPSQLFactPrograms(t *testing.T) {
 				t.Fatalf("records %d, facts %q, want %d", records, facts, c.want)
 			}
 		})
+	}
+}
+
+// TestPHPSQLFactTree reads every file under the root, skips only .git, and states no
+// fact for a tree it cannot read whole.
+func TestPHPSQLFactTree(t *testing.T) {
+	const index = phpFactConnect + phpFactEscape + phpFactQuery + "\n"
+	facts := func(t *testing.T, root string) int {
+		t.Helper()
+		uses := phpUsesOfKind(phpAnalyze(t, root, "index.php"), "sql_query_candidate")
+		if len(uses) == 0 {
+			t.Fatal("no record")
+		}
+		return len(uses[0].Completeness.ModelFacts)
+	}
+	if got := facts(t, phpFixture(t, map[string]string{"index.php": index, ".git/HEAD": "error_handler"})); got != 1 {
+		t.Errorf("history under .git withheld the fact: %d", got)
+	}
+	root := phpFixture(t, map[string]string{"index.php": index, "private.txt": "x"})
+	if err := os.Chmod(filepath.Join(root, "private.txt"), 0); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chmod(filepath.Join(root, "private.txt"), 0o644)
+	if got := facts(t, root); got != 0 && os.Getuid() != 0 {
+		t.Errorf("an unreadable file stated %d facts", got)
+	}
+	limit := phpSQLFactHazardBytes
+	defer func() { phpSQLFactHazardBytes = limit }()
+	phpSQLFactHazardBytes = len(index)
+	if got := facts(t, phpFixture(t, map[string]string{"index.php": index})); got != 1 {
+		t.Errorf("a tree at the limit stated %d facts", got)
+	}
+	phpSQLFactHazardBytes = len(index) - 1
+	if got := facts(t, phpFixture(t, map[string]string{"index.php": index})); got != 0 {
+		t.Errorf("a tree over the limit stated %d facts", got)
 	}
 }
 

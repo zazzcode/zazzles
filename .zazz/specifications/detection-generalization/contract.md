@@ -133,6 +133,9 @@ Each specification has a stop rule with numbers. When it fires:
 
 A result that passes only on an application seen during development counts as a failure.
 
+**A stop rule that fires only on false positives** blocks the merge and starts §7's fix first. Dropping
+comes after that fix fails, or when it would cost a true finding.
+
 ## 6. Agent rules, standards and documents
 
 - [AGENTS.md](../../../AGENTS.md) and the [execution discipline](../../docs/agent-execution-discipline.md)
@@ -176,12 +179,19 @@ checkpoint that uses it. Finish with a fresh verifier and a draft PR to stage; n
 
 ## 7. Detection and false-positive accuracy must not fall
 
-Owner, 2026-11-25. These hold for every specification, above its own pass numbers. A specification cannot
-trade one for the other.
+Owner, 2026-11-25: accuracy must not be lost; keep the rules strict; **minimize false positives, but not at
+the expense of finding true positives.** These rules stand above each specification's own pass numbers.
 
-**Base.** Before the first branch, a ledger is frozen from saved runs, offline: every keyed positive,
-control, known false positive and Protected record of every sample, with request digest and outcome.
-Reviewed state on 2026-11-25:
+**Priority when they pull apart:** (1) keep every true finding, (2) never mark a true one Protected, (3)
+minimize false positives. A false positive is removed by better evidence that lets the model see the code is
+safe. It is never removed by dropping a record, a threshold, an ignore list, a name, or moving a true
+finding to Review.
+
+**Base.** Before the first branch, an agent that did not write the first review checks every Confirmed
+record and every known false positive of the judged samples, and reads a sample of Review records for true
+findings left there. Then a ledger is frozen offline: every true finding (keyed or reviewed), control, known
+false positive and Protected record, with request digest and outcome. State on 2026-11-25, before that
+second review:
 
 | Sample | Confirmed records | Reviewed false (records or locations) | Families with false ones |
 |---|---:|---:|---|
@@ -190,21 +200,24 @@ Reviewed state on 2026-11-25:
 | vuln-symfony | 55 | 0 | — |
 | DVWA | in the ledger | 9 locations | SQL |
 
-False counts are lower bounds. They come from one review.
-
 | Rule | Requirement |
 |---|---|
-| A1 Recall | No keyed positive that is Confirmed becomes anything else, on any sample or fixture |
-| A2 False positives | No control, known-safe location or Protected record becomes a finding. Known false positives may go down, never up |
-| A3 False Protected | No keyed positive, or true finding outside the key, becomes Protected. One is a stop |
-| A4 Changed requests | Every record whose request changed is judged before and after on the same inputs, with two planned repeats where outcomes differ. Unchanged requests are replayed, not resent |
-| A5 New findings | Every new Confirmed record is read in source by an agent that did not implement. At least 90% true **and** not below the family's base precision. Under ten new records, at most one false; that one is explained and not tuned away |
-| A6 Cumulative | After each merge, the ledger is checked offline on `stage`. One full judged scan of Juice Shop and one PHP sample closes each group of three merged specifications |
-| A7 Variance | A moved outcome counts as model variance only if the same request gave both outcomes in planned repeats. It is listed, and never used to excuse A1 or A3 |
-| A8 Revert | Each PR reverts alone and restores the base requests. Shown by G2 on the revert, offline |
+| A1 True findings kept | No true finding in the ledger, keyed or not, stops being Confirmed on any sample or fixture. Review counts as lost |
+| A2 Known-safe code | No control, known-safe location or Protected record becomes a finding. Known false positives may only go down |
+| A3 False Protected | No true finding becomes Protected. Every new Protected record is read in source and has the same answer in three planned repeats. One false Protected stops the specification |
+| A4 Changed requests | Ledger records and controls whose request changed, and every moved outcome: three planned answers before and after. Other changed requests: one. Unchanged requests are replayed, never resent |
+| A5 New findings | Two agents that did not implement read every new Confirmed record. At least 95% true, and not below the family's base. Under twenty new records, at most one false |
+| A6 Cumulative | The ledger is checked offline after each merge. Every two merged specifications close with one full judged scan of Juice Shop and one PHP sample |
+| A7 Variance | Where repeats disagree, the worse outcome counts. Variance never excuses A1 or A3 |
+| A8 Revert | Each PR reverts alone and restores the base requests, shown offline |
+| A9 Review is not a place to hide | A true weakness recorded but left in Review counts as **not found**. Results list records moved into and out of Review, each with its reason |
+| A10 Both sides, never averaged | Results state, per family and sample: true gained, true lost, false gained, false removed, left in Review. No single score |
 
-**When a rule fails:** do not merge. Fix only by better evidence that holds for any application; otherwise
-the stop procedure applies. No rule, list, wording or threshold is added for the record that failed.
+**When a rule fails.** Do not merge.
 
-Review is not a safe harbour: the results state how many records moved from Confirmed to Review, with the
-reason for each, and a keyed positive there breaks A1.
+- **A1 or A3:** stop. Restore the true finding, or revert.
+- **A2 or A5, false positives:** first seek evidence that clears the code **in general** and loses no true
+  finding. Measure the fix on code not used to design it. Do not drop a capability with true gains for a
+  false positive before this is tried.
+- If no such evidence is found, the owner decides with the numbers of A10. The default is not to merge.
+- No rule, list, wording or threshold is added for the record that failed.

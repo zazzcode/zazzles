@@ -77,9 +77,10 @@ session helpers.
   check that does not stop, is reassigned, or relates only to another subject is inconsistent. (3)
   `adequate` citing a stopping check with a `same_subject` or `caller_only` read is Protected. (4) One whose
   reads are all `unknown` is Review. (5) A cited `query_scope` guard keeps today's outcome. (6) `none`
-  contradicts a stopping check with a `same_subject` or `caller_only` read: Review. (7) Otherwise today's
-  Confirmed rule, unless such a check is `unresolved`: Review. *Risk accepted:* (6) can hold a true finding
-  in Review when a stopping check serves another purpose; `inadequate` still confirms.
+  contradicts a stopping check with a `same_subject` read: Review. A `caller_only` check alone does not move
+  a finding to Review, since it may serve another purpose. (7) Otherwise today's Confirmed rule, unless such
+  a check is `unresolved`: Review. *Risk and bound:* (6) and (7) can hold a true finding in Review. Contract
+  A1 and A9 count that as lost: if one ledger or held-out true finding is held, (6) is removed, not tuned.
 
 ## Fixtures
 
@@ -115,8 +116,8 @@ Each keyed correct check is a control. No record is added (G7: zero).
 ## Paid checkpoints
 
 1. Fixtures (about 24 records) and Juice Shop authorization (18), before and after arms. Cap 100. Pass: no
-   fixture control Confirmed; every fixture positive Confirmed or in Review with the blocking fact, at most
-   one by (6); no keyed finding lost; the three Protected Juice Shop records stay.
+   fixture control Confirmed; every fixture positive Confirmed, none held in Review by (6) or (7); no keyed
+   finding lost; the three Protected Juice Shop records stay.
 2. Held-out and the renamed copy, authorization only, before and after, twice for changed outcomes. Cap 160.
    Pass: no correct check Confirmed; contract §7 holds; no keyed positive Protected; renamed outcomes equal.
 

@@ -27,6 +27,11 @@ app.put('/x/:id', closed(), (req, res) => { res.send('ok') })`, "PUT /x/:id", an
 		{"constant secret", `app.put('/x/:id', expressjwt({ secret: 's', algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
 		{"secret held in a shared variable", `const key = crypto.randomBytes(32).toString('hex');
 app.put('/x/:id', expressjwt({ secret: key, algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
+		// A random value that is only a fallback is not the secret when the
+		// configured one is set, so tokens can verify.
+		{"random fallback after ||", `app.put('/x/:id', expressjwt({ secret: process.env.TOKEN_KEY || crypto.randomBytes(32).toString('hex'), algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
+		{"random fallback after ??", `app.put('/x/:id', expressjwt({ secret: process.env.TOKEN_KEY ?? ('' + Math.random()), algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
+		{"random arm of a conditional", `app.put('/x/:id', expressjwt({ secret: process.env.TOKEN_KEY ? process.env.TOKEN_KEY : crypto.randomBytes(8).toString('hex'), algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
 		{"mount on the same pattern", `app.use('/x/:id', expressjwt({ secret: 's', algorithms: ['HS256'] }));
 app.put('/x/:id', (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
 		{"mount on another pattern stays unresolved", `app.use('/x/:name/edit', expressjwt({ secret: 's', algorithms: ['HS256'] }));

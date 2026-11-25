@@ -362,6 +362,22 @@ blocking defects. Each is fixed with a test that failed first. No judged run was
 
 Offline evidence after the fixes: the reports of Juice Shop (305 records), vuln-nextjs, DVWA and
 vuln-symfony are byte-identical to the reports of `277f640`, so every request of the judged runs
-is unchanged and their outcomes stand. What no run has shown:
-how the model answers a read record that carries a `result_comparison` guard, since no sample
-has one.
+is unchanged and their outcomes stand.
+
+No sample has a read with a `result_comparison` guard, so the owner asked for one judged run of
+the test fixture after the review: judged run 9 (`r9-authz-reads-fixture`, scanner `990b35d`,
+`scan/internal/langjs/testdata/authorization-reads/primary`, `--only-family authorization`,
+11 requests, 34,578 input tokens).
+
+| Route | Guard recorded | `guard_adequacy` | Outcome |
+|---|---|---|---|
+| `/checked/:id`, owner compared after the fetch | `ownership_check`, `result_comparison` | adequate | Protected |
+| `/branch/:id`, response inside the comparison's branch | `ownership_check`, `result_comparison` | adequate | Protected |
+| `/packed/:id`, token claim under a destructured request | `ownership_check`, `query_scope` | adequate | Protected |
+| `/mine/:id`, owner key in the selector | `ownership_check`, `query_scope` | adequate | Protected |
+| `/loose/:id`, compared with a request value | `guard_unclassified`, `result_comparison` | unknown | Review, held by the blocker |
+| `/state/:id`, compared with a literal only | None | none | Confirmed |
+| `/lockers/:id`, `/lockers/:id/key`, `/lockers`, `/open/:id`, `PUT /lockers/:id` | None | none | Confirmed |
+
+The first three rows carried no guard before the fixes. This is one run; it does not measure
+variance between runs.

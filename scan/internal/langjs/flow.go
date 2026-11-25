@@ -1047,6 +1047,12 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			}
 		}
 	}
+	packageSQL, packageText := -1, value{}
+	if kind == "" && f.client == nil && f.set != nil {
+		if packageSQL, packageText = f.packageSQLText(n, values); packageSQL >= 0 {
+			kind = "sql_query_candidate"
+		}
+	}
 	var outbound *analysis.OutboundFacts
 	var outboundBinding []analysis.Evidence
 	op, contract, binding, dest, verified := f.outboundOperation(n, fn, args)
@@ -1096,7 +1102,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 			if kind == "sql_query_candidate" {
 				a.deps = append([]analysis.Dependency{}, a.deps...)
 				slot := "sql_options"
-				if i == 0 {
+				if packageSQL >= 0 {
+					if i == packageSQL {
+						slot, a.deps = "sql_text", append([]analysis.Dependency{}, packageText.deps...)
+					}
+				} else if i == 0 {
 					slot = "sql_text"
 					if sequelizeFinderName(name) {
 						// A finder's where object holds bound values, not SQL text.
@@ -1117,7 +1127,11 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		}
 		if len(v.deps) > 0 || len(v.gaps) > 0 || kind == "outbound_http_candidate" {
 			gaps := append(append([]analysis.Gap{}, f.gaps...), v.gaps...)
-			gaps = append(gaps, f.structureGaps(kind, args, values, n)...)
+			if packageSQL > 0 {
+				gaps = append(gaps, f.structureGaps(kind, args, []value{packageText}, n)...)
+			} else {
+				gaps = append(gaps, f.structureGaps(kind, args, values, n)...)
+			}
 			if kind != "ssrf_candidate" {
 				gaps = append(gaps, f.gap("sink_binding_unverified", "candidate API shape; library binding/argument roles require review", n))
 			}

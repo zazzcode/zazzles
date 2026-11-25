@@ -81,6 +81,13 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 				} else if finder := s.sequelizeFinderBinding(use); len(binding) == 0 && len(finder) > 0 {
 					binding, sqlContract = finder, "sequelize-model-finder-v1"
 				}
+				// A package call without a contract keeps its binding blocker for the model.
+				unverified := false
+				if len(binding) == 0 && check.Kind == "sql_query" {
+					if pkg := s.packageSQLBinding(use); len(pkg) > 0 {
+						binding, sqlContract, unverified = pkg, analysispacks.PackageSQLContract, true
+					}
+				}
 				if len(binding) > 0 {
 					if prismaFilter {
 						use.APIModel = analysispacks.NoSQLContract(analysispacks.PrismaFilterContract)
@@ -146,7 +153,7 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 							use.Completeness.Coverage = append(use.Completeness.Coverage, g)
 						}
 					case "sink_binding_unverified":
-						if len(binding) == 0 {
+						if len(binding) == 0 || unverified {
 							use.Completeness.Blockers = append(use.Completeness.Blockers, g)
 						} else {
 							use.Completeness.Coverage = append(use.Completeness.Coverage, g)

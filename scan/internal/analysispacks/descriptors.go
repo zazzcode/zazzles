@@ -135,6 +135,7 @@ func descriptors() ([]Component, error) {
 	contractOwners[PrismaFilterContract] = "internal/parse/sql_libraries.go"
 	contractOwners[BetterSQLite3Contract] = "internal/parse/sql_libraries.go"
 	contractOwners[PGliteContract] = "internal/parse/pglite.go"
+	contractOwners[PackageSQLContract] = "internal/langjs/sql_unknown_call.go"
 	for _, id := range noSQLContractIDs {
 		if id == PrismaFilterContract {
 			continue

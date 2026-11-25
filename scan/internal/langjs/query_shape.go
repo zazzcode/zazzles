@@ -282,8 +282,11 @@ func (f *flow) enterQueryCallback(n *sitter.Node) {
 		return
 	}
 	text := n.Utf8Text(f.module.src)
+	packageOnly := false
 	if !strings.Contains(text, "$where") && !strings.Contains(text, "Op.like") && !strings.Contains(text, ".query(") {
-		return
+		if packageOnly = f.packageSQLCallback(n); !packageOnly {
+			return
+		}
 	}
 	body := n.ChildByFieldName("body")
 	if body == nil {
@@ -303,7 +306,12 @@ func (f *flow) enterQueryCallback(n *sitter.Node) {
 		facts:   f.facts,
 	}
 	child.statements(body)
-	f.uses = append(f.uses, child.uses...)
+	for _, u := range child.uses {
+		// A callback entered only for its package SQL adds no other record.
+		if !packageOnly || u.Kind == "sql_query_candidate" {
+			f.uses = append(f.uses, u)
+		}
+	}
 }
 
 // finishValidation reports request fields that never reached a query sink.

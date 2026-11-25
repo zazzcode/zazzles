@@ -197,3 +197,8 @@ No section is safe to drop by the written rules; the stop condition applies. The
 ### 2026-11-25 — Round 5 designed
 
 Offline only. Nothing of round 5 is sent.
+
+### 2026-11-25 — Round 5 sent
+
+The noise level (6 and 3 of 54) is close to every round 4 loss. Both facts arms are BELOW. The development records are
+spent. [Results](../../evaluation/detection-generalization-results/15.md#where-rounds-1-to-5-stand).

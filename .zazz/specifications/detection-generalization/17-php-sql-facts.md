@@ -10,62 +10,69 @@
 
 ## Capability
 
-A PHP SQL record states facts the scanner proves about the operands of constructed SQL text: a numeric conversion result,
-a value escaped and placed inside a quoted literal, a hexadecimal hash. The text sent with PHP SQL records says what an
-escape and a cast do and do not protect. The judge decides as before.
+A PHP SQL record states facts the scanner proves about the operands of constructed SQL text: a value escaped on the
+query's own connection and alone in a single-quoted literal, or a hexadecimal hash there. The request of a record with the
+escape fact says what an escape does and does not protect. The judge decides as before.
 
 ## Invariants
 
 1. A fact decides nothing. No scanner rule gives or removes a verdict.
-2. Facts are stated only when every operand has one, every path proves it and nothing later can change its text.
-   Otherwise none is stated: an unknown is not a fact.
-3. Only PHP SQL requests change. Every other record, family and language keeps its request byte for byte.
+2. Facts are stated only for a source pattern in which every part is on an allow-list, and only when every operand has one.
+   Anything else states none: an unknown is not a fact.
+3. A request changes only when its record states a fact. Every other record, PHP SQL ones too, keeps its request byte for byte.
 4. The facts are language-neutral codes with one note each. No list of applications, fields or routes.
 
 ## Scope
 
 | Path | Change |
 |---|---|
-| `scan/internal/langphp/sql_facts.go` | New. Reads the parts of the SQL text and each path's transfers |
-| `scan/internal/langphp/sql_bound.go` | New. The fact of a constant statement with bound values |
-| `scan/internal/langphp/sql.go`, `values.go`, `calls.go` | The record carries the facts; a connection that a call returned, or whose class the program declares, is marked |
-| `scan/internal/guidelines/facts.md` | Four codes: `numeric_conversion_result`, `escaped_in_quoted_literal`, `hash_hex_result`, `constant_sql_bound_values` |
-| `scan/internal/guidelines/php.md` | Escape and cast sentences |
-| `scan/internal/analysispacks/contracts.go` | The escape sentence of `php-mysqli-v1` |
-| Tests | `langphp/sql_facts_test.go`, `langphp/sql_bound_test.go`, `guidelines/facts_test.go`, the `scan/cli` architecture golden (digests of PHP SQL records) |
+| `scan/internal/langphp/sql_facts.go` | New. The source pattern of the operands, the connection and the program |
+| `scan/internal/langphp/sql_operand_text.go` | New. The tokens and positions of the SQL text |
+| `scan/internal/langphp/sql.go`, `modules.go` | The record carries the facts; the program check is kept once per scan |
+| `scan/internal/guidelines/facts.md` | Two codes: `escaped_in_quoted_literal`, `hash_hex_result` |
+| `scan/internal/guidelines/facts.go`, `families.go`, `scan/internal/judge/client.go`, `bundle.go` | The sentences a fact replaces in its own record's request |
+| Tests | `langphp/sql_facts_test.go`, `sql_operand_text_test.go`, `testdata/sql-fact-review-forms.txt`, `guidelines/facts_test.go`, `judge/fact_notes_test.go` |
 | Documents | Query judgment, database injection guide, SQL capability page, results, this file, delivery plan row |
 
-Out of scope: other PHP drivers' escapes, pattern guards such as `preg_match`, JavaScript and Python, question wording,
-policy, and any list or threshold.
+Out of scope: numbers, bound parameters, other PHP drivers and their escapes, methods, pattern guards such as `preg_match`,
+JavaScript and Python, question wording, policy, and any list or threshold.
 
 ## Decisions
 
 - **D-1. Facts, not a rule.** *Why:* contract §1.2. *Rejected:* suppressing a record with all-operand facts; it would
   let the scanner decide.
-- **D-2. Read the scanner's text parts.** *Why:* they already hold the order of literal text and values, so the quote
-  position comes from the program. *Rejected:* matching the source with expressions.
-- **D-3. Withhold on any transfer not known to keep the text.** *Why:* `stripslashes` after an escape keeps the escaped
-  label. *Rejected:* a list of transfers that break it; it fails open.
-- **D-4. Keep the guideline, fact-document and protocol versions.** *Why:* a version is in other families' requests; the
-  digest already covers the text. No question changed.
-- **D-5. Bound values: the pattern, not the data flow.** The fact needs a literal in `prepare` and straight-line binds and
-  execution. *Why:* a join of two branches keeps one branch's text, so a fact read from the flow stated a wrong one.
-  *Rejected:* following a text held in a variable, and allowing calls between the two; the records without the fact keep
-  their request. *Cost:* 4 of 14 safe DVWA records have none.
+- **D-2. Read the syntax tree, not the flow.** *Why:* the flow's value of a join, an unresolved call or an array element can
+  miss a path, so facts read from it were false in 48 reviewed forms. *Rejected:* a list of transfers that break a fact; it
+  fails open, and closing one form at a time kept missing others.
+- **D-3. Straight-line assignments that run no code of the program.** *Why:* nothing can then change an operand, the text or the
+  connection between the escape and the query. *Rejected:* looking for writes by name; references, `$GLOBALS`, closures and
+  callbacks write without it. *Cost:* a function call between the two withholds the fact.
+- **D-4. Keep the guideline, fact-document and protocol versions.** *Why:* a version is in other families' requests.
+- **D-5. Procedural `mysqli` only.** *Why:* the built-ins accept only a native connection, so its origin needs no proof.
+  *Rejected:* methods; a class can replace them. *Cost:* no fact for `$db->query`, PDO and SQLite3.
+- **D-6. Text per record.** *Why:* contract §1.7, and the general sentence was false for another engine or connection.
+  *Rejected:* the changed guideline and contract for every PHP SQL request; they moved one false record (0.35 against 0.34)
+  and one safe record without any fact. *Rejected:* a second contract identifier; it changes the answered text of seven records
+  and nothing the judge reads.
+- **D-7. No bound-value fact.** *Why:* its connection cannot be shown to be native where the class and the variable come from
+  another file, so a sound rule states it for none of the ten records it was made for. With D-6 those ten keep their request
+  and their saved answer, Protected. *Cost:* the higher certainty measured with it.
+- **D-8. No numeric fact.** *Why:* its note was false (`-`, `INF`), and it cleared no record of the four judged applications.
+  *Cost:* two safe forms its author wrote.
 
 ## Acceptance criteria
 
 | AC | Criterion | Verified by |
 |---|---|---|
-| AC1 | Each safe, trap and plain form gives exactly the stated facts | `go test ./scan/internal/langphp -run 'TestPHPSQLFacts\|TestPHPBoundFacts'` |
-| AC2 | Every produced code has a note; the list of codes is complete | `go test ./scan/internal/guidelines -run TestFact` |
-| AC3 | On the four judged applications each request equals the one paid for in arm B | Comparison |
-| AC4 | Nine samples: no record missing or added; only PHP SQL requests change | Comparison |
+| AC1 | Each safe form gives exactly the stated facts, and each trap makes a record with none | `go test ./scan/internal/langphp -run 'TestPHPSQLFact\|TestPHPQuotedOperands'` |
+| AC2 | Every produced code has a note; the list of codes is complete; the replaced sentences reach only a record with the fact | `go test ./scan/internal/guidelines -run 'TestFact\|TestProducedFact'`, `go test ./scan/internal/judge -run 'TestEscapeFact'` |
+| AC3 | On the judged applications each request equals an answered one: the text before the feature, or the text paid for in arm B | Comparison |
+| AC4 | Nine samples: no record missing or added; only PHP SQL requests with a fact change | Comparison |
 | AC5 | G1 to G7, the reserved control by script | Commands |
 | AC6 | Documents, with the tested benefit in `.zazz/architecture/` | `doc-check` |
 
-**Not met, and stated in the pull request:** held-out PHP applications, and three planned answers for every changed ledger
-record (A4; done for the six moved outcomes). Each needs the owner's word. The full judged scan (A6) is due after two merged
+**Not met, and stated in the pull request:** held-out PHP applications; the reserved control; three planned answers for three of the
+seven changed ledger records (A4; done for the four moved outcomes). Each needs the owner's word. The full judged scan (A6) is due after two merged
 specifications.
 
 ## Stop rule
@@ -98,3 +105,10 @@ Protected to Review. 24 requests on the owner's word: A3 is met, and the move re
 The owner asked for a general answer to the safe record that had left Protected. 15 requests on the owner's word, 19 approved:
 10 of 10 records and 5 of 5 forms Protected. The first rules were wrong on trap forms, and again after the paid test on seven
 more; each is a test now. The requests of the final code equal the paid ones byte for byte.
+
+### 2026-11-25 — Independent review: 29 findings, both fact sets unsound
+
+All 89 forms of the review reproduced. The facts were read again from the source pattern of D-2 to D-5, the changed text was limited
+to records with the fact (D-6), and the bound-value and numeric facts were removed (D-7, D-8). Every form is a test. The entries above
+describe code that is gone. Benefit on DVWA: 4 of 14 false findings no longer Confirmed, where it was 5: `bac/medium.php:22` had no
+fact and moved by the general text alone. No paid request was made, and none is needed for an answer that does not exist.

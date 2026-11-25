@@ -211,15 +211,14 @@ storage keys; SELECT headers resolve string and numeric `fetch_row` access for s
 UPDATE/INSERT whose interpolation count does not match its column list produces no invented
 origin. See the [bounded PHP subset](../php-support.md).
 
-String-built SQL is weak construction practice even when no input can change its syntax. For injection, a PHP value is
-not able to change syntax when it is the result of a numeric conversion, or when it is escaped with
-`mysqli_real_escape_string`, sits inside a quoted SQL literal and is not changed afterwards. The same escape protects nothing
-when the value is not in quotes, is an identifier or a number, or is changed after the escape. The scanner states such a fact
-only when every operand of the text has one and every path proves it; the judge decides.
-
-A prepared statement is safe from injection when its SQL text is fixed and its values are bound. `prepare` alone is not enough:
-text built from input stays injectable, and a bound value that a stored procedure, dynamic statement or database function runs is
-not data. The scanner states the fact only for a literal in its own `prepare` call, followed by nothing but binds and the execution.
+String-built SQL is weak construction practice even when no input can change its syntax. For injection on MySQL, a PHP value
+cannot end the literal it sits in when it is escaped with `mysqli_real_escape_string` on the connection that runs the statement,
+stands in a single-quoted literal and is not changed afterwards. The same escape protects nothing when the value is not in quotes,
+is an identifier or a number, is changed after the escape, is sent to another engine, or reaches SQL run from that literal. It also
+fails when the connection's character set was changed by a statement (`SET NAMES`) and not by the client. The scanner states such
+a fact, or that a value is a hexadecimal hash, only for a narrow source pattern in which it can check all of this, and only when
+every operand has one. The judge decides. The exact pattern and its limits are in
+[query judgment](../../../.zazz/architecture/query-judgment.md#facts-about-constructed-php-sql-operands).
 
 ## GraphQL resolver sources
 

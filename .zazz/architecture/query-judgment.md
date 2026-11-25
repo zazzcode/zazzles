@@ -24,34 +24,45 @@ global guarantee. This produces type facts for semantic assessment, not a hardco
 
 ### Facts about constructed PHP SQL operands
 
-`langphp/sql_facts.go` states facts about the operands of a constructed PHP SQL text, from the ordered parts of that text and
-each path's transfers. Their codes and notes are in `scan/internal/guidelines/facts.md`:
+`langphp/sql_facts.go` states facts about the operands of a constructed PHP SQL text. Their codes and notes are in
+`scan/internal/guidelines/facts.md`:
 
 | Code | Stated when the operand is |
 |---|---|
-| `numeric_conversion_result` | The result of a numeric cast or conversion |
-| `escaped_in_quoted_literal` | Escaped by the database client and placed inside a quoted SQL literal |
-| `hash_hex_result` | The hexadecimal text of a one-argument `md5` or `sha1` |
+| `escaped_in_quoted_literal` | `mysqli_real_escape_string` on the connection of the query, alone in a single-quoted SQL literal |
+| `hash_hex_result` | A one-argument `md5` or `sha1` in the same position |
 
 - **A fact decides nothing.** The judge reads it with the code. No verdict, suppression or policy uses it.
-- **All or nothing.** Facts are stated only when every operand has one. Every path must prove it, every alternative of a
-  conditional must be the value or a literal, and after the value is made no variable that carries it may be written, passed
-  to a call or reached by a construct that writes variables it does not name. A SQL comment ends what the text shows.
-- **A constant statement with bound values.** `langphp/sql_bound.go` states `constant_sql_bound_values` when the SQL text is a
-  literal written in its own `prepare` call, request values reach only bind calls, and prepare, binds and execute are statements
-  of one block with nothing else between them. It is withheld for a wrapped connection, a class the program declares under the
-  driver's name, a second statement, a comment, dynamic SQL, or a placeholder inside a database function.
-- **Never stated as unknown.** In an experiment, a fact that said `not established` made the judge doubt a true finding.
-- **The text says the same as the facts.** The PHP guideline and the `php-mysqli-v1` contract used to say that an escaped
-  value remains a finding and that escaping is never protection. They now separate construction practice from injection.
-  Facts without that text cleared 1 of 14 false findings, and nearly the same text without facts cleared 2.
-- **Versions are unchanged.** A version is part of other families' requests; the component digest covers the text.
+- **A source pattern, not the flow.** A join of two branches keeps one branch's text and an unresolved call adds no dependency,
+  so a fact read from the flow was false again and again. The rule reads the syntax tree and allows only what it names:
+  - the sink is `mysqli_query` with two positional arguments, a direct call of the built-in: no namespace or import in the file,
+    and no declaration of that name in any scanned file. The same holds for every other call the rule allows;
+  - the text is written in the call, or in the statement just before it, with literals, variables and concatenation only;
+  - each operand is the call itself, or a variable whose last write is one. Both stand in one unbroken run of assignments that
+    run no code of the program. After the first operand is written, only operands are written;
+  - every alternative of a conditional is the same kind of call, or the empty string;
+  - escape and query use one connection: the same variable, or the same literal key of `$GLOBALS`, not written between;
+  - `sql_operand_text.go` knows every token. The statement is one `SELECT`, `INSERT`, `UPDATE`, `DELETE` or `REPLACE`; each
+    operand is compared, assigned or listed in `VALUES` or `IN`. A function call, backslash, double quote, comment, variable,
+    character set introducer, byte outside ASCII or second statement fails.
+- **Program conditions.** No fact is stated when a scanned file sets an error handler or tick function, declares `__destruct`,
+  `__toString` or `ArrayAccess` methods, redefines a function, sends `SET NAMES` or a change of `sql_mode`, takes one of these
+  variables by reference, is over the size limit or does not parse.
+- **All or nothing.** Facts are stated only when every operand has one. Never stated as unknown: in an experiment a fact that
+  said `not established` made the judge doubt a true finding.
+- **Text per record.** The PHP guideline and the `php-mysqli-v1` contract say that an escaped value remains a finding. In the
+  request of a record with `escaped_in_quoted_literal`, and in no other, `guidelines/facts.go` replaces those sentences: they
+  would contradict the fact. Every other PHP SQL request is the same as without this feature.
 
-**Tested benefit** (2026-11-25, one paid answer per request, outcomes by policy replay; [results and
-limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 5 are no longer Confirmed,
-0 of 25 true findings on changed requests are lost, and none becomes Protected. Without the bound-value fact, one safe prepared statement moved from Protected to Review; with it, none does,
-and the certainty of Protected rose on all ten records that have it (0.43 to 0.90 before, 0.80 to 0.98 after). The operand
-facts were below the bar set before their test. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
+**Limits.** The rule cannot see code outside the scanned files (an error handler of a library, `eval`, a generated file), a
+character set or SQL mode set by the server, by a file that is not scanned or by text put together at run time, or a trigger of
+the database. The statement is taken to run on MySQL or MariaDB. Methods (`$db->query`), PDO, SQLite3, PostgreSQL, numbers and
+bound parameters have no fact.
+
+**Tested benefit** (2026-11-25, outcomes by policy replay; [results and
+limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 4 are no longer Confirmed, 0 of 25
+true findings are lost, none becomes Protected, and no safe record moves. Seven requests of 403 differ from those before the feature,
+and each has a paid answer for its exact text. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
 application has been used.
 
 ## Semantic questions and policy

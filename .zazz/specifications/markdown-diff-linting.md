@@ -10,8 +10,11 @@ for Go checks. Keep the tool independent of the product code and model providers
   commit line numbers. It skips deletions and unchanged findings, covers agent rule paths,
   treats rename targets as new files, handles paths with spaces, and fails on an invalid base.
 - `TestLintLines` verifies hidden Unicode, raw HTML comments, common prompt injection patterns,
-  merge conflict markers, malformed text, and missing final newlines. Normal Markdown and
-  ordinary Unicode pass.
+  merge conflict markers, malformed text, and missing final newlines. Unicode default-ignorables,
+  HTML-encoded invisible characters, and prompt indicators obscured by formatting or wrapping
+  are covered. Normal Markdown and ordinary Unicode pass.
+- `TestPromptFindingRequiresChangedLine` verifies that adjacent source lines can complete
+  a prompt indicator and that an unchanged indicator in the same paragraph yields no finding.
 - The CI workflow runs the checker after checkout and Go setup and before the existing Go
   checks. The pull request path compares the base and test merge commits. Pushes compare the
   previous tip and new commit.

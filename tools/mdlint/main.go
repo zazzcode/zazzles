@@ -2,6 +2,7 @@
 Command mdlint checks added and replaced lines in committed Markdown and agent
 rule files. It flags invisible characters, hidden comments, common prompt
 injection patterns, and basic text defects before a change reaches integration.
+Prompt checks normalize common obfuscations and use paragraph context.
 
 Agents may read raw source, including content that a Markdown preview hides.
 The diff keeps unrelated legacy content out of the gate. Findings identify

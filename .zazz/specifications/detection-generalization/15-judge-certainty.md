@@ -160,3 +160,8 @@ BELOW: 52 of 256 true Confirmed lost, one false Protected. F withheld evidence X
 ### 2026-11-25 — Round 4 designed
 
 Offline only. Nothing of round 4 is sent.
+
+### 2026-11-25 — Round 4 sent
+
+No section is safe to drop by the written rules; the stop condition applies. The design lacked a noise control.
+[Results](../../evaluation/detection-generalization-results/15.md#round-4-one-section-removed-at-a-time).

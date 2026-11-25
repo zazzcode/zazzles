@@ -65,6 +65,12 @@ constructions, two repeats, exact count asked separately.
 
 ## Review change log
 
-### 2026-11-25 — Written
+### 2026-11-25 — Written, round 1 sent
 
-Nothing is sent.
+A2 is marked GOAL; A0, A1, A3 and A4 are BELOW. [Results](../../evaluation/detection-generalization-results/15.md).
+
+### 2026-11-25 — Owner's goal restated
+
+The aim is to generalize, so a new driver version, ORM or validation library needs no scanner change, or as little as
+possible, with an easy way to improve. It may differ by language. Consequences for this series: an approach is judged
+by how little it needs to know ahead. A focused question built from structural facts fits; a list of packages does not.

@@ -122,4 +122,7 @@ and let the model answer `not_sql`; count the cost at checkpoint 1.
 
 ## Implementation and review change log
 
-No changes recorded.
+### 2026-11-25 — Stopped at checkpoint 1
+
+2 of 16 forms. Reverted. [Results](../../evaluation/detection-generalization-results/03.md),
+[redesign](14-sql-calls-redesign.md).

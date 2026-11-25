@@ -102,6 +102,11 @@ false-positive risk.
 
 ## 5. Implementation and review change log
 
+### 2026-11-25 — 14 approved
+
+The owner approved 14 with two changes and answered its questions. AC1 is done offline; the probe is not run.
+[Results](../../evaluation/detection-generalization-results/14.md).
+
 ### 2026-11-25 — 03 stopped, 14 written
 
 The owner let 03 start before 00. It stopped at its first paid checkpoint and was reverted. 14 is its one redesign,

@@ -1,7 +1,7 @@
 # Detection generalization 14 — SQL calls without a contract, redesigned
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
-  are not repeated. **Draft, not approved. Nothing is implemented.**
+  are not repeated. **Approved 2026-11-25, with the changes in the log below. Nothing is merged or implemented.**
 - **Replaces** [03](03-sql-calls.md), stopped at checkpoint 1 and reverted
   ([results](../../evaluation/detection-generalization-results/03.md)). This is the one redesign that
   [contract §5](contract.md#5-stop-procedure) allows. If it stops, the capability is dropped.
@@ -44,8 +44,10 @@ a finding needs a verified `executes` or `prepares_then_executes` **and** `vulne
 **S-3. Unknown packages.** The question says that a package the model does not know is `cannot_tell`, and that a
 name, a method name or the look of the text is not knowledge.
 
-**S-4. Per record.** The text of S-1 to S-3 is chosen by the record's contract. No shared instruction, family
-question or protocol of another record changes a byte (contract §1.6, §1.7).
+**S-4. Per record.** The text of S-1 to S-3 is chosen by the record's contract, and only when the request asks the
+package-call question. A request of such a record carries a variant of the shared instruction, of the
+`injection_protection` question and of its choice texts. No instruction, family question or protocol of any other
+record changes a byte (contract §1.6, §1.7).
 
 Outcomes, citation and report text are those of 03. The "values argument" question of 03 is dropped: no outcome
 uses it.
@@ -57,7 +59,7 @@ uses it.
 | 0, probe | Test-only overlay in the scratch area | Built from the reverted 03 code with S-1 to S-4. Not merged |
 | 1, only if 0 passes | The paths of 03, restored from `ed257a7` and `df02634`; `judge/client.go`, `judge/sql_call.go` | Restored, then S-1 to S-4 |
 
-Out of scope: as 03; any change to the shared instruction, guidelines or family questions.
+Out of scope: as 03; the guidelines; any change to the shared instruction or family questions **of another record**.
 
 ## Decisions
 
@@ -71,16 +73,23 @@ Out of scope: as 03; any change to the shared instruction, guidelines or family 
 - **D-5. New forms.** The 25 fixtures of 03 are spent and are not used as evidence.
 - **D-6. No threshold on probabilities.** *Why:* confidence is not evidence.
 
+- **D-7. Package knowledge is accepted for findings only** (owner, 2026-11-25). It never gives Protected or a dismissal,
+  and the model-resolved mark stays visible in the report. This is a stated exception to contract §1.3 for this
+  question on this contract: the citation proves which package it is, not that the knowledge is right, nor the version.
+- **D-8. Safe construction is a control.** *Why:* S-2 could push safe code to `vulnerable` and no other group would show
+  it. The safe forms are tricky on purpose.
+
 ## Probe forms
 
-All are new and none was sent to a model. All 15 record offline with the reverted 03 code, each blocked only by
-`sink_binding_unverified`.
+All are new and none was sent to a model. All 18 record offline with the overlay, each blocked only by
+`sink_binding_unverified`. A driver of the probe is not an unseen driver at held-out.
 
 | Group | Forms | Right answer |
 |---|---|---|
 | Drivers, 8 | mariadb, Neon, PlanetScale, Snowflake, BigQuery, pg-promise, ibm_db, Databricks | `executes` or `prepares_then_executes` |
 | Lookalikes, 5 | SendGrid text, Slack message, node-sql-parser, highlight.js, ioredis value | Anything but those two |
 | Made up, 2 | A neutral name and a database-like name | `cannot_tell` |
+| Safe construction, 3 | A `Number` result (mariadb), an allow-list guard (pg-promise), a hex digest in quotes (Snowflake) | `injection_protection` not `vulnerable` |
 
 `node-sql-parser` is the hard lookalike: it is a SQL package that parses and runs nothing.
 
@@ -100,9 +109,9 @@ All are new and none was sent to a model. All 15 record offline with the reverte
 
 Each asks first (contract §4).
 
-1. **Probe.** 15 forms, two repeats: 30 requests, hard stop 36. Pass, in **both** repeats: at least 7 of 8 drivers
+1. **Probe.** 18 forms, two repeats: 36 requests, hard stop 42. Pass, in **both** repeats: at least 7 of 8 drivers
    right with a verified citation and `vulnerable`; no lookalike and no made-up package answered `executes` or
-   `prepares_then_executes`.
+   `prepares_then_executes`; no safe form answered `vulnerable`.
 2. **Held-out**, only after phase 1. As 03: unused applications, cap 60, at least 80% of keyed positives Confirmed
    and none missed without its blocking fact; no keyed control Confirmed.
 
@@ -110,18 +119,16 @@ Each asks first (contract §4).
 
 Stop and drop the capability when, in either repeat, fewer than 6 of 8 drivers are right, or any lookalike or
 made-up package is answered as running SQL, or the repeats disagree on more than two forms. Between 6 and 7 drivers
-the owner decides. The wording is not changed after the first probe request.
+the owner decides. A safe form answered `vulnerable` fails the pass; when nothing else failed, contract §5's last
+paragraph applies. The wording is not changed after the first probe request.
 
-## Open questions for the owner
+## Open questions, answered by the owner 2026-11-25
 
-- **OQ-1. Branch.** The delivery plan has no branch for 14. Default: `detgen-14-sql-calls-redesign` from `origin/stage`
-  in lane B, added to the plan when you approve this specification.
-- **OQ-2. Held-out applications.** 03 needed three and the pool holds NodeGoat only, which is Express with MongoDB.
-  Needed: a driver absent from all fixtures, an ORM raw call, and one ordinary application. The probe does not wait
-  for them; the merge does.
-- **OQ-3. Package knowledge as evidence.** S-1 lets an answer rest on what the model knows, not on the scanned source.
-  The citation proves which package it is, not that the knowledge is right. Default: accept for findings, never for
-  Protected, with the model-resolved mark visible in the report.
+- **OQ-1. Branch.** `detgen-14-sql-calls-redesign` from `origin/stage`, started before 00 merges. It carries the two
+  document commits of 03 and 14. 03 gets no PR of its own; its branch is kept.
+- **OQ-2. Held-out applications.** Found and keyed by the key session only after the probe passes. The merge waits for
+  them: a driver absent from all fixtures and forms, an ORM raw call, and one ordinary application. NodeGoat fits none.
+- **OQ-3. Package knowledge as evidence.** Accepted as D-7.
 
 ## Loop
 
@@ -138,3 +145,9 @@ AC1 on overlay requests, with no request sent.
 ### 2026-11-25 — Written after 03 stopped
 
 The owner asked for the redesign. Nothing is approved.
+
+### 2026-11-25 — Approved
+
+The owner approved 14 with two changes: variants of the shared instruction and of `injection_protection` are allowed on
+package records (S-4), and three safe construction forms join the probe (36 requests, hard stop 42). AC1 is in the
+[results](../../evaluation/detection-generalization-results/14.md).

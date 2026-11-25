@@ -3,7 +3,7 @@
 **Draft. Nothing in it exists yet.** It says where each pull request is built, what it is called, what it
 starts from and what must be true first. The [series contract](contract.md) owns the rules.
 
-Two lanes, fifteen pull requests. These documents come first, in PR 51. **One branch per PR. One open branch
+Two lanes, sixteen pull requests. These documents come first, in PR 51. **One branch per PR. One open branch
 per lane at a time, except the one stack in §3.**
 
 ## 1. Worktrees
@@ -29,7 +29,8 @@ is this table, read per lane.
 | 02.1 | `detgen-02-1-check-fields` | A | `origin/stage` | `stage` | PR 51 is merged |
 | 02.2 | `detgen-02-2-handler-checks` | A | `detgen-02-1-check-fields` | `detgen-02-1-check-fields`, then `stage` | 02.1 open and green |
 | 03 | `detgen-03-sql-calls` | B | `origin/stage` | `stage` | 00 merged, or the owner lets 03 start before it |
-| 01 | `detgen-01-storage-identity` | B | `origin/stage` | `stage` | 03 merged or dropped. **Paid checkpoint and merge only after 04 is merged** |
+| 14 | `detgen-14-sql-calls-redesign` | B | `origin/stage` | `stage` | 03 dropped, and the owner lets 14 start before 00 (given 2026-11-25). Merge waits for its held-out applications |
+| 01 | `detgen-01-storage-identity` | B | `origin/stage` | `stage` | 14 merged or dropped. **Paid checkpoint and merge only after 04 is merged** |
 | 13 | `detgen-13-storage-calls` | B | `origin/stage` | `stage` | 01, 03, 04 and 12 merged |
 | 04 | `detgen-04-middleware-checks` | A | `origin/stage` | `stage` | 02.2 merged |
 | 12 | `detgen-12-http-entries` | A | `origin/stage` | `stage` | 04 merged |
@@ -47,7 +48,7 @@ is this table, read per lane.
 flowchart LR
   P51["PR 51, with these documents"]
   subgraph B["Lane B"]
-    P51 --> S00["00"] --> S03["03"] --> S01["01"] --> S13["13"] --> S08["08"] --> S09["09"]
+    P51 --> S00["00"] --> S03["03"] --> S14["14"] --> S01["01"] --> S13["13"] --> S08["08"] --> S09["09"]
   end
   subgraph A["Lane A"]
     P51 --> S021["02.1"] -- stack --> S022["02.2"] --> S04["04"] --> S12["12"] --> S05["05"] --> S06["06"] --> S07["07"] --> S10["10"] --> S11["11"]
@@ -69,6 +70,7 @@ changed.
 | 02.1 | `[ANALYSIS+PARSE] Detection generalization 02.1: shared check fields` |
 | 02.2 | `[PARSE+ANALYSIS+JUDGE+REPORT+DOC] Detection generalization 02.2: handler checks as evidence` |
 | 03 | `[PARSE+ANALYSIS+JUDGE+REPORT+DOC] Detection generalization 03: SQL calls without a contract` |
+| 14 | `[PARSE+ANALYSIS+JUDGE+REPORT+DOC] Detection generalization 14: SQL calls, redesigned` |
 | 04 | `[PARSE+JUDGE+DOC] Detection generalization 04: local middleware as evidence` |
 | 05 | `[PARSE+DOC] Detection generalization 05: record selection through several steps` |
 | 06 | `[PARSE+ANALYSIS+JUDGE+DOC] Detection generalization 06: ownership on create` |

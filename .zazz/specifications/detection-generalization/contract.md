@@ -25,7 +25,8 @@ and revert alone.
    allowed with its documentation cited.
 2. The scanner records facts and the decision model judges. No scanner rule decides a verdict, and none
    suppresses a record on a guard.
-3. A finding and a Protected outcome cite recorded source evidence. Missing evidence stays unknown.
+3. A finding and a Protected outcome cite recorded source evidence. Missing evidence stays unknown. One stated
+   exception, for findings only: [14, D-7](14-sql-calls-redesign.md#decisions).
 4. Existing analyzers are extended. No specification adds an analyzer family.
 5. Requests replay exactly. No provider or model fallback. Report fields are additive.
 6. A request of a family or language the specification does not name stays byte-identical.

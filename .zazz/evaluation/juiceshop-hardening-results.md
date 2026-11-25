@@ -292,10 +292,13 @@ missed. The comparison counts four Code Scan false positives after this, not fiv
 records a path as guarded when a condition mentions the operand and states that it does not
 establish whether the condition restricts it. The owner decided that the model's restriction
 answer settles that. In the code family, when every path is guarded, none is unresolved, the
-model answers `code_restriction: none` and `protection_coverage` other than `complete`, and a
-guarded path has a request origin, the record is Confirmed
-(`scan/internal/judge/code_redirect.go`, six rows added to `TestCodeRedirectPolicy`). The
-redirect family is unchanged.
+model answers `code_restriction: none` and `protection_coverage: incomplete`, no conversion
+constrains the operand, and a guarded path has a request origin, the record is Confirmed
+(`scan/internal/judge/code_redirect.go`, ten rows of `TestCodeRedirectPolicy`). The redirect
+family is unchanged. The PR review tightened two conditions after the judged runs: coverage must
+be `incomplete` (it was "other than `complete`", which let `unknown` confirm), and a constrained
+operand such as `eval(Number(x))` under a condition is not confirmed. `JS-CODE-01` was answered
+`none` and `incomplete` on an unconstrained operand, so its outcome does not change.
 
 Judged run 7 (`r7-code-juice-shop`, `--only-family code`, 2 requests, 17,625 input tokens):
 `routes/userProfile.ts:65` Confirmed; `routes/b2bOrder.ts:23` a practice finding as before. The

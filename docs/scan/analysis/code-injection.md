@@ -40,7 +40,12 @@ context and receives no such guarantee.
 Questions separate code position (`whole_program`, `inside_string_literal`, `data_only`, `none`,
 `unknown`), restriction (`allowlist_grammar`, `type_conversion`, `blacklist_only`, `sandbox_library`,
 `none`, `unknown`) and protection coverage. A raw complete path with no effective restriction supports
-Confirmed. Complete enforcing grammar/conversion coverage supports Protected. Blacklists, type
+Confirmed. A path is recorded as guarded when a dominating or enclosing condition mentions the
+operand; the scanner does not establish that the condition restricts it. When every path is guarded
+and none is unresolved, a guarded path has a request origin, no conversion constrains the operand,
+and the answers are restriction `none` with coverage `incomplete`, the record is also Confirmed: the
+restriction answer settles that the conditions are not a protection. Coverage `unknown` or
+`complete`, or any other restriction, leaves the record in Review. Complete enforcing grammar/conversion coverage supports Protected. Blacklists, type
 annotations, exception handlers and sandbox branding do not establish protection. Inconsistent
 answers, unresolved relevant transfers and missing bindings remain Review.
 

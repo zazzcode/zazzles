@@ -33,6 +33,13 @@ func TestCodeRedirectPolicy(t *testing.T) {
 		{"code", `if(req.body.code.match(/#\{(.*)\}/)!==null){eval(req.body.code)}`, "whole_program", "blacklist_only", "incomplete", "needs_evidence"},
 		{"code", `if(req.body.code.match(/#\{(.*)\}/)!==null){eval(req.body.code)}`, "data_only", "none", "incomplete", "needs_evidence"},
 		{"redirect", `if(req.query.url.length<50){res.redirect(req.query.url)}`, "full_url", "none", "incomplete", "needs_evidence"},
+		// The answers alone carry a guarded claim: "unknown" coverage or restriction settles nothing.
+		{"code", `if(req.body.code.length<50){eval(req.body.code)}`, "whole_program", "none", "unknown", "needs_evidence"},
+		{"code", `if(req.body.code.length<50){eval(req.body.code)}`, "whole_program", "unknown", "incomplete", "needs_evidence"},
+		// An operand the scanner recorded as constrained is not confirmed on a "none" answer.
+		{"code", `if(req.body.code.length<50){eval(Number(req.body.code))}`, "whole_program", "none", "incomplete", "needs_evidence"},
+		// A path of unknown protection stays unresolved whatever the answers.
+		{"code", `const k=helper(req.body.code);if(k.length<50){eval(k)}`, "whole_program", "none", "incomplete", "needs_evidence"},
 
 		{"redirect", `res.redirect('/'+req.query.url)`, "path_only", "none", "incomplete", "confirmed_vulnerability"},
 		{"redirect", `res.redirect(req.query.url)`, "full_url", "host_allowlist", "complete", "needs_evidence"},

@@ -11,7 +11,7 @@ See [server-side template injection](template-injection.md) for the other class 
 
 | Form | Example | What the scanner can establish |
 | --- | --- | --- |
-| Raw interpreter operands | JavaScript `eval`, Python `exec` or PHP `eval` receives request-dependent code text | A complete raw path can be Confirmed |
+| Raw interpreter operands | JavaScript `eval`, Python `exec` or PHP `eval` receives request-dependent code text | A complete raw path can be Confirmed. A path under a condition that mentions the operand can be Confirmed when the assessment answers that the condition imposes no restriction |
 | Supported interpreter contexts | Browser string timers or Node `vm` receives a code string | Assess the code slot separately from context objects and callbacks |
 | Full operand restriction | An enforced grammar or a recognized conversion constrains the entire operand | May be Protected when all code-bearing paths are covered |
 

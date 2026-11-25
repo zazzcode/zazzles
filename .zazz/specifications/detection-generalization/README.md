@@ -22,7 +22,7 @@ Numbers are stable names. **The order is the first column.**
 | 1 | 02 | [Handler checks as evidence](02-handler-checks.md) | M | — | Correct in-handler checks become Protected, wrong ones stay findings |
 | 2 | 04 | [Local middleware as evidence](04-middleware-checks.md) | S | 02 | An application's own access check can be judged |
 | — | 03 | [SQL calls without a contract](03-sql-calls.md) | M to L | — | **Stopped and reverted** 2026-11-25, [results](../../evaluation/detection-generalization-results/03.md) |
-| 3 | 14 | [SQL calls, redesigned](14-sql-calls-redesign.md) | S, then M | — | SQL injection on drivers with no written contract. Probe first |
+| — | 14 | [SQL calls, redesigned](14-sql-calls-redesign.md) | S, then M | — | **Stopped at its probe and dropped** 2026-11-25, [results](../../evaluation/detection-generalization-results/14.md) |
 | 4 | 01 | [Storage identity across module forms](01-storage-identity.md) | S to M | 02 and 04 to merge | Four families record on CommonJS, default-export and `define` projects |
 | 5 | 12 | [Operation families on every HTTP entry](12-http-entries.md) | M to L | 02, 04 | Authorization, mass assignment and enumeration beyond Express |
 | 6 | 13 | [Storage calls without a contract](13-storage-calls.md) | M to L | 02, 03, 04, 12 | State changes through any storage library |
@@ -102,9 +102,10 @@ false-positive risk.
 
 ## 5. Implementation and review change log
 
-### 2026-11-25 — 14 approved
+### 2026-11-25 — 14 approved, then stopped
 
-The owner approved 14 with two changes and answered its questions. AC1 is done offline; the probe is not run.
+The owner approved 14 with two changes. Its probe gave 4 of 8 drivers and its stop rule fired. 13 starts only if 03
+passed, which it did not; the owner decides what becomes of 13.
 [Results](../../evaluation/detection-generalization-results/14.md).
 
 ### 2026-11-25 — 03 stopped, 14 written

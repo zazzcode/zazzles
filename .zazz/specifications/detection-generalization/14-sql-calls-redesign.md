@@ -1,7 +1,7 @@
 # Detection generalization 14 — SQL calls without a contract, redesigned
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
-  are not repeated. **Approved 2026-11-25, with the changes in the log below. Nothing is merged or implemented.**
+  are not repeated. **Stopped at its probe and dropped, 2026-11-25.**
 - **Replaces** [03](03-sql-calls.md), stopped at checkpoint 1 and reverted
   ([results](../../evaluation/detection-generalization-results/03.md)). This is the one redesign that
   [contract §5](contract.md#5-stop-procedure) allows. If it stops, the capability is dropped.
@@ -151,3 +151,8 @@ The owner asked for the redesign. Nothing is approved.
 The owner approved 14 with two changes: variants of the shared instruction and of `injection_protection` are allowed on
 package records (S-4), and three safe construction forms join the probe (36 requests, hard stop 42). AC1 is in the
 [results](../../evaluation/detection-generalization-results/14.md).
+
+### 2026-11-25 — Stopped at the probe
+
+4 of 8 drivers in repeat 1; repeat 2 not run. Dropped by the stop rule: 14 was the one redesign. No product code existed.
+[Results](../../evaluation/detection-generalization-results/14.md).

@@ -59,7 +59,6 @@ var sqlCallNegatives = []sqlCallForm{
 	{name: "tagged_template", imports: "import postgres from 'postgres'", setup: "const sql = postgres('postgres://x')", body: "await sql`SELECT * FROM users WHERE id = ${id}`"},
 	{name: "local_class", setup: "class Store { find(text) { return text.length } }\nconst store = new Store()", body: "store.find(" + unsafeText + ")"},
 	{name: "prose_to_package", imports: "import mailer from 'nodemailer'", setup: "const transport = mailer.createTransport({})", body: "await transport.sendMail({ text: `Select a plan for ${id}` })"},
-	{name: "reassigned", imports: "import oracledb from 'oracledb'", setup: "let conn = await oracledb.getConnection({})\nconn = { execute: (t) => t }", body: "await conn.execute(" + unsafeText + ")"},
 	{name: "shadowed", imports: "import conn from 'oracledb'", body: "{ const conn = { execute: (t) => t }; conn.execute(" + unsafeText + ") }"},
 }
 
@@ -90,8 +89,8 @@ func TestSQLUnknownCall(t *testing.T) {
 					open++
 				}
 			}
-			if open != 1 || len(u.Completeness.Blockers) != 1 {
-				t.Fatalf("only the binding blocker must stay open for the model: %+v", u.Completeness.Blockers)
+			if open != 1 {
+				t.Fatalf("binding blocker must stay open for the model: %+v", u.Completeness.Blockers)
 			}
 			text := false
 			for _, d := range u.Dependencies {

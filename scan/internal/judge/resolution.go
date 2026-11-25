@@ -125,7 +125,7 @@ func resolvable(u analysis.CandidateUse, g analysis.Gap) bool {
 	if g.Kind == "storage_origin_unresolved" && storedOriginAskable(u) {
 		return true
 	}
-	return g.Kind == sqlCallBlocker && sqlCallAskable(u)
+	return false
 }
 
 // storedOriginAskable reports a record whose stored origin an answer could
@@ -311,13 +311,6 @@ func resolutionAsks(u analysis.CandidateUse, wire map[string]any, gapIDs map[str
 				cite: question{name: name + citeSuffix, choices: choices, instructions: "If you answered request_write_cited, cite the one listed write that stores a request-controlled value into the column read. Choose none otherwise."}})
 		}
 	}
-	if sqlCallAskable(u) {
-		for _, g := range u.Completeness.Blockers {
-			if id := gapIDs[gapKey(g)]; g.Kind == sqlCallBlocker && id != "" {
-				asks = append(asks, sqlCallAsk(u, x, g, id))
-			}
-		}
-	}
 	switch familyOf(u) {
 	case "path":
 		if f := u.Path; f != nil && !pathHasWitness(u) {
@@ -477,9 +470,6 @@ func resolveOne(use analysis.CandidateUse, x *wireIndex, name string, answers ma
 	case strings.HasPrefix(name, resolvePrefix+"stored_"):
 		r.QuestionVersion = StoredOriginQuestionVersion
 		r.Blocker = matchBlocker(use, x, strings.TrimPrefix(name, resolvePrefix+"stored_"))
-	case strings.HasPrefix(name, sqlCallPrefix):
-		r.QuestionVersion = SQLCallQuestionVersion
-		r.Blocker = matchBlocker(use, x, strings.TrimPrefix(name, sqlCallPrefix))
 	case name == resolvePrefix+"witness":
 		r.QuestionVersion, r.Answer = WitnessQuestionVersion, answers["path_traversal"]
 	case name == resolvePrefix+"bypass":
@@ -492,8 +482,6 @@ func resolveOne(use analysis.CandidateUse, x *wireIndex, name string, answers ma
 	}
 	if r.QuestionVersion == StoredOriginQuestionVersion {
 		r.CitedSpans, r.Rejection = verifyWriteCitation(use, x, r.Citation)
-	} else if r.QuestionVersion == SQLCallQuestionVersion {
-		r.CitedSpans, r.Rejection = verifySQLCallCitation(use, x, r.Citation, r.Answer)
 	} else {
 		var c citation
 		c, r.Rejection = verifyCitation(x, r.Citation, asked)
@@ -669,9 +657,6 @@ func modelResolvedNote(discharged []analysis.Gap) string {
 	kinds := []string{}
 	for _, g := range discharged {
 		kinds = append(kinds, g.Kind)
-	}
-	if len(kinds) == 1 && kinds[0] == sqlCallBlocker {
-		return "Model-resolved: the scanner has no written contract for this package; the decision model answered that the call runs the argument as SQL text and cited the callee's own import, which the scanner checked."
 	}
 	return "Model-resolved: the decision model answered value_preserved with a verified evidence chain for " + strings.Join(kinds, ", ") + "; the resolution and its cited spans are recorded on the assessment."
 }

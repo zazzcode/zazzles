@@ -81,10 +81,6 @@ func describe(u analysis.CandidateUse) analysis.Finding {
 		f.Summary = "Scan identified a database-call pattern. Verify the driver and how it separates query structure from values."
 		if constructionWithoutOrigin(u) {
 			describeOriginless(&f, "SQL query text")
-		} else if hasGap(u, "package_call_unverified") && !u.Assessment.ModelResolved() {
-			f.RecordType, f.Status = "analysis", "needs_review"
-			f.Title = "Text that reads as SQL reaches a package call with no contract"
-			f.Summary = "A string built from request data begins a SQL statement and is passed to an imported package Scan has no written contract for. Whether the package runs it as SQL is not established, so nothing is reported."
 		} else if hasGap(u, "query_text_interpolated") {
 			f.RecordType = "finding"
 			f.Status = "poor_practice"

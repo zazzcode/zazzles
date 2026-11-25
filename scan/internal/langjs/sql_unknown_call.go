@@ -2,7 +2,6 @@ package langjs
 
 import (
 	"regexp"
-	"sort"
 	"strings"
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
@@ -316,29 +315,4 @@ func (s *moduleSet) packageSQLBinding(use analysis.CandidateUse) []analysis.Evid
 		return nil
 	}
 	return append(b, m.evidence("sink_binding", call))
-}
-
-// otherPackageImports lists the sink file's other package imports in source
-// order, so a citation has to name the callee's own import among them.
-func (s *moduleSet) otherPackageImports(use analysis.CandidateUse, binding []analysis.Evidence) []analysis.Evidence {
-	m := s.modules[use.Sink.Span.File]
-	if m == nil {
-		return nil
-	}
-	seen := map[uint]bool{}
-	for _, e := range binding {
-		if e.Span.File == m.file {
-			seen[uint(e.Span.StartByte)] = true
-		}
-	}
-	var out []analysis.Evidence
-	for _, imp := range m.imports {
-		if imp.declaration == nil || seen[imp.declaration.StartByte()] || s.importModule(m, imp.module) != nil || strings.HasPrefix(imp.module, ".") {
-			continue
-		}
-		seen[imp.declaration.StartByte()] = true
-		out = append(out, m.evidence("package_import", imp.declaration))
-	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Span.StartByte < out[j].Span.StartByte })
-	return out[:min(len(out), maxPackageImports)]
 }

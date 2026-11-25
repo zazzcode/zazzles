@@ -112,8 +112,6 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	if cited {
 		discharged = append(discharged, analysis.Gap{Kind: "storage_origin_unresolved"})
 	}
-	blockers, calls := dischargeSQLCall(use, a, blockers)
-	discharged = append(discharged, calls...)
 	blockers = append([]analysis.Gap{}, blockers...)
 	if c.ClaimKind == "injection" && a.Answers["injection_protection"] == "vulnerable" {
 		for _, role := range []string{"sql_all_inputs_hex", "selector_type_guard", "selector_path_string"} {
@@ -186,12 +184,6 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.Protection = "uncertain"
 		a.FindingStatus = "needs_evidence"
 		a.Reason = "claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained"
-		return
-	}
-	if packageSQL(use) && a.Answers["injection_protection"] != "vulnerable" {
-		// A package without a contract never supports Protected or a dismissal.
-		a.FindingStatus, a.Protection = "needs_evidence", "uncertain"
-		a.Reason = "The operation rests on a model-resolved package call; only a finding or Review can follow, so the record stays Review."
 		return
 	}
 	if closedNoWrite && c.ClaimKind == "injection" {

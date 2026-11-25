@@ -29,7 +29,7 @@ is this table, read per lane.
 | 02.1 | `detgen-02-1-check-fields` | A | `origin/stage` | `stage` | PR 51 is merged |
 | 02.2 | `detgen-02-2-handler-checks` | A | `detgen-02-1-check-fields` | `detgen-02-1-check-fields`, then `stage` | 02.1 open and green |
 | 03 | `detgen-03-sql-calls` | B | `origin/stage` | `stage` | 00 merged, or the owner lets 03 start before it |
-| 14 | `detgen-14-sql-calls-redesign` | B | `origin/stage` | `stage` | 03 dropped, and the owner lets 14 start before 00 (given 2026-11-25). Merge waits for its held-out applications |
+| 14 | `detgen-14-sql-calls-redesign` | B | `origin/stage` | `stage` | 03 dropped, and the owner lets 14 start before 00 (given 2026-11-25). Merge waits for its held-out applications. Dropped; the branch also holds experiment [15](15-judge-certainty.md), documents only, by the owner's word |
 | 01 | `detgen-01-storage-identity` | B | `origin/stage` | `stage` | 14 merged or dropped. **Paid checkpoint and merge only after 04 is merged** |
 | 13 | `detgen-13-storage-calls` | B | `origin/stage` | `stage` | 01, 03, 04 and 12 merged |
 | 04 | `detgen-04-middleware-checks` | A | `origin/stage` | `stage` | 02.2 merged |

@@ -7,7 +7,9 @@
 - **Goal** (owner) A vulnerability answer has certainty of at least **0.70**. **0.65** is the lowest acceptable. An
   approach that does not reach it is marked and left.
 - **Constraint** (owner) Send the judge the right details, well under the 64 KB request limit.
-- **Branch** `detgen-14-sql-calls-redesign`, in lane B.
+- **Branch** `detgen-14-sql-calls-redesign`, in lane B, kept there by the owner 2026-11-25: an exception to the
+  dropped-branch rule of [delivery plan §6](delivery-plan.md#6-moving-a-lane-to-its-next-branch), while 15 is documents
+  only. Product code from 15 starts a new branch from `origin/stage`.
 
 ## What certainty means here
 

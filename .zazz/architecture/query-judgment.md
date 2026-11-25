@@ -45,7 +45,8 @@ each path's transfers. Their codes and notes are in `scan/internal/guidelines/fa
 
 **Tested benefit** (2026-11-25, one paid answer per request, outcomes by policy replay; [results and
 limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 5 are no longer Confirmed,
-0 of 25 true findings on changed requests are lost, and none becomes Protected. It was below the bar set before the test,
+0 of 25 true findings on changed requests are lost, and none becomes Protected. One safe record moves from Protected to Review.
+The six moved records gave the same answer three times. It was below the bar set before the test,
 and is measured on DVWA and on forms its author wrote. No held-out PHP application has been used.
 
 ## Semantic questions and policy

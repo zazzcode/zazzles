@@ -59,8 +59,9 @@ policy, and any list or threshold.
 | AC5 | G1 to G7, the reserved control by script | Commands |
 | AC6 | Documents, with the tested benefit in `.zazz/architecture/` | `doc-check` |
 
-**Not met, and stated in the pull request:** held-out PHP applications, three planned answers for every changed ledger
-record and moved outcome (A4), and a full judged scan (A6). Each needs the owner's word.
+**Not met, and stated in the pull request:** held-out PHP applications, and three planned answers for every changed ledger
+record (A4; done for the six moved outcomes). Each needs the owner's word. The full judged scan (A6) is due after two merged
+specifications.
 
 ## Stop rule
 
@@ -81,3 +82,8 @@ withhold on each of these (11 failing tests first). So AC3 and the stop rule are
 equal the paid ones; two judged records and three trap forms now state no fact and have no paid answer. No wording changed.
 The five were then sent on the owner's word: all `vulnerable`, the true record stays Confirmed, no trap is protected. AC3 is met
 in substance: every changed judged request has an answer for its final text.
+
+### 2026-11-25 — Moved records repeated; A3, A4 and A6 corrected
+
+The first text said A3 was met with one answer per new Protected record, and omitted that `brute/impossible.php:96` moved from
+Protected to Review. 24 requests on the owner's word: A3 is met, and the move repeats. A6 was listed as missing; it is not due.

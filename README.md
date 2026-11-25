@@ -193,3 +193,9 @@ Build and test from an assigned feature branch or worktree, then submit a draft 
 
 Start with the [user guide index](docs/README.md) or the [Scan documentation](docs/scan/README.md).
 The [analysis rules](docs/scan/analysis/README.md) describe how Scan evaluates source evidence.
+
+## License
+
+Zazzles is licensed under the [GNU General Public License, version 3](LICENSE). Third-party
+material in [sample reports](docs/samples/README.md) and test fixtures remains under its own terms;
+see the license files and notes beside it.

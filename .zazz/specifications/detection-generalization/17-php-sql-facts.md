@@ -27,11 +27,12 @@ escape and a cast do and do not protect. The judge decides as before.
 | Path | Change |
 |---|---|
 | `scan/internal/langphp/sql_facts.go` | New. Reads the parts of the SQL text and each path's transfers |
-| `scan/internal/langphp/sql.go` | One line: the record carries the facts |
-| `scan/internal/guidelines/facts.md` | Three codes: `numeric_conversion_result`, `escaped_in_quoted_literal`, `hash_hex_result` |
+| `scan/internal/langphp/sql_bound.go` | New. The fact of a constant statement with bound values |
+| `scan/internal/langphp/sql.go`, `values.go`, `calls.go` | The record carries the facts; a connection that a call returned, or whose class the program declares, is marked |
+| `scan/internal/guidelines/facts.md` | Four codes: `numeric_conversion_result`, `escaped_in_quoted_literal`, `hash_hex_result`, `constant_sql_bound_values` |
 | `scan/internal/guidelines/php.md` | Escape and cast sentences |
 | `scan/internal/analysispacks/contracts.go` | The escape sentence of `php-mysqli-v1` |
-| Tests | `langphp/sql_facts_test.go`, `guidelines/facts_test.go`, the `scan/cli` architecture golden (digests of PHP SQL records) |
+| Tests | `langphp/sql_facts_test.go`, `langphp/sql_bound_test.go`, `guidelines/facts_test.go`, the `scan/cli` architecture golden (digests of PHP SQL records) |
 | Documents | Query judgment, database injection guide, SQL capability page, results, this file, delivery plan row |
 
 Out of scope: other PHP drivers' escapes, pattern guards such as `preg_match`, JavaScript and Python, question wording,
@@ -47,12 +48,16 @@ policy, and any list or threshold.
   label. *Rejected:* a list of transfers that break it; it fails open.
 - **D-4. Keep the guideline, fact-document and protocol versions.** *Why:* a version is in other families' requests; the
   digest already covers the text. No question changed.
+- **D-5. Bound values: the pattern, not the data flow.** The fact needs a literal in `prepare` and straight-line binds and
+  execution. *Why:* a join of two branches keeps one branch's text, so a fact read from the flow stated a wrong one.
+  *Rejected:* following a text held in a variable, and allowing calls between the two; the records without the fact keep
+  their request. *Cost:* 4 of 14 safe DVWA records have none.
 
 ## Acceptance criteria
 
 | AC | Criterion | Verified by |
 |---|---|---|
-| AC1 | Each safe, trap and plain form gives exactly the stated facts | `go test ./scan/internal/langphp -run TestPHPSQLFacts` |
+| AC1 | Each safe, trap and plain form gives exactly the stated facts | `go test ./scan/internal/langphp -run 'TestPHPSQLFacts\|TestPHPBoundFacts'` |
 | AC2 | Every produced code has a note; the list of codes is complete | `go test ./scan/internal/guidelines -run TestFact` |
 | AC3 | On the four judged applications each request equals the one paid for in arm B | Comparison |
 | AC4 | Nine samples: no record missing or added; only PHP SQL requests change | Comparison |
@@ -87,3 +92,9 @@ in substance: every changed judged request has an answer for its final text.
 
 The first text said A3 was met with one answer per new Protected record, and omitted that `brute/impossible.php:96` moved from
 Protected to Review. 24 requests on the owner's word: A3 is met, and the move repeats. A6 was listed as missing; it is not due.
+
+### 2026-11-25 — Bound-value fact added
+
+The owner asked for a general answer to the safe record that had left Protected. 15 requests on the owner's word, 19 approved:
+10 of 10 records and 5 of 5 forms Protected. The first rules were wrong on trap forms, and again after the paid test on seven
+more; each is a test now. The requests of the final code equal the paid ones byte for byte.

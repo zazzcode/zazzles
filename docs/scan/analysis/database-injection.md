@@ -217,6 +217,10 @@ not able to change syntax when it is the result of a numeric conversion, or when
 when the value is not in quotes, is an identifier or a number, or is changed after the escape. The scanner states such a fact
 only when every operand of the text has one and every path proves it; the judge decides.
 
+A prepared statement is safe from injection when its SQL text is fixed and its values are bound. `prepare` alone is not enough:
+text built from input stays injectable, and a bound value that a stored procedure, dynamic statement or database function runs is
+not data. The scanner states the fact only for a literal in its own `prepare` call, followed by nothing but binds and the execution.
+
 ## GraphQL resolver sources
 
 The bounded Apollo Node adapter binds schema coordinates to separate resolver invocations and

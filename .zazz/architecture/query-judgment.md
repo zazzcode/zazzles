@@ -37,6 +37,10 @@ each path's transfers. Their codes and notes are in `scan/internal/guidelines/fa
 - **All or nothing.** Facts are stated only when every operand has one. Every path must prove it, every alternative of a
   conditional must be the value or a literal, and after the value is made no variable that carries it may be written, passed
   to a call or reached by a construct that writes variables it does not name. A SQL comment ends what the text shows.
+- **A constant statement with bound values.** `langphp/sql_bound.go` states `constant_sql_bound_values` when the SQL text is a
+  literal written in its own `prepare` call, request values reach only bind calls, and prepare, binds and execute are statements
+  of one block with nothing else between them. It is withheld for a wrapped connection, a class the program declares under the
+  driver's name, a second statement, a comment, dynamic SQL, or a placeholder inside a database function.
 - **Never stated as unknown.** In an experiment, a fact that said `not established` made the judge doubt a true finding.
 - **The text says the same as the facts.** The PHP guideline and the `php-mysqli-v1` contract used to say that an escaped
   value remains a finding and that escaping is never protection. They now separate construction practice from injection.
@@ -45,9 +49,10 @@ each path's transfers. Their codes and notes are in `scan/internal/guidelines/fa
 
 **Tested benefit** (2026-11-25, one paid answer per request, outcomes by policy replay; [results and
 limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 5 are no longer Confirmed,
-0 of 25 true findings on changed requests are lost, and none becomes Protected. One safe record moves from Protected to Review.
-The six moved records gave the same answer three times. It was below the bar set before the test,
-and is measured on DVWA and on forms its author wrote. No held-out PHP application has been used.
+0 of 25 true findings on changed requests are lost, and none becomes Protected. Without the bound-value fact, one safe prepared statement moved from Protected to Review; with it, none does,
+and the certainty of Protected rose on all ten records that have it (0.43 to 0.90 before, 0.80 to 0.98 after). The operand
+facts were below the bar set before their test. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
+application has been used.
 
 ## Semantic questions and policy
 

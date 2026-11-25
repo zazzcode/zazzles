@@ -4857,8 +4857,8 @@
       {
         "id": "candidate:v1:e312218411629d947d20137711d4b6c881005cf51e20987abdadc6d5806b7cf4",
         "kind": "sql_query_candidate",
-        "request_sha256": "2acbe26e1eca1a0b28c7f772791ee73527d33163fb1385c20d5eb70255da0615",
-        "signature_sha256": "c1dfd2a894e586545510ddd6921dbea24b00174bbd5be3e952ac8d2d8ea8d10d"
+        "request_sha256": "c020675f6412ab4d165db2cbace57ded4118b45f6e768881a55875b12471b7fb",
+        "signature_sha256": "3692628a554ac2a426c175cae924f7b653d5ad9c07f91f458d808ed4a8c2a8c5"
       },
       {
         "id": "candidate:v1:c6b449fbf1be9767f2de6dd8ab100b8e9e91dfd2cbb52c5befffee0fdcdfd465",
@@ -4891,7 +4891,7 @@
         "signature_sha256": "9fd2c4bbb9af3e2a934f4a0a015bad54f48e370a3ce0bcc68c522cd00bc35af7"
       }
     ],
-    "report_sha256": "c0a712695e6a220ba055d39b25ab39fd409113588066eb4af1cce656fae54915",
+    "report_sha256": "b9e91b8a4a4abe70415b36ddadcb4abb6c4fea76670b0c79651ae925e22445bf",
     "sarif_sha256": "fe790397d0e3a9f6901d35565a6406d36a14138157c4fa43a4926e8f8e808e64",
     "entries": 4,
     "registrations": 4,

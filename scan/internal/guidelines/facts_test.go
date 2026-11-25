@@ -29,12 +29,12 @@ func TestFactNotes(t *testing.T) {
 }
 
 func TestFactCodesAreDocumented(t *testing.T) {
-	for _, code := range []string{"scope_express_direct", "scope_node_framework", "scope_apollo_resolver", "scope_grpc_unary", "nosql_selector_semantics", "conditional_value_paths", "validator_is_email", "express_transport_adapters", "verified_number_call", "native_hash_hex", "supported_transfer", "output_alternative_numeric", "output_alternative_unconstrained", "numeric_output_expression", "scope_nextjs", "zod_schema_supplied", "sql_multi_statement", "sql_single_statement", "script_reexecution", "browser_navigation_sink", "xss_via_fetched_content", "url_scheme_only_test", "vm_not_security_boundary", "code_inside_string_literal", "sandbox_library_advisory", "protocol_relative_path", "redirect_back_referer", "redirect_also_xss", "redirect_predicate_bypass", "redirect_predicate_excludes", "redirect_normalization", "sql_literal_quote_doubling", "numeric_conversion_result", "escaped_in_quoted_literal", "hash_hex_result"} {
+	for _, code := range []string{"scope_express_direct", "scope_node_framework", "scope_apollo_resolver", "scope_grpc_unary", "nosql_selector_semantics", "conditional_value_paths", "validator_is_email", "express_transport_adapters", "verified_number_call", "native_hash_hex", "supported_transfer", "output_alternative_numeric", "output_alternative_unconstrained", "numeric_output_expression", "scope_nextjs", "zod_schema_supplied", "sql_multi_statement", "sql_single_statement", "script_reexecution", "browser_navigation_sink", "xss_via_fetched_content", "url_scheme_only_test", "vm_not_security_boundary", "code_inside_string_literal", "sandbox_library_advisory", "protocol_relative_path", "redirect_back_referer", "redirect_also_xss", "redirect_predicate_bypass", "redirect_predicate_excludes", "redirect_normalization", "sql_literal_quote_doubling", "numeric_conversion_result", "escaped_in_quoted_literal", "hash_hex_result", "constant_sql_bound_values"} {
 		if !KnownFact(code) {
 			t.Fatalf("%s has no note", code)
 		}
 	}
-	if len(factOrder) != 35 {
+	if len(factOrder) != 36 {
 		t.Fatalf("fact codes %v: update the producer list in this test", factOrder)
 	}
 }

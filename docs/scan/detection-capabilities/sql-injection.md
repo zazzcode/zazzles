@@ -16,6 +16,7 @@ Supported bindings include Sequelize, Prisma raw queries, sql.js, better-sqlite3
 | Structured Sequelize finders | A verified model finder with values in `where` | Ordinary finder values are bound. Raw SQL literal escapes are evaluated separately |
 | Provider-specific literal escaping | Prisma raw SQL with quote doubling inside a single-quoted value | Recognized per operand for SQLite, PostgreSQL and CockroachDB |
 | PHP operands proven numeric, escaped inside quotes, or a hash | `(int)` in a `LIMIT`, or `mysqli_real_escape_string` inside a quoted literal | Stated as facts when every operand and path proves it. The judge decides, and construction practice stays separate |
+| PHP prepared literal with bound values | `$db->prepare('... WHERE id = :id')`, then `bindParam` and `execute` | Stated as a fact when the three are straight-line code in one block. The judge decides |
 | Doctrine DBAL and ORM | A prepared DBAL statement, ORM query, or QueryBuilder chain from a repository or the entity manager executes source-backed query text | Bound data and executable fragments carry separate evidence. Pagination and cache setters keep the chain's text. [Symfony coverage](symfony.md#operations) |
 
 ## Recorded in Review

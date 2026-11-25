@@ -71,7 +71,7 @@ JavaScript and Python, question wording, policy, and any list or threshold.
 |---|---|---|
 | AC1 | Each safe form gives exactly the stated facts, and each trap makes a record with none | `go test ./scan/internal/langphp -run 'TestPHPSQLFact\|TestPHPQuotedOperands'` |
 | AC2 | Every produced code has a note; the list of codes is complete; the replaced sentences reach only a record with the fact | `go test ./scan/internal/guidelines -run 'TestFact\|TestProducedFact'`, `go test ./scan/internal/judge -run 'TestEscapeFact'` |
-| AC3 | On the judged applications each request equals an answered one (the text before the feature, or the text paid for in arm B), except two whose paid check is prepared | Comparison, `pf17-paid/` |
+| AC3 | On the judged applications each request equals an answered one (the text before the feature, the text paid for in arm B, or the text of the 35-request check) | Comparison, `pf17-paid/` |
 | AC4 | Nine samples: no record missing or added; only PHP SQL requests with a fact change | Comparison |
 | AC5 | G1 to G7, the reserved control by script | Commands |
 | AC6 | Documents, with the tested benefit in `.zazz/architecture/` | `doc-check` |
@@ -122,4 +122,5 @@ fact and moved by the general text alone. No paid request was made, and none is 
 
 The owner asked that no result be lost. The numeric fact returned as an integer fact with a true note (D-8), and a digit-pattern fact was
 added for the general shape of `bac/medium.php:22` (D-9), each with its own traps. Two judged requests now have new text: a paid check of
-35 requests is prepared, with its rule written first, and not sent.
+35 requests, with its rule written first, was sent on the owner's word: PASS. 5 of 14 false findings Protected 3 of 3, 0 of 25 true lost,
+0 safe moved; 2 of 7 new safe forms not `vulnerable`.

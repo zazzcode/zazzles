@@ -65,9 +65,9 @@ the database. The statement is taken to run on MySQL or MariaDB. Methods (`$db->
 bound parameters have no fact.
 
 **Tested benefit** (2026-11-25, outcomes by policy replay; [results and
-limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 4 are no longer Confirmed, 0 of 25
-true findings are lost, none becomes Protected, and no safe record moves. Nine requests of 403 differ from those before the feature:
-seven have a paid answer for their exact text, and two (`bac/medium.php:22`, `bac/low.php:23`) wait for a prepared paid check. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
+limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 5 are no longer Confirmed, each 3 of 3,
+0 of 25 true findings are lost, none becomes Protected, and no safe record moves. Nine requests of 403 differ from those before the
+feature, and each has three paid answers for its exact text. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
 application has been used.
 
 ## Semantic questions and policy

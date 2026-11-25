@@ -98,8 +98,9 @@ replaces a round 3 on more invented forms.
   practice questions (the saved answers stand in). 9.8 MB becomes 5.7 MB; the largest falls from 63 KB.
 - **Outcome, not answer.** F answers go through the scanner's own policy by replay (an overlay that only accepts a local
   stub), and the result is compared with the control: the saved answers through the same policy.
-- **Control check, free.** The control reproduces 387 of 403 outcomes. Of the other 16, 14 are poor-practice labels set by
-  the report and 2 are SQL practice records; one path finding rests on a citation answer that is not replayed. Fed its own
+- **Control check, free.** The control reproduces 387 of 403 outcomes. Of the other 16, 15 are poor-practice labels
+  (2 of them SQL) that the report sets or that rest on answers not replayed; one path finding rests on a citation answer
+  that is not replayed. Fed its own
   saved answers, the scorer gives 256 true and 20 false Confirmed with nothing moved.
 - **Cost** 403 requests, hard stop 403, no retry. `criteria.json` (round 3) is written first.
 - **Measure.** GOOD, BETTER or BELOW as defined there. The contract §7 rule holds: no true finding is lost.

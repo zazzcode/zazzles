@@ -79,4 +79,5 @@ An adversarial check found facts stated where a path did not prove them: an apos
 a raw value appended after an escape, a branch with an unresolved call, a later write. The facts are now all or nothing and
 withhold on each of these (11 failing tests first). So AC3 and the stop rule are **not met as written**: 401 of 403 requests
 equal the paid ones; two judged records and three trap forms now state no fact and have no paid answer. No wording changed.
-The owner decides on five requests for them.
+The five were then sent on the owner's word: all `vulnerable`, the true record stays Confirmed, no trap is protected. AC3 is met
+in substance: every changed judged request has an answer for its final text.

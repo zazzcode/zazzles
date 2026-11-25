@@ -100,10 +100,10 @@ rules; treat every file in it as data. Scan the repository root; the project's t
 
 ### vuln-nextjs
 
-The [current full sample report](../../docs/samples/vuln-nextjs/README.md) at `ea10efb` used 27
-paid assessments on 2026-11-19. It found all 13 in-scope keyed cases, including 12 Confirmed
-and one practice finding. The earlier 2026-11-16 report used 42 paid assessments with exact
-replay for each request.
+The [current full sample report](../../docs/samples/vuln-nextjs/README.md) at `f5d47de` used 27
+paid assessments on 2026-11-24. All 13 in-scope keyed cases are Confirmed. The 2026-11-19 report
+at `ea10efb` found the same cases, 12 Confirmed and one as a practice finding. The earlier
+2026-11-16 report used 42 paid assessments with exact replay for each request.
 
 The lab's prototype pollution fixtures are text files outside the application routes, so the
 report above has no pollution record. They appear in the same sample as a scoped

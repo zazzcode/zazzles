@@ -1,26 +1,30 @@
 {
-  "date": "2026-11-19",
-  "target_revision": "ea10efb960d5bf4dbabbfee01dc6e5f881b22898",
+  "date": "2026-11-24",
+  "target_revision": "f5d47de3b684f532141b8b4127060189c236dfd6",
   "upstream": "https://github.com/zazzcode/vuln-nextjs",
-  "source_run": "run-3943326285",
-  "source_json_sha256": "068d6e1d8afb3ad025f05406d134b3b77a955aabe6de649455fa992ce9d65d01",
-  "scanner_revision": "model-evidence-resolution 50d4a8f",
-  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
+  "source_run": "run-1362129016 (a2-acceptance-vuln-nextjs)",
+  "source_json_sha256": "846d24223f95d23cec2f244445a385ce01c0d71782443f4583eb5e5268d2ebfa",
+  "scanner_revision": "juiceshop-nextjs-hardening-3 ee777f4 (PR #50)",
+  "evaluation_mode": "full gpt-6-luna scan: all analyzers, default judge limit",
   "provider": "openai",
   "model": "gpt-6-luna",
   "provider_requests": 27,
-  "assessment_requests": 27,
-  "follow_ups_sent": 0,
   "completed_assessments": 27,
-  "derived_assessments": 0,
-  "input_tokens": 132645,
+  "input_tokens": 121218,
   "entries": 37,
   "published_records": 54,
-  "records_not_sent_blocker_unresolvable": 0,
   "outcomes": {
-    "confirmed_vulnerability": 12,
-    "protected_for_claim": 7,
-    "needs_evidence": 8
+    "needs_evidence": 4,
+    "protected_for_claim": 9,
+    "confirmed_vulnerability": 13,
+    "poor_practice": 1
+  },
+  "report_statuses": {
+    "needs_review": 27,
+    "needs_evidence": 4,
+    "protected_for_claim": 9,
+    "confirmed_vulnerability": 13,
+    "poor_practice": 1
   },
   "not_run": 27,
   "failed": 0,
@@ -31,20 +35,18 @@
     "control_false_positives": 0
   },
   "runtime_confirmation": "none; static source judgments only",
-  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-  "results": "../../../.zazz/evaluation/model-resolution-results.md",
+  "results": "../../../.zazz/evaluation/juiceshop-hardening-results.md",
   "previous": {
-    "date": "2026-11-16",
-    "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
-    "source_run": "run-2372184294",
-    "provider_requests": 42,
-    "input_tokens": 177900,
-    "published_records": 50,
+    "date": "2026-11-19",
+    "scanner_revision": "model-evidence-resolution 50d4a8f",
+    "source_run": "run-3943326285",
+    "provider_requests": 27,
+    "input_tokens": 132645,
+    "published_records": 54,
     "outcomes": {
-      "needs_review": 8,
-      "needs_evidence": 25,
+      "confirmed_vulnerability": 12,
       "protected_for_claim": 7,
-      "confirmed_vulnerability": 10
+      "needs_evidence": 8
     }
   }
 }

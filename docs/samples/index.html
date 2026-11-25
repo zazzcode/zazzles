@@ -1,24 +1,135 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>scan sample findings</title><style>body{font:18px/1.6 system-ui,sans-serif;max-width:780px;margin:70px auto;padding:0 24px;color:#182d38}a{color:#165f52}li{margin:18px 0}</style></head><body>
-<h1>Explore scan findings</h1>
-<p>Expand routes for source evidence and remediation. These evolving examples include incomplete analysis; they are not complete security assessments.</p>
-<ul>
-<li><a href="juice-shop/findings.html">OWASP Juice Shop report</a> — full judged scan: server/API and browser/client sections, XSS, query and logging findings; no direct command-injection positive (source-reviewed).</li>
-<li><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app report</a> — full judged scan: the <code>/api/ping</code> command injection, reflected XSS, Lodash prototype pollution and logging, plus validation and outbound review.</li>
-<li><a href="vulnpy/findings.html">VulnPy report</a> — full all-family Python assessment: 3,260 completed contexts, including 61 command, 78 SQL, 31 XSS, 260 path and 2,830 input-validation contexts; no records omitted.</li>
-<li><a href="nodejs-goof/findings.html">Node.js Goof report</a> — full judged scan: the <code>POST /create</code> regex-capture command injection, XSS, NoSQL, Lodash prototype pollution, validation and logging.</li>
-<li><a href="ThreatByte/findings.html">ThreatByte Python report</a> — Flask/RESTX, SQL, reflected/stored/DOM XSS and protected controls.</li>
-<li><a href="python-insecure-app/findings.html">Python insecure app report</a> — FastAPI HTML/template construction.</li>
-<li><a href="vulnerable-flask-app/findings.html">Erlik 2 Flask report</a> — SQL and raw responses, with logging and unknown-flow review.</li>
-<li><a href="oss-oopssec-store/findings.html">OSS OopsSec Store report</a> — Next.js App Router: 15 Confirmed, 99 Review (two grouped observations retained in JSON); SQL, path, SSRF, logging and client XSS.</li>
-<li><strong>vuln-nextjs JavaScript and TypeScript lab</strong>
-<ul>
-<li><a href="vuln-nextjs/findings.html">Full Pages Router app report</a>. The 2026-11-19 paid scan at <code>ea10efb</code> found all 13 expected in-scope cases (12 Confirmed and one practice finding) in 27 requests. Examples include PGlite SQL injection, cross-tier XSS, code injection and open redirect. <a href="vuln-nextjs/findings.json">JSON</a> · <a href="vuln-nextjs/findings.sarif">SARIF</a></li>
-<li><a href="vuln-nextjs/reports/prototype-pollution/findings.html">Prototype pollution fixture report</a>. The 2026-11-21 paid scan at <code>8d26f52</code> Confirmed 14 of 15 in-scope cases in 19 requests. One in-scope case stayed in Review, and two dependency-only cases had no record. Examples include Lodash by version and source-visible prototype writes. <a href="vuln-nextjs/reports/prototype-pollution/findings.json">JSON</a> · <a href="vuln-nextjs/reports/prototype-pollution/findings.sarif">SARIF</a></li>
-</ul>
-</li>
-<li><a href="dvwa/findings.html">DVWA PHP report</a> — 11 keyed positives confirmed and no protected control reported as a finding. The 2026-11-23 scan adds 13 findings: weak MD5 password hashing on six password-change pages (12 records) and a session cookie readable by script. Remote include, the session cookie without <code>Secure</code>, and an unguarded user update stay in Review. <a href="dvwa/findings.json.gz">JSON, gzip</a> · <a href="dvwa/findings.sarif.gz">SARIF, gzip</a></li>
-<li><a href="vuln-symfony/findings.html">VulnerableSymfony PHP and Symfony report</a>. The 2026-11-23 paid scan at <code>086f81f</code> Confirmed all 30 keyed positives in 84 requests, with no control reported as a finding. Source excerpts are by Secureaks under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. <a href="vuln-symfony/findings.json">JSON</a> · <a href="vuln-symfony/findings.sarif">SARIF</a> · <a href="vuln-symfony/UPSTREAM-LICENSE.txt">licence</a></li>
-</ul>
-<p>Each report is standalone. No model calls are made when viewing it.</p>
-</body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zazzles Code Scan sample reports</title>
+<meta name="description" content="Saved Zazzles Code Scan reports on intentionally vulnerable applications, with the judged outcomes and source evidence.">
+<style>
+:root{color-scheme:light dark;--bg:#fff;--fg:#182d38;--muted:#4d626d;--line:#d5dee2;--link:#165f52;--panel:#f4f7f8}
+@media (prefers-color-scheme:dark){:root{--bg:#10191e;--fg:#e2eaed;--muted:#a3b4bc;--line:#2c3b43;--link:#6fd0bc;--panel:#18242a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:48px 20px 64px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 12px}
+h3{font-size:1.08rem;margin:28px 0 8px}
+h2{font-size:1.3rem;line-height:1.3;margin:44px 0 10px}
+p{max-width:72ch;margin:0 0 14px}
+a{color:var(--link)}
+.note{color:var(--muted);font-size:.92rem}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+thead th{background:var(--panel);white-space:nowrap}
+tbody tr:last-child>*{border-bottom:0}
+tbody th{font-weight:600}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+dl{display:grid;grid-template-columns:minmax(9rem,max-content) 1fr;gap:8px 20px;margin:14px 0}
+dt{font-weight:600}
+dd{margin:0}
+@media (max-width:600px){dl{grid-template-columns:1fr;gap:2px}dd{margin-bottom:10px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Zazzles Code Scan sample reports</h1>
+<p>Code Scan traces untrusted input to sensitive operations and records the controls on each path. A decision model then judges that evidence. These are saved reports on intentionally vulnerable applications. Expand an entry to see the source evidence, the outcome and the remediation.</p>
+<p class="note">Each report is standalone, and viewing one makes no model call. Outcomes are static source judgments, not runtime exploit confirmation. <a href="https://github.com/zazzcode/zazzles">Project on GitHub</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/detection-capabilities.md">Detection capabilities</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/interpreting-results.md">How to read a report</a></p>
+
+<h2>Compared with other scanners</h2>
+<p>Known vulnerabilities found in four applications, scored against a source-reviewed answer key on 2026-11-24.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Application</th><th scope="col" class="n">Known</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td class="n">42</td><td class="n">41</td><td class="n">9</td><td class="n">14</td></tr>
+<tr><th scope="row"><a href="vuln-nextjs/findings.html">vuln-nextjs</a></th><td class="n">13</td><td class="n">13</td><td class="n">2</td><td class="n">7</td></tr>
+<tr><th scope="row"><a href="dvwa/findings.html">DVWA</a></th><td class="n">11</td><td class="n">11</td><td class="n">5</td><td class="n">6</td></tr>
+<tr><th scope="row"><a href="vuln-symfony/findings.html">VulnerableSymfony</a></th><td class="n">30</td><td class="n">30</td><td class="n">2</td><td class="n">5</td></tr>
+<tr><th scope="row">Total</th><td class="n">96</td><td class="n">95</td><td class="n">18</td><td class="n">32</td></tr>
+</tbody>
+</table>
+</div>
+<h3>By weakness class</h3>
+<p>Known vulnerabilities found, across the four applications.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Weakness class</th><th scope="col" class="n">Known</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
+<tbody>
+<tr><th scope="row">Cross-site scripting</th><td class="n">18</td><td class="n">18</td><td class="n">1</td><td class="n">5</td></tr>
+<tr><th scope="row">SQL injection</th><td class="n">10</td><td class="n">10</td><td class="n">5</td><td class="n">7</td></tr>
+<tr><th scope="row">Missing authorization</th><td class="n">10</td><td class="n">10</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Insecure configuration</th><td class="n">8</td><td class="n">8</td><td class="n">4</td><td class="n">4</td></tr>
+<tr><th scope="row">Path traversal</th><td class="n">7</td><td class="n">7</td><td class="n">0</td><td class="n">2</td></tr>
+<tr><th scope="row">Mass assignment</th><td class="n">7</td><td class="n">7</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Code and template injection</th><td class="n">6</td><td class="n">6</td><td class="n">2</td><td class="n">4</td></tr>
+<tr><th scope="row">OS command injection</th><td class="n">5</td><td class="n">5</td><td class="n">2</td><td class="n">2</td></tr>
+<tr><th scope="row">Server-side request forgery</th><td class="n">4</td><td class="n">4</td><td class="n">0</td><td class="n">1</td></tr>
+<tr><th scope="row">NoSQL injection</th><td class="n">3</td><td class="n">3</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Information exposure</th><td class="n">3</td><td class="n">3</td><td class="n">1</td><td class="n">1</td></tr>
+<tr><th scope="row">Weak password hashing</th><td class="n">3</td><td class="n">3</td><td class="n">1</td><td class="n">2</td></tr>
+<tr><th scope="row">Account enumeration</th><td class="n">3</td><td class="n">3</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Open redirect</th><td class="n">3</td><td class="n">3</td><td class="n">1</td><td class="n">2</td></tr>
+<tr><th scope="row">Unrestricted file upload</th><td class="n">2</td><td class="n">2</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Unsafe deserialization</th><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">1</td></tr>
+<tr><th scope="row">Weak password recovery</th><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Sensitive data in logs</th><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><th scope="row">Hardcoded secret</th><td class="n">1</td><td class="n">0</td><td class="n">1</td><td class="n">1</td></tr>
+<tr><th scope="row">Total</th><td class="n">96</td><td class="n">95</td><td class="n">18</td><td class="n">32</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>False positives</h3>
+<p>Results on code that the answer key or a source review shows to be safe, counted by location. Results nobody has reviewed are not counted.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Application</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
+<tbody>
+<tr><th scope="row">OWASP Juice Shop</th><td class="n">3</td><td class="n">5</td><td class="n">14 and two grouped rules</td></tr>
+<tr><th scope="row">vuln-nextjs</th><td class="n">0</td><td class="n">1</td><td class="n">4</td></tr>
+<tr><th scope="row">DVWA</th><td class="n">0</td><td class="n">2</td><td class="n">2</td></tr>
+<tr><th scope="row">vuln-symfony</th><td class="n">0</td><td class="n">0</td><td class="n">2</td></tr>
+<tr><th scope="row">Total</th><td class="n">3</td><td class="n">8</td><td class="n">22 and two grouped rules</td></tr>
+</tbody>
+</table>
+</div>
+<p class="note">Semgrep CE 1.183.0 ran 564 rules; its cross-file engine is a paid product and was not run. Bearer CLI ran <code>bearer-rules</code>; Bearer Pro was not run. Code Scan’s found count includes three Juice Shop cases reported as practice findings. It misses one committed secret, a class it has no analyzer for. These are development reference applications and the answer keys favor the classes Code Scan analyzes, so this is not a general accuracy claim. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison</a></p>
+
+<h2>Reports</h2>
+<p>Counts are records in the report, and one defect can appear in several. Review means the evidence or the judgment is incomplete. It does not mean safe.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Report</th><th scope="col">What it shows</th><th scope="col" class="n">Confirmed</th><th scope="col" class="n">Practice</th><th scope="col" class="n">Protected</th><th scope="col" class="n">Review</th><th scope="col">Scanned</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. All 41 keyed positives found.</td><td class="n">51</td><td class="n">3</td><td class="n">3</td><td class="n">248</td><td>2026-11-24</td></tr>
+<tr><th scope="row"><a href="vuln-nextjs/findings.html">vuln-nextjs</a></th><td>Next.js Pages Router. All 13 expected cases Confirmed, including PGlite SQL injection, cross-tier XSS and code injection.</td><td class="n">13</td><td class="n">1</td><td class="n">9</td><td class="n">31</td><td>2026-11-24</td></tr>
+<tr><th scope="row"><a href="vuln-nextjs/reports/prototype-pollution/findings.html">vuln-nextjs prototype pollution fixtures</a></th><td>Lodash by version and source-visible prototype writes. 14 of 15 in-scope cases Confirmed, one in Review. Two dependency-only cases have no record.</td><td class="n">14</td><td class="n">0</td><td class="n">2</td><td class="n">47</td><td>2026-11-21</td></tr>
+<tr><th scope="row"><a href="dvwa/findings.html">DVWA</a></th><td>Plain PHP. All 11 keyed positives Confirmed and no protected control reported. Adds weak password hashing and session cookie settings.</td><td class="n">159</td><td class="n">39</td><td class="n">18</td><td class="n">49</td><td>2026-11-23</td></tr>
+<tr><th scope="row"><a href="vuln-symfony/findings.html">VulnerableSymfony</a></th><td>Symfony, Doctrine and Twig. All 30 keyed positives Confirmed and no control reported. Source excerpts are by Secureaks under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> (<a href="vuln-symfony/UPSTREAM-LICENSE.txt">license</a>).</td><td class="n">55</td><td class="n">0</td><td class="n">22</td><td class="n">7</td><td>2026-11-23</td></tr>
+<tr><th scope="row"><a href="nodejs-goof/findings.html">Node.js Goof</a></th><td>Express. Command injection, XSS, NoSQL injection and Lodash prototype pollution. All 8 keyed positives found.</td><td class="n">7</td><td class="n">0</td><td class="n">2</td><td class="n">27</td><td>2026-11-21</td></tr>
+<tr><th scope="row"><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app</a></th><td>Command and code injection, reflected XSS, open redirect and prototype pollution. All 7 keyed positives found.</td><td class="n">8</td><td class="n">0</td><td class="n">0</td><td class="n">19</td><td>2026-11-21</td></tr>
+<tr><th scope="row"><a href="oss-oopssec-store/findings.html">OSS OopsSec Store</a></th><td>Next.js App Router. SQL injection, path traversal, SSRF, logging and client XSS. All 13 keyed positives found.</td><td class="n">23</td><td class="n">2</td><td class="n">0</td><td class="n">103</td><td>2026-11-19</td></tr>
+<tr><th scope="row"><a href="ThreatByte/findings.html">ThreatByte</a></th><td>Flask and RESTX. SQL injection and reflected, stored and DOM XSS, with protected controls. All 5 keyed positives found.</td><td class="n">5</td><td class="n">3</td><td class="n">34</td><td class="n">20</td><td>2026-11-19</td></tr>
+<tr><th scope="row"><a href="vulnerable-flask-app/findings.html">Vulnerable Flask App (Erlik 2)</a></th><td>Flask. SQL injection and raw responses. All 4 keyed positives found.</td><td class="n">8</td><td class="n">0</td><td class="n">0</td><td class="n">22</td><td>2026-11-19</td></tr>
+<tr><th scope="row"><a href="python-insecure-app/findings.html">Python insecure app</a></th><td>FastAPI HTML construction. One of 2 keyed positives found, the other in Review.</td><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">1</td><td>2026-11-19</td></tr>
+<tr><th scope="row"><a href="vulnpy/findings.html">VulnPy</a></th><td>Several Python frameworks, with repeated entry contexts. Path traversal, code, SQL and command injection, and XSS. All 6 source-reviewed positives found.</td><td class="n">455</td><td class="n">0</td><td class="n">0</td><td class="n">2,895</td><td>2026-11-19</td></tr>
+</tbody>
+</table>
+</div>
+<p class="note">Reports dated 2026-11-19 and 2026-11-21 predate the newest analyzers, so they do not show everything Code Scan finds today. The <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/samples/README.md">sample notes</a> list each report’s target and scanner revisions, answer key, limits, JSON and SARIF.</p>
+
+<h2>What Code Scan covers</h2>
+<dl>
+<dt>Languages</dt><dd>JavaScript and TypeScript, Python, and PHP</dd>
+<dt>Frameworks</dt><dd>Includes Express, Fastify, Hapi, Next.js, Flask, FastAPI, Django and Symfony with Twig and Doctrine</dd>
+<dt>Injection</dt><dd>SQL, NoSQL, OS command, argument, code and server-side template injection</dd>
+<dt>Web and files</dt><dd>Cross-site scripting, server-side request forgery, open redirect, path traversal and unrestricted upload</dd>
+<dt>Data handling</dt><dd>Unsafe deserialization, prototype pollution and sensitive data in logs</dd>
+<dt>Access and accounts</dt><dd>Missing authorization, mass assignment, account enumeration, weak password recovery and weak password hashing</dd>
+<dt>Configuration</dt><dd>Information exposure and insecure framework, deployment and session cookie settings</dd>
+</dl>
+<p class="note">Coverage varies by language, framework and library. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/detection-capabilities.md">Full detection coverage</a></p>
+</main>
+</body>
+</html>

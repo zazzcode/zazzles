@@ -445,6 +445,14 @@
         },
         {
           "hashes": {
+            "sha-256": "28df9e8a36a09aef530beedbdcf13105502d5a10e87ac82973614eedddcd6173"
+          },
+          "location": {
+            "uri": "scripts/export-prototype-pollution-fixtures.mjs"
+          }
+        },
+        {
+          "hashes": {
             "sha-256": "986b6dd833116e3e4391e699c4ab0d9e5e6baa94780cfd39ed1e6135b43acdf0"
           },
           "location": {
@@ -489,6 +497,14 @@
           },
           "location": {
             "uri": "tests/browser/xss.browser.test.mjs"
+          }
+        },
+        {
+          "hashes": {
+            "sha-256": "99d98491554880132daf65d24042cd2a92d513503abfc04ff36afbf6d4467baa"
+          },
+          "location": {
+            "uri": "tests/scanner/prototype-pollution.test.mjs"
           }
         },
         {
@@ -5372,10 +5388,10 @@
           "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
           "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
           "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
-          "Evidence follow-ups: 0 sent beside 27 assessment requests (cap 25%, 6); 3 named items the snapshot did not resolve exactly; 0 over the cap (follow_up_cap_reached).",
+          "Evidence follow-ups: 0 sent beside 27 assessment requests (cap 25%, 6); 2 named items the snapshot did not resolve exactly; 0 over the cap (follow_up_cap_reached).",
           "19 validation records were not sent to the judge: their field-policy gate lacks required evidence, so no answer could change their Review outcome (validation_evidence_missing).",
           "Judged 27 distinct candidate signatures across 27 total entry contexts (0 derived across equivalent entry contexts).",
-          "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 27; reported input tokens 132645; unknown-usage attempts 0. "
+          "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 27; reported input tokens 121218; unknown-usage attempts 0. "
         ],
         "scan.practiceObservations": [
           {
@@ -7083,27 +7099,27 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "6b05a5dc4fe850a4a4355c9f30eaa688fde50fe0e1732e429f8ebf359159678b",
+              "request_digest": "25007bfe3efff86cc757ccb1136d17d7891930669c187cc11ec3c03f83e2ca05",
               "answer_details": {
                 "argument_control": {
                   "choice": "unknown",
-                  "confidence": 0.47,
+                  "confidence": 0.71,
                   "probabilities": [
                     {
                       "value": "unsafe",
-                      "probability": 0.14
+                      "probability": 0.1
                     },
                     {
                       "value": "constrained",
-                      "probability": 0.14
+                      "probability": 0.08
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.12
+                      "probability": 0.04
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.6
+                      "probability": 0.78
                     }
                   ]
                 },
@@ -7131,51 +7147,51 @@
                 },
                 "guard_bypass": {
                   "choice": "guard_semantics_unknown",
-                  "confidence": 0.64,
+                  "confidence": 0.68,
                   "probabilities": [
                     {
                       "value": "bypass_identified",
-                      "probability": 0.05
+                      "probability": 0.04
                     },
                     {
                       "value": "no_bypass",
-                      "probability": 0.08
+                      "probability": 0.16
                     },
                     {
                       "value": "guard_semantics_unknown",
-                      "probability": 0.73
+                      "probability": 0.76
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.14
+                      "probability": 0.04
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "complete",
-                  "confidence": 0.24,
+                  "confidence": 0.48,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.49
+                      "probability": 0.65
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.42
+                      "probability": 0.24
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.09
+                      "probability": 0.11
                     }
                   ]
                 },
                 "shell_syntax_protection": {
                   "choice": "not_applicable",
-                  "confidence": 0.99,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "protected",
@@ -7183,7 +7199,7 @@
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.99
+                      "probability": 0.98
                     },
                     {
                       "value": "unknown",
@@ -7201,26 +7217,15 @@
                 "shell_syntax_protection": "not_applicable"
               },
               "usage": {
-                "input_tokens": 5772,
+                "input_tokens": 5220,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "command-components-v4",
+              "question_version": "command-components-v5",
               "protection": "uncertain",
-              "reason": "The command assessment is inconclusive; unknown, unsafe-without-a-complete-witness or incomplete coverage cannot support protection.",
-              "resolutions": [
-                {
-                  "question": "resolve_bypass",
-                  "question_version": "bypass-citation-v2",
-                  "answer": "guard_semantics_unknown",
-                  "verified": false,
-                  "rejection": "no citation",
-                  "provider": "openai",
-                  "model": "gpt-6-luna"
-                }
-              ]
+              "reason": "The command assessment is inconclusive; unknown, unsafe-without-a-complete-witness or incomplete coverage cannot support protection."
             },
             "scan.assessmentState": "completed",
             "scan.blockingGaps": [],
@@ -8390,8 +8395,8 @@
               ]
             }
           ],
-          "kind": "review",
-          "level": "note",
+          "kind": "pass",
+          "level": "none",
           "locations": [
             {
               "logicalLocations": [
@@ -8402,7 +8407,7 @@
                 }
               ],
               "message": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Preserve the contained file operation"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -8416,24 +8421,24 @@
             }
           ],
           "message": {
-            "text": "ALL /api/secure/file-read: File path needs review [needs_evidence]. Scan identified a request-derived value reaching the path operand of fs/promises.readFile (read) under the declared posix assumption. Traversal, containment control and coverage are assessed as separate facets; write content and options are not path sources. Path assessment: traversal protected, containment finite_allowlist, coverage Inconclusive. Scanner policy: The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding."
+            "text": "ALL /api/secure/file-read: File path is contained [protected_for_claim]. Source-backed containment on the same value and a consistent path assessment support protection of this file operation against traversal for the stated claim. Preserve the control; this does not assess other file operations, symbolic-link or race behavior, or authorization of the selected file. Path assessment: traversal protected, containment finite_allowlist, coverage complete. Scanner policy: Every request-derived path is covered by a source-backed enforcing control on the same value with complete coverage under the declared posix assumption; this applies only to the stated claim and does not address symbolic links created after the check unless a resolved boundary was established."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "2e3820df764c79457ef41165d9d1fc0e83b04c47dc8d7b82bcf0dcdce01a6933",
+              "request_digest": "17b180a88c310f4ae113ad175a67eace1fc96fca86dd39614030fdd74424befc",
               "answer_details": {
                 "containment_control": {
                   "choice": "finite_allowlist",
-                  "confidence": 0.85,
+                  "confidence": 0.9,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
-                      "probability": 0.88
+                      "probability": 0.92
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0.03
+                      "probability": 0.01
                     },
                     {
                       "value": "resolved_boundary",
@@ -8441,7 +8446,7 @@
                     },
                     {
                       "value": "none",
-                      "probability": 0.07
+                      "probability": 0.05
                     },
                     {
                       "value": "unknown",
@@ -8451,61 +8456,61 @@
                 },
                 "path_traversal": {
                   "choice": "protected",
-                  "confidence": 0.81,
+                  "confidence": 0.47,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.12
+                      "probability": 0.31
                     },
                     {
                       "value": "protected",
-                      "probability": 0.86
+                      "probability": 0.6
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.07
                     }
                   ]
                 },
                 "protection_coverage": {
-                  "choice": "unknown",
-                  "confidence": 0.11,
+                  "choice": "complete",
+                  "confidence": 0.51,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.35
+                      "probability": 0.67
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.24
+                      "probability": 0.15
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.41
+                      "probability": 0.18
                     }
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "protected_for_claim",
               "answers": {
                 "containment_control": "finite_allowlist",
                 "path_traversal": "protected",
-                "protection_coverage": "unknown"
+                "protection_coverage": "complete"
               },
               "usage": {
-                "input_tokens": 6242,
+                "input_tokens": 5911,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
               "question_version": "path-components-v3",
-              "protection": "uncertain",
-              "reason": "The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding.",
+              "protection": "sufficient",
+              "reason": "Every request-derived path is covered by a source-backed enforcing control on the same value with complete coverage under the declared posix assumption; this applies only to the stated claim and does not address symbolic links created after the check unless a resolved boundary was established.",
               "resolutions": [
                 {
                   "question": "resolve_witness",
@@ -8519,56 +8524,6 @@
               ]
             },
             "scan.assessmentState": "completed",
-            "scan.blockingEvidence": [
-              {
-                "kind": "unknown_call_result",
-                "detail": "call result is not modeled: process.cwd",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/api/secure/file-read.js",
-                  "start_line": 15,
-                  "end_line": 15,
-                  "start_byte": 688,
-                  "end_byte": 701
-                }
-              },
-              {
-                "kind": "unknown_transfer",
-                "detail": "call may transform or discard its arguments: path.join",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/api/secure/file-read.js",
-                  "start_line": 15,
-                  "end_line": 15,
-                  "start_byte": 678,
-                  "end_byte": 708
-                }
-              },
-              {
-                "kind": "unknown_value",
-                "detail": "unresolved local value: path",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/api/secure/file-read.js",
-                  "start_line": 15,
-                  "end_line": 15,
-                  "start_byte": 678,
-                  "end_byte": 682
-                }
-              },
-              {
-                "kind": "unknown_value",
-                "detail": "unresolved local value: process",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/api/secure/file-read.js",
-                  "start_line": 15,
-                  "end_line": 15,
-                  "start_byte": 688,
-                  "end_byte": 695
-                }
-              }
-            ],
             "scan.blockingGaps": [],
             "scan.controlEdges": [
               {
@@ -8792,72 +8747,22 @@
               "use_id": "candidate:v1:aa3b9bd7cdcfa62e7f294cf5bb2291fced32fe4917ef6fac37acebc4eaae05b8",
               "entry_id": "entry:v1:c44c9dd8538cddadf03dfcfceadc0eaa36af15e14746502a058c2437e4339a75",
               "invocation_context_id": "invocation:v1:a386b7750832e3ced3dd6d1449ffc4c1ac62af7713fde762414d94ade5878058",
-              "record_type": "analysis",
-              "status": "needs_evidence",
-              "title": "File path needs review",
-              "summary": "Scan identified a request-derived value reaching the path operand of fs/promises.readFile (read) under the declared posix assumption. Traversal, containment control and coverage are assessed as separate facets; write content and options are not path sources.",
+              "record_type": "protection",
+              "status": "protected_for_claim",
+              "title": "File path is contained",
+              "summary": "Source-backed containment on the same value and a consistent path assessment support protection of this file operation against traversal for the stated claim. Preserve the control; this does not assess other file operations, symbolic-link or race behavior, or authorization of the selected file.",
               "input_validation": "Not established from the supplied evidence.",
-              "use_protection": "Path assessment: traversal protected, containment finite_allowlist, coverage Inconclusive. Scanner policy: The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding.",
+              "use_protection": "Path assessment: traversal protected, containment finite_allowlist, coverage complete. Scanner policy: Every request-derived path is covered by a source-backed enforcing control on the same value with complete coverage under the declared posix assumption; this applies only to the stated claim and does not address symbolic links created after the check unless a resolved boundary was established.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
-                "title": "Resolve the specific claim blockers",
+                "title": "Preserve the contained file operation",
                 "actions": [
-                  "Investigate the operation at pages/api/secure/file-read.js:15: readFile(path.join(process.cwd(), file), 'utf8'). Its current Review status does not establish a code defect.",
-                  "Reconcile the semantic assessment with this exact source claim: The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding."
+                  "Preserve at pages/api/secure/file-read.js:15 the enforcing control that rejects before readFile(path.join(process.cwd(), file), 'utf8'): the allow-list or the separator-bounded boundary check on the same value. Do not move the check after a decode, a reassignment or a different value.",
+                  "Keep regression tests for '..' segments, an absolute path, a sibling directory sharing the prefix and every branch or invocation that reaches this call; a control on one value or branch never protects another."
                 ],
-                "example_status": "no patch proposed while the claim is inconclusive"
+                "example_status": "no repair proposed for a protected claim"
               },
-              "assessment_state": "completed",
-              "blocking_evidence": [
-                {
-                  "kind": "unknown_call_result",
-                  "detail": "call result is not modeled: process.cwd",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/api/secure/file-read.js",
-                    "start_line": 15,
-                    "end_line": 15,
-                    "start_byte": 688,
-                    "end_byte": 701
-                  }
-                },
-                {
-                  "kind": "unknown_transfer",
-                  "detail": "call may transform or discard its arguments: path.join",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/api/secure/file-read.js",
-                    "start_line": 15,
-                    "end_line": 15,
-                    "start_byte": 678,
-                    "end_byte": 708
-                  }
-                },
-                {
-                  "kind": "unknown_value",
-                  "detail": "unresolved local value: path",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/api/secure/file-read.js",
-                    "start_line": 15,
-                    "end_line": 15,
-                    "start_byte": 678,
-                    "end_byte": 682
-                  }
-                },
-                {
-                  "kind": "unknown_value",
-                  "detail": "unresolved local value: process",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/api/secure/file-read.js",
-                    "start_line": 15,
-                    "end_line": 15,
-                    "start_byte": 688,
-                    "end_byte": 695
-                  }
-                }
-              ]
+              "assessment_state": "completed"
             },
             "scan.inputFacts": {
               "version": 1,
@@ -9000,12 +8905,12 @@
             "scan.invocationContextId": "invocation:v1:a386b7750832e3ced3dd6d1449ffc4c1ac62af7713fde762414d94ade5878058",
             "scan.kind": "path_traversal_candidate",
             "scan.recommendations": {
-              "title": "Resolve the specific claim blockers",
+              "title": "Preserve the contained file operation",
               "actions": [
-                "Investigate the operation at pages/api/secure/file-read.js:15: readFile(path.join(process.cwd(), file), 'utf8'). Its current Review status does not establish a code defect.",
-                "Reconcile the semantic assessment with this exact source claim: The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding."
+                "Preserve at pages/api/secure/file-read.js:15 the enforcing control that rejects before readFile(path.join(process.cwd(), file), 'utf8'): the allow-list or the separator-bounded boundary check on the same value. Do not move the check after a decode, a reassignment or a different value.",
+                "Keep regression tests for '..' segments, an absolute path, a sibling directory sharing the prefix and every branch or invocation that reaches this call; a control on one value or branch never protects another."
               ],
-              "example_status": "no patch proposed while the claim is inconclusive"
+              "example_status": "no repair proposed for a protected claim"
             },
             "scan.requiredEvidence": [
               "input_source",
@@ -10510,45 +10415,45 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "8048c4cac1cc120f9460b060b04fc734dbe2cc4193e31cc74ce2a4cd4b3e34ee",
+              "request_digest": "f1f9421fc549a1884b94062a168e7df6bc9d0b6a94670b16d30f4096b6fe1144",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 0.67,
+                  "confidence": 0.87,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.11
+                      "probability": 0.08
                     },
                     {
                       "value": "protected",
-                      "probability": 0.75
+                      "probability": 0.9
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.13
+                      "probability": 0.02
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "protection": {
                   "choice": "sufficient",
-                  "confidence": 0.91,
+                  "confidence": 0.77,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.93
+                      "probability": 0.83
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.05
+                      "probability": 0.14
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.02
+                      "probability": 0.03
                     },
                     {
                       "value": "not_applicable",
@@ -10558,19 +10463,19 @@
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.44,
+                  "confidence": 0.59,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.38
+                      "probability": 0.28
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.58
+                      "probability": 0.69
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.04
+                      "probability": 0.03
                     },
                     {
                       "value": "not_applicable",
@@ -10586,7 +10491,7 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5390,
+                "input_tokens": 4996,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -11485,11 +11390,11 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "05aa0616cdedce430ae95c1ce0e344337b1c2410f297bc9f7cf196d6465f0e15",
+              "request_digest": "508a3e7e94e7acbeec34a6c67637740993f676356a930b26347525e6f313203f",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 0.85,
+                  "confidence": 0.81,
                   "probabilities": [
                     {
                       "value": "vulnerable",
@@ -11497,33 +11402,33 @@
                     },
                     {
                       "value": "protected",
-                      "probability": 0.89
+                      "probability": 0.86
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.04
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 },
                 "protection": {
                   "choice": "sufficient",
-                  "confidence": 0.89,
+                  "confidence": 0.85,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.92
+                      "probability": 0.89
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.06
+                      "probability": 0.11
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.02
+                      "probability": 0
                     },
                     {
                       "value": "not_applicable",
@@ -11533,23 +11438,23 @@
                 },
                 "validation": {
                   "choice": "sufficient",
-                  "confidence": 0.41,
+                  "confidence": 0.47,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.56
+                      "probability": 0.6
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.33
+                      "probability": 0.29
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.03
+                      "probability": 0.02
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.08
+                      "probability": 0.09
                     }
                   ]
                 }
@@ -11561,7 +11466,7 @@
                 "validation": "sufficient"
               },
               "usage": {
-                "input_tokens": 5381,
+                "input_tokens": 4997,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -12484,23 +12389,23 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "36ec808710f393ed3c528005cadfb0ac8e11266fc2a7ed2a03523d36d5d0ea3c",
+              "request_digest": "a219fa4aa20cc277be068b3c499c6c25007bad74af9d0992f0ab93470f8ff345",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 0.16,
+                  "confidence": 0.63,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.32
+                      "probability": 0.2
                     },
                     {
                       "value": "protected",
-                      "probability": 0.37
+                      "probability": 0.72
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.3
+                      "probability": 0.07
                     },
                     {
                       "value": "not_applicable",
@@ -12509,20 +12414,20 @@
                   ]
                 },
                 "protection": {
-                  "choice": "insufficient",
-                  "confidence": 0.37,
+                  "choice": "sufficient",
+                  "confidence": 0.41,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.26
+                      "probability": 0.56
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.53
+                      "probability": 0.39
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.21
+                      "probability": 0.05
                     },
                     {
                       "value": "not_applicable",
@@ -12532,19 +12437,19 @@
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.93,
+                  "confidence": 0.89,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.02
+                      "probability": 0.04
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.95
+                      "probability": 0.92
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.03
+                      "probability": 0.04
                     },
                     {
                       "value": "not_applicable",
@@ -12556,11 +12461,11 @@
               "finding_status": "protected_for_claim",
               "answers": {
                 "injection_protection": "protected",
-                "protection": "insufficient",
+                "protection": "sufficient",
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5143,
+                "input_tokens": 4751,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -13515,23 +13420,23 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "da6207a27c9dea12a8b9e9283491f7b4b300cab4ac51363b21f9f9a4269e3a19",
+              "request_digest": "56a6adbddc70d17b0f672a5c524dc29a2c6792a9439cdac550ca1919d553481c",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.68,
+                  "confidence": 0.83,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.76
+                      "probability": 0.87
                     },
                     {
                       "value": "protected",
-                      "probability": 0.07
+                      "probability": 0.05
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.16
+                      "probability": 0.07
                     },
                     {
                       "value": "not_applicable",
@@ -13563,19 +13468,19 @@
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.65,
+                  "confidence": 0.79,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.2
+                      "probability": 0.12
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.74
+                      "probability": 0.84
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.06
+                      "probability": 0.04
                     },
                     {
                       "value": "not_applicable",
@@ -13591,7 +13496,7 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5393,
+                "input_tokens": 4991,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -14487,33 +14392,33 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "b732db55864ee043bea3084f55df5df01edfdc53938372f8e8db41aa7e348c3b",
+              "request_digest": "8524f2b8781cc7ea7a4b1a9710a6840b9b701277060aad607c0a2619e8e2f2f5",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.52,
+                  "confidence": 0.88,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.64
+                      "probability": 0.91
                     },
                     {
                       "value": "protected",
-                      "probability": 0.08
+                      "probability": 0.05
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.26
+                      "probability": 0.03
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.02
+                      "probability": 0.01
                     }
                   ]
                 },
                 "protection": {
                   "choice": "insufficient",
-                  "confidence": 0.99,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "sufficient",
@@ -14521,11 +14426,11 @@
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.99
+                      "probability": 1
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "not_applicable",
@@ -14535,23 +14440,23 @@
                 },
                 "validation": {
                   "choice": "sufficient",
-                  "confidence": 0.43,
+                  "confidence": 0.37,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.57
+                      "probability": 0.53
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.39
+                      "probability": 0.35
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.03
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0.11
                     }
                   ]
                 }
@@ -14563,7 +14468,7 @@
                 "validation": "sufficient"
               },
               "usage": {
-                "input_tokens": 5431,
+                "input_tokens": 5037,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -15498,27 +15403,27 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "7ee87d2bda5ca14064b5594ff1af54bac43dfd8ede962b3ac74fc12a9fbcd0a6",
+              "request_digest": "0eb522719849fc5d8569497e1a1bcfffc5622f891feee5f1fe38aa135f21eac7",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.83,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.87
+                      "probability": 0.98
                     },
                     {
                       "value": "protected",
-                      "probability": 0.07
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.05
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
@@ -15546,19 +15451,19 @@
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.59,
+                  "confidence": 0.56,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.19
+                      "probability": 0.08
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.69
+                      "probability": 0.67
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.12
+                      "probability": 0.25
                     },
                     {
                       "value": "not_applicable",
@@ -15574,7 +15479,7 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5144,
+                "input_tokens": 4759,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -17076,23 +16981,23 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "2d4cf49368dfb63d3015c90c9d19a16af991864e93e6d0eb25fcbe9421ba8490",
+              "request_digest": "e37425f5614184531874a80dbcbd37b1e6b4d3b9dad21ff79f6dd1b127871ebb",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 1,
+                  "confidence": 0.85,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0
+                      "probability": 0.09
                     },
                     {
                       "value": "protected",
-                      "probability": 1
+                      "probability": 0.89
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.02
                     },
                     {
                       "value": "not_applicable",
@@ -17102,15 +17007,15 @@
                 },
                 "protection": {
                   "choice": "sufficient",
-                  "confidence": 0.83,
+                  "confidence": 0.79,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.87
+                      "probability": 0.84
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.09
+                      "probability": 0.12
                     },
                     {
                       "value": "uncertain",
@@ -17124,19 +17029,19 @@
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.88,
+                  "confidence": 0.91,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.04
+                      "probability": 0.07
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.91
+                      "probability": 0.93
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.05
+                      "probability": 0
                     },
                     {
                       "value": "not_applicable",
@@ -17152,7 +17057,7 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5645,
+                "input_tokens": 5247,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -18818,45 +18723,45 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "016131f2900f900ee05533a4dbcdd9612c25c8c758a0fdf0b1869f4e902eea7b",
+              "request_digest": "65aa0dcfefdcb63a5f1cc55f490a3ed757c362dec17fe069eedcc5da9fc67618",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 0.52,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.1
+                      "probability": 0.02
                     },
                     {
                       "value": "protected",
-                      "probability": 0.64
+                      "probability": 0.97
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.23
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.03
+                      "probability": 0
                     }
                   ]
                 },
                 "protection": {
                   "choice": "sufficient",
-                  "confidence": 0.84,
+                  "confidence": 0.92,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.88
+                      "probability": 0.94
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.09
+                      "probability": 0.05
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.03
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
@@ -18866,23 +18771,23 @@
                 },
                 "validation": {
                   "choice": "sufficient",
-                  "confidence": 0.69,
+                  "confidence": 0.48,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.77
+                      "probability": 0.61
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.18
+                      "probability": 0.34
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.05
+                      "probability": 0.04
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 }
@@ -18894,7 +18799,7 @@
                 "validation": "sufficient"
               },
               "usage": {
-                "input_tokens": 5582,
+                "input_tokens": 5166,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -20566,23 +20471,23 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "82af239a7c95a4410c2dad4857f44faccd4f430eb425f9690fa5d2c5408700ea",
+              "request_digest": "33b74bb502df691f2ca44381e9d73a0d297d97971e939afe2404ae48a873b8ae",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 0.53,
+                  "confidence": 0.68,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.24
+                      "probability": 0.12
                     },
                     {
                       "value": "protected",
-                      "probability": 0.65
+                      "probability": 0.76
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1
+                      "probability": 0.11
                     },
                     {
                       "value": "not_applicable",
@@ -20592,19 +20497,19 @@
                 },
                 "protection": {
                   "choice": "sufficient",
-                  "confidence": 0.59,
+                  "confidence": 0.63,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.69
+                      "probability": 0.72
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.28
+                      "probability": 0.27
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.03
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
@@ -20614,19 +20519,19 @@
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.93,
+                  "confidence": 0.56,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.03
+                      "probability": 0.18
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.95
+                      "probability": 0.67
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.02
+                      "probability": 0.15
                     },
                     {
                       "value": "not_applicable",
@@ -20642,7 +20547,7 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5435,
+                "input_tokens": 5049,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -21440,15 +21345,15 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "54174a176913696501537d5bdc52fe3d13d1fa8131a2db27a2a42d6c8a1fd7d6",
+              "request_digest": "eeb7a3de422e1b0a37c55bb6791b2cc219e58b293abce306455d50d3666c71e3",
               "answer_details": {
                 "argument_control": {
                   "choice": "not_applicable",
-                  "confidence": 0.97,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "unsafe",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "constrained",
@@ -21456,7 +21361,7 @@
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.98
+                      "probability": 0.99
                     },
                     {
                       "value": "unknown",
@@ -21466,19 +21371,19 @@
                 },
                 "executable_control": {
                   "choice": "not_applicable",
-                  "confidence": 0.91,
+                  "confidence": 0.88,
                   "probabilities": [
                     {
                       "value": "unsafe",
-                      "probability": 0.02
+                      "probability": 0.01
                     },
                     {
                       "value": "constrained",
-                      "probability": 0.05
+                      "probability": 0.08
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.93
+                      "probability": 0.91
                     },
                     {
                       "value": "unknown",
@@ -21488,7 +21393,7 @@
                 },
                 "guard_bypass": {
                   "choice": "not_applicable",
-                  "confidence": 0.93,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "bypass_identified",
@@ -21500,11 +21405,11 @@
                     },
                     {
                       "value": "guard_semantics_unknown",
-                      "probability": 0.04
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.95
+                      "probability": 0.98
                     }
                   ]
                 },
@@ -21528,11 +21433,11 @@
                 },
                 "shell_syntax_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.96,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.97
+                      "probability": 0.98
                     },
                     {
                       "value": "protected",
@@ -21544,7 +21449,7 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 }
@@ -21558,13 +21463,13 @@
                 "shell_syntax_protection": "vulnerable"
               },
               "usage": {
-                "input_tokens": 5134,
+                "input_tokens": 4884,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "command-components-v4",
+              "question_version": "command-components-v5",
               "protection": "insufficient",
               "reason": "A consistent shell syntax (CWE-78) answer is supported by an independent source-to-operand path with a verified child_process.exec binding under the declared posix assumption. Unresolved sibling paths remain visible. This is a static judgment, not runtime exploitation or independent Findings Review."
             },
@@ -22696,7 +22601,7 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "fab1a86492b9fefe1f297f0c82f03408628c54d82eb7e9141701f9b1ac4c0c71",
+              "request_digest": "b7767cf074c1a5a488e40d08660d656b704f426bef75fe5ec6d77b85711702d8",
               "answer_details": {
                 "containment_control": {
                   "choice": "none",
@@ -22726,11 +22631,11 @@
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.97,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.98
+                      "probability": 0.99
                     },
                     {
                       "value": "protected",
@@ -22742,21 +22647,21 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 1,
+                  "confidence": 0.7,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0
+                      "probability": 0.2
                     },
                     {
                       "value": "incomplete",
-                      "probability": 1
+                      "probability": 0.8
                     },
                     {
                       "value": "unknown",
@@ -22772,7 +22677,7 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 5162,
+                "input_tokens": 4823,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -25365,7 +25270,7 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "bb96c8ce867c7ce09bb61ccb3d69a33140b1fb87b4dc50413e89af48007bee9b",
+              "request_digest": "f02cdd0d28f33681f87a25c2c647c9f47651c32c8ec4c69e5e0c3cee8566934a",
               "answer_details": {
                 "code_control": {
                   "choice": "inside_string_literal",
@@ -25395,7 +25300,7 @@
                 },
                 "code_restriction": {
                   "choice": "none",
-                  "confidence": 1,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "allowlist_grammar",
@@ -25415,11 +25320,11 @@
                     },
                     {
                       "value": "none",
-                      "probability": 1
+                      "probability": 0.99
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 },
@@ -25449,13 +25354,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 3548,
+                "input_tokens": 3202,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "code-components-v1",
+              "question_version": "code-components-v2",
               "protection": "insufficient",
               "reason": "A request-derived operand reaches a verified code operation on a complete raw path without an effective restriction."
             },
@@ -27512,45 +27417,45 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "bc14bb355e812781dd22792d37a66576da984c4820c70862683b5272570d4ac9",
+              "request_digest": "bb4470a09958b7a79df4bf11b538eef47724391a314f6b45dae0112efbf70b1f",
               "answer_details": {
                 "injection_protection": {
                   "choice": "protected",
-                  "confidence": 0.84,
+                  "confidence": 0.92,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.08
+                      "probability": 0.04
                     },
                     {
                       "value": "protected",
-                      "probability": 0.88
+                      "probability": 0.94
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.02
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "protection": {
                   "choice": "sufficient",
-                  "confidence": 0.77,
+                  "confidence": 0.79,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.83
+                      "probability": 0.84
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.13
+                      "probability": 0.15
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.04
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
@@ -27559,20 +27464,20 @@
                   ]
                 },
                 "validation": {
-                  "choice": "sufficient",
-                  "confidence": 0.35,
+                  "choice": "insufficient",
+                  "confidence": 0.41,
                   "probabilities": [
                     {
                       "value": "sufficient",
-                      "probability": 0.51
+                      "probability": 0.43
                     },
                     {
                       "value": "insufficient",
-                      "probability": 0.44
+                      "probability": 0.56
                     },
                     {
                       "value": "uncertain",
-                      "probability": 0.05
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
@@ -27585,10 +27490,10 @@
               "answers": {
                 "injection_protection": "protected",
                 "protection": "sufficient",
-                "validation": "sufficient"
+                "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 5505,
+                "input_tokens": 5103,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -27941,7 +27846,7 @@
               "status": "protected_for_claim",
               "title": "SQL values remain separate from query syntax",
               "summary": "The verified driver binding and injection assessment support data/statement separation for this operation. Field validity and authorization are separate claims.",
-              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.body reaches a sensitive use with no validator call in the handler or applicable middleware Model validation answer: sufficient. This operation-level answer is not an independent field-policy finding.",
+              "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.body reaches a sensitive use with no validator call in the handler or applicable middleware Model validation answer: insufficient. This operation-level answer is not an independent field-policy finding.",
               "use_protection": "Assessed injection/use protection: sufficient. Injection-specific assessment supports syntax protection for the supplied claim; field validation and construction practice remain separate.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
@@ -28948,8 +28853,8 @@
               ]
             }
           ],
-          "kind": "review",
-          "level": "note",
+          "kind": "fail",
+          "level": "warning",
           "locations": [
             {
               "logicalLocations": [
@@ -28974,76 +28879,76 @@
             }
           ],
           "message": {
-            "text": "GET /secure/redirect: Open redirect needs operand review [needs_evidence]. Request-derived data reaches a verified redirect operand. Review the independent paths and enforcing restrictions. The supplied answers do not establish a complete vulnerable or protected operand path."
+            "text": "GET /secure/redirect: Open redirect protection relies on weak practice [poor_practice]. Request-derived data reaches a verified redirect operand. Review the independent paths and enforcing restrictions. An unparsed destination prefix is the only established restriction."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "7ba2cb2e23f625569c58bd6d747c1053922ee31041f2fb3dee103222d44f5142",
+              "request_digest": "f0f1a2c9c8c8dcac91b66a63bf436c44ff2a5af78b8a5a2c31f39b4fe169773b",
               "answer_details": {
                 "destination_control": {
-                  "choice": "full_url",
-                  "confidence": 0.16,
+                  "choice": "path_only",
+                  "confidence": 0.08,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.3
-                    },
-                    {
-                      "value": "host",
-                      "probability": 0.3
-                    },
-                    {
-                      "value": "path_only",
                       "probability": 0.18
                     },
                     {
+                      "value": "host",
+                      "probability": 0.18
+                    },
+                    {
+                      "value": "path_only",
+                      "probability": 0.23
+                    },
+                    {
                       "value": "fixed_origin",
-                      "probability": 0.02
+                      "probability": 0.03
                     },
                     {
                       "value": "none",
-                      "probability": 0.06
+                      "probability": 0.16
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.14
+                      "probability": 0.22
                     }
                   ]
                 },
                 "destination_restriction": {
-                  "choice": "same_site_relative",
-                  "confidence": 0.34,
+                  "choice": "prefix_or_substring",
+                  "confidence": 0.21,
                   "probabilities": [
                     {
                       "value": "same_site_relative",
-                      "probability": 0.45
+                      "probability": 0.28
                     },
                     {
                       "value": "parsed_origin_check",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "host_allowlist",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "prefix_or_substring",
-                      "probability": 0.13
+                      "probability": 0.34
                     },
                     {
                       "value": "none",
-                      "probability": 0.05
+                      "probability": 0.15
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.35
+                      "probability": 0.19
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.86,
+                  "confidence": 0.83,
                   "probabilities": [
                     {
                       "value": "complete",
@@ -29051,47 +28956,33 @@
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.91
+                      "probability": 0.89
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.09
+                      "probability": 0.11
                     }
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "poor_practice",
               "answers": {
-                "destination_control": "full_url",
-                "destination_restriction": "same_site_relative",
+                "destination_control": "path_only",
+                "destination_restriction": "prefix_or_substring",
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 3921,
+                "input_tokens": 3677,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
               "question_version": "redirect-components-v1",
-              "protection": "uncertain",
-              "reason": "The supplied answers do not establish a complete vulnerable or protected operand path."
+              "protection": "insufficient",
+              "reason": "An unparsed destination prefix is the only established restriction."
             },
             "scan.assessmentState": "completed",
-            "scan.blockingEvidence": [
-              {
-                "kind": "conditional_merge",
-                "detail": "branch feasibility is not modeled",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/secure/redirect.js",
-                  "start_line": 7,
-                  "end_line": 7,
-                  "start_byte": 275,
-                  "end_byte": 319
-                }
-              }
-            ],
             "scan.blockingGaps": [],
             "scan.controlEdges": [
               {
@@ -29282,36 +29173,22 @@
               "use_id": "candidate:v1:4ccae06adcbbbdfc0669a8eea6e07e0d0e8ea12f96ce492ea62148f7d91cd264",
               "entry_id": "entry:v1:ca3cc3672099ec3b0a3e74af0506848a305236f95d510bcd59f16699a50736ec",
               "invocation_context_id": "invocation:v1:796186243cd87dcd70fab4cfc251fb0c7d042b232fd07e6b1f427bf0e26cafaf",
-              "record_type": "analysis",
-              "status": "needs_evidence",
-              "title": "Open redirect needs operand review",
+              "record_type": "finding",
+              "status": "poor_practice",
+              "title": "Open redirect protection relies on weak practice",
               "summary": "Request-derived data reaches a verified redirect operand. Review the independent paths and enforcing restrictions.",
               "input_validation": "Not established from the supplied evidence.",
-              "use_protection": "The supplied answers do not establish a complete vulnerable or protected operand path.",
+              "use_protection": "An unparsed destination prefix is the only established restriction.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at pages/secure/redirect.js:10: return { redirect: { destination: to, permanent: false } };. Its current Review status does not establish a code defect.",
-                  "Reconcile the semantic assessment with this exact source claim: The supplied answers do not establish a complete vulnerable or protected operand path."
+                  "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               },
-              "assessment_state": "completed",
-              "blocking_evidence": [
-                {
-                  "kind": "conditional_merge",
-                  "detail": "branch feasibility is not modeled",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/secure/redirect.js",
-                    "start_line": 7,
-                    "end_line": 7,
-                    "start_byte": 275,
-                    "end_byte": 319
-                  }
-                }
-              ]
+              "assessment_state": "completed"
             },
             "scan.inputFacts": {
               "version": 1,
@@ -29423,7 +29300,7 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at pages/secure/redirect.js:10: return { redirect: { destination: to, permanent: false } };. Its current Review status does not establish a code defect.",
-                "Reconcile the semantic assessment with this exact source claim: The supplied answers do not establish a complete vulnerable or protected operand path."
+                "Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -30902,28 +30779,28 @@
             }
           ],
           "message": {
-            "text": "GET /secure/ssrf: Outbound destination needs SSRF review [needs_evidence]. Scan identified a request-derived value reaching the destination operand of fetch: query.fetch, req.headers.host. Destination control, restriction and coverage are assessed as separate facets; request data sent as a body or header is not destination control. SSRF assessment: destination control full_url, restriction none, coverage incomplete. Scanner policy: The SSRF assessment is inconclusive; unknown answers, an unsafe path without a complete witness or incomplete coverage cannot support protection or a finding."
+            "text": "GET /secure/ssrf: Outbound destination needs SSRF review [needs_evidence]. Scan identified a request-derived value reaching the destination operand of fetch: query.fetch, req.headers.host. Destination control, restriction and coverage are assessed as separate facets; request data sent as a body or header is not destination control. SSRF assessment: destination control host, restriction scheme_and_host_check, coverage incomplete. Scanner policy: The SSRF assessment is inconclusive; unknown answers, an unsafe path without a complete witness or incomplete coverage cannot support protection or a finding."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "1803307d858a80f3e65dd496887d1c36153103bf67a74d476f798e90c4238d88",
+              "request_digest": "ffebc54670341290904fb1b3d80c6f276308bd96f7d72e4f98876c7b499487e7",
               "answer_details": {
                 "destination_control": {
-                  "choice": "full_url",
-                  "confidence": 0.25,
+                  "choice": "host",
+                  "confidence": 0.1,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.4
+                      "probability": 0.25
                     },
                     {
                       "value": "host",
-                      "probability": 0.08
+                      "probability": 0.28
                     },
                     {
                       "value": "path_or_query",
-                      "probability": 0.17
+                      "probability": 0.24
                     },
                     {
                       "value": "none",
@@ -30931,13 +30808,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.31
+                      "probability": 0.19
                     }
                   ]
                 },
                 "destination_restriction": {
-                  "choice": "none",
-                  "confidence": 0.34,
+                  "choice": "scheme_and_host_check",
+                  "confidence": 0.33,
                   "probabilities": [
                     {
                       "value": "host_allowlist",
@@ -30945,49 +30822,49 @@
                     },
                     {
                       "value": "scheme_and_host_check",
-                      "probability": 0.39
+                      "probability": 0.46
                     },
                     {
                       "value": "prefix_only",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "none",
-                      "probability": 0.47
+                      "probability": 0.45
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.12
+                      "probability": 0.08
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.24,
+                  "confidence": 0.35,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.21
+                      "probability": 0.25
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.49
+                      "probability": 0.57
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.3
+                      "probability": 0.18
                     }
                   ]
                 }
               },
               "finding_status": "needs_evidence",
               "answers": {
-                "destination_control": "full_url",
-                "destination_restriction": "none",
+                "destination_control": "host",
+                "destination_restriction": "scheme_and_host_check",
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 5224,
+                "input_tokens": 4879,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -31454,7 +31331,7 @@
               "title": "Outbound destination needs SSRF review",
               "summary": "Scan identified a request-derived value reaching the destination operand of fetch: query.fetch, req.headers.host. Destination control, restriction and coverage are assessed as separate facets; request data sent as a body or header is not destination control.",
               "input_validation": "Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: query.fetch reaches a sensitive use with no validator call in the handler or applicable middleware Complete enforcement of an applicable field policy was not established in this operation record. Consult any separate field-policy assessment; query binding is a different claim. Evidence: req.headers.host reaches a sensitive use with no validator call in the handler or applicable middleware",
-              "use_protection": "SSRF assessment: destination control full_url, restriction none, coverage incomplete. Scanner policy: The SSRF assessment is inconclusive; unknown answers, an unsafe path without a complete witness or incomplete coverage cannot support protection or a finding.",
+              "use_protection": "SSRF assessment: destination control host, restriction scheme_and_host_check, coverage incomplete. Scanner policy: The SSRF assessment is inconclusive; unknown answers, an unsafe path without a complete witness or incomplete coverage cannot support protection or a finding.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
@@ -32555,11 +32432,11 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "24cdec00ba7fdc3f7f2f3aad41bb812ade2d1ae7d13ba5b8e4b4c3a16a67d8ba",
+              "request_digest": "48740ec98bb940d716d6309fa090f876038afc1a9a9b3a06e1cd9aeff9c92d53",
               "answer_details": {
                 "code_control": {
                   "choice": "inside_string_literal",
-                  "confidence": 0.95,
+                  "confidence": 0.93,
                   "probabilities": [
                     {
                       "value": "whole_program",
@@ -32567,7 +32444,7 @@
                     },
                     {
                       "value": "inside_string_literal",
-                      "probability": 0.96
+                      "probability": 0.94
                     },
                     {
                       "value": "data_only",
@@ -32579,13 +32456,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.04
                     }
                   ]
                 },
                 "code_restriction": {
                   "choice": "none",
-                  "confidence": 0.71,
+                  "confidence": 0.83,
                   "probabilities": [
                     {
                       "value": "allowlist_grammar",
@@ -32605,29 +32482,29 @@
                     },
                     {
                       "value": "none",
-                      "probability": 0.76
+                      "probability": 0.86
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.22
+                      "probability": 0.12
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.99,
+                  "confidence": 0.82,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0
+                      "probability": 0.02
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.99
+                      "probability": 0.88
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.1
                     }
                   ]
                 }
@@ -32639,13 +32516,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 3128,
+                "input_tokens": 2800,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "code-components-v1",
+              "question_version": "code-components-v2",
               "protection": "insufficient",
               "reason": "A request-derived operand reaches a verified code operation on a complete raw path without an effective restriction."
             },
@@ -34001,23 +33878,23 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "5434aea2837a6ad6a214b536881ef69074b8699e2708f8340e0adf7b363ed8bc",
+              "request_digest": "664ff60ed8649f13a7c7fe62ae5e2da7570c1f26ac03a1b55b2a1f2c9aa33e73",
               "answer_details": {
                 "destination_control": {
                   "choice": "full_url",
-                  "confidence": 0.47,
+                  "confidence": 0.4,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.56
+                      "probability": 0.5
                     },
                     {
                       "value": "host",
-                      "probability": 0.03
+                      "probability": 0.05
                     },
                     {
                       "value": "path_only",
-                      "probability": 0.17
+                      "probability": 0.12
                     },
                     {
                       "value": "fixed_origin",
@@ -34025,59 +33902,59 @@
                     },
                     {
                       "value": "none",
-                      "probability": 0.07
+                      "probability": 0.1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.15
+                      "probability": 0.21
                     }
                   ]
                 },
                 "destination_restriction": {
                   "choice": "none",
-                  "confidence": 0.51,
+                  "confidence": 0.42,
                   "probabilities": [
                     {
                       "value": "same_site_relative",
-                      "probability": 0.04
+                      "probability": 0.14
                     },
                     {
                       "value": "parsed_origin_check",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "host_allowlist",
-                      "probability": 0.02
+                      "probability": 0.03
                     },
                     {
                       "value": "prefix_or_substring",
-                      "probability": 0.02
+                      "probability": 0.04
                     },
                     {
                       "value": "none",
-                      "probability": 0.59
+                      "probability": 0.52
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.32
+                      "probability": 0.25
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.8,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.02
+                      "probability": 0
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.87
+                      "probability": 0.97
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.11
+                      "probability": 0.03
                     }
                   ]
                 }
@@ -34089,7 +33966,7 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 3215,
+                "input_tokens": 2889,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -34991,15 +34868,15 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "d0bac59506a859bd66e3adb8c3613abd6b917a9d2d56df0d4c2aa3f37e79416f",
+              "request_digest": "ea66b7710422a400be762947f07f00bb345bd96e6e94e08e23bcdff7371f10f5",
               "answer_details": {
                 "destination_control": {
                   "choice": "full_url",
-                  "confidence": 0.96,
+                  "confidence": 0.95,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.97
+                      "probability": 0.96
                     },
                     {
                       "value": "host",
@@ -35015,13 +34892,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.02
                     }
                   ]
                 },
                 "destination_restriction": {
                   "choice": "prefix_only",
-                  "confidence": 1,
+                  "confidence": 0.98,
                   "probabilities": [
                     {
                       "value": "host_allowlist",
@@ -35033,11 +34910,11 @@
                     },
                     {
                       "value": "prefix_only",
-                      "probability": 1
+                      "probability": 0.98
                     },
                     {
                       "value": "none",
-                      "probability": 0
+                      "probability": 0.02
                     },
                     {
                       "value": "unknown",
@@ -35047,19 +34924,19 @@
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.83,
+                  "confidence": 0.58,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.07
+                      "probability": 0.22
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.89
+                      "probability": 0.72
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.06
                     }
                   ]
                 }
@@ -35071,7 +34948,7 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 4488,
+                "input_tokens": 4215,
                 "output_tokens": 0
               },
               "status": "completed",
@@ -36208,8 +36085,8 @@
               ]
             }
           ],
-          "kind": "review",
-          "level": "note",
+          "kind": "pass",
+          "level": "none",
           "locations": [
             {
               "logicalLocations": [
@@ -36220,7 +36097,7 @@
                 }
               ],
               "message": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Preserve the verified protection"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -36234,38 +36111,38 @@
             }
           ],
           "message": {
-            "text": "GET /xss/safe/script-context: Protection evidence is inconclusive [needs_evidence]. Some protective behavior was observed, but the complete claim remains unresolved. Review the named source, path and assessment gaps before relying on this output. Decision XSS exposure: Inconclusive. Scanner policy: XSS assessment is inconclusive; absence of a positive answer is not protection."
+            "text": "GET /xss/safe/script-context: Context-appropriate rendering protection is present [protected_for_claim]. The modeled output uses escaping or a verified sanitizer appropriate to this context. This protects the named rendering claim; other contexts and uses require separate assessment. Decision XSS exposure: protected. Scanner policy: Consistent XSS-specific answers and static protection facts support protection for this rendering claim."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "b45dd137678a27e776541dc48b8c0050d22de3f9b08fb18ed34a32461b87b3e2",
+              "request_digest": "681d1aff9e9350dafb99d4c8c652c58f058c16addc49b77ff06deb059e237039",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "unknown",
-                  "confidence": 0.32,
+                  "confidence": 0.33,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.2
+                      "probability": 0.22
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.26
+                      "probability": 0.27
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.05
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.49
+                      "probability": 0.5
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "script",
-                  "confidence": 1,
+                  "confidence": 0.98,
                   "probabilities": [
                     {
                       "value": "html_text",
@@ -36281,7 +36158,7 @@
                     },
                     {
                       "value": "script",
-                      "probability": 1
+                      "probability": 0.98
                     },
                     {
                       "value": "style",
@@ -36301,69 +36178,69 @@
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.01
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
-                  "choice": "unknown",
-                  "confidence": 0.21,
+                  "choice": "effective",
+                  "confidence": 0.29,
                   "probabilities": [
                     {
                       "value": "effective",
-                      "probability": 0.24
+                      "probability": 0.47
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.31
+                      "probability": 0.34
                     },
                     {
                       "value": "absent",
-                      "probability": 0.04
+                      "probability": 0.06
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.41
+                      "probability": 0.13
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
-                  "choice": "unknown",
-                  "confidence": 0.16,
+                  "choice": "yes",
+                  "confidence": 0.48,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0.25
+                      "probability": 0.65
                     },
                     {
                       "value": "no",
-                      "probability": 0.31
+                      "probability": 0.13
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.44
+                      "probability": 0.22
                     }
                   ]
                 },
                 "xss_exposure": {
-                  "choice": "unknown",
-                  "confidence": 0.64,
+                  "choice": "protected",
+                  "confidence": 0.8,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.03
+                      "probability": 0.09
                     },
                     {
                       "value": "protected",
-                      "probability": 0.24
+                      "probability": 0.85
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.73
+                      "probability": 0.06
                     },
                     {
                       "value": "not_applicable",
@@ -36372,94 +36249,26 @@
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "protected_for_claim",
               "answers": {
                 "encoding_adequacy": "unknown",
                 "output_context": "script",
-                "sanitizer_effectiveness": "unknown",
-                "xss_all_paths_protected": "unknown",
-                "xss_exposure": "unknown"
+                "sanitizer_effectiveness": "effective",
+                "xss_all_paths_protected": "yes",
+                "xss_exposure": "protected"
               },
               "usage": {
-                "input_tokens": 4879,
+                "input_tokens": 4305,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
-              "protection": "uncertain",
-              "reason": "XSS assessment is inconclusive; absence of a positive answer is not protection.",
-              "follow_up": {
-                "kind": "helper_body",
-                "symbol": "JSON.stringify",
-                "status": "unresolved",
-                "reason": "the scanned snapshot has no single exact definition of JSON.stringify"
-              }
+              "question_version": "xss-components-v4",
+              "protection": "sufficient",
+              "reason": "Consistent XSS-specific answers and static protection facts support protection for this rendering claim."
             },
             "scan.assessmentState": "completed",
-            "scan.blockingEvidence": [
-              {
-                "kind": "conditional_merge",
-                "detail": "branch feasibility is not modeled",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/xss/safe/script-context.js",
-                  "start_line": 22,
-                  "end_line": 22,
-                  "start_byte": 1482,
-                  "end_byte": 1568
-                }
-              },
-              {
-                "kind": "unknown_transfer",
-                "detail": "call may transform or discard its arguments: JSON.stringify",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/xss/safe/script-context.js",
-                  "start_line": 7,
-                  "end_line": 7,
-                  "start_byte": 342,
-                  "end_byte": 363
-                }
-              },
-              {
-                "kind": "unknown_transfer",
-                "detail": "call may transform or discard its arguments: JSON.stringify(value).replace",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/xss/safe/script-context.js",
-                  "start_line": 7,
-                  "end_line": 7,
-                  "start_byte": 342,
-                  "end_byte": 388
-                }
-              },
-              {
-                "kind": "unknown_transfer",
-                "detail": "call may transform or discard its arguments: JSON.stringify(value).replace(/\u003c/g, '\\\\u003c').replace",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/xss/safe/script-context.js",
-                  "start_line": 7,
-                  "end_line": 7,
-                  "start_byte": 342,
-                  "end_byte": 425
-                }
-              },
-              {
-                "kind": "unknown_value",
-                "detail": "unresolved local value: JSON",
-                "source": "scanner",
-                "at": {
-                  "file": "pages/xss/safe/script-context.js",
-                  "start_line": 7,
-                  "end_line": 7,
-                  "start_byte": 342,
-                  "end_byte": 346
-                }
-              }
-            ],
             "scan.blockingGaps": [],
             "scan.coverageGaps": [
               {
@@ -36568,84 +36377,22 @@
               "use_id": "candidate:v1:8cce4abdcf195905b097ce7f2d0e2339c22f4de9cbe0ecc0109bae06778023b1",
               "entry_id": "entry:v1:d40355cf1d06144dc8190fc5d43b18516ab164e2801e49765c5d9096e8a5998b",
               "invocation_context_id": "invocation:v1:06e9ab67c8bb6f0dc1fb9725eaa858e943f4124496e1a436b921be69b1125f50",
-              "record_type": "analysis",
-              "status": "needs_evidence",
-              "title": "Protection evidence is inconclusive",
-              "summary": "Some protective behavior was observed, but the complete claim remains unresolved. Review the named source, path and assessment gaps before relying on this output.",
+              "record_type": "protection",
+              "status": "protected_for_claim",
+              "title": "Context-appropriate rendering protection is present",
+              "summary": "The modeled output uses escaping or a verified sanitizer appropriate to this context. This protects the named rendering claim; other contexts and uses require separate assessment.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: Inconclusive. Scanner policy: XSS assessment is inconclusive; absence of a positive answer is not protection.",
+              "use_protection": "Decision XSS exposure: protected. Scanner policy: Consistent XSS-specific answers and static protection facts support protection for this rendering claim.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
-                "title": "Resolve the specific claim blockers",
+                "title": "Preserve the verified protection",
                 "actions": [
-                  "Investigate the operation at pages/xss/safe/script-context.js:17: dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }}. Its current Review status does not establish a code defect.",
-                  "Reconcile the semantic assessment with this exact source claim: XSS assessment is inconclusive; absence of a positive answer is not protection. Answers: context=script; encoding=unknown; sanitizer=unknown; all paths protected=unknown; exposure=unknown. Static context=script, protection=sanitized. Do not infer a code repair from contradictory answers."
+                  "Preserve escaping for dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }} at pages/xss/safe/script-context.js:17 in script. Do not add a trust bypass or disable the verified renderer's autoescape.",
+                  "Keep a regression test with HTML-significant or SQL-significant input, as appropriate to this claim. Input-validation requirements are assessed separately."
                 ],
-                "example_status": "no patch proposed while the claim is inconclusive"
+                "example_status": "no repair proposed for a protected claim"
               },
-              "assessment_state": "completed",
-              "blocking_evidence": [
-                {
-                  "kind": "conditional_merge",
-                  "detail": "branch feasibility is not modeled",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/xss/safe/script-context.js",
-                    "start_line": 22,
-                    "end_line": 22,
-                    "start_byte": 1482,
-                    "end_byte": 1568
-                  }
-                },
-                {
-                  "kind": "unknown_transfer",
-                  "detail": "call may transform or discard its arguments: JSON.stringify",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/xss/safe/script-context.js",
-                    "start_line": 7,
-                    "end_line": 7,
-                    "start_byte": 342,
-                    "end_byte": 363
-                  }
-                },
-                {
-                  "kind": "unknown_transfer",
-                  "detail": "call may transform or discard its arguments: JSON.stringify(value).replace",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/xss/safe/script-context.js",
-                    "start_line": 7,
-                    "end_line": 7,
-                    "start_byte": 342,
-                    "end_byte": 388
-                  }
-                },
-                {
-                  "kind": "unknown_transfer",
-                  "detail": "call may transform or discard its arguments: JSON.stringify(value).replace(/\u003c/g, '\\\\u003c').replace",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/xss/safe/script-context.js",
-                    "start_line": 7,
-                    "end_line": 7,
-                    "start_byte": 342,
-                    "end_byte": 425
-                  }
-                },
-                {
-                  "kind": "unknown_value",
-                  "detail": "unresolved local value: JSON",
-                  "source": "scanner",
-                  "at": {
-                    "file": "pages/xss/safe/script-context.js",
-                    "start_line": 7,
-                    "end_line": 7,
-                    "start_byte": 342,
-                    "end_byte": 346
-                  }
-                }
-              ]
+              "assessment_state": "completed"
             },
             "scan.inputFacts": {
               "version": 1,
@@ -36837,12 +36584,12 @@
             "scan.invocationContextId": "invocation:v1:06e9ab67c8bb6f0dc1fb9725eaa858e943f4124496e1a436b921be69b1125f50",
             "scan.kind": "xss_candidate",
             "scan.recommendations": {
-              "title": "Resolve the specific claim blockers",
+              "title": "Preserve the verified protection",
               "actions": [
-                "Investigate the operation at pages/xss/safe/script-context.js:17: dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }}. Its current Review status does not establish a code defect.",
-                "Reconcile the semantic assessment with this exact source claim: XSS assessment is inconclusive; absence of a positive answer is not protection. Answers: context=script; encoding=unknown; sanitizer=unknown; all paths protected=unknown; exposure=unknown. Static context=script, protection=sanitized. Do not infer a code repair from contradictory answers."
+                "Preserve escaping for dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }} at pages/xss/safe/script-context.js:17 in script. Do not add a trust bypass or disable the verified renderer's autoescape.",
+                "Keep a regression test with HTML-significant or SQL-significant input, as appropriate to this claim. Input-validation requirements are assessed separately."
               ],
-              "example_status": "no patch proposed while the claim is inconclusive"
+              "example_status": "no repair proposed for a protected claim"
             },
             "scan.requiredEvidence": [
               "render_source",
@@ -37629,45 +37376,45 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "26fd673d765cfc8769b8cc6a4ed03b26767f15cc43f08b6216ac0ae4736240f0",
+              "request_digest": "5e672af15d08683e81641871fa15a34ac439ef2d3f456daf35e264f64b6ca0d9",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "unknown",
-                  "confidence": 0.55,
+                  "confidence": 0.31,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.1
+                      "probability": 0.14
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.19
+                      "probability": 0.25
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.05
+                      "probability": 0.13
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.66
+                      "probability": 0.48
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.86,
+                  "confidence": 0.78,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.87
+                      "probability": 0.8
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "url",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "script",
@@ -37675,7 +37422,7 @@
                     },
                     {
                       "value": "style",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unquoted_attribute",
@@ -37691,39 +37438,39 @@
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.12
+                      "probability": 0.15
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "unknown",
-                  "confidence": 0.8,
+                  "confidence": 0.92,
                   "probabilities": [
                     {
                       "value": "effective",
-                      "probability": 0.02
+                      "probability": 0
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.12
+                      "probability": 0.03
                     },
                     {
                       "value": "absent",
-                      "probability": 0.01
+                      "probability": 0.03
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.85
+                      "probability": 0.94
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "unknown",
-                  "confidence": 0.74,
+                  "confidence": 0.56,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -37731,29 +37478,29 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.1
+                      "probability": 0.22
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.83
+                      "probability": 0.71
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "unknown",
-                  "confidence": 0.61,
+                  "confidence": 0.52,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.13
+                      "probability": 0.08
                     },
                     {
                       "value": "protected",
-                      "probability": 0.16
+                      "probability": 0.28
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.71
+                      "probability": 0.64
                     },
                     {
                       "value": "not_applicable",
@@ -37771,13 +37518,13 @@
                 "xss_exposure": "unknown"
               },
               "usage": {
-                "input_tokens": 5132,
+                "input_tokens": 4520,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "question_version": "xss-components-v4",
               "protection": "uncertain",
               "reason": "XSS assessment is inconclusive; absence of a positive answer is not protection.",
               "follow_up": {
@@ -38356,53 +38103,53 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "d356084cd56212103ea787cc4259aa2a693fc504a4712c49952a9c8795a88ab9",
+              "request_digest": "5cd256dcc57523d4a23802465cbdb02552deb338202a88bc071cdb689c2fd48d",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "unknown",
-                  "confidence": 0.41,
+                  "confidence": 0.61,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.03
+                      "probability": 0.05
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.32
+                      "probability": 0.11
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.09
+                      "probability": 0.13
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.56
+                      "probability": 0.71
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.74,
+                  "confidence": 0.67,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.77
+                      "probability": 0.7
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0
+                      "probability": 0.04
                     },
                     {
                       "value": "url",
-                      "probability": 0.01
+                      "probability": 0.02
                     },
                     {
                       "value": "script",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "style",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unquoted_attribute",
@@ -38410,7 +38157,7 @@
                     },
                     {
                       "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "html_tag",
@@ -38418,17 +38165,17 @@
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.21
+                      "probability": 0.19
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "unknown",
-                  "confidence": 0.95,
+                  "confidence": 0.89,
                   "probabilities": [
                     {
                       "value": "effective",
@@ -38436,51 +38183,51 @@
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.02
+                      "probability": 0.03
                     },
                     {
                       "value": "absent",
-                      "probability": 0.01
+                      "probability": 0.04
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.96
+                      "probability": 0.92
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "unknown",
-                  "confidence": 0.63,
+                  "confidence": 0.74,
                   "probabilities": [
                     {
                       "value": "yes",
-                      "probability": 0.05
+                      "probability": 0.03
                     },
                     {
                       "value": "no",
-                      "probability": 0.2
+                      "probability": 0.14
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.75
+                      "probability": 0.83
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "unknown",
-                  "confidence": 0.91,
+                  "confidence": 0.63,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.03
+                      "probability": 0.08
                     },
                     {
                       "value": "protected",
-                      "probability": 0.04
+                      "probability": 0.2
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.93
+                      "probability": 0.72
                     },
                     {
                       "value": "not_applicable",
@@ -38498,13 +38245,13 @@
                 "xss_exposure": "unknown"
               },
               "usage": {
-                "input_tokens": 4759,
+                "input_tokens": 4203,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "question_version": "xss-components-v4",
               "protection": "uncertain",
               "reason": "XSS assessment is inconclusive; absence of a positive answer is not protection.",
               "follow_up": {
@@ -39566,7 +39313,7 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "465edd6ffe830027a32960b8bdd4e184ca5e3eb27740ab38cc5de4a65ed53937",
+              "request_digest": "77106484bb623a77e29f820a46402049545cba4644ec2053c5a42af1bc6bf4dd",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
@@ -39592,15 +39339,15 @@
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.99,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.99
+                      "probability": 0.97
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "url",
@@ -39628,7 +39375,7 @@
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unknown",
@@ -39638,29 +39385,29 @@
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.84,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "effective",
-                      "probability": 0.04
+                      "probability": 0
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.07
+                      "probability": 0
                     },
                     {
                       "value": "absent",
-                      "probability": 0.88
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.99,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -39668,21 +39415,21 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.99
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.89,
+                  "confidence": 0.95,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.92
+                      "probability": 0.96
                     },
                     {
                       "value": "protected",
@@ -39690,11 +39437,11 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.06
+                      "probability": 0.03
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 }
@@ -39708,13 +39455,13 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 4643,
+                "input_tokens": 4021,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -40162,53 +39909,53 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "e90534d895f2fe087f099ffff90f611903c3d7d34ce70ce8f78051f1cdf9122e",
+              "request_digest": "41b8096bfea9861147b8558b1e711b1fa0a40b0c76fa5837a7c10ac9905d4096",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.93,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.03
+                      "probability": 0
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.95
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.9,
+                  "confidence": 0.86,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.91
+                      "probability": 0.87
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.01
+                      "probability": 0.03
                     },
                     {
                       "value": "url",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "script",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "style",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unquoted_attribute",
@@ -40216,7 +39963,7 @@
                     },
                     {
                       "value": "active_attribute",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "html_tag",
@@ -40234,7 +39981,7 @@
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.99,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "effective",
@@ -40242,11 +39989,11 @@
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "absent",
-                      "probability": 0.99
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
@@ -40256,7 +40003,7 @@
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.99,
+                  "confidence": 1,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -40264,29 +40011,29 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.99
+                      "probability": 1
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.85,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.89
+                      "probability": 0.99
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
@@ -40304,13 +40051,13 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 4271,
+                "input_tokens": 3706,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -41266,33 +41013,33 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "f3ea38e2b201bee57ea11f2baa7325abcfef470e598db4ba53ca2e17da41a4f5",
+              "request_digest": "be8a95a3cf5bb85b0f28065f0517bfe091269477e3613c3c3683bfee80de187c",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.29,
+                  "confidence": 0.72,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.04
+                      "probability": 0
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.46
+                      "probability": 0.2
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.47
+                      "probability": 0.79
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.01
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "script",
-                  "confidence": 1,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "html_text",
@@ -41304,11 +41051,11 @@
                     },
                     {
                       "value": "url",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "script",
-                      "probability": 1
+                      "probability": 0.99
                     },
                     {
                       "value": "style",
@@ -41338,23 +41085,23 @@
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.84,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "effective",
-                      "probability": 0.02
+                      "probability": 0
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.03
+                      "probability": 0
                     },
                     {
                       "value": "absent",
-                      "probability": 0.88
+                      "probability": 0.99
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.07
+                      "probability": 0.01
                     }
                   ]
                 },
@@ -41378,11 +41125,11 @@
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.81,
+                  "confidence": 0.97,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.86
+                      "probability": 0.98
                     },
                     {
                       "value": "protected",
@@ -41390,11 +41137,11 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.12
+                      "probability": 0.01
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 }
@@ -41408,21 +41155,15 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 4726,
+                "input_tokens": 4159,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
-              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
-              "follow_up": {
-                "kind": "helper_body",
-                "symbol": "JSON.stringify",
-                "status": "not_sent",
-                "reason": "the record is not an assessed Review record"
-              }
+              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
             "scan.assessmentState": "completed",
             "scan.blockingGaps": [],
@@ -43672,42 +43413,42 @@
             }
           ],
           "message": {
-            "text": "pages/xss/unsafe/stored.js: Untrusted data reaches raw HTML output [poor_practice]. A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate. Decision XSS exposure: Inconclusive. Scanner policy: XSS assessment is inconclusive; absence of a positive answer is not protection."
+            "text": "pages/xss/unsafe/stored.js: Cross-site scripting supported by source analysis [confirmed_vulnerability]. A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "f49049ccd4791c6393946dbaa739c9def24db84468d21246baa797bd26b6683f",
+              "request_digest": "f6c01b5e059367d97022bcc8d01b0d8ce8aa711dafb649f5b436d1451b3a47aa",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.85,
+                  "confidence": 0.99,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.02
+                      "probability": 0
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.08
+                      "probability": 0.01
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.89
+                      "probability": 0.99
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.56,
+                  "confidence": 0.94,
                   "probabilities": [
                     {
                       "value": "html_text",
-                      "probability": 0.6
+                      "probability": 0.95
                     },
                     {
                       "value": "html_attribute",
@@ -43723,7 +43464,7 @@
                     },
                     {
                       "value": "style",
-                      "probability": 0
+                      "probability": 0.01
                     },
                     {
                       "value": "unquoted_attribute",
@@ -43739,11 +43480,11 @@
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.37
+                      "probability": 0.02
                     }
                   ]
                 },
@@ -43753,11 +43494,11 @@
                   "probabilities": [
                     {
                       "value": "effective",
-                      "probability": 0.01
+                      "probability": 0
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0
+                      "probability": 0.03
                     },
                     {
                       "value": "absent",
@@ -43765,13 +43506,13 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.7,
+                  "confidence": 0.96,
                   "probabilities": [
                     {
                       "value": "yes",
@@ -43779,21 +43520,21 @@
                     },
                     {
                       "value": "no",
-                      "probability": 0.8
+                      "probability": 0.97
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.2
+                      "probability": 0.03
                     }
                   ]
                 },
                 "xss_exposure": {
-                  "choice": "unknown",
-                  "confidence": 0.37,
+                  "choice": "vulnerable",
+                  "confidence": 0.43,
                   "probabilities": [
                     {
                       "value": "vulnerable",
-                      "probability": 0.45
+                      "probability": 0.57
                     },
                     {
                       "value": "protected",
@@ -43801,7 +43542,7 @@
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.53
+                      "probability": 0.41
                     },
                     {
                       "value": "not_applicable",
@@ -43810,24 +43551,24 @@
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "confirmed_vulnerability",
               "answers": {
                 "encoding_adequacy": "not_present",
                 "output_context": "html_text",
                 "sanitizer_effectiveness": "absent",
                 "xss_all_paths_protected": "no",
-                "xss_exposure": "unknown"
+                "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 4352,
+                "input_tokens": 3708,
                 "output_tokens": 0
               },
               "status": "completed",
               "provider": "openai",
               "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
-              "protection": "uncertain",
-              "reason": "XSS assessment is inconclusive; absence of a positive answer is not protection."
+              "question_version": "xss-components-v4",
+              "protection": "insufficient",
+              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
             "scan.assessmentState": "completed",
             "scan.blockingGaps": [],
@@ -43887,12 +43628,12 @@
               "entry_id": "entry:v1:2609c73e2697c8e875e47d396db97edc851da9ad0f44c69deeab0c29db85df9d",
               "invocation_context_id": "invocation:v1:fa93e8f0ffff94a7a8d448f728848db075552d588c74b11508f60ef732fed648",
               "record_type": "finding",
-              "status": "poor_practice",
-              "title": "Untrusted data reaches raw HTML output",
-              "summary": "A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate.",
+              "status": "confirmed_vulnerability",
+              "title": "Cross-site scripting supported by source analysis",
+              "summary": "A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: Inconclusive. Scanner policy: XSS assessment is inconclusive; absence of a positive answer is not protection.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Exploitability is separate from the established construction practice; a missing or inconclusive semantic assessment does not remove this remediation task.",
+              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Repair this HTML output",
                 "actions": [
@@ -44036,8 +43777,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at pages/api/secure/file-read.js:15: readFile(path.join(process.cwd(), file), 'utf8'). Its current Review status does not establish a code defect.\n- Reconcile the semantic assessment with this exact source claim: The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at pages/api/secure/file-read.js:15: readFile(path.join(process.cwd(), file), 'utf8'). Its current Review status does not establish a code defect. Reconcile the semantic assessment with this exact source claim: The path assessment is inconclusive; unknown answers, an unsafe path without a complete witness, a bare prefix comparison or incomplete coverage cannot support protection or a finding."
+                "markdown": "Preserve the contained file operation\n\n- Preserve at pages/api/secure/file-read.js:15 the enforcing control that rejects before readFile(path.join(process.cwd(), file), 'utf8'): the allow-list or the separator-bounded boundary check on the same value. Do not move the check after a decode, a reassignment or a different value.\n- Keep regression tests for '..' segments, an absolute path, a sibling directory sharing the prefix and every branch or invocation that reaches this call; a control on one value or branch never protects another.\n",
+                "text": "Preserve the contained file operation. Preserve at pages/api/secure/file-read.js:15 the enforcing control that rejects before readFile(path.join(process.cwd(), file), 'utf8'): the allow-list or the separator-bounded boundary check on the same value. Do not move the check after a decode, a reassignment or a different value. Keep regression tests for '..' segments, an absolute path, a sibling directory sharing the prefix and every branch or invocation that reaches this call; a control on one value or branch never protects another."
               },
               "id": "scan/path-traversal",
               "properties": {
@@ -44047,7 +43788,7 @@
                 ]
               },
               "shortDescription": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Preserve the contained file operation"
               }
             },
             {
@@ -44084,8 +43825,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at pages/secure/redirect.js:10: return { redirect: { destination: to, permanent: false } };. Its current Review status does not establish a code defect.\n- Reconcile the semantic assessment with this exact source claim: The supplied answers do not establish a complete vulnerable or protected operand path.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at pages/secure/redirect.js:10: return { redirect: { destination: to, permanent: false } };. Its current Review status does not establish a code defect. Reconcile the semantic assessment with this exact source claim: The supplied answers do not establish a complete vulnerable or protected operand path."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at pages/secure/redirect.js:10: return { redirect: { destination: to, permanent: false } };. Its current Review status does not establish a code defect.\n- Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at pages/secure/redirect.js:10: return { redirect: { destination: to, permanent: false } };. Its current Review status does not establish a code defect. Identify the actual field requirement and the enforced guard before this operation, including rejection/return behavior and any helper body. Assess that requirement separately from the destination's protection."
               },
               "id": "scan/open-redirect",
               "properties": {
@@ -44116,8 +43857,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at pages/xss/safe/script-context.js:17: dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }}. Its current Review status does not establish a code defect.\n- Reconcile the semantic assessment with this exact source claim: XSS assessment is inconclusive; absence of a positive answer is not protection. Answers: context=script; encoding=unknown; sanitizer=unknown; all paths protected=unknown; exposure=unknown. Static context=script, protection=sanitized. Do not infer a code repair from contradictory answers.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at pages/xss/safe/script-context.js:17: dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }}. Its current Review status does not establish a code defect. Reconcile the semantic assessment with this exact source claim: XSS assessment is inconclusive; absence of a positive answer is not protection. Answers: context=script; encoding=unknown; sanitizer=unknown; all paths protected=unknown; exposure=unknown. Static context=script, protection=sanitized. Do not infer a code repair from contradictory answers."
+                "markdown": "Preserve the verified protection\n\n- Preserve escaping for dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }} at pages/xss/safe/script-context.js:17 in script. Do not add a trust bypass or disable the verified renderer's autoescape.\n- Keep a regression test with HTML-significant or SQL-significant input, as appropriate to this claim. Input-validation requirements are assessed separately.\n",
+                "text": "Preserve the verified protection. Preserve escaping for dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }} at pages/xss/safe/script-context.js:17 in script. Do not add a trust bypass or disable the verified renderer's autoescape. Keep a regression test with HTML-significant or SQL-significant input, as appropriate to this claim. Input-validation requirements are assessed separately."
               },
               "id": "scan/xss-output-protection",
               "properties": {
@@ -44127,7 +43868,7 @@
                 ]
               },
               "shortDescription": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Preserve the verified protection"
               }
             }
           ]

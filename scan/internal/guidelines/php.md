@@ -12,7 +12,7 @@ Report a confirmed injection and weak or poor practice. An agent can harden both
 
 ## Validation
 
-Restrict each field as far as its business requirement allows. A missing check alone does not establish a business requirement or a validation defect. Assess required presence, type, format, range and other constraints only when the supplied code or explicit scan check establishes that policy. Unknown business requirements stay uncertain. A cast, a type check or a length limit does not replace sink-specific protection as a practice; whether a numeric result can carry SQL syntax is a separate question. A name, a comment, or an unshown helper is not validation.
+Restrict each field as far as its business requirement allows. A missing check alone does not establish a business requirement or a validation defect. Assess required presence, type, format, range and other constraints only when the supplied code or explicit scan check establishes that policy. Unknown business requirements stay uncertain. A cast, a type check or a length limit does not replace sink-specific protection. A name, a comment, or an unshown helper is not validation.
 
 ## Free text
 
@@ -20,7 +20,7 @@ Comments, messages, descriptions, reviews, feedback, and notes may contain any c
 
 ## Sinks
 
-Do not build SQL text with string interpolation, concatenation, or heredoc interpolation. Pass values through prepared-statement binding (mysqli_prepare with bind_param, PDO prepare with bindParam/bindValue, SQLite3 prepare with bindValue). A bound parameter is sufficient protection for statement structure even when validation is weak. `mysqli_real_escape_string` is a value transform for SQL syntax, not binding: string-built SQL remains weak construction practice. For injection, an escaped value that sits inside a quoted SQL string literal, and is not changed afterwards, cannot end that literal. An escaped value that is not inside quotes, or is used as an identifier or a number, is not protected by the escape. A type or length check does not make an interpolated statement safe as a practice.
+Do not build SQL text with string interpolation, concatenation, or heredoc interpolation. Pass values through prepared-statement binding (mysqli_prepare with bind_param, PDO prepare with bindParam/bindValue, SQLite3 prepare with bindValue). A bound parameter is sufficient protection for statement structure even when validation is weak. `mysqli_real_escape_string` is a value transform for SQL syntax, not binding: an escaped value interpolated into SQL text remains a construction finding. A type or length check does not make an interpolated statement safe.
 
 ## Rendering
 

@@ -1,0 +1,596 @@
+=== R1 unresolved call returns the statement that runs
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+other($s)->execute();
+=== R1 method, as in a query expander
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$o->rewrite($s)->execute();
+=== R1 conditional with a statement built from the request
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$t = $db->prepare('SELECT a FROM u WHERE id = :id AND n = ' . $_GET['z']);
+$t->bindParam(':id', $id);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+($x ? $s : $t)->execute();
+=== R2 by reference, function outside the program
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+init($db);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 by reference, function in the program
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+function init(&$d) { $d = new Legacy($d); }
+init($db);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 alias
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$r = &$db; $r = new Legacy($r);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 destructuring
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+[$db] = [new Legacy($db)];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 extract
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+extract($_GET);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 unresolved include
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+include $x;
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 $GLOBALS
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$GLOBALS['db'] = new Legacy($db);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 else branch, declared class
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+class Legacy { function prepare($q) { return mystery($q); } }
+if ($x) { echo 1; } else { $db = new Legacy($db); }
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 catch fallback
+<?php
+$id = $_GET['id'];
+try { $db = new PDO('m'); } catch (E $e) { $db = new Legacy(); }
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 conditional
+<?php
+$id = $_GET['id'];
+$db = $x ? new PDO('m') : new Legacy('m');
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R2 property, object changed by an unknown call
+<?php
+class R {
+ public $db;
+ function __construct() { $this->db = new PDO('m'); }
+ function go() { $id = $_GET['id']; $s = $this->db->prepare('SELECT a FROM u WHERE id = :id'); $s->bindParam(':id', $id); $s->execute(); }
+}
+$r = new R; decorate($r); $r->go();
+=== R3 imported alias
+<?php
+namespace App;
+use Vendor\Legacy\Db as PDO;
+$db = new PDO('x');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R3 namespace, no import
+<?php
+namespace App;
+$db = new PDO('x');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R3 class_alias
+<?php
+namespace App;
+class_alias('App\\Legacy', 'App\\PDO');
+$db = new PDO('x');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R3 own mysqli class in the same file
+<?php
+namespace App;
+class mysqli { function prepare($q) { return mystery($q); } }
+$db = new mysqli('x');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R3 polyfill of mysqli_connect
+<?php
+if (!function_exists('mysqli_connect')) { function mysqli_connect($h) { return new Legacy($h); } }
+$db = mysqli_connect('x');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R4 digit name, PDO
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT query_to_xml(:1, true, true, 0)');
+$s->bindValue(':1', $id);
+$s->execute();
+=== R4 SQLite3 named form
+<?php
+$db = new SQLite3('a.db');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT load_extension(@id)');
+$s->bindValue('@id', $id);
+$s->execute();
+=== R5 quoted identifiers, PostgreSQL
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT a FROM u WHERE b = "pg_catalog"."query_to_xml"(:id, true, true, a)');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R5 backtick name after a comma
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT 1, `run`(:id) FROM u');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R5 brackets
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT [dbo].[run](:id) FROM u');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R5 dollar in the name
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT run$(:id) FROM u');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R6 derived table
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('SELECT run(q) FROM u, (SELECT :id AS q) t');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R6 UPDATE RETURNING
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('UPDATE u SET q = :id WHERE id = 1 RETURNING query_to_xml(q, true, true, 0)');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R6 INSERT RETURNING
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$s = $db->prepare('INSERT INTO j (q) VALUES (:id) RETURNING run(q)');
+$s->bindValue(':id', $id);
+$s->execute();
+=== R7 ArrayAccess
+<?php
+$db = new PDO('m');
+class Req implements ArrayAccess { function offsetGet($k): mixed { global $s, $db; $s = $db->prepare('SELECT a FROM u WHERE id = ' . $_GET['z']); return 1; } function offsetExists($k): bool { return true; } function offsetSet($k, $v): void {} function offsetUnset($k): void {} }
+$id = $_GET['id']; $req = new Req;
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->bindValue(':n', $req['n']);
+$s->execute();
+=== R7 __toString
+<?php
+$db = new PDO('m');
+class Req { function __toString() { global $s, $db; $s = $db->prepare('SELECT a FROM u WHERE id = ' . $_GET['z']); return 'x'; } }
+$id = $_GET['id']; $req = new Req;
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->bindValue(':n', "$req");
+$s->execute();
+=== R7 destructor
+<?php
+$db = new PDO('m');
+class Old { function __destruct() { global $s, $db; $s = $db->prepare('SELECT a FROM u WHERE id = ' . $_GET['z']); } }
+$id = $_GET['id']; $s = new Old;
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R8 setAttribute
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$db->setAttribute(PDO::ATTR_STATEMENT_CLASS, ['Legacy', []]);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R8 constructor option
+<?php
+$id = $_GET['id'];
+$db = new PDO('m', 'u', 'p', [PDO::ATTR_STATEMENT_CLASS => ['Legacy']]);
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R9 SET NAMES
+<?php
+$db = new PDO('mysql:host=h', 'u', 'p');
+$id = $_GET['id'];
+$db->exec('SET NAMES gbk');
+$s = $db->prepare('SELECT a FROM u WHERE id = :id');
+$s->bindParam(':id', $id);
+$s->execute();
+=== R10 unresolved first, conversion in a branch
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = mystery();
+if ($x) { $n = (int) $_GET['n']; }
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R10 unresolved in if, conversion in else
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+if ($x) { $n = mystery(); } else { $n = (int) $_GET['n']; }
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R10 same with the escape
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+if ($x) { $v = $o->raw(); } else { $v = mysqli_real_escape_string($db, $_POST['v']); }
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R10 call with a constant argument
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+if ($x) { $n = $o->get('id'); } else { $n = (int) $_GET['n']; }
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R10 switch
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+switch ($x) { case 1: $n = mystery(); break; case 2: $n = (int) $_GET['n']; break; }
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R10 extract before
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+extract($_GET);
+if ($x) { $n = (int) $_GET['n']; }
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R10 include before
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+include 'x.php';
+if ($x) { $n = (int) $_GET['n']; }
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R10 parameter
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+function go($db, $n = null) { if ($n === null) { $n = (int) $_GET['n']; } mysqli_query($db, "SELECT a FROM t WHERE id = $n"); }
+go($db, mystery());
+=== R11 method
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$w = $o->get('sort');
+mysqli_query($db, "SELECT a FROM t WHERE id = $n ORDER BY $w");
+=== R11 function
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+mysqli_query($db, "SELECT a FROM t WHERE id = $n ORDER BY " . param('sort'));
+=== R11 request input
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$w = filter_input(INPUT_GET, 'sort');
+mysqli_query($db, "SELECT a FROM t WHERE id = $n ORDER BY $w");
+=== R11 environment
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$w = getenv('QUERY_STRING');
+mysqli_query($db, "SELECT a FROM t WHERE id = $n ORDER BY $w");
+=== R11 quote by chr, escaped value bare
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = 'x" . chr(39) . " AND id = $v AND c = " . chr(39) . "y'");
+=== R12 escape undone
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$w = stripslashes("$v");
+mysqli_query($db, "SELECT a FROM t WHERE b = '$w'");
+=== R12 escape reversed
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$w = strrev("$v");
+mysqli_query($db, "SELECT a FROM t WHERE b = '$w'");
+=== R12 unresolved part lost
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$w = trim("$n" . $o->more());
+mysqli_query($db, "SELECT a FROM t WHERE id = $w");
+=== R12 text built in a branch, unresolved part lost
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$w = '';
+if ($x) { $w = " AND id = $n AND name = '" . $request->get('q') . "'"; }
+mysqli_query($db, "SELECT a FROM t WHERE 1 = 1 $w");
+=== R12 quotes inside the joined text, escaped value bare
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$w = '';
+if ($x) { $w = "' AND id = $v AND '1' = '1"; }
+mysqli_query($db, "SELECT a FROM t WHERE b = '$w'");
+=== R13 by reference
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$q = "SELECT a FROM t WHERE id = $n";
+filters($q);
+mysqli_query($db, $q);
+=== R13 by reference, function in the program
+<?php
+function filters(&$s) { $s .= ' AND z = ' . $_GET['z']; }
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$q = "SELECT a FROM t WHERE id = $n";
+filters($q);
+mysqli_query($db, $q);
+=== R13 alias
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$q = "SELECT a FROM t WHERE id = $n";
+$r = &$q; $r .= $_GET['z'];
+mysqli_query($db, $q);
+=== R13 extract
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$q = "SELECT a FROM t WHERE id = $n";
+extract($_GET);
+mysqli_query($db, $q);
+=== R13 include
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$q = "SELECT a FROM t WHERE id = $n";
+include $f;
+mysqli_query($db, $q);
+=== R13 escaped text undone
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$w = "%$v%";
+undo($w);
+mysqli_query($db, "SELECT a FROM t WHERE b LIKE '$w'");
+=== R14 $GLOBALS
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$GLOBALS['v'] = $_POST['z'];
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R14 $GLOBALS in a function
+<?php
+function f() { $GLOBALS['v'] = $_POST['z']; }
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+f();
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R14 alias before
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$r = &$v;
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$r = $_POST['z'];
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R14 closure by reference
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$f = function () use (&$v) { $v = $_POST['z']; };
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$f();
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R14 unresolved function at file scope
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+loadmore();
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R14 earlier iteration of a loop
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+for ($i = 0; $i < 2; $i++) { if ($i) { undo($v); } else { $v = mysqli_real_escape_string($db, $_POST['v']); } mysqli_query($db, "SELECT a FROM t WHERE b = '$v'"); }
+=== R15 escaped apostrophes
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = 'it\'s' AND id = $v AND c = 'can\'t'");
+=== R15 hexadecimal escape
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = 'a\x27 AND id = $v AND c = \x27b'");
+=== R15 octal escape
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = 'a\47 AND id = $v AND c = \47b'");
+=== R16 SQLite3
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$l = new SQLite3('a.db');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$l->query("SELECT a FROM t WHERE b = '$v'");
+=== R16 PDO PostgreSQL
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$l = new PDO('pgsql:host=h');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$l->query("SELECT a FROM t WHERE b = '$v'");
+=== R16 another connection
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($other, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R17 string offset
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$w = mysqli_real_escape_string($db, $_POST['w']);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v[0]' AND c = '$w'");
+=== R18 key held in a constant
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$a = ['id' => (int) $_GET['id'], NAME => mystery()];
+mysqli_query($db, "SELECT a FROM t WHERE b = {$a['name']}");
+=== R18 spread
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$a = [...load(), 'id' => (int) $_GET['id']];
+mysqli_query($db, "SELECT a FROM t WHERE b = {$a['name']}");
+=== R18 list index
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$a = [(int) $_GET['id'], mystery()];
+$z = $a[1];
+mysqli_query($db, "SELECT a FROM t WHERE b = $z");
+=== R18 request-chosen key
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$a = ['id' => (int) $_GET['id'], 'name' => mystery()];
+$k = $_GET['k']; $z = $a[$k];
+mysqli_query($db, "SELECT a FROM t WHERE b = $z");
+=== R19 heredoc with an unresolved part
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = (int) $_GET['n'];
+$w = <<<S
+{$n}{$o->raw()}
+S;
+mysqli_query($db, "SELECT a FROM t WHERE id = $w");
+=== R19 complement
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = ~mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R20 own md5 in a namespace
+<?php
+namespace App;
+function md5($x) { return $x; }
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$h = md5($_GET['n']);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$h'");
+=== R20 imported intval
+<?php
+use function Vendor\Text\intval;
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = intval($_GET['n']);
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+=== R20 escape polyfill
+<?php
+if (!function_exists('mysqli_real_escape_string')) { function mysqli_real_escape_string($c, $s) { return $s; } }
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R20 own intval in another file of the namespace
+<?php
+namespace App;
+require 'own.php';
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$n = intval($_GET['n']);
+mysqli_query($db, "SELECT a FROM t WHERE id = $n");
+--- own.php
+<?php
+namespace App;
+function intval($x) { return $x; }
+=== R20 binary hash by spread
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$a = [$_POST['p'], true];
+$h = md5(...$a);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$h'");
+=== R21 SQLite3
+<?php
+$db = new SQLite3('a.db');
+$n = (int) $_GET['n'];
+$db->query("SELECT owner FROM t WHERE x = 5-$n AND owner = 1");
+=== R21 PostgreSQL
+<?php
+$db = new PDO('pgsql:host=h');
+$n = (int) $_GET['n'];
+$db->query("SELECT owner FROM t WHERE x = 5-$n AND owner = 1");
+=== R22 PREPARE
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_multi_query($db, "PREPARE p FROM 'SELECT a FROM t WHERE id = $v'; EXECUTE p");
+=== R22 stored procedure
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "CALL run_sql('$v')");
+=== R23 SET NAMES
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+mysqli_query($db, 'SET NAMES gbk');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = '$v'");
+=== R23 NO_BACKSLASH_ESCAPES, double quotes
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+mysqli_query($db, "SET SESSION sql_mode='NO_BACKSLASH_ESCAPES'");
+$v = mysqli_real_escape_string($db, $_POST['v']);
+mysqli_query($db, "SELECT a FROM t WHERE b = \"$v\"");
+=== R24 escape of another engine
+<?php
+$db = mysqli_connect('h', 'u', 'p', 'd');
+$l = new SQLite3('a.db');
+$v = mysqli_real_escape_string($db, $_POST['v']);
+$l->query("SELECT a FROM t WHERE b = '$v'");

@@ -146,8 +146,7 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 		c.Blockers = append(c.Blockers, stored...)
 		f.set.storedOnly[u.ID] = phpStoredKeys(constructed)
 	}
-	c.ModelFacts = append(c.ModelFacts, phpSQLFacts(text)...)
-	c.ModelFacts = append(c.ModelFacts, f.boundFacts(n, text, params, op, preparedText)...)
+	c.ModelFacts = append(c.ModelFacts, f.sqlOperandFacts(n)...)
 	u.Completeness = c
 	return result
 }
@@ -171,7 +170,6 @@ func (f *phpFlow) sqlPrepare(n *sitter.Node, nodes []*sitter.Node, values []phpV
 	}
 	stmt := f.sqlClaim(n, queryNode, nil, text, driver, "prepare", connection.evidence, nil, nil)
 	stmt.binding = "db_statement"
-	stmt.wrapped = connection.wrapped
 	// The prepare call, with the variable it is assigned to, is what makes the
 	// query text this statement's text; an execute() claim carries it so the
 	// judge sees the literal, the bindings and the execution as one statement.
@@ -190,7 +188,6 @@ func (f *phpFlow) sqlExecPrepared(n *sitter.Node, stmt phpValue) phpValue {
 	if stmt.sqlText != nil {
 		text = *stmt.sqlText
 	}
-	text.wrapped = text.wrapped || stmt.wrapped
 	requestDerived := text.built
 	for _, p := range stmt.sqlParams {
 		if len(p.deps) > 0 {

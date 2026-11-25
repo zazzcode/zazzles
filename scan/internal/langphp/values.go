@@ -56,9 +56,6 @@ type phpValue struct {
 	// binding labels tracked objects: db_connection, db_statement, db_result.
 	binding string
 	driver  string
-	// wrapped marks a connection that a call received and returned, or whose
-	// class the program declares: its prepare is not established.
-	wrapped bool
 	// class names the user class of a `new C` object (binding php_class).
 	class string
 	// regex is set on the matches array of a literal preg_match.
@@ -240,7 +237,6 @@ func phpCombine(a, b phpValue) phpValue {
 		a.columns = nil
 	}
 	a.unknown = a.unknown || b.unknown
-	a.wrapped = a.wrapped || b.wrapped
 	a.deps = phpMergeDeps(a.deps, b.deps)
 	if len(a.deps) > 64 {
 		a.deps = a.deps[:64]

@@ -49,6 +49,7 @@ type phpSet struct {
 	composers       map[string]*symfonyProject
 	symfony         []*symfonyProject
 	builtinEffects  map[string]bool
+	sqlHazard       *bool
 	summaries       map[string]*parse.ClosedCallable
 	root            string
 	parser          *sitter.Parser

@@ -38,9 +38,6 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 	v := f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.accountCall(n, nodes, values, f.callValues(n, nodes, values, all))))
 	// A call result is not the string its argument was built as.
 	v.pieces = nil
-	for _, a := range values {
-		v.wrapped = v.wrapped || v.binding == "db_connection" && a.binding == "db_connection"
-	}
 	return v
 }
 
@@ -681,9 +678,9 @@ func (f *phpFlow) objectCreation(n *sitter.Node) phpValue {
 	case "mysqli":
 		return phpValue{binding: "db_connection", driver: "mysqli", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	case "PDO":
-		return phpValue{binding: "db_connection", driver: "pdo", wrapped: f.declaredClass(clsNode, cls), evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
+		return phpValue{binding: "db_connection", driver: "pdo", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	case "SQLite3":
-		return phpValue{binding: "db_connection", driver: "sqlite3", wrapped: f.declaredClass(clsNode, cls), evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
+		return phpValue{binding: "db_connection", driver: "sqlite3", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	case "mysqli_stmt":
 		return phpValue{binding: "db_statement", driver: "mysqli", evidence: []analysis.Evidence{m.evidence("sink_binding", n)}}
 	}

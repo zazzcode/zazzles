@@ -11,7 +11,8 @@
 ## Capability
 
 A PHP SQL record states facts the scanner proves about the operands of constructed SQL text: a value escaped on the
-query's own connection and alone in a single-quoted literal, or a hexadecimal hash there. The request of a record with the
+query's own connection and alone in a single-quoted literal, a hexadecimal hash there, an integer conversion, or a request value an
+anchored digit pattern accepted. The request of a record with the
 escape fact says what an escape does and does not protect. The judge decides as before.
 
 ## Invariants
@@ -28,13 +29,14 @@ escape fact says what an escape does and does not protect. The judge decides as 
 |---|---|
 | `scan/internal/langphp/sql_facts.go` | New. The source pattern of the operands, the connection and the program |
 | `scan/internal/langphp/sql_operand_text.go` | New. The tokens and positions of the SQL text |
+| `scan/internal/langphp/sql_digit_guard.go` | New. The `preg_match` branch that guards a request element |
 | `scan/internal/langphp/sql.go`, `modules.go` | The record carries the facts; the program check is kept once per scan |
-| `scan/internal/guidelines/facts.md` | Two codes: `escaped_in_quoted_literal`, `hash_hex_result` |
+| `scan/internal/guidelines/facts.md` | Four codes: `integer_conversion_result`, `digit_pattern_value`, `escaped_in_quoted_literal`, `hash_hex_result` |
 | `scan/internal/guidelines/facts.go`, `families.go`, `scan/internal/judge/client.go`, `bundle.go` | The sentences a fact replaces in its own record's request |
 | Tests | `langphp/sql_facts_test.go`, `sql_operand_text_test.go`, `testdata/sql-fact-review-forms.txt`, `guidelines/facts_test.go`, `judge/fact_notes_test.go` |
 | Documents | Query judgment, database injection guide, SQL capability page, results, this file, delivery plan row |
 
-Out of scope: numbers, bound parameters, other PHP drivers and their escapes, methods, pattern guards such as `preg_match`,
+Out of scope: floats, bound parameters, other PHP drivers and their escapes, methods, pattern guards such as `preg_match`,
 JavaScript and Python, question wording, policy, and any list or threshold.
 
 ## Decisions
@@ -57,8 +59,11 @@ JavaScript and Python, question wording, policy, and any list or threshold.
 - **D-7. No bound-value fact.** *Why:* its connection cannot be shown to be native where the class and the variable come from
   another file, so a sound rule states it for none of the ten records it was made for. With D-6 those ten keep their request
   and their saved answer, Protected. *Cost:* the higher certainty measured with it.
-- **D-8. No numeric fact.** *Why:* its note was false (`-`, `INF`), and it cleared no record of the four judged applications.
-  *Cost:* two safe forms its author wrote.
+- **D-8. Integers, not numbers.** *Why:* the old note was false (`-`, `INF`). `(int)` and `intval` give a sign and digits, which cannot
+  change syntax where the value stands apart. *Rejected:* floats. *Cost:* `s-float`.
+- **D-9. A digit pattern that guards its branch.** *Why:* the owner wants no record of the recorded gains lost, and `bac/medium.php:22`
+  was cleared only by text that was false in general. Its shape is general: a request element read first in the block that runs only when
+  `preg_match` of an anchored digit pattern accepted it. *Rejected:* any other condition, flag or pattern, and a read after other code.
 
 ## Acceptance criteria
 
@@ -66,7 +71,7 @@ JavaScript and Python, question wording, policy, and any list or threshold.
 |---|---|---|
 | AC1 | Each safe form gives exactly the stated facts, and each trap makes a record with none | `go test ./scan/internal/langphp -run 'TestPHPSQLFact\|TestPHPQuotedOperands'` |
 | AC2 | Every produced code has a note; the list of codes is complete; the replaced sentences reach only a record with the fact | `go test ./scan/internal/guidelines -run 'TestFact\|TestProducedFact'`, `go test ./scan/internal/judge -run 'TestEscapeFact'` |
-| AC3 | On the judged applications each request equals an answered one: the text before the feature, or the text paid for in arm B | Comparison |
+| AC3 | On the judged applications each request equals an answered one (the text before the feature, or the text paid for in arm B), except two whose paid check is prepared | Comparison, `pf17-paid/` |
 | AC4 | Nine samples: no record missing or added; only PHP SQL requests with a fact change | Comparison |
 | AC5 | G1 to G7, the reserved control by script | Commands |
 | AC6 | Documents, with the tested benefit in `.zazz/architecture/` | `doc-check` |
@@ -112,3 +117,9 @@ All 89 forms of the review reproduced. The facts were read again from the source
 to records with the fact (D-6), and the bound-value and numeric facts were removed (D-7, D-8). Every form is a test. The entries above
 describe code that is gone. Benefit on DVWA: 4 of 14 false findings no longer Confirmed, where it was 5: `bac/medium.php:22` had no
 fact and moved by the general text alone. No paid request was made, and none is needed for an answer that does not exist.
+
+### 2026-11-25 — No regression against the recorded results
+
+The owner asked that no result be lost. The numeric fact returned as an integer fact with a true note (D-8), and a digit-pattern fact was
+added for the general shape of `bac/medium.php:22` (D-9), each with its own traps. Two judged requests now have new text: a paid check of
+35 requests is prepared, with its rule written first, and not sent.

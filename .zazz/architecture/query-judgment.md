@@ -31,6 +31,8 @@ global guarantee. This produces type facts for semantic assessment, not a hardco
 |---|---|
 | `escaped_in_quoted_literal` | `mysqli_real_escape_string` on the connection of the query, alone in a single-quoted SQL literal |
 | `hash_hex_result` | A one-argument `md5` or `sha1` in the same position |
+| `integer_conversion_result` | `(int)` or `intval` of one argument, compared, listed or a row count, or inside a single-quoted literal |
+| `digit_pattern_value` | A request element read first in a block that runs only when a native `preg_match` of `^\d+$` or `^[0-9]+$` accepted it; same positions |
 
 - **A fact decides nothing.** The judge reads it with the code. No verdict, suppression or policy uses it.
 - **A source pattern, not the flow.** A join of two branches keeps one branch's text and an unresolved call adds no dependency,
@@ -40,29 +42,32 @@ global guarantee. This produces type facts for semantic assessment, not a hardco
   - the text is written in the call, or in the statement just before it, with literals, variables and concatenation only;
   - each operand is the call itself, or a variable whose last write is one. Both stand in one unbroken run of assignments that
     run no code of the program. After the first operand is written, only operands are written;
-  - every alternative of a conditional is the same kind of call, or the empty string;
+  - every alternative of a conditional is the same kind of call, or the empty string; an integer has no alternative;
+  - after the first operand only operands are written, or `true`, `false`, `null` and integers, which are safe in any position;
   - escape and query use one connection: the same variable, or the same literal key of `$GLOBALS`, not written between;
   - `sql_operand_text.go` knows every token. The statement is one `SELECT`, `INSERT`, `UPDATE`, `DELETE` or `REPLACE`; each
-    operand is compared, assigned or listed in `VALUES` or `IN`. A function call, backslash, double quote, comment, variable,
+    operand is compared, assigned or listed in `VALUES` or `IN`; a bare integer may also follow `LIMIT` or `OFFSET`, and stands apart
+    from a sign, digit, point or letter. A function call, backslash, double quote, comment, variable,
     character set introducer, byte outside ASCII or second statement fails.
 - **Program conditions.** No fact is stated when a scanned file sets an error handler or tick function, declares `__destruct`,
   `__toString` or `ArrayAccess` methods, redefines a function, sends `SET NAMES` or a change of `sql_mode`, takes one of these
   variables by reference, is over the size limit or does not parse.
 - **All or nothing.** Facts are stated only when every operand has one. Never stated as unknown: in an experiment a fact that
   said `not established` made the judge doubt a true finding.
-- **Text per record.** The PHP guideline and the `php-mysqli-v1` contract say that an escaped value remains a finding. In the
-  request of a record with `escaped_in_quoted_literal`, and in no other, `guidelines/facts.go` replaces those sentences: they
-  would contradict the fact. Every other PHP SQL request is the same as without this feature.
+- **Text per record.** The PHP guideline and the `php-mysqli-v1` contract say that an escaped value remains a finding, and that a
+  cast or type check does not make a statement safe. In the request of a record with one of these facts, and in no other,
+  `guidelines/facts.go` replaces those sentences: they would contradict the fact. Every other PHP SQL request is the same as
+  without this feature.
 
 **Limits.** The rule cannot see code outside the scanned files (an error handler of a library, `eval`, a generated file), a
 character set or SQL mode set by the server, by a file that is not scanned or by text put together at run time, or a trigger of
-the database. The statement is taken to run on MySQL or MariaDB. Methods (`$db->query`), PDO, SQLite3, PostgreSQL, numbers and
+the database. The statement is taken to run on MySQL or MariaDB. Methods (`$db->query`), PDO, SQLite3, PostgreSQL, floats and
 bound parameters have no fact.
 
 **Tested benefit** (2026-11-25, outcomes by policy replay; [results and
 limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 4 are no longer Confirmed, 0 of 25
-true findings are lost, none becomes Protected, and no safe record moves. Seven requests of 403 differ from those before the feature,
-and each has a paid answer for its exact text. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
+true findings are lost, none becomes Protected, and no safe record moves. Nine requests of 403 differ from those before the feature:
+seven have a paid answer for their exact text, and two (`bac/medium.php:22`, `bac/low.php:23`) wait for a prepared paid check. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
 application has been used.
 
 ## Semantic questions and policy

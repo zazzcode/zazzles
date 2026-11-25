@@ -22,6 +22,32 @@ conditional output alternative and proves numeric output only for supported nume
 unshadowed native Number calls, with bounded nested ternaries. A sibling conversion is never a
 global guarantee. This produces type facts for semantic assessment, not a hardcoded verdict.
 
+### Facts about constructed PHP SQL operands
+
+`langphp/sql_facts.go` states facts about the operands of a constructed PHP SQL text, from the ordered parts of that text and
+each path's transfers. Their codes and notes are in `scan/internal/guidelines/facts.md`:
+
+| Code | Stated when the operand is |
+|---|---|
+| `numeric_conversion_result` | The result of a numeric cast or conversion |
+| `escaped_in_quoted_literal` | Escaped by the database client and placed inside a quoted SQL literal |
+| `hash_hex_result` | The hexadecimal text of a one-argument `md5` or `sha1` |
+
+- **A fact decides nothing.** The judge reads it with the code. No verdict, suppression or policy uses it.
+- **All or nothing.** Facts are stated only when every operand has one. Every path must prove it, every alternative of a
+  conditional must be the value or a literal, and after the value is made no variable that carries it may be written, passed
+  to a call or reached by a construct that writes variables it does not name. A SQL comment ends what the text shows.
+- **Never stated as unknown.** In an experiment, a fact that said `not established` made the judge doubt a true finding.
+- **The text says the same as the facts.** The PHP guideline and the `php-mysqli-v1` contract used to say that an escaped
+  value remains a finding and that escaping is never protection. They now separate construction practice from injection.
+  Facts without that text cleared 1 of 14 false findings, and nearly the same text without facts cleared 2.
+- **Versions are unchanged.** A version is part of other families' requests; the component digest covers the text.
+
+**Tested benefit** (2026-11-25, one paid answer per request, outcomes by policy replay; [results and
+limits](../evaluation/detection-generalization-results/17.md)): of 14 known false SQL findings 5 are no longer Confirmed,
+0 of 25 true findings on changed requests are lost, and none becomes Protected. It was below the bar set before the test,
+and is measured on DVWA and on forms its author wrote. No held-out PHP application has been used.
+
 ## Semantic questions and policy
 
 Protocol `candidate-use-v9` retains validation and construction-practice questions, plus a distinct

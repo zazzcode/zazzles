@@ -29,6 +29,7 @@ is this table, read per lane.
 | 02.1 | `detgen-02-1-check-fields` | A | `origin/stage` | `stage` | PR 51 is merged |
 | 02.2 | `detgen-02-2-handler-checks` | A | `detgen-02-1-check-fields` | `detgen-02-1-check-fields`, then `stage` | 02.1 open and green |
 | 03 | `detgen-03-sql-calls` | B | `origin/stage` | `stage` | 00 merged, or the owner lets 03 start before it |
+| 17 | `detgen-17-php-sql-facts` | B | `origin/stage` | `stage` | The owner's word, 2026-11-25. Not in the original fifteen |
 | 01 | `detgen-01-storage-identity` | B | `origin/stage` | `stage` | 03 merged or dropped. **Paid checkpoint and merge only after 04 is merged** |
 | 13 | `detgen-13-storage-calls` | B | `origin/stage` | `stage` | 01, 03, 04 and 12 merged |
 | 04 | `detgen-04-middleware-checks` | A | `origin/stage` | `stage` | 02.2 merged |
@@ -69,6 +70,7 @@ changed.
 | 02.1 | `[ANALYSIS+PARSE] Detection generalization 02.1: shared check fields` |
 | 02.2 | `[PARSE+ANALYSIS+JUDGE+REPORT+DOC] Detection generalization 02.2: handler checks as evidence` |
 | 03 | `[PARSE+ANALYSIS+JUDGE+REPORT+DOC] Detection generalization 03: SQL calls without a contract` |
+| 17 | `[PARSE+ANALYSIS+DOC] Detection generalization 17: computed facts for PHP SQL operands` |
 | 04 | `[PARSE+JUDGE+DOC] Detection generalization 04: local middleware as evidence` |
 | 05 | `[PARSE+DOC] Detection generalization 05: record selection through several steps` |
 | 06 | `[PARSE+ANALYSIS+JUDGE+DOC] Detection generalization 06: ownership on create` |

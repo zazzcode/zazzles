@@ -146,6 +146,7 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 		c.Blockers = append(c.Blockers, stored...)
 		f.set.storedOnly[u.ID] = phpStoredKeys(constructed)
 	}
+	c.ModelFacts = append(c.ModelFacts, phpSQLFacts(text)...)
 	u.Completeness = c
 	return result
 }

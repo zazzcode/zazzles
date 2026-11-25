@@ -124,3 +124,9 @@ The owner asked that no result be lost. The numeric fact returned as an integer 
 added for the general shape of `bac/medium.php:22` (D-9), each with its own traps. Two judged requests now have new text: a paid check of
 35 requests, with its rule written first, was sent on the owner's word: PASS. 5 of 14 false findings Protected 3 of 3, 0 of 25 true lost,
 0 safe moved; 2 of 7 new safe forms not `vulnerable`.
+
+### 2026-11-25 — Re-review at `64b80b2`: R30 to R34
+
+An alias the rule did not see could rewrite a bare integer (R30); only integers may now follow an integer operand's last write. The
+program check reads every file under the root (R31), a nullsafe fetch in a string and a repeated fact are refused (R32, R33). R34 (a
+character set changed outside PHP source) stays a stated limit for the owner. No judged request text changed.

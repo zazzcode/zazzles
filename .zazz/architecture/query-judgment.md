@@ -44,14 +44,18 @@ global guarantee. This produces type facts for semantic assessment, not a hardco
     run no code of the program. After the first operand is written, only operands are written;
   - every alternative of a conditional is the same kind of call, or the empty string; an integer has no alternative;
   - after the first operand only operands are written, or `true`, `false`, `null` and integers, which are safe in any position;
+  - names that share a value through a reference end on the last value written to any of them, and every operand value is safe
+    in quotes. So after the last write of an integer or digit operand, which may stand bare, only integers, booleans and null
+    may be written. This holds whatever made the reference, so it needs no search for one;
   - escape and query use one connection: the same variable, or the same literal key of `$GLOBALS`, not written between;
   - `sql_operand_text.go` knows every token. The statement is one `SELECT`, `INSERT`, `UPDATE`, `DELETE` or `REPLACE`; each
     operand is compared, assigned or listed in `VALUES` or `IN`; a bare integer may also follow `LIMIT` or `OFFSET`, and stands apart
     from a sign, digit, point or letter. A function call, backslash, double quote, comment, variable,
     character set introducer, byte outside ASCII or second statement fails.
-- **Program conditions.** No fact is stated when a scanned file sets an error handler or tick function, declares `__destruct`,
-  `__toString` or `ArrayAccess` methods, redefines a function, sends `SET NAMES` or a change of `sql_mode`, takes one of these
-  variables by reference, is over the size limit or does not parse.
+- **Program conditions.** No fact is stated when any file under the scanned root, whatever its extension and including
+  `vendor/`, names an error handler or tick function (also as part of a longer string), declares `__destruct`, `__toString` or
+  `ArrayAccess` methods, redefines a function, or holds `SET NAMES`, a character set or a change of `sql_mode`; when the tree is
+  over 256 MiB; when a PHP file cannot be parsed; or when a scanned file takes one of the variables by reference with `&$name`.
 - **All or nothing.** Facts are stated only when every operand has one. Never stated as unknown: in an experiment a fact that
   said `not established` made the judge doubt a true finding.
 - **Text per record.** The PHP guideline and the `php-mysqli-v1` contract say that an escaped value remains a finding, and that a
@@ -59,9 +63,10 @@ global guarantee. This produces type facts for semantic assessment, not a hardco
   `guidelines/facts.go` replaces those sentences: they would contradict the fact. Every other PHP SQL request is the same as
   without this feature.
 
-**Limits.** The rule cannot see code outside the scanned files (an error handler of a library, `eval`, a generated file), a
-character set or SQL mode set by the server, by a file that is not scanned or by text put together at run time, or a trigger of
-the database. The statement is taken to run on MySQL or MariaDB. Methods (`$db->query`), PDO, SQLite3, PostgreSQL, floats and
+**Limits.** The rule cannot see code outside the scanned root (an extension, a library installed elsewhere, `eval` of text made
+at run time), a handler or setting whose name is put together from smaller pieces, a character set or SQL mode set by the server or
+by text put together at run time, or a trigger of the database. The `escaped_in_quoted_literal` note the judge reads does not repeat
+these conditions. The statement is taken to run on MySQL or MariaDB. Methods (`$db->query`), PDO, SQLite3, PostgreSQL, floats and
 bound parameters have no fact.
 
 **Tested benefit** (2026-11-25, outcomes by policy replay; [results and

@@ -2,8 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 09. **Depends on** nothing. Reads 08's role if merged. **Effort** small. **Review artifact** one
-  draft PR.
+- **Order** see the [index](README.md#1-index). **Depends on** nothing. Reads 08's role if merged.
+  **Effort** small. **Review artifact** one draft PR.
 
 ## Capability
 

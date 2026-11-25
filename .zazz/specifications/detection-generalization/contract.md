@@ -29,6 +29,11 @@ and revert alone.
 4. Existing analyzers are extended. No specification adds an analyzer family.
 5. Requests replay exactly. No provider or model fallback. Report fields are additive.
 6. A request of a family or language the specification does not name stays byte-identical.
+7. A protocol, question or instruction change is selected **per record** by its contract, never for a whole
+   family. Families are shared by languages: authorization, account, SQL and configuration serve PHP too. If
+   a change cannot be kept to its own records, halt.
+8. **Precision before reach.** A specification that adds records to a family merges only after the evidence
+   that lets the model clear correct code is in `stage` (02 and 04 for authorization).
 
 ## 2. Regression gates
 
@@ -88,9 +93,8 @@ checkpoint.
 
 **Roles.** *Unchanged control* for 01, 02, 04, 05, 06 and 10: their producers accept Express entries or
 stores it does not use, so records and requests must not move. *False-positive control* for 03: its SQL
-calls have contracts and must not change. *Held-out positives and controls* for 00, 07, 08, 09 and 11, where
-the rule is not tied to Express. An unchanged control shows no harm. It cannot show that a capability
-generalizes.
+calls have contracts and must not change. *Held-out positives and controls* for 00, 07, 08, 09, 11, 12 and
+13. An unchanged control shows no harm. It cannot show that a capability generalizes; 12 and 13 can.
 
 **Already seen by the author of this series:** record counts per family, storage blocker counts, entry and
 source sizes, counts of arms, awaits, creates and sends, package names, and lines 45 to 62 of one client
@@ -169,3 +173,38 @@ criteria and stop rule as the contract; on any halt condition or stop rule, stop
 call, commit or push without the owner's word. Do not look at a held-out application before the
 checkpoint that uses it. Finish with a fresh verifier and a draft PR to stage; never merge.
 ```
+
+## 7. Detection and false-positive accuracy must not fall
+
+Owner, 2026-11-25. These hold for every specification, above its own pass numbers. A specification cannot
+trade one for the other.
+
+**Base.** Before the first branch, a ledger is frozen from saved runs, offline: every keyed positive,
+control, known false positive and Protected record of every sample, with request digest and outcome.
+Reviewed state on 2026-11-25:
+
+| Sample | Confirmed records | Reviewed false (records or locations) | Families with false ones |
+|---|---:|---:|---|
+| Juice Shop | 51 | 5 records, 4 locations | NoSQL 2 of 7, authorization 2 of 10, configuration 1 of 5 |
+| vuln-nextjs | 13 | 0 | — |
+| vuln-symfony | 55 | 0 | — |
+| DVWA | in the ledger | 9 locations | SQL |
+
+False counts are lower bounds. They come from one review.
+
+| Rule | Requirement |
+|---|---|
+| A1 Recall | No keyed positive that is Confirmed becomes anything else, on any sample or fixture |
+| A2 False positives | No control, known-safe location or Protected record becomes a finding. Known false positives may go down, never up |
+| A3 False Protected | No keyed positive, or true finding outside the key, becomes Protected. One is a stop |
+| A4 Changed requests | Every record whose request changed is judged before and after on the same inputs, with two planned repeats where outcomes differ. Unchanged requests are replayed, not resent |
+| A5 New findings | Every new Confirmed record is read in source by an agent that did not implement. At least 90% true **and** not below the family's base precision. Under ten new records, at most one false; that one is explained and not tuned away |
+| A6 Cumulative | After each merge, the ledger is checked offline on `stage`. One full judged scan of Juice Shop and one PHP sample closes each group of three merged specifications |
+| A7 Variance | A moved outcome counts as model variance only if the same request gave both outcomes in planned repeats. It is listed, and never used to excuse A1 or A3 |
+| A8 Revert | Each PR reverts alone and restores the base requests. Shown by G2 on the revert, offline |
+
+**When a rule fails:** do not merge. Fix only by better evidence that holds for any application; otherwise
+the stop procedure applies. No rule, list, wording or threshold is added for the record that failed.
+
+Review is not a safe harbour: the results state how many records moved from Confirmed to Review, with the
+reason for each, and a keyed positive there breaks A1.

@@ -20,7 +20,7 @@ Working notes, run logs, QA findings, and handoffs do **not** live here — they
 The [delivery-ordered index](spec-index.md) lists every specification in the order it was
 delivered or is planned. The entries below describe each one.
 
-- [Detection generalization](detection-generalization/README.md) — draft series of twelve specifications, ordered by expected general value, with a shared [contract](detection-generalization/contract.md) and a [delivery plan](detection-generalization/delivery-plan.md). Not approved or implemented.
+- [Detection generalization](detection-generalization/README.md) — draft series of fourteen specifications, ordered by expected general value after precision, with a shared [contract](detection-generalization/contract.md) and a [delivery plan](detection-generalization/delivery-plan.md). Not approved or implemented.
 
 - [Juice Shop and Next.js hardening](juiceshop-nextjs-hardening-1.md) — specified as two stacked branches in the `juiceshop-nextjs-hardening` worktree. [Branch 1](juiceshop-nextjs-hardening-1.md) extends the `exposure`, `mass-assignment`, `authorization`, `account` and `configuration` families to Express applications in JavaScript and TypeScript and closes the upload gap, with OWASP Juice Shop and vuln-nextjs as the measure; it adds no analyzer. [Branch 2](juiceshop-nextjs-hardening-2.md) reruns Semgrep CE and Bearer on four samples and reorganizes the comparison documents around one summary linked from the project README. [Branch 3](juiceshop-nextjs-hardening-3.md) is specified: it closes the three Juice Shop misses the comparison found, reports reads of a record another user owns, removes three false positives, and lists the follow-on work.
 

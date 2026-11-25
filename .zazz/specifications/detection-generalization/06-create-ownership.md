@@ -2,8 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 06. **Depends on** 01 and 02. **Effort** medium. **Review artifact** one draft PR. If 00 passes,
-  its inventory supplies the operations and D-1 changes.
+- **Order** see the [index](README.md#1-index). **Depends on** 01 and 02. **Effort** medium. **Review
+  artifact** one draft PR. If 00 passes, its inventory supplies the operations and D-1 changes.
 
 ## Capability
 
@@ -77,14 +77,14 @@ creating entries in a sample that is not read and explained.
 
 ## Paid checkpoints
 
-1. Fixtures and added sample records. Cap 60. 2. Held-out. Cap 60. Pass: no keyed control Confirmed; at
-   least 75% of Confirmed records true; at least 60% of keyed positives Confirmed.
+1. Fixtures and added sample records. Cap 60. 2. Held-out. Cap 60. Pass: no keyed control Confirmed;
+   contract §7 holds; at least 60% of keyed positives Confirmed.
 
 ## Stop rule
 
 Stop when under half of held-out keyed positives get a record (the identity bases are too narrow), or
-precision of Confirmed is under 75%, or a delegated-creation control is Confirmed at either checkpoint. Do
-not widen the name hints.
+contract §7 fails, or a delegated-creation control is Confirmed at either checkpoint. Do not widen the name
+hints.
 
 ## Juice Shop check
 

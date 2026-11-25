@@ -134,3 +134,44 @@ Effort: S days, M one branch, L several. "Judged cost" is requests per scan.
 
 No judged run. Probability estimates are judgments from the measurements above. Six Node samples are few,
 and five of them have been used before. The probes were written by the session that ranked the options.
+
+## 7. Second pass
+
+The owner asked whether the options are right and said that detection and false-positive accuracy must not
+fall. Rereading the proposal and probing again found five problems. All are corrected in the series.
+
+1. **A merge order that could add false positives.** Storage identity (01) ranked first and would add
+   authorization records on new projects before the model can see checks. Evidence that clears correct code
+   now comes first.
+2. **An entry limit that was missed.** The producers accept Express entries only. Same routes, offline
+   probe:
+
+| Same routes on | Entries found | Authorization or mass-assignment records |
+|---|---:|---:|
+| Express, named ES export | 2 | 2 |
+| Next.js route handlers | 2 | 0 |
+| Fastify | 2 | 0 |
+| Express with a verified Prisma client (update, create, delete) | 3 | 0 |
+| Express with a bound SQL update | 1 | 0 |
+| Express with an in-memory array | 1 | 0 |
+
+   Specs 12 and 13 cover these, except the array. It is the proposal's first observation and the first draft
+   did not act on it.
+3. **Pass marks that allowed accuracy to fall.** 75 to 80 percent true is below today's reviewed level on
+   Juice Shop (46 of 51). Contract §7 replaces them.
+4. **Shared protocols.** Authorization, account, SQL and configuration serve several languages with one
+   protocol by kind. A family-wide change would alter PHP requests. Changes are now selected per record.
+5. **Optimism about model resolution.** The earlier mechanism discharged 10 blockers on 64 sent records, and
+   one wrong answer verified. P for 03 and 13 is set with that in mind, and neither can give Protected.
+
+**The proposal's outputs:**
+
+| Asked for | State |
+|---|---|
+| A map of where framework knowledge lives, per adapter | Partly: counted for JavaScript only. PHP and Python not counted |
+| Contract, recognition or shape for each list | Partly: by group, not list by list |
+| Evidence from existing mechanisms | Partly: evidence resolution. Route discovery was not examined |
+| Three to five proposals with facts, question, check, cost and replay risk | Met by specs 02, 03, 04, 12 and 13 |
+| An accuracy guard per proposal, with a held-out application | Met by contract §3 and §7 |
+| A ranked order, first small enough for one branch | Met: 02.1, then 02.2 |
+| Candidate: entries beyond HTTP | Not covered; reason in the index |

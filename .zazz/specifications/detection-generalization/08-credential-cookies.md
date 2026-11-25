@@ -2,7 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 08. **Depends on** nothing. **Effort** small. **Review artifact** one draft PR.
+- **Order** see the [index](README.md#1-index). **Depends on** nothing. **Effort** small. **Review
+  artifact** one draft PR.
 
 ## Capability
 

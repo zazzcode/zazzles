@@ -3,8 +3,8 @@
 **Draft. Nothing in it exists yet.** It says where each pull request is built, what it is called, what it
 starts from and what must be true first. The [series contract](contract.md) owns the rules.
 
-Two lanes, thirteen pull requests. These documents come first, in PR 51. **One branch per PR. One open
-branch per lane at a time, except the one stack in §3.**
+Two lanes, fifteen pull requests. These documents come first, in PR 51. **One branch per PR. One open branch
+per lane at a time, except the one stack in §3.**
 
 ## 1. Worktrees
 
@@ -20,20 +20,23 @@ no `.claude/worktrees/`, and no `claude/*` branch.
 
 ## 2. Branches and pull requests
 
-Names are flat and sort in series order: `detgen-<number>-<slug>`. The number is the specification's.
+Names are flat: `detgen-<number>-<slug>`. The number is the specification's name, not its place. The order
+is this table, read per lane.
 
 | PR | Branch | Lane | Starts from | PR base | Starts when |
 |---:|---|---|---|---|---|
 | 00 | `detgen-00-operation-inventory` | B | `origin/stage` | `stage` | PR 51 is merged |
-| 01 | `detgen-01-storage-identity` | B | `origin/stage` | `stage` | 00 merged, or the owner lets 01 start before it |
 | 02.1 | `detgen-02-1-check-fields` | A | `origin/stage` | `stage` | PR 51 is merged |
 | 02.2 | `detgen-02-2-handler-checks` | A | `detgen-02-1-check-fields` | `detgen-02-1-check-fields`, then `stage` | 02.1 open and green |
-| 03 | `detgen-03-sql-calls` | B | `origin/stage` | `stage` | 01 merged or dropped |
+| 03 | `detgen-03-sql-calls` | B | `origin/stage` | `stage` | 00 merged, or the owner lets 03 start before it |
+| 01 | `detgen-01-storage-identity` | B | `origin/stage` | `stage` | 03 merged or dropped. **Paid checkpoint and merge only after 04 is merged** |
+| 13 | `detgen-13-storage-calls` | B | `origin/stage` | `stage` | 01, 03, 04 and 12 merged |
 | 04 | `detgen-04-middleware-checks` | A | `origin/stage` | `stage` | 02.2 merged |
-| 05 | `detgen-05-record-selection` | A | `origin/stage` | `stage` | 04 merged or dropped |
+| 12 | `detgen-12-http-entries` | A | `origin/stage` | `stage` | 04 merged |
+| 05 | `detgen-05-record-selection` | A | `origin/stage` | `stage` | 12 merged or dropped |
 | 06 | `detgen-06-create-ownership` | A | `origin/stage` | `stage` | 01 and 02.2 merged, 00 decided, 05 merged or dropped |
 | 07 | `detgen-07-response-disclosure` | A | `origin/stage` | `stage` | 01 merged, 00 decided, 06 merged or dropped |
-| 08 | `detgen-08-credential-cookies` | B | `origin/stage` | `stage` | 00 decided, 03 merged or dropped |
+| 08 | `detgen-08-credential-cookies` | B | `origin/stage` | `stage` | 00 decided, 13 merged or dropped |
 | 09 | `detgen-09-cross-origin` | B | `origin/stage` | `stage` | 08 merged or dropped |
 | 10 | `detgen-10-credential-change` | A | `origin/stage` | `stage` | 05 merged, 00 decided, 07 merged or dropped |
 | 11 | `detgen-11-rejection-without-stop` | A | `origin/stage` | `stage` | 04 merged, and its occurrence count passes |
@@ -44,11 +47,13 @@ Names are flat and sort in series order: `detgen-<number>-<slug>`. The number is
 flowchart LR
   P51["PR 51, with these documents"]
   subgraph B["Lane B"]
-    P51 --> S00["00"] --> S01["01"] --> S03["03"] --> S08["08"] --> S09["09"]
+    P51 --> S00["00"] --> S03["03"] --> S01["01"] --> S13["13"] --> S08["08"] --> S09["09"]
   end
   subgraph A["Lane A"]
-    P51 --> S021["02.1"] -- stack --> S022["02.2"] --> S04["04"] --> S05["05"] --> S06["06"] --> S07["07"] --> S10["10"] --> S11["11"]
+    P51 --> S021["02.1"] -- stack --> S022["02.2"] --> S04["04"] --> S12["12"] --> S05["05"] --> S06["06"] --> S07["07"] --> S10["10"] --> S11["11"]
   end
+  S04 -. must merge first .-> S01
+  S12 -. needed by .-> S13
   S01 -. needed by .-> S06
   S01 -. needed by .-> S07
   S00 -. decision .-> S06
@@ -71,6 +76,8 @@ changed.
 | 08 | `[PARSE+ANALYSIS+DOC] Detection generalization 08: credential cookie settings` |
 | 09 | `[PARSE+ANALYSIS+REPORT+DOC] Detection generalization 09: credentialed cross-origin reads` |
 | 10 | `[PARSE+ANALYSIS+JUDGE+DOC] Detection generalization 10: proof of a credential change` |
+| 12 | `[PARSE+DOC] Detection generalization 12: operation families on every HTTP entry` |
+| 13 | `[PARSE+ANALYSIS+JUDGE+DOC] Detection generalization 13: storage calls without a contract` |
 | 11 | `[PARSE+JUDGE+DOC] Detection generalization 11: rejection that does not stop` |
 
 First lines of every PR body: `Lane`, `Series PR <n> of the delivery plan`, `Specification`, `Depends on`,
@@ -187,7 +194,8 @@ no longer count, and repeating them is a new decision for the owner.
 ## 9. For the human
 
 One look at the state: `gh pr list --state all --search "head:detgen-"`. Read the PR number and the lane in
-the title and first lines. Merge in §2 order within a lane. A question before each merge: did the stop rule
-pass, are the gates on the current `stage`, and is any judged result older than the last rebase?
+the title and first lines. Merge in §2 order within a lane. A question before each merge: does [contract
+§7](contract.md#7-detection-and-false-positive-accuracy-must-not-fall) hold with no exception, did the stop
+rule pass, are the gates on the current `stage`, and is any judged result older than the last rebase?
 
 Live status is on GitHub and not in this file: two lanes editing one status table would conflict.

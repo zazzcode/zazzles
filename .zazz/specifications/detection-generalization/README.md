@@ -14,33 +14,44 @@ value.
 
 ## 1. Index
 
-| Order | Specification | Effort | Depends on | Expected effect |
-|---:|---|---|---|---|
-| 00 | [Operation inventory experiment](00-operation-inventory.md) | S, offline | — | A decision: may replace producers in 06 to 10 |
-| 01 | [Storage identity across module forms](01-storage-identity.md) | S to M | — | Four families record on CommonJS, default-export and `define` projects |
-| 02 | [Handler checks as evidence](02-handler-checks.md) | M | — | Correct in-handler checks become Protected, wrong ones stay findings |
-| 03 | [SQL calls without a contract](03-sql-calls.md) | M to L | — | SQL injection on drivers with no written contract |
-| 04 | [Local middleware as evidence](04-middleware-checks.md) | S | 02 | An application's own access check can be judged |
-| 05 | [Record selection through several steps](05-record-selection.md) | M | — | Writes on a record reached through more than one lookup |
-| 06 | [Ownership on create](06-create-ownership.md) | M | 01, 02 | Records stored under an identity the request chose |
-| 07 | [Response disclosure](07-response-disclosure.md) | M | 01 | Credential fields or request-chosen properties in a response |
-| 08 | [Credential cookie settings](08-credential-cookies.md) | S | — | Script-readable or insecure session cookies outside session libraries |
-| 09 | [Credentialed cross-origin reads](09-cross-origin.md) | S | — | Origin reflection with credentials, and script-readable responses |
-| 10 | [Proof of a credential change](10-credential-change.md) | M | 05 | Password writes whose only proof is a reusable stored value |
-| 11 | [Rejection that does not stop](11-rejection-without-stop.md) | S | 04 | A check that answers and lets the operation run |
+Numbers are stable names. **The order is the first column.**
+
+| Order | No. | Specification | Effort | Depends on | Expected effect |
+|---:|---:|---|---|---|---|
+| 0 | 00 | [Operation inventory experiment](00-operation-inventory.md) | S, offline | — | A decision: may replace producers in 06 to 10 |
+| 1 | 02 | [Handler checks as evidence](02-handler-checks.md) | M | — | Correct in-handler checks become Protected, wrong ones stay findings |
+| 2 | 04 | [Local middleware as evidence](04-middleware-checks.md) | S | 02 | An application's own access check can be judged |
+| 3 | 03 | [SQL calls without a contract](03-sql-calls.md) | M to L | — | SQL injection on drivers with no written contract |
+| 4 | 01 | [Storage identity across module forms](01-storage-identity.md) | S to M | 02 and 04 to merge | Four families record on CommonJS, default-export and `define` projects |
+| 5 | 12 | [Operation families on every HTTP entry](12-http-entries.md) | M to L | 02, 04 | Authorization, mass assignment and enumeration beyond Express |
+| 6 | 13 | [Storage calls without a contract](13-storage-calls.md) | M to L | 02, 03, 04, 12 | State changes through any storage library |
+| 7 | 05 | [Record selection through several steps](05-record-selection.md) | M | — | Writes on a record reached through more than one lookup |
+| 8 | 06 | [Ownership on create](06-create-ownership.md) | M | 01, 02 | Records stored under an identity the request chose |
+| 9 | 07 | [Response disclosure](07-response-disclosure.md) | M | 01 | Credential fields or request-chosen properties in a response |
+| 10 | 08 | [Credential cookie settings](08-credential-cookies.md) | S | — | Script-readable or insecure session cookies outside session libraries |
+| 11 | 09 | [Credentialed cross-origin reads](09-cross-origin.md) | S | — | Origin reflection with credentials, and script-readable responses |
+| 12 | 10 | [Proof of a credential change](10-credential-change.md) | M | 05 | Password writes whose only proof is a reusable stored value |
+| 13 | 11 | [Rejection that does not stop](11-rejection-without-stop.md) | S | 04 | A check that answers and lets the operation run |
 
 ## 2. Ranking
 
 Value is P × gain. **P** is the probability that the capability generalizes beyond the samples. **Gain** is
 1 to 5: how many applications and records it would improve. Both are **judgments**. Evidence is measured and
-is in the linked notes. Ties go to lower effort, lower false-positive risk and independence.
+is in the linked notes.
 
-| Order | P | Gain | Value | False-positive risk | Evidence behind P | What P still assumes |
+The order is not value alone. **Precision before reach**
+([contract](contract.md#7-detection-and-false-positive-accuracy-must-not-fall)): what lets the model clear
+correct code (02, 04) comes before what adds records (01, 12, 13). Ties go to lower effort and lower
+false-positive risk.
+
+| No. | P | Gain | Value | False-positive risk | Evidence behind P | What P still assumes |
 |---:|---:|---:|---:|---|---|---|
-| 01 | 0.90 | 4 | 3.6 | Low to medium: more correct candidates to judge | 8 of 12 ordinary definition forms unrecorded; nodejs-goof (CommonJS) has no such record | Real projects use these forms at similar rates |
 | 02 | 0.80 | 4 | 3.2 | Lowers it | 49 answering-and-exiting arms in four other development samples; 7 of 10 handler requests omit the handler; probe pairs recorded alike | The model uses the facts. Two earlier facts did not move answers |
-| 03 | 0.65 | 5 | 3.2 | Medium | 16 of 19 driver forms unrecorded or unsendable | A model answers about a driver from the import and call; judged evidence is missing |
 | 04 | 0.65 | 3 | 2.0 | Lowers it | 21 Juice Shop and 3 nodejs-goof entries have access `unresolved`; the body is not sent | Other apps use local middleware as much |
+| 03 | 0.60 | 5 | 3.0 | Medium | 16 of 19 driver forms unrecorded or unsendable | A model answers about a driver from the import and call; judged evidence is missing, and earlier model resolution moved few records |
+| 01 | 0.90 | 4 | 3.6 | High without 02 and 04, medium after: it adds records on new projects | 8 of 12 ordinary definition forms unrecorded; nodejs-goof (CommonJS) has no such record | Real projects use these forms at similar rates |
+| 12 | 0.80 | 4 | 3.2 | High without 02 and 04, medium after | The same update and create that record on Express record nothing on Next.js or Fastify (probe); Express-only tests in the producers; 150 Next.js route entries in two samples have no record of these families | Existing entry contexts hold what the producers need |
+| 13 | 0.50 | 5 | 2.5 | Medium to high | Prisma update, create and delete, and a bound SQL update, record no authorization claim (probe) | 03's mechanism works on storage too. Earlier model resolution moved few records: 10 blockers on 64 sent |
 | 05 | 0.60 | 3 | 1.8 | Low | Probe pair p5 and p5b | Multi-step selection is common |
 | 06 | 0.60 | 3 | 1.8 | Medium to high | Two probe forms unrecorded; 2 create calls in one other development sample, so P is mostly judgment | Identity fields can be established without names |
 | 07 | 0.50 | 3 | 1.5 | Medium | Probe p9 and p9b; 276 response sends in five development samples | A credential field can be linked to the response |
@@ -48,9 +59,6 @@ is in the linked notes. Ties go to lower effort, lower false-positive risk and i
 | 09 | 0.50 | 2 | 1.0 | Medium | Origin policy in two of five development samples | Credential facts are joined correctly |
 | 10 | 0.50 | 2 | 1.0 | Medium | One Juice Shop row, one probe | Recovery forms are similar across apps |
 | 11 | 0.30 | 2 | 0.6 | Low | **None outside Juice Shop**: 0 in four other development samples | The defect occurs in real code. Known in general, not seen here |
-
-01 precedes 02 and 03 because it needs no judged answer to show its effect. 03 is worth as much as 02 and
-costs more. 00 is first because it is cheap and its result can change 06 to 10.
 
 ## 3. No specification
 
@@ -65,6 +73,10 @@ costs more. 00 is first because it is cheap and its result can change 06 to 10.
 | `CONF-05` as a vulnerability | Open origin without credentials is a choice. Spec 09 records the facts |
 | Entry-level review by the model | Deferred: [option F](../../evaluation/detection-generalization-strategy.md#4-options). Needs a paid experiment |
 | Upload bytes after memory storage | Low value until a follow-on store is common in samples |
+| Entries beyond HTTP: queues, jobs, webhooks, events | In the owner's proposal. No local sample has one to measure. Needs a common entry model and an application that uses it; add a specification when the pool has one |
+| In-memory collections and object spread into them | Seen in one demonstration application. Real applications store elsewhere; 13 covers those |
+| Environment and deployment guards by enumeration | The known miss is fixed. Reading conditions as facts in other families follows if 02 passes |
+| Python and PHP equivalents | The series is JavaScript first, where the gap is measured. 02.1's fields are for all three. Decide after 02 and 04 |
 | Typed graph store; scanner rules that decide | Tried and removed; contrary to the design intent |
 | The 17 rows with no analyzer (18 with the committed key) | Outside this brief: new analyzers |
 
@@ -85,6 +97,12 @@ costs more. 00 is first because it is cheap and its result can change 06 to 10.
 - **OQ-6** Answered by the owner, 2026-11-25: the seven rows are corrected in PR 51, by that session.
 
 ## 5. Implementation and review change log
+
+### 2026-11-25 — Second pass
+
+Reread against the owner's proposal. Added 12 and 13, and the accuracy rules of contract §7. Moved 01 behind
+02 and 04. Replaced precision pass marks of 75 and 80 percent with contract §7. Shared protocols must be
+selected per record.
 
 ### 2026-11-25 — Documents join PR 51
 

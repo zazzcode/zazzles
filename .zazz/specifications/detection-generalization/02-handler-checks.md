@@ -2,9 +2,9 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 02. **Depends on** nothing in code. **Effort** medium. **Review artifact** two draft PRs: 02.1
-  the shared check fields, 02.2 the rest. *Why two:* the injection false-positive work reuses 02.1 and must
-  not wait for 02.2.
+- **Order** see the [index](README.md#1-index). **Depends on** nothing in code. **Effort** medium. **Review
+  artifact** two draft PRs: 02.1 the shared check fields, 02.2 the rest. *Why two:* the injection
+  false-positive work reuses 02.1 and must not wait for 02.2.
 
 ## Capability
 
@@ -118,15 +118,13 @@ Each keyed correct check is a control. No record is added (G7: zero).
    fixture control Confirmed; every fixture positive Confirmed or in Review with the blocking fact, at most
    one by (6); no keyed finding lost; the three Protected Juice Shop records stay.
 2. Held-out and the renamed copy, authorization only, before and after, twice for changed outcomes. Cap 160.
-   Pass: no correct check Confirmed; at least 80% of Confirmed records true; no keyed positive Protected;
-   renamed outcomes equal.
+   Pass: no correct check Confirmed; contract §7 holds; no keyed positive Protected; renamed outcomes equal.
 
 ## Stop rule
 
 Stop when, at checkpoint 1, answers do not follow the facts: fewer than 80% of the fixture pairs separate.
 Do not add a rule that decides the check, and do not reword until they pass. Stop when AC5 finds a wrong
-`stops`, or at checkpoint 2 a keyed positive becomes Protected, or a correct check is Confirmed more than
-once in ten.
+`stops`, or at checkpoint 2 a keyed positive becomes Protected, or a correct check is Confirmed.
 
 ## Juice Shop check
 

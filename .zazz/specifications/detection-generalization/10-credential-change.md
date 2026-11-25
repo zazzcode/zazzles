@@ -2,8 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 10. **Depends on** 05. **Effort** medium. **Review artifact** one draft PR. If 00 passes, its
-  update effect supplies the operation.
+- **Order** see the [index](README.md#1-index). **Depends on** 05. **Effort** medium. **Review artifact**
+  one draft PR. If 00 passes, its update effect supplies the operation.
 
 ## Capability
 

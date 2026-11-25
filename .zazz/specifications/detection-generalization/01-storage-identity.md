@@ -2,7 +2,9 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 01. **Depends on** nothing. **Effort** small to medium. **Review artifact** one draft PR.
+- **Order** see the [index](README.md#1-index). **Depends on** nothing to build; its paid checkpoint and
+  merge wait for 02 and 04. *Why:* it adds authorization records on new projects, and without check evidence
+  a guarded handler there could be Confirmed. **Effort** small to medium. **Review artifact** one draft PR.
 
 ## Capability
 
@@ -82,14 +84,12 @@ is not a real storage call on the stated model.
 
 After AC1 to AC4: the added records of nodejs-goof and the two held-out applications, families
 authorization, mass assignment and account, one arm (base has none). Cap 80. Pass: no keyed control
-Confirmed; at least 75% of Confirmed records true on independent review.
+Confirmed; contract §7 holds.
 
 ## Stop rule
 
 Stop when fewer than 10 of 12 forms resolve without an application-specific exception; or held-out AC4 is
-under 70%; or precision of Confirmed records is under 75%; or scan time breaks G5. If precision alone fails,
-the likely cause is missing check evidence: report it, hold the merge, and repeat after 02. That repeat uses
-unused applications.
+under 70%; or contract §7 fails; or scan time breaks G5.
 
 ## Juice Shop check
 

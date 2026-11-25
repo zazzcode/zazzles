@@ -2,7 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 05. **Depends on** nothing. **Effort** medium. **Review artifact** one draft PR.
+- **Order** see the [index](README.md#1-index). **Depends on** nothing. **Effort** medium. **Review
+  artifact** one draft PR.
 
 ## Capability
 
@@ -65,8 +66,7 @@ all read.
 
 ## Paid checkpoints
 
-Fixtures, added sample records and held-out. Cap 70. Pass: no keyed control Confirmed; at least 75% of
-Confirmed records true.
+Fixtures, added sample records and held-out. Cap 70. Pass: no keyed control Confirmed; contract §7 holds.
 
 ## Stop rule
 

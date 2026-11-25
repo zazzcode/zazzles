@@ -2,8 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 07. **Depends on** 01. **Effort** medium. **Review artifact** one draft PR. If 00 passes, its
-  `respond` effect replaces D-1's producer.
+- **Order** see the [index](README.md#1-index). **Depends on** 01. **Effort** medium. **Review artifact**
+  one draft PR. If 00 passes, its `respond` effect replaces D-1's producer.
 
 ## Capability
 
@@ -73,13 +73,13 @@ read.
 
 ## Paid checkpoints
 
-Fixtures, added sample records and held-out. Cap 80. Pass: no keyed projection Confirmed; at least 80% of
-Confirmed records true; at least 60% of keyed positives Confirmed or in Review with the blocking fact.
+Fixtures, added sample records and held-out. Cap 80. Pass: no keyed projection Confirmed; contract §7 holds;
+at least 60% of keyed positives Confirmed or in Review with the blocking fact.
 
 ## Stop rule
 
 Stop when fewer than half of held-out credentials reach the census (the role is too narrow), a serializer
-control is Confirmed, or precision is under 80%. Do not add field names.
+control is Confirmed, or contract §7 fails. Do not add field names.
 
 ## Juice Shop check
 

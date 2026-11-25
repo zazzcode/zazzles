@@ -2,7 +2,8 @@
 
 - **Series** [Contract, gates, held-out protocol, stop procedure and prompt](contract.md). They apply and
   are not repeated. **Draft, not approved.**
-- **Order** 04. **Depends on** 02. **Effort** small. **Review artifact** one draft PR.
+- **Order** see the [index](README.md#1-index). **Depends on** 02. **Effort** small. **Review artifact** one
+  draft PR.
 
 ## Capability
 
@@ -71,12 +72,12 @@ No record added. Keyed correct chains are controls.
 ## Paid checkpoints
 
 Fixtures and held-out, before and after. Cap 100. Pass: no stopping caller check Confirmed; no non-stopping
-or non-caller check Protected; at least 80% of Confirmed records true.
+or non-caller check Protected; contract §7 holds.
 
 ## Stop rule
 
 Stop when fewer than 80% of stopping and non-stopping pairs separate, a non-caller check (feature flag,
-method test) is accepted as protection more than once in ten, or the held-out facts contain a wrong `stops`.
+method test) is accepted as protection, or the held-out facts contain a wrong `stops`.
 
 ## Juice Shop check
 

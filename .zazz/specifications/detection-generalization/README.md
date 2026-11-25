@@ -95,8 +95,14 @@ false-positive risk.
 - **OQ-5** Owner, 2026-11-25: paid runs are kept for when they are needed. Read as: the entry-review
   experiment waits for spec 00 and runs only if 00 leaves its question open. It still asks first.
 - **OQ-6** Answered by the owner, 2026-11-25: the seven rows are corrected in PR 51, by that session.
+- **OQ-7** Answered by the owner, 2026-11-25: the accuracy rules of
+  [contract §7](contract.md#7-detection-and-false-positive-accuracy-must-not-fall) are accepted as written.
 
 ## 5. Implementation and review change log
+
+### 2026-11-25 — Accuracy rules accepted
+
+The owner accepted contract §7 as written. A change to it needs the owner.
 
 ### 2026-11-25 — Second pass
 

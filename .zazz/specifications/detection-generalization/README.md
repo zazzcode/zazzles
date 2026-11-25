@@ -23,6 +23,7 @@ Numbers are stable names. **The order is the first column.**
 | 2 | 04 | [Local middleware as evidence](04-middleware-checks.md) | S | 02 | An application's own access check can be judged |
 | — | 03 | [SQL calls without a contract](03-sql-calls.md) | M to L | — | **Stopped and reverted** 2026-11-25, [results](../../evaluation/detection-generalization-results/03.md) |
 | — | 14 | [SQL calls, redesigned](14-sql-calls-redesign.md) | S, then M | — | **Stopped at its probe and dropped** 2026-11-25, [results](../../evaluation/detection-generalization-results/14.md) |
+| — | 15 | [Judge certainty](15-judge-certainty.md) | S | — | Experiment: which request gives the judge at least 0.65 to 0.70 certainty |
 | 4 | 01 | [Storage identity across module forms](01-storage-identity.md) | S to M | 02 and 04 to merge | Four families record on CommonJS, default-export and `define` projects |
 | 5 | 12 | [Operation families on every HTTP entry](12-http-entries.md) | M to L | 02, 04 | Authorization, mass assignment and enumeration beyond Express |
 | 6 | 13 | [Storage calls without a contract](13-storage-calls.md) | M to L | 02, 03, 04, 12 | State changes through any storage library |

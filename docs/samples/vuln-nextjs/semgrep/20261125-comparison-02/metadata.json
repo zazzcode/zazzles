@@ -1,0 +1,11 @@
+{
+  "tool": "Semgrep Community Edition",
+  "version": "1.183.0",
+  "rules": "23 packs; snapshot semgrep-rules/20261125-broad (1379 rules)",
+  "options": "--metrics=off --oss-only --timeout 30 --dataflow-traces; excludes node_modules, vendor, .github, dist, build, var, *.min.js, frontend/src/assets/private/three.js",
+  "date": "2026-11-25",
+  "target_revision": "f5d47de3b684f532141b8b4127060189c236dfd6",
+  "results": 15,
+  "results_sha256": "ccb64d223f568a1b9e36728ec5546d414000cdf4369d96b2d92a23211af41459",
+  "note": "Curated copy: target paths are relative to the sample root. Raw output, with SARIF, is under <TEST_FINDINGS>/vuln-nextjs/semgrep-20261125-broad-1/."
+}

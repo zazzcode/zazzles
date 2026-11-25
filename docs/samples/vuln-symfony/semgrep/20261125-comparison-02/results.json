@@ -1,0 +1,3215 @@
+{
+ "version": "1.183.0",
+ "results": [
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.secrets.security.detected-generic-secret.detected-generic-secret",
+   "path": ".env",
+   "start": {
+    "line": 19,
+    "col": 5,
+    "offset": 879
+   },
+   "end": {
+    "line": 19,
+    "col": 44,
+    "offset": 918
+   },
+   "extra": {
+    "message": "Generic Secret detected",
+    "metadata": {
+     "cwe": [
+      "CWE-798: Use of Hard-coded Credentials"
+     ],
+     "source-rule-url": "https://github.com/dxa4481/truffleHogRegexes/blob/master/truffleHogRegexes/regexes.json",
+     "category": "security",
+     "technology": [
+      "secrets"
+     ],
+     "confidence": "LOW",
+     "owasp": [
+      "A07:2021 - Identification and Authentication Failures",
+      "A07:2025 - Authentication Failures"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Hard-coded Secrets"
+     ],
+     "source": "https://semgrep.dev/r/generic.secrets.security.detected-generic-secret.detected-generic-secret",
+     "shortlink": "https://sg.run/l2o5"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.generic.amqp-unencrypted-transport.amqp-unencrypted-transport",
+   "path": ".env",
+   "start": {
+    "line": 34,
+    "col": 27,
+    "offset": 1708
+   },
+   "end": {
+    "line": 34,
+    "col": 73,
+    "offset": 1754
+   },
+   "extra": {
+    "message": "Found unencrypted AMQP connection, prefer TLS encrypted `amqps://` transport\n",
+    "metadata": {
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "cwe": "CWE-319: Cleartext Transmission of Sensitive Information",
+     "confidence": "HIGH",
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "technology": [
+      "amqp",
+      "rabbitmq"
+     ],
+     "references": [
+      "https://www.rabbitmq.com/docs/uri-spec#the-amqps-uri-scheme"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.generic.amqp-unencrypted-transport.amqp-unencrypted-transport",
+     "shortlink": "https://sg.run/3qYKK"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.generic.redis-unencrypted-transport.redis-unencrypted-transport",
+   "path": ".env",
+   "start": {
+    "line": 35,
+    "col": 27,
+    "offset": 1781
+   },
+   "end": {
+    "line": 35,
+    "col": 58,
+    "offset": 1812
+   },
+   "extra": {
+    "message": "Found unencrypted Redis connection, prefer TLS encrypted `rediss://` transport\n",
+    "metadata": {
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "cwe": "CWE-319: Cleartext Transmission of Sensitive Information",
+     "confidence": "HIGH",
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "technology": [
+      "redis"
+     ],
+     "references": [
+      "https://redis.io/docs/latest/develop/connect/cli/#host-port-password-and-database"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.generic.redis-unencrypted-transport.redis-unencrypted-transport",
+     "shortlink": "https://sg.run/GdP8q"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.dockerfile.security.missing-user-entrypoint.missing-user-entrypoint",
+   "path": "Dockerfile",
+   "start": {
+    "line": 57,
+    "col": 1,
+    "offset": 1736
+   },
+   "end": {
+    "line": 57,
+    "col": 30,
+    "offset": 1765
+   },
+   "extra": {
+    "message": "By not specifying a USER, a program in the container may run as 'root'. This is a security hazard. If an attacker can control a process running as root, they may have control over the container. Ensure that the last USER in a Dockerfile is a USER other than 'root'.",
+    "fix": "USER non-root\nENTRYPOINT [\"/entrypoint.sh\"]",
+    "metadata": {
+     "cwe": [
+      "CWE-269: Improper Privilege Management"
+     ],
+     "category": "security",
+     "technology": [
+      "dockerfile"
+     ],
+     "confidence": "MEDIUM",
+     "owasp": [
+      "A04:2021 - Insecure Design",
+      "A06:2025 - Insecure Design"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A04_2021-Insecure_Design"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authorization"
+     ],
+     "source": "https://semgrep.dev/r/dockerfile.security.missing-user-entrypoint.missing-user-entrypoint",
+     "shortlink": "https://sg.run/k281"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.generic.redis-unencrypted-transport.redis-unencrypted-transport",
+   "path": "config/packages/cache.yaml",
+   "start": {
+    "line": 12,
+    "col": 34,
+    "offset": 401
+   },
+   "end": {
+    "line": 12,
+    "col": 51,
+    "offset": 418
+   },
+   "extra": {
+    "message": "Found unencrypted Redis connection, prefer TLS encrypted `rediss://` transport\n",
+    "metadata": {
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "cwe": "CWE-319: Cleartext Transmission of Sensitive Information",
+     "confidence": "HIGH",
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "technology": [
+      "redis"
+     ],
+     "references": [
+      "https://redis.io/docs/latest/develop/connect/cli/#host-port-password-and-database"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.generic.redis-unencrypted-transport.redis-unencrypted-transport",
+     "shortlink": "https://sg.run/GdP8q"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+   "path": "docker-compose.override.yml",
+   "start": {
+    "line": 7,
+    "col": 10,
+    "offset": 92
+   },
+   "end": {
+    "line": 7,
+    "col": 19,
+    "offset": 101
+   },
+   "extra": {
+    "message": "Service port is exposed on all interfaces",
+    "metadata": {
+     "category": "security",
+     "cwe": "CWE-1327: Binding to an Unrestricted IP Address",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "docker",
+      "compose"
+     ],
+     "confidence": "LOW",
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "references": [
+      "https://docs.docker.com/compose/compose-file/compose-file-v3/#ports"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+     "shortlink": "https://sg.run/gxAyK"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.yaml.docker-compose.security.no-new-privileges.no-new-privileges",
+   "path": "docker-compose.override.yml",
+   "start": {
+    "line": 11,
+    "col": 3,
+    "offset": 168
+   },
+   "end": {
+    "line": 11,
+    "col": 9,
+    "offset": 174
+   },
+   "extra": {
+    "message": "Service 'mailer' allows for privilege escalation via setuid or setgid binaries. Add 'no-new-privileges:true' in 'security_opt' to prevent this.",
+    "metadata": {
+     "cwe": [
+      "CWE-732: Incorrect Permission Assignment for Critical Resource"
+     ],
+     "owasp": [
+      "A05:2021 - Security Misconfiguration",
+      "A06:2017 - Security Misconfiguration",
+      "A02:2025 - Security Misconfiguration"
+     ],
+     "references": [
+      "https://raesene.github.io/blog/2019/06/01/docker-capabilities-and-no-new-privs/",
+      "https://www.kernel.org/doc/Documentation/prctl/no_new_privs.txt",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html#rule-4-add-no-new-privileges-flag"
+     ],
+     "category": "security",
+     "technology": [
+      "docker-compose"
+     ],
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authorization"
+     ],
+     "source": "https://semgrep.dev/r/yaml.docker-compose.security.no-new-privileges.no-new-privileges",
+     "shortlink": "https://sg.run/0n8q"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.yaml.docker-compose.security.writable-filesystem-service.writable-filesystem-service",
+   "path": "docker-compose.override.yml",
+   "start": {
+    "line": 11,
+    "col": 3,
+    "offset": 168
+   },
+   "end": {
+    "line": 11,
+    "col": 9,
+    "offset": 174
+   },
+   "extra": {
+    "message": "Service 'mailer' is running with a writable root filesystem. This may allow malicious applications to download and run additional payloads, or modify container files. If an application inside a container has to save something temporarily consider using a tmpfs. Add 'read_only: true' to this service to prevent this.",
+    "metadata": {
+     "cwe": [
+      "CWE-732: Incorrect Permission Assignment for Critical Resource"
+     ],
+     "owasp": [
+      "A05:2021 - Security Misconfiguration",
+      "A06:2017 - Security Misconfiguration",
+      "A02:2025 - Security Misconfiguration"
+     ],
+     "references": [
+      "https://docs.docker.com/compose/compose-file/compose-file-v3/#domainname-hostname-ipc-mac_address-privileged-read_only-shm_size-stdin_open-tty-user-working_dir",
+      "https://blog.atomist.com/security-of-docker-kubernetes/",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html#rule-8-set-filesystem-and-volumes-to-read-only"
+     ],
+     "category": "security",
+     "technology": [
+      "docker-compose"
+     ],
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authorization"
+     ],
+     "source": "https://semgrep.dev/r/yaml.docker-compose.security.writable-filesystem-service.writable-filesystem-service",
+     "shortlink": "https://sg.run/e4JE"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+   "path": "docker-compose.override.yml",
+   "start": {
+    "line": 13,
+    "col": 14,
+    "offset": 217
+   },
+   "end": {
+    "line": 13,
+    "col": 18,
+    "offset": 221
+   },
+   "extra": {
+    "message": "Service port is exposed on all interfaces",
+    "metadata": {
+     "category": "security",
+     "cwe": "CWE-1327: Binding to an Unrestricted IP Address",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "docker",
+      "compose"
+     ],
+     "confidence": "LOW",
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "references": [
+      "https://docs.docker.com/compose/compose-file/compose-file-v3/#ports"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+     "shortlink": "https://sg.run/gxAyK"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+   "path": "docker-compose.override.yml",
+   "start": {
+    "line": 13,
+    "col": 22,
+    "offset": 225
+   },
+   "end": {
+    "line": 13,
+    "col": 26,
+    "offset": 229
+   },
+   "extra": {
+    "message": "Service port is exposed on all interfaces",
+    "metadata": {
+     "category": "security",
+     "cwe": "CWE-1327: Binding to an Unrestricted IP Address",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "docker",
+      "compose"
+     ],
+     "confidence": "LOW",
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "references": [
+      "https://docs.docker.com/compose/compose-file/compose-file-v3/#ports"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+     "shortlink": "https://sg.run/gxAyK"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.yaml.docker-compose.security.no-new-privileges.no-new-privileges",
+   "path": "docker-compose.yml",
+   "start": {
+    "line": 5,
+    "col": 3,
+    "offset": 62
+   },
+   "end": {
+    "line": 5,
+    "col": 11,
+    "offset": 70
+   },
+   "extra": {
+    "message": "Service 'database' allows for privilege escalation via setuid or setgid binaries. Add 'no-new-privileges:true' in 'security_opt' to prevent this.",
+    "metadata": {
+     "cwe": [
+      "CWE-732: Incorrect Permission Assignment for Critical Resource"
+     ],
+     "owasp": [
+      "A05:2021 - Security Misconfiguration",
+      "A06:2017 - Security Misconfiguration",
+      "A02:2025 - Security Misconfiguration"
+     ],
+     "references": [
+      "https://raesene.github.io/blog/2019/06/01/docker-capabilities-and-no-new-privs/",
+      "https://www.kernel.org/doc/Documentation/prctl/no_new_privs.txt",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html#rule-4-add-no-new-privileges-flag"
+     ],
+     "category": "security",
+     "technology": [
+      "docker-compose"
+     ],
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authorization"
+     ],
+     "source": "https://semgrep.dev/r/yaml.docker-compose.security.no-new-privileges.no-new-privileges",
+     "shortlink": "https://sg.run/0n8q"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.yaml.docker-compose.security.writable-filesystem-service.writable-filesystem-service",
+   "path": "docker-compose.yml",
+   "start": {
+    "line": 5,
+    "col": 3,
+    "offset": 62
+   },
+   "end": {
+    "line": 5,
+    "col": 11,
+    "offset": 70
+   },
+   "extra": {
+    "message": "Service 'database' is running with a writable root filesystem. This may allow malicious applications to download and run additional payloads, or modify container files. If an application inside a container has to save something temporarily consider using a tmpfs. Add 'read_only: true' to this service to prevent this.",
+    "metadata": {
+     "cwe": [
+      "CWE-732: Incorrect Permission Assignment for Critical Resource"
+     ],
+     "owasp": [
+      "A05:2021 - Security Misconfiguration",
+      "A06:2017 - Security Misconfiguration",
+      "A02:2025 - Security Misconfiguration"
+     ],
+     "references": [
+      "https://docs.docker.com/compose/compose-file/compose-file-v3/#domainname-hostname-ipc-mac_address-privileged-read_only-shm_size-stdin_open-tty-user-working_dir",
+      "https://blog.atomist.com/security-of-docker-kubernetes/",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html#rule-8-set-filesystem-and-volumes-to-read-only"
+     ],
+     "category": "security",
+     "technology": [
+      "docker-compose"
+     ],
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authorization"
+     ],
+     "source": "https://semgrep.dev/r/yaml.docker-compose.security.writable-filesystem-service.writable-filesystem-service",
+     "shortlink": "https://sg.run/e4JE"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+   "path": "docker-compose.yml",
+   "start": {
+    "line": 15,
+    "col": 10,
+    "offset": 591
+   },
+   "end": {
+    "line": 15,
+    "col": 19,
+    "offset": 600
+   },
+   "extra": {
+    "message": "Service port is exposed on all interfaces",
+    "metadata": {
+     "category": "security",
+     "cwe": "CWE-1327: Binding to an Unrestricted IP Address",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "docker",
+      "compose"
+     ],
+     "confidence": "LOW",
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "references": [
+      "https://docs.docker.com/compose/compose-file/compose-file-v3/#ports"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.yaml.docker-compose.port-all-interfaces.port-all-interfaces",
+     "shortlink": "https://sg.run/gxAyK"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.secrets.security.detected-generic-secret.detected-generic-secret",
+   "path": "docker/.env.local",
+   "start": {
+    "line": 3,
+    "col": 5,
+    "offset": 51
+   },
+   "end": {
+    "line": 3,
+    "col": 44,
+    "offset": 90
+   },
+   "extra": {
+    "message": "Generic Secret detected",
+    "metadata": {
+     "cwe": [
+      "CWE-798: Use of Hard-coded Credentials"
+     ],
+     "source-rule-url": "https://github.com/dxa4481/truffleHogRegexes/blob/master/truffleHogRegexes/regexes.json",
+     "category": "security",
+     "technology": [
+      "secrets"
+     ],
+     "confidence": "LOW",
+     "owasp": [
+      "A07:2021 - Identification and Authentication Failures",
+      "A07:2025 - Authentication Failures"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Hard-coded Secrets"
+     ],
+     "source": "https://semgrep.dev/r/generic.secrets.security.detected-generic-secret.detected-generic-secret",
+     "shortlink": "https://sg.run/l2o5"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.generic.amqp-unencrypted-transport.amqp-unencrypted-transport",
+   "path": "docker/.env.local",
+   "start": {
+    "line": 18,
+    "col": 27,
+    "offset": 877
+   },
+   "end": {
+    "line": 18,
+    "col": 73,
+    "offset": 923
+   },
+   "extra": {
+    "message": "Found unencrypted AMQP connection, prefer TLS encrypted `amqps://` transport\n",
+    "metadata": {
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "cwe": "CWE-319: Cleartext Transmission of Sensitive Information",
+     "confidence": "HIGH",
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "technology": [
+      "amqp",
+      "rabbitmq"
+     ],
+     "references": [
+      "https://www.rabbitmq.com/docs/uri-spec#the-amqps-uri-scheme"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.generic.amqp-unencrypted-transport.amqp-unencrypted-transport",
+     "shortlink": "https://sg.run/3qYKK"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.generic.redis-unencrypted-transport.redis-unencrypted-transport",
+   "path": "docker/.env.local",
+   "start": {
+    "line": 19,
+    "col": 27,
+    "offset": 950
+   },
+   "end": {
+    "line": 19,
+    "col": 58,
+    "offset": 981
+   },
+   "extra": {
+    "message": "Found unencrypted Redis connection, prefer TLS encrypted `rediss://` transport\n",
+    "metadata": {
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "cwe": "CWE-319: Cleartext Transmission of Sensitive Information",
+     "confidence": "HIGH",
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "technology": [
+      "redis"
+     ],
+     "references": [
+      "https://redis.io/docs/latest/develop/connect/cli/#host-port-password-and-database"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.generic.redis-unencrypted-transport.redis-unencrypted-transport",
+     "shortlink": "https://sg.run/GdP8q"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.phpinfo-use.phpinfo-use",
+   "path": "public/info.php",
+   "start": {
+    "line": 2,
+    "col": 1,
+    "offset": 6
+   },
+   "end": {
+    "line": 2,
+    "col": 16,
+    "offset": 21
+   },
+   "extra": {
+    "message": "The 'phpinfo' function may reveal sensitive information about your environment.",
+    "metadata": {
+     "cwe": [
+      "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/function.phpinfo",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/PhpinfosSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.phpinfo-use.phpinfo-use",
+     "shortlink": "https://sg.run/W82E"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-used-as-password.md5-used-as-password",
+   "path": "src/Command/BlogInitCommand.php",
+   "start": {
+    "line": 91,
+    "col": 9,
+    "offset": 3601
+   },
+   "end": {
+    "line": 91,
+    "col": 51,
+    "offset": 3643
+   },
+   "extra": {
+    "message": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as bcrypt. You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.",
+    "metadata": {
+     "cwe": [
+      "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "references": [
+      "https://tools.ietf.org/html/rfc6151",
+      "https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision",
+      "https://security.stackexchange.com/questions/211/how-to-securely-hash-passwords",
+      "https://github.com/returntocorp/semgrep-rules/issues/1609",
+      "https://www.php.net/password_hash"
+     ],
+     "category": "security",
+     "technology": [
+      "md5"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cryptographic Issues"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-used-as-password.md5-used-as-password",
+     "shortlink": "https://sg.run/66YL"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Command/BlogInitCommand.php",
+   "start": {
+    "line": 91,
+    "col": 33,
+    "offset": 3625
+   },
+   "end": {
+    "line": 91,
+    "col": 50,
+    "offset": 3642
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-used-as-password.md5-used-as-password",
+   "path": "src/Command/BlogInitCommand.php",
+   "start": {
+    "line": 101,
+    "col": 9,
+    "offset": 4009
+   },
+   "end": {
+    "line": 101,
+    "col": 46,
+    "offset": 4046
+   },
+   "extra": {
+    "message": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as bcrypt. You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.",
+    "metadata": {
+     "cwe": [
+      "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "references": [
+      "https://tools.ietf.org/html/rfc6151",
+      "https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision",
+      "https://security.stackexchange.com/questions/211/how-to-securely-hash-passwords",
+      "https://github.com/returntocorp/semgrep-rules/issues/1609",
+      "https://www.php.net/password_hash"
+     ],
+     "category": "security",
+     "technology": [
+      "md5"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cryptographic Issues"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-used-as-password.md5-used-as-password",
+     "shortlink": "https://sg.run/66YL"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Command/BlogInitCommand.php",
+   "start": {
+    "line": 101,
+    "col": 34,
+    "offset": 4034
+   },
+   "end": {
+    "line": 101,
+    "col": 45,
+    "offset": 4045
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-used-as-password.md5-used-as-password",
+   "path": "src/Controller/AdminController.php",
+   "start": {
+    "line": 105,
+    "col": 9,
+    "offset": 3775
+   },
+   "end": {
+    "line": 105,
+    "col": 43,
+    "offset": 3809
+   },
+   "extra": {
+    "message": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as bcrypt. You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.",
+    "metadata": {
+     "cwe": [
+      "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "references": [
+      "https://tools.ietf.org/html/rfc6151",
+      "https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision",
+      "https://security.stackexchange.com/questions/211/how-to-securely-hash-passwords",
+      "https://github.com/returntocorp/semgrep-rules/issues/1609",
+      "https://www.php.net/password_hash"
+     ],
+     "category": "security",
+     "technology": [
+      "md5"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cryptographic Issues"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-used-as-password.md5-used-as-password",
+     "shortlink": "https://sg.run/66YL"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Controller/AdminController.php",
+   "start": {
+    "line": 105,
+    "col": 28,
+    "offset": 3794
+   },
+   "end": {
+    "line": 105,
+    "col": 42,
+    "offset": 3808
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-used-as-password.md5-used-as-password",
+   "path": "src/Controller/LoginController.php",
+   "start": {
+    "line": 106,
+    "col": 13,
+    "offset": 3936
+   },
+   "end": {
+    "line": 106,
+    "col": 47,
+    "offset": 3970
+   },
+   "extra": {
+    "message": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as bcrypt. You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.",
+    "metadata": {
+     "cwe": [
+      "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "references": [
+      "https://tools.ietf.org/html/rfc6151",
+      "https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision",
+      "https://security.stackexchange.com/questions/211/how-to-securely-hash-passwords",
+      "https://github.com/returntocorp/semgrep-rules/issues/1609",
+      "https://www.php.net/password_hash"
+     ],
+     "category": "security",
+     "technology": [
+      "md5"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cryptographic Issues"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-used-as-password.md5-used-as-password",
+     "shortlink": "https://sg.run/66YL"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Controller/LoginController.php",
+   "start": {
+    "line": 106,
+    "col": 32,
+    "offset": 3955
+   },
+   "end": {
+    "line": 106,
+    "col": 46,
+    "offset": 3969
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-used-as-password.md5-used-as-password",
+   "path": "src/Controller/PasswordResetController.php",
+   "start": {
+    "line": 78,
+    "col": 13,
+    "offset": 2553
+   },
+   "end": {
+    "line": 78,
+    "col": 47,
+    "offset": 2587
+   },
+   "extra": {
+    "message": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as bcrypt. You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.",
+    "metadata": {
+     "cwe": [
+      "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "references": [
+      "https://tools.ietf.org/html/rfc6151",
+      "https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision",
+      "https://security.stackexchange.com/questions/211/how-to-securely-hash-passwords",
+      "https://github.com/returntocorp/semgrep-rules/issues/1609",
+      "https://www.php.net/password_hash"
+     ],
+     "category": "security",
+     "technology": [
+      "md5"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cryptographic Issues"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-used-as-password.md5-used-as-password",
+     "shortlink": "https://sg.run/66YL"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Controller/PasswordResetController.php",
+   "start": {
+    "line": 78,
+    "col": 32,
+    "offset": 2572
+   },
+   "end": {
+    "line": 78,
+    "col": 46,
+    "offset": 2586
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-used-as-password.md5-used-as-password",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 41,
+    "col": 9,
+    "offset": 1284
+   },
+   "end": {
+    "line": 41,
+    "col": 43,
+    "offset": 1318
+   },
+   "extra": {
+    "message": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as bcrypt. You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.",
+    "metadata": {
+     "cwe": [
+      "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "references": [
+      "https://tools.ietf.org/html/rfc6151",
+      "https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision",
+      "https://security.stackexchange.com/questions/211/how-to-securely-hash-passwords",
+      "https://github.com/returntocorp/semgrep-rules/issues/1609",
+      "https://www.php.net/password_hash"
+     ],
+     "category": "security",
+     "technology": [
+      "md5"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cryptographic Issues"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-used-as-password.md5-used-as-password",
+     "shortlink": "https://sg.run/66YL"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 41,
+    "col": 28,
+    "offset": 1303
+   },
+   "end": {
+    "line": 41,
+    "col": 42,
+    "offset": 1317
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.unlink-use.unlink-use",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 82,
+    "col": 13,
+    "offset": 2909
+   },
+   "end": {
+    "line": 82,
+    "col": 88,
+    "offset": 2984
+   },
+   "extra": {
+    "message": "Using user input when deleting files with `unlink()` is potentially dangerous. A malicious actor could use this to modify or access files they have no right to.",
+    "metadata": {
+     "references": [
+      "https://www.php.net/manual/en/function.unlink",
+      "https://owasp.org/www-project-top-ten/2017/A5_2017-Broken_Access_Control.html"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A05:2017 - Broken Access Control",
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "cwe": [
+      "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Path Traversal"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.unlink-use.unlink-use",
+     "shortlink": "https://sg.run/rYeR"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 98,
+    "col": 23,
+    "offset": 3434
+   },
+   "end": {
+    "line": 98,
+    "col": 36,
+    "offset": 3447
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 138,
+    "col": 23,
+    "offset": 4851
+   },
+   "end": {
+    "line": 138,
+    "col": 36,
+    "offset": 4864
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.unlink-use.unlink-use",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 159,
+    "col": 9,
+    "offset": 5637
+   },
+   "end": {
+    "line": 159,
+    "col": 84,
+    "offset": 5712
+   },
+   "extra": {
+    "message": "Using user input when deleting files with `unlink()` is potentially dangerous. A malicious actor could use this to modify or access files they have no right to.",
+    "metadata": {
+     "references": [
+      "https://www.php.net/manual/en/function.unlink",
+      "https://owasp.org/www-project-top-ten/2017/A5_2017-Broken_Access_Control.html"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A05:2017 - Broken Access Control",
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "cwe": [
+      "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Path Traversal"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.unlink-use.unlink-use",
+     "shortlink": "https://sg.run/rYeR"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "src/Controller/UserController.php",
+   "start": {
+    "line": 195,
+    "col": 9,
+    "offset": 6986
+   },
+   "end": {
+    "line": 195,
+    "col": 30,
+    "offset": 7007
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.doctrine.security.audit.doctrine-dbal-dangerous-query.doctrine-dbal-dangerous-query",
+   "path": "src/Repository/PostRepository.php",
+   "start": {
+    "line": 66,
+    "col": 17,
+    "offset": 1858
+   },
+   "end": {
+    "line": 66,
+    "col": 40,
+    "offset": 1881
+   },
+   "extra": {
+    "message": "Detected string concatenation with a non-literal variable in a Doctrine DBAL query method. This could lead to SQL injection if the variable is user-controlled and not properly sanitized. In order to prevent SQL injection, use parameterized queries or prepared statements instead.",
+    "metadata": {
+     "category": "security",
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/security.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+     ],
+     "technology": [
+      "doctrine"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.doctrine.security.audit.doctrine-dbal-dangerous-query.doctrine-dbal-dangerous-query",
+     "shortlink": "https://sg.run/KXWn"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Repository/UserRepository.php",
+   "start": {
+    "line": 73,
+    "col": 27,
+    "offset": 2252
+   },
+   "end": {
+    "line": 73,
+    "col": 41,
+    "offset": 2266
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.doctrine.security.audit.doctrine-dbal-dangerous-query.doctrine-dbal-dangerous-query",
+   "path": "src/Repository/UserRepository.php",
+   "start": {
+    "line": 76,
+    "col": 17,
+    "offset": 2448
+   },
+   "end": {
+    "line": 76,
+    "col": 40,
+    "offset": 2471
+   },
+   "extra": {
+    "message": "Detected string concatenation with a non-literal variable in a Doctrine DBAL query method. This could lead to SQL injection if the variable is user-controlled and not properly sanitized. In order to prevent SQL injection, use parameterized queries or prepared statements instead.",
+    "metadata": {
+     "category": "security",
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/security.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+     ],
+     "technology": [
+      "doctrine"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.doctrine.security.audit.doctrine-dbal-dangerous-query.doctrine-dbal-dangerous-query",
+     "shortlink": "https://sg.run/KXWn"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Security/Hasher/Md5Hasher.php",
+   "start": {
+    "line": 15,
+    "col": 16,
+    "offset": 374
+   },
+   "end": {
+    "line": 15,
+    "col": 35,
+    "offset": 393
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "src/Security/Hasher/Md5Hasher.php",
+   "start": {
+    "line": 24,
+    "col": 36,
+    "offset": 597
+   },
+   "end": {
+    "line": 24,
+    "col": 55,
+    "offset": 616
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.trailofbits.generic.curl-insecure.curl-insecure",
+   "path": "src/Services/Analytics.php",
+   "start": {
+    "line": 31,
+    "col": 21,
+    "offset": 697
+   },
+   "end": {
+    "line": 31,
+    "col": 28,
+    "offset": 704
+   },
+   "extra": {
+    "message": "Found `curl` command disabling SSL verification",
+    "metadata": {
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "shell"
+     ],
+     "cwe": "CWE-295: Improper Certificate Validation",
+     "confidence": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "impact": "HIGH",
+     "references": [
+      "https://curl.se/docs/manpage.html"
+     ],
+     "license": "AGPL-3.0 license",
+     "vulnerability_class": [
+      "Improper Authentication"
+     ],
+     "source": "https://semgrep.dev/r/trailofbits.generic.curl-insecure.curl-insecure",
+     "shortlink": "https://sg.run/YG37D"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "src/Services/Analytics.php",
+   "start": {
+    "line": 32,
+    "col": 9,
+    "offset": 761
+   },
+   "end": {
+    "line": 32,
+    "col": 44,
+    "offset": 796
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.unserialize-use.unserialize-use",
+   "path": "src/Services/UserPref.php",
+   "start": {
+    "line": 36,
+    "col": 16,
+    "offset": 795
+   },
+   "end": {
+    "line": 36,
+    "col": 34,
+    "offset": 813
+   },
+   "extra": {
+    "message": "Calling `unserialize()` with user input in the pattern can lead to arbitrary code execution. Consider using JSON or structured data approaches (e.g. Google Protocol Buffers).",
+    "metadata": {
+     "references": [
+      "https://www.php.net/manual/en/function.unserialize.php",
+      "https://owasp.org/www-project-top-ten/2017/A8_2017-Insecure_Deserialization.html"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A08:2017 - Insecure Deserialization",
+      "A08:2021 - Software and Data Integrity Failures",
+      "A08:2025 - Software or Data Integrity Failures"
+     ],
+     "cwe": [
+      "CWE-502: Deserialization of Untrusted Data"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Deserialization "
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.unserialize-use.unserialize-use",
+     "shortlink": "https://sg.run/b24E"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.unquoted-attribute-var.unquoted-attribute-var",
+   "path": "templates/admin/index.html.twig",
+   "start": {
+    "line": 49,
+    "col": 41,
+    "offset": 1947
+   },
+   "end": {
+    "line": 49,
+    "col": 95,
+    "offset": 2001
+   },
+   "extra": {
+    "message": "Detected a unquoted template variable as an attribute. If unquoted, a malicious actor could inject custom JavaScript handlers. To fix this, add quotes around the template expression, like this: \"{{ expr }}\".",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.unquoted-attribute-var.unquoted-attribute-var",
+     "shortlink": "https://sg.run/weNX"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.unquoted-attribute-var.unquoted-attribute-var",
+   "path": "templates/admin/index.html.twig",
+   "start": {
+    "line": 52,
+    "col": 41,
+    "offset": 2136
+   },
+   "end": {
+    "line": 52,
+    "col": 91,
+    "offset": 2186
+   },
+   "extra": {
+    "message": "Detected a unquoted template variable as an attribute. If unquoted, a malicious actor could inject custom JavaScript handlers. To fix this, add quotes around the template expression, like this: \"{{ expr }}\".",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.unquoted-attribute-var.unquoted-attribute-var",
+     "shortlink": "https://sg.run/weNX"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/admin/index.html.twig",
+   "start": {
+    "line": 59,
+    "col": 24,
+    "offset": 2471
+   },
+   "end": {
+    "line": 59,
+    "col": 82,
+    "offset": 2529
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 29,
+    "col": 20,
+    "offset": 754
+   },
+   "end": {
+    "line": 29,
+    "col": 49,
+    "offset": 783
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 31,
+    "col": 24,
+    "offset": 867
+   },
+   "end": {
+    "line": 31,
+    "col": 54,
+    "offset": 897
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 34,
+    "col": 24,
+    "offset": 990
+   },
+   "end": {
+    "line": 34,
+    "col": 53,
+    "offset": 1019
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 35,
+    "col": 24,
+    "offset": 1063
+   },
+   "end": {
+    "line": 35,
+    "col": 55,
+    "offset": 1094
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 37,
+    "col": 24,
+    "offset": 1157
+   },
+   "end": {
+    "line": 37,
+    "col": 54,
+    "offset": 1187
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 38,
+    "col": 24,
+    "offset": 1226
+   },
+   "end": {
+    "line": 38,
+    "col": 57,
+    "offset": 1259
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/base.html.twig",
+   "start": {
+    "line": 53,
+    "col": 12,
+    "offset": 1561
+   },
+   "end": {
+    "line": 53,
+    "col": 42,
+    "offset": 1591
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/blog/index.html.twig",
+   "start": {
+    "line": 27,
+    "col": 24,
+    "offset": 663
+   },
+   "end": {
+    "line": 27,
+    "col": 77,
+    "offset": 716
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/blog/index.html.twig",
+   "start": {
+    "line": 34,
+    "col": 24,
+    "offset": 986
+   },
+   "end": {
+    "line": 34,
+    "col": 77,
+    "offset": 1039
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/blog/post.html.twig",
+   "start": {
+    "line": 25,
+    "col": 16,
+    "offset": 656
+   },
+   "end": {
+    "line": 25,
+    "col": 45,
+    "offset": 685
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/login/index.html.twig",
+   "start": {
+    "line": 15,
+    "col": 20,
+    "offset": 431
+   },
+   "end": {
+    "line": 15,
+    "col": 50,
+    "offset": 461
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/user/index.html.twig",
+   "start": {
+    "line": 65,
+    "col": 20,
+    "offset": 2473
+   },
+   "end": {
+    "line": 65,
+    "col": 82,
+    "offset": 2535
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.generic.html-templates.security.var-in-href.var-in-href",
+   "path": "templates/user/index.html.twig",
+   "start": {
+    "line": 66,
+    "col": 20,
+    "offset": 2586
+   },
+   "end": {
+    "line": 66,
+    "col": 82,
+    "offset": 2648
+   },
+   "extra": {
+    "message": "Detected a template variable used in an anchor tag with the 'href' attribute. This allows a malicious actor to input the 'javascript:' URI and is subject to cross- site scripting (XSS) attacks. If using Flask, use 'url_for()' to safely generate a URL. If using Django, use the 'url' filter to safely generate a URL. If using Mustache, use a URL encoding library, or prepend a slash '/' to the variable for relative links (`href=\"/{{link}}\"`). You may also consider setting the Content Security Policy (CSP) header.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://flask.palletsprojects.com/en/1.1.x/security/#cross-site-scripting-xss#:~:text=javascript:%20URI",
+      "https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#url",
+      "https://github.com/pugjs/pug/issues/2952",
+      "https://content-security-policy.com/"
+     ],
+     "category": "security",
+     "technology": [
+      "html-templates"
+     ],
+     "confidence": "LOW",
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/generic.html-templates.security.var-in-href.var-in-href",
+     "shortlink": "https://sg.run/x1kP"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  }
+ ],
+ "errors": [],
+ "paths": {
+  "scanned": [
+   ".env",
+   ".env.test",
+   ".gitignore",
+   "Dockerfile",
+   "LICENSE",
+   "README.md",
+   "bin/console",
+   "bin/phpunit",
+   "bin/script",
+   "composer.json",
+   "composer.lock",
+   "config/bundles.php",
+   "config/packages/cache.yaml",
+   "config/packages/debug.yaml",
+   "config/packages/doctrine.yaml",
+   "config/packages/doctrine_migrations.yaml",
+   "config/packages/framework.yaml",
+   "config/packages/mailer.yaml",
+   "config/packages/messenger.yaml",
+   "config/packages/monolog.yaml",
+   "config/packages/notifier.yaml",
+   "config/packages/routing.yaml",
+   "config/packages/security.yaml",
+   "config/packages/sensio_framework_extra.yaml",
+   "config/packages/translation.yaml",
+   "config/packages/twig.yaml",
+   "config/packages/validator.yaml",
+   "config/packages/web_profiler.yaml",
+   "config/preload.php",
+   "config/routes/framework.yaml",
+   "config/routes/web_profiler.yaml",
+   "config/routes.yaml",
+   "config/services.yaml",
+   "docker/.env.local",
+   "docker/apache.conf",
+   "docker/entrypoint.sh",
+   "docker/php.ini",
+   "docker/vhost.conf",
+   "docker-compose.override.yml",
+   "docker-compose.yml",
+   "migrations/.gitignore",
+   "migrations/Version20251109123941.php",
+   "phpunit.xml.dist",
+   "public/.htaccess",
+   "public/css/styles.css",
+   "public/index.php",
+   "public/info.php",
+   "public/js/script.js",
+   "resources/comments/comment01.txt",
+   "resources/comments/comment02.txt",
+   "resources/comments/comment03.txt",
+   "resources/comments/comment04.txt",
+   "resources/comments/comment05.txt",
+   "resources/posts/post01.txt",
+   "resources/posts/post02.txt",
+   "resources/posts/post03.txt",
+   "resources/posts/post04.txt",
+   "src/Command/BlogClearCommand.php",
+   "src/Command/BlogInitCommand.php",
+   "src/Controller/.gitignore",
+   "src/Controller/AdminController.php",
+   "src/Controller/BlogController.php",
+   "src/Controller/LocalController.php",
+   "src/Controller/LoginController.php",
+   "src/Controller/PasswordResetController.php",
+   "src/Controller/UserController.php",
+   "src/Entity/.gitignore",
+   "src/Entity/Comment.php",
+   "src/Entity/Post.php",
+   "src/Entity/User.php",
+   "src/Kernel.php",
+   "src/Repository/.gitignore",
+   "src/Repository/CommentRepository.php",
+   "src/Repository/PostRepository.php",
+   "src/Repository/UserRepository.php",
+   "src/Security/Hasher/Md5Hasher.php",
+   "src/Services/Analytics.php",
+   "src/Services/Avatar.php",
+   "src/Services/Mail.php",
+   "src/Services/UserPref.php",
+   "src/Twig/TemplateFromStringExtension.php",
+   "symfony.lock",
+   "templates/admin/index.html.twig",
+   "templates/base.html.twig",
+   "templates/blog/index.html.twig",
+   "templates/blog/legal.html.twig",
+   "templates/blog/post.html.twig",
+   "templates/commons/messages.html.twig",
+   "templates/commons/search.html.twig",
+   "templates/legal/legal.html",
+   "templates/login/index.html.twig",
+   "templates/login/register.html.twig",
+   "templates/login/reset.html.twig",
+   "templates/login/reset_password.html.twig",
+   "templates/user/edit.html.twig",
+   "templates/user/index.html.twig",
+   "translations/.gitignore"
+  ]
+ },
+ "time": {
+  "rules": [],
+  "rules_parse_time": 0.20738005638122559,
+  "profiling_times": {
+   "config_time": 13.162771940231323,
+   "core_time": 1.0100500583648682,
+   "ignores_time": 0.0006077289581298828,
+   "total_time": 14.178141832351685
+  },
+  "parsing_time": {
+   "total_time": 0.09310245513916016,
+   "per_file_time": {
+    "mean": 6.478946077881709e-05,
+    "std_dev": 2.3604367545227041e-07
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_files": []
+  },
+  "scanning_time": {
+   "total_time": 3.3399994373321533,
+   "per_file_time": {
+    "mean": 0.013306770666661966,
+    "std_dev": 0.0029102415623770404
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_files": []
+  },
+  "matching_time": {
+   "total_time": 0.08125019073486328,
+   "per_file_and_rule_time": {
+    "mean": 5.6541538437622335e-05,
+    "std_dev": 5.6012873521631816e-08
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_rules_on_files": []
+  },
+  "tainting_time": {
+   "total_time": 0.017391204833984375,
+   "per_def_and_rule_time": {
+    "mean": 7.369154590671348e-05,
+    "std_dev": 1.36536192353167e-08
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_rules_on_defs": []
+  },
+  "fixpoint_timeouts": [],
+  "prefiltering": {
+   "project_level_time": 0.0,
+   "file_level_time": 0.0,
+   "rules_with_project_prefilters_ratio": 0.0,
+   "rules_with_file_prefilters_ratio": 0.854560828665046,
+   "rules_selected_ratio": 0.16340767360744107,
+   "rules_matched_ratio": 0.16340767360744107
+  },
+  "targets": [],
+  "total_bytes": 0,
+  "max_memory_bytes": 1472636608
+ },
+ "engine_requested": "OSS",
+ "skipped_rules": [],
+ "profiling_results": []
+}

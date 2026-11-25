@@ -1,0 +1,5207 @@
+{
+ "version": "1.183.0",
+ "results": [
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "dvwa/includes/dvwaPage.inc.php",
+   "start": {
+    "line": 650,
+    "col": 33,
+    "offset": 20262
+   },
+   "end": {
+    "line": 650,
+    "col": 48,
+    "offset": 20277
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "instructions.php",
+   "start": {
+    "line": 26,
+    "col": 36,
+    "offset": 1038
+   },
+   "end": {
+    "line": 26,
+    "col": 67,
+    "offset": 1069
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "login.php",
+   "start": {
+    "line": 27,
+    "col": 10,
+    "offset": 1159
+   },
+   "end": {
+    "line": 27,
+    "col": 22,
+    "offset": 1171
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "login.php",
+   "start": {
+    "line": 48,
+    "col": 17,
+    "offset": 2283
+   },
+   "end": {
+    "line": 48,
+    "col": 48,
+    "offset": 2314
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.phpinfo-use.phpinfo-use",
+   "path": "phpinfo.php",
+   "start": {
+    "line": 8,
+    "col": 1,
+    "offset": 170
+   },
+   "end": {
+    "line": 8,
+    "col": 11,
+    "offset": 180
+   },
+   "extra": {
+    "message": "The 'phpinfo' function may reveal sensitive information about your environment.",
+    "metadata": {
+     "cwe": [
+      "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/function.phpinfo",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/PhpinfosSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Mishandled Sensitive Information"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.phpinfo-use.phpinfo-use",
+     "shortlink": "https://sg.run/W82E"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.php-permissive-cors.php-permissive-cors",
+   "path": "vulnerabilities/api/gen_openapi.php",
+   "start": {
+    "line": 6,
+    "col": 1,
+    "offset": 88
+   },
+   "end": {
+    "line": 6,
+    "col": 41,
+    "offset": 128
+   },
+   "extra": {
+    "message": "Access-Control-Allow-Origin response header is set to \"*\". This will disable CORS Same Origin Policy restrictions.",
+    "metadata": {
+     "references": [
+      "https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Access-Control-Allow-Origin"
+     ],
+     "owasp": [
+      "A07:2021 - Identification and Authentication Failures",
+      "A07:2025 - Authentication Failures"
+     ],
+     "cwe": [
+      "CWE-346: Origin Validation Error"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authentication"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.php-permissive-cors.php-permissive-cors",
+     "shortlink": "https://sg.run/y1XR"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.php-permissive-cors.php-permissive-cors",
+   "path": "vulnerabilities/api/public/index.php",
+   "start": {
+    "line": 11,
+    "col": 1,
+    "offset": 180
+   },
+   "end": {
+    "line": 11,
+    "col": 41,
+    "offset": 220
+   },
+   "extra": {
+    "message": "Access-Control-Allow-Origin response header is set to \"*\". This will disable CORS Same Origin Policy restrictions.",
+    "metadata": {
+     "references": [
+      "https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Access-Control-Allow-Origin"
+     ],
+     "owasp": [
+      "A07:2021 - Identification and Authentication Failures",
+      "A07:2025 - Authentication Failures"
+     ],
+     "cwe": [
+      "CWE-346: Origin Validation Error"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Improper Authentication"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.php-permissive-cors.php-permissive-cors",
+     "shortlink": "https://sg.run/y1XR"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/api/src/HealthController.php",
+   "start": {
+    "line": 88,
+    "col": 4,
+    "offset": 2445
+   },
+   "end": {
+    "line": 88,
+    "col": 52,
+    "offset": 2493
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/api/src/HealthController.php",
+   "start": {
+    "line": 88,
+    "col": 4,
+    "offset": 2445
+   },
+   "end": {
+    "line": 88,
+    "col": 53,
+    "offset": 2494
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.audit.openssl-decrypt-validate.openssl-decrypt-validate",
+   "path": "vulnerabilities/api/src/Token.php",
+   "start": {
+    "line": 39,
+    "col": 3,
+    "offset": 972
+   },
+   "end": {
+    "line": 39,
+    "col": 110,
+    "offset": 1079
+   },
+   "extra": {
+    "message": "The function `openssl_decrypt` returns either a string of the decrypted data on success or `false` on failure. If the failure case is not handled, this could lead to undefined behavior in your application. Please handle the case where `openssl_decrypt` returns `false`.",
+    "metadata": {
+     "references": [
+      "https://www.php.net/manual/en/function.openssl-decrypt.php"
+     ],
+     "cwe": [
+      "CWE-252: Unchecked Return Value"
+     ],
+     "owasp": [
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "technology": [
+      "php",
+      "openssl"
+     ],
+     "category": "security",
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.audit.openssl-decrypt-validate.openssl-decrypt-validate",
+     "shortlink": "https://sg.run/kzn7"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/bac/source/low.php",
+   "start": {
+    "line": 22,
+    "col": 24,
+    "offset": 831
+   },
+   "end": {
+    "line": 22,
+    "col": 71,
+    "offset": 878
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/bac/source/low.php",
+   "start": {
+    "line": 35,
+    "col": 30,
+    "offset": 1436
+   },
+   "end": {
+    "line": 35,
+    "col": 109,
+    "offset": 1515
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/bac/source/low.php",
+   "start": {
+    "line": 79,
+    "col": 26,
+    "offset": 3657
+   },
+   "end": {
+    "line": 80,
+    "col": 69,
+    "offset": 3787
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/bac/source/medium.php",
+   "start": {
+    "line": 21,
+    "col": 24,
+    "offset": 770
+   },
+   "end": {
+    "line": 21,
+    "col": 73,
+    "offset": 819
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/bac/source/medium.php",
+   "start": {
+    "line": 28,
+    "col": 26,
+    "offset": 1165
+   },
+   "end": {
+    "line": 28,
+    "col": 107,
+    "offset": 1246
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/bac/source/medium.php",
+   "start": {
+    "line": 71,
+    "col": 26,
+    "offset": 3345
+   },
+   "end": {
+    "line": 72,
+    "col": 69,
+    "offset": 3475
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/brute/source/high.php",
+   "start": {
+    "line": 16,
+    "col": 10,
+    "offset": 922
+   },
+   "end": {
+    "line": 16,
+    "col": 22,
+    "offset": 934
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/brute/source/high.php",
+   "start": {
+    "line": 22,
+    "col": 17,
+    "offset": 1310
+   },
+   "end": {
+    "line": 22,
+    "col": 48,
+    "offset": 1341
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/brute/source/impossible.php",
+   "start": {
+    "line": 16,
+    "col": 10,
+    "offset": 985
+   },
+   "end": {
+    "line": 16,
+    "col": 22,
+    "offset": 997
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/brute/source/low.php",
+   "start": {
+    "line": 9,
+    "col": 10,
+    "offset": 153
+   },
+   "end": {
+    "line": 9,
+    "col": 22,
+    "offset": 165
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/brute/source/low.php",
+   "start": {
+    "line": 12,
+    "col": 12,
+    "offset": 205
+   },
+   "end": {
+    "line": 12,
+    "col": 80,
+    "offset": 273
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/brute/source/low.php",
+   "start": {
+    "line": 15,
+    "col": 17,
+    "offset": 545
+   },
+   "end": {
+    "line": 15,
+    "col": 48,
+    "offset": 576
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/brute/source/medium.php",
+   "start": {
+    "line": 11,
+    "col": 10,
+    "offset": 741
+   },
+   "end": {
+    "line": 11,
+    "col": 22,
+    "offset": 753
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/brute/source/medium.php",
+   "start": {
+    "line": 17,
+    "col": 17,
+    "offset": 1133
+   },
+   "end": {
+    "line": 17,
+    "col": 48,
+    "offset": 1164
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/captcha/source/high.php",
+   "start": {
+    "line": 27,
+    "col": 16,
+    "offset": 883
+   },
+   "end": {
+    "line": 27,
+    "col": 32,
+    "offset": 899
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/captcha/source/impossible.php",
+   "start": {
+    "line": 14,
+    "col": 15,
+    "offset": 615
+   },
+   "end": {
+    "line": 14,
+    "col": 31,
+    "offset": 631
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/captcha/source/impossible.php",
+   "start": {
+    "line": 19,
+    "col": 15,
+    "offset": 1028
+   },
+   "end": {
+    "line": 19,
+    "col": 32,
+    "offset": 1045
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/captcha/source/impossible.php",
+   "start": {
+    "line": 24,
+    "col": 15,
+    "offset": 1445
+   },
+   "end": {
+    "line": 24,
+    "col": 32,
+    "offset": 1462
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/captcha/source/impossible.php",
+   "start": {
+    "line": 46,
+    "col": 9,
+    "offset": 2227
+   },
+   "end": {
+    "line": 46,
+    "col": 32,
+    "offset": 2250
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/captcha/source/low.php",
+   "start": {
+    "line": 57,
+    "col": 15,
+    "offset": 1939
+   },
+   "end": {
+    "line": 57,
+    "col": 31,
+    "offset": 1955
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/captcha/source/medium.php",
+   "start": {
+    "line": 65,
+    "col": 15,
+    "offset": 2196
+   },
+   "end": {
+    "line": 65,
+    "col": 31,
+    "offset": 2212
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/cryptography/source/ecb_attack.php",
+   "start": {
+    "line": 92,
+    "col": 5,
+    "offset": 2466
+   },
+   "end": {
+    "line": 92,
+    "col": 27,
+    "offset": 2488
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/cryptography/source/ecb_attack.php",
+   "start": {
+    "line": 92,
+    "col": 53,
+    "offset": 2514
+   },
+   "end": {
+    "line": 92,
+    "col": 76,
+    "offset": 2537
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.echoed-request.echoed-request",
+   "path": "vulnerabilities/csp/source/jsonp.php",
+   "start": {
+    "line": 12,
+    "col": 1,
+    "offset": 199
+   },
+   "end": {
+    "line": 12,
+    "col": 45,
+    "offset": 243
+   },
+   "extra": {
+    "message": "`Echo`ing user input risks cross-site scripting vulnerability. You should use `htmlentities()` when showing data to users.",
+    "fix": "echo htmlentities($callback . \"(\".json_encode($outp).\")\");",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "category": "security",
+     "references": [
+      "https://www.php.net/manual/en/function.htmlentities.php",
+      "https://www.php.net/manual/en/reserved.variables.request.php",
+      "https://www.php.net/manual/en/reserved.variables.post.php",
+      "https://www.php.net/manual/en/reserved.variables.get.php",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.echoed-request.echoed-request",
+     "shortlink": "https://sg.run/Bqqb"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/csrf/source/high.php",
+   "start": {
+    "line": 39,
+    "col": 15,
+    "offset": 1295
+   },
+   "end": {
+    "line": 39,
+    "col": 31,
+    "offset": 1311
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/csrf/source/impossible.php",
+   "start": {
+    "line": 15,
+    "col": 15,
+    "offset": 689
+   },
+   "end": {
+    "line": 15,
+    "col": 32,
+    "offset": 706
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/csrf/source/impossible.php",
+   "start": {
+    "line": 29,
+    "col": 15,
+    "offset": 1566
+   },
+   "end": {
+    "line": 29,
+    "col": 31,
+    "offset": 1582
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/csrf/source/low.php",
+   "start": {
+    "line": 12,
+    "col": 15,
+    "offset": 527
+   },
+   "end": {
+    "line": 12,
+    "col": 31,
+    "offset": 543
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/csrf/source/medium.php",
+   "start": {
+    "line": 14,
+    "col": 16,
+    "offset": 666
+   },
+   "end": {
+    "line": 14,
+    "col": 32,
+    "offset": 682
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/csrf/test_credentials.php",
+   "start": {
+    "line": 19,
+    "col": 10,
+    "offset": 544
+   },
+   "end": {
+    "line": 19,
+    "col": 22,
+    "offset": 556
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/csrf/test_credentials.php",
+   "start": {
+    "line": 23,
+    "col": 17,
+    "offset": 824
+   },
+   "end": {
+    "line": 23,
+    "col": 48,
+    "offset": 855
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/high.php",
+   "start": {
+    "line": 26,
+    "col": 3,
+    "offset": 548
+   },
+   "end": {
+    "line": 26,
+    "col": 43,
+    "offset": 588
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/high.php",
+   "start": {
+    "line": 26,
+    "col": 10,
+    "offset": 555
+   },
+   "end": {
+    "line": 26,
+    "col": 42,
+    "offset": 587
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/high.php",
+   "start": {
+    "line": 26,
+    "col": 10,
+    "offset": 555
+   },
+   "end": {
+    "line": 26,
+    "col": 42,
+    "offset": 587
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/high.php",
+   "start": {
+    "line": 30,
+    "col": 3,
+    "offset": 616
+   },
+   "end": {
+    "line": 30,
+    "col": 48,
+    "offset": 661
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/high.php",
+   "start": {
+    "line": 30,
+    "col": 10,
+    "offset": 623
+   },
+   "end": {
+    "line": 30,
+    "col": 47,
+    "offset": 660
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/high.php",
+   "start": {
+    "line": 30,
+    "col": 10,
+    "offset": 623
+   },
+   "end": {
+    "line": 30,
+    "col": 47,
+    "offset": 660
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/impossible.php",
+   "start": {
+    "line": 22,
+    "col": 4,
+    "offset": 775
+   },
+   "end": {
+    "line": 22,
+    "col": 44,
+    "offset": 815
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/impossible.php",
+   "start": {
+    "line": 22,
+    "col": 11,
+    "offset": 782
+   },
+   "end": {
+    "line": 22,
+    "col": 43,
+    "offset": 814
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/impossible.php",
+   "start": {
+    "line": 22,
+    "col": 11,
+    "offset": 782
+   },
+   "end": {
+    "line": 22,
+    "col": 43,
+    "offset": 814
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/impossible.php",
+   "start": {
+    "line": 26,
+    "col": 4,
+    "offset": 847
+   },
+   "end": {
+    "line": 26,
+    "col": 49,
+    "offset": 892
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/impossible.php",
+   "start": {
+    "line": 26,
+    "col": 11,
+    "offset": 854
+   },
+   "end": {
+    "line": 26,
+    "col": 48,
+    "offset": 891
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/impossible.php",
+   "start": {
+    "line": 26,
+    "col": 11,
+    "offset": 854
+   },
+   "end": {
+    "line": 26,
+    "col": 48,
+    "offset": 891
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/low.php",
+   "start": {
+    "line": 10,
+    "col": 3,
+    "offset": 211
+   },
+   "end": {
+    "line": 10,
+    "col": 43,
+    "offset": 251
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/low.php",
+   "start": {
+    "line": 10,
+    "col": 10,
+    "offset": 218
+   },
+   "end": {
+    "line": 10,
+    "col": 42,
+    "offset": 250
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/low.php",
+   "start": {
+    "line": 10,
+    "col": 10,
+    "offset": 218
+   },
+   "end": {
+    "line": 10,
+    "col": 42,
+    "offset": 250
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/low.php",
+   "start": {
+    "line": 14,
+    "col": 3,
+    "offset": 279
+   },
+   "end": {
+    "line": 14,
+    "col": 48,
+    "offset": 324
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/low.php",
+   "start": {
+    "line": 14,
+    "col": 10,
+    "offset": 286
+   },
+   "end": {
+    "line": 14,
+    "col": 47,
+    "offset": 323
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/low.php",
+   "start": {
+    "line": 14,
+    "col": 10,
+    "offset": 286
+   },
+   "end": {
+    "line": 14,
+    "col": 47,
+    "offset": 323
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/medium.php",
+   "start": {
+    "line": 19,
+    "col": 3,
+    "offset": 437
+   },
+   "end": {
+    "line": 19,
+    "col": 43,
+    "offset": 477
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/medium.php",
+   "start": {
+    "line": 19,
+    "col": 10,
+    "offset": 444
+   },
+   "end": {
+    "line": 19,
+    "col": 42,
+    "offset": 476
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/medium.php",
+   "start": {
+    "line": 19,
+    "col": 10,
+    "offset": 444
+   },
+   "end": {
+    "line": 19,
+    "col": 42,
+    "offset": 476
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.exec-use.exec-use",
+   "path": "vulnerabilities/exec/source/medium.php",
+   "start": {
+    "line": 23,
+    "col": 3,
+    "offset": 505
+   },
+   "end": {
+    "line": 23,
+    "col": 48,
+    "offset": 550
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/SystemExecFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.exec-use.exec-use",
+     "shortlink": "https://sg.run/5Q1j"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/medium.php",
+   "start": {
+    "line": 23,
+    "col": 10,
+    "offset": 512
+   },
+   "end": {
+    "line": 23,
+    "col": 47,
+    "offset": 549
+   },
+   "extra": {
+    "message": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "HIGH",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/kxEEz"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.tainted-exec.tainted-exec",
+   "path": "vulnerabilities/exec/source/medium.php",
+   "start": {
+    "line": 23,
+    "col": 10,
+    "offset": 512
+   },
+   "end": {
+    "line": 23,
+    "col": 47,
+    "offset": 549
+   },
+   "extra": {
+    "message": "Executing non-constant commands. This can lead to command injection. You should use `escapeshellarg()` when using command.",
+    "metadata": {
+     "cwe": [
+      "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+     ],
+     "references": [
+      "https://www.stackhawk.com/blog/php-command-injection/",
+      "https://brightsec.com/blog/code-injection-php/",
+      "https://www.acunetix.com/websitesecurity/php-security-2/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "HIGH",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.tainted-exec.tainted-exec",
+     "shortlink": "https://sg.run/JAkP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/fi/source/high.php",
+   "start": {
+    "line": 7,
+    "col": 24,
+    "offset": 113
+   },
+   "end": {
+    "line": 7,
+    "col": 29,
+    "offset": 118
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/javascript/index.php",
+   "start": {
+    "line": 43,
+    "col": 10,
+    "offset": 1097
+   },
+   "end": {
+    "line": 43,
+    "col": 45,
+    "offset": 1132
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/javascript/index.php",
+   "start": {
+    "line": 43,
+    "col": 20,
+    "offset": 1107
+   },
+   "end": {
+    "line": 43,
+    "col": 45,
+    "offset": 1132
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/javascript/index.php",
+   "start": {
+    "line": 43,
+    "col": 24,
+    "offset": 1111
+   },
+   "end": {
+    "line": 43,
+    "col": 44,
+    "offset": 1131
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.md5-loose-equality.md5-loose-equality",
+   "path": "vulnerabilities/javascript/index.php",
+   "start": {
+    "line": 57,
+    "col": 10,
+    "offset": 1487
+   },
+   "end": {
+    "line": 57,
+    "col": 83,
+    "offset": 1560
+   },
+   "extra": {
+    "message": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+    "metadata": {
+     "cwe": [
+      "CWE-697: Incorrect Comparison"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/types.comparisons.php",
+      "https://web.archive.org/web/20210430183236/https://www.whitehatsec.com/blog/magic-hashes/"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "LOW",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Other"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.md5-loose-equality.md5-loose-equality",
+     "shortlink": "https://sg.run/Do4G"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.browser.security.eval-detected.eval-detected",
+   "path": "vulnerabilities/javascript/source/high.js",
+   "start": {
+    "line": 1,
+    "col": 9843,
+    "offset": 9842
+   },
+   "end": {
+    "line": 1,
+    "col": 10417,
+    "offset": 10416
+   },
+   "extra": {
+    "message": "Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this content can be input from outside the program, this may be a code injection vulnerability. Ensure evaluated content is not definable by external sources.",
+    "metadata": {
+     "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "asvs": {
+      "control_id": "5.2.4 Dynamic Code Execution Features",
+      "control_url": "https://github.com/OWASP/ASVS/blob/master/4.0/en/0x13-V5-Validation-Sanitization-Encoding.md#v52-sanitization-and-sandboxing",
+      "section": "V5 Validation, Sanitization and Encoding",
+      "version": "4"
+     },
+     "category": "security",
+     "technology": [
+      "browser"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.browser.security.eval-detected.eval-detected",
+     "shortlink": "https://sg.run/7ope"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp",
+   "path": "vulnerabilities/javascript/source/high.js",
+   "start": {
+    "line": 1,
+    "col": 10308,
+    "offset": 10307
+   },
+   "end": {
+    "line": 1,
+    "col": 10344,
+    "offset": 10343
+   },
+   "extra": {
+    "message": "RegExp() called with a `f` function argument, this might allow an attacker to cause a Regular Expression Denial-of-Service (ReDoS) within your application as RegExP blocks the main thread. For this reason, it is recommended to use hardcoded regexes instead. If your regex is run on user-controlled input, consider performing input validation or use a regex checking/sanitization library such as https://www.npmjs.com/package/recheck to verify that the regex does not appear vulnerable to ReDoS.",
+    "metadata": {
+     "owasp": [
+      "A05:2021 - Security Misconfiguration",
+      "A06:2017 - Security Misconfiguration",
+      "A02:2025 - Security Misconfiguration"
+     ],
+     "cwe": [
+      "CWE-1333: Inefficient Regular Expression Complexity"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"
+     ],
+     "source-rule-url": "https://github.com/nodesecurity/eslint-plugin-security/blob/master/rules/detect-non-literal-regexp.js",
+     "category": "security",
+     "technology": [
+      "javascript"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Denial-of-Service (DoS)"
+     ],
+     "source": "https://semgrep.dev/r/javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp",
+     "shortlink": "https://sg.run/gr65"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp",
+   "path": "vulnerabilities/javascript/source/high.js",
+   "start": {
+    "line": 1,
+    "col": 10308,
+    "offset": 10307
+   },
+   "end": {
+    "line": 1,
+    "col": 10344,
+    "offset": 10343
+   },
+   "extra": {
+    "message": "RegExp() called with a `h` function argument, this might allow an attacker to cause a Regular Expression Denial-of-Service (ReDoS) within your application as RegExP blocks the main thread. For this reason, it is recommended to use hardcoded regexes instead. If your regex is run on user-controlled input, consider performing input validation or use a regex checking/sanitization library such as https://www.npmjs.com/package/recheck to verify that the regex does not appear vulnerable to ReDoS.",
+    "metadata": {
+     "owasp": [
+      "A05:2021 - Security Misconfiguration",
+      "A06:2017 - Security Misconfiguration",
+      "A02:2025 - Security Misconfiguration"
+     ],
+     "cwe": [
+      "CWE-1333: Inefficient Regular Expression Complexity"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"
+     ],
+     "source-rule-url": "https://github.com/nodesecurity/eslint-plugin-security/blob/master/rules/detect-non-literal-regexp.js",
+     "category": "security",
+     "technology": [
+      "javascript"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Denial-of-Service (DoS)"
+     ],
+     "source": "https://semgrep.dev/r/javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp",
+     "shortlink": "https://sg.run/gr65"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli/source/low.php",
+   "start": {
+    "line": 10,
+    "col": 14,
+    "offset": 174
+   },
+   "end": {
+    "line": 10,
+    "col": 78,
+    "offset": 238
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli/source/low.php",
+   "start": {
+    "line": 31,
+    "col": 14,
+    "offset": 1018
+   },
+   "end": {
+    "line": 31,
+    "col": 78,
+    "offset": 1082
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli_blind/source/high.php",
+   "start": {
+    "line": 11,
+    "col": 14,
+    "offset": 187
+   },
+   "end": {
+    "line": 11,
+    "col": 86,
+    "offset": 259
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli_blind/source/high.php",
+   "start": {
+    "line": 33,
+    "col": 14,
+    "offset": 857
+   },
+   "end": {
+    "line": 33,
+    "col": 86,
+    "offset": 929
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli_blind/source/low.php",
+   "start": {
+    "line": 11,
+    "col": 14,
+    "offset": 185
+   },
+   "end": {
+    "line": 11,
+    "col": 78,
+    "offset": 249
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli_blind/source/low.php",
+   "start": {
+    "line": 32,
+    "col": 14,
+    "offset": 809
+   },
+   "end": {
+    "line": 32,
+    "col": 78,
+    "offset": 873
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "vulnerabilities/sqli_blind/source/medium.php",
+   "start": {
+    "line": 34,
+    "col": 14,
+    "offset": 1039
+   },
+   "end": {
+    "line": 34,
+    "col": 76,
+    "offset": 1101
+   },
+   "extra": {
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label) VALUES (?, ?)\");`) or a safe library.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/lZYG"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.unlink-use.unlink-use",
+   "path": "vulnerabilities/upload/source/impossible.php",
+   "start": {
+    "line": 54,
+    "col": 4,
+    "offset": 2077
+   },
+   "end": {
+    "line": 54,
+    "col": 24,
+    "offset": 2097
+   },
+   "extra": {
+    "message": "Using user input when deleting files with `unlink()` is potentially dangerous. A malicious actor could use this to modify or access files they have no right to.",
+    "metadata": {
+     "references": [
+      "https://www.php.net/manual/en/function.unlink",
+      "https://owasp.org/www-project-top-ten/2017/A5_2017-Broken_Access_Control.html"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A05:2017 - Broken Access Control",
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "cwe": [
+      "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Path Traversal"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.unlink-use.unlink-use",
+     "shortlink": "https://sg.run/rYeR"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.eval-use.eval-use",
+   "path": "vulnerabilities/view_help.php",
+   "start": {
+    "line": 20,
+    "col": 3,
+    "offset": 537
+   },
+   "end": {
+    "line": 20,
+    "col": 112,
+    "offset": 646
+   },
+   "extra": {
+    "message": "Evaluating non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/function.eval",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/NoEvalsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.eval-use.eval-use",
+     "shortlink": "https://sg.run/J9AP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_help.php",
+   "start": {
+    "line": 20,
+    "col": 35,
+    "offset": 569
+   },
+   "end": {
+    "line": 20,
+    "col": 96,
+    "offset": 630
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.eval-use.eval-use",
+   "path": "vulnerabilities/view_help.php",
+   "start": {
+    "line": 22,
+    "col": 3,
+    "offset": 661
+   },
+   "end": {
+    "line": 22,
+    "col": 122,
+    "offset": 780
+   },
+   "extra": {
+    "message": "Evaluating non-constant commands. This can lead to command injection.",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/function.eval",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/NoEvalsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.eval-use.eval-use",
+     "shortlink": "https://sg.run/J9AP"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_help.php",
+   "start": {
+    "line": 22,
+    "col": 35,
+    "offset": 693
+   },
+   "end": {
+    "line": 22,
+    "col": 106,
+    "offset": 764
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source.php",
+   "start": {
+    "line": 63,
+    "col": 32,
+    "offset": 1392
+   },
+   "end": {
+    "line": 63,
+    "col": 102,
+    "offset": 1462
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source.php",
+   "start": {
+    "line": 67,
+    "col": 19,
+    "offset": 1578
+   },
+   "end": {
+    "line": 67,
+    "col": 88,
+    "offset": 1647
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source.php",
+   "start": {
+    "line": 68,
+    "col": 36,
+    "offset": 1688
+   },
+   "end": {
+    "line": 68,
+    "col": 105,
+    "offset": 1757
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source_all.php",
+   "start": {
+    "line": 14,
+    "col": 31,
+    "offset": 361
+   },
+   "end": {
+    "line": 14,
+    "col": 55,
+    "offset": 385
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source_all.php",
+   "start": {
+    "line": 18,
+    "col": 31,
+    "offset": 534
+   },
+   "end": {
+    "line": 18,
+    "col": 58,
+    "offset": 561
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source_all.php",
+   "start": {
+    "line": 22,
+    "col": 32,
+    "offset": 711
+   },
+   "end": {
+    "line": 22,
+    "col": 57,
+    "offset": 736
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+   "path": "vulnerabilities/view_source_all.php",
+   "start": {
+    "line": 26,
+    "col": 31,
+    "offset": 889
+   },
+   "end": {
+    "line": 26,
+    "col": 62,
+    "offset": 920
+   },
+   "extra": {
+    "message": "File name based on user input risks server-side request forgery.",
+    "metadata": {
+     "technology": [
+      "php"
+     ],
+     "category": "security",
+     "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+     ],
+     "owasp": [
+      "A10:2021 - Server-Side Request Forgery (SSRF)",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "impact": "MEDIUM",
+     "likelihood": "MEDIUM",
+     "confidence": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Server-Side Request Forgery (SSRF)"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.injection.tainted-filename.tainted-filename",
+     "shortlink": "https://sg.run/Ayqp"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.php.lang.security.weak-crypto.weak-crypto",
+   "path": "vulnerabilities/weak_id/source/high.php",
+   "start": {
+    "line": 10,
+    "col": 18,
+    "offset": 223
+   },
+   "end": {
+    "line": 10,
+    "col": 56,
+    "offset": 261
+   },
+   "extra": {
+    "message": "Detected usage of weak crypto function. Consider using stronger alternatives.",
+    "metadata": {
+     "cwe": [
+      "CWE-328: Use of Weak Hash"
+     ],
+     "references": [
+      "https://www.php.net/manual/en/book.sodium.php",
+      "https://github.com/FloeDesignTechnologies/phpcs-security-audit/blob/master/Security/Sniffs/BadFunctions/CryptoFunctionsSniff.php"
+     ],
+     "category": "security",
+     "technology": [
+      "php"
+     ],
+     "owasp": [
+      "A03:2017 - Sensitive Data Exposure",
+      "A02:2021 - Cryptographic Failures",
+      "A04:2025 - Cryptographic Failures"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Insecure Hashing Algorithm"
+     ],
+     "source": "https://semgrep.dev/r/php.lang.security.weak-crypto.weak-crypto",
+     "shortlink": "https://sg.run/KlBn"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  }
+ ],
+ "errors": [
+  {
+   "code": 3,
+   "level": "warn",
+   "type": [
+    "PartialParsing",
+    [
+     {
+      "path": "Dockerfile",
+      "start": {
+       "line": 24,
+       "col": 1,
+       "offset": 0
+      },
+      "end": {
+       "line": 25,
+       "col": 24,
+       "offset": 66
+      }
+     }
+    ]
+   ],
+   "message": "Syntax error at line Dockerfile:24:\n `RUN cd /var/www/html/vulnerabilities/api \\\n && composer install \\\n` was unexpected",
+   "path": "Dockerfile",
+   "spans": [
+    {
+     "file": "Dockerfile",
+     "start": {
+      "line": 24,
+      "col": 1,
+      "offset": 0
+     },
+     "end": {
+      "line": 25,
+      "col": 24,
+      "offset": 66
+     }
+    }
+   ]
+  },
+  {
+   "code": 3,
+   "level": "warn",
+   "type": [
+    "PartialParsing",
+    [
+     {
+      "path": "docs/pdf.html",
+      "start": {
+       "line": 1,
+       "col": 1,
+       "offset": 0
+      },
+      "end": {
+       "line": 1,
+       "col": 39,
+       "offset": 38
+      }
+     }
+    ]
+   ],
+   "message": "Syntax error at line docs/pdf.html:1:\n `Damn Vulnerable Web Application (DVWA)` was unexpected",
+   "path": "docs/pdf.html",
+   "spans": [
+    {
+     "file": "docs/pdf.html",
+     "start": {
+      "line": 1,
+      "col": 1,
+      "offset": 0
+     },
+     "end": {
+      "line": 1,
+      "col": 39,
+      "offset": 38
+     }
+    }
+   ]
+  }
+ ],
+ "paths": {
+  "scanned": [
+   ".dockerignore",
+   ".gitattributes",
+   ".gitignore",
+   "CHANGELOG.md",
+   "COPYING.txt",
+   "Dockerfile",
+   "README.ar.md",
+   "README.es.md",
+   "README.fa.md",
+   "README.fr.md",
+   "README.id.md",
+   "README.it.md",
+   "README.ko.md",
+   "README.md",
+   "README.pl.md",
+   "README.pt.md",
+   "README.ru.md",
+   "README.tr.md",
+   "README.uk.md",
+   "README.vi.md",
+   "README.zh.md",
+   "SECURITY.md",
+   "about.php",
+   "compose.yml",
+   "config/config.inc.php.dist",
+   "database/bac_setup.sql",
+   "database/create_mssql_db.sql",
+   "database/create_oracle_db.sql",
+   "database/create_postgresql_db.sql",
+   "database/create_sqlite_db.sql",
+   "docs/pdf.html",
+   "dvwa/css/help.css",
+   "dvwa/css/login.css",
+   "dvwa/css/main.css",
+   "dvwa/css/source.css",
+   "dvwa/includes/DBMS/MySQL.php",
+   "dvwa/includes/DBMS/PGSQL.php",
+   "dvwa/includes/Parsedown.php",
+   "dvwa/includes/dvwaPage.inc.php",
+   "dvwa/js/add_event_listeners.js",
+   "dvwa/js/dvwaPage.js",
+   "external/recaptcha/recaptchalib.php",
+   "hackable/flags/fi.php",
+   "index.php",
+   "instructions.php",
+   "login.php",
+   "logout.php",
+   "php.ini",
+   "phpinfo.php",
+   "robots.txt",
+   "security.php",
+   "security.txt",
+   "setup.php",
+   "vulnerabilities/api/.htaccess",
+   "vulnerabilities/api/README.md",
+   "vulnerabilities/api/bootstrap.php",
+   "vulnerabilities/api/composer.json",
+   "vulnerabilities/api/composer.lock",
+   "vulnerabilities/api/gen_openapi.php",
+   "vulnerabilities/api/help/help.php",
+   "vulnerabilities/api/index.php",
+   "vulnerabilities/api/openapi.yml",
+   "vulnerabilities/api/public/index.php",
+   "vulnerabilities/api/source/high.php",
+   "vulnerabilities/api/source/impossible.php",
+   "vulnerabilities/api/source/low.php",
+   "vulnerabilities/api/source/medium.php",
+   "vulnerabilities/api/src/GenericController.php",
+   "vulnerabilities/api/src/HealthController.php",
+   "vulnerabilities/api/src/Helpers.php",
+   "vulnerabilities/api/src/Login.php",
+   "vulnerabilities/api/src/LoginController.php",
+   "vulnerabilities/api/src/Order.php",
+   "vulnerabilities/api/src/OrderController.php",
+   "vulnerabilities/api/src/Token.php",
+   "vulnerabilities/api/src/User.php",
+   "vulnerabilities/api/src/UserController.php",
+   "vulnerabilities/authbypass/authbypass.js",
+   "vulnerabilities/authbypass/change_user_details.php",
+   "vulnerabilities/authbypass/get_user_data.php",
+   "vulnerabilities/authbypass/help/help.php",
+   "vulnerabilities/authbypass/index.php",
+   "vulnerabilities/authbypass/source/high.php",
+   "vulnerabilities/authbypass/source/impossible.php",
+   "vulnerabilities/authbypass/source/low.php",
+   "vulnerabilities/authbypass/source/medium.php",
+   "vulnerabilities/bac/README.md",
+   "vulnerabilities/bac/help/help.php",
+   "vulnerabilities/bac/index.php",
+   "vulnerabilities/bac/log_viewer.php",
+   "vulnerabilities/bac/source/high.php",
+   "vulnerabilities/bac/source/impossible.php",
+   "vulnerabilities/bac/source/low.php",
+   "vulnerabilities/bac/source/medium.php",
+   "vulnerabilities/bac/source/view_source.php",
+   "vulnerabilities/brute/help/help.php",
+   "vulnerabilities/brute/index.php",
+   "vulnerabilities/brute/source/high.php",
+   "vulnerabilities/brute/source/impossible.php",
+   "vulnerabilities/brute/source/low.php",
+   "vulnerabilities/brute/source/medium.php",
+   "vulnerabilities/captcha/help/help.php",
+   "vulnerabilities/captcha/index.php",
+   "vulnerabilities/captcha/source/high.php",
+   "vulnerabilities/captcha/source/impossible.php",
+   "vulnerabilities/captcha/source/low.php",
+   "vulnerabilities/captcha/source/medium.php",
+   "vulnerabilities/cryptography/help/help.php",
+   "vulnerabilities/cryptography/index.php",
+   "vulnerabilities/cryptography/source/check_token_high.php",
+   "vulnerabilities/cryptography/source/check_token_impossible.php",
+   "vulnerabilities/cryptography/source/download_ecb_attack.php",
+   "vulnerabilities/cryptography/source/download_oracle_attack.php",
+   "vulnerabilities/cryptography/source/ecb_attack.php",
+   "vulnerabilities/cryptography/source/high.php",
+   "vulnerabilities/cryptography/source/impossible.php",
+   "vulnerabilities/cryptography/source/low.php",
+   "vulnerabilities/cryptography/source/medium.php",
+   "vulnerabilities/cryptography/source/oracle_attack.php",
+   "vulnerabilities/cryptography/source/token_library_high.php",
+   "vulnerabilities/cryptography/source/token_library_impossible.php",
+   "vulnerabilities/cryptography/source/xor_theory.php",
+   "vulnerabilities/csp/help/help.php",
+   "vulnerabilities/csp/index.php",
+   "vulnerabilities/csp/source/high.js",
+   "vulnerabilities/csp/source/high.php",
+   "vulnerabilities/csp/source/impossible.js",
+   "vulnerabilities/csp/source/impossible.php",
+   "vulnerabilities/csp/source/jsonp.php",
+   "vulnerabilities/csp/source/jsonp_impossible.php",
+   "vulnerabilities/csp/source/low.php",
+   "vulnerabilities/csp/source/medium.php",
+   "vulnerabilities/csrf/help/help.php",
+   "vulnerabilities/csrf/index.php",
+   "vulnerabilities/csrf/source/high.php",
+   "vulnerabilities/csrf/source/impossible.php",
+   "vulnerabilities/csrf/source/low.php",
+   "vulnerabilities/csrf/source/medium.php",
+   "vulnerabilities/csrf/test_credentials.php",
+   "vulnerabilities/exec/help/help.php",
+   "vulnerabilities/exec/index.php",
+   "vulnerabilities/exec/source/high.php",
+   "vulnerabilities/exec/source/impossible.php",
+   "vulnerabilities/exec/source/low.php",
+   "vulnerabilities/exec/source/medium.php",
+   "vulnerabilities/fi/file1.php",
+   "vulnerabilities/fi/file2.php",
+   "vulnerabilities/fi/file3.php",
+   "vulnerabilities/fi/file4.php",
+   "vulnerabilities/fi/help/help.php",
+   "vulnerabilities/fi/include.php",
+   "vulnerabilities/fi/index.php",
+   "vulnerabilities/fi/source/high.php",
+   "vulnerabilities/fi/source/impossible.php",
+   "vulnerabilities/fi/source/low.php",
+   "vulnerabilities/fi/source/medium.php",
+   "vulnerabilities/help.css",
+   "vulnerabilities/help.js",
+   "vulnerabilities/javascript/help/help.php",
+   "vulnerabilities/javascript/index.php",
+   "vulnerabilities/javascript/source/high.js",
+   "vulnerabilities/javascript/source/high.php",
+   "vulnerabilities/javascript/source/high_unobfuscated.js",
+   "vulnerabilities/javascript/source/impossible.php",
+   "vulnerabilities/javascript/source/low.php",
+   "vulnerabilities/javascript/source/medium.js",
+   "vulnerabilities/javascript/source/medium.php",
+   "vulnerabilities/open_redirect/help/help.php",
+   "vulnerabilities/open_redirect/index.php",
+   "vulnerabilities/open_redirect/source/high.php",
+   "vulnerabilities/open_redirect/source/impossible.php",
+   "vulnerabilities/open_redirect/source/info.php",
+   "vulnerabilities/open_redirect/source/low.php",
+   "vulnerabilities/open_redirect/source/medium.php",
+   "vulnerabilities/sqli/help/help.php",
+   "vulnerabilities/sqli/index.php",
+   "vulnerabilities/sqli/session-input.php",
+   "vulnerabilities/sqli/source/high.php",
+   "vulnerabilities/sqli/source/impossible.php",
+   "vulnerabilities/sqli/source/low.php",
+   "vulnerabilities/sqli/source/medium.php",
+   "vulnerabilities/sqli/test.php",
+   "vulnerabilities/sqli_blind/cookie-input.php",
+   "vulnerabilities/sqli_blind/help/help.php",
+   "vulnerabilities/sqli_blind/index.php",
+   "vulnerabilities/sqli_blind/source/high.php",
+   "vulnerabilities/sqli_blind/source/impossible.php",
+   "vulnerabilities/sqli_blind/source/low.php",
+   "vulnerabilities/sqli_blind/source/medium.php",
+   "vulnerabilities/upload/help/help.php",
+   "vulnerabilities/upload/index.php",
+   "vulnerabilities/upload/source/high.php",
+   "vulnerabilities/upload/source/impossible.php",
+   "vulnerabilities/upload/source/low.php",
+   "vulnerabilities/upload/source/medium.php",
+   "vulnerabilities/view_help.php",
+   "vulnerabilities/view_source.php",
+   "vulnerabilities/view_source_all.php",
+   "vulnerabilities/weak_id/help/help.php",
+   "vulnerabilities/weak_id/index.php",
+   "vulnerabilities/weak_id/source/high.php",
+   "vulnerabilities/weak_id/source/impossible.php",
+   "vulnerabilities/weak_id/source/low.php",
+   "vulnerabilities/weak_id/source/medium.php",
+   "vulnerabilities/xss_d/help/help.php",
+   "vulnerabilities/xss_d/index.php",
+   "vulnerabilities/xss_d/source/high.php",
+   "vulnerabilities/xss_d/source/impossible.php",
+   "vulnerabilities/xss_d/source/low.php",
+   "vulnerabilities/xss_d/source/medium.php",
+   "vulnerabilities/xss_r/help/help.php",
+   "vulnerabilities/xss_r/index.php",
+   "vulnerabilities/xss_r/source/high.php",
+   "vulnerabilities/xss_r/source/impossible.php",
+   "vulnerabilities/xss_r/source/low.php",
+   "vulnerabilities/xss_r/source/medium.php",
+   "vulnerabilities/xss_s/help/help.php",
+   "vulnerabilities/xss_s/index.php",
+   "vulnerabilities/xss_s/source/high.php",
+   "vulnerabilities/xss_s/source/impossible.php",
+   "vulnerabilities/xss_s/source/low.php",
+   "vulnerabilities/xss_s/source/medium.php"
+  ]
+ },
+ "time": {
+  "rules": [],
+  "rules_parse_time": 0.21010494232177734,
+  "profiling_times": {
+   "config_time": 13.121457815170288,
+   "core_time": 2.3137271404266357,
+   "ignores_time": 0.0005807876586914062,
+   "total_time": 15.440619707107544
+  },
+  "parsing_time": {
+   "total_time": 0.32776403427124023,
+   "per_file_time": {
+    "mean": 0.0002921248077283781,
+    "std_dev": 5.279309461239475e-06
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_files": []
+  },
+  "scanning_time": {
+   "total_time": 6.3967015743255615,
+   "per_file_time": {
+    "mean": 0.010202075876117314,
+    "std_dev": 0.005606466076650692
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.23672058934962065,
+    "count_ratio": 0.001594896331738437
+   },
+   "very_slow_files": [
+    {
+     "fpath": "vulnerabilities/api/openapi.yml",
+     "ftime": 1.5142309665679932
+    }
+   ]
+  },
+  "matching_time": {
+   "total_time": 1.8699638843536377,
+   "per_file_and_rule_time": {
+    "mean": 0.0016666344780335456,
+    "std_dev": 0.00012382947129250234
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.4256278402799267,
+    "count_ratio": 0.004456327985739751
+   },
+   "very_slow_rules_on_files": [
+    {
+     "fpath": "dvwa/includes/dvwaPage.inc.php",
+     "rule_id": "semgrep-rules.20261125-broad.php.lang.security.injection.tainted-filename.tainted-filename",
+     "time": 0.10508584976196289
+    },
+    {
+     "fpath": "vulnerabilities/javascript/source/high_unobfuscated.js",
+     "rule_id": "semgrep-rules.20261125-broad.ajinabraham.njsscan.xss.xss_node.express_xss",
+     "time": 0.13767004013061523
+    },
+    {
+     "fpath": "vulnerabilities/javascript/source/high_unobfuscated.js",
+     "rule_id": "semgrep-rules.20261125-broad.ajinabraham.njsscan.ssrf.ssrf_node.node_ssrf",
+     "time": 0.17614102363586426
+    },
+    {
+     "fpath": "vulnerabilities/javascript/source/high_unobfuscated.js",
+     "rule_id": "semgrep-rules.20261125-broad.ajinabraham.njsscan.dos.regex_injection.regex_injection_dos",
+     "time": 0.18549394607543945
+    },
+    {
+     "fpath": "vulnerabilities/javascript/source/high_unobfuscated.js",
+     "rule_id": "semgrep-rules.20261125-broad.ajinabraham.njsscan.eval.eval_node.eval_nodejs",
+     "time": 0.19151782989501953
+    }
+   ]
+  },
+  "tainting_time": {
+   "total_time": 0.392622709274292,
+   "per_def_and_rule_time": {
+    "mean": 0.00032528807727778955,
+    "std_dev": 5.109272635558881e-07
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_rules_on_defs": []
+  },
+  "fixpoint_timeouts": [],
+  "prefiltering": {
+   "project_level_time": 0.0,
+   "file_level_time": 0.0,
+   "rules_with_project_prefilters_ratio": 0.0,
+   "rules_with_file_prefilters_ratio": 0.9858812074001947,
+   "rules_selected_ratio": 0.05834144758195391,
+   "rules_matched_ratio": 0.05834144758195391
+  },
+  "targets": [],
+  "total_bytes": 0,
+  "max_memory_bytes": 1321243008
+ },
+ "engine_requested": "OSS",
+ "skipped_rules": [],
+ "profiling_results": []
+}

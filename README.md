@@ -53,14 +53,17 @@ scored against each application's known vulnerabilities, with false positives co
 
 | Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop | 42 | 41 | 9 | 14 |
-| vuln-nextjs | 13 | 13 | 2 | 7 |
-| DVWA | 11 | 11 | 5 | 6 |
-| vuln-symfony | 30 | 30 | 2 | 5 |
+| OWASP Juice Shop | 42 | 41 | 13 | 14 |
+| vuln-nextjs | 13 | 13 | 7 | 7 |
+| DVWA | 11 | 11 | 6 | 6 |
+| vuln-symfony | 30 | 30 | 8 | 5 |
 
-False positives on known-safe code: Code Scan 3, Semgrep CE 8, Bearer 22 and two grouped rules.
-These are development reference applications and the answer keys favor the classes Code Scan
-analyzes, so this is not a general accuracy claim.
+Reviewed false positives: Code Scan 13, Semgrep CE 93, Bearer 73 and two grouped rules. Each is a
+lower bound. Semgrep CE is shown with 23 registry packs; with five focused packs it
+found 18 with 13 false positives. Semgrep CE and Bearer run free and offline, and a judged Code
+Scan calls a paid model provider. These are development reference applications that Code Scan was
+developed against, and the answer keys favor the classes it analyzes, so this is not a general
+accuracy claim.
 [Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)
 
 ## Modules

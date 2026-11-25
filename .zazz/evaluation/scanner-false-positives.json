@@ -1,0 +1,463 @@
+{
+ "about": "False positives of the scanner comparison: a location a scanner reported where a source read shows the reported weakness cannot occur. Counted once per file and line.",
+ "reviewed": "2026-11-25",
+ "tools": {
+  "code-scan": {
+   "juice-shop": [
+    {
+     "reason": "Liking another user's review is the feature",
+     "locations": [
+      "routes/likeProductReviews.ts:35",
+      "routes/likeProductReviews.ts:50"
+     ]
+    },
+    {
+     "reason": ".well-known holds only published files",
+     "locations": [
+      "server.ts:294"
+     ]
+    },
+    {
+     "reason": "NoSQL: the selector value is a route parameter, always a string",
+     "locations": [
+      "routes/orderHistory.ts:36"
+     ]
+    }
+   ],
+   "dvwa": [
+    {
+     "reason": "SQL: every request value is escaped for, and placed inside, a quoted literal",
+     "locations": [
+      "login.php:47",
+      "vulnerabilities/brute/source/high.php:20",
+      "vulnerabilities/brute/source/medium.php:15",
+      "vulnerabilities/csrf/test_credentials.php:22",
+      "vulnerabilities/xss_s/source/low.php:17",
+      "vulnerabilities/xss_s/source/medium.php:19",
+      "vulnerabilities/xss_s/source/high.php:19"
+     ]
+    },
+    {
+     "reason": "SQL: the value must match digits only",
+     "locations": [
+      "vulnerabilities/bac/source/medium.php:22",
+      "vulnerabilities/bac/source/medium.php:29"
+     ]
+    }
+   ],
+   "vuln-nextjs": [],
+   "vuln-symfony": []
+  },
+  "semgrep": {
+   "juice-shop": [
+    {
+     "reason": "Each handler rejects a name containing /",
+     "locations": [
+      "routes/fileServer.ts:32",
+      "routes/keyServer.ts:14",
+      "routes/logfileServer.ts:14",
+      "routes/quarantineServer.ts:14"
+     ]
+    },
+    {
+     "reason": ".well-known holds only published files",
+     "locations": [
+      "server.ts:294"
+     ]
+    },
+    {
+     "reason": "A constant path list",
+     "locations": [
+      "lib/antiCheat.ts:198"
+     ]
+    },
+    {
+     "reason": "NoSQL rule on a Sequelize (SQL) lookup with bound values",
+     "locations": [
+      "routes/address.ts:18",
+      "routes/basket.ts:19",
+      "routes/basketItems.ts:68",
+      "routes/captcha.ts:37",
+      "routes/dataErasure.ts:34",
+      "routes/delivery.ts:34",
+      "routes/deluxe.ts:19",
+      "routes/deluxe.ts:25",
+      "routes/deluxe.ts:35",
+      "routes/order.ts:35",
+      "routes/order.ts:125",
+      "routes/order.ts:148",
+      "routes/payment.ts:41",
+      "routes/wallet.ts:12",
+      "routes/wallet.ts:24"
+     ]
+    },
+    {
+     "reason": "eval of an expression built only from server-chosen numbers",
+     "locations": [
+      "routes/captcha.ts:22"
+     ]
+    },
+    {
+     "reason": "Random value is not a secret",
+     "locations": [
+      "data/datacreator.ts:323",
+      "data/datacreator.ts:381",
+      "data/datacreator.ts:756",
+      "frontend/src/app/Services/conversation-storage.service.ts:17",
+      "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts:67",
+      "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts:120",
+      "lib/insecurity.ts:53",
+      "routes/captcha.ts:14",
+      "routes/captcha.ts:15",
+      "routes/captcha.ts:16",
+      "routes/captcha.ts:18",
+      "routes/captcha.ts:19"
+     ]
+    },
+    {
+     "reason": "Not a credential",
+     "locations": [
+      "data/datacreator.ts:350",
+      "data/datacreator.ts:354",
+      "frontend/src/app/purchase-basket/purchase-basket.component.ts:60",
+      "frontend/src/app/purchase-basket/purchase-basket.component.ts:70"
+     ]
+    },
+    {
+     "reason": "Angular interpolation, not a raw attribute",
+     "locations": [
+      "frontend/src/app/navbar/navbar.component.html:17",
+      "frontend/src/app/purchase-basket/purchase-basket.component.html:16"
+     ]
+    },
+    {
+     "reason": "Read-only property walk",
+     "locations": [
+      "frontend/src/hacking-instructor/helpers/helpers.ts:49"
+     ]
+    },
+    {
+     "reason": "Pattern built from fixed challenge keys",
+     "locations": [
+      "lib/codingChallenges.ts:77",
+      "lib/codingChallenges.ts:79"
+     ]
+    },
+    {
+     "reason": "Origin is fixed to a local development host",
+     "locations": [
+      "lib/startup/registerWebsocketEvents.ts:19"
+     ]
+    },
+    {
+     "reason": "Comparison with null",
+     "locations": [
+      "routes/changePassword.ts:28"
+     ]
+    },
+    {
+     "reason": "Challenge check, not an access decision",
+     "locations": [
+      "routes/verify.ts:60"
+     ]
+    },
+    {
+     "reason": "Developer script",
+     "locations": [
+      "rsn/rsnUtil.ts:63",
+      "scripts/package.mjs:121"
+     ]
+    },
+    {
+     "reason": "Log prefix is a function name",
+     "locations": [
+      "server.ts:158"
+     ]
+    },
+    {
+     "reason": "!= in inline script text, not an unescaped output",
+     "locations": [
+      "views/promotionVideo.pug:75"
+     ]
+    }
+   ],
+   "vuln-nextjs": [
+    {
+     "reason": "DOMPurify output",
+     "locations": [
+      "pages/xss/sanitized/reflected.js:16"
+     ]
+    },
+    {
+     "reason": "Build script over the project's own lockfile",
+     "locations": [
+      "scripts/export-prototype-pollution-fixtures.mjs:136",
+      "scripts/export-prototype-pollution-fixtures.mjs:137"
+     ]
+    }
+   ],
+   "dvwa": [
+    {
+     "reason": "Address is rebuilt from four numeric octets",
+     "locations": [
+      "vulnerabilities/exec/source/impossible.php:22",
+      "vulnerabilities/exec/source/impossible.php:26"
+     ]
+    },
+    {
+     "reason": "SQL: the value is an integer or must match digits only",
+     "locations": [
+      "vulnerabilities/bac/source/low.php:22",
+      "vulnerabilities/bac/source/low.php:35",
+      "vulnerabilities/bac/source/medium.php:21",
+      "vulnerabilities/bac/source/medium.php:28"
+     ]
+    },
+    {
+     "reason": "File name comes from a fixed map",
+     "locations": [
+      "instructions.php:26"
+     ]
+    },
+    {
+     "reason": "No digest is compared with a loose operator that an input can influence",
+     "locations": [
+      "login.php:48",
+      "vulnerabilities/brute/source/high.php:22",
+      "vulnerabilities/brute/source/low.php:15",
+      "vulnerabilities/brute/source/medium.php:17",
+      "vulnerabilities/captcha/source/impossible.php:46",
+      "vulnerabilities/cryptography/source/ecb_attack.php:92",
+      "vulnerabilities/csrf/test_credentials.php:23",
+      "vulnerabilities/javascript/index.php:43",
+      "vulnerabilities/javascript/index.php:57"
+     ]
+    },
+    {
+     "reason": "Deletes its own temporary file",
+     "locations": [
+      "vulnerabilities/upload/source/impossible.php:54"
+     ]
+    }
+   ],
+   "vuln-symfony": [
+    {
+     "reason": "URL generated by path()",
+     "locations": [
+      "templates/admin/index.html.twig:59",
+      "templates/base.html.twig:29",
+      "templates/base.html.twig:31",
+      "templates/base.html.twig:34",
+      "templates/base.html.twig:35",
+      "templates/base.html.twig:37",
+      "templates/base.html.twig:38",
+      "templates/base.html.twig:53",
+      "templates/blog/index.html.twig:27",
+      "templates/blog/index.html.twig:34",
+      "templates/blog/post.html.twig:25",
+      "templates/login/index.html.twig:15",
+      "templates/user/index.html.twig:65",
+      "templates/user/index.html.twig:66"
+     ]
+    },
+    {
+     "reason": "Attribute is one of two constants",
+     "locations": [
+      "templates/admin/index.html.twig:49",
+      "templates/admin/index.html.twig:52"
+     ]
+    },
+    {
+     "reason": "md5 names an uploaded file",
+     "locations": [
+      "src/Controller/UserController.php:98",
+      "src/Controller/UserController.php:138"
+     ]
+    },
+    {
+     "reason": "Commented-out setting",
+     "locations": [
+      ".env:34",
+      ".env:35",
+      "docker/.env.local:18",
+      "docker/.env.local:19",
+      "config/packages/cache.yaml:12"
+     ]
+    }
+   ]
+  },
+  "bearer": {
+   "juice-shop": [
+    {
+     "reason": "Each handler rejects a name containing /",
+     "locations": [
+      "routes/fileServer.ts:32",
+      "routes/keyServer.ts:14",
+      "routes/logfileServer.ts:14",
+      "routes/quarantineServer.ts:14"
+     ]
+    },
+    {
+     "reason": ".well-known holds only published files",
+     "locations": [
+      "server.ts:294"
+     ]
+    },
+    {
+     "reason": "A constant or configured path",
+     "locations": [
+      "data/staticData.ts:8",
+      "lib/startup/validatePreconditions.ts:199",
+      "lib/startup/validatePreconditions.ts:210",
+      "scripts/package.mjs:62",
+      "lib/antiCheat.ts:198"
+     ]
+    },
+    {
+     "reason": "Random value is not a secret",
+     "locations": [
+      "data/datacreator.ts:323",
+      "data/datacreator.ts:381",
+      "data/datacreator.ts:756",
+      "frontend/src/app/Services/conversation-storage.service.ts:17",
+      "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts:67",
+      "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts:120",
+      "lib/insecurity.ts:53",
+      "routes/captcha.ts:14",
+      "routes/captcha.ts:15",
+      "routes/captcha.ts:16",
+      "routes/captcha.ts:18",
+      "routes/captcha.ts:19"
+     ]
+    },
+    {
+     "reason": "Pattern built from fixed challenge keys",
+     "locations": [
+      "lib/codingChallenges.ts:77",
+      "lib/codingChallenges.ts:79"
+     ]
+    },
+    {
+     "reason": "Not a password digest",
+     "locations": [
+      "lib/utils.ts:82",
+      "scripts/package.mjs:121"
+     ]
+    },
+    {
+     "reason": "The application's own files; js-yaml 4 constructs no objects",
+     "locations": [
+      "routes/vulnCodeFixes.ts:83",
+      "routes/vulnCodeSnippet.ts:90"
+     ]
+    },
+    {
+     "reason": "Comparison with an empty string or a public value",
+     "locations": [
+      "frontend/src/hacking-instructor/helpers/helpers.ts:266",
+      "routes/2fa.ts:66",
+      "routes/2fa.ts:111",
+      "routes/login.ts:37",
+      "routes/dataExport.ts:106",
+      "routes/changePassword.ts:54"
+     ]
+    },
+    {
+     "reason": "Logs a public balance",
+     "locations": [
+      "frontend/src/app/faucet/faucet.component.ts:121",
+      "frontend/src/app/faucet/faucet.component.ts:226"
+     ]
+    }
+   ],
+   "vuln-nextjs": [
+    {
+     "reason": "DOMPurify output",
+     "locations": [
+      "pages/xss/sanitized/reflected.js:16"
+     ]
+    },
+    {
+     "reason": "< is escaped before the script context",
+     "locations": [
+      "pages/xss/safe/script-context.js:17"
+     ]
+    },
+    {
+     "reason": "Exact filename allow-list",
+     "locations": [
+      "pages/api/secure/file-read.js:15"
+     ]
+    },
+    {
+     "reason": "Same-origin URL and /api/ path check",
+     "locations": [
+      "pages/secure/ssrf.js:26"
+     ]
+    }
+   ],
+   "dvwa": [
+    {
+     "reason": "Address is rebuilt from four numeric octets",
+     "locations": [
+      "vulnerabilities/exec/source/impossible.php:22",
+      "vulnerabilities/exec/source/impossible.php:26"
+     ]
+    },
+    {
+     "reason": "SQL: the value is an integer or must match digits only",
+     "locations": [
+      "vulnerabilities/bac/source/low.php:23",
+      "vulnerabilities/bac/source/low.php:36",
+      "vulnerabilities/bac/source/medium.php:22",
+      "vulnerabilities/bac/source/medium.php:29"
+     ]
+    },
+    {
+     "reason": "XSS: constant text",
+     "locations": [
+      "vulnerabilities/bac/source/high.php:65",
+      "vulnerabilities/bac/source/high.php:68",
+      "vulnerabilities/bac/source/impossible.php:53",
+      "vulnerabilities/bac/source/impossible.php:108",
+      "vulnerabilities/bac/source/impossible.php:116",
+      "vulnerabilities/bac/source/impossible.php:120",
+      "vulnerabilities/bac/source/impossible.php:131",
+      "vulnerabilities/bac/source/low.php:50",
+      "vulnerabilities/bac/source/low.php:53",
+      "vulnerabilities/bac/source/medium.php:46",
+      "vulnerabilities/brute/source/high.php:34",
+      "vulnerabilities/brute/source/impossible.php:72",
+      "vulnerabilities/brute/source/impossible.php:85",
+      "vulnerabilities/brute/source/low.php:26",
+      "vulnerabilities/brute/source/medium.php:29",
+      "vulnerabilities/captcha/source/low.php:39",
+      "vulnerabilities/captcha/source/low.php:64",
+      "vulnerabilities/captcha/source/low.php:68",
+      "vulnerabilities/captcha/source/medium.php:40",
+      "vulnerabilities/captcha/source/medium.php:56",
+      "vulnerabilities/captcha/source/medium.php:72",
+      "vulnerabilities/captcha/source/medium.php:76",
+      "vulnerabilities/exec/source/impossible.php:34"
+     ]
+    },
+    {
+     "reason": "XSS: the value is an integer or must match digits only",
+     "locations": [
+      "vulnerabilities/bac/source/low.php:27",
+      "vulnerabilities/bac/source/medium.php:43"
+     ]
+    }
+   ],
+   "vuln-symfony": [
+    {
+     "reason": "md5 names an uploaded file",
+     "locations": [
+      "src/Controller/UserController.php:98",
+      "src/Controller/UserController.php:138"
+     ]
+    }
+   ]
+  }
+ }
+}

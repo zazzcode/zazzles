@@ -79,6 +79,15 @@ other scanners' path-traversal results on that line are counted with the three s
 as false positives. vuln-nextjs's redirect control is not counted as a Code Scan false positive:
 its guard admits `/\\host`, so the report is correct.
 
+**Broad Semgrep run and false-positive review of 2026-11-25.** The capability inventory below uses
+the [broad run](semgrep-results.md#broad-run). New rule names were added to `RULE_CLASS` by what
+each rule detects, before their locations were read; the focused Semgrep and Bearer scores are
+unchanged by it. `JS-NOSQL-01` (`showProductReviews.ts:31-48`) and `JS-XSS-07`
+(`userProfile.ts:34-104`) are counted as found by hand: the result covers the keyed line but starts
+more than three lines above it. The committed key `JS-SECRET-01` is also counted by hand, as before.
+Earlier counting rule 5 left results outside the key unreviewed; they are now sorted, and the false
+positives of each tool are in [scanner-false-positives.json](scanner-false-positives.json).
+
 ## Reproduce
 
 ```bash
@@ -94,6 +103,9 @@ python3 .zazz/evaluation/match-scanner-results.py check.json juice-shop <DEV_ROO
   --cases .zazz/evaluation/recall-gap-inventory/cases.json
 
 python3 .zazz/evaluation/test_match_scanner_results.py
+
+# Count the reviewed false positives and check that each tool reported each location.
+python3 .zazz/evaluation/count-scanner-false-positives.py config.json
 ```
 
 `VULN` lines are the table rows. A `SAFE` line with a tool result is a false positive of that
@@ -107,34 +119,34 @@ nothing is claimed for any scanner.
 
 | Weakness class | Known vulnerabilities | Code Scan | Semgrep CE | Bearer |
 |---|---:|---:|---:|---:|
-| Cross-site scripting | 18 | 18 | 1 | 5 |
-| SQL injection | 10 | 10 | 5 | 7 |
+| Cross-site scripting | 18 | 18 | 2 | 5 |
+| SQL injection | 10 | 10 | 10 | 7 |
 | Missing authorization | 10 | 10 | 0 | 0 |
 | Insecure configuration | 8 | 8 | 4 | 4 |
-| Path traversal | 7 | 7 | 0 | 2 |
+| Path traversal | 7 | 7 | 1 | 2 |
 | Mass assignment | 7 | 7 | 0 | 0 |
-| Code and template injection | 6 | 6 | 2 | 4 |
-| OS command injection | 5 | 5 | 2 | 2 |
+| Code and template injection | 6 | 6 | 4 | 4 |
+| OS command injection | 5 | 5 | 5 | 2 |
 | Server-side request forgery | 4 | 4 | 0 | 1 |
-| NoSQL injection | 3 | 3 | 0 | 0 |
+| NoSQL injection | 3 | 3 | 2 | 0 |
 | Information exposure | 3 | 3 | 1 | 1 |
-| Weak password hashing | 3 | 3 | 1 | 2 |
+| Weak password hashing | 3 | 3 | 2 | 2 |
 | Account enumeration | 3 | 3 | 0 | 0 |
 | Open redirect | 3 | 3 | 1 | 2 |
 | Unrestricted file upload | 2 | 2 | 0 | 0 |
-| Unsafe deserialization | 1 | 1 | 0 | 1 |
+| Unsafe deserialization | 1 | 1 | 1 | 1 |
 | Weak password recovery | 1 | 1 | 0 | 0 |
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Hardcoded secret | 1 | 0 | 1 | 1 |
 | Prototype pollution, argument injection | No keyed case | — | — | — |
-| **Total** | **96** | **95** | **18** | **32** |
+| **Total** | **96** | **95** | **34** | **32** |
 
 | Capability | Code Scan | Semgrep CE | Bearer CLI |
 |---|---|---|---|
 | Languages run here | JavaScript, TypeScript, PHP | The same | The same |
-| Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; the cross-file engine is Semgrep Pro, not run | Not shown: it found no row that needs it |
+| Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; cross-function and cross-file taint is Semgrep Pro, not run | Not shown: it found no row that needs it |
 | Access rules read from framework configuration and middleware | Yes: the authorization, mass-assignment and enumeration rows depend on it | No such rule fired | No such rule fired |
-| Known-safe code left unreported | 3 false positives | 8 | 22 and two grouped rules |
+| Reviewed false positives, a lower bound | 13 | 93 (13 with the focused packs) | 73 and two grouped rules |
 | Committed secrets | No analyzer | Found the keyed row | Found the keyed row |
 | Infrastructure files (Terraform, package-manager policy) | Dockerfile, web-server and cron files for PHP projects | Terraform and npm/pnpm rules fired | None fired |
 | Output | JSON, HTML, SARIF | JSON, SARIF, text | JSON; SARIF not produced in this run |

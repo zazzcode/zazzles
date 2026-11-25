@@ -159,6 +159,76 @@ finale.resource({ model: Memo, endpoints: ['/api/Memos', '/api/Memos/:id'] })
 	}
 }
 
+// TestExpressGeneratedStillReached: an earlier handler ends the request only
+// when its registration always runs before the resource call, on the
+// application the resources are generated on. A registration under a
+// condition, in another function, on another application or on a router keeps
+// the generated endpoint's claim.
+func TestExpressGeneratedStillReached(t *testing.T) {
+	const head = `import express from 'express'
+import finale from 'finale-rest'
+import { Model, DataTypes } from 'sequelize'
+
+class Memo extends Model {}
+Memo.init({ text: DataTypes.STRING }, { sequelize })
+
+const api = express()
+`
+	const deny = `(req, res) => { res.sendStatus(403) }`
+	const resource = `finale.resource({ model: Memo, endpoints: ['/api/Memos', '/api/Memos/:id'] })`
+	for _, tt := range []struct {
+		name, body string
+		answered   bool
+	}{
+		{"unconditional, same application", `api.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize({ app: api, sequelize })
+` + resource, true},
+		{"resource call in a loop after the handler", `api.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize({ app: api, sequelize })
+for (const mode of ['a']) { ` + resource + ` }`, true},
+		{"under a condition", `if (process.env.LOCKED) { api.delete('/api/Memos/:id', ` + deny + `) }
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"in a function that may not run", `function lock () { api.delete('/api/Memos/:id', ` + deny + `) }
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"on another application", `const other = express()
+other.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"on a router mounted elsewhere", `const part = express.Router()
+part.delete('/api/Memos/:id', ` + deny + `)
+api.use('/v2', part)
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"application of the resources not named", `api.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize(settings)
+` + resource, false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "api.ts", head+tt.body+"\n")
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			names := map[string]string{}
+			for _, e := range report.Entries {
+				names[e.ID] = e.Name
+			}
+			recorded := false
+			for _, u := range report.Uses {
+				if u.Kind == analysis.AuthorizationKind && names[u.EntryID] == "DELETE /api/Memos/:id" {
+					recorded = true
+				}
+			}
+			if recorded == tt.answered {
+				t.Fatalf("generated delete recorded = %v, want %v", recorded, !tt.answered)
+			}
+		})
+	}
+}
+
 // TestExpressEnvSettingGuard: Express's own environment setting is an
 // environment guard, as process.env.NODE_ENV is.
 func TestExpressEnvSettingGuard(t *testing.T) {

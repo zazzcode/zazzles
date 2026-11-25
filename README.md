@@ -196,6 +196,7 @@ The [analysis rules](docs/scan/analysis/README.md) describe how Scan evaluates s
 
 ## License
 
-Zazzles is licensed under the [GNU General Public License, version 3](LICENSE). Third-party
-material in [sample reports](docs/samples/README.md) and test fixtures remains under its own terms;
-see the license files and notes beside it.
+Zazzles is licensed under the [GNU General Public License, version 3](LICENSE), with an
+[output exception](OUTPUT-EXCEPTION.md) that lets you use and share the reports it generates under
+terms of your choice. Third-party material in [sample reports](docs/samples/README.md) and test
+fixtures remains under its own terms; see the license files and notes beside it.

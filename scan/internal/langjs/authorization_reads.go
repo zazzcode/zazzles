@@ -25,9 +25,12 @@ import (
 //   - no other key of the selector is a constant.
 //
 // Another key whose value is not the request's is an ownership_check guard in
-// the query_scope form and never suppresses the record. A model with no
-// association to an account model, a list with no selector and a read whose
-// result is not sent are not covered.
+// the query_scope form and never suppresses the record. A comparison of a
+// member of the result that decides whether the response is sent is a guard
+// in the result_comparison form: an ownership_check when the other side is a
+// verified token claim, guard_unclassified with a blocker otherwise. A model
+// with no association to an account model, a list with no selector and a read
+// whose result is not sent are not covered.
 var sequelizeReads = map[string]bool{"findOne": true, "findByPk": true, "findAll": true}
 var mongooseReads = map[string]bool{"findById": true, "findOne": true}
 
@@ -43,6 +46,14 @@ type authzRead struct {
 	selector    authzSelector
 	association analysis.Evidence
 	response    *sitter.Node
+	// comparisons are the conditions that compare a member of the result and
+	// decide whether the response is sent.
+	comparisons []resultComparison
+}
+
+// resultComparison is one such condition and the side that is not the result.
+type resultComparison struct {
+	condition, other *sitter.Node
 }
 
 // authzReadOf recognizes a read of an owned record whose result the entry sends.
@@ -86,17 +97,18 @@ func (s *moduleSet) authzReadOf(m *sourceModule, handler, call *sitter.Node, p h
 	if len(sel.order) == 0 {
 		return authzRead{}, false
 	}
-	response := sentResult(m, handler, call, p)
+	response, comparisons := sentResult(m, handler, call, p)
 	if response == nil {
 		return authzRead{}, false
 	}
-	return authzRead{selector: sel, association: association, response: response}, true
+	return authzRead{selector: sel, association: association, response: response, comparisons: comparisons}, true
 }
 
 // sentResult returns the response call that sends the result of a read, or a
 // constant derived from it: `const row = await Model.find…(…)` followed by
-// res.json(row), or Model.find…(…).then(row => res.json(row)).
-func sentResult(m *sourceModule, handler, call *sitter.Node, p handlerParams) *sitter.Node {
+// res.json(row), or Model.find…(…).then(row => res.json(row)). It also returns
+// the comparisons of the result that decide whether that response is sent.
+func sentResult(m *sourceModule, handler, call *sitter.Node, p handlerParams) (*sitter.Node, []resultComparison) {
 	var name string
 	var scope *sitter.Node
 	parent := call.Parent()
@@ -111,18 +123,18 @@ func sentResult(m *sourceModule, handler, call *sitter.Node, p handlerParams) *s
 	case parent != nil && parent.Kind() == "member_expression" && memberName(m, parent) == "then":
 		then := parent.Parent()
 		if then == nil || then.Kind() != "call_expression" {
-			return nil
+			return nil, nil
 		}
 		callback := firstArg(then.ChildByFieldName("arguments"))
 		if callback == nil || !isFunction(callback) {
-			return nil
+			return nil, nil
 		}
 		if params, ok := functionParameters(callback, m.src); ok && len(params) == 1 {
 			name, scope = params[0].name, callback.ChildByFieldName("body")
 		}
 	}
 	if name == "" || scope == nil {
-		return nil
+		return nil, nil
 	}
 	names := map[string]bool{name: true}
 	var derive func(*sitter.Node)
@@ -154,7 +166,107 @@ func sentResult(m *sourceModule, handler, call *sitter.Node, p handlerParams) *s
 			sent = c
 		}
 	})
-	return sent
+	if sent == nil {
+		return nil, nil
+	}
+	return sent, resultComparisons(m, scope, call, sent, names)
+}
+
+// resultComparisons returns the conditions between a read and the response
+// that sends its result which compare a member of the result with a value
+// that is neither the result nor a literal, and which decide whether the
+// response is sent: the response is inside a branch of the condition, or the
+// condition has no else branch and its branch leaves the function.
+func resultComparisons(m *sourceModule, scope, read, sent *sitter.Node, names map[string]bool) []resultComparison {
+	var out []resultComparison
+	inside := func(outer, inner *sitter.Node) bool {
+		return outer != nil && outer.StartByte() <= inner.StartByte() && inner.EndByte() <= outer.EndByte()
+	}
+	var walk func(*sitter.Node)
+	walk = func(x *sitter.Node) {
+		if x == nil || x.StartByte() >= sent.StartByte() || (x != scope && isFunction(x) && !inside(x, sent)) {
+			return
+		}
+		if x.Kind() == "if_statement" && x.StartByte() > read.EndByte() {
+			then, otherwise := x.ChildByFieldName("consequence"), x.ChildByFieldName("alternative")
+			if inside(then, sent) || inside(otherwise, sent) || otherwise == nil && leavesFunction(then) {
+				if other := comparedWithResult(m, x.ChildByFieldName("condition"), names); other != nil {
+					out = append(out, resultComparison{condition: x.ChildByFieldName("condition"), other: other})
+				}
+			}
+		}
+		for i := uint(0); i < x.NamedChildCount(); i++ {
+			walk(x.NamedChild(i))
+		}
+	}
+	walk(scope)
+	return out
+}
+
+// leavesFunction reports a branch that is, or ends with, a return or a throw.
+func leavesFunction(branch *sitter.Node) bool {
+	if branch == nil {
+		return false
+	}
+	last := branch
+	if branch.Kind() == "statement_block" {
+		if branch.NamedChildCount() == 0 {
+			return false
+		}
+		last = branch.NamedChild(branch.NamedChildCount() - 1)
+	}
+	return last.Kind() == "return_statement" || last.Kind() == "throw_statement"
+}
+
+// comparedWithResult returns the other side of the first equality comparison
+// under cond in which one side reads a member of the result and the other
+// reads neither the result nor only literals.
+func comparedWithResult(m *sourceModule, cond *sitter.Node, names map[string]bool) *sitter.Node {
+	var found *sitter.Node
+	var walk func(*sitter.Node)
+	walk = func(x *sitter.Node) {
+		if x == nil || found != nil || isFunction(x) {
+			return
+		}
+		if x.Kind() == "binary_expression" {
+			switch op := x.ChildByFieldName("operator"); {
+			case op == nil:
+			case op.Kind() == "===" || op.Kind() == "!==" || op.Kind() == "==" || op.Kind() == "!=":
+				left, right := x.ChildByFieldName("left"), x.ChildByFieldName("right")
+				for _, side := range [][2]*sitter.Node{{left, right}, {right, left}} {
+					if readsMemberOf(m, side[0], names) && !mentionsName(m, side[1], names) && !literalTree(unwrapTS(side[1])) {
+						found = side[1]
+						return
+					}
+				}
+			}
+		}
+		for i := uint(0); i < x.NamedChildCount(); i++ {
+			walk(x.NamedChild(i))
+		}
+	}
+	walk(cond)
+	return found
+}
+
+// readsMemberOf reports a member read whose chain starts at one of the names.
+func readsMemberOf(m *sourceModule, n *sitter.Node, names map[string]bool) bool {
+	found := false
+	var walk func(*sitter.Node)
+	walk = func(x *sitter.Node) {
+		if x == nil || found {
+			return
+		}
+		if x.Kind() == "member_expression" && names[chainRoot(x, m.src)] {
+			found = true
+			return
+		}
+		for i := uint(0); i < x.NamedChildCount(); i++ {
+			walk(x.NamedChild(i))
+		}
+	}
+	walk(n)
+	return found
 }
 
 // mentionsName reports a read of one of the names under n. A property name and
@@ -302,19 +414,28 @@ func topVariableNames(m *sourceModule) []string {
 // listed authentication middleware on the entry's chain fills from the
 // verified token. The caller does not choose such a value.
 func verifiedClaim(m *sourceModule, src *sitter.Node, p handlerParams, access analysis.EntryAccess) bool {
-	if access.Authentication != analysis.AccessRequired || p.request == "" || src == nil {
+	if access.Authentication != analysis.AccessRequired || src == nil {
 		return false
 	}
 	chain, ok := memberChain(unwrapTS(src), m.src)
-	return ok && len(chain) >= 2 && chain[0] == p.request && tokenClaimMembers[chain[1]]
+	if !ok {
+		return false
+	}
+	if p.request != "" {
+		return len(chain) >= 2 && chain[0] == p.request && tokenClaimMembers[chain[1]]
+	}
+	// A destructured request parameter binds the member under a local name:
+	// ({ auth }), ({ auth: claims }) or ({ auth: { id } }).
+	member, _, _ := strings.Cut(p.projections[chain[0]], ".")
+	return tokenClaimMembers[member]
 }
 
 func (s *moduleSet) recordAuthorizationRead(out *analysis.AnalysisReport, e analysis.EntryPoint, m *sourceModule, p handlerParams, overwritten map[string]analysis.Evidence, read authzRead) {
 	sel := read.selector
 	access, _ := expressEntryAccess(e)
-	var selecting []string
 	var source *sitter.Node
 	var guards []analysis.AuthorizationGuard
+	blockers := []analysis.Gap{}
 	for _, key := range sel.order {
 		v := sel.pairs[key]
 		if lit := unwrapTS(v); lit == nil || isLiteralNode(lit) {
@@ -322,7 +443,6 @@ func (s *moduleSet) recordAuthorizationRead(out *analysis.AnalysisReport, e anal
 		}
 		src, ok := s.requestKeyed(m, v, p, overwritten)
 		if ok && !verifiedClaim(m, src, p, access) {
-			selecting = append(selecting, key)
 			if source == nil {
 				source = src
 			}
@@ -338,6 +458,18 @@ func (s *moduleSet) recordAuthorizationRead(out *analysis.AnalysisReport, e anal
 	}
 	if source == nil {
 		return
+	}
+	for _, c := range read.comparisons {
+		g := analysis.AuthorizationGuard{Kind: analysis.GuardUnclassified, Form: "result_comparison", Evidence: m.evidence("guard_test", c.condition)}
+		if verifiedClaim(m, s.requestValue(m, c.other, p, 0), p, access) {
+			g.Kind = analysis.GuardOwnership
+		} else {
+			// What the result is compared with is not established, so the scanner
+			// does not say what kind of check this is and the claim stays in Review.
+			g.Gaps = []analysis.Gap{{Kind: analysis.GuardUnclassified, Detail: "a comparison of the record decides whether it is sent; the value it is compared with has no modeled kind", At: g.Evidence.Span}}
+			blockers = append(blockers, g.Gaps...)
+		}
+		guards = append(guards, g)
 	}
 	sink := m.evidence(analysis.AuthorizationKind, sel.call)
 	subject := m.evidence("subject_selection", source)
@@ -365,7 +497,6 @@ func (s *moduleSet) recordAuthorizationRead(out *analysis.AnalysisReport, e anal
 		"control_flow": flowEvidence, "sink_binding": {asEvidenceKind(sink, "sink_binding")},
 		"owner_association": {read.association}, "response_emission": {m.evidence("response_emission", read.response)},
 	}
-	_ = selecting
 	out.Uses = append(out.Uses, analysis.CandidateUse{
 		EntryID: e.ID, Kind: analysis.AuthorizationKind, Sink: sink, Authorization: facts,
 		Dependencies: []analysis.Dependency{{Source: asEvidenceKind(subject, "input_source")}},
@@ -374,7 +505,7 @@ func (s *moduleSet) recordAuthorizationRead(out *analysis.AnalysisReport, e anal
 		Completeness: &analysis.Completeness{
 			ClaimKind: "authorization", Required: analysispacks.AuthorizationRoles(),
 			Scope:    "One read of an owned record, the keys that select it, the response that sends it, the entry's access and the conditions on its selector.",
-			Evidence: evidence, Blockers: []analysis.Gap{}, Coverage: []analysis.Gap{},
+			Evidence: evidence, Blockers: blockers, Coverage: []analysis.Gap{},
 		},
 	})
 }

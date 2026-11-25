@@ -65,3 +65,30 @@ app.put('/lockers/:id', async (req, res) => {
   await locker.update({ label: 'renamed' })
   res.json(locker)
 })
+app.get('/checked/:id', signedIn, async (req, res) => {
+  const locker = await Locker.findByPk(req.params.id)
+  if (locker.MemberId !== req.auth.id) return res.sendStatus(403)
+  res.json(locker)
+})
+app.get('/branch/:id', signedIn, async (req, res) => {
+  const locker = await Locker.findByPk(req.params.id)
+  if (locker.MemberId === req.auth.id) {
+    res.json(locker)
+  } else {
+    res.sendStatus(403)
+  }
+})
+app.get('/loose/:id', async (req, res) => {
+  const locker = await Locker.findByPk(req.params.id)
+  if (locker.MemberId != req.query.member) return res.sendStatus(403)
+  res.json(locker)
+})
+app.get('/state/:id', async (req, res) => {
+  const locker = await Locker.findByPk(req.params.id)
+  if (locker.label === 'sealed') return res.sendStatus(410)
+  res.json(locker)
+})
+app.get('/packed/:id', signedIn, async ({ params, auth }, res) => {
+  const locker = await Locker.findOne({ where: { id: params.id, MemberId: auth.id } })
+  res.json(locker)
+})

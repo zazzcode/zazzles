@@ -29,6 +29,16 @@ func TestExpressAuthorizationReads(t *testing.T) {
 			{"GET /mine/:id", "model:Locker", "read", "ownership_check/query_scope"},
 			// No listed authentication middleware: req.auth is a request member like any other.
 			{"GET /open/:id", "model:Locker", "read", ""},
+			// A comparison of a member of the result that decides whether the
+			// response is sent is a guard: an ownership check against a verified
+			// token claim, unclassified against anything else. A comparison with a
+			// literal is not a guard.
+			{"GET /checked/:id", "model:Locker", "read", "ownership_check/result_comparison"},
+			{"GET /branch/:id", "model:Locker", "read", "ownership_check/result_comparison"},
+			{"GET /loose/:id", "model:Locker", "read", "guard_unclassified/result_comparison"},
+			{"GET /state/:id", "model:Locker", "read", ""},
+			// A destructured request parameter names the claim member directly.
+			{"GET /packed/:id", "model:Locker", "read", "ownership_check/query_scope"},
 			// The write on the found instance carries the claim; no second record for its read.
 			{"PUT /lockers/:id", "model:Locker", "update", ""},
 		}},
@@ -36,6 +46,7 @@ func TestExpressAuthorizationReads(t *testing.T) {
 			{"GET /diaries/:ref", "model:Diary", "read", ""},
 			{"GET /diary", "model:Diary", "read", ""},
 			{"GET /own/:ref", "model:Diary", "read", "ownership_check/query_scope"},
+			{"GET /checked/:ref", "model:Diary", "read", "ownership_check/result_comparison"},
 		}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -75,8 +86,16 @@ func TestExpressAuthorizationReads(t *testing.T) {
 					}
 				}
 				var guards []string
+				blocked := false
+				for _, gap := range u.Completeness.Blockers {
+					blocked = blocked || gap.Kind == analysis.GuardUnclassified
+				}
 				for _, g := range f.Guards {
 					guards = append(guards, g.Kind+"/"+g.Form)
+					// A guard the scanner cannot classify keeps the claim in Review.
+					if (g.Kind == analysis.GuardUnclassified) != blocked {
+						t.Fatalf("%s: guard %s with unclassified blocker = %v", entry, g.Kind, blocked)
+					}
 				}
 				got = append(got, authzWant{entry, f.SubjectClass, f.Operation.Operation, strings.Join(guards, ",")})
 			}

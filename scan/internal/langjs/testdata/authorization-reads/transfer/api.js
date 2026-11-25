@@ -51,3 +51,12 @@ site.get('/current-diary', (request, response) => {
     response.json(entry)
   })
 })
+site.get('/checked/:ref', passport.authenticate('jwt', { session: false }), (request, response) => {
+  Diary.findById(request.params.ref).then((entry) => {
+    if (String(entry.writer) !== request.user.id) {
+      response.status(403).end()
+      return
+    }
+    response.json(entry)
+  })
+})

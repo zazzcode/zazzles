@@ -47,6 +47,10 @@ func TestPHPBoundFacts(t *testing.T) {
 		{"text after extract", `$q = "SELECT a FROM u WHERE id = :id"; extract($_GET); $s = $db->prepare($q); ` + run, false},
 		{"text after a variable variable", `$q = "SELECT a FROM u WHERE id = :id"; $n = $_GET["n"]; $$n = $_GET["z"]; $s = $db->prepare($q); ` + run, false},
 		{"text in a global", `function add() { $GLOBALS["q"] .= $_GET["z"]; } $q = "SELECT a FROM u WHERE id = :id"; add(); $s = $db->prepare($q); ` + run, false},
+		{"text changed by a local function", `function alter(&$x) { $x .= " AND n = " . $_GET["z"]; } $q = "SELECT a FROM u WHERE id = :id"; alter($q); $s = $db->prepare($q); ` + run, false},
+		{"text after request keys become variables", `$q = "SELECT a FROM u WHERE id = :id"; foreach ($_GET as $k => $v) { $$k = $v; } $s = $db->prepare($q); ` + run, false},
+		{"text after parse_str", `$q = "SELECT a FROM u WHERE id = :id"; parse_str($_SERVER["QUERY_STRING"]); $s = $db->prepare($q); ` + run, false},
+		{"text after an include", `$q = "SELECT a FROM u WHERE id = :id"; include $_GET["f"]; $s = $db->prepare($q); ` + run, false},
 		{"text from an unknown call", `$s = $db->prepare(build("SELECT a FROM u WHERE id = :id")); ` + run, false},
 
 		{"replaced in a branch", literal + `if ($x) { ` + built + `} ` + run, false},

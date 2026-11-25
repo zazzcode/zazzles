@@ -85,6 +85,26 @@ handler a `for` loop that does not touch the value gives `control_flow_unresolve
 not enough alone: the same focused approach has to be tried on those gaps. `look-winston` made no SQL record and
 `safe-ternary` made none because no request data is in its text.
 
+## Round 3: whole applications
+
+The owner asked (2026-11-25) to confirm the approach on Juice Shop and the other three README applications with paid
+judge runs: the same vulnerabilities, with less data and as good or better results, means it is worth pursuing. This
+replaces a round 3 on more invented forms.
+
+- **Records.** All 403 judged records of the four applications in the frozen ledger, every family. Their pins match.
+- **F request.** Short instruction, the family's own instruction, api_model, family facts, dependencies, evidence rows
+  that something refers to, guards and helpers, the code they point at, and fact notes. Family questions and answers are
+  unchanged. Left out: guidelines, components, coverage and invocation tables, unreferenced code, and the SQL and NoSQL
+  practice questions (the saved answers stand in). 9.8 MB becomes 5.7 MB; the largest falls from 63 KB.
+- **Outcome, not answer.** F answers go through the scanner's own policy by replay (an overlay that only accepts a local
+  stub), and the result is compared with the control: the saved answers through the same policy.
+- **Control check, free.** The control reproduces 387 of 403 outcomes. Of the other 16, 14 are poor-practice labels set by
+  the report and 2 are SQL practice records; one path finding rests on a citation answer that is not replayed. Fed its own
+  saved answers, the scorer gives 256 true and 20 false Confirmed with nothing moved.
+- **Cost** 403 requests, hard stop 403, no retry. `criteria.json` (round 3) is written first.
+- **Measure.** GOOD, BETTER or BELOW as defined there. The contract §7 rule holds: no true finding is lost.
+- **Not shown.** The 26 stale records, a multi-question package call, held-out applications, and any production change.
+
 ## Review change log
 
 ### 2026-11-25 — Written, round 1 sent
@@ -104,3 +124,7 @@ Offline only. Nothing of round 2 is sent.
 ### 2026-11-25 — Round 2 sent
 
 P is GOAL. H1 and V are BELOW and are not reworded on these forms. [Results](../../evaluation/detection-generalization-results/15.md#round-2).
+
+### 2026-11-25 — Round 3 designed
+
+Offline only. Nothing of round 3 is sent.

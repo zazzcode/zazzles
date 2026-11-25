@@ -54,6 +54,8 @@ type moduleSet struct {
 	// credentialAttrs names the model attributes a set accessor fills from a
 	// fast digest (decision D-6); account enumeration reads it to exclude logins.
 	credentialAttrs map[string]bool
+	// owned is the lazily built index of owned models (authorization_reads.go).
+	owned           map[string]analysis.Evidence
 	pollutionWrites map[uintptr][]pollutionWrite
 	pollutionInline map[uintptr]map[uintptr][]pollutionWrite
 	witnessPlans    map[string]*jsWitnessPlan

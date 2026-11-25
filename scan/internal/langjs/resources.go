@@ -40,10 +40,15 @@ func (s *moduleSet) generatedResources(out *analysis.AnalysisReport, selected []
 		if m == nil || m.tree.RootNode().HasError() {
 			continue
 		}
-		updateMethod := "PUT"
+		updateMethod, app := "PUT", generatedApp{}
 		walkCalls(m.tree.RootNode(), func(call *sitter.Node) {
 			if libraryMember(m, call, []string{"finale-rest", "epilogue"}, "initialize") {
 				if o := objectOf(m, firstArg(call.ChildByFieldName("arguments"))); o != nil {
+					// initialize({ app }) names the application the endpoints are
+					// registered on (finale README, "Getting started").
+					if v := unwrapTS(propertyOrShorthand(o, "app", m.src)); v != nil && (v.Kind() == "identifier" || v.Kind() == "shorthand_property_identifier") {
+						app = generatedApp{name: v.Utf8Text(m.src), scope: enclosingFunction(call)}
+					}
 					if v := property(o, "updateMethod", m.src); v != nil {
 						if lit, ok := stringLiteral(v, m.src); ok {
 							updateMethod = strings.ToUpper(lit)
@@ -56,7 +61,7 @@ func (s *moduleSet) generatedResources(out *analysis.AnalysisReport, selected []
 			if !libraryMember(m, call, []string{"finale-rest", "epilogue"}, "resource") {
 				return
 			}
-			s.generatedResource(out, m, call, updateMethod)
+			s.generatedResource(out, m, call, updateMethod, app)
 		})
 	}
 }
@@ -84,7 +89,15 @@ func libraryMember(m *sourceModule, call *sitter.Node, modules []string, member 
 	return false
 }
 
-func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceModule, call *sitter.Node, updateMethod string) {
+// generatedApp is the application initialize({ app }) names and the function
+// that call is in (nil at module level): the name means that application only
+// in that scope.
+type generatedApp struct {
+	name  string
+	scope *sitter.Node
+}
+
+func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceModule, call *sitter.Node, updateMethod string, app generatedApp) {
 	unresolved := func(detail string) {
 		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "generated_resource_unresolved", Detail: detail, At: m.evidence("generated_resource", call).Span})
 	}
@@ -139,7 +152,7 @@ func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceMod
 		}
 		for _, ep := range eps {
 			access, chain := s.generatedAccess(m, call, ep)
-			if access.RejectsAll {
+			if access.RejectsAll || s.answeredFirst(m, call, app, chain) {
 				// No request reaches the generated handler through this
 				// endpoint, so it makes no claim.
 				continue
@@ -382,6 +395,75 @@ func (s *moduleSet) generatedAccess(m *sourceModule, call *sitter.Node, ep gener
 	return s.expressAccessForNodes(m, call, ep.path, nil, 0, 0, extra), extra
 }
 
+// answeredFirst reports whether a handler registered earlier for the same
+// method and path always ends the request. Express passes a request on to the
+// next handler only when the current one calls next() (Express guide,
+// "Routing", route handlers). A resolved handler that declares no third
+// parameter cannot call it, so nothing registered after it is reached.
+//
+// The earlier registration must be one that always runs before the resource
+// call, on the application the resources are generated on (app, the `app`
+// option of initialize): a registration under a condition, in another
+// function, or on another application or router leaves the endpoint reachable.
+func (s *moduleSet) answeredFirst(m *sourceModule, call *sitter.Node, app generatedApp, chain []*sitter.Node) bool {
+	if app.name == "" || !sameNode(enclosingFunction(call), app.scope) {
+		return false
+	}
+	for _, arg := range chain {
+		if !registeredBefore(m, arg, call, app.name) {
+			continue
+		}
+		hm, body, _, gaps := s.handler(m, arg)
+		if body == nil || len(gaps) > 0 || body.Parent() == nil {
+			continue
+		}
+		if n := len(plainParameters(body.Parent(), hm.src)); n == 1 || n == 2 {
+			return true
+		}
+	}
+	return false
+}
+
+// registeredBefore reports that the registration holding the middleware
+// argument arg is a statement of a block that also holds call, with no
+// condition, loop or function between them, and that its receiver is app. The
+// shared block makes the name mean the same binding at both calls.
+func registeredBefore(m *sourceModule, arg, call *sitter.Node, app string) bool {
+	reg := arg.Parent()
+	if reg != nil {
+		reg = reg.Parent()
+	}
+	if reg == nil || reg.Kind() != "call_expression" {
+		return false
+	}
+	// The receiver: app.delete(path, …) or app.route(path).delete(…).
+	receiver := reg.ChildByFieldName("function")
+	for receiver != nil && receiver.Kind() != "identifier" {
+		switch receiver.Kind() {
+		case "member_expression":
+			receiver = receiver.ChildByFieldName("object")
+		case "call_expression":
+			receiver = receiver.ChildByFieldName("function")
+		default:
+			return false
+		}
+	}
+	if receiver == nil || receiver.Utf8Text(m.src) != app {
+		return false
+	}
+	for p := reg.Parent(); p != nil; p = p.Parent() {
+		if p.StartByte() <= call.StartByte() && call.EndByte() <= p.EndByte() {
+			return true
+		}
+		switch p.Kind() {
+		case "expression_statement", "member_expression", "call_expression", "statement_block":
+		default:
+			return false
+		}
+	}
+	return false
+}
+
 // routeChainPath returns the literal path of the receiver.route(path) call at
 // the base of a chain of method calls.
 func routeChainPath(m *sourceModule, n *sitter.Node) (string, bool) {
@@ -424,6 +506,10 @@ func (s *moduleSet) recordGeneratedAuthorization(out *analysis.AnalysisReport, e
 		Facets: []string{analysis.FacetObjectLevel}, SubjectClass: "model:" + info.class, SubjectProvenance: analysis.SubjectRequestSelected,
 		Operation:      analysis.StateChange{StorageKey: "js-model:" + info.class, Operation: op, Span: sink.Span},
 		SecurityFields: []analysis.SecurityFieldFact{}, Guards: []analysis.AuthorizationGuard{}, MethodSafe: "no",
+	}
+	if op == "update" {
+		// A generated update writes the attributes the request body names.
+		facts.Written = &analysis.WrittenValues{RequestDependent: "yes"}
 	}
 	out.Uses = append(out.Uses, analysis.CandidateUse{
 		EntryID: e.ID, Kind: analysis.AuthorizationKind, Sink: sink, Authorization: facts,

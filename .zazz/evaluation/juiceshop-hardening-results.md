@@ -195,3 +195,189 @@ storage engine, `express-fileupload`, and a middleware on a mount with no route 
 - **Account enumeration** records any verified model, so a delivery-method lookup is recorded.
 - Every other reading is under "Deviations" of the run log
   (`.zazz/ephemeral/juiceshop-nextjs-hardening-run-log.md`, not committed).
+
+## Hardening 3
+
+Branch `juiceshop-nextjs-hardening-3` of the
+[specification](../specifications/juiceshop-nextjs-hardening-3.md), draft
+[PR #50](https://github.com/zazzcode/zazzles/pull/50). Scanner commit of the acceptance runs 5
+and 6: `ee777f4`. Two later commits changed scanner code (the lead review and the code policy),
+and the final Juice Shop run 8 is on `3318e27`. These hashes predate the rebase of the branch
+onto `stage` and are not reachable from it; the `scan/` and `cmd/` trees of `3318e27` and of
+branch commit `277f640` are identical. The fixes of the [PR review](#pr-review-fixes) came
+after every judged run. Samples, provider, model and limits as above.
+Protocols after this branch: `authorization-components-v9`, `configuration-components-v7`.
+
+### What was built
+
+| Decision | Built | Effect on Juice Shop |
+|---|---|---|
+| D-1 destructured request parameter | Yes | Five path records lose `request_projection_unresolved`. One, `routes/fileServer.ts:32`, is sent. The three path controls stay blocked by the `serve-index` mount on their prefix |
+| D-2 namespace import callee | Yes | 70 records lose an `unknown_value` gap on a namespace binding |
+| D-3 verified middleware | Yes, for a `multer` binding without a custom `fileFilter` and the authentication list | Three records on the upload routes lose `unresolved_factory` |
+| D-4 literal heap write | Yes, for ssrf, path and code | The SSRF record at `routes/profileImageUrlUpload.ts:24` has no blocker and is sent |
+| D-5 sink inside `try` | Cause recorded, no change | The `try` is coverage, not a blocker. The record is held by a guard and the code policy |
+| D-6 middleware the resolver cannot read | Cause recorded, no change | Neither sample construct is one the decision allows; both allowed constructs already resolve |
+| D-7 reads of an owned record | Yes | Three new records: `routes/basket.ts:19`, `routes/address.ts:18`, `routes/recycles.ts:12` |
+| D-8 what an update writes | Yes (`written_values`) | Ten update records carry the fact |
+| D-9 what a listed directory holds | Yes (`directory_contents`) | Five `serve-index` records carry the fact |
+| D-10 anchored redirect pattern | `String.match` now classified like `RegExp.test`; no new form | None on these samples |
+| D-11 protocol identifiers | Yes | DVWA and vuln-symfony keep every record identifier; only `analysis_components` of the two families changes. Thirteen PHP rows of the architecture baseline move in request and signature digest only |
+
+### Judged runs
+
+Four family runs and two full runs, the bound of §5 of the specification. Folders are under
+`_test-findings/juiceshop-nextjs-hardening/h3/judged/`.
+
+| # | Folder | Scanner | Scope | Requests | Input tokens | Result |
+|---:|---|---|---|---:|---:|---|
+| 1 | `f1-path-ssrf-code-authz-conf` | `c121a58` | path, ssrf, code, authorization, configuration | 32 | 130,998 | PATH-01 and CODE-01 Review; SSRF-01 practice finding; basket read `access_adequacy` unknown; both false positives still Confirmed |
+| 2 | `f2-authz-conf` | `b959d26` | authorization, configuration | 24 | 71,926 | Basket read Confirmed, both like records Protected; the coupon update and the `logs` listing became unknown |
+| 3 | `f3-authz` | `e94682c` | authorization | 19 | 60,527 | Coupon Confirmed; like records Confirmed; basket read unknown (0.45 against 0.45) |
+| 4 | `f4-authz` | `ee777f4` | authorization | 19 | 60,926 | Basket read (0.86), coupon (0.65) and `JS-AUTHZ-02` Confirmed; like records Confirmed |
+| 5 | `a1-acceptance-juice-shop` | `ee777f4` | Full scan | 85 | 384,674 | 37 of 42 keyed positives Confirmed, 3 practice findings, 2 in Review; 2 keyed controls are findings |
+| 6 | `a2-acceptance-vuln-nextjs` | `ee777f4` | Full scan | 27 | 121,218 | 13 of 13 Confirmed; no record changed status; the redirect control is still a practice finding |
+
+For an entry that requires sign-in and lists no role, the model's `access_adequacy` answer is
+close to a three-way tie, and small changes of wording move rows across it. Runs 1 to 4 tried
+four wordings. The one kept makes every owned-record row firm and leaves the like records
+findings; the wording of run 2 did the opposite. None held both.
+
+### Key rows, before and after
+
+Before is `r10-acceptance-juice-shop` (scanner `29ce9aa`); after is `a1-acceptance-juice-shop`.
+
+| Row | Anchor | Before | After |
+|---|---|---|---|
+| `JS-REDIR-01` | `routes/redirect.ts:18` | Confirmed | Confirmed |
+| `JS-PATH-01` | `routes/fileServer.ts:32` | Review, not sent | Review, sent |
+| `JS-PATH-02` | `routes/fileUpload.ts:34` | Confirmed | Confirmed |
+| `JS-PATH-03` | `routes/dataErasure.ts:107` | Confirmed | Confirmed |
+| `JS-SSRF-01` | `routes/profileImageUrlUpload.ts:24` | Review, not sent | Practice finding |
+| `JS-CODE-01` | `routes/userProfile.ts:65` | Review | Review |
+| `JS-CODE-02` | `routes/b2bOrder.ts:23` | Practice finding | Practice finding |
+| `JS-AUTHZ-05` | `routes/basket.ts:19` | No record | Confirmed |
+| `JS-PATH-N01` to `N03` | `keyServer.ts:14`, `logfileServer.ts:14`, `quarantineServer.ts:14` | Review, not sent | Review, not sent |
+| `JS-AUTHZ-N05` | `routes/likeProductReviews.ts:35` | Confirmed (false positive) | Confirmed (false positive) |
+| `JS-CONF-N01` | `server.ts:294` | Confirmed (false positive) | Confirmed (false positive) |
+
+The 34 rows keyed before this branch keep their status: 33 Confirmed and `JS-LOG-01` a practice
+finding. On vuln-nextjs the 13 keyed cases are Confirmed as before.
+
+Findings went from 44 Confirmed and 2 practice to 50 Confirmed and 3 practice. The records that
+became findings, each read against the source:
+
+| Record | Status | Source review |
+|---|---|---|
+| `routes/basket.ts:19`, `GET /rest/basket/:id` | Confirmed | `JS-AUTHZ-05` |
+| `routes/profileImageUrlUpload.ts:24` | Practice finding | `JS-SSRF-01` |
+| `routes/recycles.ts:12`, `GET /api/Recycles/:id` | Confirmed | Real: the route has no authentication middleware (`server.ts:416`) and returns the recycle row a request id selects |
+| `server.ts:529`, `DELETE /api/BasketItems/:id` | Confirmed | Real: sign-in only (`server.ts:387`), no owner test. In Review before; Confirmed in an earlier run of branch 1 |
+| `server.ts:529`, `DELETE /api/Feedbacks/:id` | Confirmed | Real: sign-in only (`server.ts:389`), any user deletes any feedback |
+| `routes/likeProductReviews.ts:50` | Confirmed | **False positive.** The second update of the like route. Protected before |
+| `server.ts:529`, `DELETE /api/Addresss/:id` | Confirmed | **False positive.** The explicit handler at `server.ts:479` deletes only the caller's address and always answers, so the generated delete is not reached. In Review before |
+
+The new read at `routes/address.ts:18` is Protected (its selector carries the owner key a chain
+middleware sets). The four upload records are in Review.
+
+### Lead review after the acceptance runs
+
+Two fixes, each with a test and no judged run. An earlier handler for the same method and path
+that declares no `next` parameter always answers, so the generated endpoint behind it makes no
+claim: the generated `DELETE /api/Addresss/:id` record, a false positive of run 5, is no longer
+recorded (Juice Shop 306 records to 305, nothing else changed). An environment guard written
+with Express's `app.get('env')` setting is recorded, which a scan of nodejs-goof showed was
+missed. The comparison counts four Code Scan false positives after this, not five.
+
+### Code policy change (owner decision, 2026-11-24)
+
+`JS-CODE-01` was held by the code policy: every operand path is `guarded` by the enclosing test
+`username?.match(/#{(.*)}/) !== null`, and the policy confirmed only a `raw` path. The scanner
+records a path as guarded when a condition mentions the operand and states that it does not
+establish whether the condition restricts it. The owner decided that the model's restriction
+answer settles that. In the code family, when every path is guarded, none is unresolved, the
+model answers `code_restriction: none` and `protection_coverage: incomplete`, no conversion
+constrains the operand, and a guarded path has a request origin, the record is Confirmed
+(`scan/internal/judge/code_redirect.go`, ten rows of `TestCodeRedirectPolicy`). The redirect
+family is unchanged. The PR review tightened two conditions after the judged runs: coverage must
+be `incomplete` (it was "other than `complete`", which let `unknown` confirm), and a constrained
+operand such as `eval(Number(x))` under a condition is not confirmed. `JS-CODE-01` was answered
+`none` and `incomplete` on an unconstrained operand, so its outcome does not change.
+
+Judged run 7 (`r7-code-juice-shop`, `--only-family code`, 2 requests, 17,625 input tokens):
+`routes/userProfile.ts:65` Confirmed; `routes/b2bOrder.ts:23` a practice finding as before. The
+same run on vuln-nextjs (`r7-code-vuln-nextjs`, 2 requests, 6,002 tokens): both keyed code rows
+Confirmed as before. The saved-replay tests of every sample pass, so no recorded outcome of
+another sample moves. A wrong `none` answer on a path whose guard does restrict the operand
+would now be Confirmed; the anchored allow-list case of the policy test is answered
+`allowlist_grammar` by the model and stays Protected.
+
+### Two key decisions (owner, 2026-11-24)
+
+`JS-PATH-01` (`routes/fileServer.ts:32`) is keyed as Review, not as a path-traversal positive:
+the handler rejects a name containing `/`, so the read stays in `ftp/`, and the null byte
+defeats the file-type allow-list. vuln-nextjs's redirect control is reported correctly, because
+its guard `/^\/[^/]/` admits `/\host`; it is not a false positive, and the control in the lab
+needs a fix.
+
+### Final full run
+
+Judged run 8 (`a3-acceptance-juice-shop`, scanner `3318e27`, full scan, 84 requests, 381,728
+input tokens), made after the lead review and the code policy change so that every Juice Shop
+cell of the comparison comes from one run. 305 records: 51 Confirmed, 3 practice findings, 3
+Protected and 248 in Review. Of the 41 keyed positives, 38 are Confirmed and 3 are practice
+findings (`JS-LOG-01`, `JS-SSRF-01`, `JS-CODE-02`). `JS-PATH-01` is in Review, as keyed. Against
+run 5 the only record whose status differs is `routes/userProfile.ts:65`, now Confirmed, and the
+generated `DELETE /api/Addresss/:id` record is absent. The two keyed controls that are findings
+are the false positives already listed: `JS-AUTHZ-N05` and `JS-CONF-N01`.
+
+### Open rows
+
+Each was stopped under the blocked item protocol. None was relabeled and no rule was written to
+pass it.
+
+| Row | First failing stage | Evidence | Decision needed |
+|---|---|---|---|
+| `JS-SSRF-01` | Model answer | The flow is `raw` with no guard recorded; the model answers `destination_restriction: prefix_only`, reading the `url.match(...)` condition of an unrelated statement as a restriction. Reported as a practice finding, not Confirmed | A change to the ssrf request, which D-11 excludes from this branch |
+| `JS-AUTHZ-N05` | Question wording, then model answer | The record carries `request_dependent: no, operators: [$inc]`. The three questions have no answer for "any signed-in caller may do this to any record" | A question or a policy rule that separates a fixed write from an owned-record write |
+| `JS-CONF-N01` | Model answer | The record carries "holds 2 entries: csaf/, security.txt"; the model answers `weakens` | Whether the scanner may state what `.well-known` is (RFC 8615), or the model is to judge from names |
+| Three path controls | Not sent | Each keeps `applicable_middleware_unresolved` from the `serve-index` mount. If sent, `judge/path.go` treats a separator-only guard as an unsafe witness, so a `vulnerable` answer would be Confirmed | Whether a separator test on a file read is containment |
+
+Closed since the acceptance runs: the generated `DELETE /api/Addresss/:id` record is no longer
+made (lead review, above).
+
+### PR review fixes
+
+The independent [review of PR #50](https://github.com/zazzcode/zazzles/pull/50) found seven
+blocking defects. Each is fixed with a test that failed first. No judged run was made.
+
+| Finding | Fix | Test |
+|---|---|---|
+| The guarded code rule confirmed on `protection_coverage: unknown` and on an operand a conversion constrains | Coverage must be `incomplete`; a constrained operand is not confirmed | `TestCodeRedirectPolicy`, four rows |
+| `written_values` said `request_dependent: no` for an increment whose `by` option reads the request, and for a save after other changes of the instance | The `by` option and every change of a saved instance are read; a call that can change the instance makes the write `unknown` | `TestAuthorizationWrittenValues`, eight rows |
+| An earlier handler under a condition, in another function, or on another application or router removed a generated endpoint | The registration must always run before the resource call, on the application `initialize({ app })` names | `TestExpressGeneratedStillReached` |
+| A read whose handler compares the owner after the fetch carried no guard and could be Confirmed | The comparison is a guard: `ownership_check` against a verified token claim, `guard_unclassified` with a blocker otherwise | `TestExpressAuthorizationReads`, six routes |
+| A token-claim owner key under a destructured request parameter was read as a request key | It is a guard, as for a plain parameter | Same test |
+| A random value used only as a fallback secret was read as `rejects_all` | A random call under a logical or conditional operator does not count | `TestExpressRejectsAll`, three rows |
+
+Offline evidence after the fixes: the reports of Juice Shop (305 records), vuln-nextjs, DVWA and
+vuln-symfony are byte-identical to the reports of `277f640`, so every request of the judged runs
+is unchanged and their outcomes stand.
+
+No sample has a read with a `result_comparison` guard, so the owner asked for one judged run of
+the test fixture after the review: judged run 9 (`r9-authz-reads-fixture`, scanner `990b35d`,
+`scan/internal/langjs/testdata/authorization-reads/primary`, `--only-family authorization`,
+11 requests, 34,578 input tokens).
+
+| Route | Guard recorded | `guard_adequacy` | Outcome |
+|---|---|---|---|
+| `/checked/:id`, owner compared after the fetch | `ownership_check`, `result_comparison` | adequate | Protected |
+| `/branch/:id`, response inside the comparison's branch | `ownership_check`, `result_comparison` | adequate | Protected |
+| `/packed/:id`, token claim under a destructured request | `ownership_check`, `query_scope` | adequate | Protected |
+| `/mine/:id`, owner key in the selector | `ownership_check`, `query_scope` | adequate | Protected |
+| `/loose/:id`, compared with a request value | `guard_unclassified`, `result_comparison` | unknown | Review, held by the blocker |
+| `/state/:id`, compared with a literal only | None | none | Confirmed |
+| `/lockers/:id`, `/lockers/:id/key`, `/lockers`, `/open/:id`, `PUT /lockers/:id` | None | none | Confirmed |
+
+The first three rows carried no guard before the fixes. This is one run; it does not measure
+variance between runs.

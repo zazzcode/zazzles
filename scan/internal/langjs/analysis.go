@@ -298,6 +298,11 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 		}
 	}
 	if req == "" {
+		// An object pattern binds request members (hardening 3 D-1). The request
+		// name stays empty; requestParts gives the flow the bound names.
+		if p := plainOrDestructuredParameters(n, target.src); p.destructured && !p.unsupported {
+			return target, n.ChildByFieldName("body"), "", gaps
+		}
 		return target, n.ChildByFieldName("body"), "", append(gaps, analysis.Gap{Kind: "request_projection_unresolved", Detail: "request parameter uses an unsupported projection", At: parse.Span(target.file, n)})
 	}
 	return target, n.ChildByFieldName("body"), req, gaps

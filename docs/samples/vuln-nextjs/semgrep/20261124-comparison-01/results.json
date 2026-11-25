@@ -1,0 +1,370 @@
+{
+ "errors": [],
+ "paths": {
+  "scanned_count": 95
+ },
+ "profiling_results": [],
+ "results": [
+  {
+   "check_id": "semgrep-rules.20261124.package_managers.npm.npm-missing-minimum-release-age.npm-missing-minimum-release-age",
+   "end": {
+    "col": 17,
+    "line": 1,
+    "offset": 16
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "This .npmrc does not set a minimum release age or sets it too low. Newly published packages can be malicious or unstable. Add `min-release-age = 7` to wait 7 days before resolving newly published package versions. Added in: v11.10 Reference: https://github.blog/changelog/2026-02-18-npm-bulk-trusted-publishing-config-and-script-security-now-generally-available/",
+    "metadata": {
+     "category": "security",
+     "confidence": "HIGH",
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "impact": "HIGH",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "LOW",
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "references": [
+      "https://github.blog/changelog/2026-02-18-npm-bulk-trusted-publishing-config-and-script-security-now-generally-available/",
+      "https://github.com/npm/cli/pull/8965"
+     ],
+     "shortlink": "https://sg.run/GRo1z",
+     "source": "https://semgrep.dev/r/package_managers.npm.npm-missing-minimum-release-age.npm-missing-minimum-release-age",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "npm",
+      "javascript"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ]
+    },
+    "severity": "MEDIUM",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": ".npmrc",
+   "start": {
+    "col": 1,
+    "line": 1,
+    "offset": 0
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261124.javascript.lang.security.audit.code-string-concat.code-string-concat",
+   "end": {
+    "col": 9,
+    "line": 20,
+    "offset": 670
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "Found data from an Express or Next web request flowing to `eval`. If this data is user-controllable this can lead to execution of arbitrary system commands in the context of your application process. Avoid `eval` whenever possible.",
+    "metadata": {
+     "category": "security",
+     "confidence": "HIGH",
+     "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+     ],
+     "impact": "MEDIUM",
+     "interfile": true,
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "MEDIUM",
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval",
+      "https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback",
+      "https://www.stackhawk.com/blog/nodejs-command-injection-examples-and-prevention/",
+      "https://ckarande.gitbooks.io/owasp-nodegoat-tutorial/content/tutorial/a1_-_server_side_js_injection.html"
+     ],
+     "shortlink": "https://sg.run/96Yk",
+     "source": "https://semgrep.dev/r/javascript.lang.security.audit.code-string-concat.code-string-concat",
+     "subcategory": [
+      "vuln"
+     ],
+     "technology": [
+      "node.js",
+      "Express",
+      "Next.js"
+     ],
+     "vulnerability_class": [
+      "Code Injection"
+     ]
+    },
+    "severity": "ERROR",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": "pages/api/vulnerable-submit.js",
+   "start": {
+    "col": 20,
+    "line": 15,
+    "offset": 529
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261124.typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+   "end": {
+    "col": 89,
+    "line": 16,
+    "offset": 1585
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "Detection of dangerouslySetInnerHTML from non-constant definition. This can inadvertently expose users to cross-site scripting (XSS) attacks if this comes from user-provided input. If you have to use dangerouslySetInnerHTML, consider using a sanitization library such as DOMPurify to sanitize your HTML.",
+    "metadata": {
+     "category": "security",
+     "confidence": "MEDIUM",
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "cwe2021-top25": true,
+     "cwe2022-top25": true,
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "MEDIUM",
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://react.dev/reference/react-dom/components/common#dangerously-setting-the-inner-html"
+     ],
+     "shortlink": "https://sg.run/rAx6",
+     "source": "https://semgrep.dev/r/typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+     "subcategory": [
+      "vuln"
+     ],
+     "technology": [
+      "react"
+     ],
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ]
+    },
+    "severity": "WARNING",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": "pages/xss/sanitized/reflected.js",
+   "start": {
+    "col": 84,
+    "line": 16,
+    "offset": 1580
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261124.typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+   "end": {
+    "col": 91,
+    "line": 15,
+    "offset": 1274
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "Detection of dangerouslySetInnerHTML from non-constant definition. This can inadvertently expose users to cross-site scripting (XSS) attacks if this comes from user-provided input. If you have to use dangerouslySetInnerHTML, consider using a sanitization library such as DOMPurify to sanitize your HTML.",
+    "metadata": {
+     "category": "security",
+     "confidence": "MEDIUM",
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "cwe2021-top25": true,
+     "cwe2022-top25": true,
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "MEDIUM",
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://react.dev/reference/react-dom/components/common#dangerously-setting-the-inner-html"
+     ],
+     "shortlink": "https://sg.run/rAx6",
+     "source": "https://semgrep.dev/r/typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+     "subcategory": [
+      "vuln"
+     ],
+     "technology": [
+      "react"
+     ],
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ]
+    },
+    "severity": "WARNING",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": "pages/xss/unsafe/reflected.js",
+   "start": {
+    "col": 84,
+    "line": 15,
+    "offset": 1267
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261124.package_managers.pnpm.pnpm-block-exotic-sub-dependencies.pnpm-block-exotic-sub-dependencies",
+   "end": {
+    "col": 10,
+    "line": 1,
+    "offset": 9
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "Missing or incorrect blockExoticSubdeps. Set `blockExoticSubdeps: true` to transitive dependencies from being installed from untrusted sources. Added in: v10.26.0 Reference: https://pnpm.io/settings#blockexoticsubdeps",
+    "metadata": {
+     "category": "security",
+     "confidence": "HIGH",
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "impact": "HIGH",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "LOW",
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "references": [
+      "https://pnpm.io/settings#blockexoticsubdeps"
+     ],
+     "shortlink": "https://sg.run/RrWRv",
+     "source": "https://semgrep.dev/r/package_managers.pnpm.pnpm-block-exotic-sub-dependencies.pnpm-block-exotic-sub-dependencies",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "pnpm"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ]
+    },
+    "severity": "MEDIUM",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": "pnpm-workspace.yaml",
+   "start": {
+    "col": 1,
+    "line": 1,
+    "offset": 0
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261124.package_managers.pnpm.pnpm-missing-minimum-release-age.pnpm-minimum-release-age",
+   "end": {
+    "col": 10,
+    "line": 1,
+    "offset": 9
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "This pnpm workspace configuration does not set a minimum release age. Newly published packages can be malicious or unstable. Add `minimumReleaseAge: 10080` (minutes) to wait at least seven days before installing newly published package versions. Added in: v10.16.0 Reference: https://pnpm.io/settings#minimumreleaseage",
+    "metadata": {
+     "category": "security",
+     "confidence": "HIGH",
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "impact": "HIGH",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "LOW",
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "references": [
+      "https://pnpm.io/settings#minimumreleaseage"
+     ],
+     "shortlink": "https://sg.run/Aj0o0",
+     "source": "https://semgrep.dev/r/package_managers.pnpm.pnpm-missing-minimum-release-age.pnpm-minimum-release-age",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "pnpm"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ]
+    },
+    "severity": "MEDIUM",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": "pnpm-workspace.yaml",
+   "start": {
+    "col": 1,
+    "line": 1,
+    "offset": 0
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261124.package_managers.pnpm.pnpm-trust-policy.pnpm-trust-policy",
+   "end": {
+    "col": 10,
+    "line": 1,
+    "offset": 9
+   },
+   "extra": {
+    "engine_kind": "OSS",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "message": "Missing or incorrect trustPolicy. Set `trustPolicy: no-downgrade` to prevent malicious package updates from downgrading security settings. Added in: v10.21.0 Reference: https://pnpm.io/settings#trustpolicy",
+    "metadata": {
+     "category": "security",
+     "confidence": "HIGH",
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "impact": "HIGH",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "likelihood": "LOW",
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "references": [
+      "https://pnpm.io/settings#minimumreleaseage"
+     ],
+     "shortlink": "https://sg.run/B2Kz7",
+     "source": "https://semgrep.dev/r/package_managers.pnpm.pnpm-trust-policy.pnpm-trust-policy",
+     "subcategory": [
+      "audit"
+     ],
+     "technology": [
+      "pnpm"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ]
+    },
+    "severity": "MEDIUM",
+    "validation_state": "NO_VALIDATOR"
+   },
+   "path": "pnpm-workspace.yaml",
+   "start": {
+    "col": 1,
+    "line": 1,
+    "offset": 0
+   }
+  }
+ ],
+ "version": "1.183.0"
+}

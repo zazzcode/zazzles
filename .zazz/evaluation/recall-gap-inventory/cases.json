@@ -10,6 +10,7 @@
     "only_lines": "Candidates of the kind in the file sit only at the listed lines; with anchors, every candidate of the kind in the report sits at a listed file and line, and max_uses bounds their count",
     "guarded": "A candidate of the kind exists at the anchor and carries a guard of guard_kind (guard_lines, when set, are covered by those guards), or the entry's access.roles include entry_roles",
     "bound": "No matching sql candidate carries query_text_interpolated",
+    "control_assessment": "A candidate may exist at the anchor; offline nothing is asserted, and a judged run must not present it as a finding",
     "excluded": "Outside candidate/registration recall; reason given",
     "noise_rows": "Source-reviewed anchors for keyed noise classes; the checker counts matching records that still carry the class condition"
   },
@@ -2527,6 +2528,131 @@
       "entry_names": [
         "POST /api/SecurityAnswers"
       ]
+    },
+    {
+      "id": "JS-REDIR-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "open_redirect_candidate",
+      "expect": "positive",
+      "file": "routes/redirect.ts",
+      "line": 18,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-PATH-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "review",
+      "file": "routes/fileServer.ts",
+      "line": 32,
+      "note": "Owner decision 2026-11-24: not a path-traversal positive. The name is rejected when it contains a slash, so the read stays in its directory; the null byte defeats the file-type allow-list"
+    },
+    {
+      "id": "JS-PATH-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "positive",
+      "file": "routes/fileUpload.ts",
+      "line": 34,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-PATH-03",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "positive",
+      "file": "routes/dataErasure.ts",
+      "line": 107,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-SSRF-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "ssrf_candidate",
+      "expect": "positive",
+      "file": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-CODE-01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "code_execution_candidate",
+      "expect": "positive",
+      "file": "routes/userProfile.ts",
+      "line": 65,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-CODE-02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "code_execution_candidate",
+      "expect": "positive",
+      "file": "routes/b2bOrder.ts",
+      "line": 23,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-AUTHZ-05",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "positive",
+      "file": "routes/basket.ts",
+      "line": 19,
+      "expect_status": "confirmed_vulnerability"
+    },
+    {
+      "id": "JS-PATH-N01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "control_assessment",
+      "file": "routes/keyServer.ts",
+      "line": 14
+    },
+    {
+      "id": "JS-PATH-N02",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "control_assessment",
+      "file": "routes/logfileServer.ts",
+      "line": 14
+    },
+    {
+      "id": "JS-PATH-N03",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "path_traversal_candidate",
+      "expect": "control_assessment",
+      "file": "routes/quarantineServer.ts",
+      "line": 14
+    },
+    {
+      "id": "JS-AUTHZ-N05",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "authorization_candidate",
+      "expect": "control_assessment",
+      "file": "routes/likeProductReviews.ts",
+      "line": 35
+    },
+    {
+      "id": "JS-CONF-N01",
+      "app": "juice-shop",
+      "key": ".zazz/evaluation/juice-shop-detection-guide.md",
+      "kind": "configuration_candidate",
+      "expect": "control_assessment",
+      "file": "server.ts",
+      "line": 294
     }
   ],
   "tags": {

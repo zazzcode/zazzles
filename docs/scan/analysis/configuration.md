@@ -4,7 +4,7 @@
 
 A configuration claim is one allow-listed setting joined to application facts. The
 family is `configuration`, the candidate kind is `configuration_candidate`, and the
-protocol is `configuration-components-v6`. There is no request source.
+protocol is `configuration-components-v7`. There is no request source.
 
 The scanner reads the setting and joins the facts. It does not decide that the setting
 is a defect. The instruction sent with a request says what each joined fact kind states
@@ -66,4 +66,4 @@ debug 489, remote include 98, scheduled writable file 732.
 
 ## JavaScript and TypeScript
 
-A registration or cookie option in the source that builds an Express application needs no deployment mapping; the adapter joins `deployed_file` evidence to say so. A directory listing is a weakness unless a recorded middleware before it on the same call, or an earlier mount, ends the request.
+A registration or cookie option in the source that builds an Express application needs no deployment mapping; the adapter joins `deployed_file` evidence to say so. A directory listing is a weakness unless a recorded middleware before it on the same call, or an earlier mount, ends the request. A `serve-index` record also joins `directory_contents`: the immediate entries of the listed directory in the scanned tree, sorted, at most eight by name with the total count, or a statement that the directory is empty or is not in the tree. Files the application writes there when it runs are not in it.

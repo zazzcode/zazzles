@@ -197,6 +197,26 @@ func applyInterpreterPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.Reason = "A request-derived operand reaches a verified " + family + " operation on a complete raw path without an effective restriction."
 		return
 	}
+	// A guarded path records that a dominating or enclosing condition mentions
+	// the operand. The scanner does not establish whether that condition
+	// restricts it; the restriction answer does. When every path is guarded,
+	// none is unresolved, and the model answers that the controls impose no
+	// restriction and do not cover the operand, the conditions are not a
+	// protection and the operand reaches the evaluator as written. Owner
+	// decision of 2026-11-24, code family only. The answers are the only basis
+	// of this claim, so coverage must be answered incomplete (unknown settles
+	// nothing), and an operand the scanner recorded as constrained by a
+	// conversion is not confirmed against that record.
+	guardedRequest := false
+	for _, p := range paths {
+		guardedRequest = guardedRequest || p.Protection == "guarded" && p.Dependency >= 0 && p.Dependency < len(use.Dependencies) && requestOrigin(use.Dependencies[p.Dependency])
+	}
+	if family == "code" && controlled && restriction == "none" && ans["protection_coverage"] == "incomplete" &&
+		guarded && !unknown && !transformed && len(pathBlockers) == 0 && guardedRequest {
+		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
+		a.Reason = "A request-derived operand reaches a verified code operation; the conditions on its path are answered to impose no restriction."
+		return
+	}
 	a.BlockingGaps = append(a.BlockingGaps, pathBlockers...)
 	a.Reason = "The supplied answers do not establish a complete vulnerable or protected operand path."
 }

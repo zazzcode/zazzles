@@ -1,0 +1,11 @@
+{
+  "tool": "Bearer CLI",
+  "version": "source build a7a87529a12af1eb2afaa7864dc043b6ab8d9c4e",
+  "rules": "Bearer/bearer-rules 82c335f781a61a6d8b052394f84fd1d93edec467, default rules disabled",
+  "options": "sast scanner, --skip-test=false, --force; skips node_modules, vendor, .github, dist, build, var, .next, test-results, *.min.js, frontend/src/assets/private/three.js",
+  "date": "2026-11-24",
+  "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
+  "results": 675,
+  "results_sha256": "822c334dcbf05ad99126035aa63938f63161a63aae558d0b1e46f5e179511cda",
+  "note": "Curated copy: target paths are relative to the sample root. Raw output, with SARIF where the tool wrote it, is under <TEST_FINDINGS>/juice-shop/bearer-20261124-1/."
+}

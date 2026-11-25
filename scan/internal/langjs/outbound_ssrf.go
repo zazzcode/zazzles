@@ -267,7 +267,7 @@ func (s *moduleSet) assembleSSRFClaims(report *analysis.AnalysisReport) {
 		fields:        commandFields,
 		guards:        s.commandGuards,
 		gapCovered: func(u *analysis.CandidateUse, g analysis.Gap, controlComplete bool, complete, transforms []analysis.Evidence, extra map[string][]analysis.Evidence) bool {
-			return s.commandGapCovered(u, g, controlComplete, complete, transforms, extra)
+			return s.literalWriteBesideOperand(u, g) || s.commandGapCovered(u, g, controlComplete, complete, transforms, extra)
 		},
 		complete: parse.SSRFCompleteness,
 		finish: func(u *analysis.CandidateUse, c *analysis.Completeness, guards []analysis.Evidence, guardIndex []int) {

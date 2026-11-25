@@ -1,0 +1,1690 @@
+{
+ "critical": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  exec(command, { timeout: 5000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {\n    if (error) {\n      console.error(`[VULNERABLE] Command error:`, error);\n      ...omitted (buffer value 3)\n      timestamp: Date.now()\n    });\n  });",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "pages/api/vulnerable-exec.js",
+   "fingerprint": "ef68caa012748ae552f8bf583072ddd8_0",
+   "full_filename": "pages/api/vulnerable-exec.js",
+   "id": "javascript_lang_dynamic_os_command",
+   "line_number": 21,
+   "old_fingerprint": "6e7f15d1928083d80ba13c3d2a8063ea_0",
+   "parent_line_number": 21,
+   "sink": {
+    "column": {
+     "end": 5,
+     "start": 3
+    },
+    "content": "",
+    "end": 41,
+    "start": 21
+   },
+   "source": {
+    "column": {
+     "end": 5,
+     "start": 3
+    },
+    "end": 41,
+    "start": 21
+   },
+   "title": "Unsanitized dynamic input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    const result = eval(`({\n      name: '${name}',\n      message: '${message}',\n      timestamp: Date.now(),\n      processedBy: 'vulnerable-submit API'\n    })`);",
+   "cwe_ids": [
+    "95"
+   ],
+   "filename": "pages/api/vulnerable-submit.js",
+   "fingerprint": "290e3b843c769bd8ff4b1595a88657c5_0",
+   "full_filename": "pages/api/vulnerable-submit.js",
+   "id": "javascript_lang_eval_user_input",
+   "line_number": 15,
+   "old_fingerprint": "c5683bee920684e99eef24484f8163f7_0",
+   "parent_line_number": 15,
+   "sink": {
+    "column": {
+     "end": 9,
+     "start": 20
+    },
+    "content": "",
+    "end": 20,
+    "start": 15
+   },
+   "source": {
+    "column": {
+     "end": 9,
+     "start": 20
+    },
+    "end": 20,
+    "start": 15
+   },
+   "title": "Unsanitized user input in 'eval' type function"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  login: { id: 'SQL-001', title: 'Login bypass', defaults: { username: 'alice', password: 'alice-lab-only' }, payload: { username: \"admin' --\", password: 'wrong-password' } },",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "pages/sql/[operation].js",
+   "fingerprint": "79a719e2503abc660c2b2cac2f676613_0",
+   "full_filename": "pages/sql/[operation].js",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 5,
+   "old_fingerprint": "3e7bf59e6ea40dd5a4a382cfa7363bb1_0",
+   "parent_line_number": 5,
+   "sink": {
+    "column": {
+     "end": 107,
+     "start": 81
+    },
+    "content": "",
+    "end": 5,
+    "start": 5
+   },
+   "source": {
+    "column": {
+     "end": 107,
+     "start": 81
+    },
+    "end": 5,
+    "start": 5
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "      const response = await postJson(request, `/api/sql/${mode}/login`, { username: 'alice', password: 'alice-lab-only' });",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/api/lab.api.test.mjs",
+   "fingerprint": "da8cff6dc4163a92a4e9c46e094fb040_0",
+   "full_filename": "tests/api/lab.api.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 44,
+   "old_fingerprint": "b85994978495c0afb8970e7b012277a3_8",
+   "parent_line_number": 44,
+   "sink": {
+    "column": {
+     "end": 121,
+     "start": 95
+    },
+    "content": "",
+    "end": 44,
+    "start": 44
+   },
+   "source": {
+    "column": {
+     "end": 121,
+     "start": 95
+    },
+    "end": 44,
+    "start": 44
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    const payload = { username: \"admin' --\", password: 'wrong' }; // password is ignored after \"--\"",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/api/lab.api.test.mjs",
+   "fingerprint": "da8cff6dc4163a92a4e9c46e094fb040_1",
+   "full_filename": "tests/api/lab.api.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 50,
+   "old_fingerprint": "b85994978495c0afb8970e7b012277a3_11",
+   "parent_line_number": 50,
+   "sink": {
+    "column": {
+     "end": 63,
+     "start": 46
+    },
+    "content": "",
+    "end": 50,
+    "start": 50
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 46
+    },
+    "end": 50,
+    "start": 50
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    expect((await postJson(request, '/api/sql/zod/login', { username: 42, password: 'x' })).status()).toBe(400);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/api/lab.api.test.mjs",
+   "fingerprint": "da8cff6dc4163a92a4e9c46e094fb040_2",
+   "full_filename": "tests/api/lab.api.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 58,
+   "old_fingerprint": "b85994978495c0afb8970e7b012277a3_12",
+   "parent_line_number": 58,
+   "sink": {
+    "column": {
+     "end": 88,
+     "start": 75
+    },
+    "content": "",
+    "end": 58,
+    "start": 58
+   },
+   "source": {
+    "column": {
+     "end": 88,
+     "start": 75
+    },
+    "end": 58,
+    "start": 58
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "const creds = { username: 'alice', password: 'alice-lab-only' };",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_0",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 12,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_1",
+   "parent_line_number": 12,
+   "sink": {
+    "column": {
+     "end": 62,
+     "start": 36
+    },
+    "content": "",
+    "end": 12,
+    "start": 12
+   },
+   "source": {
+    "column": {
+     "end": 62,
+     "start": 36
+    },
+    "end": 12,
+    "start": 12
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    const bad = await request(handler, { body: { username: 'alice', password: 'wrong' } });",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_1",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 33,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_6",
+   "parent_line_number": 33,
+   "sink": {
+    "column": {
+     "end": 86,
+     "start": 69
+    },
+    "content": "",
+    "end": 33,
+    "start": 33
+   },
+   "source": {
+    "column": {
+     "end": 86,
+     "start": 69
+    },
+    "end": 33,
+    "start": 33
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  const attack = { username: \"admin' --\", password: 'wrong' };",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_2",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 39,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_7",
+   "parent_line_number": 39,
+   "sink": {
+    "column": {
+     "end": 60,
+     "start": 43
+    },
+    "content": "",
+    "end": 39,
+    "start": 39
+   },
+   "source": {
+    "column": {
+     "end": 60,
+     "start": 43
+    },
+    "end": 39,
+    "start": 39
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  expect((await request(safeLogin, { body: { username: 'admin', password: \"' OR true --\" } })).status).toBe(401);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_3",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 44,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_9",
+   "parent_line_number": 44,
+   "sink": {
+    "column": {
+     "end": 89,
+     "start": 65
+    },
+    "content": "",
+    "end": 44,
+    "start": 44
+   },
+   "source": {
+    "column": {
+     "end": 89,
+     "start": 65
+    },
+    "end": 44,
+    "start": 44
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  expect((await request(unsafeLogin, { body: { username: 'nobody', password: \"' OR true --\" } })).status).toBe(200);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_4",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 45,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_10",
+   "parent_line_number": 45,
+   "sink": {
+    "column": {
+     "end": 92,
+     "start": 68
+    },
+    "content": "",
+    "end": 45,
+    "start": 45
+   },
+   "source": {
+    "column": {
+     "end": 92,
+     "start": 68
+    },
+    "end": 45,
+    "start": 45
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  expect((await request(safeLogin, { body: { username: 'admin', password: 'admin-lab-only' } })).status).toBe(200);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_5",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 86,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_13",
+   "parent_line_number": 86,
+   "sink": {
+    "column": {
+     "end": 91,
+     "start": 65
+    },
+    "content": "",
+    "end": 86,
+    "start": 86
+   },
+   "source": {
+    "column": {
+     "end": 91,
+     "start": 65
+    },
+    "end": 86,
+    "start": 86
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    expect((await request(handler, { body: { username: [], password: 'x' } })).status, mode).toBe(400);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/sql.test.mjs",
+   "fingerprint": "e4e5814048d62686fe9240f973e4db59_6",
+   "full_filename": "tests/unit/sql.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 94,
+   "old_fingerprint": "9b67fe3a11a1d25b9db8df6c65813c3e_14",
+   "parent_line_number": 94,
+   "sink": {
+    "column": {
+     "end": 73,
+     "start": 60
+    },
+    "content": "",
+    "end": 94,
+    "start": 94
+   },
+   "source": {
+    "column": {
+     "end": 73,
+     "start": 60
+    },
+    "end": 94,
+    "start": 94
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  const ok = await request(zodLogin, { body: { username: 'alice', password: 'alice-lab-only' } });",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/zod.test.mjs",
+   "fingerprint": "f7dd95c050d7c2f6d20fe9312d7a53c5_0",
+   "full_filename": "tests/unit/zod.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 15,
+   "old_fingerprint": "9b443bf75d39f90a25dccae889d283d0_2",
+   "parent_line_number": 15,
+   "sink": {
+    "column": {
+     "end": 93,
+     "start": 67
+    },
+    "content": "",
+    "end": 15,
+    "start": 15
+   },
+   "source": {
+    "column": {
+     "end": 93,
+     "start": 67
+    },
+    "end": 15,
+    "start": 15
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  const attack = await request(zodLogin, { body: { username: \"admin' --\", password: 'wrong' } });",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/zod.test.mjs",
+   "fingerprint": "f7dd95c050d7c2f6d20fe9312d7a53c5_1",
+   "full_filename": "tests/unit/zod.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 19,
+   "old_fingerprint": "9b443bf75d39f90a25dccae889d283d0_3",
+   "parent_line_number": 19,
+   "sink": {
+    "column": {
+     "end": 92,
+     "start": 75
+    },
+    "content": "",
+    "end": 19,
+    "start": 19
+   },
+   "source": {
+    "column": {
+     "end": 92,
+     "start": 75
+    },
+    "end": 19,
+    "start": 19
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  expect((await request(zodLogin, { body: { username: '', password: 'x' } })).status).toBe(400);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/zod.test.mjs",
+   "fingerprint": "f7dd95c050d7c2f6d20fe9312d7a53c5_2",
+   "full_filename": "tests/unit/zod.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 25,
+   "old_fingerprint": "9b443bf75d39f90a25dccae889d283d0_4",
+   "parent_line_number": 25,
+   "sink": {
+    "column": {
+     "end": 72,
+     "start": 59
+    },
+    "content": "",
+    "end": 25,
+    "start": 25
+   },
+   "source": {
+    "column": {
+     "end": 72,
+     "start": 59
+    },
+    "end": 25,
+    "start": 25
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  expect((await request(zodLogin, { body: { username: 42, password: 'x' } })).status).toBe(400);",
+   "cwe_ids": [
+    "798"
+   ],
+   "filename": "tests/unit/zod.test.mjs",
+   "fingerprint": "f7dd95c050d7c2f6d20fe9312d7a53c5_3",
+   "full_filename": "tests/unit/zod.test.mjs",
+   "id": "javascript_lang_hardcoded_secret",
+   "line_number": 27,
+   "old_fingerprint": "9b443bf75d39f90a25dccae889d283d0_5",
+   "parent_line_number": 27,
+   "sink": {
+    "column": {
+     "end": 72,
+     "start": 59
+    },
+    "content": "",
+    "end": 27,
+    "start": 27
+   },
+   "source": {
+    "column": {
+     "end": 72,
+     "start": 59
+    },
+    "end": 27,
+    "start": 27
+   },
+   "title": "Usage of hard-coded secret"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(5000) });",
+   "cwe_ids": [
+    "319"
+   ],
+   "filename": "pages/secure/ssrf.js",
+   "fingerprint": "cb2d8001fec623a25204f60e75921b11_0",
+   "full_filename": "pages/secure/ssrf.js",
+   "id": "javascript_lang_http_insecure",
+   "line_number": 26,
+   "old_fingerprint": "00de923ffc4cbf7122f2ea65a596fc08_0",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 97,
+     "start": 28
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 97,
+     "start": 28
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Usage of insecure HTTP connection"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  exec(command, { timeout: 5000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {\n    if (error) {\n      console.error(`[VULNERABLE] Command error:`, error);\n      ...omitted (buffer value 3)\n      timestamp: Date.now()\n    });\n  });",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "pages/api/vulnerable-exec.js",
+   "fingerprint": "f1d188d3cde1fce3ecc54344bbbd68eb_0",
+   "full_filename": "pages/api/vulnerable-exec.js",
+   "id": "javascript_lang_os_command_injection",
+   "line_number": 21,
+   "old_fingerprint": "b27f0cdcfee64a1575052991d4b49c30_0",
+   "parent_line_number": 21,
+   "sink": {
+    "column": {
+     "end": 5,
+     "start": 3
+    },
+    "content": "",
+    "end": 41,
+    "start": 21
+   },
+   "source": {
+    "column": {
+     "end": 5,
+     "start": 3
+    },
+    "end": 41,
+    "start": 21
+   },
+   "title": "Unsanitized user input in OS command"
+  }
+ ],
+ "high": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  const content = await readFile(path.join(process.cwd(), file), 'utf8');",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "pages/api/secure/file-read.js",
+   "fingerprint": "d008b3123303d1f456db94c583ee166c_0",
+   "full_filename": "pages/api/secure/file-read.js",
+   "id": "javascript_express_path_traversal",
+   "line_number": 15,
+   "old_fingerprint": "2402e517e1b5d1ad0c1e07a70997c341_0",
+   "parent_line_number": 15,
+   "sink": {
+    "column": {
+     "end": 64,
+     "start": 34
+    },
+    "content": "",
+    "end": 15,
+    "start": 15
+   },
+   "source": {
+    "column": {
+     "end": 64,
+     "start": 34
+    },
+    "end": 15,
+    "start": 15
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`[VULNERABLE] Executing command: ${command}`);",
+   "cwe_ids": [
+    "134"
+   ],
+   "filename": "pages/api/vulnerable-exec.js",
+   "fingerprint": "d792986af4df6ddbc6261406441e656d_0",
+   "full_filename": "pages/api/vulnerable-exec.js",
+   "id": "javascript_lang_format_string_using_user_input",
+   "line_number": 17,
+   "old_fingerprint": "374902c69ab6fdf2879f0695e2f6a515_0",
+   "parent_line_number": 17,
+   "sink": {
+    "column": {
+     "end": 60,
+     "start": 3
+    },
+    "content": "",
+    "end": 17,
+    "start": 17
+   },
+   "source": {
+    "column": {
+     "end": 60,
+     "start": 3
+    },
+    "end": 17,
+    "start": 17
+   },
+   "title": "Unsanitized user input in format string"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`[VULNERABLE] Reading file: ${filePath}`);",
+   "cwe_ids": [
+    "134"
+   ],
+   "filename": "pages/api/vulnerable-file-read.js",
+   "fingerprint": "cb934ac8aa6076b7914ae24c85b911ce_0",
+   "full_filename": "pages/api/vulnerable-file-read.js",
+   "id": "javascript_lang_format_string_using_user_input",
+   "line_number": 17,
+   "old_fingerprint": "ddfa9b75be618d6c3698b899fbfba470_1",
+   "parent_line_number": 17,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 3
+    },
+    "content": "",
+    "end": 17,
+    "start": 17
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 3
+    },
+    "end": 17,
+    "start": 17
+   },
+   "title": "Unsanitized user input in format string"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(5000) });",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "pages/secure/ssrf.js",
+   "fingerprint": "29c158a217b2d058bdef72599ba17a01_0",
+   "full_filename": "pages/secure/ssrf.js",
+   "id": "javascript_lang_http_url_using_user_input",
+   "line_number": 26,
+   "old_fingerprint": "1c0f692d01a5c4bac88d61c95fe6110b_0",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 97,
+     "start": 28
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 97,
+     "start": 28
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    const fileContent = fs.readFileSync(filePath, 'utf8');",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "pages/api/vulnerable-file-read.js",
+   "fingerprint": "0d96d0188dbcda3b4006f2fab2725125_0",
+   "full_filename": "pages/api/vulnerable-file-read.js",
+   "id": "javascript_lang_non_literal_fs_filename",
+   "line_number": 22,
+   "old_fingerprint": "cee7d876e4bc3ff578b82262dd04a516_0",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 58,
+     "start": 25
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 58,
+     "start": 25
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized dynamic input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    <script dangerouslySetInnerHTML={{ __html: `window.__labData = ${jsonForScriptEmbedding({ data })};` }} />",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "pages/xss/safe/script-context.js",
+   "fingerprint": "700c3497624edda65653b4d5f81ecc3e_0",
+   "full_filename": "pages/xss/safe/script-context.js",
+   "id": "javascript_react_dangerously_set_inner_html",
+   "line_number": 17,
+   "old_fingerprint": "f46b6d00e16d009e8f597136609504af_3",
+   "parent_line_number": 17,
+   "sink": {
+    "column": {
+     "end": 107,
+     "start": 38
+    },
+    "content": "",
+    "end": 17,
+    "start": 17
+   },
+   "source": {
+    "column": {
+     "end": 107,
+     "start": 38
+    },
+    "end": 17,
+    "start": 17
+   },
+   "title": "Unsanitized user input in React inner HTML method (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    <div id=\"xss-output\" className=\"xss-output\" dangerouslySetInnerHTML={{ __html: clean }} />",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "pages/xss/sanitized/reflected.js",
+   "fingerprint": "2bd1d46e289b58f083be5eaa017e2fe0_0",
+   "full_filename": "pages/xss/sanitized/reflected.js",
+   "id": "javascript_react_dangerously_set_inner_html",
+   "line_number": 16,
+   "old_fingerprint": "5074dd840a1a53fb10ca6e54d4645037_1",
+   "parent_line_number": 16,
+   "sink": {
+    "column": {
+     "end": 91,
+     "start": 74
+    },
+    "content": "",
+    "end": 16,
+    "start": 16
+   },
+   "source": {
+    "column": {
+     "end": 91,
+     "start": 74
+    },
+    "end": 16,
+    "start": 16
+   },
+   "title": "Unsanitized user input in React inner HTML method (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        <div className=\"comment-body\" dangerouslySetInnerHTML={{ __html: comment.body }} />",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "pages/xss/unsafe/comments.js",
+   "fingerprint": "5673c57c646d4049f4f94f25dfd370a9_0",
+   "full_filename": "pages/xss/unsafe/comments.js",
+   "id": "javascript_react_dangerously_set_inner_html",
+   "line_number": 29,
+   "old_fingerprint": "1eb605c9cb43d5b3ce611d28ac9ebf8f_4",
+   "parent_line_number": 29,
+   "sink": {
+    "column": {
+     "end": 88,
+     "start": 64
+    },
+    "content": "",
+    "end": 29,
+    "start": 29
+   },
+   "source": {
+    "column": {
+     "end": 88,
+     "start": 64
+    },
+    "end": 29,
+    "start": 29
+   },
+   "title": "Unsanitized user input in React inner HTML method (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    <div id=\"xss-output\" className=\"xss-output\" dangerouslySetInnerHTML={{ __html: payload }} />",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "pages/xss/unsafe/reflected.js",
+   "fingerprint": "5f2f928a7224a683b85c2e7f8e5c0b99_0",
+   "full_filename": "pages/xss/unsafe/reflected.js",
+   "id": "javascript_react_dangerously_set_inner_html",
+   "line_number": 15,
+   "old_fingerprint": "c9b5e8212f39591c0b21adb8c7f10c71_0",
+   "parent_line_number": 15,
+   "sink": {
+    "column": {
+     "end": 93,
+     "start": 74
+    },
+    "content": "",
+    "end": 15,
+    "start": 15
+   },
+   "source": {
+    "column": {
+     "end": 93,
+     "start": 74
+    },
+    "end": 15,
+    "start": 15
+   },
+   "title": "Unsanitized user input in React inner HTML method (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    <script dangerouslySetInnerHTML={{ __html: `window.__labData = ${JSON.stringify({ data })};` }} />",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "pages/xss/unsafe/script-context.js",
+   "fingerprint": "7bc1bf9172672640a9c72df72104de3a_0",
+   "full_filename": "pages/xss/unsafe/script-context.js",
+   "id": "javascript_react_dangerously_set_inner_html",
+   "line_number": 16,
+   "old_fingerprint": "2e8b01cfa285ed419eadc2e05e4ca044_2",
+   "parent_line_number": 16,
+   "sink": {
+    "column": {
+     "end": 99,
+     "start": 38
+    },
+    "content": "",
+    "end": 16,
+    "start": 16
+   },
+   "source": {
+    "column": {
+     "end": 99,
+     "start": 38
+    },
+    "end": 16,
+    "start": 16
+   },
+   "title": "Unsanitized user input in React inner HTML method (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "      <div key={note.id} className=\"xss-output note\" dangerouslySetInnerHTML={{ __html: note.body }} />",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "pages/xss/unsafe/stored.js",
+   "fingerprint": "cf3dd8a7dc454bc87e9ef61b57627118_0",
+   "full_filename": "pages/xss/unsafe/stored.js",
+   "id": "javascript_react_dangerously_set_inner_html",
+   "line_number": 35,
+   "old_fingerprint": "6a18d5d553a31fd495d2ed54b8ab351a_5",
+   "parent_line_number": 35,
+   "sink": {
+    "column": {
+     "end": 100,
+     "start": 79
+    },
+    "content": "",
+    "end": 35,
+    "start": 35
+   },
+   "source": {
+    "column": {
+     "end": 100,
+     "start": 79
+    },
+    "end": 35,
+    "start": 35
+   },
+   "title": "Unsanitized user input in React inner HTML method (XSS)"
+  }
+ ],
+ "low": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`[VULNERABLE] Executing command: ${command}`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "pages/api/vulnerable-exec.js",
+   "fingerprint": "945327c831bcf272657b4d62c5662a6a_0",
+   "full_filename": "pages/api/vulnerable-exec.js",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 17,
+   "old_fingerprint": "7d3f30e7b18dd9a56bb609d3e179b53b_2",
+   "parent_line_number": 17,
+   "sink": {
+    "column": {
+     "end": 60,
+     "start": 3
+    },
+    "content": "",
+    "end": 17,
+    "start": 17
+   },
+   "source": {
+    "column": {
+     "end": 60,
+     "start": 3
+    },
+    "end": 17,
+    "start": 17
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "      console.error(`[VULNERABLE] Command error:`, error);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "pages/api/vulnerable-exec.js",
+   "fingerprint": "945327c831bcf272657b4d62c5662a6a_1",
+   "full_filename": "pages/api/vulnerable-exec.js",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 23,
+   "old_fingerprint": "7d3f30e7b18dd9a56bb609d3e179b53b_4",
+   "parent_line_number": 23,
+   "sink": {
+    "column": {
+     "end": 58,
+     "start": 7
+    },
+    "content": "",
+    "end": 23,
+    "start": 23
+   },
+   "source": {
+    "column": {
+     "end": 58,
+     "start": 7
+    },
+    "end": 23,
+    "start": 23
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    console.log(`[VULNERABLE] Command output:`, stdout);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "pages/api/vulnerable-exec.js",
+   "fingerprint": "945327c831bcf272657b4d62c5662a6a_2",
+   "full_filename": "pages/api/vulnerable-exec.js",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 32,
+   "old_fingerprint": "7d3f30e7b18dd9a56bb609d3e179b53b_5",
+   "parent_line_number": 32,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 5
+    },
+    "content": "",
+    "end": 32,
+    "start": 32
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 5
+    },
+    "end": 32,
+    "start": 32
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`[VULNERABLE] Reading file: ${filePath}`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "pages/api/vulnerable-file-read.js",
+   "fingerprint": "8af07c19e77cfabea720e51c5abae38a_0",
+   "full_filename": "pages/api/vulnerable-file-read.js",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 17,
+   "old_fingerprint": "55d874f75c4ccb87b7114823fae6cbdd_1",
+   "parent_line_number": 17,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 3
+    },
+    "content": "",
+    "end": 17,
+    "start": 17
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 3
+    },
+    "end": 17,
+    "start": 17
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.error(`FAIL: audit did not produce JSON (exit ${code}).\\nstdout: ${stdout.slice(0, 400)}\\nstderr: ${stderr.slice(0, 400)}`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-audit.mjs",
+   "fingerprint": "813a7cd7778c6b26669711f8c8984d8a_0",
+   "full_filename": "scripts/check-audit.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 37,
+   "old_fingerprint": "ff479d8cfd05104304bd3b8c695c80aa_6",
+   "parent_line_number": 37,
+   "sink": {
+    "column": {
+     "end": 134,
+     "start": 3
+    },
+    "content": "",
+    "end": 37,
+    "start": 37
+   },
+   "source": {
+    "column": {
+     "end": 134,
+     "start": 3
+    },
+    "end": 37,
+    "start": 37
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`Snapshot updated: tests/expected-audit.json (${count} advisories, audit exit ${code}).`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-audit.mjs",
+   "fingerprint": "813a7cd7778c6b26669711f8c8984d8a_1",
+   "full_filename": "scripts/check-audit.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 46,
+   "old_fingerprint": "ff479d8cfd05104304bd3b8c695c80aa_7",
+   "parent_line_number": 46,
+   "sink": {
+    "column": {
+     "end": 104,
+     "start": 3
+    },
+    "content": "",
+    "end": 46,
+    "start": 46
+   },
+   "source": {
+    "column": {
+     "end": 104,
+     "start": 3
+    },
+    "end": 46,
+    "start": 46
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`PASS: pnpm audit --prod matches the committed snapshot (${count} advisories).`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-audit.mjs",
+   "fingerprint": "813a7cd7778c6b26669711f8c8984d8a_2",
+   "full_filename": "scripts/check-audit.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 52,
+   "old_fingerprint": "ff479d8cfd05104304bd3b8c695c80aa_10",
+   "parent_line_number": 52,
+   "sink": {
+    "column": {
+     "end": 95,
+     "start": 3
+    },
+    "content": "",
+    "end": 52,
+    "start": 52
+   },
+   "source": {
+    "column": {
+     "end": 95,
+     "start": 3
+    },
+    "end": 52,
+    "start": 52
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "console.error(`FAIL: audit output drifted from tests/expected-audit.json (raw audit exit ${code}).`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-audit.mjs",
+   "fingerprint": "813a7cd7778c6b26669711f8c8984d8a_3",
+   "full_filename": "scripts/check-audit.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 60,
+   "old_fingerprint": "ff479d8cfd05104304bd3b8c695c80aa_11",
+   "parent_line_number": 60,
+   "sink": {
+    "column": {
+     "end": 101,
+     "start": 1
+    },
+    "content": "",
+    "end": 60,
+    "start": 60
+   },
+   "source": {
+    "column": {
+     "end": 101,
+     "start": 1
+    },
+    "end": 60,
+    "start": 60
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "if (added.length) console.error(`  New advisory IDs: ${added.join(', ')}`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-audit.mjs",
+   "fingerprint": "813a7cd7778c6b26669711f8c8984d8a_4",
+   "full_filename": "scripts/check-audit.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 61,
+   "old_fingerprint": "ff479d8cfd05104304bd3b8c695c80aa_12",
+   "parent_line_number": 61,
+   "sink": {
+    "column": {
+     "end": 75,
+     "start": 19
+    },
+    "content": "",
+    "end": 61,
+    "start": 61
+   },
+   "source": {
+    "column": {
+     "end": 75,
+     "start": 19
+    },
+    "end": 61,
+    "start": 61
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "if (removed.length) console.error(`  No longer reported: ${removed.join(', ')}`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-audit.mjs",
+   "fingerprint": "813a7cd7778c6b26669711f8c8984d8a_5",
+   "full_filename": "scripts/check-audit.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 62,
+   "old_fingerprint": "ff479d8cfd05104304bd3b8c695c80aa_13",
+   "parent_line_number": 62,
+   "sink": {
+    "column": {
+     "end": 81,
+     "start": 21
+    },
+    "content": "",
+    "end": 62,
+    "start": 62
+   },
+   "source": {
+    "column": {
+     "end": 81,
+     "start": 21
+    },
+    "end": 62,
+    "start": 62
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(`Snapshots updated: tests/expected-hashes.json (${Object.keys(hashes).length} scenario files), tests/expected-scanner-findings.json (${scannerExport.sources.length} expectations).`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-scenarios.mjs",
+   "fingerprint": "9feba9755fae7486b8fa5962cddfd4f0_0",
+   "full_filename": "scripts/check-scenarios.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 50,
+   "old_fingerprint": "0f6c8e6d48d7c93418cb8fe6a9a33046_8",
+   "parent_line_number": 50,
+   "sink": {
+    "column": {
+     "end": 196,
+     "start": 3
+    },
+    "content": "",
+    "end": 50,
+    "start": 50
+   },
+   "source": {
+    "column": {
+     "end": 196,
+     "start": 3
+    },
+    "end": 50,
+    "start": 50
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  process.exit(problems.length ? (console.error(problems.join('\\n')), 1) : 0);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-scenarios.mjs",
+   "fingerprint": "9feba9755fae7486b8fa5962cddfd4f0_1",
+   "full_filename": "scripts/check-scenarios.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 51,
+   "old_fingerprint": "0f6c8e6d48d7c93418cb8fe6a9a33046_9",
+   "parent_line_number": 51,
+   "sink": {
+    "column": {
+     "end": 69,
+     "start": 35
+    },
+    "content": "",
+    "end": 51,
+    "start": 51
+   },
+   "source": {
+    "column": {
+     "end": 69,
+     "start": 35
+    },
+    "end": 51,
+    "start": 51
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.error(`FAIL: scenario ground truth drifted:\\n  ${problems.join('\\n  ')}`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-scenarios.mjs",
+   "fingerprint": "9feba9755fae7486b8fa5962cddfd4f0_2",
+   "full_filename": "scripts/check-scenarios.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 70,
+   "old_fingerprint": "0f6c8e6d48d7c93418cb8fe6a9a33046_14",
+   "parent_line_number": 70,
+   "sink": {
+    "column": {
+     "end": 84,
+     "start": 3
+    },
+    "content": "",
+    "end": 70,
+    "start": 70
+   },
+   "source": {
+    "column": {
+     "end": 84,
+     "start": 3
+    },
+    "end": 70,
+    "start": 70
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "console.log(`PASS: all ${scenarioFiles.length} catalog scenario sources match the committed hashes; scanner expectations export in sync (${scannerExport.sources.length} rows).`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/check-scenarios.mjs",
+   "fingerprint": "9feba9755fae7486b8fa5962cddfd4f0_3",
+   "full_filename": "scripts/check-scenarios.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 74,
+   "old_fingerprint": "0f6c8e6d48d7c93418cb8fe6a9a33046_15",
+   "parent_line_number": 74,
+   "sink": {
+    "column": {
+     "end": 178,
+     "start": 1
+    },
+    "content": "",
+    "end": 74,
+    "start": 74
+   },
+   "source": {
+    "column": {
+     "end": 178,
+     "start": 1
+    },
+    "end": 74,
+    "start": 74
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log(root);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/export-prototype-pollution-fixtures.mjs",
+   "fingerprint": "b47b6c7b0c4235afbfacdc6a9b2fbac5_0",
+   "full_filename": "scripts/export-prototype-pollution-fixtures.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 167,
+   "old_fingerprint": "c3c9442cd599b04929669cd0183067c3_16",
+   "parent_line_number": 167,
+   "sink": {
+    "column": {
+     "end": 20,
+     "start": 3
+    },
+    "content": "",
+    "end": 167,
+    "start": 167
+   },
+   "source": {
+    "column": {
+     "end": 20,
+     "start": 3
+    },
+    "end": 167,
+    "start": 167
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "console.log(`PASS: React2Shell server-side arithmetic execution demonstrated (${marker})`);",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "scripts/test-react2shell.mjs",
+   "fingerprint": "eef4f3e43491ccbbd14b29e44ec70038_0",
+   "full_filename": "scripts/test-react2shell.mjs",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 21,
+   "old_fingerprint": "18e01d103df9a5ec14d6802ba3ed3004_3",
+   "parent_line_number": 21,
+   "sink": {
+    "column": {
+     "end": 91,
+     "start": 1
+    },
+    "content": "",
+    "end": 21,
+    "start": 21
+   },
+   "source": {
+    "column": {
+     "end": 91,
+     "start": 1
+    },
+    "end": 21,
+    "start": 21
+   },
+   "title": "Leakage of information in logger message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  console.log('Zazzles lab echo:', String(formData.get('message') || '').slice(0, 200));",
+   "cwe_ids": [
+    "532"
+   ],
+   "filename": "targets/react2shell/app/page.js",
+   "fingerprint": "0d5cec19c4603e876de0790d734c5480_0",
+   "full_filename": "targets/react2shell/app/page.js",
+   "id": "javascript_lang_logger_leak",
+   "line_number": 5,
+   "old_fingerprint": "55883360d9265f9ca3b630ca8a1d9413_0",
+   "parent_line_number": 5,
+   "sink": {
+    "column": {
+     "end": 88,
+     "start": 3
+    },
+    "content": "",
+    "end": 5,
+    "start": 5
+   },
+   "source": {
+    "column": {
+     "end": 88,
+     "start": 3
+    },
+    "end": 5,
+    "start": 5
+   },
+   "title": "Leakage of information in logger message"
+  }
+ ],
+ "medium": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "  if (hashes[file] && expectedHashes[file] !== hashes[file]) {",
+   "cwe_ids": [
+    "208"
+   ],
+   "filename": "scripts/check-scenarios.mjs",
+   "fingerprint": "38d9c5f07e5814aa1ae22d3af60c6421_0",
+   "full_filename": "scripts/check-scenarios.mjs",
+   "id": "javascript_lang_observable_timing",
+   "line_number": 56,
+   "old_fingerprint": "6c4bcc1d86d18bdfb77bf0a258021560_0",
+   "parent_line_number": 56,
+   "sink": {
+    "column": {
+     "end": 60,
+     "start": 23
+    },
+    "content": "",
+    "end": 56,
+    "start": 56
+   },
+   "source": {
+    "column": {
+     "end": 60,
+     "start": 23
+    },
+    "end": 56,
+    "start": 56
+   },
+   "title": "Observable Timing Discrepancy"
+  }
+ ]
+}

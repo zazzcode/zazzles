@@ -316,13 +316,23 @@ func libraryCallEvidence(m *sourceModule, call *sitter.Node, module string) []an
 }
 
 // inlineRandom reports whether an expression calls Math.random or a random
-// generator of node:crypto.
+// generator of node:crypto on every evaluation. A call under ||, ??, && or a
+// conditional expression is a fallback: with the other operand set, the value
+// is not random, so it is not counted.
 func inlineRandom(m *sourceModule, n *sitter.Node) bool {
 	found := false
 	var walk func(*sitter.Node)
 	walk = func(x *sitter.Node) {
-		if x == nil || found || isFunction(x) {
+		if x == nil || found || isFunction(x) || x.Kind() == "ternary_expression" {
 			return
+		}
+		if x.Kind() == "binary_expression" {
+			if op := x.ChildByFieldName("operator"); op != nil {
+				switch op.Kind() {
+				case "||", "&&", "??":
+					return
+				}
+			}
 		}
 		if x.Kind() == "call_expression" {
 			if fn := x.ChildByFieldName("function"); fn != nil {

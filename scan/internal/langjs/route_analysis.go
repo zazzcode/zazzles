@@ -94,6 +94,9 @@ func (s *moduleSet) analyzeHTTPHandler(out *analysis.AnalysisReport, m, owner *s
 			constants: seeds, env: map[string]value{}, context: append([]analysis.Evidence{m.evidence("registration", call), evidence}, context...),
 			gaps: append([]analysis.Gap{}, e.Gaps...), helpers: &helperExpansion{budget: 24, stack: map[string]bool{}}, facts: newInputFacts(), parts: parts}
 		f.seedInvocation()
+		if req == "" {
+			f.seedRequestFields(requestFieldBindings(hm, body))
+		}
 		for name, node := range seeds {
 			f.env[name] = f.eval(node)
 		}

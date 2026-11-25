@@ -210,8 +210,10 @@ func catchParameter(n *sitter.Node, name string, src []byte) bool {
 	return false
 }
 
-// environmentGuards returns the conditions on process.env.NODE_ENV that
-// dominate n, as guard evidence.
+// environmentGuards returns the conditions on the environment mode that
+// dominate n, as guard evidence: process.env.NODE_ENV, or the Express
+// application setting read by app.get('env') (Express API, "Application
+// Settings": env is process.env.NODE_ENV, or "development" when it is unset).
 func environmentGuards(m *sourceModule, n *sitter.Node) []analysis.Evidence {
 	var guards []analysis.Evidence
 	child := n
@@ -241,12 +243,31 @@ func mentionsNodeEnv(m *sourceModule, n *sitter.Node) bool {
 			found = true
 			return
 		}
+		if x.Kind() == "call_expression" && expressEnvSetting(m, x) {
+			found = true
+			return
+		}
 		for i := uint(0); i < x.NamedChildCount(); i++ {
 			walk(x.NamedChild(i))
 		}
 	}
 	walk(n)
 	return found
+}
+
+// expressEnvSetting reports a call receiver.get('env') on a verified Express
+// application.
+func expressEnvSetting(m *sourceModule, call *sitter.Node) bool {
+	fn, args := call.ChildByFieldName("function"), call.ChildByFieldName("arguments")
+	if fn == nil || args == nil || fn.Kind() != "member_expression" || args.NamedChildCount() != 1 {
+		return false
+	}
+	obj, prop := fn.ChildByFieldName("object"), fn.ChildByFieldName("property")
+	if obj == nil || prop == nil || obj.Kind() != "identifier" || prop.Utf8Text(m.src) != "get" || !receiverUsable(m, call, obj.Utf8Text(m.src)) {
+		return false
+	}
+	name, ok := stringLiteral(args.NamedChild(0), m.src)
+	return ok && name == "env"
 }
 
 // recordExposure emits one candidate per operation per entry.

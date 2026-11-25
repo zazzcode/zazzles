@@ -133,6 +133,9 @@ func wireAuthorization(use analysis.CandidateUse, ref func(analysis.Evidence) st
 	if len(f.PeerAccess) > 0 {
 		out["peer_access"] = f.PeerAccess
 	}
+	if f.Written != nil {
+		out["written_values"] = f.Written
+	}
 	// Use ids embed a snapshot hash. The saved candidate lists them; the
 	// request does not, so a judge payload never carries that hash.
 	if use.EntryFacts != nil && use.EntryFacts.Access != nil {

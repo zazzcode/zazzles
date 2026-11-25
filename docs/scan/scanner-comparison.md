@@ -19,15 +19,21 @@ these scanner versions. They are not a general accuracy claim.
 
 | Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found | Code Scan false positives | Semgrep CE false positives | Bearer false positives |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| OWASP Juice Shop | 42 | 38 | 10 | 15 | 2 | 4 | 13 and two grouped rules |
-| vuln-nextjs | 13 | 13 | 2 | 7 | 1 | 1 | 4 |
+| OWASP Juice Shop | 42 | 41 | 9 | 14 | 3 | 5 | 14 and two grouped rules |
+| vuln-nextjs | 13 | 13 | 2 | 7 | 0 | 1 | 4 |
 | DVWA | 11 | 11 | 5 | 6 | 0 | 2 | 2 |
 | vuln-symfony | 30 | 30 | 2 | 5 | 0 | 0 | 2 |
-| **Total** | **96** | **92** | **19** | **33** | **3** | **7** | **21 and two grouped rules** |
+| **Total** | **96** | **95** | **18** | **32** | **3** | **8** | **22 and two grouped rules** |
 
-False positives are counted by location. Code Scan's count includes two Juice Shop rows it reports as a practice finding rather than a
-confirmed vulnerability. It misses four Juice Shop rows: three it records but leaves in Review,
-and one class (a committed secret) it has no analyzer for.
+False positives are counted by location. A fourth Juice Shop false positive of the judged run,
+a generated delete that an explicit handler answers first, is no longer recorded after a fix
+made on the same branch and is not counted. Code Scan's found count includes three Juice Shop rows
+it reports as a practice finding rather than a confirmed vulnerability. It misses one Juice
+Shop row, a committed secret, a class it has no analyzer for. The Juice Shop and vuln-nextjs columns are from the runs of
+[hardening 3](../../.zazz/specifications/juiceshop-nextjs-hardening-3.md), which added the read
+of another user's basket as a known vulnerability and as a Code Scan finding, moved the
+profile-image SSRF from Review to a practice finding, and added one Code Scan false positive
+that is counted (`routes/likeProductReviews.ts:50`).
 
 ### By weakness class
 
@@ -37,13 +43,13 @@ Known vulnerabilities found, across the four applications.
 |---|---:|---:|---:|---:|
 | Cross-site scripting | 18 | 18 | 1 | 5 |
 | SQL injection | 10 | 10 | 5 | 7 |
-| Missing authorization | 9 | 9 | 0 | 0 |
+| Missing authorization | 10 | 10 | 0 | 0 |
 | Insecure configuration | 8 | 8 | 4 | 4 |
-| Path traversal | 8 | 7 | 1 | 3 |
+| Path traversal | 7 | 7 | 0 | 2 |
 | Mass assignment | 7 | 7 | 0 | 0 |
-| Code and template injection | 6 | 5 | 2 | 4 |
+| Code and template injection | 6 | 6 | 2 | 4 |
 | OS command injection | 5 | 5 | 2 | 2 |
-| Server-side request forgery | 4 | 3 | 0 | 1 |
+| Server-side request forgery | 4 | 4 | 0 | 1 |
 | NoSQL injection | 3 | 3 | 0 | 0 |
 | Information exposure | 3 | 3 | 1 | 1 |
 | Weak password hashing | 3 | 3 | 1 | 2 |
@@ -54,7 +60,7 @@ Known vulnerabilities found, across the four applications.
 | Weak password recovery | 1 | 1 | 0 | 0 |
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Hardcoded secret | 1 | 0 | 1 | 1 |
-| **Total** | **96** | **92** | **19** | **33** |
+| **Total** | **96** | **95** | **18** | **32** |
 
 Code Scan has no analyzer for committed secrets. Prototype pollution and argument injection
 have no keyed case in these four applications.
@@ -63,7 +69,7 @@ have no keyed case in these four applications.
 
 | Scanner | Version | Rules |
 |---|---|---|
-| Zazzles Code Scan | Branch `juiceshop-nextjs-hardening-1` at `29ce9aa` for Juice Shop and vuln-nextjs; `d368a68` for DVWA; `8d97b93` for vuln-symfony | All analyzer families, judged with OpenAI `gpt-6-luna` |
+| Zazzles Code Scan | Branch `juiceshop-nextjs-hardening-3` at `3318e27` for Juice Shop and `ee777f4` for vuln-nextjs; `d368a68` for DVWA; `8d97b93` for vuln-symfony | All analyzer families, judged with OpenAI `gpt-6-luna` |
 | Semgrep CE | 1.183.0 | `p/javascript`, `p/typescript`, `p/php`, `p/xss`, `p/owasp-top-ten` (564 rules) |
 | Bearer CLI | Source build at `a7a8752` | `bearer-rules` at `82c335f`, default rules off |
 
@@ -72,7 +78,8 @@ Bearer Pro was not run.
 
 ## OWASP Juice Shop
 
-Pin `f189f52`. Code Scan run `r10-acceptance-juice-shop`.
+Pin `f189f52`. Code Scan run `a3-acceptance-juice-shop`, one full scan of 84 requests on the final
+code of the branch.
 
 | ID | Class | Location | Code Scan | Semgrep CE | Bearer |
 |---|---|---|---|---|---|
@@ -114,22 +121,23 @@ Pin `f189f52`. Code Scan run `r10-acceptance-juice-shop`.
 | `JS-PATH-02` | path | `routes/fileUpload.ts:34` (zip slip) | Confirmed | Missed | Missed |
 | `JS-PATH-03` | path | `routes/dataErasure.ts:107` (layout file read) | Confirmed | Missed | Found |
 | `JS-CODE-02` | code | `routes/b2bOrder.ts:23` | Practice finding | Missed | Found |
-| `JS-SSRF-01` | ssrf | `routes/profileImageUrlUpload.ts:24` | **Review (missed)** | Missed | Found |
-| `JS-CODE-01` | code | `routes/userProfile.ts:65` (`eval`) | **Review (missed)** | Found | Found |
-| `JS-PATH-01` | path | `routes/fileServer.ts:32` (null-byte bypass) | **Review (missed)** | Found | Found |
+| `JS-SSRF-01` | ssrf | `routes/profileImageUrlUpload.ts:24` | Practice finding | Missed | Found |
+| `JS-CODE-01` | code | `routes/userProfile.ts:65` (`eval`) | Confirmed | Found | Found |
+| `JS-AUTHZ-05` | authorization | `routes/basket.ts:19` (read of another user's basket) | Confirmed | Missed | Missed |
 | `JS-SECRET-01` | hardcoded secret | `lib/insecurity.ts:21`, used at `:54` | **Not covered** | Found | Found |
 
-The last eight rows are not in Code Scan's answer key. They are documented Juice Shop
-vulnerabilities that one of the scanners reported, added here so that a miss by any scanner
-shows.
+The rows from `JS-REDIR-01` on were added after the first comparison: seven documented Juice
+Shop vulnerabilities that one of the scanners reported, the read of another user's basket, and
+the committed key. All but `JS-SECRET-01` are now rows of Code Scan's answer key; no analyzer
+owns a committed secret.
 
 ### False positives
 
 | Scanner | What was flagged | Location | Why it is safe |
 |---|---|---|---|
-| Code Scan | Missing authorization | `routes/likeProductReviews.ts:35` | Liking another user's review is the feature |
+| Code Scan | Missing authorization | `routes/likeProductReviews.ts:35`, `:50` | Liking another user's review is the feature. The second record, the update of the review's list of likers, was Protected in the earlier run |
 | Code Scan, Semgrep CE, Bearer | Directory listing | `server.ts:294` | `.well-known` holds only files published on purpose |
-| Semgrep CE, Bearer | Path traversal | `routes/keyServer.ts:14`, `routes/logfileServer.ts:14`, `routes/quarantineServer.ts:14` | The handler rejects any name containing `/` before `path.resolve(<directory>, name)` |
+| Semgrep CE, Bearer | Path traversal | `routes/fileServer.ts:32`, `routes/keyServer.ts:14`, `routes/logfileServer.ts:14`, `routes/quarantineServer.ts:14` | Each handler rejects any name containing `/` before `path.resolve(<directory>, name)`, so the read stays in its directory. The first also has a real defect of another kind: a null byte defeats its file-type allow-list. No scanner reports that as such, and Code Scan leaves the record in Review |
 | Bearer | Unsafe deserialization | `routes/vulnCodeFixes.ts:83`, `routes/vulnCodeSnippet.ts:90` | `yaml.load` of the application's own files; `js-yaml` 4 constructs no objects |
 | Bearer | Path traversal | `lib/startup/validatePreconditions.ts:199`, `:210`, `data/staticData.ts:8`, `lib/antiCheat.ts:198`, `scripts/package.mjs:62` | The path comes from configuration or a constant, not from a request |
 | Bearer | Weak hash | `lib/utils.ts:82`, `scripts/package.mjs:121` | An HMAC for challenge flags and a build checksum; neither stores a password |
@@ -142,7 +150,7 @@ Unreviewed: Semgrep CE 15 results (Terraform, npm policy and challenge snippets)
 ## vuln-nextjs
 
 Pin `f5d47de`. The key is the lab's own `tests/expected-scanner-findings.json`. Code Scan run
-`s7-acceptance-vuln-nextjs`.
+`a2-acceptance-vuln-nextjs`.
 
 | ID | Class | Location | Code Scan | Semgrep CE | Bearer |
 |---|---|---|---|---|---|
@@ -150,7 +158,7 @@ Pin `f5d47de`. The key is the lab's own `tests/expected-scanner-findings.json`. 
 | `JS-001` | code | `pages/vulnerable/eval-injection.js` | Confirmed | Missed | Missed |
 | `JS-002` | code | `pages/api/vulnerable-submit.js` | Confirmed | Found | Found |
 | `OS-001` | command | `pages/api/vulnerable-exec.js` | Confirmed | Missed | Found |
-| `REDIR-001` | redirect | `vulnerabilities/open_redirect/source/low.php:4` | Confirmed | Missed | Missed |
+| `REDIR-001` | redirect | `pages/vulnerable/redirect.js` | Confirmed | Missed | Missed |
 | `SQL-001` | sql | `pages/api/sql/unsafe/login.js` | Confirmed | Missed | Missed |
 | `SQL-002` | sql | `pages/api/sql/unsafe/products.js` | Confirmed | Missed | Missed |
 | `SQL-003` | sql | `pages/api/sql/unsafe/notes.js` | Confirmed | Missed | Missed |
@@ -162,9 +170,12 @@ Pin `f5d47de`. The key is the lab's own `tests/expected-scanner-findings.json`. 
 
 ### False positives
 
+The lab labels `pages/secure/redirect.js` a safe control, and Code Scan reports it as a practice
+finding. It is not counted as a false positive: the guard `/^\/[^/]/` admits `/\host`, which a
+browser resolves to another origin, so the report is correct and the lab's control needs a fix.
+
 | Scanner | What was flagged | Location | Why it is safe |
 |---|---|---|---|
-| Code Scan | Open redirect (reported as a practice finding) | `pages/secure/redirect.js` | The lab's safe control for `REDIR-001` |
 | Semgrep CE, Bearer | XSS | `pages/xss/sanitized/reflected.js:16` | The value passes through DOMPurify first |
 | Bearer | XSS | `pages/xss/safe/script-context.js:17` | `<` is escaped to `\u003c` before the script context |
 | Bearer | Path traversal | `pages/api/secure/file-read.js:15` | An exact filename allow-list |

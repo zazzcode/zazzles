@@ -233,6 +233,12 @@ func (a *redirectAtoms) callAtom(m *sourceModule, call, control, fn, sink *sitte
 		return
 	}
 	receiver := obj.Utf8Text(m.src)
+	// value.match(/pattern/) tests the same literal pattern as /pattern/.test(value)
+	// (hardening 3 D-10).
+	if first := args.NamedChild(0); method == "match" && first.Kind() == "regex" {
+		a.regexAtom(m, first, receiver, control, fn, sink, sinkText, names)
+		return
+	}
 	if strings.HasSuffix(receiver, ".hostname") || strings.HasSuffix(receiver, ".host") || strings.HasSuffix(receiver, ".origin") {
 		return
 	}

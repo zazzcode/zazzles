@@ -22,7 +22,9 @@
 | 1 | `juiceshop-nextjs-hardening-1` | this document | Five analyzer families extended to JavaScript and TypeScript, the upload gap, the Juice Shop answer key, judged results | `stage` |
 | 2 | `juiceshop-nextjs-hardening-2` | [-2](juiceshop-nextjs-hardening-2.md) | Scanner comparison on four samples, reorganized comparison documents, README link | Branch 1 |
 
-Both branches live in this worktree. Branch 2 is stacked because its Zazzles columns are the
+| 3 | `juiceshop-nextjs-hardening-3` | [-3](juiceshop-nextjs-hardening-3.md) | The misses and false positives the comparison found, reads of an owned record, the follow-on list | Branch 2 |
+
+All branches live in this worktree. Branch 2 is stacked because its Zazzles columns are the
 judged results of branch 1.
 
 **Lane setup. Done on 2026-11-24.** Both branches exist and are pushed. The branch 1 session

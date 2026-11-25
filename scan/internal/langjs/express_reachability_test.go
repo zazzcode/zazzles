@@ -27,6 +27,11 @@ app.put('/x/:id', closed(), (req, res) => { res.send('ok') })`, "PUT /x/:id", an
 		{"constant secret", `app.put('/x/:id', expressjwt({ secret: 's', algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
 		{"secret held in a shared variable", `const key = crypto.randomBytes(32).toString('hex');
 app.put('/x/:id', expressjwt({ secret: key, algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
+		// A random value that is only a fallback is not the secret when the
+		// configured one is set, so tokens can verify.
+		{"random fallback after ||", `app.put('/x/:id', expressjwt({ secret: process.env.TOKEN_KEY || crypto.randomBytes(32).toString('hex'), algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
+		{"random fallback after ??", `app.put('/x/:id', expressjwt({ secret: process.env.TOKEN_KEY ?? ('' + Math.random()), algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
+		{"random arm of a conditional", `app.put('/x/:id', expressjwt({ secret: process.env.TOKEN_KEY ? process.env.TOKEN_KEY : crypto.randomBytes(8).toString('hex'), algorithms: ['HS256'] }), (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
 		{"mount on the same pattern", `app.use('/x/:id', expressjwt({ secret: 's', algorithms: ['HS256'] }));
 app.put('/x/:id', (req, res) => { res.send('ok') })`, "PUT /x/:id", analysis.AccessRequired, false},
 		{"mount on another pattern stays unresolved", `app.use('/x/:name/edit', expressjwt({ secret: 's', algorithms: ['HS256'] }));
@@ -114,5 +119,184 @@ finale.resource({ model: Label, endpoints: ['/api/Labels', '/api/Labels/:id'] })
 	}
 	if strings.Join(got, "|") != strings.Join(want, "|") {
 		t.Fatalf("records:\n got %v\nwant %v", got, want)
+	}
+}
+
+// TestExpressGeneratedAnsweredFirst: a generated endpoint makes no claim when a
+// handler registered earlier for the same method and path cannot pass the
+// request on, because it declares no next parameter.
+func TestExpressGeneratedAnsweredFirst(t *testing.T) {
+	root := t.TempDir()
+	writeSource(t, root, "api.ts", `import express from 'express'
+import finale from 'finale-rest'
+import { Model, DataTypes } from 'sequelize'
+
+class Memo extends Model {}
+Memo.init({ text: DataTypes.STRING }, { sequelize })
+
+const removeOwn = () => async (req, res) => { res.json({ ok: true }) }
+const tag = () => (req, res, next) => { req.body.seen = true; next() }
+
+const app = express()
+app.delete('/api/Memos/:id', tag(), removeOwn())
+app.put('/api/Memos/:id', tag())
+finale.initialize({ app, sequelize })
+finale.resource({ model: Memo, endpoints: ['/api/Memos', '/api/Memos/:id'] })
+`)
+	report, err := Analyze(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := map[string]string{}
+	for _, e := range report.Entries {
+		names[e.ID] = e.Name
+	}
+	var got []string
+	for _, u := range report.Uses {
+		if u.Kind == analysis.AuthorizationKind {
+			got = append(got, names[u.EntryID])
+		}
+	}
+	sort.Strings(got)
+	// The delete is answered by removeOwn; the update passes through tag.
+	if want := "PUT /api/Memos/:id"; strings.Join(got, "|") != want {
+		t.Fatalf("authorization entries: got %v, want [%s]", got, want)
+	}
+}
+
+// TestExpressGeneratedStillReached: an earlier handler ends the request only
+// when its registration always runs before the resource call, on the
+// application the resources are generated on. A registration under a
+// condition, in another function, on another application or on a router keeps
+// the generated endpoint's claim.
+func TestExpressGeneratedStillReached(t *testing.T) {
+	const head = `import express from 'express'
+import finale from 'finale-rest'
+import { Model, DataTypes } from 'sequelize'
+
+class Memo extends Model {}
+Memo.init({ text: DataTypes.STRING }, { sequelize })
+
+const api = express()
+`
+	const deny = `(req, res) => { res.sendStatus(403) }`
+	const resource = `finale.resource({ model: Memo, endpoints: ['/api/Memos', '/api/Memos/:id'] })`
+	for _, tt := range []struct {
+		name, body string
+		answered   bool
+	}{
+		{"unconditional, same application", `api.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize({ app: api, sequelize })
+` + resource, true},
+		{"resource call in a loop after the handler", `api.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize({ app: api, sequelize })
+for (const mode of ['a']) { ` + resource + ` }`, true},
+		{"application passed to the function that registers", `function configure (api) {
+  api.delete('/api/Memos/:id', ` + deny + `)
+  finale.initialize({ app: api, sequelize })
+  ` + resource + `
+}
+configure(api)`, true},
+		{"application named in another function", `function prepare (api) { finale.initialize({ app: api, sequelize }) }
+function configure (api) {
+  api.delete('/api/Memos/:id', ` + deny + `)
+  ` + resource + `
+}`, false},
+		{"under a condition", `if (process.env.LOCKED) { api.delete('/api/Memos/:id', ` + deny + `) }
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"in a function that may not run", `function lock () { api.delete('/api/Memos/:id', ` + deny + `) }
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"on another application", `const other = express()
+other.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"on a router mounted elsewhere", `const part = express.Router()
+part.delete('/api/Memos/:id', ` + deny + `)
+api.use('/v2', part)
+finale.initialize({ app: api, sequelize })
+` + resource, false},
+		{"application of the resources not named", `api.delete('/api/Memos/:id', ` + deny + `)
+finale.initialize(settings)
+` + resource, false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "api.ts", head+tt.body+"\n")
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			names := map[string]string{}
+			for _, e := range report.Entries {
+				names[e.ID] = e.Name
+			}
+			recorded := false
+			for _, u := range report.Uses {
+				if u.Kind == analysis.AuthorizationKind && names[u.EntryID] == "DELETE /api/Memos/:id" {
+					recorded = true
+				}
+			}
+			if recorded == tt.answered {
+				t.Fatalf("generated delete recorded = %v, want %v", recorded, !tt.answered)
+			}
+		})
+	}
+}
+
+// TestExpressEnvSettingGuard: Express's own environment setting is an
+// environment guard, as process.env.NODE_ENV is.
+func TestExpressEnvSettingGuard(t *testing.T) {
+	for _, tt := range []struct {
+		name, cond string
+		guarded    bool
+	}{
+		{"app.get('env')", `app.get('env') == 'development'`, true},
+		{"process.env.NODE_ENV", `process.env.NODE_ENV !== 'production'`, true},
+		{"another setting", `app.get('view engine') == 'pug'`, false},
+		{"unrelated condition", `verbose`, false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeSource(t, root, "app.js", `const express = require('express')
+const errorHandler = require('errorhandler')
+const app = express()
+const verbose = true
+if (`+tt.cond+`) {
+  app.use(errorHandler())
+}
+app.get('/x', (req, res) => { res.send('ok') })
+`)
+			report, err := Analyze(root, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			found, guarded := false, false
+			for _, u := range report.Uses {
+				if u.Kind != analysis.ExposureKind {
+					continue
+				}
+				found = true
+				for _, evs := range u.Completeness.Evidence {
+					for _, ev := range evs {
+						if ev.Kind == "configuration_precondition" {
+							guarded = true
+						}
+					}
+				}
+				for _, ev := range u.Context {
+					if ev.Kind == "configuration_precondition" {
+						guarded = true
+					}
+				}
+			}
+			if !found {
+				t.Fatal("no exposure candidate recorded")
+			}
+			if guarded != tt.guarded {
+				t.Fatalf("environment guard recorded = %v, want %v", guarded, tt.guarded)
+			}
+		})
 	}
 }

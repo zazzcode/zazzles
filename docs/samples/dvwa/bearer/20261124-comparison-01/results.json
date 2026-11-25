@@ -1,0 +1,5680 @@
+{
+ "critical": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\teval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/help/help.php\" ) . '<?php ' );",
+   "cwe_ids": [
+    "95"
+   ],
+   "filename": "vulnerabilities/view_help.php",
+   "fingerprint": "2e9ebd86a8ac134f0a530f52e0c23bf7_0",
+   "full_filename": "vulnerabilities/view_help.php",
+   "id": "php_lang_eval_using_user_input",
+   "line_number": 20,
+   "old_fingerprint": "0242fae2c3cdae3739d5b9cdbdb129c6_0",
+   "parent_line_number": 20,
+   "sink": {
+    "column": {
+     "end": 111,
+     "start": 3
+    },
+    "content": "",
+    "end": 20,
+    "start": 20
+   },
+   "source": {
+    "column": {
+     "end": 111,
+     "start": 3
+    },
+    "end": 20,
+    "start": 20
+   },
+   "title": "Unsanitized user input in 'eval' type function"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\teval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/help/help.{$locale}.php\" ) . '<?php ' );",
+   "cwe_ids": [
+    "95"
+   ],
+   "filename": "vulnerabilities/view_help.php",
+   "fingerprint": "2e9ebd86a8ac134f0a530f52e0c23bf7_1",
+   "full_filename": "vulnerabilities/view_help.php",
+   "id": "php_lang_eval_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "0242fae2c3cdae3739d5b9cdbdb129c6_1",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 121,
+     "start": 3
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 121,
+     "start": 3
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in 'eval' type function"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$cmd = shell_exec( 'ping  ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/high.php",
+   "fingerprint": "b74d624a64b0edade7039c8fce9bc250_0",
+   "full_filename": "vulnerabilities/exec/source/high.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 26,
+   "old_fingerprint": "fbdded9127cf0cf5cfd629257bacc55d_5",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 10
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 10
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/high.php",
+   "fingerprint": "b74d624a64b0edade7039c8fce9bc250_1",
+   "full_filename": "vulnerabilities/exec/source/high.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 30,
+   "old_fingerprint": "fbdded9127cf0cf5cfd629257bacc55d_7",
+   "parent_line_number": 30,
+   "sink": {
+    "column": {
+     "end": 47,
+     "start": 10
+    },
+    "content": "",
+    "end": 30,
+    "start": 30
+   },
+   "source": {
+    "column": {
+     "end": 47,
+     "start": 10
+    },
+    "end": 30,
+    "start": 30
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$cmd = shell_exec( 'ping  ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/impossible.php",
+   "fingerprint": "4c6c034199005fc828d51a3082b3f19e_0",
+   "full_filename": "vulnerabilities/exec/source/impossible.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "2116884c484b24f157952ed2c372d61e_3",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 43,
+     "start": 11
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 43,
+     "start": 11
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/impossible.php",
+   "fingerprint": "4c6c034199005fc828d51a3082b3f19e_1",
+   "full_filename": "vulnerabilities/exec/source/impossible.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 26,
+   "old_fingerprint": "2116884c484b24f157952ed2c372d61e_6",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 48,
+     "start": 11
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 48,
+     "start": 11
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$cmd = shell_exec( 'ping  ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/low.php",
+   "fingerprint": "ecde5fe09475941ad0e678e529ae8dc1_0",
+   "full_filename": "vulnerabilities/exec/source/low.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 10,
+   "old_fingerprint": "7250f08a74da2839f8c108b50f08a559_0",
+   "parent_line_number": 10,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 10
+    },
+    "content": "",
+    "end": 10,
+    "start": 10
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 10
+    },
+    "end": 10,
+    "start": 10
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/low.php",
+   "fingerprint": "ecde5fe09475941ad0e678e529ae8dc1_1",
+   "full_filename": "vulnerabilities/exec/source/low.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 14,
+   "old_fingerprint": "7250f08a74da2839f8c108b50f08a559_1",
+   "parent_line_number": 14,
+   "sink": {
+    "column": {
+     "end": 47,
+     "start": 10
+    },
+    "content": "",
+    "end": 14,
+    "start": 14
+   },
+   "source": {
+    "column": {
+     "end": 47,
+     "start": 10
+    },
+    "end": 14,
+    "start": 14
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$cmd = shell_exec( 'ping  ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/medium.php",
+   "fingerprint": "5c5143b51550debd47c24a805dc34f42_0",
+   "full_filename": "vulnerabilities/exec/source/medium.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 19,
+   "old_fingerprint": "5cc7b5e2feef37f417b03c99f12f1a76_2",
+   "parent_line_number": 19,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 10
+    },
+    "content": "",
+    "end": 19,
+    "start": 19
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 10
+    },
+    "end": 19,
+    "start": 19
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+   "cwe_ids": [
+    "78"
+   ],
+   "filename": "vulnerabilities/exec/source/medium.php",
+   "fingerprint": "5c5143b51550debd47c24a805dc34f42_1",
+   "full_filename": "vulnerabilities/exec/source/medium.php",
+   "id": "php_lang_exec_using_user_input",
+   "line_number": 23,
+   "old_fingerprint": "5cc7b5e2feef37f417b03c99f12f1a76_4",
+   "parent_line_number": 23,
+   "sink": {
+    "column": {
+     "end": 47,
+     "start": 10
+    },
+    "content": "",
+    "end": 23,
+    "start": 23
+   },
+   "source": {
+    "column": {
+     "end": 47,
+     "start": 10
+    },
+    "end": 23,
+    "start": 23
+   },
+   "title": "Unsanitized user input in OS command"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $check_result = mysqli_query($GLOBALS[\"___mysqli_ston\"], $check_query);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "6b3663dfcb0585f4fb8d4acb645d7a15_0",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 23,
+   "old_fingerprint": "0c110d0058269dd438d69801c5bc804a_5",
+   "parent_line_number": 23,
+   "sink": {
+    "column": {
+     "end": 79,
+     "start": 25
+    },
+    "content": "",
+    "end": 23,
+    "start": 23
+   },
+   "source": {
+    "column": {
+     "end": 79,
+     "start": 25
+    },
+    "end": 23,
+    "start": 23
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                    $result = mysqli_query($GLOBALS[\"___mysqli_ston\"], $query);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "6b3663dfcb0585f4fb8d4acb645d7a15_1",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 36,
+   "old_fingerprint": "0c110d0058269dd438d69801c5bc804a_7",
+   "parent_line_number": 36,
+   "sink": {
+    "column": {
+     "end": 79,
+     "start": 31
+    },
+    "content": "",
+    "end": 36,
+    "start": 36
+   },
+   "source": {
+    "column": {
+     "end": 79,
+     "start": 31
+    },
+    "end": 36,
+    "start": 36
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            mysqli_query($GLOBALS[\"___mysqli_ston\"], $log_query);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "6b3663dfcb0585f4fb8d4acb645d7a15_2",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 81,
+   "old_fingerprint": "0c110d0058269dd438d69801c5bc804a_9",
+   "parent_line_number": 81,
+   "sink": {
+    "column": {
+     "end": 65,
+     "start": 13
+    },
+    "content": "",
+    "end": 81,
+    "start": 81
+   },
+   "source": {
+    "column": {
+     "end": 65,
+     "start": 13
+    },
+    "end": 81,
+    "start": 81
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "        $check_result = mysqli_query($GLOBALS[\"___mysqli_ston\"], $check_query);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/bac/source/medium.php",
+   "fingerprint": "295224b42ec7d17a5231f45361254637_0",
+   "full_filename": "vulnerabilities/bac/source/medium.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 22,
+   "old_fingerprint": "07092411375746c003f1c95371c2ee8b_4",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 79,
+     "start": 25
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 79,
+     "start": 25
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                $result = mysqli_query($GLOBALS[\"___mysqli_ston\"], $query);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/bac/source/medium.php",
+   "fingerprint": "295224b42ec7d17a5231f45361254637_1",
+   "full_filename": "vulnerabilities/bac/source/medium.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 29,
+   "old_fingerprint": "07092411375746c003f1c95371c2ee8b_6",
+   "parent_line_number": 29,
+   "sink": {
+    "column": {
+     "end": 75,
+     "start": 27
+    },
+    "content": "",
+    "end": 29,
+    "start": 29
+   },
+   "source": {
+    "column": {
+     "end": 75,
+     "start": 27
+    },
+    "end": 29,
+    "start": 29
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            mysqli_query($GLOBALS[\"___mysqli_ston\"], $log_query);",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/bac/source/medium.php",
+   "fingerprint": "295224b42ec7d17a5231f45361254637_2",
+   "full_filename": "vulnerabilities/bac/source/medium.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 73,
+   "old_fingerprint": "07092411375746c003f1c95371c2ee8b_8",
+   "parent_line_number": 73,
+   "sink": {
+    "column": {
+     "end": 65,
+     "start": 13
+    },
+    "content": "",
+    "end": 73,
+    "start": 73
+   },
+   "source": {
+    "column": {
+     "end": 65,
+     "start": 13
+    },
+    "end": 73,
+    "start": 73
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $query ) or die( '<pre>' . ((is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_error($GLOBALS[\"___mysqli_ston\"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/brute/source/low.php",
+   "fingerprint": "ddeed4dc3fc055eb570d550d7cb14007_0",
+   "full_filename": "vulnerabilities/brute/source/low.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 13,
+   "old_fingerprint": "c43e2354d9a899d4cfbcc6870c794b1f_1",
+   "parent_line_number": 13,
+   "sink": {
+    "column": {
+     "end": 62,
+     "start": 12
+    },
+    "content": "",
+    "end": 13,
+    "start": 13
+   },
+   "source": {
+    "column": {
+     "end": 62,
+     "start": 12
+    },
+    "end": 13,
+    "start": 13
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $query ) or die( '<pre>' . ((is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_error($GLOBALS[\"___mysqli_ston\"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/sqli/source/low.php",
+   "fingerprint": "3416e9dd36611b47391fb17c86c891fa_0",
+   "full_filename": "vulnerabilities/sqli/source/low.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 11,
+   "old_fingerprint": "6e744c669036715b45ce641df3cc6461_0",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 64,
+     "start": 14
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 64,
+     "start": 14
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $query ); // Removed 'or die' to suppress mysql errors",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/sqli_blind/source/high.php",
+   "fingerprint": "c17f478f5e103b799055d349318dc788_0",
+   "full_filename": "vulnerabilities/sqli_blind/source/high.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 13,
+   "old_fingerprint": "1d1211b8befad731e9cb9fdc235b435f_2",
+   "parent_line_number": 13,
+   "sink": {
+    "column": {
+     "end": 65,
+     "start": 15
+    },
+    "content": "",
+    "end": 13,
+    "start": 13
+   },
+   "source": {
+    "column": {
+     "end": 65,
+     "start": 15
+    },
+    "end": 13,
+    "start": 13
+   },
+   "title": "Unsanitized external input in SQL query"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $query ); // Removed 'or die' to suppress mysql errors",
+   "cwe_ids": [
+    "89"
+   ],
+   "filename": "vulnerabilities/sqli_blind/source/low.php",
+   "fingerprint": "d4af3b1e935a2c6a0e82b8f36fc89498_0",
+   "full_filename": "vulnerabilities/sqli_blind/source/low.php",
+   "id": "php_lang_sql_injection",
+   "line_number": 13,
+   "old_fingerprint": "666b061c44a3f57119f9bcc7539b24e6_3",
+   "parent_line_number": 13,
+   "sink": {
+    "column": {
+     "end": 65,
+     "start": 15
+    },
+    "content": "",
+    "end": 13,
+    "start": 13
+   },
+   "source": {
+    "column": {
+     "end": 65,
+     "start": 15
+    },
+    "end": 13,
+    "start": 13
+   },
+   "title": "Unsanitized external input in SQL query"
+  }
+ ],
+ "high": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\tcell0.innerHTML = user['user_id'] + '<input type=\"hidden\" id=\"user_id_' + user['user_id'] + '\" name=\"user_id\" value=\"' + user['user_id'] + '\" />';",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/authbypass/authbypass.js",
+   "fingerprint": "26674f2f5a4e1ade84eb4e4dd9e33c76_0",
+   "full_filename": "vulnerabilities/authbypass/authbypass.js",
+   "id": "javascript_lang_dangerous_insert_html",
+   "line_number": 43,
+   "old_fingerprint": "5e286790b91cb762358adec7a0a88caf_2",
+   "parent_line_number": 43,
+   "sink": {
+    "column": {
+     "end": 149,
+     "start": 4
+    },
+    "content": "",
+    "end": 43,
+    "start": 43
+   },
+   "source": {
+    "column": {
+     "end": 149,
+     "start": 4
+    },
+    "end": 43,
+    "start": 43
+   },
+   "title": "Unsanitized user input in dynamic HTML insertion (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\tcell1.innerHTML = '<input type=\"text\" id=\"first_name_' + user['user_id'] + '\" name=\"first_name\" value=\"' + user['first_name'] + '\" />';",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/authbypass/authbypass.js",
+   "fingerprint": "26674f2f5a4e1ade84eb4e4dd9e33c76_1",
+   "full_filename": "vulnerabilities/authbypass/authbypass.js",
+   "id": "javascript_lang_dangerous_insert_html",
+   "line_number": 45,
+   "old_fingerprint": "5e286790b91cb762358adec7a0a88caf_3",
+   "parent_line_number": 45,
+   "sink": {
+    "column": {
+     "end": 138,
+     "start": 4
+    },
+    "content": "",
+    "end": 45,
+    "start": 45
+   },
+   "source": {
+    "column": {
+     "end": 138,
+     "start": 4
+    },
+    "end": 45,
+    "start": 45
+   },
+   "title": "Unsanitized user input in dynamic HTML insertion (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\tcell2.innerHTML = '<input type=\"text\" id=\"surname_' + user['user_id'] + '\" name=\"surname\" value=\"' + user['surname'] + '\" />';",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/authbypass/authbypass.js",
+   "fingerprint": "26674f2f5a4e1ade84eb4e4dd9e33c76_2",
+   "full_filename": "vulnerabilities/authbypass/authbypass.js",
+   "id": "javascript_lang_dangerous_insert_html",
+   "line_number": 47,
+   "old_fingerprint": "5e286790b91cb762358adec7a0a88caf_4",
+   "parent_line_number": 47,
+   "sink": {
+    "column": {
+     "end": 129,
+     "start": 4
+    },
+    "content": "",
+    "end": 47,
+    "start": 47
+   },
+   "source": {
+    "column": {
+     "end": 129,
+     "start": 4
+    },
+    "end": 47,
+    "start": 47
+   },
+   "title": "Unsanitized user input in dynamic HTML insertion (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\tcell3.innerHTML = '<input type=\"button\" value=\"Update\" onclick=\"submit_change(' + user['user_id'] + ')\" />';",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/authbypass/authbypass.js",
+   "fingerprint": "26674f2f5a4e1ade84eb4e4dd9e33c76_3",
+   "full_filename": "vulnerabilities/authbypass/authbypass.js",
+   "id": "javascript_lang_dangerous_insert_html",
+   "line_number": 49,
+   "old_fingerprint": "5e286790b91cb762358adec7a0a88caf_5",
+   "parent_line_number": 49,
+   "sink": {
+    "column": {
+     "end": 111,
+     "start": 4
+    },
+    "content": "",
+    "end": 49,
+    "start": 49
+   },
+   "source": {
+    "column": {
+     "end": 111,
+     "start": 4
+    },
+    "end": 49,
+    "start": 49
+   },
+   "title": "Unsanitized user input in dynamic HTML insertion (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\tdocument.getElementById(\"answer\").innerHTML = obj['answer'];",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csp/source/high.js",
+   "fingerprint": "db92e67d4fd8d194959055b1fa5d26d0_0",
+   "full_filename": "vulnerabilities/csp/source/high.js",
+   "id": "javascript_lang_dangerous_insert_html",
+   "line_number": 9,
+   "old_fingerprint": "cafad8048b60b2cd361eadc76926479a_0",
+   "parent_line_number": 9,
+   "sink": {
+    "column": {
+     "end": 62,
+     "start": 3
+    },
+    "content": "",
+    "end": 9,
+    "start": 9
+   },
+   "source": {
+    "column": {
+     "end": 62,
+     "start": 3
+    },
+    "end": 9,
+    "start": 9
+   },
+   "title": "Unsanitized user input in dynamic HTML insertion (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\tdocument.getElementById(\"answer\").innerHTML = obj['answer'];",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csp/source/impossible.js",
+   "fingerprint": "6c952b6096f908109ad60620770c291f_0",
+   "full_filename": "vulnerabilities/csp/source/impossible.js",
+   "id": "javascript_lang_dangerous_insert_html",
+   "line_number": 9,
+   "old_fingerprint": "569ef5f185752f5d88cdb61e04284be4_1",
+   "parent_line_number": 9,
+   "sink": {
+    "column": {
+     "end": 62,
+     "start": 3
+    },
+    "content": "",
+    "end": 9,
+    "start": 9
+   },
+   "source": {
+    "column": {
+     "end": 62,
+     "start": 3
+    },
+    "end": 9,
+    "start": 9
+   },
+   "title": "Unsanitized user input in dynamic HTML insertion (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\teval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/help/help.php\" ) . '<?php ' );",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_help.php",
+   "fingerprint": "15da9456feb20758c32fdc677d1ae089_0",
+   "full_filename": "vulnerabilities/view_help.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 20,
+   "old_fingerprint": "edcf6c2a83fb0d71cae6748c2d16efda_2",
+   "parent_line_number": 20,
+   "sink": {
+    "column": {
+     "end": 98,
+     "start": 16
+    },
+    "content": "",
+    "end": 20,
+    "start": 20
+   },
+   "source": {
+    "column": {
+     "end": 98,
+     "start": 16
+    },
+    "end": 20,
+    "start": 20
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\teval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/help/help.{$locale}.php\" ) . '<?php ' );",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_help.php",
+   "fingerprint": "15da9456feb20758c32fdc677d1ae089_1",
+   "full_filename": "vulnerabilities/view_help.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "edcf6c2a83fb0d71cae6748c2d16efda_3",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 108,
+     "start": 16
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 108,
+     "start": 16
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$source = @file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/source/{$security}.php\" );",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "4db9322411e1954ee4fa6482041df67e_0",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 63,
+   "old_fingerprint": "b6dfbec77318a7dd1d57622c9446cf91_6",
+   "parent_line_number": 63,
+   "sink": {
+    "column": {
+     "end": 104,
+     "start": 13
+    },
+    "content": "",
+    "end": 63,
+    "start": 63
+   },
+   "source": {
+    "column": {
+     "end": 104,
+     "start": 13
+    },
+    "end": 63,
+    "start": 63
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$js_source = @file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/source/{$security}.js\" );",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "4db9322411e1954ee4fa6482041df67e_1",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 68,
+   "old_fingerprint": "b6dfbec77318a7dd1d57622c9446cf91_7",
+   "parent_line_number": 68,
+   "sink": {
+    "column": {
+     "end": 107,
+     "start": 17
+    },
+    "content": "",
+    "end": 68,
+    "start": 68
+   },
+   "source": {
+    "column": {
+     "end": 107,
+     "start": 17
+    },
+    "end": 68,
+    "start": 68
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$lowsrc = @file_get_contents(\"./{$id}/source/low.php\");",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "c9d021d8d1a222a237da8c4a0563673d_0",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 14,
+   "old_fingerprint": "f4215f4f0aa05b6a755c0d6b5f857703_0",
+   "parent_line_number": 14,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 13
+    },
+    "content": "",
+    "end": 14,
+    "start": 14
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 13
+    },
+    "end": 14,
+    "start": 14
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$medsrc = @file_get_contents(\"./{$id}/source/medium.php\");",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "c9d021d8d1a222a237da8c4a0563673d_1",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 18,
+   "old_fingerprint": "f4215f4f0aa05b6a755c0d6b5f857703_1",
+   "parent_line_number": 18,
+   "sink": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "content": "",
+    "end": 18,
+    "start": 18
+   },
+   "source": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "end": 18,
+    "start": 18
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$highsrc = @file_get_contents(\"./{$id}/source/high.php\");",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "c9d021d8d1a222a237da8c4a0563673d_2",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "f4215f4f0aa05b6a755c0d6b5f857703_4",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 58,
+     "start": 14
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 58,
+     "start": 14
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$impsrc = @file_get_contents(\"./{$id}/source/impossible.php\");",
+   "cwe_ids": [
+    "918"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "c9d021d8d1a222a237da8c4a0563673d_3",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_http_url_using_user_input",
+   "line_number": 26,
+   "old_fingerprint": "f4215f4f0aa05b6a755c0d6b5f857703_5",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 63,
+     "start": 13
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 13
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Unsanitized user input in HTTP request (SSRF)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\teval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/help/help.php\" ) . '<?php ' );",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_help.php",
+   "fingerprint": "bbebebc2d574eb0509649d0c9d6b1b50_0",
+   "full_filename": "vulnerabilities/view_help.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 20,
+   "old_fingerprint": "b360e76e568ed16655fb878bc953196e_2",
+   "parent_line_number": 20,
+   "sink": {
+    "column": {
+     "end": 98,
+     "start": 16
+    },
+    "content": "",
+    "end": 20,
+    "start": 20
+   },
+   "source": {
+    "column": {
+     "end": 98,
+     "start": 16
+    },
+    "end": 20,
+    "start": 20
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\teval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/help/help.{$locale}.php\" ) . '<?php ' );",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_help.php",
+   "fingerprint": "bbebebc2d574eb0509649d0c9d6b1b50_1",
+   "full_filename": "vulnerabilities/view_help.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "b360e76e568ed16655fb878bc953196e_3",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 108,
+     "start": 16
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 108,
+     "start": 16
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$source = @file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/source/{$security}.php\" );",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "44e1a0d81ca9ab43db3e92a57c2ef3d4_0",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 63,
+   "old_fingerprint": "3bc68973c472fded7f75a57c46046d0b_6",
+   "parent_line_number": 63,
+   "sink": {
+    "column": {
+     "end": 104,
+     "start": 13
+    },
+    "content": "",
+    "end": 63,
+    "start": 63
+   },
+   "source": {
+    "column": {
+     "end": 104,
+     "start": 13
+    },
+    "end": 63,
+    "start": 63
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tif (file_exists (DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/source/{$security}.js\")) {",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "44e1a0d81ca9ab43db3e92a57c2ef3d4_1",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 67,
+   "old_fingerprint": "3bc68973c472fded7f75a57c46046d0b_7",
+   "parent_line_number": 67,
+   "sink": {
+    "column": {
+     "end": 89,
+     "start": 6
+    },
+    "content": "",
+    "end": 67,
+    "start": 67
+   },
+   "source": {
+    "column": {
+     "end": 89,
+     "start": 6
+    },
+    "end": 67,
+    "start": 67
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$js_source = @file_get_contents( DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/{$id}/source/{$security}.js\" );",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "44e1a0d81ca9ab43db3e92a57c2ef3d4_2",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 68,
+   "old_fingerprint": "3bc68973c472fded7f75a57c46046d0b_8",
+   "parent_line_number": 68,
+   "sink": {
+    "column": {
+     "end": 107,
+     "start": 17
+    },
+    "content": "",
+    "end": 68,
+    "start": 68
+   },
+   "source": {
+    "column": {
+     "end": 107,
+     "start": 17
+    },
+    "end": 68,
+    "start": 68
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$lowsrc = @file_get_contents(\"./{$id}/source/low.php\");",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "4ad63ffd50a32202e860c954c0410888_0",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 14,
+   "old_fingerprint": "3d2e2a113b1a9128a00e8a8fd89d8943_0",
+   "parent_line_number": 14,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 13
+    },
+    "content": "",
+    "end": 14,
+    "start": 14
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 13
+    },
+    "end": 14,
+    "start": 14
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$medsrc = @file_get_contents(\"./{$id}/source/medium.php\");",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "4ad63ffd50a32202e860c954c0410888_1",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 18,
+   "old_fingerprint": "3d2e2a113b1a9128a00e8a8fd89d8943_1",
+   "parent_line_number": 18,
+   "sink": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "content": "",
+    "end": 18,
+    "start": 18
+   },
+   "source": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "end": 18,
+    "start": 18
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$highsrc = @file_get_contents(\"./{$id}/source/high.php\");",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "4ad63ffd50a32202e860c954c0410888_2",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "3d2e2a113b1a9128a00e8a8fd89d8943_4",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 58,
+     "start": 14
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 58,
+     "start": 14
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$impsrc = @file_get_contents(\"./{$id}/source/impossible.php\");",
+   "cwe_ids": [
+    "73"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "4ad63ffd50a32202e860c954c0410888_3",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_path_using_user_input",
+   "line_number": 26,
+   "old_fingerprint": "3d2e2a113b1a9128a00e8a8fd89d8943_5",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 63,
+     "start": 13
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 13
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Unsanitized user input in file path"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$html .= \"\n<script>\n\tfunction update_username(user_json) {\n...omitted (buffer value 3)",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/api/source/low.php",
+   "fingerprint": "877a09e7997dcdd55e7531bf5065e3b4_0",
+   "full_filename": "vulnerabilities/api/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 18,
+   "old_fingerprint": "17612209341f390d805428abe723613a_15",
+   "parent_line_number": 18,
+   "sink": {
+    "column": {
+     "end": 33,
+     "start": 10
+    },
+    "content": "",
+    "end": 47,
+    "start": 18
+   },
+   "source": {
+    "column": {
+     "end": 2,
+     "start": 1
+    },
+    "end": 99,
+    "start": 18
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$html .= \"",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/api/source/low.php",
+   "fingerprint": "877a09e7997dcdd55e7531bf5065e3b4_3",
+   "full_filename": "vulnerabilities/api/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 101,
+   "old_fingerprint": "17612209341f390d805428abe723613a_151",
+   "parent_line_number": 101,
+   "sink": {
+    "column": {
+     "end": 6,
+     "start": 1
+    },
+    "content": "",
+    "end": 101,
+    "start": 101
+   },
+   "source": {
+    "column": {
+     "end": 2,
+     "start": 1
+    },
+    "end": 119,
+    "start": 101
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$html .= \"\n\t<script>\n\t\tfunction update_username(user_json) {\n...omitted (buffer value 3)",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/api/source/medium.php",
+   "fingerprint": "ef66b1e136f85461149dcc047b501dff_0",
+   "full_filename": "vulnerabilities/api/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 6,
+   "old_fingerprint": "e054665f8684dd348723b7d6702ba99a_0",
+   "parent_line_number": 6,
+   "sink": {
+    "column": {
+     "end": 34,
+     "start": 10
+    },
+    "content": "",
+    "end": 31,
+    "start": 6
+   },
+   "source": {
+    "column": {
+     "end": 2,
+     "start": 1
+    },
+    "end": 76,
+    "start": 6
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$html .= \"",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/api/source/medium.php",
+   "fingerprint": "ef66b1e136f85461149dcc047b501dff_5",
+   "full_filename": "vulnerabilities/api/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 78,
+   "old_fingerprint": "e054665f8684dd348723b7d6702ba99a_130",
+   "parent_line_number": 78,
+   "sink": {
+    "column": {
+     "end": 6,
+     "start": 1
+    },
+    "content": "",
+    "end": 78,
+    "start": 78
+   },
+   "source": {
+    "column": {
+     "end": 2,
+     "start": 1
+    },
+    "end": 96,
+    "start": 78
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            $html .= \"<p>No user found with ID: {$id}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/high.php",
+   "fingerprint": "5f2f06e0afdb6705314743ed14105ef4_0",
+   "full_filename": "vulnerabilities/bac/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 37,
+   "old_fingerprint": "7371fc0f6d34e3394361baa7a22d2866_67",
+   "parent_line_number": 37,
+   "sink": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "content": "",
+    "end": 37,
+    "start": 37
+   },
+   "source": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "end": 37,
+    "start": 37
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                        $html .= \"",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/high.php",
+   "fingerprint": "5f2f06e0afdb6705314743ed14105ef4_2",
+   "full_filename": "vulnerabilities/bac/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 53,
+   "old_fingerprint": "7371fc0f6d34e3394361baa7a22d2866_94",
+   "parent_line_number": 53,
+   "sink": {
+    "column": {
+     "end": 30,
+     "start": 25
+    },
+    "content": "",
+    "end": 53,
+    "start": 53
+   },
+   "source": {
+    "column": {
+     "end": 36,
+     "start": 25
+    },
+    "end": 61,
+    "start": 53
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                    $html .= \"<p>Access denied. You can only view your own profile.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/high.php",
+   "fingerprint": "5f2f06e0afdb6705314743ed14105ef4_4",
+   "full_filename": "vulnerabilities/bac/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 65,
+   "old_fingerprint": "7371fc0f6d34e3394361baa7a22d2866_105",
+   "parent_line_number": 65,
+   "sink": {
+    "column": {
+     "end": 89,
+     "start": 21
+    },
+    "content": "",
+    "end": 65,
+    "start": 65
+   },
+   "source": {
+    "column": {
+     "end": 89,
+     "start": 21
+    },
+    "end": 65,
+    "start": 65
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                $html .= \"<p>Access denied. No user_id in session.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/high.php",
+   "fingerprint": "5f2f06e0afdb6705314743ed14105ef4_6",
+   "full_filename": "vulnerabilities/bac/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 68,
+   "old_fingerprint": "7371fc0f6d34e3394361baa7a22d2866_109",
+   "parent_line_number": 68,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 17
+    },
+    "content": "",
+    "end": 68,
+    "start": 68
+   },
+   "source": {
+    "column": {
+     "end": 72,
+     "start": 17
+    },
+    "end": 68,
+    "start": 68
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                        $html .= \"<p>No user found with ID: {$id}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_0",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 48,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_88",
+   "parent_line_number": 48,
+   "sink": {
+    "column": {
+     "end": 71,
+     "start": 25
+    },
+    "content": "",
+    "end": 48,
+    "start": 48
+   },
+   "source": {
+    "column": {
+     "end": 71,
+     "start": 25
+    },
+    "end": 48,
+    "start": 48
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                        $html .= \"<p>Too many requests. Please try again later.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_2",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 53,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_95",
+   "parent_line_number": 53,
+   "sink": {
+    "column": {
+     "end": 30,
+     "start": 25
+    },
+    "content": "",
+    "end": 53,
+    "start": 53
+   },
+   "source": {
+    "column": {
+     "end": 85,
+     "start": 25
+    },
+    "end": 53,
+    "start": 53
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                    $html .= \"<p>Database error: \" . mysqli_error($GLOBALS[\"___mysqli_ston\"]) . \"</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_4",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 76,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_124",
+   "parent_line_number": 76,
+   "sink": {
+    "column": {
+     "end": 119,
+     "start": 37
+    },
+    "content": "",
+    "end": 76,
+    "start": 76
+   },
+   "source": {
+    "column": {
+     "end": 119,
+     "start": 37
+    },
+    "end": 76,
+    "start": 76
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                        $html .= \"<p>Database error: \" . mysqli_stmt_error($stmt) . \"</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_6",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 81,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_132",
+   "parent_line_number": 81,
+   "sink": {
+    "column": {
+     "end": 46,
+     "start": 41
+    },
+    "content": "",
+    "end": 81,
+    "start": 81
+   },
+   "source": {
+    "column": {
+     "end": 107,
+     "start": 41
+    },
+    "end": 81,
+    "start": 81
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                            $html .= \"<p>Database error: \" . mysqli_stmt_error($stmt) . \"</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_8",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 86,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_140",
+   "parent_line_number": 86,
+   "sink": {
+    "column": {
+     "end": 111,
+     "start": 45
+    },
+    "content": "",
+    "end": 86,
+    "start": 86
+   },
+   "source": {
+    "column": {
+     "end": 111,
+     "start": 45
+    },
+    "end": 86,
+    "start": 86
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                                $html .= \"<p>Database error: \" . mysqli_stmt_error($stmt) . \"</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_10",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 91,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_146",
+   "parent_line_number": 91,
+   "sink": {
+    "column": {
+     "end": 115,
+     "start": 49
+    },
+    "content": "",
+    "end": 91,
+    "start": 91
+   },
+   "source": {
+    "column": {
+     "end": 115,
+     "start": 49
+    },
+    "end": 91,
+    "start": 91
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                                $html .= \"\n                                                <div class=\\\"profile-info\\\">\n                                                  <h3>User Profile</h3>\n                                                  ...omitted (buffer value 3)\n                                                                htmlspecialchars($row['last_name'], ENT_QUOTES, 'UTF-8') . \"</p>\n                                                  <p>Avatar: \" . htmlspecialchars($row['avatar'], ENT_QUOTES, 'UTF-8') . \"</p>\n                                                </div>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_12",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 96,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_149",
+   "parent_line_number": 96,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 49
+    },
+    "content": "",
+    "end": 103,
+    "start": 96
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 49
+    },
+    "end": 103,
+    "start": 96
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                                $html .= \"<p>Access denied. Insufficient privileges.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_14",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 108,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_153",
+   "parent_line_number": 108,
+   "sink": {
+    "column": {
+     "end": 106,
+     "start": 49
+    },
+    "content": "",
+    "end": 108,
+    "start": 108
+   },
+   "source": {
+    "column": {
+     "end": 106,
+     "start": 49
+    },
+    "end": 108,
+    "start": 108
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                                $html .= \"<p>An error occurred. Please try again later.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_16",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 116,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_155",
+   "parent_line_number": 116,
+   "sink": {
+    "column": {
+     "end": 38,
+     "start": 33
+    },
+    "content": "",
+    "end": 116,
+    "start": 116
+   },
+   "source": {
+    "column": {
+     "end": 93,
+     "start": 33
+    },
+    "end": 116,
+    "start": 116
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                            $html .= \"<p>Access denied. Insufficient privileges.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_18",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 120,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_157",
+   "parent_line_number": 120,
+   "sink": {
+    "column": {
+     "end": 34,
+     "start": 29
+    },
+    "content": "",
+    "end": 120,
+    "start": 120
+   },
+   "source": {
+    "column": {
+     "end": 86,
+     "start": 29
+    },
+    "end": 120,
+    "start": 120
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                    $html .= \"<p>Database error: \" . mysqli_error($GLOBALS[\"___mysqli_ston\"]) . \"</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_20",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 128,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_159",
+   "parent_line_number": 128,
+   "sink": {
+    "column": {
+     "end": 26,
+     "start": 21
+    },
+    "content": "",
+    "end": 128,
+    "start": 128
+   },
+   "source": {
+    "column": {
+     "end": 103,
+     "start": 21
+    },
+    "end": 128,
+    "start": 128
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                $html .= \"<p>Authentication error.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_22",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 131,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_161",
+   "parent_line_number": 131,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 17
+    },
+    "content": "",
+    "end": 131,
+    "start": 131
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 17
+    },
+    "end": 131,
+    "start": 131
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            $html .= \"<p>Database error: \" . mysqli_error($GLOBALS[\"___mysqli_ston\"]) . \"</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/impossible.php",
+   "fingerprint": "2463d9a0352f15fd5def5d6780932f95_24",
+   "full_filename": "vulnerabilities/bac/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 137,
+   "old_fingerprint": "7fe2254979fc94f150b78adb4f55e5c5_163",
+   "parent_line_number": 137,
+   "sink": {
+    "column": {
+     "end": 18,
+     "start": 13
+    },
+    "content": "",
+    "end": 137,
+    "start": 137
+   },
+   "source": {
+    "column": {
+     "end": 95,
+     "start": 13
+    },
+    "end": 137,
+    "start": 137
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            $html .= \"<p>No user found with ID: {$id}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "380d64475a12386973398a41927da39b_0",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 27,
+   "old_fingerprint": "6a040131042e629e4f82924450e77451_39",
+   "parent_line_number": 27,
+   "sink": {
+    "column": {
+     "end": 59,
+     "start": 22
+    },
+    "content": "",
+    "end": 27,
+    "start": 27
+   },
+   "source": {
+    "column": {
+     "end": 59,
+     "start": 13
+    },
+    "end": 27,
+    "start": 27
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                        $html .= \"\n                            <div class=\\\"profile-info\\\">\n                                <h3>User Profile</h3>\n                                ...omitted (buffer value 3)\n                                <p>Avatar: {$row['avatar']}</p>\n                                <!-- Hint: Cookies can be modified by users... -->\n                            </div>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "380d64475a12386973398a41927da39b_2",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 40,
+   "old_fingerprint": "6a040131042e629e4f82924450e77451_71",
+   "parent_line_number": 40,
+   "sink": {
+    "column": {
+     "end": 36,
+     "start": 34
+    },
+    "content": "",
+    "end": 47,
+    "start": 40
+   },
+   "source": {
+    "column": {
+     "end": 36,
+     "start": 25
+    },
+    "end": 47,
+    "start": 40
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                    $html .= \"<p>Access denied. You can only view your own profile.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "380d64475a12386973398a41927da39b_5",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 50,
+   "old_fingerprint": "6a040131042e629e4f82924450e77451_90",
+   "parent_line_number": 50,
+   "sink": {
+    "column": {
+     "end": 89,
+     "start": 21
+    },
+    "content": "",
+    "end": 50,
+    "start": 50
+   },
+   "source": {
+    "column": {
+     "end": 89,
+     "start": 21
+    },
+    "end": 50,
+    "start": 50
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                $html .= \"<p>Access denied. No user_id cookie found.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "380d64475a12386973398a41927da39b_7",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 53,
+   "old_fingerprint": "6a040131042e629e4f82924450e77451_98",
+   "parent_line_number": 53,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 17
+    },
+    "content": "",
+    "end": 53,
+    "start": 53
+   },
+   "source": {
+    "column": {
+     "end": 74,
+     "start": 17
+    },
+    "end": 53,
+    "start": 53
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$html .= \"<div class='info-banner'>Current Role: {$role}</div>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "380d64475a12386973398a41927da39b_9",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 90,
+   "old_fingerprint": "6a040131042e629e4f82924450e77451_143",
+   "parent_line_number": 90,
+   "sink": {
+    "column": {
+     "end": 64,
+     "start": 10
+    },
+    "content": "",
+    "end": 90,
+    "start": 90
+   },
+   "source": {
+    "column": {
+     "end": 64,
+     "start": 1
+    },
+    "end": 90,
+    "start": 90
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                    $html .= \"\n                        <div class=\\\"profile-info\\\">\n                            <h3>User Profile</h3>\n                            ...omitted (buffer value 3)\n                            <p>Avatar: {$row['avatar']}</p>\n                            <!-- Hint: This token check isn't very secure... -->\n                        </div>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/medium.php",
+   "fingerprint": "e8d446d2d5942d7d772a9f4e5f69ddcd_0",
+   "full_filename": "vulnerabilities/bac/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 33,
+   "old_fingerprint": "7b346d5756ce75efba87cb73777f21e2_56",
+   "parent_line_number": 33,
+   "sink": {
+    "column": {
+     "end": 32,
+     "start": 21
+    },
+    "content": "",
+    "end": 40,
+    "start": 33
+   },
+   "source": {
+    "column": {
+     "end": 32,
+     "start": 21
+    },
+    "end": 40,
+    "start": 33
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "                $html .= \"<p>No user found with ID: {$id}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/medium.php",
+   "fingerprint": "e8d446d2d5942d7d772a9f4e5f69ddcd_2",
+   "full_filename": "vulnerabilities/bac/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 43,
+   "old_fingerprint": "7b346d5756ce75efba87cb73777f21e2_77",
+   "parent_line_number": 43,
+   "sink": {
+    "column": {
+     "end": 63,
+     "start": 17
+    },
+    "content": "",
+    "end": 43,
+    "start": 43
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 17
+    },
+    "end": 43,
+    "start": 43
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "            $html .= \"<p>Access denied. Valid token required. <!-- Try using token=user_token --></p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/bac/source/medium.php",
+   "fingerprint": "e8d446d2d5942d7d772a9f4e5f69ddcd_5",
+   "full_filename": "vulnerabilities/bac/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 46,
+   "old_fingerprint": "7b346d5756ce75efba87cb73777f21e2_83",
+   "parent_line_number": 46,
+   "sink": {
+    "column": {
+     "end": 18,
+     "start": 13
+    },
+    "content": "",
+    "end": 46,
+    "start": 46
+   },
+   "source": {
+    "column": {
+     "end": 103,
+     "start": 13
+    },
+    "end": 46,
+    "start": 46
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<p>Welcome to the password protected area {$user}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/high.php",
+   "fingerprint": "2096ecc959d8ca2453cd039d6aac3165_0",
+   "full_filename": "vulnerabilities/brute/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 28,
+   "old_fingerprint": "58bde8989c1162f1f7dbc64677ac36f1_43",
+   "parent_line_number": 28,
+   "sink": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "content": "",
+    "end": 28,
+    "start": 28
+   },
+   "source": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "end": 28,
+    "start": 28
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<img src=\\\"{$avatar}\\\" />\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/high.php",
+   "fingerprint": "2096ecc959d8ca2453cd039d6aac3165_2",
+   "full_filename": "vulnerabilities/brute/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 29,
+   "old_fingerprint": "58bde8989c1162f1f7dbc64677ac36f1_49",
+   "parent_line_number": 29,
+   "sink": {
+    "column": {
+     "end": 8,
+     "start": 3
+    },
+    "content": "",
+    "end": 29,
+    "start": 29
+   },
+   "source": {
+    "column": {
+     "end": 39,
+     "start": 3
+    },
+    "end": 29,
+    "start": 29
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre><br />Username and/or password incorrect.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/high.php",
+   "fingerprint": "2096ecc959d8ca2453cd039d6aac3165_5",
+   "full_filename": "vulnerabilities/brute/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 34,
+   "old_fingerprint": "58bde8989c1162f1f7dbc64677ac36f1_62",
+   "parent_line_number": 34,
+   "sink": {
+    "column": {
+     "end": 66,
+     "start": 3
+    },
+    "content": "",
+    "end": 34,
+    "start": 34
+   },
+   "source": {
+    "column": {
+     "end": 66,
+     "start": 3
+    },
+    "end": 34,
+    "start": 34
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<p>Welcome to the password protected area <em>{$user}</em></p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/impossible.php",
+   "fingerprint": "4cfec8f5f4aa09a59efcca0753b3afa3_0",
+   "full_filename": "vulnerabilities/brute/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 67,
+   "old_fingerprint": "342c12b3b20df3912c760981b93d54e6_107",
+   "parent_line_number": 67,
+   "sink": {
+    "column": {
+     "end": 76,
+     "start": 3
+    },
+    "content": "",
+    "end": 67,
+    "start": 67
+   },
+   "source": {
+    "column": {
+     "end": 76,
+     "start": 3
+    },
+    "end": 67,
+    "start": 67
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<img src=\\\"{$avatar}\\\" />\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/impossible.php",
+   "fingerprint": "4cfec8f5f4aa09a59efcca0753b3afa3_2",
+   "full_filename": "vulnerabilities/brute/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 68,
+   "old_fingerprint": "342c12b3b20df3912c760981b93d54e6_113",
+   "parent_line_number": 68,
+   "sink": {
+    "column": {
+     "end": 8,
+     "start": 3
+    },
+    "content": "",
+    "end": 68,
+    "start": 68
+   },
+   "source": {
+    "column": {
+     "end": 39,
+     "start": 3
+    },
+    "end": 68,
+    "start": 68
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$html .= \"<p><em>Warning</em>: Someone might of been brute forcing your account.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/impossible.php",
+   "fingerprint": "4cfec8f5f4aa09a59efcca0753b3afa3_4",
+   "full_filename": "vulnerabilities/brute/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 72,
+   "old_fingerprint": "342c12b3b20df3912c760981b93d54e6_118",
+   "parent_line_number": 72,
+   "sink": {
+    "column": {
+     "end": 9,
+     "start": 4
+    },
+    "content": "",
+    "end": 72,
+    "start": 72
+   },
+   "source": {
+    "column": {
+     "end": 89,
+     "start": 4
+    },
+    "end": 72,
+    "start": 72
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$html .= \"<p>Number of login attempts: <em>{$failed_login}</em>.<br />Last login attempt was at: <em>{$last_login}</em>.</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/impossible.php",
+   "fingerprint": "4cfec8f5f4aa09a59efcca0753b3afa3_6",
+   "full_filename": "vulnerabilities/brute/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 73,
+   "old_fingerprint": "342c12b3b20df3912c760981b93d54e6_122",
+   "parent_line_number": 73,
+   "sink": {
+    "column": {
+     "end": 9,
+     "start": 4
+    },
+    "content": "",
+    "end": 73,
+    "start": 73
+   },
+   "source": {
+    "column": {
+     "end": 129,
+     "start": 4
+    },
+    "end": 73,
+    "start": 73
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre><br />Username and/or password incorrect.<br /><br/>Alternative, the account has been locked because of too many failed logins.<br />If this is the case, <em>please try again in {$lockout_time} minutes</em>.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/impossible.php",
+   "fingerprint": "4cfec8f5f4aa09a59efcca0753b3afa3_8",
+   "full_filename": "vulnerabilities/brute/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 85,
+   "old_fingerprint": "342c12b3b20df3912c760981b93d54e6_138",
+   "parent_line_number": 85,
+   "sink": {
+    "column": {
+     "end": 232,
+     "start": 3
+    },
+    "content": "",
+    "end": 85,
+    "start": 85
+   },
+   "source": {
+    "column": {
+     "end": 232,
+     "start": 3
+    },
+    "end": 85,
+    "start": 85
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<p>Welcome to the password protected area {$user}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/low.php",
+   "fingerprint": "916b64fba6cabd7bc8d123ef4be41e8d_0",
+   "full_filename": "vulnerabilities/brute/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 21,
+   "old_fingerprint": "2112deec55193adee2703990d9c67e45_21",
+   "parent_line_number": 21,
+   "sink": {
+    "column": {
+     "end": 67,
+     "start": 12
+    },
+    "content": "",
+    "end": 21,
+    "start": 21
+   },
+   "source": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "end": 21,
+    "start": 21
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<img src=\\\"{$avatar}\\\" />\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/low.php",
+   "fingerprint": "916b64fba6cabd7bc8d123ef4be41e8d_2",
+   "full_filename": "vulnerabilities/brute/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 22,
+   "old_fingerprint": "2112deec55193adee2703990d9c67e45_25",
+   "parent_line_number": 22,
+   "sink": {
+    "column": {
+     "end": 8,
+     "start": 3
+    },
+    "content": "",
+    "end": 22,
+    "start": 22
+   },
+   "source": {
+    "column": {
+     "end": 39,
+     "start": 3
+    },
+    "end": 22,
+    "start": 22
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre><br />Username and/or password incorrect.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/low.php",
+   "fingerprint": "916b64fba6cabd7bc8d123ef4be41e8d_5",
+   "full_filename": "vulnerabilities/brute/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 26,
+   "old_fingerprint": "2112deec55193adee2703990d9c67e45_34",
+   "parent_line_number": 26,
+   "sink": {
+    "column": {
+     "end": 8,
+     "start": 3
+    },
+    "content": "",
+    "end": 26,
+    "start": 26
+   },
+   "source": {
+    "column": {
+     "end": 66,
+     "start": 3
+    },
+    "end": 26,
+    "start": 26
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<p>Welcome to the password protected area {$user}</p>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/medium.php",
+   "fingerprint": "140c5971c0751cfec9f59adfb6cb0a49_0",
+   "full_filename": "vulnerabilities/brute/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 23,
+   "old_fingerprint": "eb2c73df1a3aaba486f80e59a3d0dc46_28",
+   "parent_line_number": 23,
+   "sink": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "content": "",
+    "end": 23,
+    "start": 23
+   },
+   "source": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "end": 23,
+    "start": 23
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<img src=\\\"{$avatar}\\\" />\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/medium.php",
+   "fingerprint": "140c5971c0751cfec9f59adfb6cb0a49_2",
+   "full_filename": "vulnerabilities/brute/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 24,
+   "old_fingerprint": "eb2c73df1a3aaba486f80e59a3d0dc46_31",
+   "parent_line_number": 24,
+   "sink": {
+    "column": {
+     "end": 39,
+     "start": 12
+    },
+    "content": "",
+    "end": 24,
+    "start": 24
+   },
+   "source": {
+    "column": {
+     "end": 39,
+     "start": 3
+    },
+    "end": 24,
+    "start": 24
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre><br />Username and/or password incorrect.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/brute/source/medium.php",
+   "fingerprint": "140c5971c0751cfec9f59adfb6cb0a49_5",
+   "full_filename": "vulnerabilities/brute/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 29,
+   "old_fingerprint": "eb2c73df1a3aaba486f80e59a3d0dc46_52",
+   "parent_line_number": 29,
+   "sink": {
+    "column": {
+     "end": 66,
+     "start": 3
+    },
+    "content": "",
+    "end": 29,
+    "start": 29
+   },
+   "source": {
+    "column": {
+     "end": 66,
+     "start": 3
+    },
+    "end": 29,
+    "start": 29
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$html .= \"\n\t\t\t\t<pre><br />You passed the CAPTCHA! Click the button to confirm your changes.<br /></pre>\n\t\t\t\t<form action=\\\"#\\\" method=\\\"POST\\\">\n...omitted (buffer value 3)\n\t\t\t\t\t<input type=\\\"hidden\\\" name=\\\"password_conf\\\" value=\\\"{$pass_conf}\\\" />\n\t\t\t\t\t<input type=\\\"submit\\\" name=\\\"Change\\\" value=\\\"Change\\\" />\n\t\t\t\t</form>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/low.php",
+   "fingerprint": "a2c985113dc39b78f4c916ebd011a17e_0",
+   "full_filename": "vulnerabilities/captcha/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 28,
+   "old_fingerprint": "baa5a5476c242c5dbe62a083d0df8a14_46",
+   "parent_line_number": 28,
+   "sink": {
+    "column": {
+     "end": 13,
+     "start": 4
+    },
+    "content": "",
+    "end": 35,
+    "start": 28
+   },
+   "source": {
+    "column": {
+     "end": 13,
+     "start": 4
+    },
+    "end": 35,
+    "start": 28
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$html     .= \"<pre>Both passwords must match.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/low.php",
+   "fingerprint": "a2c985113dc39b78f4c916ebd011a17e_2",
+   "full_filename": "vulnerabilities/captcha/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 39,
+   "old_fingerprint": "baa5a5476c242c5dbe62a083d0df8a14_69",
+   "parent_line_number": 39,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 4
+    },
+    "content": "",
+    "end": 39,
+    "start": 39
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 4
+    },
+    "end": 39,
+    "start": 39
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre>Password Changed.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/low.php",
+   "fingerprint": "a2c985113dc39b78f4c916ebd011a17e_4",
+   "full_filename": "vulnerabilities/captcha/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 64,
+   "old_fingerprint": "baa5a5476c242c5dbe62a083d0df8a14_103",
+   "parent_line_number": 64,
+   "sink": {
+    "column": {
+     "end": 8,
+     "start": 3
+    },
+    "content": "",
+    "end": 64,
+    "start": 64
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 3
+    },
+    "end": 64,
+    "start": 64
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre>Passwords did not match.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/low.php",
+   "fingerprint": "a2c985113dc39b78f4c916ebd011a17e_6",
+   "full_filename": "vulnerabilities/captcha/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 68,
+   "old_fingerprint": "baa5a5476c242c5dbe62a083d0df8a14_110",
+   "parent_line_number": 68,
+   "sink": {
+    "column": {
+     "end": 49,
+     "start": 3
+    },
+    "content": "",
+    "end": 68,
+    "start": 68
+   },
+   "source": {
+    "column": {
+     "end": 49,
+     "start": 3
+    },
+    "end": 68,
+    "start": 68
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$html .= \"\n\t\t\t\t<pre><br />You passed the CAPTCHA! Click the button to confirm your changes.<br /></pre>\n\t\t\t\t<form action=\\\"#\\\" method=\\\"POST\\\">\n...omitted (buffer value 3)\n\t\t\t\t\t<input type=\\\"hidden\\\" name=\\\"passed_captcha\\\" value=\\\"true\\\" />\n\t\t\t\t\t<input type=\\\"submit\\\" name=\\\"Change\\\" value=\\\"Change\\\" />\n\t\t\t\t</form>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/medium.php",
+   "fingerprint": "64d9c35fb10ba850ce006f8ae593f37d_0",
+   "full_filename": "vulnerabilities/captcha/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 28,
+   "old_fingerprint": "0838184bbd998d3da850d1ae6ada9ddd_42",
+   "parent_line_number": 28,
+   "sink": {
+    "column": {
+     "end": 13,
+     "start": 13
+    },
+    "content": "",
+    "end": 36,
+    "start": 28
+   },
+   "source": {
+    "column": {
+     "end": 13,
+     "start": 4
+    },
+    "end": 36,
+    "start": 28
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$html     .= \"<pre>Both passwords must match.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/medium.php",
+   "fingerprint": "64d9c35fb10ba850ce006f8ae593f37d_2",
+   "full_filename": "vulnerabilities/captcha/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 40,
+   "old_fingerprint": "0838184bbd998d3da850d1ae6ada9ddd_72",
+   "parent_line_number": 40,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 4
+    },
+    "content": "",
+    "end": 40,
+    "start": 40
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 4
+    },
+    "end": 40,
+    "start": 40
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html     .= \"<pre><br />You have not passed the CAPTCHA.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/medium.php",
+   "fingerprint": "64d9c35fb10ba850ce006f8ae593f37d_4",
+   "full_filename": "vulnerabilities/captcha/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 56,
+   "old_fingerprint": "0838184bbd998d3da850d1ae6ada9ddd_101",
+   "parent_line_number": 56,
+   "sink": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "content": "",
+    "end": 56,
+    "start": 56
+   },
+   "source": {
+    "column": {
+     "end": 67,
+     "start": 3
+    },
+    "end": 56,
+    "start": 56
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre>Password Changed.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/medium.php",
+   "fingerprint": "64d9c35fb10ba850ce006f8ae593f37d_6",
+   "full_filename": "vulnerabilities/captcha/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 72,
+   "old_fingerprint": "0838184bbd998d3da850d1ae6ada9ddd_120",
+   "parent_line_number": 72,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 3
+    },
+    "content": "",
+    "end": 72,
+    "start": 72
+   },
+   "source": {
+    "column": {
+     "end": 42,
+     "start": 3
+    },
+    "end": 72,
+    "start": 72
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre>Passwords did not match.</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/captcha/source/medium.php",
+   "fingerprint": "64d9c35fb10ba850ce006f8ae593f37d_8",
+   "full_filename": "vulnerabilities/captcha/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 76,
+   "old_fingerprint": "0838184bbd998d3da850d1ae6ada9ddd_125",
+   "parent_line_number": 76,
+   "sink": {
+    "column": {
+     "end": 49,
+     "start": 3
+    },
+    "content": "",
+    "end": 76,
+    "start": 76
+   },
+   "source": {
+    "column": {
+     "end": 49,
+     "start": 3
+    },
+    "end": 76,
+    "start": 76
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$page[ 'body' ] .= \"\n\t<script src='\" . $_POST['include'] . \"'></script>\n\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csp/source/low.php",
+   "fingerprint": "ecbe4039d74c730b831f70d1a37b6a5a_0",
+   "full_filename": "vulnerabilities/csp/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 14,
+   "old_fingerprint": "b01ca8e01ada2de6bef946a702a75c2f_12",
+   "parent_line_number": 14,
+   "sink": {
+    "column": {
+     "end": 2,
+     "start": 20
+    },
+    "content": "",
+    "end": 16,
+    "start": 14
+   },
+   "source": {
+    "column": {
+     "end": 2,
+     "start": 1
+    },
+    "end": 16,
+    "start": 14
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$login_state = \"<h3 class=\\\"loginSuccess\\\">Valid password for '{$user}'</h3>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csrf/test_credentials.php",
+   "fingerprint": "79cfada5968a1846bcd3563668cbd529_0",
+   "full_filename": "vulnerabilities/csrf/test_credentials.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 24,
+   "old_fingerprint": "37a7013e4340dfbafca05c30fb120558_30",
+   "parent_line_number": 24,
+   "sink": {
+    "column": {
+     "end": 80,
+     "start": 3
+    },
+    "content": "",
+    "end": 24,
+    "start": 24
+   },
+   "source": {
+    "column": {
+     "end": 80,
+     "start": 3
+    },
+    "end": 24,
+    "start": 24
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$login_state = \"<h3 class=\\\"loginFail\\\">Wrong password for '{$user}'</h3>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csrf/test_credentials.php",
+   "fingerprint": "79cfada5968a1846bcd3563668cbd529_1",
+   "full_filename": "vulnerabilities/csrf/test_credentials.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 27,
+   "old_fingerprint": "37a7013e4340dfbafca05c30fb120558_36",
+   "parent_line_number": 27,
+   "sink": {
+    "column": {
+     "end": 77,
+     "start": 3
+    },
+    "content": "",
+    "end": 27,
+    "start": 27
+   },
+   "source": {
+    "column": {
+     "end": 77,
+     "start": 3
+    },
+    "end": 27,
+    "start": 27
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "$page[ 'body' ] .= \"\n\t\t<div class=\\\"body_padded\\\">\n\t\t\t<h1>Test Credentials</h1>\n...omitted (buffer value 3)\n\t\t\t\t{$messagesHtml}\n\t\t\t</div>\n\t\t</div>\\n\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csrf/test_credentials.php",
+   "fingerprint": "79cfada5968a1846bcd3563668cbd529_2",
+   "full_filename": "vulnerabilities/csrf/test_credentials.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 35,
+   "old_fingerprint": "37a7013e4340dfbafca05c30fb120558_64",
+   "parent_line_number": 35,
+   "sink": {
+    "column": {
+     "end": 12,
+     "start": 1
+    },
+    "content": "",
+    "end": 50,
+    "start": 35
+   },
+   "source": {
+    "column": {
+     "end": 12,
+     "start": 1
+    },
+    "end": 50,
+    "start": 35
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\t\t\" . $login_state . \"",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csrf/test_credentials.php",
+   "fingerprint": "79cfada5968a1846bcd3563668cbd529_5",
+   "full_filename": "vulnerabilities/csrf/test_credentials.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 42,
+   "old_fingerprint": "37a7013e4340dfbafca05c30fb120558_76",
+   "parent_line_number": 42,
+   "sink": {
+    "column": {
+     "end": 23,
+     "start": 11
+    },
+    "content": "",
+    "end": 42,
+    "start": 42
+   },
+   "source": {
+    "column": {
+     "end": 23,
+     "start": 11
+    },
+    "end": 42,
+    "start": 42
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$html .= \"<pre>{$cmd}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/exec/source/high.php",
+   "fingerprint": "f93f2f811e979401fadaeefcacf5ffc3_0",
+   "full_filename": "vulnerabilities/exec/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 34,
+   "old_fingerprint": "6352db0e893f794a81cf74cdbc7f4426_58",
+   "parent_line_number": 34,
+   "sink": {
+    "column": {
+     "end": 30,
+     "start": 2
+    },
+    "content": "",
+    "end": 34,
+    "start": 34
+   },
+   "source": {
+    "column": {
+     "end": 30,
+     "start": 2
+    },
+    "end": 34,
+    "start": 34
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= \"<pre>{$cmd}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/exec/source/impossible.php",
+   "fingerprint": "50ff7e5c29fa059ac50dd180c783c674_0",
+   "full_filename": "vulnerabilities/exec/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 30,
+   "old_fingerprint": "2e04db4479f161bbc66a41ee6b25c9fb_54",
+   "parent_line_number": 30,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 3
+    },
+    "content": "",
+    "end": 30,
+    "start": 30
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 3
+    },
+    "end": 30,
+    "start": 30
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$html .= '<pre>ERROR: You have entered an invalid IP.</pre>';",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/exec/source/impossible.php",
+   "fingerprint": "50ff7e5c29fa059ac50dd180c783c674_2",
+   "full_filename": "vulnerabilities/exec/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 34,
+   "old_fingerprint": "2e04db4479f161bbc66a41ee6b25c9fb_59",
+   "parent_line_number": 34,
+   "sink": {
+    "column": {
+     "end": 8,
+     "start": 3
+    },
+    "content": "",
+    "end": 34,
+    "start": 34
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 3
+    },
+    "end": 34,
+    "start": 34
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$html .= \"<pre>{$cmd}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/exec/source/low.php",
+   "fingerprint": "3b96b60a1fcba410d46e956b88622c20_0",
+   "full_filename": "vulnerabilities/exec/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 18,
+   "old_fingerprint": "4b88a1f6b1b38131c945ef671daa8dd5_14",
+   "parent_line_number": 18,
+   "sink": {
+    "column": {
+     "end": 30,
+     "start": 11
+    },
+    "content": "",
+    "end": 18,
+    "start": 18
+   },
+   "source": {
+    "column": {
+     "end": 30,
+     "start": 2
+    },
+    "end": 18,
+    "start": 18
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$html .= \"<pre>{$cmd}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/exec/source/medium.php",
+   "fingerprint": "95aa5e80694183b0bcdfc260d26d5705_0",
+   "full_filename": "vulnerabilities/exec/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 27,
+   "old_fingerprint": "80e2b3238b64991008645f4dab4eae93_37",
+   "parent_line_number": 27,
+   "sink": {
+    "column": {
+     "end": 30,
+     "start": 11
+    },
+    "content": "",
+    "end": 27,
+    "start": 27
+   },
+   "source": {
+    "column": {
+     "end": 30,
+     "start": 2
+    },
+    "end": 27,
+    "start": 27
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\t$html .= \"<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/sqli/source/impossible.php",
+   "fingerprint": "2b44a632baf060b3d1060415fbd3b3f8_0",
+   "full_filename": "vulnerabilities/sqli/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 28,
+   "old_fingerprint": "7e7b4fcb9a918cd16c0bd774e05f8b6c_41",
+   "parent_line_number": 28,
+   "sink": {
+    "column": {
+     "end": 85,
+     "start": 6
+    },
+    "content": "",
+    "end": 28,
+    "start": 28
+   },
+   "source": {
+    "column": {
+     "end": 85,
+     "start": 6
+    },
+    "end": 28,
+    "start": 28
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\t\t$html .= \"<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/sqli/source/impossible.php",
+   "fingerprint": "2b44a632baf060b3d1060415fbd3b3f8_2",
+   "full_filename": "vulnerabilities/sqli/source/impossible.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 53,
+   "old_fingerprint": "7e7b4fcb9a918cd16c0bd774e05f8b6c_92",
+   "parent_line_number": 53,
+   "sink": {
+    "column": {
+     "end": 12,
+     "start": 7
+    },
+    "content": "",
+    "end": 53,
+    "start": 53
+   },
+   "source": {
+    "column": {
+     "end": 86,
+     "start": 7
+    },
+    "end": 53,
+    "start": 53
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t$html .= \"<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/sqli/source/low.php",
+   "fingerprint": "26cbaabf80b25cc22fb6a290600a4690_0",
+   "full_filename": "vulnerabilities/sqli/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 20,
+   "old_fingerprint": "c0481be78e93e45557c15c41ff92101c_19",
+   "parent_line_number": 20,
+   "sink": {
+    "column": {
+     "end": 84,
+     "start": 14
+    },
+    "content": "",
+    "end": 20,
+    "start": 20
+   },
+   "source": {
+    "column": {
+     "end": 84,
+     "start": 5
+    },
+    "end": 20,
+    "start": 20
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\t$html .= \"<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/sqli/source/low.php",
+   "fingerprint": "26cbaabf80b25cc22fb6a290600a4690_2",
+   "full_filename": "vulnerabilities/sqli/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 47,
+   "old_fingerprint": "c0481be78e93e45557c15c41ff92101c_85",
+   "parent_line_number": 47,
+   "sink": {
+    "column": {
+     "end": 11,
+     "start": 6
+    },
+    "content": "",
+    "end": 47,
+    "start": 47
+   },
+   "source": {
+    "column": {
+     "end": 85,
+     "start": 6
+    },
+    "end": 47,
+    "start": 47
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t$html .= \"<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/sqli/source/medium.php",
+   "fingerprint": "dd911ebe71113c6d582364ab3c917e37_0",
+   "full_filename": "vulnerabilities/sqli/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 21,
+   "old_fingerprint": "dcd1cae6184e9b7838d7a7b1ac380c06_23",
+   "parent_line_number": 21,
+   "sink": {
+    "column": {
+     "end": 84,
+     "start": 5
+    },
+    "content": "",
+    "end": 21,
+    "start": 21
+   },
+   "source": {
+    "column": {
+     "end": 84,
+     "start": 5
+    },
+    "end": 21,
+    "start": 21
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\t$html .= \"<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/sqli/source/medium.php",
+   "fingerprint": "dd911ebe71113c6d582364ab3c917e37_2",
+   "full_filename": "vulnerabilities/sqli/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 43,
+   "old_fingerprint": "dcd1cae6184e9b7838d7a7b1ac380c06_80",
+   "parent_line_number": 43,
+   "sink": {
+    "column": {
+     "end": 85,
+     "start": 15
+    },
+    "content": "",
+    "end": 43,
+    "start": 43
+   },
+   "source": {
+    "column": {
+     "end": 85,
+     "start": 6
+    },
+    "end": 43,
+    "start": 43
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$js_html = \"\n\t\t<h2>vulnerabilities/{$id}/source/{$security}.js</h2>\n\t\t<div id=\\\"code\\\">\n...omitted (buffer value 3)",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "80bd36ae180806449f2af0679da68954_0",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 69,
+   "old_fingerprint": "9e4d67b473f30c5c5d254b5f28686fa3_115",
+   "parent_line_number": 69,
+   "sink": {
+    "column": {
+     "end": 28,
+     "start": 14
+    },
+    "content": "",
+    "end": 74,
+    "start": 69
+   },
+   "source": {
+    "column": {
+     "end": 4,
+     "start": 3
+    },
+    "end": 78,
+    "start": 69
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$page[ 'body' ] .= \"\n\t<div class=\\\"body_padded\\\">\n\t\t<h1>{$vuln} Source</h1>\n...omitted (buffer value 3)\n\t\t\t<input type=\\\"button\\\" value=\\\"Compare All Levels\\\" onclick=\\\"window.location.href='view_source_all.php?id=$id'\\\">\n\t\t</form>\n\t</div>\\n\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "80bd36ae180806449f2af0679da68954_3",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 81,
+   "old_fingerprint": "9e4d67b473f30c5c5d254b5f28686fa3_134",
+   "parent_line_number": 81,
+   "sink": {
+    "column": {
+     "end": 11,
+     "start": 2
+    },
+    "content": "",
+    "end": 99,
+    "start": 81
+   },
+   "source": {
+    "column": {
+     "end": 11,
+     "start": 2
+    },
+    "end": 99,
+    "start": 81
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\t<td><div id=\\\"code\\\">\" . highlight_string( $source, true ) . \"</div></td>\n\t\t\t\t</tr>\n\t\t\t</table>\n...omitted (buffer value 3)\n\t\t\t<input type=\\\"button\\\" value=\\\"Compare All Levels\\\" onclick=\\\"window.location.href='view_source_all.php?id=$id'\\\">\n\t\t</form>\n\t</div>\\n\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "80bd36ae180806449f2af0679da68954_7",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 89,
+   "old_fingerprint": "9e4d67b473f30c5c5d254b5f28686fa3_142",
+   "parent_line_number": 89,
+   "sink": {
+    "column": {
+     "end": 11,
+     "start": 67
+    },
+    "content": "",
+    "end": 99,
+    "start": 89
+   },
+   "source": {
+    "column": {
+     "end": 11,
+     "start": 67
+    },
+    "end": 99,
+    "start": 89
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t{$js_html}",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/view_source.php",
+   "fingerprint": "80bd36ae180806449f2af0679da68954_8",
+   "full_filename": "vulnerabilities/view_source.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 93,
+   "old_fingerprint": "9e4d67b473f30c5c5d254b5f28686fa3_148",
+   "parent_line_number": 93,
+   "sink": {
+    "column": {
+     "end": 12,
+     "start": 4
+    },
+    "content": "",
+    "end": 93,
+    "start": 93
+   },
+   "source": {
+    "column": {
+     "end": 12,
+     "start": 4
+    },
+    "end": 93,
+    "start": 93
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$page['body'] .= \"\n\t<div class=\\\"body_padded\\\">\n\t\t<h1>{$vuln}</h1>\n...omitted (buffer value 3)\n\t\t</form>\n\n\t</div>\\n\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/view_source_all.php",
+   "fingerprint": "d5a0f702298c83c1805a23ee4b642962_0",
+   "full_filename": "vulnerabilities/view_source_all.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 77,
+   "old_fingerprint": "549434f68e05529ae04a0875fe4ad74e_128",
+   "parent_line_number": 77,
+   "sink": {
+    "column": {
+     "end": 11,
+     "start": 2
+    },
+    "content": "",
+    "end": 118,
+    "start": 77
+   },
+   "source": {
+    "column": {
+     "end": 11,
+     "start": 2
+    },
+    "end": 118,
+    "start": 77
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$html .= \"<pre>Hello {$name}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/xss_r/source/high.php",
+   "fingerprint": "6d0b83e5fc172941621229d14a5bae73_0",
+   "full_filename": "vulnerabilities/xss_r/source/high.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 11,
+   "old_fingerprint": "c824afd696dffce57879c73560d0382c_8",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 37,
+     "start": 2
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 37,
+     "start": 2
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$html .= '<pre>Hello ' . $_GET[ 'name' ] . '</pre>';",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/xss_r/source/low.php",
+   "fingerprint": "45e0c57740dd9704185115149558c75e_0",
+   "full_filename": "vulnerabilities/xss_r/source/low.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 8,
+   "old_fingerprint": "3f5e446e1e0d32e41e548a0cbde0e0f0_5",
+   "parent_line_number": 8,
+   "sink": {
+    "column": {
+     "end": 42,
+     "start": 11
+    },
+    "content": "",
+    "end": 8,
+    "start": 8
+   },
+   "source": {
+    "column": {
+     "end": 53,
+     "start": 2
+    },
+    "end": 8,
+    "start": 8
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$html .= \"<pre>Hello {$name}</pre>\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/xss_r/source/medium.php",
+   "fingerprint": "bf259bdda12d064e4862dac6012c5b0f_0",
+   "full_filename": "vulnerabilities/xss_r/source/medium.php",
+   "id": "php_lang_raw_html_using_user_input",
+   "line_number": 11,
+   "old_fingerprint": "04a0259f425adb061ca3b640aa174f4a_9",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 37,
+     "start": 11
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 37,
+     "start": 2
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Unsanitized user input in raw HTML strings (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "echo $callback . \"(\".json_encode($outp).\")\";",
+   "cwe_ids": [
+    "79"
+   ],
+   "filename": "vulnerabilities/csp/source/jsonp.php",
+   "fingerprint": "6d392b956b9870067e786661cf587f8b_0",
+   "full_filename": "vulnerabilities/csp/source/jsonp.php",
+   "id": "php_lang_raw_output_using_user_input",
+   "line_number": 12,
+   "old_fingerprint": "516a8d81fdb7f5dead9729375bf533ec_0",
+   "parent_line_number": 12,
+   "sink": {
+    "column": {
+     "end": 45,
+     "start": 1
+    },
+    "content": "",
+    "end": 12,
+    "start": 12
+   },
+   "source": {
+    "column": {
+     "end": 45,
+     "start": 1
+    },
+    "end": 12,
+    "start": 12
+   },
+   "title": "Unsanitized user input in 'echo' function (XSS)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    with open(filename, 'r') as f:",
+   "cwe_ids": [
+    "22"
+   ],
+   "filename": "tests/test_url.py",
+   "fingerprint": "63bceab94eacc17695b67cd36d0a49e9_0",
+   "full_filename": "tests/test_url.py",
+   "id": "python_lang_path_traversal",
+   "line_number": 20,
+   "old_fingerprint": "3ca2bf78e891060bef6bc83be15fd18d_0",
+   "parent_line_number": 20,
+   "sink": {
+    "column": {
+     "end": 29,
+     "start": 10
+    },
+    "content": "",
+    "end": 20,
+    "start": 20
+   },
+   "source": {
+    "column": {
+     "end": 29,
+     "start": 10
+    },
+    "end": 20,
+    "start": 20
+   },
+   "title": "Unsanitized dynamic input in file path"
+  }
+ ],
+ "low": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\techo 'Caught exception: ' . $e->getMessage();",
+   "cwe_ids": [
+    "209"
+   ],
+   "filename": "vulnerabilities/sqli/source/high.php",
+   "fingerprint": "b6795ad506aa5815b91f6fe107ab5dd5_0",
+   "full_filename": "vulnerabilities/sqli/source/high.php",
+   "id": "php_lang_information_leakage",
+   "line_number": 33,
+   "old_fingerprint": "8fbb3ab6f9535945d879ed8e68888868_1",
+   "parent_line_number": 33,
+   "sink": {
+    "column": {
+     "end": 50,
+     "start": 5
+    },
+    "content": "",
+    "end": 33,
+    "start": 33
+   },
+   "source": {
+    "column": {
+     "end": 50,
+     "start": 5
+    },
+    "end": 33,
+    "start": 33
+   },
+   "title": "Leakage of sensitive information in exception message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\techo 'Caught exception: ' . $e->getMessage();",
+   "cwe_ids": [
+    "209"
+   ],
+   "filename": "vulnerabilities/sqli/source/low.php",
+   "fingerprint": "33829b9b23f96fa7a35298788d77cb5f_0",
+   "full_filename": "vulnerabilities/sqli/source/low.php",
+   "id": "php_lang_information_leakage",
+   "line_number": 36,
+   "old_fingerprint": "3de480cb7f99da0f40b07b1ae7fd81a5_2",
+   "parent_line_number": 36,
+   "sink": {
+    "column": {
+     "end": 50,
+     "start": 5
+    },
+    "content": "",
+    "end": 36,
+    "start": 36
+   },
+   "source": {
+    "column": {
+     "end": 50,
+     "start": 5
+    },
+    "end": 36,
+    "start": 36
+   },
+   "title": "Leakage of sensitive information in exception message"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\techo 'Caught exception: ' . $e->getMessage();",
+   "cwe_ids": [
+    "209"
+   ],
+   "filename": "vulnerabilities/sqli/source/medium.php",
+   "fingerprint": "d0be11025d7caf78ab3a622582bef8c1_0",
+   "full_filename": "vulnerabilities/sqli/source/medium.php",
+   "id": "php_lang_information_leakage",
+   "line_number": 32,
+   "old_fingerprint": "d084baac1120fe9f20dfe45422c833e3_0",
+   "parent_line_number": 32,
+   "sink": {
+    "column": {
+     "end": 50,
+     "start": 5
+    },
+    "content": "",
+    "end": 32,
+    "start": 32
+   },
+   "source": {
+    "column": {
+     "end": 50,
+     "start": 5
+    },
+    "end": 32,
+    "start": 32
+   },
+   "title": "Leakage of sensitive information in exception message"
+  }
+ ],
+ "medium": [
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie( 'security', $pSecurityLevel, 0, \"/\", \"\", false, $httponly );",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "dvwa/includes/dvwaPage.inc.php",
+   "fingerprint": "e2cb35cd40705ecc6f0e83ac08e4bdad_0",
+   "full_filename": "dvwa/includes/dvwaPage.inc.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 226,
+   "old_fingerprint": "a384f22cb5fcd6fd37ae7a8c50c0da8e_5",
+   "parent_line_number": 226,
+   "sink": {
+    "column": {
+     "end": 72,
+     "start": 2
+    },
+    "content": "",
+    "end": 226,
+    "start": 226
+   },
+   "source": {
+    "column": {
+     "end": 72,
+     "start": 2
+    },
+    "end": 226,
+    "start": 226
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    setcookie('user_role', 'regular_user', time() + 3600, '/');",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "7f9e0fae959344c1f35284023fa7bcf2_0",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 94,
+   "old_fingerprint": "443656d72f3a7f86e9bb238df3c35386_4",
+   "parent_line_number": 94,
+   "sink": {
+    "column": {
+     "end": 63,
+     "start": 5
+    },
+    "content": "",
+    "end": 94,
+    "start": 94
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 5
+    },
+    "end": 94,
+    "start": 94
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie( 'id', $_POST[ 'id' ]);",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "vulnerabilities/sqli_blind/cookie-input.php",
+   "fingerprint": "f9fba14c6df6c7a548d66033bf445cdf_0",
+   "full_filename": "vulnerabilities/sqli_blind/cookie-input.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 12,
+   "old_fingerprint": "bffb632d4464dd9e8715fd03e6f92192_3",
+   "parent_line_number": 12,
+   "sink": {
+    "column": {
+     "end": 34,
+     "start": 2
+    },
+    "content": "",
+    "end": 12,
+    "start": 12
+   },
+   "source": {
+    "column": {
+     "end": 34,
+     "start": 2
+    },
+    "end": 12,
+    "start": 12
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie(\"dvwaSession\", $cookie_value, time()+3600, \"/vulnerabilities/weak_id/\", $_SERVER['HTTP_HOST'], false, false);",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "vulnerabilities/weak_id/source/high.php",
+   "fingerprint": "dea8f67721f02714fd8ff6d2be0bd9f8_0",
+   "full_filename": "vulnerabilities/weak_id/source/high.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 11,
+   "old_fingerprint": "a117816117488b4880c86e2886d3d78c_1",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 120,
+     "start": 2
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 120,
+     "start": 2
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie(\"dvwaSession\", $cookie_value);",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "vulnerabilities/weak_id/source/low.php",
+   "fingerprint": "9f66303910f4e495b3a0b616b89cd3d7_0",
+   "full_filename": "vulnerabilities/weak_id/source/low.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 11,
+   "old_fingerprint": "0c4f6fc2ff82e0f547eed4c3676d3e6f_2",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie(\"dvwaSession\", $cookie_value);",
+   "cwe_ids": [
+    "1004"
+   ],
+   "filename": "vulnerabilities/weak_id/source/medium.php",
+   "fingerprint": "f4364423f97391e2356a7e5e958380f9_0",
+   "full_filename": "vulnerabilities/weak_id/source/medium.php",
+   "id": "php_lang_cookie_missing_http_only",
+   "line_number": 7,
+   "old_fingerprint": "192b8c53e83709a4f9c295872256b7e0_0",
+   "parent_line_number": 7,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "content": "",
+    "end": 7,
+    "start": 7
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "end": 7,
+    "start": 7
+   },
+   "title": "Missing HTTP Only option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie( 'security', $pSecurityLevel, 0, \"/\", \"\", false, $httponly );",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "dvwa/includes/dvwaPage.inc.php",
+   "fingerprint": "da2c4cf51ef5e24dc0a5802ab06302c3_0",
+   "full_filename": "dvwa/includes/dvwaPage.inc.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 226,
+   "old_fingerprint": "be4924e0ab8c6cd2068da9639175c90b_5",
+   "parent_line_number": 226,
+   "sink": {
+    "column": {
+     "end": 72,
+     "start": 2
+    },
+    "content": "",
+    "end": 226,
+    "start": 226
+   },
+   "source": {
+    "column": {
+     "end": 72,
+     "start": 2
+    },
+    "end": 226,
+    "start": 226
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "    setcookie('user_role', 'regular_user', time() + 3600, '/');",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "vulnerabilities/bac/source/low.php",
+   "fingerprint": "10365d60309b193b98ddcd57d48a2a66_0",
+   "full_filename": "vulnerabilities/bac/source/low.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 94,
+   "old_fingerprint": "d5ecd24d046e3e29a24acb1d9c33a18b_4",
+   "parent_line_number": 94,
+   "sink": {
+    "column": {
+     "end": 63,
+     "start": 5
+    },
+    "content": "",
+    "end": 94,
+    "start": 94
+   },
+   "source": {
+    "column": {
+     "end": 63,
+     "start": 5
+    },
+    "end": 94,
+    "start": 94
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie( 'id', $_POST[ 'id' ]);",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "vulnerabilities/sqli_blind/cookie-input.php",
+   "fingerprint": "84bc0d86e292e81382bf336bd0607f48_0",
+   "full_filename": "vulnerabilities/sqli_blind/cookie-input.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 12,
+   "old_fingerprint": "985eb613f6baad7ef0a1c675d6e2e30e_3",
+   "parent_line_number": 12,
+   "sink": {
+    "column": {
+     "end": 34,
+     "start": 2
+    },
+    "content": "",
+    "end": 12,
+    "start": 12
+   },
+   "source": {
+    "column": {
+     "end": 34,
+     "start": 2
+    },
+    "end": 12,
+    "start": 12
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie(\"dvwaSession\", $cookie_value, time()+3600, \"/vulnerabilities/weak_id/\", $_SERVER['HTTP_HOST'], false, false);",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "vulnerabilities/weak_id/source/high.php",
+   "fingerprint": "4209df5bf5f64047633515cd40804d97_0",
+   "full_filename": "vulnerabilities/weak_id/source/high.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 11,
+   "old_fingerprint": "e093a9d489836f9147caa52f338cc7fc_1",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 120,
+     "start": 2
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 120,
+     "start": 2
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie(\"dvwaSession\", $cookie_value);",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "vulnerabilities/weak_id/source/low.php",
+   "fingerprint": "238f26a6cb46fb7a8c16e401b56a9990_0",
+   "full_filename": "vulnerabilities/weak_id/source/low.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 11,
+   "old_fingerprint": "ea44d35467189eae02af4ac01b40e009_2",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\tsetcookie(\"dvwaSession\", $cookie_value);",
+   "cwe_ids": [
+    "614"
+   ],
+   "filename": "vulnerabilities/weak_id/source/medium.php",
+   "fingerprint": "7f5e3b9d63647b943179df054fd518be_0",
+   "full_filename": "vulnerabilities/weak_id/source/medium.php",
+   "id": "php_lang_insecure_cookie",
+   "line_number": 7,
+   "old_fingerprint": "ee3b3f57799251744be00365ccafcfe9_0",
+   "parent_line_number": 7,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "content": "",
+    "end": 7,
+    "start": 7
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 2
+    },
+    "end": 7,
+    "start": 7
+   },
+   "title": "Missing Secure option in cookie configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\theader (\"location: \" . $_GET['redirect']);",
+   "cwe_ids": [
+    "601"
+   ],
+   "filename": "vulnerabilities/open_redirect/source/high.php",
+   "fingerprint": "0ff43bb8dcfc09517e7e03373e776734_0",
+   "full_filename": "vulnerabilities/open_redirect/source/high.php",
+   "id": "php_lang_open_redirect",
+   "line_number": 5,
+   "old_fingerprint": "0e1682f771c8fc6a6ae7bf6bd4316212_1",
+   "parent_line_number": 5,
+   "sink": {
+    "column": {
+     "end": 44,
+     "start": 3
+    },
+    "content": "",
+    "end": 5,
+    "start": 5
+   },
+   "source": {
+    "column": {
+     "end": 44,
+     "start": 3
+    },
+    "end": 5,
+    "start": 5
+   },
+   "title": "Unsanitized user input in redirect"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\theader (\"location: \" . $_GET['redirect']);",
+   "cwe_ids": [
+    "601"
+   ],
+   "filename": "vulnerabilities/open_redirect/source/low.php",
+   "fingerprint": "97dd1fb4b2aef5d1e08fe336019ddbce_0",
+   "full_filename": "vulnerabilities/open_redirect/source/low.php",
+   "id": "php_lang_open_redirect",
+   "line_number": 4,
+   "old_fingerprint": "c54423a7b07b57bb652c27cd6d64d982_0",
+   "parent_line_number": 4,
+   "sink": {
+    "column": {
+     "end": 43,
+     "start": 2
+    },
+    "content": "",
+    "end": 4,
+    "start": 4
+   },
+   "source": {
+    "column": {
+     "end": 43,
+     "start": 2
+    },
+    "end": 4,
+    "start": 4
+   },
+   "title": "Unsanitized user input in redirect"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\theader (\"location: \" . $_GET['redirect']);",
+   "cwe_ids": [
+    "601"
+   ],
+   "filename": "vulnerabilities/open_redirect/source/medium.php",
+   "fingerprint": "a2dfe5d8793c6058424107de68e54455_0",
+   "full_filename": "vulnerabilities/open_redirect/source/medium.php",
+   "id": "php_lang_open_redirect",
+   "line_number": 11,
+   "old_fingerprint": "d343ab3de97f3a314a77328a82a401e8_2",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 44,
+     "start": 3
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 44,
+     "start": 3
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Unsanitized user input in redirect"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "header(\"Access-Control-Allow-Origin: *\");",
+   "cwe_ids": [
+    "942"
+   ],
+   "filename": "vulnerabilities/api/gen_openapi.php",
+   "fingerprint": "ee6e85e36b5e153197413e297714563d_0",
+   "full_filename": "vulnerabilities/api/gen_openapi.php",
+   "id": "php_lang_permissive_allow_origin",
+   "line_number": 6,
+   "old_fingerprint": "cd1c3e2437ef71b029db6546d23aea8d_0",
+   "parent_line_number": 6,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 1
+    },
+    "content": "",
+    "end": 6,
+    "start": 6
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 1
+    },
+    "end": 6,
+    "start": 6
+   },
+   "title": "Permissive Access-Control-Allow-Origin configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "header(\"Access-Control-Allow-Origin: *\");",
+   "cwe_ids": [
+    "942"
+   ],
+   "filename": "vulnerabilities/api/public/index.php",
+   "fingerprint": "12fcf54ac5189ea79415a3bc4cf754c4_0",
+   "full_filename": "vulnerabilities/api/public/index.php",
+   "id": "php_lang_permissive_allow_origin",
+   "line_number": 11,
+   "old_fingerprint": "4af1d22dac97a1121e8f0f9c06671ef5_1",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 41,
+     "start": 1
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 41,
+     "start": 1
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Permissive Access-Control-Allow-Origin configuration"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "phpinfo();",
+   "cwe_ids": [
+    "200"
+   ],
+   "filename": "phpinfo.php",
+   "fingerprint": "3fa4b1322bb9445eaf6e195e0f055452_0",
+   "full_filename": "phpinfo.php",
+   "id": "php_lang_phpinfo",
+   "line_number": 8,
+   "old_fingerprint": "12c01395c964700b7af97ecd7ec60e50_0",
+   "parent_line_number": 8,
+   "sink": {
+    "column": {
+     "end": 10,
+     "start": 1
+    },
+    "content": "",
+    "end": 8,
+    "start": 8
+   },
+   "source": {
+    "column": {
+     "end": 10,
+     "start": 1
+    },
+    "end": 8,
+    "start": 8
+   },
+   "title": "Leakage of sensitive information with 'phpinfo' function"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$_SESSION[ 'session_token' ] = md5( uniqid() );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "dvwa/includes/dvwaPage.inc.php",
+   "fingerprint": "63a689cb5ac980a1265d3657ca99ab54_0",
+   "full_filename": "dvwa/includes/dvwaPage.inc.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 650,
+   "old_fingerprint": "4ade59658a809a8f04c41c659802fbc9_19",
+   "parent_line_number": 650,
+   "sink": {
+    "column": {
+     "end": 48,
+     "start": 33
+    },
+    "content": "",
+    "end": 650,
+    "start": 650
+   },
+   "source": {
+    "column": {
+     "end": 48,
+     "start": 33
+    },
+    "end": 650,
+    "start": 650
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass = md5( $pass );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "login.php",
+   "fingerprint": "e75c3db34ecb83d3888dc9fce879f054_0",
+   "full_filename": "login.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 27,
+   "old_fingerprint": "cd20d78f15e6b70b101bd2e6bb6da393_13",
+   "parent_line_number": 27,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "content": "",
+    "end": 27,
+    "start": 27
+   },
+   "source": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "end": 27,
+    "start": 27
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass = md5( $pass );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/brute/source/high.php",
+   "fingerprint": "92264ec9230849fec19b1d4df3a3619b_0",
+   "full_filename": "vulnerabilities/brute/source/high.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 16,
+   "old_fingerprint": "fa38d88c36d8cf0eae51fccb477c4de6_7",
+   "parent_line_number": 16,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "content": "",
+    "end": 16,
+    "start": 16
+   },
+   "source": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "end": 16,
+    "start": 16
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass = md5( $pass );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/brute/source/impossible.php",
+   "fingerprint": "c3ab2d6c79038a42be6d868af212fc86_0",
+   "full_filename": "vulnerabilities/brute/source/impossible.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 16,
+   "old_fingerprint": "d3efe10c620331710864891efbd5194b_8",
+   "parent_line_number": 16,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "content": "",
+    "end": 16,
+    "start": 16
+   },
+   "source": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "end": 16,
+    "start": 16
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass = md5( $pass );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/brute/source/low.php",
+   "fingerprint": "370f9b40c6da9811cc2795ed0eae12bf_0",
+   "full_filename": "vulnerabilities/brute/source/low.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 9,
+   "old_fingerprint": "d5e13aedf1c1e7e31cc593bdbf3f3548_0",
+   "parent_line_number": 9,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "content": "",
+    "end": 9,
+    "start": 9
+   },
+   "source": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "end": 9,
+    "start": 9
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass = md5( $pass );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/brute/source/medium.php",
+   "fingerprint": "fc89804269b6e37ecd14fc7f0a9f2600_0",
+   "full_filename": "vulnerabilities/brute/source/medium.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 11,
+   "old_fingerprint": "565737109b53652ae55369de3d94a7c8_2",
+   "parent_line_number": 11,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "content": "",
+    "end": 11,
+    "start": 11
+   },
+   "source": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "end": 11,
+    "start": 11
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/captcha/source/high.php",
+   "fingerprint": "60aa7adbbe5f581b9f84c29a13888bd6_0",
+   "full_filename": "vulnerabilities/captcha/source/high.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 27,
+   "old_fingerprint": "176ce5e7ddb1f5265306488181e0d9ff_12",
+   "parent_line_number": 27,
+   "sink": {
+    "column": {
+     "end": 32,
+     "start": 16
+    },
+    "content": "",
+    "end": 27,
+    "start": 27
+   },
+   "source": {
+    "column": {
+     "end": 32,
+     "start": 16
+    },
+    "end": 27,
+    "start": 27
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass_new  = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/captcha/source/impossible.php",
+   "fingerprint": "e88d9caa88daf8553fefcd20c98dae1a_0",
+   "full_filename": "vulnerabilities/captcha/source/impossible.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 14,
+   "old_fingerprint": "fcc0485a872e375ba0dedd77fcbd7a6f_5",
+   "parent_line_number": 14,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "content": "",
+    "end": 14,
+    "start": 14
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "end": 14,
+    "start": 14
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass_conf = md5( $pass_conf );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/captcha/source/impossible.php",
+   "fingerprint": "e88d9caa88daf8553fefcd20c98dae1a_1",
+   "full_filename": "vulnerabilities/captcha/source/impossible.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 19,
+   "old_fingerprint": "fcc0485a872e375ba0dedd77fcbd7a6f_9",
+   "parent_line_number": 19,
+   "sink": {
+    "column": {
+     "end": 32,
+     "start": 15
+    },
+    "content": "",
+    "end": 19,
+    "start": 19
+   },
+   "source": {
+    "column": {
+     "end": 32,
+     "start": 15
+    },
+    "end": 19,
+    "start": 19
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass_curr = md5( $pass_curr );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/captcha/source/impossible.php",
+   "fingerprint": "e88d9caa88daf8553fefcd20c98dae1a_2",
+   "full_filename": "vulnerabilities/captcha/source/impossible.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 24,
+   "old_fingerprint": "fcc0485a872e375ba0dedd77fcbd7a6f_11",
+   "parent_line_number": 24,
+   "sink": {
+    "column": {
+     "end": 32,
+     "start": 15
+    },
+    "content": "",
+    "end": 24,
+    "start": 24
+   },
+   "source": {
+    "column": {
+     "end": 32,
+     "start": 15
+    },
+    "end": 24,
+    "start": 24
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/captcha/source/low.php",
+   "fingerprint": "945b1e912e01bf5eb0f4c46f5f12e914_0",
+   "full_filename": "vulnerabilities/captcha/source/low.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 57,
+   "old_fingerprint": "0bf5da131e89841835a535ddcadbce72_17",
+   "parent_line_number": 57,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "content": "",
+    "end": 57,
+    "start": 57
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "end": 57,
+    "start": 57
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/captcha/source/medium.php",
+   "fingerprint": "4ee94a92f33e55a07a006ec6a679a346_0",
+   "full_filename": "vulnerabilities/captcha/source/medium.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 65,
+   "old_fingerprint": "7aa08d8c926654d19bf2bcdca6d2903b_18",
+   "parent_line_number": 65,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "content": "",
+    "end": 65,
+    "start": 65
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "end": 65,
+    "start": 65
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/csrf/source/high.php",
+   "fingerprint": "897291e17ed11e87cafa1a2e90fb75f4_0",
+   "full_filename": "vulnerabilities/csrf/source/high.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 39,
+   "old_fingerprint": "0c58c4d2e88b58708ed18d948ac8e858_15",
+   "parent_line_number": 39,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "content": "",
+    "end": 39,
+    "start": 39
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "end": 39,
+    "start": 39
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass_curr = md5( $pass_curr );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/csrf/source/impossible.php",
+   "fingerprint": "80f6c0e9abd56f759909cea27c061099_0",
+   "full_filename": "vulnerabilities/csrf/source/impossible.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 15,
+   "old_fingerprint": "2438ae5e45c18f4d970911386e41ac97_6",
+   "parent_line_number": 15,
+   "sink": {
+    "column": {
+     "end": 32,
+     "start": 15
+    },
+    "content": "",
+    "end": 15,
+    "start": 15
+   },
+   "source": {
+    "column": {
+     "end": 32,
+     "start": 15
+    },
+    "end": 15,
+    "start": 15
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/csrf/source/impossible.php",
+   "fingerprint": "80f6c0e9abd56f759909cea27c061099_1",
+   "full_filename": "vulnerabilities/csrf/source/impossible.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 29,
+   "old_fingerprint": "2438ae5e45c18f4d970911386e41ac97_14",
+   "parent_line_number": 29,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "content": "",
+    "end": 29,
+    "start": 29
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "end": 29,
+    "start": 29
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/csrf/source/low.php",
+   "fingerprint": "ed7e2cd5fa7bcbfdb36001cb95ea6dfe_0",
+   "full_filename": "vulnerabilities/csrf/source/low.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 12,
+   "old_fingerprint": "2c9ca97ee49dab861ec84cf1321e0923_3",
+   "parent_line_number": 12,
+   "sink": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "content": "",
+    "end": 12,
+    "start": 12
+   },
+   "source": {
+    "column": {
+     "end": 31,
+     "start": 15
+    },
+    "end": 12,
+    "start": 12
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t$pass_new = md5( $pass_new );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/csrf/source/medium.php",
+   "fingerprint": "549029ee18127f631c8f41e4081af72f_0",
+   "full_filename": "vulnerabilities/csrf/source/medium.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 14,
+   "old_fingerprint": "edfbeb0ce9193911031a5d4d7e4c3090_4",
+   "parent_line_number": 14,
+   "sink": {
+    "column": {
+     "end": 32,
+     "start": 16
+    },
+    "content": "",
+    "end": 14,
+    "start": 14
+   },
+   "source": {
+    "column": {
+     "end": 32,
+     "start": 16
+    },
+    "end": 14,
+    "start": 14
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$pass = md5( $pass );",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/csrf/test_credentials.php",
+   "fingerprint": "ba77a97d5e161e1dd84962fc833516e9_0",
+   "full_filename": "vulnerabilities/csrf/test_credentials.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 19,
+   "old_fingerprint": "6e982d1a7fe86af04ef5943c6603ba4b_10",
+   "parent_line_number": 19,
+   "sink": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "content": "",
+    "end": 19,
+    "start": 19
+   },
+   "source": {
+    "column": {
+     "end": 22,
+     "start": 10
+    },
+    "end": 19,
+    "start": 19
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t\t\t\t\tif ($token == md5(str_rot13(\"success\"))) {",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/javascript/index.php",
+   "fingerprint": "216cd5116481e30ca7c7ca20e74e57b3_0",
+   "full_filename": "vulnerabilities/javascript/index.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 43,
+   "old_fingerprint": "cd1cf30958a2af0fe4e3adf2dc824154_16",
+   "parent_line_number": 43,
+   "sink": {
+    "column": {
+     "end": 45,
+     "start": 20
+    },
+    "content": "",
+    "end": 43,
+    "start": 43
+   },
+   "source": {
+    "column": {
+     "end": 45,
+     "start": 20
+    },
+    "end": 43,
+    "start": 43
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  },
+  {
+   "category_groups": [
+    "PII",
+    "Personal Data"
+   ],
+   "code_extract": "\t$cookie_value = md5($_SESSION['last_session_id_high']);",
+   "cwe_ids": [
+    "328"
+   ],
+   "filename": "vulnerabilities/weak_id/source/high.php",
+   "fingerprint": "dbf07e95c28d79966304c1e1e6389908_0",
+   "full_filename": "vulnerabilities/weak_id/source/high.php",
+   "id": "php_lang_weak_hash_md",
+   "line_number": 10,
+   "old_fingerprint": "8191fef43aa79eb5abbe39788d549e92_1",
+   "parent_line_number": 10,
+   "sink": {
+    "column": {
+     "end": 56,
+     "start": 18
+    },
+    "content": "",
+    "end": 10,
+    "start": 10
+   },
+   "source": {
+    "column": {
+     "end": 56,
+     "start": 18
+    },
+    "end": 10,
+    "start": 10
+   },
+   "title": "Usage of weak hashing library (MDx)"
+  }
+ ]
+}

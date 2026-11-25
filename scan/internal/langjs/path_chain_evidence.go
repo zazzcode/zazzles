@@ -27,6 +27,9 @@ func (s *moduleSet) pathChainEvidence(report *analysis.AnalysisReport, check ana
 			context = append(context, adapter...)
 			continue
 		}
+		if s.verifiedMiddlewareCall(m, arg) {
+			continue
+		}
 		if transportMiddleware(m, arg) {
 			continue
 		}

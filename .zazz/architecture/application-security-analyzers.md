@@ -130,7 +130,7 @@ authorization (branch 2).
 Record shape (`analysis.AuthorizationFacts`): facets, subject class and provenance, the
 operation, census fields, guards, `method_safe`, peer access and, for an address guard,
 the ids of SSRF uses in the same report. One candidate per operation per entry. Protocol
-`authorization-components-v5` (branch 3 judges listed roles by who holds them). Required roles: `subject_selection`, `protected_operation`,
+`authorization-components-v9` (Symfony branch 3 judges listed roles by who holds them; hardening 3 adds the `written_values` fact of an update and names an object-level read in the access question). Required roles: `subject_selection`, `protected_operation`,
 `entry_access`, `control_flow`. Contract `php-authorization-operation-v1`.
 
 Entry access is context. It is computed from `access_control`, firewalls and

@@ -74,6 +74,15 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 			facts.Gaps = append(facts.Gaps, analysis.Gap{Kind: "input_type_unresolved", Detail: "app.param can replace captured parameter values", At: c.entry.Location.Span})
 		}
 	}
+	// A destructured request parameter binds containers and fields under local
+	// names (hardening 3 D-1); their origin is that of the member they read.
+	var pattern handlerParams
+	if c.request == "" && c.entry.HTTP.Framework == "express" && c.body != nil && c.body.Parent() != nil {
+		pattern = plainOrDestructuredParameters(c.body.Parent(), c.handler.src)
+		if pattern.unsupported {
+			pattern = handlerParams{}
+		}
+	}
 	for i, d := range u.Dependencies {
 		v := analysis.InputValueFact{Dependency: i, Origin: "unknown", InitialType: "unknown", SinkType: "unknown", Source: d.Source, Transfers: append([]analysis.Evidence{}, d.Transfers...)}
 		m := s.modules[d.Source.Span.File]
@@ -84,40 +93,53 @@ func (s *moduleSet) nodeInputFacts(u *analysis.CandidateUse, c *nodeHTTPContext)
 		}
 		if m != nil {
 			n := parse.NodeAt(m.tree.RootNode(), d.Source.Span.StartByte, d.Source.Span.EndByte)
+			member, prop := "", ""
 			if n != nil && n.Kind() == "member_expression" {
 				container, key := n.ChildByFieldName("object"), n.ChildByFieldName("property")
 				if container != nil && key != nil {
-					prop := key.Utf8Text(m.src)
+					prop = key.Utf8Text(m.src)
 					if container.Kind() == "identifier" && container.Utf8Text(m.src) == c.request {
 						v.Origin = nodeURLUploadOrigin(prop, "")
 					}
 					parts := strings.Split(container.Utf8Text(m.src), ".")
 					if len(parts) == 2 && parts[0] == c.request {
-						switch parts[1] {
-						case "params":
-							v.Origin = "http.path"
-							if namedHTTPParameter(c.entry.HTTP.Path, prop, c.entry.HTTP.Framework) {
-								v.InitialType = "string"
-								if stable && !inputEffects(facts.Controls) && len(facts.Gaps) == 0 && preservesInputType(d.Transfers) {
-									v.SinkType = "string"
-								}
-							}
-						case "body", "payload":
-							v.Origin = "http.body"
-						case "query":
-							v.Origin = "http.query"
-						case "headers":
-							v.Origin = "http.headers"
-						case "cookies":
-							v.Origin = "http.cookies"
-						case "file", "files":
-							v.Origin = nodeURLUploadOrigin(parts[1], prop)
-						case "path", "url", "originalUrl", "baseUrl":
-							// Nested reads on URL members keep the URL origin.
-							v.Origin = nodeURLUploadOrigin(parts[1], "")
-						}
+						member = parts[1]
+					} else if chain := pattern.projections[parts[0]]; len(parts) == 1 && m == c.handler && chain != "" && !strings.Contains(chain, ".") {
+						member = chain // params.name under ({ params }) or ({ params: p })
 					}
 				}
+			} else if n != nil && m == c.handler {
+				// The binding node of a nested pattern: ({ params: { name } }).
+				for name, node := range pattern.bindings {
+					if node.StartByte() == n.StartByte() && node.EndByte() == n.EndByte() {
+						member, prop, _ = strings.Cut(pattern.projections[name], ".")
+					}
+				}
+			}
+			switch member {
+			case "params":
+				v.Origin = "http.path"
+				if namedHTTPParameter(c.entry.HTTP.Path, prop, c.entry.HTTP.Framework) {
+					v.InitialType = "string"
+					// The sink type is claimed for a plain request parameter only: the
+					// stability test reads writes through the request name.
+					if c.request != "" && stable && !inputEffects(facts.Controls) && len(facts.Gaps) == 0 && preservesInputType(d.Transfers) {
+						v.SinkType = "string"
+					}
+				}
+			case "body", "payload":
+				v.Origin = "http.body"
+			case "query":
+				v.Origin = "http.query"
+			case "headers":
+				v.Origin = "http.headers"
+			case "cookies":
+				v.Origin = "http.cookies"
+			case "file", "files":
+				v.Origin = nodeURLUploadOrigin(member, prop)
+			case "path", "url", "originalUrl", "baseUrl":
+				// Nested reads on URL members keep the URL origin.
+				v.Origin = nodeURLUploadOrigin(member, "")
 			}
 		}
 		if u.Upload != nil && u.Kind == "file_upload_candidate" {

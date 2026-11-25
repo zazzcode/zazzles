@@ -128,6 +128,34 @@ evidence, all code, the api_model and the family questions.
 - **Later, not here:** adding information. The first candidate is a language-neutral fact, whether the value sits inside
   quotes in the text; the DVWA false positives are values escaped and quoted.
 
+## Round 5: a noise control, and computed facts
+
+The owner asked (2026-11-25) whether the judge should choose what to send, without a recursive loop, or whether Go can
+decide it. **Go decides, the judge answers once.** The scanner's one bounded follow-up exists (one per record, 25% cap)
+and on the four applications 60 records have one, 0 sent: 49 marked not sent, 11 unresolved. So this round tests facts
+the scanner computes.
+
+Round 4 had two flaws: no noise control, and arms C, V and X were re-encoded with the guidelines moved before the
+instruction. G and L2 had the guidelines removed, so they kept the order.
+
+| Arm | Requests | What |
+|---|---:|---|
+| N | 145 | One neutral sentence added: the 101 dev records and the 68 SQL records (24 shared) |
+| R | 101 | Dev records re-encoded with nothing dropped: the order change of C, V and X, content equal |
+| Fa | 68 | SQL records, full request plus `sql_position_facts` |
+| Fb | 68 | Fa plus a short general note on escaping inside and outside quotes |
+| **Total** | **382** | hard stop 382, no retry, 9.2 MB |
+
+- **The fact.** For each request value: where it sits in the SQL text (inside a quoted literal or not), and the names of the
+  calls on its path. No list of libraries decides anything; the position comes from the text, the call names are reported.
+  It is added to the request and nothing is removed.
+- **Seen already, before any paid answer.** Of the 14 false SQL findings, 12 have every value inside quotes and an escape
+  call on every path; none of the 30 true ones does. The other 2 use a pattern check. So the facts were chosen on these
+  records, and a pass needs a Go version and other applications.
+- **Criteria** are in round 5's `criteria.json`: facts must lose no true finding, remove at least 8 of 14 false, and clear
+  nothing the ledger calls safe; the noise level decides whether any round 4 arm was distinguishable.
+- **Not here:** facts for other families, and dropping any section.
+
 ## Review change log
 
 ### 2026-11-25 — Written, round 1 sent
@@ -165,3 +193,7 @@ Offline only. Nothing of round 4 is sent.
 
 No section is safe to drop by the written rules; the stop condition applies. The design lacked a noise control.
 [Results](../../evaluation/detection-generalization-results/15.md#round-4-one-section-removed-at-a-time).
+
+### 2026-11-25 — Round 5 designed
+
+Offline only. Nothing of round 5 is sent.

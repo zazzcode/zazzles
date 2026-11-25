@@ -14,11 +14,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
+
+      - name: Lint Markdown diff
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          base="$PUSH_BEFORE"
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            # Checkout uses GitHub's test merge commit. Its first parent is the base.
+            base="${GITHUB_SHA}^1"
+          fi
+          go run ./tools/mdlint -base "$base" -head "$GITHUB_SHA"
 
       # A format gate, not a formatter: CI never rewrites the tree.
       - name: Format

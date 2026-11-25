@@ -192,7 +192,7 @@ revision, assessment scope and scored results. [Hosted reports](https://zazzcode
 ## Contributing
 
 Build and test from an assigned feature branch or worktree, then submit a draft PR against
-`stage` for human review. [Contributor guide](docs/contributing.md)
+`stage` for human review. [Contributor guide](docs/contributing.md) · [Markdown lint guide](docs/markdown-linting.md)
 
 ## Documentation
 

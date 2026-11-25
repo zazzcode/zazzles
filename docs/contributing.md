@@ -68,6 +68,9 @@ extraction, model assessment, and deterministic evidence validation distinct.
 
 ## Verification
 
+CI checks new and edited Markdown lines before the Go format, vet, build, and test steps.
+See the [Markdown lint guide](markdown-linting.md) for the local command and the checks it runs.
+
 While developing, run the smallest relevant package or test:
 
 ```bash

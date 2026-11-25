@@ -106,6 +106,28 @@ replaces a round 3 on more invented forms.
 - **Measure.** GOOD, BETTER or BELOW as defined there. The contract §7 rule holds: no true finding is lost.
 - **Not shown.** The 26 stale records, a multi-question package call, held-out applications, and any production change.
 
+## Round 4: which information does the judge need
+
+The owner (2026-11-25): find what has to be sent to get a signal good enough for the correct result, and the fewer KB the
+better. Round 3 cut evidence, so it could not answer that. This round removes **one section at a time**, keeping all
+evidence, all code, the api_model and the family questions.
+
+| Arm | Drops | Bytes of the 101 requests |
+|---|---|---:|
+| G | Guidelines (fact notes kept), component list, generic instruction tail | 2.06 MB |
+| C | `evidence_coverage` | 2.25 MB |
+| V | `invocation` | 2.29 MB |
+| X | Context and required lists, scope, declared requirement, coverage gaps | 2.32 MB |
+| L2 | All of them | 1.75 MB |
+
+- **Records.** 101 development records, fixed by seed before any answer: the 44 true Confirmed with a decisive answer
+  below 0.70, 20 false Confirmed, 1 not decidable, 15 Protected, 10 other true, 11 others. The fragile ones were chosen
+  because they show what is needed. **302 records stay out as a confirmation set.**
+- **Safe or needed** is defined in `criteria.json` (round 4), on policy outcomes by replay, plus the change of certainty.
+- **Cost** 505 requests, hard stop 505, no retry. Confirmation is a second run of one arm on the 302, asked separately.
+- **Later, not here:** adding information. The first candidate is a language-neutral fact, whether the value sits inside
+  quotes in the text; the DVWA false positives are values escaped and quoted.
+
 ## Review change log
 
 ### 2026-11-25 — Written, round 1 sent
@@ -134,3 +156,7 @@ Offline only. Nothing of round 3 is sent.
 
 BELOW: 52 of 256 true Confirmed lost, one false Protected. F withheld evidence XSS and other families need.
 [Results](../../evaluation/detection-generalization-results/15.md#round-3-whole-applications).
+
+### 2026-11-25 — Round 4 designed
+
+Offline only. Nothing of round 4 is sent.

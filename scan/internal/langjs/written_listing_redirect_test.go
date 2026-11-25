@@ -42,6 +42,17 @@ const site = express()
 		{"transfer: model update with a request value", sequelize + `app.put('/tickets/:id', (req, res) => { Ticket.update({ state: req.body.state }, { where: { id: req.params.id } }); res.send('ok') })`, "server.ts", "yes", ""},
 		{"transfer: instance update through a constant alias", sequelize + `app.put('/tickets/:id', async (req, res) => { const next = req.body.state; const row = await Ticket.findByPk(req.params.id); await row.update({ state: next }); res.send('ok') })`, "server.ts", "yes", ""},
 		{"transfer: increment a named column", sequelize + `app.post('/tickets/:id/vote', (req, res) => { Ticket.increment('votes', { where: { id: req.params.id } }); res.send('ok') })`, "server.ts", "no", ""},
+		// The amount of an increment is its `by` option (Sequelize v6, Model.increment).
+		{"transfer: increment by a request amount", sequelize + `app.post('/tickets/:id/vote', (req, res) => { Ticket.increment('votes', { by: req.body.weight, where: { id: req.params.id } }); res.send('ok') })`, "server.ts", "yes", ""},
+		{"transfer: decrement by a constant amount", sequelize + `app.post('/tickets/:id/vote', (req, res) => { Ticket.decrement(['votes'], { by: 2, where: { id: req.params.id } }); res.send('ok') })`, "server.ts", "no", ""},
+		{"transfer: increment by a looked-up amount", sequelize + `app.post('/tickets/:id/vote', (req, res) => { Ticket.increment('votes', { by: weights.current(), where: { id: req.params.id } }); res.send('ok') })`, "server.ts", "unknown", ""},
+		// A save writes whatever the handler put on the instance. "no" needs every
+		// change of the instance to be a literal member assignment.
+		{"transfer: save after literal assignments only", sequelize + `app.put('/tickets/:id', async (req, res) => { const row = await Ticket.findByPk(req.params.id); row.state = 'closed'; await row.save(); res.send('ok') })`, "server.ts", "no", ""},
+		{"transfer: save after the request is copied onto the instance", sequelize + `app.put('/tickets/:id', async (req, res) => { const row = await Ticket.findByPk(req.params.id); row.state = 'closed'; Object.assign(row, req.body); await row.save(); res.send('ok') })`, "server.ts", "yes", ""},
+		{"transfer: save after a setter call with the request", sequelize + `app.put('/tickets/:id', async (req, res) => { const row = await Ticket.findByPk(req.params.id); row.set(req.body); row.state = 'closed'; await row.save(); res.send('ok') })`, "server.ts", "yes", ""},
+		{"transfer: save after a computed member write", sequelize + `app.put('/tickets/:id', async (req, res) => { const row = await Ticket.findByPk(req.params.id); row.state = 'closed'; row[req.body.field] = req.body.value; await row.save(); res.send('ok') })`, "server.ts", "yes", ""},
+		{"transfer: save after a call that receives the instance", sequelize + `app.put('/tickets/:id', async (req, res) => { const row = await Ticket.findByPk(req.params.id); row.state = 'closed'; stamp(row); await row.save(); res.send('ok') })`, "server.ts", "unknown", ""},
 		{"transfer: destroy carries no fact", sequelize + `app.delete('/tickets/:id', (req, res) => { Ticket.destroy({ where: { id: req.params.id } }); res.send('ok') })`, "server.ts", "", ""},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

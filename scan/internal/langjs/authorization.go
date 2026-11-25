@@ -40,6 +40,10 @@ type authzSelector struct {
 	// first of them is a Mongo-style update document (hardening 3 D-8).
 	written  []*sitter.Node
 	document bool
+	// opaque marks a write the listed values do not describe in full: an
+	// option object with a spread, or an instance that a call can change
+	// before it is saved. Such a write is never "no".
+	opaque bool
 }
 
 func (s *moduleSet) authorizationCandidates(out *analysis.AnalysisReport) {
@@ -141,6 +145,14 @@ func (s *moduleSet) authzSelectorOf(m *sourceModule, call *sitter.Node, p handle
 							sel.written = append(sel.written, v)
 						}
 					}
+					if method == "increment" || method == "decrement" {
+						// The amount is the `by` option, 1 when absent (Sequelize v6
+						// API, Model.increment: "options.by: The number to increment by").
+						if by := property(o, "by", m.src); by != nil {
+							sel.written = append(sel.written, by)
+						}
+						sel.opaque = hasSpread(o)
+					}
 					return sel, true
 				}
 			}
@@ -165,23 +177,24 @@ func (s *moduleSet) authzSelectorOf(m *sourceModule, call *sitter.Node, p handle
 			return authzSelector{}, false
 		}
 		var written []*sitter.Node
+		opaque := false
 		switch method {
 		case "update":
 			if v := firstArg(args); v != nil {
 				written = []*sitter.Node{v}
 			}
 		case "save":
-			written = instanceAssignments(m, call, name)
+			written, opaque = instanceAssignments(m, call, name)
 		}
 		switch memberName(m, ifn) {
 		case "findByPk":
-			sel := authzSelector{subject: "model:" + model.Utf8Text(m.src), operation: op, call: call, pairs: map[string]*sitter.Node{"primary key": firstArg(iargs)}, order: []string{"primary key"}, written: written}
+			sel := authzSelector{subject: "model:" + model.Utf8Text(m.src), operation: op, call: call, pairs: map[string]*sitter.Node{"primary key": firstArg(iargs)}, order: []string{"primary key"}, written: written, opaque: opaque}
 			return sel, true
 		case "findOne":
 			if o := unwrapTS(firstArg(iargs)); o != nil && o.Kind() == "object" {
 				if w := property(o, "where", m.src); w != nil {
 					sel := selectorFrom(m, "model:"+model.Utf8Text(m.src), op, call, w)
-					sel.written = written
+					sel.written, sel.opaque = written, opaque
 					return sel, true
 				}
 			}
@@ -414,23 +427,52 @@ func instanceWritten(m *sourceModule, handler, read *sitter.Node) bool {
 	return written
 }
 
-// instanceAssignments returns the values assigned to members of the instance
-// name before a save call in the same function.
-func instanceAssignments(m *sourceModule, save *sitter.Node, name string) []*sitter.Node {
+// instanceAssignments returns the values a handler puts on the instance name
+// before a save call in the same function: the right side of each assignment
+// to a member of it, plain or computed, and the arguments of each call that
+// can change it (a method of the instance, or a call that receives it). opaque
+// reports that such a call exists, so the assignments are not the whole write.
+func instanceAssignments(m *sourceModule, save *sitter.Node, name string) (out []*sitter.Node, opaque bool) {
 	fn := enclosingFunction(save)
 	if fn == nil {
-		return nil
+		return nil, true
 	}
-	var out []*sitter.Node
+	instance := map[string]bool{name: true}
 	var walk func(*sitter.Node)
 	walk = func(x *sitter.Node) {
-		if x == nil || (x != fn && isFunction(x)) || x.StartByte() >= save.StartByte() {
+		if x == nil || x.StartByte() >= save.StartByte() {
 			return
 		}
-		if x.Kind() == "assignment_expression" || x.Kind() == "augmented_assignment_expression" {
-			if left := x.ChildByFieldName("left"); left != nil && left.Kind() == "member_expression" && chainRoot(left, m.src) == name {
+		if x != fn && isFunction(x) {
+			// A nested function that reads the instance may change it when called.
+			opaque = opaque || mentionsName(m, x, instance)
+			return
+		}
+		switch x.Kind() {
+		case "assignment_expression", "augmented_assignment_expression":
+			left := unwrapTS(x.ChildByFieldName("left"))
+			root := left
+			if left != nil && left.Kind() == "subscript_expression" {
+				root = unwrapTS(left.ChildByFieldName("object"))
+			}
+			if left != nil && (left.Kind() == "member_expression" || left.Kind() == "subscript_expression") && chainRoot(root, m.src) == name {
+				if index := left.ChildByFieldName("index"); index != nil {
+					out = append(out, index)
+				}
 				if right := x.ChildByFieldName("right"); right != nil {
 					out = append(out, right)
+				}
+			}
+		case "call_expression":
+			callee, args := x.ChildByFieldName("function"), x.ChildByFieldName("arguments")
+			method := callee != nil && callee.Kind() == "member_expression" && chainRoot(callee, m.src) == name
+			if args != nil && (method || mentionsName(m, args, instance)) {
+				opaque = true
+				for i := uint(0); i < args.NamedChildCount(); i++ {
+					// The instance as an argument is the record, not a written value.
+					if a := args.NamedChild(i); !mentionsName(m, a, instance) {
+						out = append(out, a)
+					}
 				}
 			}
 		}
@@ -439,13 +481,24 @@ func instanceAssignments(m *sourceModule, save *sitter.Node, name string) []*sit
 		}
 	}
 	walk(fn)
-	return out
+	return out, opaque
+}
+
+// hasSpread reports an object literal with a spread element.
+func hasSpread(o *sitter.Node) bool {
+	for i := uint(0); i < o.NamedChildCount(); i++ {
+		if o.NamedChild(i).Kind() == "spread_element" {
+			return true
+		}
+	}
+	return false
 }
 
 // writtenValues is the D-8 fact of an update: whether any written value
 // depends on the request, and the operators of an update document. "no" is
-// stated only when every written value is built from literals; a value the
-// scanner cannot follow to the request or to a literal is "unknown".
+// stated only when every written value is built from literals and the listed
+// values are the whole write; a value the scanner cannot follow to the request
+// or to a literal, and a write a call can extend, is "unknown".
 func (s *moduleSet) writtenValues(m *sourceModule, p handlerParams, sel authzSelector) *analysis.WrittenValues {
 	w := &analysis.WrittenValues{RequestDependent: "unknown"}
 	if sel.document && len(sel.written) > 0 {
@@ -461,13 +514,13 @@ func (s *moduleSet) writtenValues(m *sourceModule, p handlerParams, sel authzSel
 		}
 	}
 	if len(sel.written) == 0 {
-		if method := memberName(m, sel.call.ChildByFieldName("function")); method == "increment" || method == "decrement" {
-			// Model.increment(column, { where }) adds the default amount of 1.
+		if method := memberName(m, sel.call.ChildByFieldName("function")); (method == "increment" || method == "decrement") && !sel.opaque {
+			// Model.increment({ where }) with no `by` option adds the default amount of 1.
 			w.RequestDependent = "no"
 		}
 		return w
 	}
-	constant := true
+	constant := !sel.opaque
 	for _, v := range sel.written {
 		if s.requestValue(m, v, p, 0) != nil {
 			w.RequestDependent = "yes"

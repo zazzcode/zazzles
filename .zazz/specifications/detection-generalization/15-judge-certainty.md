@@ -60,7 +60,7 @@ and not reworded on these forms.
 ## Round 2: does it hold on what it was not designed on
 
 Packages, made-up names, safe constructions and traps all differ from 03 and 14. JavaScript SQL requests are built from
-real scanner records (the 14 overlay), so they hold only what a scan can extract. Half the drivers sit in a longer
+real scanner records (the 14 overlay), so they hold only what a scan can extract. Five of the 12 drivers sit in a longer
 handler. The call question gains "or marks it as raw SQL text", which round 1 lacked. The injection question is
 rewritten and names no pattern. The implementer wrote the forms and the questions, so this is not held-out evidence.
 
@@ -78,7 +78,7 @@ in quotes, a `typeof` test. Marks are in `criteria.json`. A set marked BELOW is 
 
 **Found offline, free.** The scanner's own blockers hold correct records back whatever the judge answers. In the long
 handler a `for` loop that does not touch the value gives `control_flow_unresolved`, `unsupported_control_flow` and
-`unknown_control_effect`; a callback gives `unsupported_callback`; `parseInt`, `BigInt` and `Map.get` give
+`unknown_control_effect`; a callback can give `unsupported_callback`; `parseInt`, `BigInt` and `Map.get` give
 `input_helper_unresolved`. 5 of the 12 drivers have the loop blockers, and 3 the callback blocker (one has both). Generalizing the package question is
 not enough alone: the same focused approach has to be tried on those gaps. `look-winston` made no SQL record and
 `safe-ternary` made none because no request data is in its text.

@@ -98,3 +98,7 @@ by how little it needs to know ahead. A focused question built from structural f
 ### 2026-11-25 — Round 2 designed
 
 Offline only. Nothing of round 2 is sent.
+
+### 2026-11-25 — Round 2 sent
+
+P is GOAL. H1 and V are BELOW and are not reworded on these forms. [Results](../../evaluation/detection-generalization-results/15.md#round-2).

@@ -129,3 +129,8 @@ P is GOAL. H1 and V are BELOW and are not reworded on these forms. [Results](../
 ### 2026-11-25 — Round 3 designed
 
 Offline only. Nothing of round 3 is sent.
+
+### 2026-11-25 — Round 3 sent
+
+BELOW: 52 of 256 true Confirmed lost, one false Protected. F withheld evidence XSS and other families need.
+[Results](../../evaluation/detection-generalization-results/15.md#round-3-whole-applications).

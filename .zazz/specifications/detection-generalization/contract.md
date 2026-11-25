@@ -195,7 +195,7 @@ second review:
 
 | Sample | Confirmed records | Reviewed false (records or locations) | Families with false ones |
 |---|---:|---:|---|
-| Juice Shop | 51 | 5 records, 4 locations | NoSQL 2 of 7, authorization 2 of 10, configuration 1 of 5 |
+| Juice Shop | 51 | 4 records, 4 locations | NoSQL 1 of 7, authorization 2 of 10, configuration 1 of 5 |
 | vuln-nextjs | 13 | 0 | — |
 | vuln-symfony | 55 | 0 | — |
 | DVWA | in the ledger | 9 locations | SQL |

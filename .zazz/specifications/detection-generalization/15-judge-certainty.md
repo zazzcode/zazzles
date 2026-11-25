@@ -57,11 +57,31 @@ of the forms, so its safe result is optimistic and needs other constructions in 
 when the running-SQL certainty is at most 1 minus the bar), and injection does where asked. Otherwise BELOW, recorded
 and not reworded on these forms.
 
-**Round 2**, only for an arm marked FLOOR or GOAL: new forms with other drivers, other made-up names and other safe
-constructions, two repeats, exact count asked separately.
+## Round 2: does it hold on what it was not designed on
 
-**Not tested here.** Package facts (a type declaration or documented signature) sent as evidence. They are the strongest
-"right details" candidate, but the sample repositories do not hold `node_modules` and getting them needs a download.
+Packages, made-up names, safe constructions and traps all differ from 03 and 14. JavaScript SQL requests are built from
+real scanner records (the 14 overlay), so they hold only what a scan can extract. Half the drivers sit in a longer
+handler. The call question gains "or marks it as raw SQL text", which round 1 lacked. The injection question is
+rewritten and names no pattern. The implementer wrote the forms and the questions, so this is not held-out evidence.
+
+| Set | Requests | What |
+|---|---:|---|
+| H1 | 33 | JavaScript SQL: 8 drivers, 4 ORM raw calls, 7 lookalikes, 4 made up, 5 safe, 5 traps. Call and injection questions |
+| H2 | 23 | The drivers, lookalikes and made-up of H1 with the declared package version. Reported, not marked |
+| V | 15 | Validation libraries: what can the value be after the call. Hand-built; no producer exists |
+| P | 13 | Python: 9 drivers, 3 lookalikes, 1 made up. Hand-built; no producer exists |
+| D | 6 | Exact repeats of H1 requests |
+| **Total** | **90** | hard stop 90, 0.19 MB of requests |
+
+A trap looks checked and is not: an unanchored pattern, a check without a return, trim and slice, `encodeURIComponent`
+in quotes, a `typeof` test. Marks are in `criteria.json`. A set marked BELOW is not reworded on these forms.
+
+**Found offline, free.** The scanner's own blockers hold correct records back whatever the judge answers. In the long
+handler a `for` loop that does not touch the value gives `control_flow_unresolved`, `unsupported_control_flow` and
+`unknown_control_effect`; a callback gives `unsupported_callback`; `parseInt`, `BigInt` and `Map.get` give
+`input_helper_unresolved`. 5 of the 12 drivers have the loop blockers, and 3 the callback blocker (one has both). Generalizing the package question is
+not enough alone: the same focused approach has to be tried on those gaps. `look-winston` made no SQL record and
+`safe-ternary` made none because no request data is in its text.
 
 ## Review change log
 
@@ -74,3 +94,7 @@ A2 is marked GOAL; A0, A1, A3 and A4 are BELOW. [Results](../../evaluation/detec
 The aim is to generalize, so a new driver version, ORM or validation library needs no scanner change, or as little as
 possible, with an easy way to improve. It may differ by language. Consequences for this series: an approach is judged
 by how little it needs to know ahead. A focused question built from structural facts fits; a list of packages does not.
+
+### 2026-11-25 — Round 2 designed
+
+Offline only. Nothing of round 2 is sent.

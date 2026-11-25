@@ -20,6 +20,10 @@ func replace(old, replacement string) sectionEdit {
 	return sectionEdit{old: old, replacement: replacement}
 }
 
+func mustReplace(old, replacement string) sectionEdit {
+	return sectionEdit{old: old, replacement: replacement, required: true}
+}
+
 func mustRemove(phrase string) sectionEdit {
 	return sectionEdit{old: phrase, required: true}
 }

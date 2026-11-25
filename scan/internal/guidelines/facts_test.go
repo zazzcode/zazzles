@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/zazzcode/zazzles/scan/internal/lang"
 )
 
 func TestFactNotes(t *testing.T) {
@@ -74,5 +76,41 @@ func TestProducedFactCodesHaveNotes(t *testing.T) {
 	}
 	if found == 0 {
 		t.Fatal("no coded facts found; the producer pattern is stale")
+	}
+}
+
+// TestFactSentences replaces the general escape sentences only for a record with
+// the escape fact, and fails when a sentence to replace is gone.
+func TestFactSentences(t *testing.T) {
+	php, err := FamilyBody(lang.PHP, "sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	const general, particular = "an escaped value interpolated into SQL text remains a construction finding", "an escaped value that sits inside a quoted SQL string literal, and is not changed afterwards, cannot end that literal"
+	for _, facts := range [][]string{nil, {"hash_hex_result: $p from md5($p) at a.php"}, {"Operand path facts: x"}} {
+		if body, err := FactGuidance(php.Body, facts); err != nil || body != php.Body {
+			t.Fatalf("%q changed the guidance: %v", facts, err)
+		}
+		if text, err := FactContract("any", facts); err != nil || text != "any" {
+			t.Fatalf("%q changed the contract: %v", facts, err)
+		}
+	}
+	escaped := []string{"hash_hex_result: $p", "escaped_in_quoted_literal: $v", "escaped_in_quoted_literal: $w"}
+	body, err := FactGuidance(php.Body, escaped)
+	if err != nil || strings.Contains(body, general) || strings.Count(body, particular) != 1 || !strings.Contains(php.Body, general) || strings.Contains(php.Body, particular) {
+		t.Fatalf("guidance: %v\n%s", err, body)
+	}
+	for _, sentence := range factSentences["escaped_in_quoted_literal"].guidance {
+		if _, err := FactGuidance(strings.Replace(php.Body, sentence.old, "", 1), escaped); err == nil {
+			t.Errorf("guidance without %q was accepted", sentence.old)
+		}
+	}
+	for _, sentence := range factSentences["escaped_in_quoted_literal"].contract {
+		if got, err := FactContract("a "+sentence.old+" z", escaped); err != nil || got != "a "+sentence.replacement+" z" {
+			t.Errorf("contract %q %v", got, err)
+		}
+		if _, err := FactContract("a z", escaped); err == nil {
+			t.Errorf("a contract without %q was accepted", sentence.old)
+		}
 	}
 }

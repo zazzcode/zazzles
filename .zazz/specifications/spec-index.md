@@ -104,6 +104,7 @@ with no merge recorded there reads "See specification".
 | 58 | [Phase 7: npm corpus and direct-model baseline](architecture-phase-7-npm-corpus.md) | 2026-11-17 | Ready to assign (waypoint W2) |
 | 59 | [Phase 8: npm library mode](architecture-phase-8-npm-library-mode.md) | 2026-11-17 | Starts after phase 7 (waypoint W4) |
 | 60 | [Phase 9: Drupal](architecture-phase-9-drupal.md) | 2026-11-17 | Planned |
+| 61 | [Detection generalization: series index](detection-generalization/README.md), with its [delivery plan](detection-generalization/delivery-plan.md) and specifications 00 to 13 | 2026-11-25 | Draft. Implementation starts on the owner's word |
 
 ## Maintaining this index
 

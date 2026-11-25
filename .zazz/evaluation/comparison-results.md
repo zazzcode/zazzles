@@ -79,6 +79,31 @@ other scanners' path-traversal results on that line are counted with the three s
 as false positives. vuln-nextjs's redirect control is not counted as a Code Scan false positive:
 its guard admits `/\\host`, so the report is correct.
 
+**Broad Semgrep run and false-positive review of 2026-11-25.** The capability inventory below uses
+the [broad run](semgrep-results.md#broad-run). New rule names were added to `RULE_CLASS` by what
+each rule detects, before their locations were read; the focused Semgrep and Bearer scores are
+unchanged by it. `JS-NOSQL-01` (`showProductReviews.ts:31-48`) and `JS-XSS-07`
+(`userProfile.ts:34-104`) are counted as found by hand: the result covers the keyed line but starts
+more than three lines above it. The committed key `JS-SECRET-01` is also counted by hand, as before.
+Earlier counting rule 5 left results outside the key unreviewed; they are now sorted, and the false
+positives of each tool are in [scanner-false-positives.json](scanner-false-positives.json).
+
+**Juice Shop key extended on 2026-11-25.** The comparison's Juice Shop table grew from 42 to 75 rows.
+The [33 rows](juice-shop-comparison-rows.json) are not in `cases.json`, which stays Code Scan's own
+key, so `match-scanner-results.py` does not score them. Their cells were set by hand from every
+result within three lines of an anchor whose rule reports the row's weakness. The inclusion rule was
+fixed before scoring: a distinct weakness in first-party code that one of the 116 documented
+challenges, a `vuln-line` marker, the detection guide or any scanner points to. Left out: puzzles,
+seeded passwords, outdated components, contract snippets, rows already keyed, and undecided cases.
+`JS-X-XSS-09` is the review row `JS-XSS-08` of `cases.json`, and `JS-X-DOS-01` its excluded row
+`JS-DESER-X01`; both are documented challenges, so they count as rows here. `JS-HASH-02` is counted
+as found for Semgrep and Bearer, whose hardcoded-key results describe its constant key. The rows and
+cells were set by the agent that ran the comparison. The 13 rows where an existing analyzer fell short were
+then read against source by a second session on 2026-11-25, and the first session rechecked the seven it
+questioned. `JS-X-UPLOAD-01` was removed (the server does enforce a size) and kept as a control, two rows
+changed class, one is a poor practice and three causes were corrected. The other 21 rows and their cells have
+not been checked independently.
+
 ## Reproduce
 
 ```bash
@@ -94,6 +119,9 @@ python3 .zazz/evaluation/match-scanner-results.py check.json juice-shop <DEV_ROO
   --cases .zazz/evaluation/recall-gap-inventory/cases.json
 
 python3 .zazz/evaluation/test_match_scanner_results.py
+
+# Count the reviewed false positives and check that each tool reported each location.
+python3 .zazz/evaluation/count-scanner-false-positives.py config.json
 ```
 
 `VULN` lines are the table rows. A `SAFE` line with a tool result is a false positive of that
@@ -105,36 +133,46 @@ What each scanner demonstrated on these four applications. A cell is the number 
 vulnerabilities found out of those keyed. "No keyed case" means no run exercised the class, so
 nothing is claimed for any scanner.
 
-| Weakness class | Known vulnerabilities | Code Scan | Semgrep CE | Bearer |
+| Weakness class | In answer key | Code Scan | Semgrep CE | Bearer |
 |---|---:|---:|---:|---:|
-| Cross-site scripting | 18 | 18 | 1 | 5 |
-| SQL injection | 10 | 10 | 5 | 7 |
-| Missing authorization | 10 | 10 | 0 | 0 |
-| Insecure configuration | 8 | 8 | 4 | 4 |
-| Path traversal | 7 | 7 | 0 | 2 |
+| Cross-site scripting | 19 | 18 | 3 | 5 |
+| Missing authorization | 16 | 13 | 0 | 0 |
+| SQL injection | 10 | 10 | 10 | 7 |
+| Insecure configuration | 10 | 8 | 5 | 4 |
 | Mass assignment | 7 | 7 | 0 | 0 |
-| Code and template injection | 6 | 6 | 2 | 4 |
-| OS command injection | 5 | 5 | 2 | 2 |
+| Path traversal | 7 | 7 | 1 | 2 |
+| Code and template injection | 6 | 6 | 4 | 4 |
+| Information exposure | 5 | 3 | 1 | 1 |
+| OS command injection | 5 | 5 | 5 | 2 |
+| NoSQL injection | 4 | 4 | 3 | 0 |
 | Server-side request forgery | 4 | 4 | 0 | 1 |
-| NoSQL injection | 3 | 3 | 0 | 0 |
-| Information exposure | 3 | 3 | 1 | 1 |
-| Weak password hashing | 3 | 3 | 1 | 2 |
+| Unrestricted file upload | 2 | 2 | 0 | 0 |
+| Business logic | 4 | 0 | 0 | 0 |
+| Weak password hashing | 3 | 3 | 3 | 3 |
 | Account enumeration | 3 | 3 | 0 | 0 |
 | Open redirect | 3 | 3 | 1 | 2 |
-| Unrestricted file upload | 2 | 2 | 0 | 0 |
-| Unsafe deserialization | 1 | 1 | 0 | 1 |
-| Weak password recovery | 1 | 1 | 0 | 0 |
+| Hardcoded secret | 3 | 0 | 3 | 1 |
+| Authentication flaws | 3 | 0 | 0 | 0 |
+| Weak password recovery | 2 | 1 | 0 | 0 |
+| Rate limits and CAPTCHA | 2 | 0 | 0 | 0 |
+| Input validation | 3 | 0 | 0 | 0 |
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
-| Hardcoded secret | 1 | 0 | 1 | 1 |
+| Cross-site request forgery | 1 | 0 | 0 | 0 |
+| XML external entities | 1 | 0 | 0 | 0 |
+| Token verification | 1 | 0 | 0 | 0 |
+| Resource exhaustion | 1 | 0 | 0 | 0 |
+| Weak cryptography | 1 | 0 | 0 | 0 |
+| Race condition | 1 | 0 | 0 | 0 |
+| Unsafe deserialization | 1 | 1 | 1 | 1 |
+| **Total** | **129** | **99** | **40** | **33** |
 | Prototype pollution, argument injection | No keyed case | — | — | — |
-| **Total** | **96** | **95** | **18** | **32** |
 
 | Capability | Code Scan | Semgrep CE | Bearer CLI |
 |---|---|---|---|
 | Languages run here | JavaScript, TypeScript, PHP | The same | The same |
-| Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; the cross-file engine is Semgrep Pro, not run | Not shown: it found no row that needs it |
+| Flow across files and through stored values | Yes: the stored and cross-tier XSS rows and the helper-held SQL rows depend on it | No in CE; cross-function and cross-file taint is Semgrep Pro, not run | Not shown: it found no row that needs it |
 | Access rules read from framework configuration and middleware | Yes: the authorization, mass-assignment and enumeration rows depend on it | No such rule fired | No such rule fired |
-| Known-safe code left unreported | 3 false positives | 8 | 22 and two grouped rules |
+| Reviewed false positives, a lower bound | 13 | 93 | 73 and two grouped rules |
 | Committed secrets | No analyzer | Found the keyed row | Found the keyed row |
 | Infrastructure files (Terraform, package-manager policy) | Dockerfile, web-server and cron files for PHP projects | Terraform and npm/pnpm rules fired | None fired |
 | Output | JSON, HTML, SARIF | JSON, SARIF, text | JSON; SARIF not produced in this run |

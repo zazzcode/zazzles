@@ -12,22 +12,28 @@ permissions:
 concurrency:
   group: sample-pages
   cancel-in-progress: false
+# The Pages source must stay "GitHub Actions". A branch source also builds the whole repository
+# with Jekyll and publishes it over the samples.
 jobs:
-  publish:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/samples
+  # A separate job: deploying right after the upload in one job intermittently found no artifact
+  # (actions/deploy-pages#451).
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/samples
       - name: Deploy samples
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

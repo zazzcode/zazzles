@@ -1,8 +1,37 @@
 # OWASP Juice Shop sample
 
+[All samples](../README.md) · [HTML](https://zazzcode.github.io/zazzles/juice-shop/findings.html) · [JSON](findings.json) ·
+[SARIF](findings.sarif) · [Provenance](metadata.json) ·
+[Results](../../../.zazz/evaluation/juiceshop-hardening-results.md#final-full-run) ·
+[Scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)
 
+## Current report (2026-11-24)
 
-## Current report (rebuilt 2026-11-19)
+A full scan of revision `f189f52` with scanner `3318e27` (PR #50) and OpenAI `gpt-6-luna` produced
+305 records across 194 entries. The report presents **51 Confirmed, 3 practice findings,
+3 Protected and 248 Review**. These are static source judgments, not runtime exploit confirmation.
+
+- **Answer key:** all 41 positives of Code Scan's own key are found. The comparison's extended
+  Juice Shop key has 75 rows, of which this report finds 45
+  ([what it misses](../../scan/scanner-comparison.md#what-code-scan-misses)). 38 are Confirmed and 3 are practice findings:
+  sensitive logging (`JS-LOG-01`), the profile-image SSRF (`JS-SSRF-01`) and the `b2bOrder` code
+  execution (`JS-CODE-02`).
+- **False positives:** four locations in the
+  [source review](../../../.zazz/evaluation/scanner-false-positives.json) of 2026-11-25: liking
+  another user's review (`routes/likeProductReviews.ts:35` and `:50`), the `.well-known` listing
+  (`server.ts:294`), and a NoSQL finding whose value is always a string (`routes/orderHistory.ts:36`).
+- **New since the previous report:** insecure configuration, information exposure, weak password
+  hashing, account enumeration, mass assignment, missing authorization, and path, code and SSRF
+  cases that were in Review or had no record.
+- **Not covered:** the committed signing key (`lib/insecurity.ts:21`). No analyzer covers secrets.
+- **Usage:** 84 requests, 381,728 input tokens, zero failures. 221 records were not sent to the
+  model; they stay in Review or carry a model-free result.
+
+The report is the canonical JSON the scanner wrote to standard output in that run, with the root
+replaced by the public sample label. Later fixes on PR #50 left the offline Juice Shop report
+byte-identical, so its requests are unchanged.
+
+## Previous report (rebuilt 2026-11-19)
 
 Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
 scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static

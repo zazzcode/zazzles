@@ -12,12 +12,27 @@ compare results as the lab grows.
 
 | Scan scope | Lab pin and date | HTML | JSON | SARIF | Provenance and results |
 |---|---|---|---|---|---|
-| Full Pages Router app | `ea10efb` · 2026-11-19 | [HTML](https://zazzcode.github.io/zazzles/vuln-nextjs/findings.html) | [JSON](findings.json) | [SARIF](findings.sarif) | [Metadata](metadata.json) · [13 of 13 expected findings](#full-application-scan) |
+| Full Pages Router app | `f5d47de` · 2026-11-24 | [HTML](https://zazzcode.github.io/zazzles/vuln-nextjs/findings.html) | [JSON](findings.json) | [SARIF](findings.sarif) | [Metadata](metadata.json) · [13 of 13 Confirmed](#full-application-scan) |
 | Prototype pollution fixture export | `8d26f52` · 2026-11-21 | [HTML](https://zazzcode.github.io/zazzles/vuln-nextjs/reports/prototype-pollution/findings.html) | [JSON](reports/prototype-pollution/findings.json) | [SARIF](reports/prototype-pollution/findings.sarif) | [Metadata](reports/prototype-pollution/metadata.json) · [14 of 15 in-scope cases Confirmed](#prototype-pollution-fixture-scan) |
+
+## Full application scan
+
+The 2026-11-24 full scan of lab revision `f5d47de` used OpenAI `gpt-6-luna` with scanner `ee777f4`
+(PR #50, [results](../../../.zazz/evaluation/juiceshop-hardening-results.md#judged-runs-1)). These
+are static source judgments, not runtime exploit confirmation.
+
+- 37 entries, 54 analysis records: **13 Confirmed, 1 practice finding, 9 Protected, 31 Review**.
+- 27 requests, 27 completed assessments, 121,218 input tokens. No provider failures.
+- All 13 expected in-scope cases are Confirmed. The stored XSS case `XSS-002` was a practice
+  finding in the previous report.
+- The practice finding is the lab's redirect control, `pages/secure/redirect.js`. It is a correct
+  report: the guard `/^\/[^/]/` admits `/\host`, so the control needs a fix in the lab.
+
+[Comparison with Semgrep CE and Bearer](../../scan/scanner-comparison.md#vuln-nextjs)
 
 <a id="current-report-rebuilt-2026-11-19"></a>
 
-## Full application scan
+### Full application scan of 2026-11-19
 
 The 2026-11-19 full scan at `ea10efb` used OpenAI `gpt-6-luna` with the model-assisted evidence resolution
 scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static

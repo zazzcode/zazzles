@@ -105,10 +105,37 @@ Two rules report the same command execution lines, including those in
 | 1 | `php.lang.security.phpinfo-use` | `public/info.php:2` |
 | 1 | `dockerfile.security.missing-user-entrypoint` | `Dockerfile:57` |
 
+## Broad run
+
+**2026-11-25.** The run above used five packs. A free user could run more, so the four samples were
+scanned again with 23 registry packs chosen to fit their stacks. Semgrep, the exclusions,
+the sample pins and the other options are unchanged; `--oss-only` was added. All results are from
+the OSS engine. The packs shared with the first snapshot are byte-identical.
+
+| Item | Value |
+|---|---|
+| Rule snapshot | `<DEV_ROOT>/zazzcode/zazzles/_test-findings/semgrep-rules/20261125-broad/` |
+| Packs | 23: `p/command-injection`, `p/cwe-top-25`, `p/default`, `p/docker`, `p/dockerfile`, `p/expressjs`, `p/insecure-transport`, `p/javascript`, `p/jwt`, `p/nginx`, `p/nodejs`, `p/nodejsscan`, `p/owasp-top-ten`, `p/php`, `p/phpcs-security-audit`, `p/r2c-security-audit`, `p/react`, `p/secrets`, `p/security-audit`, `p/sql-injection`, `p/trailofbits`, `p/typescript`, `p/xss` |
+| Not used | `p/nextjs` is empty; `p/angular` and `p/symfony` do not exist |
+| Rules after merging | 1,379, all valid (`semgrep scan --validate`) |
+
+| Sample | Files scanned | Results | Errors | Focused run |
+|---|---:|---:|---:|---:|
+| OWASP Juice Shop | 1,168 | 133 | 38 | 30 |
+| vuln-nextjs | 95 | 15 | 0 | 7 |
+| DVWA | 222 | 93 | 2 | 44 |
+| vuln-symfony | 97 | 58 | 0 | 8 |
+
+Every run exited 0 and left the sample's tracked files unchanged. Raw output is under
+`_test-findings/<sample>/semgrep-20261125-broad-1/`. Curated copies are in
+`docs/samples/<sample>/semgrep/20261125-comparison-02/`. The packs' SHA-256 values are in
+`SHA256SUMS` beside the snapshot.
+
 ## Limits of this record
 
 - CE taint analysis is single-file and intraprocedural. Cross-file and stored flows need
   Semgrep Pro, which was not run.
 - A result count is not a score. Results in test files and challenge snippets are listed above
   where they occur and are not findings in the running application.
-- No result here has been reviewed against source beyond its location.
+- The broad results were sorted against source for the comparison. The false positives are in
+  [scanner-false-positives.json](scanner-false-positives.json).

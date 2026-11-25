@@ -49,18 +49,23 @@ Coverage varies by language, framework, and library. [Full detection coverage](d
 ## Scanner comparison
 
 Code Scan, Semgrep CE and Bearer were run on four intentionally vulnerable applications and
-scored against each application's known vulnerabilities, with false positives counted.
+scored against an answer key for each application, with false positives counted.
 
-| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found |
+| Application | In answer key | Code Scan found | Semgrep CE found | Bearer found |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop | 42 | 41 | 9 | 14 |
-| vuln-nextjs | 13 | 13 | 2 | 7 |
-| DVWA | 11 | 11 | 5 | 6 |
-| vuln-symfony | 30 | 30 | 2 | 5 |
+| OWASP Juice Shop | 75 | 45 | 19 | 15 |
+| vuln-nextjs | 13 | 13 | 7 | 7 |
+| DVWA | 11 | 11 | 6 | 6 |
+| vuln-symfony | 30 | 30 | 8 | 5 |
+| **Total** | **129** | **99** | **40** | **33** |
 
-False positives on known-safe code: Code Scan 3, Semgrep CE 8, Bearer 22 and two grouped rules.
-These are development reference applications and the answer keys favor the classes Code Scan
-analyzes, so this is not a general accuracy claim.
+Reviewed false positives: Code Scan 13, Semgrep CE 93, Bearer 73 and two grouped rules. Each is a
+lower bound. An answer key is not a complete list of an application's vulnerabilities. Juice Shop's
+was extended from its own documented challenges; the other three were not and still favor the
+classes Code Scan analyzes. Code Scan misses 30 rows: 18 in classes it has no analyzer for and 12
+where an existing analyzer falls short. Semgrep CE and Bearer run free and offline, and a judged
+Code Scan calls a paid model provider. Code Scan was developed against these applications, so this
+is not a general accuracy claim.
 [Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)
 
 ## Modules
@@ -196,6 +201,7 @@ The [analysis rules](docs/scan/analysis/README.md) describe how Scan evaluates s
 
 ## License
 
-Zazzles is licensed under the [GNU General Public License, version 3](LICENSE). Third-party
-material in [sample reports](docs/samples/README.md) and test fixtures remains under its own terms;
-see the license files and notes beside it.
+Zazzles is licensed under the [GNU General Public License, version 3](LICENSE), with an
+[output exception](OUTPUT-EXCEPTION.md) that lets you use and share the reports it generates under
+terms of your choice. Third-party material in [sample reports](docs/samples/README.md) and test
+fixtures remains under its own terms; see the license files and notes beside it.

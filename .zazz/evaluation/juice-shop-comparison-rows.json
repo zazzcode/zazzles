@@ -1,0 +1,469 @@
+{
+ "about": "Juice Shop rows of the scanner comparison that are not in Code Scan's own key (cases.json). Added on 2026-11-25 from the 116 documented challenges, the vuln-line markers, the detection guide and results of any scanner, whether or not a scanner found them.",
+ "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
+ "rows": [
+  {
+   "id": "JS-X-NOSQL-04",
+   "class": "nosql",
+   "anchors": [
+    "routes/likeProductReviews.ts:25",
+    "routes/likeProductReviews.ts:35",
+    "routes/likeProductReviews.ts:43"
+   ],
+   "what": "Review selected by an unchecked body value",
+   "source": "scanner",
+   "code_scan": "Confirmed",
+   "semgrep": "Found",
+   "bearer": "Missed",
+   "code_scan_cause": null
+  },
+  {
+   "id": "JS-X-AUTHZ-06",
+   "class": "authorization",
+   "anchors": [
+    "routes/recycles.ts:12"
+   ],
+   "what": "Any recycling request can be read without sign-in",
+   "source": "scanner",
+   "code_scan": "Confirmed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": null
+  },
+  {
+   "id": "JS-X-AUTHZ-07",
+   "class": "authorization",
+   "anchors": [
+    "server.ts:529"
+   ],
+   "what": "DELETE /api/Feedbacks/:id has no owner test",
+   "source": "challenge feedbackChallenge",
+   "code_scan": "Confirmed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": null
+  },
+  {
+   "id": "JS-X-AUTHZ-08",
+   "class": "authorization",
+   "anchors": [
+    "server.ts:529"
+   ],
+   "what": "DELETE /api/BasketItems/:id has no owner test",
+   "source": "scanner",
+   "code_scan": "Confirmed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": null
+  },
+  {
+   "id": "JS-X-AUTHZ-09",
+   "class": "authorization",
+   "anchors": [
+    "routes/basketItems.ts:42",
+    "routes/basketItems.ts:49"
+   ],
+   "what": "A repeated BasketId passes the check and writes another basket",
+   "source": "challenge basketManipulateChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: The repeated-key check is not modelled"
+  },
+  {
+   "id": "JS-X-AUTHZ-10",
+   "class": "authorization",
+   "anchors": [
+    "routes/dataExport.ts:33"
+   ],
+   "what": "Orders are selected by an email with its vowels masked, so another user can match",
+   "source": "challenge dataExportChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: The masked selector is not modelled"
+  },
+  {
+   "id": "JS-X-MASS-07",
+   "class": "authorization",
+   "anchors": [
+    "routes/createProductReviews.ts:26"
+   ],
+   "what": "Review is stored under an author taken from the body, on a route with no sign-in check",
+   "source": "challenge forgedReviewChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: A create is not an authorization operation in JavaScript. The insert is recorded as a NoSQL query and left in Review"
+  },
+  {
+   "id": "JS-X-EXPO-03",
+   "class": "exposure",
+   "anchors": [
+    "routes/currentUser.ts:31"
+   ],
+   "what": "A requested field can be the password hash",
+   "source": "challenge passwordHashLeakChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: No record for a property chosen by the request in a response"
+  },
+  {
+   "id": "JS-X-EXPO-04",
+   "class": "exposure",
+   "anchors": [
+    "routes/currentUser.ts:58"
+   ],
+   "what": "The current user is readable cross-origin through JSONP",
+   "source": "challenge emailLeakChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: No record for JSONP"
+  },
+  {
+   "id": "JS-X-XSS-09",
+   "class": "xss",
+   "anchors": [
+    "routes/videoHandler.ts:71",
+    "routes/videoHandler.ts:72"
+   ],
+   "what": "Subtitle file is written into a script element",
+   "source": "challenge videoXssChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Found",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: Recorded and left in Review: the stored value has no linked writer"
+  },
+  {
+   "id": "JS-X-UPLOAD-02",
+   "class": "input-validation",
+   "anchors": [
+    "routes/fileUpload.ts:65",
+    "routes/fileUpload.ts:68"
+   ],
+   "what": "The client's upload type rule is not enforced on the server; a file of another type is discarded, not stored",
+   "source": "challenge uploadTypeChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: The route has an upload record in Review about executable storage. The type test in a later handler is not read"
+  },
+  {
+   "id": "JS-X-RESET-01",
+   "class": "recovery",
+   "anchors": [
+    "routes/resetPassword.ts:41"
+   ],
+   "what": "Password reset by a stored security answer that can be used again",
+   "source": "challenges resetPassword*",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: The recovery claim exists for PHP only"
+  },
+  {
+   "id": "JS-X-CONF-05",
+   "class": "configuration",
+   "anchors": [
+    "server.ts:183",
+    "server.ts:184"
+   ],
+   "what": "CORS allows every origin, without credentials",
+   "source": "scanner",
+   "code_scan": "Missed",
+   "semgrep": "Found",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: CORS is outside the configuration claims",
+   "severity": "poor practice"
+  },
+  {
+   "id": "JS-X-CONF-06",
+   "class": "configuration",
+   "anchors": [
+    "frontend/src/app/login/login.component.ts:113",
+    "routes/updateUserProfile.ts:42"
+   ],
+   "what": "Session token cookie without HttpOnly",
+   "source": "guide, reviewed and not covered",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: Cookie flags are read for express-session and cookie-session. A res.cookie call is left out, and an absent flag is not recorded"
+  },
+  {
+   "id": "JS-X-SECRET-02",
+   "class": "secret",
+   "anchors": [
+    "frontend/src/app/login/login.component.ts:68",
+    "frontend/src/app/login/login.component.ts:69"
+   ],
+   "what": "Working test credentials in the client",
+   "source": "challenge exposedCredentialsChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Found",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-SECRET-03",
+   "class": "secret",
+   "anchors": [
+    "data/static/users.yml:151"
+   ],
+   "what": "Committed TOTP secret of a seeded account",
+   "source": "challenge twoFactorAuthUnsafeSecretStorageChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Found",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-CSRF-01",
+   "class": "csrf",
+   "anchors": [
+    "routes/updateUserProfile.ts:17",
+    "routes/updateUserProfile.ts:38"
+   ],
+   "what": "Cookie-authenticated profile change without a CSRF token",
+   "source": "challenge csrfChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-XXE-01",
+   "class": "xxe",
+   "anchors": [
+    "lib/xml.ts:35",
+    "routes/fileUpload.ts:80"
+   ],
+   "what": "XML parsed with entity substitution and DTD loading",
+   "source": "challenges xxeFileDisclosure, xxeDos",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-JWT-01",
+   "class": "token-verification",
+   "anchors": [
+    "lib/insecurity.ts:52",
+    "lib/insecurity.ts:55"
+   ],
+   "what": "Token verified without an algorithm list",
+   "source": "challenges jwtUnsigned, jwtForged",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-DOS-01",
+   "class": "resource-exhaustion",
+   "anchors": [
+    "routes/fileUpload.ts:114"
+   ],
+   "what": "Uploaded YAML expands without a limit",
+   "source": "challenge yamlBombChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-CRYPTO-01",
+   "class": "weak-crypto",
+   "anchors": [
+    "lib/insecurity.ts:97",
+    "lib/insecurity.ts:99"
+   ],
+   "what": "Coupon is an encoding, not a signature",
+   "source": "challenge forgedCouponChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-AUTH-01",
+   "class": "authentication",
+   "anchors": [
+    "routes/changePassword.ts:39"
+   ],
+   "what": "Current password check is skipped when it is absent",
+   "source": "challenge changePasswordBenderChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-AUTH-02",
+   "class": "authentication",
+   "anchors": [
+    "frontend/src/app/oauth/oauth.component.ts:31"
+   ],
+   "what": "OAuth account password derived from the email",
+   "source": "challenge oauthUserPasswordChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-AUTH-03",
+   "class": "authentication",
+   "anchors": [
+    "models/user.ts:73"
+   ],
+   "what": "No password policy",
+   "source": "vuln-line weakPasswordChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-AUTO-01",
+   "class": "anti-automation",
+   "anchors": [
+    "server.ts:374"
+   ],
+   "what": "Rate limit keyed by a request header",
+   "source": "vuln-line resetPasswordMortyChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-AUTO-02",
+   "class": "anti-automation",
+   "anchors": [
+    "routes/captcha.ts:37",
+    "routes/captcha.ts:38"
+   ],
+   "what": "A solved CAPTCHA can be reused",
+   "source": "challenge captchaBypassChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-RACE-01",
+   "class": "race",
+   "anchors": [
+    "routes/likeProductReviews.ts:31",
+    "routes/likeProductReviews.ts:50"
+   ],
+   "what": "Like check and update can be raced",
+   "source": "challenge timingAttackChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-LOGIC-01",
+   "class": "business-logic",
+   "anchors": [
+    "routes/deluxe.ts:43"
+   ],
+   "what": "Unknown payment mode upgrades for free",
+   "source": "challenge freeDeluxeChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-LOGIC-02",
+   "class": "business-logic",
+   "anchors": [
+    "routes/order.ts:198",
+    "routes/order.ts:201"
+   ],
+   "what": "Coupon date comes from the client",
+   "source": "challenge manipulateClockChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-LOGIC-03",
+   "class": "business-logic",
+   "anchors": [
+    "routes/basketItems.ts:43",
+    "routes/order.ts:144"
+   ],
+   "what": "Negative quantity gives a negative total",
+   "source": "challenge negativeOrderChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-LOGIC-04",
+   "class": "business-logic",
+   "anchors": [
+    "routes/chat.ts:179",
+    "routes/chat.ts:184"
+   ],
+   "what": "Coupon limit exists only in the model tool description",
+   "source": "vuln-line chatbotPromptInjectionChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "no analyzer"
+  },
+  {
+   "id": "JS-X-VALID-01",
+   "class": "input-validation",
+   "anchors": [
+    "models/feedback.ts:57",
+    "models/feedback.ts:58"
+   ],
+   "what": "Zero-star rating accepted",
+   "source": "challenge zeroStarsChallenge",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: No record for the model setter"
+  },
+  {
+   "id": "JS-X-VALID-02",
+   "class": "input-validation",
+   "anchors": [
+    "server.ts:436",
+    "server.ts:449",
+    "server.ts:450"
+   ],
+   "what": "Empty or mismatched registration accepted",
+   "source": "challenges emptyUserRegistration, passwordRepeat",
+   "code_scan": "Missed",
+   "semgrep": "Missed",
+   "bearer": "Missed",
+   "code_scan_cause": "existing analyzer: Three field records at server.ts:437, not sent to the model for missing evidence. The check answers 400 and still calls next()"
+  }
+ ],
+ "controls": [
+  {
+   "id": "JS-X-UPLOAD-01",
+   "class": "upload",
+   "anchors": [
+    "server.ts:722"
+   ],
+   "what": "Not a weakness: multer rejects an upload over 200,000 bytes on the server. The client's lower limit of 100,000 bytes is not enforced",
+   "source": "challenge uploadSizeChallenge",
+   "expect": "not a finding",
+   "corrected": "2026-11-25. Was a row that said upload size is not enforced on the server"
+  }
+ ]
+}

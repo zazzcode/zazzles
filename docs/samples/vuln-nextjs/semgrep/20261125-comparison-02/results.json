@@ -1,0 +1,970 @@
+{
+ "version": "1.183.0",
+ "results": [
+  {
+   "check_id": "semgrep-rules.20261125-broad.package_managers.npm.npm-missing-minimum-release-age.npm-missing-minimum-release-age",
+   "path": ".npmrc",
+   "start": {
+    "line": 1,
+    "col": 1,
+    "offset": 0
+   },
+   "end": {
+    "line": 1,
+    "col": 17,
+    "offset": 16
+   },
+   "extra": {
+    "message": "This .npmrc does not set a minimum release age or sets it too low. Newly published packages can be malicious or unstable. Add `min-release-age = 7` to wait 7 days before resolving newly published package versions. Added in: v11.10 Reference: https://github.blog/changelog/2026-02-18-npm-bulk-trusted-publishing-config-and-script-security-now-generally-available/",
+    "metadata": {
+     "category": "security",
+     "technology": [
+      "npm",
+      "javascript"
+     ],
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "confidence": "HIGH",
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "subcategory": [
+      "audit"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ],
+     "references": [
+      "https://github.blog/changelog/2026-02-18-npm-bulk-trusted-publishing-config-and-script-security-now-generally-available/",
+      "https://github.com/npm/cli/pull/8965"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "source": "https://semgrep.dev/r/package_managers.npm.npm-missing-minimum-release-age.npm-missing-minimum-release-age",
+     "shortlink": "https://sg.run/GRo1z"
+    },
+    "severity": "MEDIUM",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.express.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "pages/api/sql/unsafe/login.js",
+   "start": {
+    "line": 11,
+    "col": 93,
+    "offset": 682
+   },
+   "end": {
+    "line": 11,
+    "col": 101,
+    "offset": 690
+   },
+   "extra": {
+    "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as Sequelize which will protect your queries.",
+    "metadata": {
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "express"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.express.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/66ZL"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.express.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "pages/api/sql/unsafe/notes.js",
+   "start": {
+    "line": 15,
+    "col": 82,
+    "offset": 764
+   },
+   "end": {
+    "line": 15,
+    "col": 86,
+    "offset": 768
+   },
+   "extra": {
+    "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as Sequelize which will protect your queries.",
+    "metadata": {
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "express"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.express.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/66ZL"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.express.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "pages/api/sql/unsafe/products.js",
+   "start": {
+    "line": 11,
+    "col": 120,
+    "offset": 611
+   },
+   "end": {
+    "line": 11,
+    "col": 121,
+    "offset": 612
+   },
+   "extra": {
+    "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as Sequelize which will protect your queries.",
+    "metadata": {
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "references": [
+      "https://owasp.org/www-community/attacks/SQL_Injection"
+     ],
+     "category": "security",
+     "technology": [
+      "express"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "HIGH",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "SQL Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.express.security.injection.tainted-sql-string.tainted-sql-string",
+     "shortlink": "https://sg.run/66ZL"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.lang.security.detect-child-process.detect-child-process",
+   "path": "pages/api/vulnerable-exec.js",
+   "start": {
+    "line": 21,
+    "col": 8,
+    "offset": 596
+   },
+   "end": {
+    "line": 21,
+    "col": 15,
+    "offset": 603
+   },
+   "extra": {
+    "message": "Detected calls to child_process from a function argument `req`. This could lead to a command injection if the input is user controllable. Try to avoid calls to child_process, and if it is needed ensure user input is correctly sanitized or sandboxed. ",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html#do-not-use-dangerous-functions"
+     ],
+     "source-rule-url": "https://github.com/nodesecurity/eslint-plugin-security/blob/master/rules/detect-child-process.js",
+     "category": "security",
+     "technology": [
+      "javascript"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Command Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.lang.security.detect-child-process.detect-child-process",
+     "shortlink": "https://sg.run/l2lo"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.browser.security.eval-detected.eval-detected",
+   "path": "pages/api/vulnerable-submit.js",
+   "start": {
+    "line": 15,
+    "col": 20,
+    "offset": 529
+   },
+   "end": {
+    "line": 20,
+    "col": 9,
+    "offset": 670
+   },
+   "extra": {
+    "message": "Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this content can be input from outside the program, this may be a code injection vulnerability. Ensure evaluated content is not definable by external sources.",
+    "metadata": {
+     "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "asvs": {
+      "control_id": "5.2.4 Dynamic Code Execution Features",
+      "control_url": "https://github.com/OWASP/ASVS/blob/master/4.0/en/0x13-V5-Validation-Sanitization-Encoding.md#v52-sanitization-and-sandboxing",
+      "section": "V5 Validation, Sanitization and Encoding",
+      "version": "4"
+     },
+     "category": "security",
+     "technology": [
+      "browser"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.browser.security.eval-detected.eval-detected",
+     "shortlink": "https://sg.run/7ope"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.lang.security.audit.code-string-concat.code-string-concat",
+   "path": "pages/api/vulnerable-submit.js",
+   "start": {
+    "line": 15,
+    "col": 20,
+    "offset": 529
+   },
+   "end": {
+    "line": 20,
+    "col": 9,
+    "offset": 670
+   },
+   "extra": {
+    "message": "Found data from an Express or Next web request flowing to `eval`. If this data is user-controllable this can lead to execution of arbitrary system commands in the context of your application process. Avoid `eval` whenever possible.",
+    "metadata": {
+     "interfile": true,
+     "confidence": "HIGH",
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+     ],
+     "references": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval",
+      "https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback",
+      "https://www.stackhawk.com/blog/nodejs-command-injection-examples-and-prevention/",
+      "https://ckarande.gitbooks.io/owasp-nodegoat-tutorial/content/tutorial/a1_-_server_side_js_injection.html"
+     ],
+     "category": "security",
+     "technology": [
+      "node.js",
+      "Express",
+      "Next.js"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.lang.security.audit.code-string-concat.code-string-concat",
+     "shortlink": "https://sg.run/96Yk"
+    },
+    "severity": "ERROR",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.browser.security.eval-detected.eval-detected",
+   "path": "pages/vulnerable/eval-injection.js",
+   "start": {
+    "line": 8,
+    "col": 7,
+    "offset": 299
+   },
+   "end": {
+    "line": 8,
+    "col": 40,
+    "offset": 332
+   },
+   "extra": {
+    "message": "Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this content can be input from outside the program, this may be a code injection vulnerability. Ensure evaluated content is not definable by external sources.",
+    "metadata": {
+     "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+     ],
+     "owasp": [
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "asvs": {
+      "control_id": "5.2.4 Dynamic Code Execution Features",
+      "control_url": "https://github.com/OWASP/ASVS/blob/master/4.0/en/0x13-V5-Validation-Sanitization-Encoding.md#v52-sanitization-and-sandboxing",
+      "section": "V5 Validation, Sanitization and Encoding",
+      "version": "4"
+     },
+     "category": "security",
+     "technology": [
+      "browser"
+     ],
+     "subcategory": [
+      "audit"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "references": [
+      "https://owasp.org/Top10/A03_2021-Injection"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Code Injection"
+     ],
+     "source": "https://semgrep.dev/r/javascript.browser.security.eval-detected.eval-detected",
+     "shortlink": "https://sg.run/7ope"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+   "path": "pages/xss/sanitized/reflected.js",
+   "start": {
+    "line": 16,
+    "col": 84,
+    "offset": 1580
+   },
+   "end": {
+    "line": 16,
+    "col": 89,
+    "offset": 1585
+   },
+   "extra": {
+    "message": "Detection of dangerouslySetInnerHTML from non-constant definition. This can inadvertently expose users to cross-site scripting (XSS) attacks if this comes from user-provided input. If you have to use dangerouslySetInnerHTML, consider using a sanitization library such as DOMPurify to sanitize your HTML.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://react.dev/reference/react-dom/components/common#dangerously-setting-the-inner-html"
+     ],
+     "category": "security",
+     "confidence": "MEDIUM",
+     "technology": [
+      "react"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+     "shortlink": "https://sg.run/rAx6"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+   "path": "pages/xss/unsafe/reflected.js",
+   "start": {
+    "line": 15,
+    "col": 84,
+    "offset": 1267
+   },
+   "end": {
+    "line": 15,
+    "col": 91,
+    "offset": 1274
+   },
+   "extra": {
+    "message": "Detection of dangerouslySetInnerHTML from non-constant definition. This can inadvertently expose users to cross-site scripting (XSS) attacks if this comes from user-provided input. If you have to use dangerouslySetInnerHTML, consider using a sanitization library such as DOMPurify to sanitize your HTML.",
+    "metadata": {
+     "cwe": [
+      "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+     ],
+     "owasp": [
+      "A07:2017 - Cross-Site Scripting (XSS)",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "references": [
+      "https://react.dev/reference/react-dom/components/common#dangerously-setting-the-inner-html"
+     ],
+     "category": "security",
+     "confidence": "MEDIUM",
+     "technology": [
+      "react"
+     ],
+     "cwe2022-top25": true,
+     "cwe2021-top25": true,
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "MEDIUM",
+     "impact": "MEDIUM",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Cross-Site-Scripting (XSS)"
+     ],
+     "source": "https://semgrep.dev/r/typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+     "shortlink": "https://sg.run/rAx6"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.package_managers.pnpm.pnpm-block-exotic-sub-dependencies.pnpm-block-exotic-sub-dependencies",
+   "path": "pnpm-workspace.yaml",
+   "start": {
+    "line": 1,
+    "col": 1,
+    "offset": 0
+   },
+   "end": {
+    "line": 1,
+    "col": 10,
+    "offset": 9
+   },
+   "extra": {
+    "message": "Missing or incorrect blockExoticSubdeps. Set `blockExoticSubdeps: true` to transitive dependencies from being installed from untrusted sources. Added in: v10.26.0 Reference: https://pnpm.io/settings#blockexoticsubdeps",
+    "metadata": {
+     "category": "security",
+     "technology": [
+      "pnpm"
+     ],
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "confidence": "HIGH",
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "subcategory": [
+      "audit"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ],
+     "references": [
+      "https://pnpm.io/settings#blockexoticsubdeps"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "source": "https://semgrep.dev/r/package_managers.pnpm.pnpm-block-exotic-sub-dependencies.pnpm-block-exotic-sub-dependencies",
+     "shortlink": "https://sg.run/RrWRv"
+    },
+    "severity": "MEDIUM",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.package_managers.pnpm.pnpm-missing-minimum-release-age.pnpm-minimum-release-age",
+   "path": "pnpm-workspace.yaml",
+   "start": {
+    "line": 1,
+    "col": 1,
+    "offset": 0
+   },
+   "end": {
+    "line": 1,
+    "col": 10,
+    "offset": 9
+   },
+   "extra": {
+    "message": "This pnpm workspace configuration does not set a minimum release age. Newly published packages can be malicious or unstable. Add `minimumReleaseAge: 10080` (minutes) to wait at least seven days before installing newly published package versions. Added in: v10.16.0 Reference: https://pnpm.io/settings#minimumreleaseage",
+    "metadata": {
+     "category": "security",
+     "technology": [
+      "pnpm"
+     ],
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "confidence": "HIGH",
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "subcategory": [
+      "audit"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ],
+     "references": [
+      "https://pnpm.io/settings#minimumreleaseage"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "source": "https://semgrep.dev/r/package_managers.pnpm.pnpm-missing-minimum-release-age.pnpm-minimum-release-age",
+     "shortlink": "https://sg.run/Aj0o0"
+    },
+    "severity": "MEDIUM",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.package_managers.pnpm.pnpm-trust-policy.pnpm-trust-policy",
+   "path": "pnpm-workspace.yaml",
+   "start": {
+    "line": 1,
+    "col": 1,
+    "offset": 0
+   },
+   "end": {
+    "line": 1,
+    "col": 10,
+    "offset": 9
+   },
+   "extra": {
+    "message": "Missing or incorrect trustPolicy. Set `trustPolicy: no-downgrade` to prevent malicious package updates from downgrading security settings. Added in: v10.21.0 Reference: https://pnpm.io/settings#trustpolicy",
+    "metadata": {
+     "category": "security",
+     "technology": [
+      "pnpm"
+     ],
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures"
+     ],
+     "confidence": "HIGH",
+     "likelihood": "LOW",
+     "impact": "HIGH",
+     "subcategory": [
+      "audit"
+     ],
+     "vulnerability_class": [
+      "Insecure Configuration"
+     ],
+     "references": [
+      "https://pnpm.io/settings#minimumreleaseage"
+     ],
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "source": "https://semgrep.dev/r/package_managers.pnpm.pnpm-trust-policy.pnpm-trust-policy",
+     "shortlink": "https://sg.run/B2Kz7"
+    },
+    "severity": "MEDIUM",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.lang.security.insecure-object-assign.insecure-object-assign",
+   "path": "scripts/export-prototype-pollution-fixtures.mjs",
+   "start": {
+    "line": 136,
+    "col": 5,
+    "offset": 5375
+   },
+   "end": {
+    "line": 136,
+    "col": 43,
+    "offset": 5413
+   },
+   "extra": {
+    "message": "Depending on the context, user control data in `Object.assign` can cause web response to include data that it should not have or can lead to a mass assignment vulnerability.",
+    "metadata": {
+     "cwe": [
+      "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+     ],
+     "owasp": [
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Mass_Assignment_Cheat_Sheet.html",
+      "https://en.wikipedia.org/wiki/Mass_assignment_vulnerability"
+     ],
+     "category": "security",
+     "technology": [
+      "javascript"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Open Redirect"
+     ],
+     "source": "https://semgrep.dev/r/javascript.lang.security.insecure-object-assign.insecure-object-assign",
+     "shortlink": "https://sg.run/2R0D"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "semgrep-rules.20261125-broad.javascript.lang.security.insecure-object-assign.insecure-object-assign",
+   "path": "scripts/export-prototype-pollution-fixtures.mjs",
+   "start": {
+    "line": 137,
+    "col": 5,
+    "offset": 5419
+   },
+   "end": {
+    "line": 137,
+    "col": 109,
+    "offset": 5523
+   },
+   "extra": {
+    "message": "Depending on the context, user control data in `Object.assign` can cause web response to include data that it should not have or can lead to a mass assignment vulnerability.",
+    "metadata": {
+     "cwe": [
+      "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+     ],
+     "owasp": [
+      "A01:2021 - Broken Access Control",
+      "A01:2025 - Broken Access Control"
+     ],
+     "references": [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Mass_Assignment_Cheat_Sheet.html",
+      "https://en.wikipedia.org/wiki/Mass_assignment_vulnerability"
+     ],
+     "category": "security",
+     "technology": [
+      "javascript"
+     ],
+     "subcategory": [
+      "vuln"
+     ],
+     "likelihood": "LOW",
+     "impact": "MEDIUM",
+     "confidence": "LOW",
+     "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+     "vulnerability_class": [
+      "Open Redirect"
+     ],
+     "source": "https://semgrep.dev/r/javascript.lang.security.insecure-object-assign.insecure-object-assign",
+     "shortlink": "https://sg.run/2R0D"
+    },
+    "severity": "WARNING",
+    "fingerprint": "requires login",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  }
+ ],
+ "errors": [],
+ "paths": {
+  "scanned": [
+   ".eslintrc.json",
+   ".gitignore",
+   ".npmrc",
+   ".zazz/ephemeral/HANDOFF.md",
+   "AGENTS.md",
+   "LICENSE",
+   "QUICK-START.md",
+   "README.md",
+   "SECURITY.md",
+   "components/ApiConsole.js",
+   "components/LabLayout.js",
+   "docs/README.md",
+   "docs/adding-scenarios.md",
+   "docs/architecture.md",
+   "docs/setup-and-testing.md",
+   "docs/validation-and-sanitization.md",
+   "docs/vulnerabilities/demonstrations.md",
+   "docs/vulnerabilities/index.md",
+   "docs/vulnerabilities/javascript.md",
+   "docs/vulnerabilities/prototype-pollution.md",
+   "docs/vulnerabilities/react2shell.md",
+   "docs/vulnerabilities/sql.md",
+   "docs/vulnerabilities/ssr.md",
+   "docs/vulnerabilities/system.md",
+   "docs/vulnerabilities/unsafe-deserialization.md",
+   "docs/vulnerabilities/xss.md",
+   "lib/catalog.json",
+   "lib/database.cjs",
+   "lib/http.cjs",
+   "next.config.js",
+   "package.json",
+   "pages/_app.js",
+   "pages/api/lab/reset.js",
+   "pages/api/protected-example.js",
+   "pages/api/secure/command.js",
+   "pages/api/secure/file-read.js",
+   "pages/api/sql/safe/login.js",
+   "pages/api/sql/safe/notes.js",
+   "pages/api/sql/safe/products.js",
+   "pages/api/sql/unsafe/login.js",
+   "pages/api/sql/unsafe/notes.js",
+   "pages/api/sql/unsafe/products.js",
+   "pages/api/sql/zod/login.js",
+   "pages/api/sql/zod/notes.js",
+   "pages/api/sql/zod/products.js",
+   "pages/api/vulnerable-exec.js",
+   "pages/api/vulnerable-file-read.js",
+   "pages/api/vulnerable-submit.js",
+   "pages/api/xss/comments.js",
+   "pages/index.js",
+   "pages/secure/command-execution.js",
+   "pages/secure/csp-enabled.js",
+   "pages/secure/file-access.js",
+   "pages/secure/protected-api.js",
+   "pages/secure/redirect.js",
+   "pages/secure/sanitized-input.js",
+   "pages/secure/ssrf.js",
+   "pages/secure/validated-form.js",
+   "pages/sql/[operation].js",
+   "pages/vulnerabilities.js",
+   "pages/vulnerable/api-route.js",
+   "pages/vulnerable/dynamic-import.js",
+   "pages/vulnerable/eval-injection.js",
+   "pages/vulnerable/file-read.js",
+   "pages/vulnerable/form-submission.js",
+   "pages/vulnerable/header-injection.js",
+   "pages/vulnerable/redirect.js",
+   "pages/vulnerable/rsc-server-action.js",
+   "pages/vulnerable/ssrf.js",
+   "pages/xss/safe/reflected.js",
+   "pages/xss/safe/script-context.js",
+   "pages/xss/safe/stored.js",
+   "pages/xss/sanitized/comments.js",
+   "pages/xss/sanitized/reflected.js",
+   "pages/xss/unsafe/comments.js",
+   "pages/xss/unsafe/reflected.js",
+   "pages/xss/unsafe/script-context.js",
+   "pages/xss/unsafe/stored.js",
+   "playwright.config.mjs",
+   "pnpm-lock.yaml",
+   "pnpm-workspace.yaml",
+   "scripts/check-audit.mjs",
+   "scripts/check-scenarios.mjs",
+   "scripts/export-prototype-pollution-fixtures.mjs",
+   "scripts/test-all.sh",
+   "scripts/test-react2shell.mjs",
+   "scripts/test-rsc-exploit.sh",
+   "setup.sh",
+   "styles/globals.css",
+   "targets/react2shell/app/layout.js",
+   "targets/react2shell/app/page.js",
+   "targets/react2shell/next.config.js",
+   "targets/react2shell/package.json",
+   "tmp/tmp.js",
+   "vitest.config.mjs"
+  ]
+ },
+ "time": {
+  "rules": [],
+  "rules_parse_time": 0.2121429443359375,
+  "profiling_times": {
+   "config_time": 12.948538064956665,
+   "core_time": 10.73603892326355,
+   "ignores_time": 0.0005738735198974609,
+   "total_time": 23.689621925354004
+  },
+  "parsing_time": {
+   "total_time": 0.21290159225463867,
+   "per_file_time": {
+    "mean": 0.00018119284447203296,
+    "std_dev": 2.7243080096238525e-06
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_files": []
+  },
+  "scanning_time": {
+   "total_time": 11.505101442337036,
+   "per_file_time": {
+    "mean": 0.0440808484380729,
+    "std_dev": 0.35496318977732044
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.838496740698592,
+    "count_ratio": 0.0038314176245210726
+   },
+   "very_slow_files": [
+    {
+     "fpath": "pnpm-lock.yaml",
+     "ftime": 9.646990060806274
+    }
+   ]
+  },
+  "matching_time": {
+   "total_time": 1.4223060607910156,
+   "per_file_and_rule_time": {
+    "mean": 0.0012104732432263962,
+    "std_dev": 1.0986987134164114e-05
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_rules_on_files": []
+  },
+  "tainting_time": {
+   "total_time": 0.22846746444702148,
+   "per_def_and_rule_time": {
+    "mean": 0.00027726634034832697,
+    "std_dev": 1.2636141991427343e-07
+   },
+   "very_slow_stats": {
+    "time_ratio": 0.0,
+    "count_ratio": 0.0
+   },
+   "very_slow_rules_on_defs": []
+  },
+  "fixpoint_timeouts": [],
+  "prefiltering": {
+   "project_level_time": 0.0,
+   "file_level_time": 0.0,
+   "rules_with_project_prefilters_ratio": 0.0,
+   "rules_with_file_prefilters_ratio": 0.9785166883035303,
+   "rules_selected_ratio": 0.054315507349554,
+   "rules_matched_ratio": 0.054315507349554
+  },
+  "targets": [],
+  "total_bytes": 0,
+  "max_memory_bytes": 1226747008
+ },
+ "engine_requested": "OSS",
+ "skipped_rules": [],
+ "profiling_results": []
+}

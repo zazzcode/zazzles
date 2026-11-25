@@ -216,9 +216,9 @@ a vulnerable file and one or more safe controls per scenario, PGlite (in-process
 DOMPurify. It exercises what OopsSec does not: `getServerSideProps` pages, `pages/api` handler
 factories, PGlite SQL, command injection and server-rendered stored and script-context XSS. Its
 ground truth is `tests/expected-scanner-findings.json` in the lab, which grows as scenarios are
-added. The [published full scan](../samples/vuln-nextjs/README.md) is pinned to `ea10efb` (only lab
-documentation changed since the original `022a863` acceptance scan). It includes all implemented
-analyzers and standalone input validation. At the acceptance pin:
+added. The [published full scan](../samples/vuln-nextjs/README.md) is pinned to `f5d47de`
+and Confirms all 13 expected cases. It includes all implemented analyzers and standalone input
+validation. At the original `022a863` acceptance pin:
 
 | Family | Vulnerable rows | Safe controls |
 | --- | --- | --- |

@@ -19,11 +19,11 @@ these scanner versions. They are not a general accuracy claim.
 
 | Application | In answer key | Code Scan found | Semgrep CE found | Bearer found |
 |---|---:|---:|---:|---:|
-| OWASP Juice Shop | 76 | 45 | 19 | 15 |
+| OWASP Juice Shop | 75 | 45 | 19 | 15 |
 | vuln-nextjs | 13 | 13 | 7 | 7 |
 | DVWA | 11 | 11 | 6 | 6 |
 | vuln-symfony | 30 | 30 | 8 | 5 |
-| **Total** | **130** | **99** | **40** | **33** |
+| **Total** | **129** | **99** | **40** | **33** |
 
 **Reviewed false positives**, counted by location:
 
@@ -37,9 +37,9 @@ these scanner versions. They are not a general accuracy claim.
 
 The answer key is not a complete list of an application's vulnerabilities. Juice Shop documents 116
 challenges. Many are puzzles, seeded passwords, outdated components or a second way to use one
-flaw. On 2026-11-25 its key was extended from 42 to 76 rows with every distinct weakness in
+flaw. On 2026-11-25 its key was extended from 42 to 75 rows with every distinct weakness in
 first-party code that a challenge, a `vuln-line` marker, the detection guide or any scanner points
-to, whether or not a scanner found it. The [34 added rows](../../.zazz/evaluation/juice-shop-comparison-rows.json)
+to, whether or not a scanner found it. The [33 added rows](../../.zazz/evaluation/juice-shop-comparison-rows.json)
 lower every scanner's share, Code Scan's most. **The other three keys were not extended this way**,
 so they still favor Code Scan.
 
@@ -72,17 +72,17 @@ Rows of the answer keys found, across the four applications.
 | Weakness class | In answer key | Code Scan | Semgrep CE | Bearer |
 |---|---:|---:|---:|---:|
 | Cross-site scripting | 19 | 18 | 3 | 5 |
-| Missing authorization | 15 | 13 | 0 | 0 |
+| Missing authorization | 16 | 13 | 0 | 0 |
 | SQL injection | 10 | 10 | 10 | 7 |
 | Insecure configuration | 10 | 8 | 5 | 4 |
-| Mass assignment | 8 | 7 | 0 | 0 |
+| Mass assignment | 7 | 7 | 0 | 0 |
 | Path traversal | 7 | 7 | 1 | 2 |
 | Code and template injection | 6 | 6 | 4 | 4 |
 | Information exposure | 5 | 3 | 1 | 1 |
 | OS command injection | 5 | 5 | 5 | 2 |
 | NoSQL injection | 4 | 4 | 3 | 0 |
 | Server-side request forgery | 4 | 4 | 0 | 1 |
-| Unrestricted file upload | 4 | 2 | 0 | 0 |
+| Unrestricted file upload | 2 | 2 | 0 | 0 |
 | Business logic | 4 | 0 | 0 | 0 |
 | Weak password hashing | 3 | 3 | 3 | 3 |
 | Account enumeration | 3 | 3 | 0 | 0 |
@@ -91,7 +91,7 @@ Rows of the answer keys found, across the four applications.
 | Authentication flaws | 3 | 0 | 0 | 0 |
 | Weak password recovery | 2 | 1 | 0 | 0 |
 | Rate limits and CAPTCHA | 2 | 0 | 0 | 0 |
-| Input validation | 2 | 0 | 0 | 0 |
+| Input validation | 3 | 0 | 0 | 0 |
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Cross-site request forgery | 1 | 0 | 0 | 0 |
 | XML external entities | 1 | 0 | 0 | 0 |
@@ -100,11 +100,11 @@ Rows of the answer keys found, across the four applications.
 | Weak cryptography | 1 | 0 | 0 | 0 |
 | Race condition | 1 | 0 | 0 | 0 |
 | Unsafe deserialization | 1 | 1 | 1 | 1 |
-| **Total** | **130** | **99** | **40** | **33** |
+| **Total** | **129** | **99** | **40** | **33** |
 
 ### What Code Scan misses
 
-Code Scan misses 31 rows, all in Juice Shop. The other keys were not extended, so this says nothing
+Code Scan misses 30 rows, all in Juice Shop. The other keys were not extended, so this says nothing
 about misses there.
 
 **No analyzer, 18 rows.** Hardcoded secrets (3), business logic (4), authentication flaws (3), rate
@@ -113,27 +113,33 @@ verification, resource exhaustion, weak cryptography and race condition. Some of
 analyzer work: XML external entities, token verification, hardcoded secrets and cross-site request
 forgery each have a source pattern to find. Business rules and races do not have one in general.
 
-**An existing analyzer falls short, 13 rows.**
+**An existing analyzer falls short, 12 rows.**
 
 | Row | Class | Gap |
 |---|---|---|
 | `JS-X-AUTHZ-09` | Missing authorization | The repeated-key check is not modelled |
 | `JS-X-AUTHZ-10` | Missing authorization | The masked selector is not modelled |
-| `JS-X-MASS-07` | Mass assignment | A NoSQL insert is recorded as a query in Review, not as an assignment |
+| `JS-X-MASS-07` | Missing authorization | A create is not an authorization operation in JavaScript. The insert is a NoSQL query in Review |
 | `JS-X-EXPO-03` | Information exposure | No record for a property chosen by the request in a response |
 | `JS-X-EXPO-04` | Information exposure | No record for JSONP |
 | `JS-X-XSS-09` | Cross-site scripting | Recorded and left in Review: the stored value has no linked writer |
-| `JS-X-UPLOAD-01` | Unrestricted file upload | Upload size is outside the claim |
-| `JS-X-UPLOAD-02` | Unrestricted file upload | The route has no upload record |
-| `JS-X-RESET-01` | Weak password recovery | The recovery claim covers token delivery, not a security answer |
-| `JS-X-CONF-05` | Insecure configuration | CORS is outside the configuration claims |
-| `JS-X-CONF-06` | Insecure configuration | Cookie flags are read in PHP only |
+| `JS-X-UPLOAD-02` | Input validation | The route's upload record, in Review, is about executable storage. The type test in a later handler is not read |
+| `JS-X-RESET-01` | Weak password recovery | The recovery claim exists for PHP only |
+| `JS-X-CONF-05` | Insecure configuration (poor practice) | CORS is outside the configuration claims |
+| `JS-X-CONF-06` | Insecure configuration | Flags are read for two session libraries. A `res.cookie` call is left out, and an absent flag is not recorded |
 | `JS-X-VALID-01` | Input validation | No record for the model setter |
-| `JS-X-VALID-02` | Input validation | No record for the generated registration |
+| `JS-X-VALID-02` | Input validation | Three field records, not sent to the model for missing evidence |
 
-One of the thirteen, `JS-X-XSS-09`, is recorded and left in Review. The others have no record for
-the weakness. The nearest records and statuses come from the saved report; the causes have not been
-traced through the scanner.
+Four of the twelve have a record nearby. `JS-X-XSS-09` is recorded and left in Review. `JS-X-MASS-07` and
+`JS-X-UPLOAD-02` have a record of another claim in Review, and `JS-X-VALID-02` has three field records
+that were not sent. The others have no record for the weakness. The causes were
+[traced through the scanner](../../.zazz/evaluation/detection-generalization-research.md#3-trace) offline.
+
+**Corrected on 2026-11-25.** A second reading of these rows changed seven. `JS-X-UPLOAD-01` said that upload
+size is not enforced on the server. It is, at 200,000 bytes (`server.ts:722`), so the row was removed and is
+kept as a control: a result that says otherwise there is a false positive. `JS-X-UPLOAD-02` and
+`JS-X-MASS-07` changed class, `JS-X-CONF-05` is a poor practice, and three causes were wrong. Semgrep's
+credit for `JS-X-CONF-05` stands. No scanner's found count changed.
 
 Prototype pollution and argument injection have no keyed case in these four applications.
 
@@ -204,14 +210,13 @@ code of the branch.
 | `JS-X-AUTHZ-08` | authorization | `server.ts:529` (DELETE /api/BasketItems/:id has no owner test) | Confirmed | Missed | Missed |
 | `JS-X-AUTHZ-09` | authorization | `routes/basketItems.ts:42`, `routes/basketItems.ts:49` (A repeated BasketId passes the check and writes another basket) | Missed | Missed | Missed |
 | `JS-X-AUTHZ-10` | authorization | `routes/dataExport.ts:33` (orders are selected by an email with its vowels masked, so another user can match) | Missed | Missed | Missed |
-| `JS-X-MASS-07` | mass-assignment | `routes/createProductReviews.ts:26` (review author comes from the body) | Missed | Missed | Missed |
+| `JS-X-MASS-07` | authorization | `routes/createProductReviews.ts:26` (review author comes from the body, with no sign-in check) | Missed | Missed | Missed |
 | `JS-X-EXPO-03` | exposure | `routes/currentUser.ts:31` (A requested field can be the password hash) | Missed | Missed | Missed |
 | `JS-X-EXPO-04` | exposure | `routes/currentUser.ts:58` (the current user is readable cross-origin through JSONP) | Missed | Missed | Missed |
 | `JS-X-XSS-09` | xss | `routes/videoHandler.ts:71`, `routes/videoHandler.ts:72` (subtitle file is written into a script element) | Missed | Found | Missed |
-| `JS-X-UPLOAD-01` | upload | `routes/fileUpload.ts:57`, `routes/fileUpload.ts:59` (upload size is not enforced on the server) | Missed | Missed | Missed |
-| `JS-X-UPLOAD-02` | upload | `routes/fileUpload.ts:65`, `routes/fileUpload.ts:68` (upload type is not enforced on the server) | Missed | Missed | Missed |
-| `JS-X-RESET-01` | recovery | `routes/resetPassword.ts:41` (password reset by a guessable security answer) | Missed | Missed | Missed |
-| `JS-X-CONF-05` | configuration | `server.ts:183`, `server.ts:184` (CORS allows every origin) | Missed | Found | Missed |
+| `JS-X-UPLOAD-02` | input-validation | `routes/fileUpload.ts:65`, `routes/fileUpload.ts:68` (the client's type rule is not enforced; other files are discarded) | Missed | Missed | Missed |
+| `JS-X-RESET-01` | recovery | `routes/resetPassword.ts:41` (password reset by a reusable security answer) | Missed | Missed | Missed |
+| `JS-X-CONF-05` | configuration | `server.ts:183`, `server.ts:184` (CORS allows every origin, without credentials; poor practice) | Missed | Found | Missed |
 | `JS-X-CONF-06` | configuration | `frontend/src/app/login/login.component.ts:113`, `routes/updateUserProfile.ts:42` (session token cookie without HttpOnly) | Missed | Missed | Missed |
 | `JS-X-SECRET-02` | hardcoded secret | `frontend/src/app/login/login.component.ts:68`, `frontend/src/app/login/login.component.ts:69` (working test credentials in the client) | **Not covered** | Found | Missed |
 | `JS-X-SECRET-03` | hardcoded secret | `data/static/users.yml:151` (committed TOTP secret of a seeded account) | **Not covered** | Found | Missed |

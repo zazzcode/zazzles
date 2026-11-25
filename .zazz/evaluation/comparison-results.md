@@ -88,8 +88,8 @@ more than three lines above it. The committed key `JS-SECRET-01` is also counted
 Earlier counting rule 5 left results outside the key unreviewed; they are now sorted, and the false
 positives of each tool are in [scanner-false-positives.json](scanner-false-positives.json).
 
-**Juice Shop key extended on 2026-11-25.** The comparison's Juice Shop table grew from 42 to 76 rows.
-The [34 rows](juice-shop-comparison-rows.json) are not in `cases.json`, which stays Code Scan's own
+**Juice Shop key extended on 2026-11-25.** The comparison's Juice Shop table grew from 42 to 75 rows.
+The [33 rows](juice-shop-comparison-rows.json) are not in `cases.json`, which stays Code Scan's own
 key, so `match-scanner-results.py` does not score them. Their cells were set by hand from every
 result within three lines of an anchor whose rule reports the row's weakness. The inclusion rule was
 fixed before scoring: a distinct weakness in first-party code that one of the 116 documented
@@ -98,7 +98,11 @@ seeded passwords, outdated components, contract snippets, rows already keyed, an
 `JS-X-XSS-09` is the review row `JS-XSS-08` of `cases.json`, and `JS-X-DOS-01` its excluded row
 `JS-DESER-X01`; both are documented challenges, so they count as rows here. `JS-HASH-02` is counted
 as found for Semgrep and Bearer, whose hardcoded-key results describe its constant key. The rows and
-cells were set by the agent that ran the comparison and have not been checked independently.
+cells were set by the agent that ran the comparison. The 13 rows where an existing analyzer fell short were
+then read against source by a second session on 2026-11-25, and the first session rechecked the seven it
+questioned. `JS-X-UPLOAD-01` was removed (the server does enforce a size) and kept as a control, two rows
+changed class, one is a poor practice and three causes were corrected. The other 21 rows and their cells have
+not been checked independently.
 
 ## Reproduce
 
@@ -132,17 +136,17 @@ nothing is claimed for any scanner.
 | Weakness class | In answer key | Code Scan | Semgrep CE | Bearer |
 |---|---:|---:|---:|---:|
 | Cross-site scripting | 19 | 18 | 3 | 5 |
-| Missing authorization | 15 | 13 | 0 | 0 |
+| Missing authorization | 16 | 13 | 0 | 0 |
 | SQL injection | 10 | 10 | 10 | 7 |
 | Insecure configuration | 10 | 8 | 5 | 4 |
-| Mass assignment | 8 | 7 | 0 | 0 |
+| Mass assignment | 7 | 7 | 0 | 0 |
 | Path traversal | 7 | 7 | 1 | 2 |
 | Code and template injection | 6 | 6 | 4 | 4 |
 | Information exposure | 5 | 3 | 1 | 1 |
 | OS command injection | 5 | 5 | 5 | 2 |
 | NoSQL injection | 4 | 4 | 3 | 0 |
 | Server-side request forgery | 4 | 4 | 0 | 1 |
-| Unrestricted file upload | 4 | 2 | 0 | 0 |
+| Unrestricted file upload | 2 | 2 | 0 | 0 |
 | Business logic | 4 | 0 | 0 | 0 |
 | Weak password hashing | 3 | 3 | 3 | 3 |
 | Account enumeration | 3 | 3 | 0 | 0 |
@@ -151,7 +155,7 @@ nothing is claimed for any scanner.
 | Authentication flaws | 3 | 0 | 0 | 0 |
 | Weak password recovery | 2 | 1 | 0 | 0 |
 | Rate limits and CAPTCHA | 2 | 0 | 0 | 0 |
-| Input validation | 2 | 0 | 0 | 0 |
+| Input validation | 3 | 0 | 0 | 0 |
 | Sensitive data in logs | 1 | 1 | 0 | 0 |
 | Cross-site request forgery | 1 | 0 | 0 | 0 |
 | XML external entities | 1 | 0 | 0 | 0 |
@@ -160,7 +164,7 @@ nothing is claimed for any scanner.
 | Weak cryptography | 1 | 0 | 0 | 0 |
 | Race condition | 1 | 0 | 0 | 0 |
 | Unsafe deserialization | 1 | 1 | 1 | 1 |
-| **Total** | **130** | **99** | **40** | **33** |
+| **Total** | **129** | **99** | **40** | **33** |
 | Prototype pollution, argument injection | No keyed case | — | — | — |
 
 | Capability | Code Scan | Semgrep CE | Bearer CLI |

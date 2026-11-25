@@ -49,7 +49,9 @@ Each row was read in source. "Source" is whether the weakness is there as writte
 | `VALID-01` zero stars | Yes, small. The only statement of the rule is the client slider (`min="1"`) | None |
 | `VALID-02` registration | Yes. The middleware sends 400 and still calls `next()`. Password repeat is checked on the client only | **Cause**: the fields have three records (`server.ts:437`), not sent for missing evidence |
 
-These are static readings. Nothing was run.
+These are static readings. Nothing was run. The comparison rows were corrected accordingly on 2026-11-25, with
+`UPLOAD-02` moved to input validation after a second reading. The counts below are of the rows as they
+then stood.
 
 ## 3. Trace
 

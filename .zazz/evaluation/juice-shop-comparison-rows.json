@@ -85,16 +85,16 @@
   },
   {
    "id": "JS-X-MASS-07",
-   "class": "mass-assignment",
+   "class": "authorization",
    "anchors": [
     "routes/createProductReviews.ts:26"
    ],
-   "what": "Review author comes from the body",
+   "what": "Review is stored under an author taken from the body, on a route with no sign-in check",
    "source": "challenge forgedReviewChallenge",
    "code_scan": "Missed",
    "semgrep": "Missed",
    "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: A NoSQL insert is recorded as a query in Review, not as an assignment"
+   "code_scan_cause": "existing analyzer: A create is not an authorization operation in JavaScript. The insert is recorded as a NoSQL query and left in Review"
   },
   {
    "id": "JS-X-EXPO-03",
@@ -137,32 +137,18 @@
    "code_scan_cause": "existing analyzer: Recorded and left in Review: the stored value has no linked writer"
   },
   {
-   "id": "JS-X-UPLOAD-01",
-   "class": "upload",
-   "anchors": [
-    "routes/fileUpload.ts:57",
-    "routes/fileUpload.ts:59"
-   ],
-   "what": "Upload size is not enforced on the server",
-   "source": "challenge uploadSizeChallenge",
-   "code_scan": "Missed",
-   "semgrep": "Missed",
-   "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: Upload size is outside the claim"
-  },
-  {
    "id": "JS-X-UPLOAD-02",
-   "class": "upload",
+   "class": "input-validation",
    "anchors": [
     "routes/fileUpload.ts:65",
     "routes/fileUpload.ts:68"
    ],
-   "what": "Upload type is not enforced on the server",
+   "what": "The client's upload type rule is not enforced on the server; a file of another type is discarded, not stored",
    "source": "challenge uploadTypeChallenge",
    "code_scan": "Missed",
    "semgrep": "Missed",
    "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: The route has no upload record"
+   "code_scan_cause": "existing analyzer: The route has an upload record in Review about executable storage. The type test in a later handler is not read"
   },
   {
    "id": "JS-X-RESET-01",
@@ -170,12 +156,12 @@
    "anchors": [
     "routes/resetPassword.ts:41"
    ],
-   "what": "Password reset by a guessable security answer",
+   "what": "Password reset by a stored security answer that can be used again",
    "source": "challenges resetPassword*",
    "code_scan": "Missed",
    "semgrep": "Missed",
    "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: The recovery claim covers token delivery, not a security answer"
+   "code_scan_cause": "existing analyzer: The recovery claim exists for PHP only"
   },
   {
    "id": "JS-X-CONF-05",
@@ -184,12 +170,13 @@
     "server.ts:183",
     "server.ts:184"
    ],
-   "what": "CORS allows every origin",
+   "what": "CORS allows every origin, without credentials",
    "source": "scanner",
    "code_scan": "Missed",
    "semgrep": "Found",
    "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: CORS is outside the configuration claims"
+   "code_scan_cause": "existing analyzer: CORS is outside the configuration claims",
+   "severity": "poor practice"
   },
   {
    "id": "JS-X-CONF-06",
@@ -203,7 +190,7 @@
    "code_scan": "Missed",
    "semgrep": "Missed",
    "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: Cookie flags are read in PHP only"
+   "code_scan_cause": "existing analyzer: Cookie flags are read for express-session and cookie-session. A res.cookie call is left out, and an absent flag is not recorded"
   },
   {
    "id": "JS-X-SECRET-02",
@@ -463,7 +450,20 @@
    "code_scan": "Missed",
    "semgrep": "Missed",
    "bearer": "Missed",
-   "code_scan_cause": "existing analyzer: No record for the generated registration"
+   "code_scan_cause": "existing analyzer: Three field records at server.ts:437, not sent to the model for missing evidence. The check answers 400 and still calls next()"
+  }
+ ],
+ "controls": [
+  {
+   "id": "JS-X-UPLOAD-01",
+   "class": "upload",
+   "anchors": [
+    "server.ts:722"
+   ],
+   "what": "Not a weakness: multer rejects an upload over 200,000 bytes on the server. The client's lower limit of 100,000 bytes is not enforced",
+   "source": "challenge uploadSizeChallenge",
+   "expect": "not a finding",
+   "corrected": "2026-11-25. Was a row that said upload size is not enforced on the server"
   }
  ]
 }

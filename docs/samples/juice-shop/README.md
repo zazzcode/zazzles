@@ -12,7 +12,7 @@ A full scan of revision `f189f52` with scanner `3318e27` (PR #50) and OpenAI `gp
 3 Protected and 248 Review**. These are static source judgments, not runtime exploit confirmation.
 
 - **Answer key:** all 41 positives of Code Scan's own key are found. The comparison's extended
-  Juice Shop key has 76 rows, of which this report finds 45
+  Juice Shop key has 75 rows, of which this report finds 45
   ([what it misses](../../scan/scanner-comparison.md#what-code-scan-misses)). 38 are Confirmed and 3 are practice findings:
   sensitive logging (`JS-LOG-01`), the profile-image SSRF (`JS-SSRF-01`) and the `b2bOrder` code
   execution (`JS-CODE-02`).

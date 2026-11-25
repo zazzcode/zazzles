@@ -1105,6 +1105,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 				if packageSQL >= 0 {
 					if i == packageSQL {
 						slot, a.deps = "sql_text", append([]analysis.Dependency{}, packageText.deps...)
+					} else {
+						// A callback or options argument is no part of the SQL text.
+						a.gaps = nil
 					}
 				} else if i == 0 {
 					slot = "sql_text"
@@ -1127,6 +1130,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		}
 		if len(v.deps) > 0 || len(v.gaps) > 0 || kind == "outbound_http_candidate" {
 			gaps := append(append([]analysis.Gap{}, f.gaps...), v.gaps...)
+			if packageSQL >= 0 {
+				gaps = append(gaps, f.gap("package_call_unverified", "SQL text reaches a package call with no written contract; nothing is reported until the operation is resolved", n))
+			}
 			if packageSQL > 0 {
 				gaps = append(gaps, f.structureGaps(kind, args, []value{packageText}, n)...)
 			} else {

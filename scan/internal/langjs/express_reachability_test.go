@@ -186,6 +186,17 @@ finale.initialize({ app: api, sequelize })
 		{"resource call in a loop after the handler", `api.delete('/api/Memos/:id', ` + deny + `)
 finale.initialize({ app: api, sequelize })
 for (const mode of ['a']) { ` + resource + ` }`, true},
+		{"application passed to the function that registers", `function configure (api) {
+  api.delete('/api/Memos/:id', ` + deny + `)
+  finale.initialize({ app: api, sequelize })
+  ` + resource + `
+}
+configure(api)`, true},
+		{"application named in another function", `function prepare (api) { finale.initialize({ app: api, sequelize }) }
+function configure (api) {
+  api.delete('/api/Memos/:id', ` + deny + `)
+  ` + resource + `
+}`, false},
 		{"under a condition", `if (process.env.LOCKED) { api.delete('/api/Memos/:id', ` + deny + `) }
 finale.initialize({ app: api, sequelize })
 ` + resource, false},

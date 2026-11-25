@@ -40,14 +40,14 @@ func (s *moduleSet) generatedResources(out *analysis.AnalysisReport, selected []
 		if m == nil || m.tree.RootNode().HasError() {
 			continue
 		}
-		updateMethod, app := "PUT", ""
+		updateMethod, app := "PUT", generatedApp{}
 		walkCalls(m.tree.RootNode(), func(call *sitter.Node) {
 			if libraryMember(m, call, []string{"finale-rest", "epilogue"}, "initialize") {
 				if o := objectOf(m, firstArg(call.ChildByFieldName("arguments"))); o != nil {
 					// initialize({ app }) names the application the endpoints are
 					// registered on (finale README, "Getting started").
 					if v := unwrapTS(propertyOrShorthand(o, "app", m.src)); v != nil && (v.Kind() == "identifier" || v.Kind() == "shorthand_property_identifier") {
-						app = v.Utf8Text(m.src)
+						app = generatedApp{name: v.Utf8Text(m.src), scope: enclosingFunction(call)}
 					}
 					if v := property(o, "updateMethod", m.src); v != nil {
 						if lit, ok := stringLiteral(v, m.src); ok {
@@ -89,7 +89,15 @@ func libraryMember(m *sourceModule, call *sitter.Node, modules []string, member 
 	return false
 }
 
-func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceModule, call *sitter.Node, updateMethod, app string) {
+// generatedApp is the application initialize({ app }) names and the function
+// that call is in (nil at module level): the name means that application only
+// in that scope.
+type generatedApp struct {
+	name  string
+	scope *sitter.Node
+}
+
+func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceModule, call *sitter.Node, updateMethod string, app generatedApp) {
 	unresolved := func(detail string) {
 		out.Gaps = append(out.Gaps, analysis.Gap{Kind: "generated_resource_unresolved", Detail: detail, At: m.evidence("generated_resource", call).Span})
 	}
@@ -397,12 +405,12 @@ func (s *moduleSet) generatedAccess(m *sourceModule, call *sitter.Node, ep gener
 // call, on the application the resources are generated on (app, the `app`
 // option of initialize): a registration under a condition, in another
 // function, or on another application or router leaves the endpoint reachable.
-func (s *moduleSet) answeredFirst(m *sourceModule, call *sitter.Node, app string, chain []*sitter.Node) bool {
-	if app == "" {
+func (s *moduleSet) answeredFirst(m *sourceModule, call *sitter.Node, app generatedApp, chain []*sitter.Node) bool {
+	if app.name == "" || !sameNode(enclosingFunction(call), app.scope) {
 		return false
 	}
 	for _, arg := range chain {
-		if !registeredBefore(m, arg, call, app) {
+		if !registeredBefore(m, arg, call, app.name) {
 			continue
 		}
 		hm, body, _, gaps := s.handler(m, arg)
@@ -418,7 +426,8 @@ func (s *moduleSet) answeredFirst(m *sourceModule, call *sitter.Node, app string
 
 // registeredBefore reports that the registration holding the middleware
 // argument arg is a statement of a block that also holds call, with no
-// condition, loop or function between them, and that its receiver is app.
+// condition, loop or function between them, and that its receiver is app. The
+// shared block makes the name mean the same binding at both calls.
 func registeredBefore(m *sourceModule, arg, call *sitter.Node, app string) bool {
 	reg := arg.Parent()
 	if reg != nil {
@@ -439,7 +448,7 @@ func registeredBefore(m *sourceModule, arg, call *sitter.Node, app string) bool 
 			return false
 		}
 	}
-	if receiver == nil || receiver.Utf8Text(m.src) != app || shadowed(reg, app, m.src) || shadowed(call, app, m.src) {
+	if receiver == nil || receiver.Utf8Text(m.src) != app {
 		return false
 	}
 	for p := reg.Parent(); p != nil; p = p.Parent() {

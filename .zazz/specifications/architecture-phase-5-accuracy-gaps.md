@@ -275,7 +275,7 @@ delivery. Rank them with this inventory's data when they become contracts.
 | Detect | SSTI as its own claim kind, correlated with XSS | [python-insecure-app guide](../evaluation/python-insecure-app-detection-guide.md) |
 | Detect | Framework access-log leakage of query credentials, generalized from `morgan('combined')` | [Juice Shop index](../evaluation/juice-shop/README.md) |
 | Protected | A Review-burden inventory that classifies each `needs_evidence` record by blocking gap kind (Juice Shop 112 of 134 judged) | Juice Shop and ThreatByte `metadata.json` |
-| Protected | Source-backed library contracts for imported validators and schema parsers, so guards aren't blocked offline | [Bearer capabilities](../evaluation/bearer-capabilities.md) custom-validator row |
+| Protected | Source-backed library contracts for imported validators and schema parsers, so guards aren't blocked offline | [Bearer capabilities](../evaluation/comparison-results.md#capability-inventory) custom-validator row |
 | Protected | Narrower stored-origin uncertainty when output encoding is already established | ThreatByte guide, escaped-output checklist |
 | Protected | Framework autoescape defaults as deterministic `encoded` facts | ThreatByte `encoded` and VulnPy Jinja controls |
 | False positive | Constant- or literal-origin suppression for logger-leak, and public versus private key material for secrets | Juice Shop source review rows |

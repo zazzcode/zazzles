@@ -1,69 +1,114 @@
-# Semgrep CE baseline and XSS comparison
+# Semgrep CE results on four samples
 
-**2026-11-01.** First Semgrep Community Edition baseline on the three pinned sample apps, compared with
-Zazzles (hardening 10, commit `83aa7bd`) and the existing [Bearer results](bearer-results.md) on the
-source-reviewed XSS answer keys. How to repeat it: [Semgrep CE cheat sheet](../../docs/semgrep-ce-cheat-sheet.md).
+**2026-11-24.** Semgrep Community Edition on the four comparison samples. This document records
+what the tool reported. Matching against the answer keys and the comparison with Zazzles are in the
+[scanner comparison](../../docs/scan/scanner-comparison.md) and its
+[run record](comparison-results.md).
+The 2026-11-01 results on three JavaScript samples are in the
+[comparison history](comparison-history.md). How to repeat a run:
+[Semgrep CE cheat sheet](../../docs/scan/semgrep-ce-cheat-sheet.md).
 
-## Run
+## Tool and rules
 
-Semgrep 1.183.0, `--metrics=off`, offline against a rule snapshot downloaded once from the registry:
-`p/javascript`, `p/typescript`, `p/xss` and `p/owasp-top-ten` (563 rules after merging, all valid).
-Exclusions match the Zazzles source scope (`node_modules`, `.github`, Goof `exploits/` and
-`public/js/bundle.js`, Juice Shop `three.js`, build output). Targets were unchanged before and after
-(`git status --porcelain --ignored` empty).
+| Item | Value |
+|---|---|
+| Semgrep | 1.183.0, Community Edition, Homebrew build. No login, no Pro engine |
+| Options | `--metrics=off --timeout 30 --dataflow-traces`, offline against the snapshot below |
+| Rule snapshot | `<DEV_ROOT>/zazzcode/zazzles/_test-findings/semgrep-rules/20261124/`, downloaded once from `https://semgrep.dev/c/p/<pack>` on 2026-11-24 |
+| Rules after merging | 564, all valid (`semgrep scan --validate`) |
+| Rule license | Semgrep Rules License v1.0 |
 
-| Target | Revision | Files | Results | Errors | Baseline |
-|---|---|---:|---:|---:|---|
-| Node.js Goof | `add14ba` | 30 | 6 | 0 | [JSON/SARIF/text](../../docs/samples/nodejs-goof/semgrep/20261101-baseline-01/metadata.json) |
-| Vulnerable TypeScript app | `7f8b240` | 7 | 7 | 0 | [JSON/SARIF/text](../../docs/samples/vulnerable-typescript-app/semgrep/20261101-baseline-01/metadata.json) |
-| OWASP Juice Shop | `f189f52` | 1,168 | 30 | 32 | [JSON/SARIF/text](../../docs/samples/juice-shop/semgrep/20261101-baseline-01/metadata.json) |
+| Pack | File | SHA-256 |
+|---|---|---|
+| `p/javascript` | `javascript.yaml` | `745b13761f38588a36695be1da76b251369d4f6f61c22122a21e4386eae46b90` |
+| `p/typescript` | `typescript.yaml` | `745b13761f38588a36695be1da76b251369d4f6f61c22122a21e4386eae46b90` |
+| `p/php` | `php.yaml` | `cefc4af5fccc5406f018fce559c6056f810aea8a7f1ff4b541210839873b3c77` |
+| `p/xss` | `xss.yaml` | `38ef42b59fdc6c9a323f008ea796aa6631218a8df77bf99b6599ac32e1bf34ac` |
+| `p/owasp-top-ten` | `owasp-top-ten.yaml` | `983513761ad687c438843c13974af3694036898db19170dd50e838e42b017649` |
 
-Juice Shop's 32 errors are syntax/partial-parse warnings in `data/static/codefixes/*` challenge snippets,
-which are not complete TypeScript files. Curated copies make target paths relative and drop the local
-rules-directory prefix from rule IDs; raw outputs remain under `_test-findings/<app>/semgrep-20261101-1/`.
+The registry served the same file for `p/javascript` and `p/typescript`. `p/symfony` does not
+exist in the registry (HTTP 404), so no Symfony-specific pack was used. `p/php` is new since the
+November snapshot, which had 563 rules.
 
-## XSS answer-key comparison
+Exclusions on every run: `node_modules`, `vendor`, `.github`, `dist`, `build`, `var`,
+`*.min.js` and `frontend/src/assets/private/three.js`. They match the Zazzles source scope.
 
-Positive = expected vulnerable flow found as a finding. "Review" = Zazzles kept a record with a named
-blocker instead of claiming a finding. Bearer columns use the saved Goof baseline and the earlier
-TypeScript comparison. Bearer has not yet been run on Juice Shop for XSS.
+## Runs
 
-| Case | Expected | Zazzles | Semgrep CE | Bearer |
-|---|---|---|---|---|
-| `GOOF-XSS-01` reflected login (EJS raw attribute) | positive | finding (red, replayed judgment) | missed | missed |
-| `GOOF-XSS-02` stored Markdown, create | positive | finding, separate supported path | missed | missed |
-| `GOOF-XSS-03` stored Markdown, update | positive | finding, separate supported path | missed | missed |
-| `GOOF-XSS-N01`/`N02` escaped edit outputs | protected | Protected | no result | no result |
-| `GOOF-XSS-N03` render options | Review | Review | no result | no result |
-| `GOOF-XSS-N04` fixed analytics script | no finding | no finding | no finding | **false positive** (`dangerous_insert_html`) |
-| `TS-XSS-01` reflected search | positive | finding | found (`direct-response-write`, `raw-html-format`) | found |
-| `TS-XSS-N01` JSON output | no finding | no finding | no finding | — |
-| `JS-XSS-01` DOM search trust bypass | positive | finding | missed | not run |
-| `JS-XSS-02` track order (cross-tier) | positive | finding, branch paths | missed | not run |
-| `JS-XSS-03` saved login IP via JWT | positive | Review (token origin) | missed | not run |
-| `JS-XSS-04` admin email | positive | Review (stored origin) | missed | not run |
-| `JS-XSS-05` feedback | positive | Review | missed | not run |
-| `JS-XSS-06` product description dialog | positive | Review (dialog sink unlinked) | missed | not run |
-| `JS-XSS-07` profile template construction | positive | Review (stored origin) | missed | not run |
-| `JS-XSS-08` subtitles | Review | Review | no result | not run |
-| `JS-XSS-N04` CAPTCHA trust bypass | no finding | Review, no finding | no finding | not run |
+Raw output is under `<DEV_ROOT>/zazzcode/zazzles/_test-findings/<sample>/semgrep-20261124-1/`
+(`results.json`, `results.sarif`, `results.txt`). Every run exited 0. Each sample's tracked
+files were unchanged before and after.
 
-Totals over expected positives: Zazzles **6 of 11** found, with the other 5 kept as Review;
-Semgrep CE **1 of 11**; Bearer **1 of 4** run (with one Goof false positive).
+| Sample | Revision | Files scanned | Results | Errors | Time |
+|---|---|---:|---:|---:|---:|
+| OWASP Juice Shop | `f189f52` | 1,168 | 30 | 32 | 9 s |
+| vuln-nextjs | `f5d47de` | 95 | 7 | 0 | 5 s |
+| DVWA | `a1978a2` | 222 | 44 | 2 | 4 s |
+| vuln-symfony | `086f81f` | 97 | 8 | 0 | 5 s |
 
-Semgrep's Angular `bypassSecurityTrust*` rule is taint-mode with intra-file sources, so it does not reach
-Juice Shop's route-parameter, API-response or stored sources. CE has no cross-file or stored-flow
-tracking (that is Semgrep Pro), and the snapshot packs have no rule for raw EJS `<%-` output or `marked`.
-That is a capability difference on these labeled cases, not a general accuracy claim.
+Juice Shop's 32 errors are 16 syntax errors and 16 partial parses in
+`data/static/codefixes/*`, which are challenge snippets and not complete TypeScript files.
+DVWA's two are partial parses of its `Dockerfile` and one HTML file.
 
-## Other Semgrep results (not XSS)
+## Results by rule
 
-- **Goof:** cookie-session options and a hard-coded session secret (`app.js:42-43`), Dockerfile user.
-- **TypeScript:** hard-coded session and JWT secrets, path traversal `:103`, string-built code `:137`,
-  open redirect `:239`. Zazzles has no rule for secrets, path traversal or open redirect; these are
-  candidate capability gaps, not verified cases.
-- **Juice Shop:** six Sequelize injection results, `res.sendFile`, directory listing, a JWT secret,
-  an open redirect, and Terraform/npm configuration rules.
+Rule identifiers are shown without the snapshot path prefix.
 
-Next: run Bearer on Juice Shop with the pinned rules; write answer-key cases for the non-XSS Semgrep
-results before counting them; repeat with each Zazzles hardening increment against the same rule snapshot.
+### OWASP Juice Shop
+
+| Results | Rule | Locations |
+|---:|---|---|
+| 6 | `express-sequelize-injection` | `routes/login.ts:34`, `routes/search.ts:23`, and four `data/static/codefixes` snippets |
+| 5 | `express-check-directory-listing` | `server.ts:269`, `:290`, `:294`, `:298`, `:302` |
+| 4 | `express-res-sendfile` | `routes/fileServer.ts:32`, `routes/keyServer.ts:14`, `routes/logfileServer.ts:14`, `routes/quarantineServer.ts:14` |
+| 1 | `express-open-redirect` | `routes/redirect.ts:18` |
+| 1 | `code-string-concat` | `routes/userProfile.ts:65` |
+| 1 | `hardcoded-jwt-secret` | `lib/insecurity.ts:54` |
+| 5 | `aws-subnet-has-public-ip-address` (Terraform) | Two infrastructure files and three snippets |
+| 5 | `insecure-load-balancer-tls-version` (Terraform) | The same five files |
+| 2 | `npm-missing-minimum-release-age` | `.npmrc:1`, `frontend/.npmrc:1` |
+
+The result set is the same 30 as on 2026-11-01. Semgrep reported nothing for the NoSQL queries,
+the Angular and server XSS sinks, the SSRF at `routes/profileImageUrlUpload.ts:24`, the `md5`
+password digest, the error handler, the metrics endpoint or any access-control defect.
+
+### vuln-nextjs
+
+| Results | Rule | Locations |
+|---:|---|---|
+| 2 | `react-dangerouslysetinnerhtml` | `pages/xss/unsafe/reflected.js:15` and `pages/xss/sanitized/reflected.js:16`, which the lab labels a DOMPurify control |
+| 1 | `code-string-concat` | `pages/api/vulnerable-submit.js:15` |
+| 4 | Package-manager policy rules | `.npmrc:1`, `pnpm-workspace.yaml:1` |
+
+Semgrep reported nothing for the three PGlite SQL injections, the command injection, the file
+read, the SSRF, or the stored, script-context and guestbook XSS rows.
+
+### DVWA
+
+| Results | Rule | Locations |
+|---:|---|---|
+| 14 | `php.lang.security.injection.tainted-sql-string` | `vulnerabilities/bac/source/*.php` and others |
+| 11 | `php.lang.security.injection.tainted-filename` | `instructions.php:26`, `vulnerabilities/fi/source/high.php:7`, `vulnerabilities/view_help.php`, `vulnerabilities/view_source.php` and others |
+| 9 | `php.lang.security.injection.tainted-exec` | `vulnerabilities/exec/source/*.php`, `vulnerabilities/api/src/HealthController.php:88` |
+| 8 | `php.lang.security.tainted-exec` | The `vulnerabilities/exec/source/*.php` locations again, from a second rule |
+| 1 | `php.lang.security.phpinfo-use` | `phpinfo.php:8` |
+| 1 | `php.lang.security.injection.echoed-request` | `vulnerabilities/csp/source/jsonp.php:12` |
+
+Two rules report the same command execution lines, including those in
+`vulnerabilities/exec/source/impossible.php`, the sample's hardened level.
+
+### vuln-symfony
+
+| Results | Rule | Locations |
+|---:|---|---|
+| 6 | `php.lang.security.md5-used-as-password` | `src/Command/BlogInitCommand.php:91`, `:101`, `src/Controller/AdminController.php:105`, `src/Controller/LoginController.php:106`, `src/Controller/PasswordResetController.php:78`, `src/Controller/UserController.php:41` |
+| 1 | `php.lang.security.phpinfo-use` | `public/info.php:2` |
+| 1 | `dockerfile.security.missing-user-entrypoint` | `Dockerfile:57` |
+
+## Limits of this record
+
+- CE taint analysis is single-file and intraprocedural. Cross-file and stored flows need
+  Semgrep Pro, which was not run.
+- A result count is not a score. Results in test files and challenge snippets are listed above
+  where they occur and are not findings in the running application.
+- No result here has been reviewed against source beyond its location.

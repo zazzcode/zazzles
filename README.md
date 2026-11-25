@@ -10,7 +10,7 @@ records the controls on each path. A decision LLM then judges that evidence as v
 protected, poor practice, weak input validation, or inconclusive. Zazzles checks the answers
 against its source facts before assigning an outcome.
 
-[Current coverage](#current-coverage) · [Run Scan](#quick-start) · [Sample reports](docs/samples/README.md) · [Modules](#modules) · [Documentation](docs/README.md)
+[Current coverage](#current-coverage) · [Scanner comparison](#scanner-comparison) · [Run Scan](#quick-start) · [Sample reports](docs/samples/README.md) · [Modules](#modules) · [Documentation](docs/README.md)
 
 <a id="what-exists-today"></a>
 <a id="scan-current-implementation"></a>
@@ -45,6 +45,23 @@ and omitting security flags on cookies.
 
 Reports point to the relevant code and show the input, operation, and controls behind each result.
 Coverage varies by language, framework, and library. [Full detection coverage](docs/scan/detection-capabilities.md) · [See a sample report](docs/samples/README.md)
+
+## Scanner comparison
+
+Code Scan, Semgrep CE and Bearer were run on four intentionally vulnerable applications and
+scored against each application's known vulnerabilities, with false positives counted.
+
+| Application | Known vulnerabilities | Code Scan found | Semgrep CE found | Bearer found |
+|---|---:|---:|---:|---:|
+| OWASP Juice Shop | 42 | 38 | 10 | 15 |
+| vuln-nextjs | 13 | 13 | 2 | 7 |
+| DVWA | 11 | 11 | 5 | 6 |
+| vuln-symfony | 30 | 30 | 2 | 5 |
+
+False positives on known-safe code: Code Scan 3, Semgrep CE 7, Bearer 21 and two grouped rules.
+These are development reference applications and the answer keys favor the classes Code Scan
+analyzes, so this is not a general accuracy claim.
+[Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)
 
 ## Modules
 

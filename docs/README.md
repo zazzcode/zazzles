@@ -36,6 +36,7 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 - [Remediation philosophy](philosophy.md) explains how to preserve behavior and existing protection when fixing a finding.
 - [CI/CD reports](scan/ci.md) covers report artifacts in build pipelines.
 - [Contributing](contributing.md) covers repository layout, verification, pull requests and documentation ownership.
+- [Scanner comparison](scan/scanner-comparison.md) scores Code Scan, Semgrep CE and Bearer against the known vulnerabilities of four sample applications.
 - [Semgrep CE comparison](scan/semgrep-ce-cheat-sheet.md) explains how to run a local comparison.
 
 ## First steps

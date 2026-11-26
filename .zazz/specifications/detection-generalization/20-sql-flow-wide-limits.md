@@ -4,7 +4,7 @@
 - **Authorized** by the owner, 2026-11-26: "can you fix deficiencies", on the finding that the judge's pre-send gate
   withholds SQL records with real injections, then "keep working through your list of improvements and loop to validate
   and commit and push at reasonable checkpoints".
-- **Branch** `detgen-02-1-check-fields`, lane A. No pull request is opened by this specification.
+- **Branch** `detgen-20-sql-flow-wide-limits`, from `detgen-02-1-check-fields` at `b039c0d`. **Review artifact** one draft PR to `stage`.
 - **Evidence** [SQL driver independence](../../learnings/detection-generalization/sql-driver-independence.md#judged-without-a-contract).
 
 ## The defect
@@ -93,6 +93,26 @@ A changed record that is Protected, or a record without a flow-wide gap whose by
 - **A finding outside the brief.** A value assigned or changed inside a loop does not carry the loop gap in either
   language, so before this change the flow-wide gap was the only thing holding such a record. It is now sent with a judged
   limit: it can be Confirmed, never Protected. Tests cover it.
-- **Not measured:** gpt-6-luna, the standing judge. PHP samples other than DVWA and vuln-symfony. Three safe records that
+### gpt-6-luna, the standing judge (2026-11-26, the same six records, 6 requests)
+
+| Record | Truth | Gemini | gpt-6-luna |
+|---|---|---|---|
+| `bac/source/low.php:81`, `medium.php:73` | Injectable | Confirmed | Confirmed (0.85, 0.94) |
+| `bac/source/low.php:23` | Safe | Review (judged limit) | Review (judged limit) |
+| `bac/source/low.php:36` | Safe: `intval` | Review (judged limit) | **Confirmed at 0.65, false** |
+| `bac/source/medium.php:22` | Safe: digits check | Review (judged limit) | **Confirmed at 0.47, false** |
+| `bac/source/medium.php:29` | Safe: digits check | Confirmed at 0.90, false | **Confirmed at 0.88, false** |
+
+- **Both true findings are the two the frozen baseline lists as `true_left_in_review`** for the entry that reaches them
+  (`_test-findings/detection-generalization-baseline/baseline.frozen.json`). Both models now confirm them.
+- **On gpt-6-luna three safe records are Confirmed.** `medium.php:22` and `medium.php:29` are locations the baseline
+  already holds as false Confirmed under the entry `/vulnerabilities/bac/source/medium.php`, so the change adds a second
+  entry to two known false locations. `low.php:36` is a new false location.
+- **Net on the standing judge: two true findings, one new false location, two repeats of known false locations.**
+- The evidence fix is specification 17's facts: `integer_conversion_result` and `digit_pattern_value` are stated for the
+  first query of each file (lines 23 and 22) and withheld for the second (lines 36 and 29), because a call runs between
+  the check and the query.
+
+- **Not measured:** the other DVWA records on gpt-6-luna (their records and requests are byte-identical, so unchanged). PHP samples other than DVWA and vuln-symfony. Three safe records that
   could be Protected stay Review; that is invariant 2.
 

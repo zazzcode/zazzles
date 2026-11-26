@@ -45,6 +45,7 @@ read by the sessions that built on it, so nothing here is held-out evidence exce
 | Probe 4 | Check 6's source; the question reworded as "is there an input that changes the operation beyond what the code lists" | 46 | **11** | **11** |
 | Paid check 5 | Check 6's request, unchanged, on **Gemini gemini-decision-1** | **50 Confirmed**, 7 Review | **0 Protected** | **7 Confirmed**, 9 Protected, 50 Review |
 | Paid check 7 | Probe 4's question on Gemini; **built in as protocol v2** | **52 Confirmed**, 5 Review | **0 Protected** | **4 Confirmed**, 11 Protected, 51 Review |
+| Paid check 8 | NodeGoat with protocol v2, both judges (3 true records, 4 safe) | Gemini 3 of 3 Confirmed; gpt-6-luna 2 of 3 | 0 Protected | 1 of 4 safe Confirmed on each, a different record |
 
 - **A small request with the query language next to the question is far better than the general one.** Same records, same model:
   16 Confirmed to 47, with a quarter of the input (870,000 tokens to 223,000). No answer was `cannot_tell`.
@@ -130,11 +131,13 @@ models on identical bytes.
    `portal`, `terminal` (a string in `$expr`), `entry` (a `catch` that keeps the raw value), `teams`.
 4. Next experiments, in order: value facts on Gemini, since a better reader may use what gpt-6-luna ignored and two of the four
    remaining controls have one (15 requests); protocol v2 through the scanner on gpt-6-luna, to see whether the 0.98 wrong clear
-   becomes a Protected vulnerable route there (128 requests); NodeGoat on Gemini (7 requests).
+   becomes a Protected vulnerable route there (128 requests).
+   The false positive that both models still make is one form: an update or `$set` whose written keys the code fixes, answered
+   `written_fields`. That choice needs the same treatment rule 14 gave `name`: say what is not an input.
 5. A second database is one table entry, one query-language note and one set of answer choices.
 
 ## What is not shown
 
-No held-out MongoDB application with a key written before scanning. Gemini was run once, on the lab only, not on NodeGoat. NodeGoat's seven records were labelled by the implementing
+No held-out MongoDB application with a key written before scanning. NodeGoat has only three true NoSQL records. NodeGoat's seven records were labelled by the implementing
 session after the run. No repeat of any request. Python and PHP are not covered. Mongoose and MarsDB keep their
 contracts and the general protocol.

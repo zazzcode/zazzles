@@ -5,8 +5,8 @@
   client set-up, helper or code shape; the solution must serve MongoDB in general, SQL and later databases, not one lab.
   Mid-session: record the learnings, and test Juice Shop and NodeGoat.
 - **Branch** `generalized-nosql-detection` from `stage` `a855b4a`. **Review artifact** draft [PR #54](https://github.com/zazzcode/zazzles/pull/54).
-- **Status** implemented and measured; **not ready to merge**: criterion AC6 fails. [Results](../../evaluation/detection-generalization-results/19.md) ·
-  [learnings](../../project/learnings/database-package-operations.md).
+- **Status** implemented and measured; in review since 2026-11-26. Criterion AC6 fails, and whether that blocks the merge is the owner's decision. [Results](../../evaluation/detection-generalization-results/19.md) ·
+  [learnings](../../learnings/detection-generalization/database-package-operations.md).
 
 ## Capability
 
@@ -92,7 +92,7 @@ decisions are another judge model for this protocol, or a policy that may use a 
 Owner: sufficient and correct information and questions are the issue. Referenced definitions added (39 requests changed, net
 zero on gpt-6-luna, kept). A reworded question cleared six controls and five more vulnerable routes; not built. The unchanged
 request on Gemini gemini-decision-1: 50 of 57 Confirmed, 7 controls Confirmed, none Protected. Earlier learnings pages copied
-from `detgen-14-sql-calls-redesign` into `.zazz/project/learnings/`. 957 requests in all.
+from `detgen-14-sql-calls-redesign` into `.zazz/project/learnings/`, since moved to `.zazz/learnings/detection-generalization/`. 957 requests in all.
 
 ### 2026-11-25 — Protocol v2
 

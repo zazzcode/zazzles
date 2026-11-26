@@ -114,5 +114,6 @@ For general startup, worktree, spec, and PR tasks, see the
 | Symfony analysis | [User guide](../../docs/scan/symfony-support.md), [implementation contract](../specifications/php-symfony-support.md), [application-security lane](../specifications/symfony-more-analyzers.md), [configuration design](../architecture/configuration-analysis.md), [evaluation results](../evaluation/symfony-results.md) |
 | User docs by module | [User docs index](../../docs/README.md): [Code Scan](../../docs/scan/README.md), [Fix](../../docs/fix/README.md), [Endpoint Probe](../../docs/probe/README.md) |
 | Contracts, standards, and process | [Spec index](../specifications/README.md#specification-index), [standards index](../standards/index.yaml), [execution discipline](agent-execution-discipline.md) |
+| Learnings from research and experiments | [Learnings index](../learnings/README.md), by topic; start with a topic's `README.md` |
 | Go language-server tooling for agents | [gopls setup](gopls-setup.md) |
 | Sample pins and published reports | [Sample catalog](../project/vulnerable-sample-apps.md#applications), [published samples](../../docs/samples/README.md), [reference policy](../../docs/samples/reference-policy.md) |

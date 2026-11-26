@@ -1,5 +1,7 @@
 # Learnings: generalizing how findings are identified
 
+Topic `detection-generalization` of the [learnings](../README.md).
+
 What this initiative has learned about finding vulnerabilities without a hand-written analyzer for every ORM, driver,
 validator and version. These are learnings, not specifications: nothing here approves work. Each statement links its
 evidence, and says when the evidence is weak.
@@ -11,7 +13,7 @@ judge. It may differ by language.
 ## Where things stand: what was accepted (2026-11-26)
 
 The verdict on every strategy tried for native MongoDB driver detection
-([specification 19](../../specifications/detection-generalization/19-database-package-operations.md), draft
+([specification 19](../../specifications/detection-generalization/19-database-package-operations.md),
 [PR #54](https://github.com/zazzcode/zazzles/pull/54)). Read this first.
 
 | Strategy | Accept | Why | Detail |
@@ -37,8 +39,7 @@ The 93% holds only for a scan judged by Gemini. See [judge model comparison](jud
 
 ## Index
 
-A finding gets its own page when a later decision will turn on it and it is longer than a table row. The page states the
-finding first, then the evidence, then what is not measured. Narrative pages link to it and do not repeat its tables.
+When a finding gets its own page is stated in the [learnings root](../README.md#how-to-add-to-this).
 
 | Page | Read it for |
 |---|---|
@@ -150,9 +151,9 @@ knowledge](package-knowledge.md#nosql-databases). Name each in full; "AWS NoSQL"
 
 ## Where these pages come from
 
-The first four pages were written on branch `detgen-14-sql-calls-redesign` (local, never pushed) and were copied here on
-2026-11-25 so the learnings are in one place. Their links to specifications 14, 15 and 16 and to results 14 and 15 point at
-files that exist only on that branch; read them with `git show detgen-14-sql-calls-redesign:<path>`.
+The first four pages were written on branch `detgen-14-sql-calls-redesign` (local, never pushed) and were copied on
+2026-11-25 to `.zazz/project/learnings/`, which moved here on 2026-11-26, so the learnings are in one place. Their links to
+specifications 14, 15 and 16 and to results 14 and 15 point at files that exist only on that branch; read them with `git show detgen-14-sql-calls-redesign:<path>`.
 
 ## Sources
 

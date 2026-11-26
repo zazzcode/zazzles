@@ -13,7 +13,7 @@ Ordered by expected value for accuracy. A lead is not a plan; each needs the own
 
 ## Native MongoDB driver: what is left
 
-Specification 19 is in draft [PR #54](https://github.com/zazzcode/zazzles/pull/54). Tuning the request text has stopped paying
+Specification 19 is in [PR #54](https://github.com/zazzcode/zazzles/pull/54). Tuning the request text has stopped paying
 ([request wording and agreement](request-wording-and-agreement.md)). In order:
 
 | # | Lead | Why | Cost |
@@ -33,4 +33,4 @@ Specification 19 is in draft [PR #54](https://github.com/zazzcode/zazzles/pull/5
 5. It reverts alone.
 6. **Its design is written in `.zazz/architecture/`, with the tested benefit** (owner, 2026-11-25): what changed, why, the measured result per family and the limits, in the document that owns the topic. Write it with the change that passes, not before.
 
-Specification 19 is a draft pull request with rule A5 open. Of the leads in the first table **nothing meets this in full**. Lead 1 is the closest: no regressions measured, and it needs the owner's decision on the bar, then a Go change, its text, the gates and held-out PHP. The rest need new evidence first.
+Specification 19 is a pull request in review with rule A5 open. Of the leads in the first table **nothing meets this in full**. Lead 1 is the closest: no regressions measured, and it needs the owner's decision on the bar, then a Go change, its text, the gates and held-out PHP. The rest need new evidence first.

@@ -96,7 +96,7 @@ its query language; `mongodb` is the one entry. The result is a may-fact (one de
   handlers that are methods of constructed objects.
 
 **Tested benefit** (2026-11-25; [results](../evaluation/detection-generalization-results/19.md),
-[learnings](../project/learnings/database-package-operations.md)): on the `vuln-nextjs` MongoDB module, 0 of 57 vulnerable routes
+[learnings](../learnings/detection-generalization/database-package-operations.md)): on the `vuln-nextjs` MongoDB module, 0 of 57 vulnerable routes
 were reported before; 52 are Confirmed, none is Protected and 4 of 71 controls are Confirmed with Gemini `gemini-decision-1`
 (46 and 17 with `gpt-6-luna` on the earlier question). NodeGoat: 0 records to 7. Nine samples: no record missing, added or
 changed. Measured on a lab used for development; no held-out keyed application.

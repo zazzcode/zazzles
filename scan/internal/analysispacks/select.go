@@ -48,13 +48,16 @@ func (c *catalog) selectUse(use analysis.CandidateUse) (*analysis.ComponentSelec
 		phpContract := strings.HasPrefix(contract.ID, "php-") || contract.ID == SymfonyProcessContract ||
 			contract.ID == SymfonyFileResponseContract || contract.ID == SymfonyHTTPClientContract ||
 			contract.ID == SymfonyUploadedFileMove || contract.ID == SymfonyRedirectContract
-		if family.RequiresAPI && language == lang.PHP && !phpContract {
+		// sql-text-v1 is language-neutral: it belongs to no driver, so the
+		// language, driver-prefix and capability checks below do not apply.
+		sqlText := family.Name == "sql" && contract.ID == SQLTextContract
+		if family.RequiresAPI && language == lang.PHP && !phpContract && !sqlText {
 			return nil, fmt.Errorf("PHP %s candidate requires a php- contract", family.Label)
 		}
 		if family.RequiresAPI && language != lang.PHP && phpContract {
 			return nil, fmt.Errorf("php contract selected for non-PHP %s candidate", family.Label)
 		}
-		if family.Name == "sql" && language != lang.PHP && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
+		if family.Name == "sql" && !sqlText && language != lang.PHP && (language == lang.Python) == JavaScriptSQLLibrary(contract.Library) {
 			return nil, fmt.Errorf("%s language and API capability conflict", family.Label)
 		}
 	}

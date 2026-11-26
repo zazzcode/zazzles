@@ -25,7 +25,7 @@ Numbers are stable names. **The order is the first column.**
 | — | 17 | [Computed facts for PHP SQL operands](17-php-sql-facts.md) | S | — | Fewer false PHP SQL findings |
 | — | 19 | [Database package operations](19-database-package-operations.md) | L | — | Native MongoDB driver calls record with no list of methods or client forms. [PR #54](https://github.com/zazzcode/zazzles/pull/54), in review; precision bar not met |
 | — | 20 | [A flow-wide reading limit does not withhold a SQL record](20-sql-flow-wide-limits.md) | S | — | PHP and Python SQL records are blocked only by limits on the query text and its values. Implemented on `detgen-02-1-check-fields`; DVWA gains two true findings and one false one on Gemini; gpt-6-luna not checked |
-| — | 21 | [SQL records and judgment with no driver contract](21-sql-text-records.md) | L | — | **Draft, not authorized.** Measured as overlays: 26 of 27 injectable driver forms Confirmed against 8 today on Gemini, no bound twin Confirmed |
+| — | 21 | [SQL records and judgment with no driver contract](21-sql-text-records.md) | L | — | Authorized 2026-11-26, in implementation on `detgen-02-1-check-fields`. Measured as overlays: 26 of 27 injectable driver forms Confirmed against 8 today on Gemini, no bound twin Confirmed |
 | 4 | 01 | [Storage identity across module forms](01-storage-identity.md) | S to M | 02 and 04 to merge | Four families record on CommonJS, default-export and `define` projects |
 | 5 | 12 | [Operation families on every HTTP entry](12-http-entries.md) | M to L | 02, 04 | Authorization, mass assignment and enumeration beyond Express |
 | 6 | 13 | [Storage calls without a contract](13-storage-calls.md) | M to L | 02, 03, 04, 12 | State changes through any storage library |

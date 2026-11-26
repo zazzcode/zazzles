@@ -94,6 +94,9 @@ func protocolVersion(u analysis.CandidateUse) string {
 	if documentOperation(u) {
 		return analysispacks.DocumentOperationProtocol
 	}
+	if sqlTextOperation(u) {
+		return analysispacks.SQLTextOperationProtocol
+	}
 	if version := analysispacks.ProtocolFor(u.Kind); version != "" {
 		return version
 	}

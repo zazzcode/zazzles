@@ -208,6 +208,9 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 	if documentOperation(use) {
 		return c.documentPayload(use)
 	}
+	if sqlTextOperation(use) {
+		return c.sqlTextPayload(use)
+	}
 	wired, err := withFactContract(use)
 	if err != nil {
 		return nil, err

@@ -1,8 +1,9 @@
-# Detection generalization 21 — SQL records and judgment with no driver contract (draft)
+# Detection generalization 21 — SQL records and judgment with no driver contract
 
 - **Series** [Contract, gates, held-out protocol and stop procedure](contract.md). They apply and are not repeated.
-- **Status** Draft for the owner. **Not authorized, not implemented.** Everything measured so far ran as build overlays
-  outside the repository.
+- **Authorized** by the owner, 2026-11-26: "Yes, build spec 21", on the draft of this file. The decisions below were
+  proposals in that draft and are taken as proposed. Measurements before it ran as build overlays outside the repository.
+- **Branch** `detgen-02-1-check-fields`, lane A.
 - **Evidence** [SQL driver independence](../../learnings/detection-generalization/sql-driver-independence.md): findings 6
   to 8, three paid rounds on Gemini. Overlays and runs: `_test-findings/detgen-sql-origin/` (`ov-judge/`, `ov-rec/`,
   `runs-judged/`).
@@ -33,7 +34,7 @@ scanner code or in the request. A new driver needs no change.
 5. A stored or session value is sent under its own name; a record with only stored values is Review.
 6. The statement test and the record shape are one shared component. A language hook only reads its own syntax.
 
-## Scope (proposed)
+## Scope
 
 | Path | Change |
 |---|---|
@@ -46,7 +47,7 @@ scanner code or in the request. A new driver needs no change.
 
 Out of scope: replacing a contract; ORM finders and builders with no SQL text; other sinks; JavaScript tagged templates.
 
-## Decisions to take before implementation
+## Decisions
 
 - **D-1. Contract-less JavaScript `query` records.** Today pg, mysql2, mysql and mssql are recorded by "a method named
   `query`" and held at Review by `sink_binding_unverified`. Judged with the driver-free request all four were Confirmed
@@ -59,24 +60,24 @@ Out of scope: replacing a contract; ORM finders and builders with no SQL text; o
   recorder attaches the excerpts (the handler, the functions on the path, the file of the call when small, an included
   file) as context evidence, so the judge reads no file.
 - **D-4. Invocation ids.** A record added to an entry changes the ids of the entry's other records, because the
-  invocation id hashes the entry's controls. Saved traces and equivalence signatures for those records change. *Open:*
-  accept, or keep the new record's controls out of the hash.
+  invocation id hashes the entry's controls. Saved traces and equivalence signatures for those records change. *Taken:*
+  accepted. A1 compares those records with the two id fields left out.
 - **D-5. The Protected floor.** 0.95, taken from MongoDB. On collected answers 0.85 keeps 67 of 79 safe records Protected
   with none wrong, but three wrong answers set that margin. *Proposed:* keep 0.95 until a held-out sample says otherwise.
 - **D-6. The escaped, unquoted value.** Three DVWA records are Review under the driver-free request and Confirmed by the
   contract request. A rewording made it worse. *Proposed:* contract records keep the contract request (invariant 2), so
   nothing is lost; the case is open only for records with no contract.
 - **D-7. The standing judge.** Every measurement is on Gemini. gpt-6-luna was the noisier judge on the MongoDB lab.
-  *Proposed:* gate G-acceptance on both.
+  *Taken:* A2 on Gemini in this work. gpt-6-luna needs the owner's word for the run and is reported as not measured until then.
 
-## Acceptance (proposed)
+## Acceptance
 
 | | Check |
 |---|---|
 | A1 | Every contract record and its request byte-identical on the twelve samples; ids per D-4 |
-| A2 | The 27 driver forms: every injectable form Confirmed, no bound twin Confirmed, on Gemini and on gpt-6-luna |
+| A2 | The 27 driver forms: every injectable form with a text record Confirmed, no bound twin Confirmed, on Gemini. gpt-6-luna: D-7 |
 | A3 | Non-database calls that take SQL text: recorded, not Confirmed |
-| A4 | A held-out application with an uncontracted driver, found by the owner per the held-out protocol: findings and false findings read by someone who did not write the recorder |
+| A4 | Not part of this work: a held-out application with an uncontracted driver, found by the owner per the held-out protocol: findings and false findings read by someone who did not write the recorder |
 | A5 | Scan time within 10% on Juice Shop, DVWA and vulnpy |
 
 ## What is known not to work yet

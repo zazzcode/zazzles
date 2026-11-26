@@ -20,6 +20,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyDocumentPolicy(use, a)
 		return
 	}
+	if sqlTextOperation(use) {
+		applySQLTextPolicy(use, a)
+		return
+	}
 	if use.Kind == analysis.PollutionKind {
 		applyPollutionPolicy(use, a)
 		return

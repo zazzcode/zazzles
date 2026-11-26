@@ -205,7 +205,11 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 // payloadWith builds the request; resolve false leaves out the resolution
 // questions, the last reduction for a request that does not otherwise fit.
 func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) ([]byte, error) {
-	bundle := wireBundle(use)
+	wired, err := withFactContract(use)
+	if err != nil {
+		return nil, err
+	}
+	bundle := wireBundle(wired)
 	var asks []resolutionAsk
 	if compact {
 		wire, gapIDs, err := compactBundleIDs(bundle)
@@ -261,6 +265,9 @@ func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) (
 			return nil, errors.New("coded model facts require analysis guidelines")
 		}
 		withNotes := *guidance
+		if withNotes.Body, err = guidelines.FactGuidance(withNotes.Body, modelFacts(use)); err != nil {
+			return nil, err
+		}
 		withNotes.Body = strings.TrimRight(withNotes.Body, "\n") + "\n\n" + notes
 		guidance = &withNotes
 	}

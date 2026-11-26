@@ -211,6 +211,17 @@ storage keys; SELECT headers resolve string and numeric `fetch_row` access for s
 UPDATE/INSERT whose interpolation count does not match its column list produces no invented
 origin. See the [bounded PHP subset](../php-support.md).
 
+String-built SQL is weak construction practice even when no input can change its syntax. For injection on MySQL, a PHP value
+cannot end the literal it sits in when it is escaped with `mysqli_real_escape_string` on the connection that runs the statement,
+stands in a single-quoted literal and is not changed afterwards. The same escape protects nothing when the value is not in quotes,
+is an identifier or a number, is changed after the escape, is sent to another engine, or reaches SQL run from that literal. It also
+fails when the connection's character set was changed by a statement (`SET NAMES`) and not by the client. A value converted with `(int)` or `intval`, or checked
+with `preg_match` against an anchored all-digit pattern on the path that uses it, is digits with at most a sign or a final line feed;
+where it stands apart as a compared or listed value it cannot change syntax either. The scanner states such
+a fact, or that a value is a hexadecimal hash, only for a narrow source pattern in which it can check all of this, and only when
+every operand has one. The judge decides. The exact pattern and its limits are in
+[query judgment](../../../.zazz/architecture/query-judgment.md#facts-about-constructed-php-sql-operands).
+
 ## GraphQL resolver sources
 
 The bounded Apollo Node adapter binds schema coordinates to separate resolver invocations and

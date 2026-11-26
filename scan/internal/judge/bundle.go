@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
+	"github.com/zazzcode/zazzles/scan/internal/guidelines"
 )
 
 // wireBundle sends each source span once. Edges and role references point into
@@ -140,6 +141,25 @@ func modelFacts(use analysis.CandidateUse) []string {
 	}
 	return use.Completeness.ModelFacts
 }
+
+// withFactContract gives the request of a record the contract sentences its coded
+// facts replace. The record keeps its own contract.
+func withFactContract(use analysis.CandidateUse) (analysis.CandidateUse, error) {
+	if use.APIModel == nil {
+		return use, nil
+	}
+	semantics, err := guidelines.FactContract(use.APIModel.Semantics, modelFacts(use))
+	if err != nil {
+		return use, err
+	}
+	if semantics != use.APIModel.Semantics {
+		model := *use.APIModel
+		model.Semantics = semantics
+		use.APIModel = &model
+	}
+	return use, nil
+}
+
 func resolvedGaps(use analysis.CandidateUse) []analysis.Gap {
 	if use.Completeness == nil {
 		return nil

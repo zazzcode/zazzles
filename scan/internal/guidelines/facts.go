@@ -88,3 +88,68 @@ func FactNotes(facts []string) (string, error) {
 	}
 	return b.String(), nil
 }
+
+// factSentences replace, in a request whose record has the fact, the sentences of
+// its guidance and of its contract that speak of the general case. No other
+// request carries them, so each must be true of every record with the fact.
+var factSentences = map[string]struct{ guidance, contract []sectionEdit }{
+	"integer_conversion_result": {guidance: numericSentences},
+	"digit_pattern_value":       {guidance: numericSentences},
+	"escaped_in_quoted_literal": {
+		guidance: []sectionEdit{
+			numericSentences[0],
+			mustReplace("not binding: an escaped value interpolated into SQL text remains a construction finding. A type or length check does not make an interpolated statement safe.",
+				"not binding: string-built SQL remains weak construction practice. For injection, an escaped value that sits inside a quoted SQL string literal, and is not changed afterwards, cannot end that literal. An escaped value that is not inside quotes, or is used as an identifier or a number, is not protected by the escape. A type or length check does not make an interpolated statement safe as a practice."),
+		},
+		contract: []sectionEdit{
+			mustReplace("it is a value transform recorded as evidence, never a binding or a protection verdict, and it does not escape identifiers.",
+				"it is a value transform, not a binding. An escaped value inside a quoted SQL string literal, not changed afterwards, cannot end that literal for the connection charset; an escaped value outside quotes, or used as an identifier or a number, is not protected, and it does not escape identifiers."),
+		},
+	},
+}
+
+// numericSentences say that a cast or a check is no protection as a practice; whether
+// its result can carry SQL syntax is the question the fact answers.
+var numericSentences = []sectionEdit{
+	mustReplace("does not replace sink-specific protection. A name,", "does not replace sink-specific protection as a practice; whether a numeric result can carry SQL syntax is a separate question. A name,"),
+	mustReplace("A type or length check does not make an interpolated statement safe.", "A type or length check does not make an interpolated statement safe as a practice."),
+}
+
+// FactGuidance returns a record's guidance with the sentences its coded facts replace.
+// A sentence another fact of the record already replaced is left as it is; a fact
+// whose sentence the guidance has in neither form is an error.
+func FactGuidance(body string, facts []string) (string, error) {
+	return factText(body, facts, func(code string) []sectionEdit { return factSentences[code].guidance })
+}
+
+// FactContract does the same for the semantics of the record's contract.
+func FactContract(semantics string, facts []string) (string, error) {
+	return factText(semantics, facts, func(code string) []sectionEdit { return factSentences[code].contract })
+}
+
+// factSentenceOrder applies the longer replacement first: it contains the sentence
+// the integer fact replaces.
+var factSentenceOrder = []string{"escaped_in_quoted_literal", "integer_conversion_result", "digit_pattern_value"}
+
+func factText(text string, facts []string, edits func(string) []sectionEdit) (string, error) {
+	used := map[string]bool{}
+	for _, fact := range facts {
+		code, _ := FactCode(fact)
+		used[code] = true
+	}
+	for _, code := range factSentenceOrder {
+		if !used[code] {
+			continue
+		}
+		for _, e := range edits(code) {
+			if strings.Contains(text, e.replacement) {
+				continue
+			}
+			var err error
+			if text, err = applyEdits(text, []sectionEdit{e}); err != nil {
+				return "", err
+			}
+		}
+	}
+	return text, nil
+}

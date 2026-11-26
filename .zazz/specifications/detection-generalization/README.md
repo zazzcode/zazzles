@@ -22,6 +22,7 @@ Numbers are stable names. **The order is the first column.**
 | 1 | 02 | [Handler checks as evidence](02-handler-checks.md) | M | — | Correct in-handler checks become Protected, wrong ones stay findings |
 | 2 | 04 | [Local middleware as evidence](04-middleware-checks.md) | S | 02 | An application's own access check can be judged |
 | 3 | 03 | [SQL calls without a contract](03-sql-calls.md) | M to L | — | SQL injection on drivers with no written contract |
+| — | 17 | [Computed facts for PHP SQL operands](17-php-sql-facts.md) | S | — | Fewer false PHP SQL findings |
 | 4 | 01 | [Storage identity across module forms](01-storage-identity.md) | S to M | 02 and 04 to merge | Four families record on CommonJS, default-export and `define` projects |
 | 5 | 12 | [Operation families on every HTTP entry](12-http-entries.md) | M to L | 02, 04 | Authorization, mass assignment and enumeration beyond Express |
 | 6 | 13 | [Storage calls without a contract](13-storage-calls.md) | M to L | 02, 03, 04, 12 | State changes through any storage library |

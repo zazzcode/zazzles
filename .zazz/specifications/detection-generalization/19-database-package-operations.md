@@ -4,7 +4,7 @@
 - **Asked for by the owner**, 2026-11-25: the judge should decide a MongoDB call as it does SQL, with no adapter per driver form,
   client set-up, helper or code shape; the solution must serve MongoDB in general, SQL and later databases, not one lab.
   Mid-session: record the learnings, and test Juice Shop and NodeGoat.
-- **Branch** `generalized-nosql-detection` from `stage` `a855b4a`. Nothing is committed. **Review artifact** one draft PR, when the owner asks.
+- **Branch** `generalized-nosql-detection` from `stage` `a855b4a`. **Review artifact** draft [PR #54](https://github.com/zazzcode/zazzles/pull/54).
 - **Status** implemented and measured; **not ready to merge**: criterion AC6 fails. [Results](../../evaluation/detection-generalization-results/19.md) ·
   [learnings](../../project/learnings/database-package-operations.md).
 

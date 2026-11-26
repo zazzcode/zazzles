@@ -46,8 +46,9 @@ a MongoDB server or establish support for every MongoDB driver. Unsupported bind
 ## Database-specific NoSQL scope
 
 NoSQL names the analyzer category, with intended support for multiple database engines. The initial
-implementation covers bounded MongoDB/Mongoose and MarsDB-compatible JavaScript/TypeScript operations.
-It does not provide generic NoSQL coverage. DynamoDB and every additional engine require their own
+implementation covers bounded MongoDB/Mongoose and MarsDB-compatible JavaScript/TypeScript operations,
+and calls of the native MongoDB driver (npm `mongodb`) found by
+[package origin](#native-mongodb-driver-operations). It does not provide generic NoSQL coverage. DynamoDB and every additional engine require their own
 verified API/operand models, rules, guidelines, applicability gates and positive/protected/unknown
 controls. Python NoSQL remains unimplemented.
 
@@ -67,6 +68,39 @@ does not meet this database-identification requirement for future report improve
   can change behavior; truncating text or stripping newlines does not exclude expression operators.
 - A positively constrained scalar selector value can be protected from operator injection.
 - JSON/body parsing is transport handling. It does not establish a per-field scalar schema.
+
+## Native MongoDB driver operations
+
+Draft [PR #54](https://github.com/zazzcode/zazzles/pull/54), not merged.
+[Specification](../../../.zazz/specifications/detection-generalization/19-database-package-operations.md) and
+[results](../../../.zazz/evaluation/detection-generalization-results/19.md) own the detail.
+
+- **Recording.** A call is a NoSQL record when a request value reaches it and its receiver or callee
+  derives from the `mongodb` package import. The scanner follows names, members, returned values,
+  parameters, callbacks, classes and module exports back to the import. It keeps no list of driver
+  methods and no list of ways a client is created, cached or passed. Nothing runs unless a file of the
+  target names the package.
+- **Origin is a may-fact.** One definition path to the import exists. The record states that path;
+  it does not claim every path leads there.
+- **Additive.** These records change no other record and mark no request field as consumed.
+- **Contract and protocol.** The record carries contract `mongodb-document-query-v1`, and only that
+  contract selects protocol `document-operation-v2`. Mongoose and MarsDB records keep their own
+  contracts and evidence. Moving them to this request was tested and lost Juice Shop findings.
+- **What is sent.** Query-language notes, an entry note, the call, the receiver path, the request
+  values, and the source with the definitions the call uses.
+- **What is asked.** Two closed questions. `operation`: is the call a database query, a stored
+  document, or not a database operation. `request_control`: is there an input an attacker can send
+  that changes the operation beyond the choices the code itself lists. The finding answers are
+  `operator`, `expression_text`, `pattern`, `name` and `written_fields`; `data_only` is the safe one.
+- **Scanner reading limits.** Code the flow could not model is shown to the model and listed in
+  `completeness.judged_limits`. A record with such a limit is never Protected.
+- **Protected** needs `data_only` at a probability of 0.95 or more and no judged limit. Below that
+  the record stays in Review.
+- **No scanner rule decides a verdict** for these records. Facts added to the request as text were
+  tested three times and each time changed unrelated answers; do not add them without a measured run.
+- **Calibration is open.** On the lab, 93% of Confirmed routes were vulnerable with Gemini
+  `gemini-decision-1` and 73% with `gpt-6-luna` on the earlier protocol. The series bar is 95%.
+  About 13% of lab routes change answer when the request wording changes.
 
 <a id="bounded-express-and-mongoose-context"></a>
 

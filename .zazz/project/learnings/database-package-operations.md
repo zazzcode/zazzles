@@ -46,6 +46,7 @@ read by the sessions that built on it, so nothing here is held-out evidence exce
 | Paid check 5 | Check 6's request, unchanged, on **Gemini gemini-decision-1** | **50 Confirmed**, 7 Review | **0 Protected** | **7 Confirmed**, 9 Protected, 50 Review |
 | Paid check 7 | Probe 4's question on Gemini; **built in as protocol v2** | **52 Confirmed**, 5 Review | **0 Protected** | **4 Confirmed**, 11 Protected, 51 Review |
 | Paid check 8 | NodeGoat with protocol v2, both judges (3 true records, 4 safe) | Gemini 3 of 3 Confirmed; gpt-6-luna 2 of 3 | 0 Protected | 1 of 4 safe Confirmed on each, a different record |
+| Paid check 10 | Protocol v2 on gpt-6-luna through the committed scanner, in the OpenAI adapter's own choice order | 46 Confirmed, 11 Review | 0 Protected | 15 Confirmed, 6 Protected, 45 Review |
 | Paid check 9 | Protocol v2 on gpt-6-luna with the answer choices in the order Gemini receives them: the same bytes for both models | 43 Confirmed, 14 Review | 0 Protected | 10 Confirmed |
 
 - **A small request with the query language next to the question is far better than the general one.** Same records, same model:

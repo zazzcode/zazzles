@@ -43,15 +43,15 @@ whether an input can change it. Any call on a value from the driver is covered t
 
 ## Measured accuracy of the native driver support
 
-Measured 2026-11-25 on the MongoDB module of the `vuln-nextjs` lab at `aeae20a`: 57 vulnerable routes and 71 safe controls
+Measured 2026-11-25 and 2026-11-26 on the MongoDB module of the `vuln-nextjs` lab at `aeae20a`: 57 vulnerable routes and 71 safe controls
 built as near twins. Before this support none of the 57 was reported.
 
 | Decision model | Vulnerable routes Confirmed | Vulnerable routes Protected | Safe controls Confirmed |
 | --- | ---: | ---: | ---: |
 | Gemini `gemini-decision-1` | 52 of 57 | 0 | 4 of 71 |
-| OpenAI `gpt-6-luna` (earlier wording of the question) | 46 of 57 | 0 | 17 of 71 |
+| OpenAI `gpt-6-luna` | 46 of 57 | 0 | 15 of 71 |
 
-The lab was used to develop this support, so these are not held-out numbers. The current wording has not been run through
-the scanner on `gpt-6-luna`; in a direct test it cleared more safe controls there and also wrongly cleared more vulnerable
-routes. Limits: Python and PHP drivers are not covered, and a safe sanitizer the model misreads can still be reported
+The lab was used to develop this support, so these are not held-out numbers. Neither model marked a
+vulnerable route Protected. With `gpt-6-luna` about one Confirmed route in four was a safe control. Limits: Python and PHP
+drivers are not covered, and a safe sanitizer the model misreads can still be reported
 (a complete string literal built with `JSON.stringify`, a `JSON.parse` reviver that drops operator keys, a character filter).

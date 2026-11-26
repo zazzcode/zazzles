@@ -12,7 +12,8 @@ applications or other families. OpenAI `gpt-6-luna` remains the project's standi
 | Same requests | gpt-6-luna | Gemini |
 |---|---|---|
 | Lab, protocol v1: found of 57, false of 71 | 46, 17 (73%) | 50, 7 (88%) |
-| Lab, protocol v2: found of 57, false of 71 | 43, 10 (81%), choices in Gemini's order | 52, 4 (93%) |
+| Lab, protocol v2, each adapter's own choice order: found of 57, false of 71 | 46, 15 (75%) | 52, 4 (93%) |
+| Lab, protocol v2, choices in Gemini's order | 43, 10 (81%) | 52, 4 (93%) |
 | NodeGoat, protocol v2: true found of 3, safe Confirmed of 4 | 2, 1 | 3, 1 |
 | Vulnerable route marked Protected, any scanner run | 0 | 0 |
 
@@ -34,7 +35,12 @@ The percentage is the share of Confirmed routes that are vulnerable.
   variants on Gemini is an effect of the text. On gpt-6-luna about 6 of 128 weak answers move with any neutral change.
 - **Both are text-sensitive.** See [request wording and agreement](request-wording-and-agreement.md).
 - **Both make the same kind of false positive**: an update whose written keys the code fixes, answered `written_fields`.
-- **Wrong answers are certain on both.** gpt-6-luna answered one vulnerable route `data_only` at 0.98.
+- **Wrong answers are certain on both.** In a direct probe gpt-6-luna answered one vulnerable route `data_only` at 0.98.
+  Through the scanner, in the adapter's own choice order, no vulnerable route was Protected.
+- **Where both models confirm, the result is Gemini's.** The two give the same outcome on 100 of 128 lab routes. Both confirm
+  45 vulnerable routes and 4 controls, and those four are exactly Gemini's four false positives. Using both adds nothing to
+  using Gemini.
+- **Choice order matters on gpt-6-luna.** Sorted, 43 found and 10 false; in written order, 46 and 15.
 
 ## How to use this
 

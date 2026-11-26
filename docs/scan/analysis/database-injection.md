@@ -99,7 +99,7 @@ Draft [PR #54](https://github.com/zazzcode/zazzles/pull/54), not merged.
 - **No scanner rule decides a verdict** for these records. Facts added to the request as text were
   tested three times and each time changed unrelated answers; do not add them without a measured run.
 - **Calibration is open.** On the lab, 93% of Confirmed routes were vulnerable with Gemini
-  `gemini-decision-1` and 73% with `gpt-6-luna` on the earlier protocol. The series bar is 95%.
+  `gemini-decision-1` and 75% with `gpt-6-luna`; neither marked a vulnerable route Protected. The series bar is 95%.
   About 13% of lab routes change answer when the request wording changes.
 
 <a id="bounded-express-and-mongoose-context"></a>

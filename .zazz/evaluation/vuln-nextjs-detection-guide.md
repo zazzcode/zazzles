@@ -82,6 +82,7 @@ The lab's MongoDB module is newer than the published sample pin `f5d47de` and is
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | `stage` `a855b4a` | any | 0 | 0 | 0 | 0 | 0 | 0 | 71 |
 | Database package operations, protocol v2 | Gemini `gemini-decision-1` | **52** | 5 | 0 | **4** | 11 | 51 | 5 |
+| Database package operations, protocol v2 | OpenAI `gpt-6-luna` | 46 | 11 | 0 | 15 | 6 | 45 | 5 |
 | Database package operations, protocol v1 | Gemini `gemini-decision-1` | 50 | 7 | 0 | 7 | 9 | 50 | 5 |
 | Database package operations, protocol v1 | OpenAI `gpt-6-luna` | 46 | 11 | 0 | 17 | 10 | 39 | 5 |
 

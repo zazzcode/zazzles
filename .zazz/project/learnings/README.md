@@ -18,7 +18,7 @@ The verdict on every strategy tried for native MongoDB driver detection
 |---|---|---|---|
 | Recording by package origin: follow the call's receiver back to the package import | **Yes** | 0 to 57 of 57 vulnerable lab routes recorded; held on NodeGoat; no record changed in nine other samples | [Database package operations](database-package-operations.md#recording-what-worked) |
 | Entry connectors: an Express app passed to a module, method handlers, Next.js wrappers | **Yes** | NodeGoat went from 1 entry to 20. This helps every family | [Database package operations](database-package-operations.md#recording-what-did-not-work-or-cost-more-than-expected) |
-| A request built for the one question, with the reworded question (protocol v2) | **Yes** | The best judged result on both models against what existed before: 16 Confirmed to 43 on gpt-6-luna, 52 on Gemini | [Database package operations](database-package-operations.md#strategies-what-works-what-shows-promise-what-does-not) |
+| A request built for the one question, with the reworded question (protocol v2) | **Yes** | The best judged result on both models against what existed before: 16 Confirmed to 46 on gpt-6-luna, 52 on Gemini | [Database package operations](database-package-operations.md#strategies-what-works-what-shows-promise-what-does-not) |
 | Scanner reading limits shown to the model; such a record is never Protected | **Yes** | No true finding was marked Protected in any scanner run | [Database package operations](database-package-operations.md#recording-what-worked) |
 | Proven value facts, flow facts, paths or stopping tests added to the request | **No** | Each fixed its target and changed unrelated answers, on both models | [Request wording and agreement](request-wording-and-agreement.md) |
 | Mongoose and MarsDB records moved to the generic request | **No** | Juice Shop 6 of 7 found became 4 of 7. Keep the evidence an existing contract computes | [Request wording and agreement](request-wording-and-agreement.md) |
@@ -26,11 +26,11 @@ The verdict on every strategy tried for native MongoDB driver detection
 | More questions, a confidence cut-off, a list of driver forms | **No** | Each was worse or found nothing on code it was not written against | [Database package operations](database-package-operations.md#strategies-what-works-what-shows-promise-what-does-not) |
 
 **Where the accuracy is.** Gemini `gemini-decision-1`: 52 of 57 vulnerable lab routes Confirmed, 4 of 71 controls (93%).
-gpt-6-luna: 43 and 10 (81%), with the answer choices in Gemini's order. The series bar is 95%; on a lab of near twins that is
-a difference of one route.
+gpt-6-luna, the standing judge, as the scanner sends it: 46 of 57 and 15 of 71 (75%). The series bar is 95%; for Gemini on
+a lab of near twins that is a difference of one route, for gpt-6-luna it is not close.
 
-**Caveat for the standing judge.** Protocol v2 has not been run through the scanner on gpt-6-luna in the choice order the
-OpenAI adapter sends. In a direct probe one vulnerable route was answered safe at 0.98, which the policy would mark Protected.
+**The standing judge is safe and noisier** (measured 2026-11-26, 128 requests). On gpt-6-luna no vulnerable route is
+Protected, so the earlier concern about a wrong clear at 0.98 is closed. About one Confirmed in four is a safe control there.
 The 93% holds only for a scan judged by Gemini. See [judge model comparison](judge-model-comparison.md).
 
 **What is left**, in order, is in [open leads](open-leads.md#native-mongodb-driver-what-is-left).

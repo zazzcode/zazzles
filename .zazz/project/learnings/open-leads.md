@@ -18,7 +18,7 @@ Specification 19 is in draft [PR #54](https://github.com/zazzcode/zazzles/pull/5
 
 | # | Lead | Why | Cost |
 |---:|---|---|---|
-| 1 | Run protocol v2 through the scanner on gpt-6-luna, in the order its adapter sends | The standing judge is unmeasured on the committed protocol, with one known risk of a vulnerable route marked Protected | 128 requests |
+| 1 | **Done 2026-11-26.** Protocol v2 through the scanner on gpt-6-luna, in the order its adapter sends | 46 of 57 found, none Protected, 15 of 71 controls Confirmed (75%). Safe to run; noisier than Gemini | 128 requests, spent |
 | 2 | Say in the `written_fields` choice that keys the code fixes are not an input | The one false-positive form seen on a real application, on both models | About 130 requests; a wording change may reshuffle other answers |
 | 3 | Read the four stable false positives again | `people/finder` (`findOne(req.query)`) is arguably a true finding; then the lab is at 94.6% | None |
 | 4 | Let the policy check an answer against a fact the scanner proved | The stable false positives are not uncertainty, so asking again does not help | A change to the series contract: the owner's decision, a new proposal |

@@ -67,12 +67,16 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 				binding := s.queryBinding(use)
 				sqlContract := "sequelize-raw-query-v1"
 				prismaFilter := false
+				storeContract := ""
 				if check.Kind == "nosql_query" {
 					binding = s.collectionBinding(use)
 					if len(binding) == 0 {
 						if pb := s.prismaFilterBinding(use); len(pb) > 0 {
 							binding, prismaFilter = pb, true
 						}
+					}
+					if len(binding) == 0 {
+						binding, storeContract = s.storeBinding(use)
 					}
 				} else if sqlJS := s.sqlJSBinding(use); len(sqlJS) > 0 {
 					binding, sqlContract = sqlJS, "sqljs-statement-v1"
@@ -84,6 +88,8 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 				if len(binding) > 0 {
 					if prismaFilter {
 						use.APIModel = analysispacks.NoSQLContract(analysispacks.PrismaFilterContract)
+					} else if storeContract != "" {
+						use.APIModel = analysispacks.NoSQLContract(storeContract)
 					} else if check.Kind == "nosql_query" {
 						use.APIModel = analysispacks.NoSQLContract("marsdb-collection-v1")
 						if module := s.modules[use.Sink.Span.File]; module != nil {
@@ -157,6 +163,18 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 				}
 				use.Completeness.Blockers = append(use.Completeness.Blockers, s.contextLimits...)
 				s.refineQueryEvidence(&use)
+				if storeContract != "" {
+					judgeStoreLimits(use.Completeness)
+					use.Context = append(use.Context, s.referencedDefinitions(use)...)
+					if len(use.Completeness.Evidence["input_source"]) == 0 {
+						// The record exists because these request values reach the call; a
+						// check field name that does not match one (req.body?.id, a whole
+						// body, a header) must not leave the role empty.
+						for _, d := range use.Dependencies {
+							use.Completeness.Evidence["input_source"] = append(use.Completeness.Evidence["input_source"], d.Source)
+						}
+					}
+				}
 				selected = append(selected, use)
 			}
 			if matched == 0 {

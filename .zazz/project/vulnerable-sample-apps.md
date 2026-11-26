@@ -110,6 +110,10 @@ report above has no pollution record. They appear in the same sample as a scoped
 [fixture report](../../docs/samples/vuln-nextjs/README.md#prototype-pollution-fixture-scan) at `8d26f52`: 19 judged
 records, 14 Confirmed, 2 Protected and 3 Review, with no false positive against the lab's labels.
 
+The lab's MongoDB module (57 vulnerable routes and 71 controls on the native `mongodb` driver, lab revision `aeae20a`) is newer
+than this pin. Its results are in the [detection guide](../evaluation/vuln-nextjs-detection-guide.md#mongodb-module-lab-revision-aeae20a):
+52 of 57 Confirmed and 4 controls Confirmed with Gemini, from 0 on `stage`.
+
 Local checkout `<DEV_ROOT>/zazzcode/vuln-nextjs`, maintained by the project owner; new scenarios are
 added over time. The ground truth is the lab's generated `tests/expected-scanner-findings.json`
 (one row per source file, with `controlFor` safe controls), which `TestNextJSVulnLab`
@@ -154,7 +158,7 @@ safe controls is red.
 | Profile template XSS (`JS-XSS-07`) | `routes/userProfile.ts:101` | Confirmed |
 | Subtitles (`JS-XSS-08`) | `routes/videoHandler.ts:72` | Review, as the key requires |
 | SQL injection | `routes/login.ts:34`, `routes/search.ts:23` | Confirmed |
-| NoSQL injection | `showProductReviews.ts:36`, `trackOrder.ts:18`, `updateProductReviews.ts:17` | Confirmed. `likeProductReviews.ts:25`, `:35`, `:43` are also confirmed; `orderHistory.ts:36` (confirmed in core v7) and the other query records stay Review |
+| NoSQL injection | `showProductReviews.ts:36`, `trackOrder.ts:18`, `updateProductReviews.ts:17` | Confirmed. `likeProductReviews.ts:25`, `:35`, `:43` are also confirmed; `orderHistory.ts:36` (confirmed in core v7) and the other query records stay Review. These are MarsDB records: the database package operations work (2026-11-25) follows the `mongodb` package, which Juice Shop does not import, so all 11 NoSQL records and all 305 requests are unchanged by it |
 | Sensitive logging | `server.ts:366` | Confirmed in one context; the second context is Review |
 | Directory listing (`JS-CONF-01` to `03`) | `server.ts:290`, `:298`, `:302` (`serve-index`) | Confirmed. `:269` and `:294` are also Confirmed |
 | Error handler with stack traces (`JS-EXPO-01`) | `server.ts:710` | Confirmed |

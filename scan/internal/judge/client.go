@@ -205,6 +205,9 @@ func (c *Client) payloadForm(use analysis.CandidateUse, compact bool) ([]byte, e
 // payloadWith builds the request; resolve false leaves out the resolution
 // questions, the last reduction for a request that does not otherwise fit.
 func (c *Client) payloadWith(use analysis.CandidateUse, compact, resolve bool) ([]byte, error) {
+	if documentOperation(use) {
+		return c.documentPayload(use)
+	}
 	wired, err := withFactContract(use)
 	if err != nil {
 		return nil, err

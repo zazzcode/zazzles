@@ -48,6 +48,11 @@ type sourceModule struct {
 	// refsUnstable names module bindings with a use that is not a plain read;
 	// see callable_summary.go.
 	refsUnstable map[string]bool
+	// origins is the lazily built index of assignments and calls; see package_origin.go.
+	origins *originIndex
+	// passedReceivers names, by function node, the parameters that a call in a
+	// scanned module binds to a verified Express receiver; see express_passed_receiver.go.
+	passedReceivers map[uintptr]map[string]bool
 }
 
 type moduleSet struct {
@@ -93,6 +98,9 @@ type moduleSet struct {
 	// summaryNoLoad is set while summaries are built: a summary never loads a
 	// module, so it cannot change which files a scan reports.
 	summaryNoLoad bool
+	// storeActive is set when a scanned file names a database package of
+	// storePackages; without one no call can derive from it (package_origin.go).
+	storeActive bool
 }
 
 func (s *moduleSet) close() {

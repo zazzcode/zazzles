@@ -75,6 +75,35 @@ limits](../evaluation/detection-generalization-results/17.md)): of 14 known fals
 feature, and each has three paid answers for its exact text. All of it is measured on DVWA and on forms its author wrote. No held-out PHP
 application has been used.
 
+### Database package operations (native MongoDB driver)
+
+A call whose receiver derives from a database client package is recorded by **package origin**, not by a list of driver forms.
+`langjs/package_origin.go` searches backwards from the callee: a name to its definitions and assignments, a member to the value it
+is read from, a call to what a function of the repository returns or else to the value whose method it is, a parameter to the
+arguments at its calls, `this.x` to the class or constructor function, an import to the package. `storePackages` maps a package to
+its query language; `mongodb` is the one entry. The result is a may-fact (one definition path exists) and it is the record's
+`sink_binding` evidence.
+
+- **Additive.** The flow treats the call as before. Class methods, loop iterables, renamed destructured properties and closure
+  arguments are walked on a copy of the flow that keeps only these records. Nothing runs unless a file names a table package.
+- **Limits left to the model.** For these records the scanner's reading limits move from blockers to coverage and are listed in
+  `completeness.judged_limits`; such a record is never Protected.
+- **Its own request** (`judge/document_operation.go`, protocol `document-operation-v2`, selected by contract
+  `mongodb-document-query-v1` only): the query-language notes, an entry note, the call, the receiver path, the request values,
+  and the source with the module-level definitions it uses (`referenced_definition`). Two questions: what the call is, and
+  whether an input exists that changes the operation beyond what the code lists. Protected needs `data_only` at 0.95 or above.
+- **Entries** it relies on: a Next.js route helper that passes its parameter on; an Express app passed to another module;
+  handlers that are methods of constructed objects.
+
+**Tested benefit** (2026-11-25; [results](../evaluation/detection-generalization-results/19.md),
+[learnings](../project/learnings/database-package-operations.md)): on the `vuln-nextjs` MongoDB module, 0 of 57 vulnerable routes
+were reported before; 52 are Confirmed, none is Protected and 4 of 71 controls are Confirmed with Gemini `gemini-decision-1`
+(46 and 17 with `gpt-6-luna` on the earlier question). NodeGoat: 0 records to 7. Nine samples: no record missing, added or
+changed. Measured on a lab used for development; no held-out keyed application.
+
+**Limits.** JavaScript and TypeScript only. One package. A sanitizer the model misreads is still reported. A wording is
+measured per model.
+
 ## Semantic questions and policy
 
 Protocol `candidate-use-v9` retains validation and construction-practice questions, plus a distinct

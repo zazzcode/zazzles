@@ -19,6 +19,11 @@ func (c *Client) EquivalenceSignature(u analysis.CandidateUse) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if documentOperation(u) {
+		// The request names no route or invocation: equal requests are equivalent.
+		digest := sha256.Sum256(payload)
+		return hex.EncodeToString(digest[:]), nil
+	}
 	var request map[string]any
 	if err = json.Unmarshal(payload, &request); err != nil {
 		return "", err

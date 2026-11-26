@@ -189,11 +189,31 @@ are easy. The policy floor and the question were written once and not iterated.
 
 **State of the overlay after round 2:** round 1 wording with `stored_values`. That combination was not sent as such.
 
+### The Protected floor, from the answers collected
+
+No new request. All `data_only` answers of the driver-free request for a record with a request value: 79 on a safe record,
+3 on an injectable one (the `sqli` medium records, at 0.48, 0.67 and 0.75).
+
+| Floor for Protected | Safe records Protected, of 79 | Injectable records Protected |
+|---:|---:|---:|
+| 0.95 (in use) | 43 | 0 |
+| 0.90 | 58 | 0 |
+| 0.85 | 67 | 0 |
+| 0.80 | 74 | 0 |
+| 0.76 | 76 | 0 |
+| 0.70 | 76 | 1 |
+
+- **A lower floor would keep most safe records Protected**: 0.85 keeps 67 of 79 with 0.10 above the worst wrong answer.
+- **It is not a reason to lower it yet.** Three wrong answers in one run, one model and one wording set that margin, and
+  rule 19 stands: on the MongoDB lab a wrong answer reached 0.98. The lowest safe answers (0.65) are plain bound values in
+  ThreatByte, below the highest wrong one (0.75), so no floor separates the two.
+- The floor is a cost setting, not an accuracy fix. What would move it is the injectable answers leaving `data_only`.
+
 **Next, in order.** (1) The escaped-unquoted case needs evidence, not wording: whether the value sits inside quotes in the
 statement text is something a recorder can read from the literal. Record it and try it as the scanner's statement of where
 the value lands, replacing the model's reading of it, on the six `sqli` medium records only. (2) Set the Protected floor
-from the answers collected (the weight below 0.95 goes to `statement_text` on plain bound values). (3) Lift the judge's
-pre-send gate for SQL in a spec: 22 DVWA records are withheld today and two are real. (4) Then build the recorder for
+from the answers collected (the weight below 0.95 goes to `statement_text` on plain bound values). (3) Done for the loop gap in
+[specification 20](../../specifications/detection-generalization/20-sql-flow-wide-limits.md): the two real findings are Confirmed by the contract request, with one new false finding. (4) Then build the recorder for
 drivers with no contract, which no run here tested: every record was made by a contract.
 
 ## What this means

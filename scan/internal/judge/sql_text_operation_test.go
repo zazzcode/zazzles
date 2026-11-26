@@ -288,6 +288,36 @@ func TestSQLTextOperationPolicy(t *testing.T) {
 	}
 }
 
+// TestSQLTextBoundOnlyFinding: a finding answer for a record whose request
+// values are all apart from a statement text the scanner resolved whole is Review.
+func TestSQLTextBoundOnlyFinding(t *testing.T) {
+	answer := func(use analysis.CandidateUse) analysis.Assessment {
+		a := analysis.Assessment{Status: "completed", Answers: map[string]string{"operation": "runs_sql", "request_control": "statement_text"},
+			AnswerDetails: map[string]analysis.AnswerDetail{}}
+		applyPolicy(use, &a)
+		return a
+	}
+	bound := sqlTextUse(false)
+	for i := range bound.Dependencies {
+		bound.Dependencies[i].SinkSlot = analysispacks.SQLTextParametersSlot
+	}
+	if a := answer(bound); a.FindingStatus != "needs_evidence" || len(a.BlockingGaps) != 1 || a.BlockingGaps[0].Kind != "bound_parameters_only" {
+		t.Fatalf("bound only: %s %v", a.FindingStatus, a.BlockingGaps)
+	}
+	built := bound
+	built.Gaps = append([]analysis.Gap{}, analysis.Gap{Kind: "query_text_interpolated"})
+	if a := answer(built); a.FindingStatus != "confirmed_vulnerability" {
+		t.Fatalf("bound values beside built text: %s", a.FindingStatus)
+	}
+	text := sqlTextUse(false)
+	for i := range text.Dependencies {
+		text.Dependencies[i].SinkSlot = analysispacks.SQLTextSlot
+	}
+	if a := answer(text); a.FindingStatus != "confirmed_vulnerability" {
+		t.Fatalf("text case: %s", a.FindingStatus)
+	}
+}
+
 // TestSQLTextOperationSelection: the protocol and request belong to the contract
 // sql-text-v1 alone; any other SQL record keeps its own.
 func TestSQLTextOperationSelection(t *testing.T) {

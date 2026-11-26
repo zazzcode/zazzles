@@ -85,3 +85,60 @@ Out of scope: replacing a contract; ORM finders and builders with no SQL text; o
 Text built by `join`, a helper or another module; statements outside a short list; a JavaScript value bound in a
 different call from the text; a tagged template whose driver binds its substitutions. Each is listed with its overlay in
 the learnings page.
+
+## Results (2026-11-26)
+
+Implemented on `detgen-02-1-check-fields`. Paid runs: 174 Gemini `gemini-decision-1` and 72 OpenAI `gpt-6-luna` requests,
+pass rule written first (`_test-findings/detgen-21/PASS-RULE.md`; reports and traces under `judged/`).
+
+| | Result |
+|---|---|
+| A1 | Twelve samples: no existing record missing or changed in content. Added: 43 on DVWA, 1 on vuln-demo-app, 0 elsewhere. Ids of other records change in entries that gain one (D-4) |
+| A2 | Gemini: 18 of 18 injectable forms with a text record Confirmed; 0 of 19 bound twins Confirmed (16 Protected, 3 Review). gpt-6-luna: 18 of 18 Confirmed; 0 of 19 twins Confirmed (5 Protected, 12 Review, 2 not a database operation) |
+| A3 | `log.info` and `print` taking SQL text with request data: recorded, answered not a database operation by both judges |
+| A4 | Not part of this work. One file nobody here wrote (`sast-testbench/js-samples/sql_injection.js`), missed before, is Confirmed by both judges |
+| A5 | Juice Shop within noise (28.7 s both), DVWA about 3%, vulnpy about 4% |
+| Gates | `go build`, `go vet`, `go test ./scan/...` pass. Goldens updated for the converted `string-flow` record and the new fixtures |
+
+**Driver forms, injectable, Confirmed** (the contract records of the same fixtures included):
+
+| Language | `stage` | This branch, Gemini | This branch, gpt-6-luna |
+|---|---:|---:|---:|
+| JavaScript, 10 | 1 | 9 | 9 |
+| Python, 9 | 4 | 9 | 9 |
+| PHP, 8 | 3 | 8 | 8 |
+
+The one not Confirmed is the Sequelize contract record blocked by an enclosing `res.json(...)` call; contract records are
+out of scope.
+
+**DVWA, the 43 added records (Gemini)**
+
+| Records | What | Truth | Outcome |
+|---:|---|---|---|
+| 6 | `$sqlite_db_connection->query($query)` in `sqli` and `sqli_blind`, low, medium and high, under the file's own entry | Injectable | 6 Confirmed |
+| 1 | `pg_query($insert)` in the PostgreSQL set-up script, `SERVER_NAME` in a quoted literal | Injectable, set-up script | Confirmed |
+| 36 | Bind calls of prepared statements in the `impossible` and `bac` files, under entries where no contract records the statement | Safe | 18 Protected, 10 Review, 8 not a database operation; 0 Confirmed |
+
+**Changes made during the work**
+
+- **A reading limit bars Protected only.** The first version held a text record with any blocker at Review, which lost
+  the SQLAlchemy `text()` form the prototype had confirmed. Limits on the text and its values now bar Protected and the
+  record is sent, as measured.
+- **`bound_parameters_only` applies.** gpt-6-luna Confirmed two bound forms of the extra Python fixture (0.74 and 0.67
+  for `statement_text`) though the request value is only in the parameter list. The existing guard of contract records
+  now covers text records: such an answer is Review. Unit-tested; the two records were not re-sent.
+- **The shared statement test is stricter than the prototypes'** ("Select a file from the list" does not match). It
+  gained and lost no record on any sample.
+
+**Known gaps**
+
+- gpt-6-luna keeps few bound twins Protected (5 of 19); they are Review, not findings.
+- The Python hook treats a call named `text`, `sql`, `query`, `raw`, `literal`, `literal_column`, `TextClause` or
+  `composed` with one argument as a wrapper around the text. That is a list of names in scanner code; a rule on shape
+  alone ("a call whose only argument is SQL statement text") should replace it.
+- In DVWA the 36 bound records are for files requested directly, where the database handle is not defined. They are
+  safe and not findings, and they add requests.
+- The escaped, unquoted value (D-6) is not addressed: with no contract, such a record can be Review where a contract
+  record is Confirmed.
+- No held-out application (A4).
+

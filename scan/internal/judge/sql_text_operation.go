@@ -215,6 +215,12 @@ func applySQLTextPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		review("Only stored values reach the call; whether a request wrote them is not judged here.")
 	case operation == "cannot_tell" || control == "cannot_tell":
 		review("The model could not tell what the call is or where the statement text comes from.")
+	case analysispacks.SQLTextOperationControls[control] && boundParametersOnly(use):
+		// The same guard as for a contract record: the scanner read every
+		// request value in an argument apart from a statement text it resolved
+		// whole, so an answer that the request changes the text has no witness.
+		a.BlockingGaps = []analysis.Gap{{Kind: "bound_parameters_only", Detail: "A vulnerable answer needs request-derived data in the SQL text; every request-derived value of this call is in another argument and the scanner found no interpolated statement text", At: use.Sink.Span}}
+		review("The answer that the request changes the statement has no request value in the statement text; the record stays Review.")
 	case analysispacks.SQLTextOperationControls[control]:
 		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
 		a.Answers["injection_protection"] = "vulnerable"

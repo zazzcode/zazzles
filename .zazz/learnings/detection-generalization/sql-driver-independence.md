@@ -283,6 +283,19 @@ thin language hooks, the `sql-text-operation` request and its policy in the judg
 (3) Find a held-out application with an uncontracted driver before any accuracy claim. (4) The same shape for other sinks
 that pass text to an interpreter (commands, templates, LDAP, XPath) is untested.
 
+### In the repository (specification 21)
+
+The recorder and the request are now code, not overlays:
+[specification 21](../../specifications/detection-generalization/21-sql-text-records.md) holds the results. On the same
+fixtures, with no overlay and no switch: 18 of 18 injectable forms with a text record Confirmed on Gemini and on
+gpt-6-luna, no bound twin Confirmed on either. Three things the overlays did not show:
+
+- **gpt-6-luna Confirmed two bound forms** until the existing `bound_parameters_only` guard was applied to these records.
+  The scanner knew the value was in the parameter list; the model's answer had no witness.
+- **gpt-6-luna keeps 5 of 19 bound twins Protected, Gemini 16.** The rest are Review.
+- **Holding a record at Review for a limit on its own text lost a true form** (SQLAlchemy `text()`). Rule 10 applies to
+  the text's own limits too: show the code, bar only Protected.
+
 ### Earlier next steps, still open
 
 (1) The escaped-unquoted case needs evidence, not wording: whether the value sits inside quotes in the

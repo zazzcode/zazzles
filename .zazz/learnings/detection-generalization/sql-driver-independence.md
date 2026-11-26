@@ -1,7 +1,7 @@
 # SQL driver independence: what the scanner recognizes today, and what package origin adds
 
-2026-11-26, branch `detgen-02-1-check-fields` at `stage` `a5fe8c9`. Findings 1 to 6 are offline; finding 7 used about 385 paid
-Gemini requests in two rounds. Evidence is in
+2026-11-26, branch `detgen-02-1-check-fields` at `stage` `a5fe8c9`. Findings 1 to 6 are offline; findings 7 and 8 used about
+480 paid Gemini requests in three rounds. Evidence is in
 `_test-findings/detgen-sql-origin/` (diagnostic build by `go build -overlay`, fixtures, run outputs, `compare.py`).
 
 **The goal (owner, 2026-11-26).** Code Scan stays accurate with no code or rule change for a new database version or a
@@ -26,6 +26,9 @@ on accuracy equal to or better than today's, with a strategy that is less fragil
    contract path blocks, cleared five false findings and made three of another kind. It kept fewer safe records Protected.
    A second round kept one fix (stored values named as such) and reverted one (a rewording that lost two more).
    See [judged without a contract](#judged-without-a-contract).
+8. **A recorder that names no driver made records for all 18 driver forms missed today, and the judge got 26 of 27
+   injectable forms right, with no bound twin Confirmed** (Gemini, paid, forms written by the implementers). A file nobody
+   here wrote, missed today, was Confirmed. See [records made with no contract](#records-made-with-no-contract-judged).
 
 ## Driver swap (forms the author of this page wrote)
 
@@ -209,7 +212,80 @@ No new request. All `data_only` answers of the driver-free request for a record 
   ThreatByte, below the highest wrong one (0.75), so no floor separates the two.
 - The floor is a cost setting, not an accuracy fix. What would move it is the injectable answers leaving `data_only`.
 
-**Next, in order.** (1) The escaped-unquoted case needs evidence, not wording: whether the value sits inside quotes in the
+## Records made with no contract, judged
+
+Round 3 (2026-11-26, Gemini, 89 requests, pass rule written first). Three recorder overlays, one per language, written
+by subagents to one brief (`_test-findings/detgen-sql-origin/RECORDER-BRIEF.md`, overlays in `ov-rec/`). Each turns the
+SQL-text probe into a recorder: a call with SQL statement text in an argument, that no contract records, becomes a
+`sql_query_candidate` with the neutral contract id `sql-text-v1`. Request data in the text gives slot `sql_text`; request
+data only in another argument, or in a bind call on a statement prepared from the text, gives `sql_parameters`. The judge
+uses the driver-free request for these records and today's request for contract records.
+
+**The 27 driver forms, injectable, and their bound twins**
+
+| Language | Injectable forms Confirmed, today | With the recorder | Bound twins Protected | Bound twins Confirmed |
+|---|---:|---:|---:|---:|
+| JavaScript, 10 | 1 | 9 | 4 of 7 recorded (3 Review) | 0 |
+| Python, 9 | 4 | 9 | 9 of 9 | 0 |
+| PHP, 8 | 3 | 8 | 8 of 8 | 0 |
+| **All, 27** | **8** | **26** | **21 of 24 recorded** | **0** |
+
+- **Oracle, SQL Server, PostgreSQL and MySQL drivers are judged in all three languages with no driver named anywhere**:
+  oracledb, cx_Oracle, pyodbc, pymssql, SQLAlchemy `text`, `pg_query`, `sqlsrv_query`, `oci_parse`, `new \PDO`, a PDO
+  subclass, sqlite3, knex, postgres.
+- **The four common JavaScript drivers (pg, mysql2, mysql, mssql) needed no recorder.** They already have a record from "a
+  method named `query`", held at Review by `sink_binding_unverified`. Judged with the driver-free request, all four are
+  Confirmed and their bound twins are Protected or Review.
+- **The one form not Confirmed is a contract record.** Sequelize `query` inside `res.json(...)` carries
+  `input_helper_unresolved` from the enclosing call and is not sent.
+- **A file nobody here wrote**: `sast-testbench/js-samples/sql_injection.js`, `db.get(query, cb)` on the `sqlite3` package.
+  No record today; recorded and Confirmed at 1.00.
+- **Calls that are not database calls were sorted by the judge.** `log.info` and `print` taking SQL text with request data
+  were recorded and answered `not_database_operation` (Python fixture). The `operation` question does the work package
+  origin was meant to do here.
+- **Forms beyond the fixtures** (Python, the agent's own): f-string, `%`, `.format` of a constant, keyword argument,
+  `CREATE TABLE` and `DROP TABLE` with a request name: all Confirmed; two bound forms Protected.
+
+**On the real samples**
+
+| Sample | Records added | What they are |
+|---|---:|---|
+| Juice Shop, vuln-nextjs, nodejs-goof, vulnerable-typescript-app, oss-oopssec-store, vuln-nestjs, vuln-drupal | 0 | Contracts cover every SQL call there |
+| vulnpy, ThreatByte, vulnerable-flask-app, python-insecure-app | 0 | The same |
+| vuln-demo-app | 1 | A bound `db.run` the contract leaves out. Protected |
+| vuln-symfony | 2 | `prepare($rawSql)`, the same statements a contract records at `executeQuery`. Duplicates |
+| DVWA | 49 | 42 bind calls of statements a contract records at `execute()` (duplicates); 6 SQLite `query` calls under another entry; 1 `pg_query` in a set-up script. Not judged |
+
+- **No existing record changes its content.** In an entry that gains a record, the ids of the other records change,
+  because the invocation id is a hash of the entry's controls (13 uses in DVWA, 1 in vuln-demo-app).
+- **Cost:** none measurable on Juice Shop (27 s) and DVWA; about 20% on vulnpy (2.5 s to 3.1 s).
+
+**Against the pass rule:** every injectable form with a new record is Confirmed; none is Protected; no safe twin is
+Confirmed; the non-database calls are not Confirmed. **Passed.**
+
+**How firm.** The fixtures and twins were written by the implementers, so this shows the path works end to end and not
+how accurate it is on code in the wild (rule 20). One held-out file is one file. The development samples add almost no
+records, so they cannot measure it either. What is still needed is an application nobody here tuned for that uses an
+uncontracted driver; none is on this machine.
+
+**What the recorders do not do, as built**
+
+- Text built by `join`, a helper that returns SQL, a class constant or another module is not followed.
+- Statements outside a short list (`PRAGMA`, `SET`, `SHOW`, `TRUNCATE`) are not recognized.
+- JavaScript: a value bound in a different call from the text (`prepare(lit).all(v)`, `request().input().query(lit)`) gets
+  no record, so that safe form is simply absent. A tagged template is recorded as text even where the driver binds it.
+- PHP: one record per bind call, and duplicates of contract records at `prepare`. Both need removing.
+- The contract id is not registered: outside the overlay the standard judge path rejects it.
+
+**Next, in order.** (1) Specify and build the recorder in the repository: one shared SQL-text test and record shape, three
+thin language hooks, the `sql-text-operation` request and its policy in the judge, with the duplicates above removed.
+(2) Judge the contract-less JavaScript `query` records the same way; that alone covers pg, mysql2, mysql and mssql.
+(3) Find a held-out application with an uncontracted driver before any accuracy claim. (4) The same shape for other sinks
+that pass text to an interpreter (commands, templates, LDAP, XPath) is untested.
+
+### Earlier next steps, still open
+
+(1) The escaped-unquoted case needs evidence, not wording: whether the value sits inside quotes in the
 statement text is something a recorder can read from the literal. Record it and try it as the scanner's statement of where
 the value lands, replacing the model's reading of it, on the six `sqli` medium records only. (2) Set the Protected floor
 from the answers collected (the weight below 0.95 goes to `statement_text` on plain bound values). (3) Done for the loop gap in
@@ -234,5 +310,5 @@ drivers with no contract, which no run here tested: every record was made by a c
 
 ## Not measured
 
-A record made by text recognition for a driver with no contract, judged. The same comparison on gpt-6-luna.
+A held-out application with an uncontracted driver. The same comparisons on gpt-6-luna, the standing judge.
 Origin for Python or PHP. The scan-time cost of the text probe. Scan time side by side. An application nobody tuned for that uses an uncontracted SQL driver.

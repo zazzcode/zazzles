@@ -126,6 +126,32 @@ evidence it moved precision from 73% to 88%, and it decides whether a better que
 cost gpt-6-luna five findings and cost Gemini none). The way to work is to fix the request and question first, then compare
 models on identical bytes.
 
+## The iteration loop on Gemini (2026-11-25)
+
+A bench of the lab, NodeGoat, Juice Shop and nodejs-goof (68 true records or routes, 80 safe) behind a caching proxy, so that
+only request texts not seen before are paid. Baseline, committed scanner on Gemini: **62 of 68 found, none Protected, 5 of 80
+safe Confirmed (92.5%)**. Three general tweaks were tried, each with its rule written first, and all three were reverted.
+
+| Iteration | Change | Result | Kept |
+|---|---|---|---|
+| 1 | Mongoose and MarsDB records on the focused request, with a library note | Juice Shop 6 of 7 found to 4 of 7; two nodejs-goof `findById` records fall from Protected to Review | No |
+| 2 | Proven value facts in the request | One false positive leaves, three controls become Protected; two safe records become Confirmed. False 5 to 6 | No |
+| 3 | The scanner's paths and stopping tests in the request | Its two targets (`partner`, `entry`) are found; two other findings are lost; lab false positives 4 to 9 | No |
+
+What the loop established:
+
+- **Gemini is deterministic on these requests.** 128 requests sent twice gave 128 identical answers and probabilities. So a
+  difference between variants is an effect of the text.
+- **It is text-sensitive.** Across four Gemini variants, 48 of 57 vulnerable lab routes are Confirmed by all and 59 of 71
+  controls by none. The other 7 vulnerable routes and 10 controls flip with the wording, and any edit reshuffles them. One
+  run's 93% is one draw; the stable core is 48 found and 2 false.
+- **Facts added as request text hit their target and disturb everything else**, on both models: three attempts.
+- **A library that already has a contract with its own facts does not gain from the focused request.** The general NoSQL
+  protocol on Gemini finds 7 of 8 Mongoose and MarsDB records with no false positive. Generalize the record and the
+  language notes; keep the evidence a specific contract computes.
+- **What would shrink the borderline set is not more text**: agreement of two wordings (v2 and v2 with paths agree on 50
+  found and 3 false, 94%, for twice the requests of these records), or a policy that checks an answer against a proven fact.
+
 ## How firm each finding is
 
 No request in this work was sent twice, and every lab number comes from an application read during development. Read the
@@ -141,14 +167,14 @@ findings by how many independent measurements stand behind them.
 
 | Single measurement: a direction, not a number to rely on | What would make it firm |
 |---|---|
-| The reworded question helps Gemini (88% to 93%) | A second application with a key; one repeat of the 128 |
+| The reworded question helps Gemini (88% to 93%) | It is repeatable, and it is one draw of the borderline set: four variants range from 85% to 93% |
 | Choice order moves gpt-6-luna by about three routes | That is the size of the noise; a repeat |
 | The 93% itself | It moves by two points per route. A lab not read during development |
 | The 0.95 floor for Protected | It was set after seeing answers; on gpt-6-luna one wrong answer reached 0.98 |
 | Complete source is worth sending | Net zero on gpt-6-luna; not measured on Gemini |
 
-**Not known at all:** how often the same request gets the same answer on Gemini (on gpt-6-luna an earlier test found 6 of 6
-identical); any of this on Mongoose or MarsDB records, which still use the general protocol.
+Since measured: Gemini answers the same request identically (128 of 128); Mongoose and MarsDB records do better on their
+own contracts than on the focused request.
 
 ## What this means for the next step
 

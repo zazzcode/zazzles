@@ -38,6 +38,11 @@ One addition: on identical evidence the model still moved precision from 73% to 
 8. Leave out what cannot be computed. A statement of "unknown" or "not established" makes the judge doubt a true finding, and
    coverage questions get answered `no` with nothing wrong.
 9. Facts read from the flow's conclusions were unsound repeatedly. A fact must come from a narrow source pattern that fails closed.
+9a. A fact added to a request as text hits its target and moves other answers too, on both models, even when the fact is
+    proven. It worked once, where the fact replaced a sentence that contradicted it. Otherwise keep proven facts out of the
+    request.
+9b. A library with its own contract and facts (Mongoose, MarsDB) does not gain from being moved to a generic request. Use the
+    generic request where there is no contract.
 10. A scanner limit is not a limit of a reader. Do not withhold a record because the scanner could not follow `JSON.parse`; show
     the code, and bar only the Protected outcome.
 
@@ -61,7 +66,9 @@ One addition: on identical evidence the model still moved precision from 73% to 
 **Measuring**
 
 17. Write the pass rule before the first request. Resend only requests whose text changed; replay the rest.
-18. About 6 of 128 weak answers move with any neutral change. A difference of that size is noise.
+18. A judge can be deterministic and still text-sensitive. Gemini returned identical answers for 128 repeated requests, and
+    about 13% of the routes changed outcome with every change of wording. Count the routes every variant agrees on, not one
+    run's score. On gpt-6-luna about 6 of 128 weak answers move with any neutral change.
 19. Certainty is not correctness: wrong answers reach 0.98. No cut-off separates true from false.
 20. Test on forms someone else wrote, and on an application nobody tuned for. Forms the implementer writes pass.
 21. Compare models on identical bytes before concluding that a request is the limit, or that it is not. Read the wire

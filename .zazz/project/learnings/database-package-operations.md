@@ -46,6 +46,7 @@ read by the sessions that built on it, so nothing here is held-out evidence exce
 | Paid check 5 | Check 6's request, unchanged, on **Gemini gemini-decision-1** | **50 Confirmed**, 7 Review | **0 Protected** | **7 Confirmed**, 9 Protected, 50 Review |
 | Paid check 7 | Probe 4's question on Gemini; **built in as protocol v2** | **52 Confirmed**, 5 Review | **0 Protected** | **4 Confirmed**, 11 Protected, 51 Review |
 | Paid check 8 | NodeGoat with protocol v2, both judges (3 true records, 4 safe) | Gemini 3 of 3 Confirmed; gpt-6-luna 2 of 3 | 0 Protected | 1 of 4 safe Confirmed on each, a different record |
+| Paid check 9 | Protocol v2 on gpt-6-luna with the answer choices in the order Gemini receives them: the same bytes for both models | 43 Confirmed, 14 Review | 0 Protected | 10 Confirmed |
 
 - **A small request with the query language next to the question is far better than the general one.** Same records, same model:
   16 Confirmed to 47, with a quarter of the input (870,000 tokens to 223,000). No answer was `cannot_tell`.
@@ -101,6 +102,11 @@ the right question reach the judge. The evidence supports the second half strong
 | Complete source: the definitions of constants and functions the handler uses | 19 of 128 requests lacked one. Sending them was net zero on gpt-6-luna (two better, two worse) | Kept because judging code that is not shown is wrong in principle. Re-measure on Gemini |
 | Use both models and treat disagreement as Review | They disagree on 22 routes; where both confirm, 5 controls remain | An owner decision: two providers per record doubles cost |
 | Route entries and class methods for every family, not only these records | NodeGoat went from 1 entry to 20 and showed three `eval` calls no family had seen | Its own specification and evidence per family |
+
+**Is it what is sent, or the model?** (check 9) The two adapters sent identical evidence and questions but ordered the answer
+choices differently. With the order made the same, gpt-6-luna gives 43 of 57 and 10 controls (81%) where Gemini gives 52 and 4
+(93%). Choice order moves gpt-6-luna by about three routes; the rest of the gap is the model. Check what each adapter really
+puts on the wire before comparing models: a map is written alphabetically.
 
 **Does not work** (measured, dropped)
 

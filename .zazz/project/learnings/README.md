@@ -64,7 +64,9 @@ One addition: on identical evidence the model still moved precision from 73% to 
 18. About 6 of 128 weak answers move with any neutral change. A difference of that size is noise.
 19. Certainty is not correctness: wrong answers reach 0.98. No cut-off separates true from false.
 20. Test on forms someone else wrote, and on an application nobody tuned for. Forms the implementer writes pass.
-21. Compare models on identical bytes before concluding that a request is the limit, or that it is not.
+21. Compare models on identical bytes before concluding that a request is the limit, or that it is not. Read the wire
+    request of each adapter: one sent the answer choices alphabetically, the other in written order. Made identical, the
+    models still differed by nine findings and six false positives.
 
 **Open** (what these rules do not yet settle): a wording that keeps rule 14's gain on gpt-6-luna too; whether proven
 value facts help a stronger reader; the same method for SQL drivers without a contract.

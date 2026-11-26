@@ -126,6 +126,30 @@ evidence it moved precision from 73% to 88%, and it decides whether a better que
 cost gpt-6-luna five findings and cost Gemini none). The way to work is to fix the request and question first, then compare
 models on identical bytes.
 
+## How firm each finding is
+
+No request in this work was sent twice, and every lab number comes from an application read during development. Read the
+findings by how many independent measurements stand behind them.
+
+| Firm: seen in several runs, on both models or on two applications | Evidence |
+|---|---|
+| Recording by package origin reaches code a list of forms does not | Lab 0 to 57 of 57; NodeGoat 0 to 7; 52 forms another session wrote |
+| A request built for the one question beats the general request | 16 to 46 or more Confirmed in every later run |
+| Gemini judges these records better than gpt-6-luna | Lab on protocol v1 (50 and 7 against 46 and 17), lab on identical bytes (52 and 4 against 43 and 10), NodeGoat (3 of 3 against 2 of 3) |
+| No vulnerable route is Protected under the conservative rule | Every scanner run: five on the lab, three on NodeGoat |
+| More questions, flow facts and value facts do not help gpt-6-luna | One run each, all inside the noise of about six routes |
+
+| Single measurement: a direction, not a number to rely on | What would make it firm |
+|---|---|
+| The reworded question helps Gemini (88% to 93%) | A second application with a key; one repeat of the 128 |
+| Choice order moves gpt-6-luna by about three routes | That is the size of the noise; a repeat |
+| The 93% itself | It moves by two points per route. A lab not read during development |
+| The 0.95 floor for Protected | It was set after seeing answers; on gpt-6-luna one wrong answer reached 0.98 |
+| Complete source is worth sending | Net zero on gpt-6-luna; not measured on Gemini |
+
+**Not known at all:** how often the same request gets the same answer on Gemini (on gpt-6-luna an earlier test found 6 of 6
+identical); any of this on Mongoose or MarsDB records, which still use the general protocol.
+
 ## What this means for the next step
 
 1. Recording by package origin generalizes: it held on forms it was not written against and on NodeGoat's different shapes.

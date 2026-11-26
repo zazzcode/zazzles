@@ -331,6 +331,11 @@ func (f *flow) joinConditionalValues(values []value, conditions []analysis.Evide
 				same := true
 				for i, v := range values {
 					fields[i] = v.fields[name]
+					if v.fields == nil && len(v.deps) > 0 {
+						// An alternative with no known fields is read whole: a property
+						// of a request value depends on that value.
+						fields[i] = value{deps: v.deps}
+					}
 					_, ok := v.fields[name]
 					_, first := values[0].fields[name]
 					same = same && ok == first && reflect.DeepEqual(fields[i], fields[0])

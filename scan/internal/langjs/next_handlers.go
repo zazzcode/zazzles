@@ -134,6 +134,9 @@ func (s *moduleSet) forwardingWrapper(m *sourceModule, wrapper *sitter.Node, dep
 		}
 		return auth, index, found == 1
 	}
+	if auth, index, ok := s.passesHandlerOn(m, wrapper, ret, params, depth); ok {
+		return auth, index, true
+	}
 	if ret.Kind() == "call_expression" && len(params) == 1 && params[0] != "" {
 		args := ret.ChildByFieldName("arguments")
 		if args == nil || args.NamedChildCount() != 1 || !isFunction(args.NamedChild(0)) {
@@ -154,6 +157,60 @@ func (s *moduleSet) forwardingWrapper(m *sourceModule, wrapper *sitter.Node, dep
 		return append(append(outerAuth, wm.evidence("wrapper_definition", outer)), own...), 0, true
 	}
 	return nil, 0, false
+}
+
+// passesHandlerOn verifies a factory that returns a call of another verified
+// forwarding wrapper and hands it one of its own parameters, unchanged, in that
+// wrapper's handler position: `const post = (run) => endpoint(['POST'], run)`.
+// The parameter has no other use in the factory, so nothing else can call,
+// replace or wrap the handler. The rule reads structure only and names no helper.
+func (s *moduleSet) passesHandlerOn(m *sourceModule, wrapper, ret *sitter.Node, params []string, depth int) ([]analysis.Evidence, int, bool) {
+	if ret.Kind() != "call_expression" {
+		return nil, 0, false
+	}
+	args := ret.ChildByFieldName("arguments")
+	if args == nil {
+		return nil, 0, false
+	}
+	wm, outer := s.resolveCall(m, ret)
+	if wm == nil || outer == nil || !supportedCallee(outer) {
+		return nil, 0, false
+	}
+	outerAuth, outerIndex, ok := s.forwardingWrapper(wm, outer, depth+1)
+	if !ok || uint(outerIndex) >= args.NamedChildCount() || callHasSpread(ret) {
+		return nil, 0, false
+	}
+	passed := unwrapTS(args.NamedChild(uint(outerIndex)))
+	if passed == nil || passed.Kind() != "identifier" {
+		return nil, 0, false
+	}
+	name := passed.Utf8Text(m.src)
+	body := wrapper.ChildByFieldName("body")
+	for i, p := range params {
+		if p == "" || p != name {
+			continue
+		}
+		if identifierUses(body, name, m.src) != 1 {
+			return nil, 0, false
+		}
+		return append(append([]analysis.Evidence{}, outerAuth...), wm.evidence("wrapper_definition", outer)), i, true
+	}
+	return nil, 0, false
+}
+
+// identifierUses counts the identifier nodes named name under n.
+func identifierUses(n *sitter.Node, name string, src []byte) int {
+	if n == nil {
+		return 0
+	}
+	count := 0
+	if (n.Kind() == "identifier" || n.Kind() == "shorthand_property_identifier") && n.Utf8Text(src) == name {
+		count++
+	}
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		count += identifierUses(n.NamedChild(i), name, src)
+	}
+	return count
 }
 
 // wrapperParameters lists a factory's parameter names in order, with "" for a

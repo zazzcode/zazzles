@@ -176,6 +176,20 @@ func (f *flow) statement(n *sitter.Node) bool {
 								projected = field // a modeled result object such as a query's { rows }
 							}
 							f.env[binding.Utf8Text(f.module.src)] = f.transfer(projected, "field_projection", binding)
+						} else if local, key, fallback := aliasBinding(binding, f.module.src); local != "" {
+							// { key: local } and { key: local = fallback } read the property key.
+							projected := v
+							if field, ok := v.fields[key.Utf8Text(f.module.src)]; ok && v.model == "" && len(v.deps) == 0 {
+								projected = field
+							}
+							bound := f.transfer(projected, "field_projection", key)
+							if fallback != nil {
+								bound = combine(bound, f.transfer(f.eval(fallback), "assignment", fallback))
+							}
+							// The flow itself does not model this binding: every other family keeps
+							// its gap and its records. Database package operations read the value.
+							f.noteStoreAlias(local, bound)
+							f.gaps = append(f.gaps, f.gap("unsupported_binding", "destructuring alias/default not modeled", binding))
 						} else {
 							f.gaps = append(f.gaps, f.gap("unsupported_binding", "destructuring alias/default not modeled", binding))
 						}
@@ -214,6 +228,7 @@ func (f *flow) statement(n *sitter.Node) bool {
 			return false
 		}
 		if !f.clientForOf(n) {
+			f.storeIterable(n)
 			f.branches(n)
 		}
 	default:
@@ -745,6 +760,7 @@ func (f *flow) eval(n *sitter.Node) value {
 		a := f.eval(n.ChildByFieldName("consequence"))
 		b := f.eval(n.ChildByFieldName("alternative"))
 		v := combine(a, b)
+		v.fields = openFields(v.fields, a, b)
 		v.gaps = append(v.gaps, f.gap("conditional_merge", "branch feasibility is not modeled", n))
 		return f.transfer(v, "conditional_value", n)
 	case "await_expression":
@@ -820,6 +836,24 @@ func (f *flow) transfer(v value, kind string, n *sitter.Node) value {
 		}
 		d.Transfers = append(append([]analysis.Evidence{}, d.Transfers...), f.module.evidence(kind, n))
 		out.deps = append(out.deps, d)
+	}
+	return out
+}
+
+// openFields corrects the fields of a join of two alternatives when one of them
+// is a request value with no known fields: a property read from the join may be
+// that value's property, so each field keeps its dependencies.
+func openFields(fields map[string]value, a, b value) map[string]value {
+	open := a
+	if a.fields != nil {
+		open = b
+	}
+	if len(fields) == 0 || (a.fields == nil) == (b.fields == nil) || len(open.deps) == 0 {
+		return fields
+	}
+	out := make(map[string]value, len(fields))
+	for name, field := range fields {
+		out[name] = combine(field, value{deps: open.deps})
 	}
 	return out
 }
@@ -1151,6 +1185,8 @@ func (f *flow) evalCall(n *sitter.Node) value {
 	if modelCall {
 		return modelValue
 	}
+	f.storeCall(n, args, values)
+	f.storeMethodCall(n, fn, values)
 	if v, ok := f.validationHelperCall(n, values); ok {
 		return v
 	}
@@ -1419,6 +1455,25 @@ func (f *flow) defaultProjection(binding *sitter.Node, v value) bool {
 
 // patternBinding returns the local name, property and key node of one object
 // pattern entry: `{ id }` or `{ id: orderId }`.
+// aliasBinding reads a renamed property of an object pattern: the local name,
+// the property key and the default value, if any.
+func aliasBinding(b *sitter.Node, src []byte) (local string, key, fallback *sitter.Node) {
+	if b.Kind() != "pair_pattern" {
+		return "", nil, nil
+	}
+	k, v := b.ChildByFieldName("key"), b.ChildByFieldName("value")
+	if k == nil || v == nil || k.Kind() != "property_identifier" {
+		return "", nil, nil
+	}
+	if v.Kind() == "assignment_pattern" {
+		v, fallback = v.ChildByFieldName("left"), v.ChildByFieldName("right")
+	}
+	if v == nil || v.Kind() != "identifier" {
+		return "", nil, nil
+	}
+	return v.Utf8Text(src), k, fallback
+}
+
 func patternBinding(b *sitter.Node, src []byte) (local, prop string, key *sitter.Node) {
 	switch b.Kind() {
 	case "shorthand_property_identifier_pattern":

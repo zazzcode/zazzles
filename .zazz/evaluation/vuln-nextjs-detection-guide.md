@@ -71,3 +71,25 @@ Before a new evaluation, verify the lab revision and changes. Re-pin changed sce
 source expectations, and obtain a bounded paid scope before making new model requests. Never carry
 old decisions onto changed evidence. Preserve the reference, repair an independent copy, and follow
 the [reference policy](../../docs/samples/reference-policy.md).
+
+## MongoDB module (lab revision `aeae20a`)
+
+The lab's MongoDB module is newer than the published sample pin `f5d47de` and is not in the published report. Its key is
+`lib/catalog.json`: 57 vulnerable routes (`MONGO-001` to `MONGO-057`) and 71 safe controls under `pages/api/mongo/` and
+`pages/api/workshop/`, all on the native `mongodb` driver. Scan it from `git archive aeae20a`.
+
+| Scanner | Judge | Vulnerable Confirmed (57) | Vulnerable Review | Vulnerable Protected | Controls Confirmed (71) | Controls Protected | Controls Review | Controls with no record |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| `stage` `a855b4a` | any | 0 | 0 | 0 | 0 | 0 | 0 | 71 |
+| Database package operations, protocol v2 | Gemini `gemini-decision-1` | **52** | 5 | 0 | **4** | 11 | 51 | 5 |
+| Database package operations, protocol v2 | OpenAI `gpt-6-luna` | 46 | 11 | 0 | 15 | 6 | 45 | 5 |
+| Database package operations, protocol v1 | Gemini `gemini-decision-1` | 50 | 7 | 0 | 7 | 9 | 50 | 5 |
+| Database package operations, protocol v1 | OpenAI `gpt-6-luna` | 46 | 11 | 0 | 17 | 10 | 39 | 5 |
+
+- Vulnerable routes left in Review with protocol v2 on Gemini (not found): `mongo/sign-in/partner` (a type check with no return),
+  `mongo/sign-in/portal`, `mongo/sign-in/terminal` (a string in `$expr`), `mongo/articles/entry` (a `catch` that keeps the raw
+  value), `workshop/people/teams`.
+- Controls Confirmed (false positives): `mongo/articles/topic`, `workshop/desk/load`, `workshop/stats/export`, and
+  `workshop/people/finder`, whose label is disputable (`findOne(req.query)` still accepts a top-level `$where` key).
+- The lab was read while this support was built. These are development results, not held-out ones.
+- Every per-run number: [results 19](detection-generalization-results/19.md). The published sample report was not regenerated.

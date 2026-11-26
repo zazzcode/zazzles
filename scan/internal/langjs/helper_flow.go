@@ -16,6 +16,13 @@ type helperExpansion struct {
 	stack  map[string]bool
 	// storeWrites holds the ids of server-held stores written in this flow (keyed_store_lookup.go).
 	storeWrites map[string]bool
+	// sideWalks counts the side walks for database package operations (package_origin_flow.go).
+	sideWalks int
+	// aliases holds renamed destructured properties, by module file and local
+	// name, for database package operations only (package_origin_flow.go).
+	aliases map[string]value
+	// aliasWalk marks a side walk that already reads the aliases.
+	aliasWalk bool
 }
 
 type boundParam struct {

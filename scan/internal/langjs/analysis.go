@@ -76,6 +76,8 @@ func (s *moduleSet) javascriptReport(selected []string, entry string, checks []a
 		"SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
 	}}
 	out.Gaps = append(out.Gaps, out0.Gaps...)
+	s.findStorePackages()
+	s.passReceivers(selected)
 	for _, file := range selected {
 		m, err := s.load(file)
 		if err != nil {
@@ -238,10 +240,20 @@ func (s *moduleSet) handler(m *sourceModule, n *sitter.Node) (*sourceModule, *si
 		if unwrapped && !contractBindingStable(m, strings.Split(name, ".")[0], n) {
 			return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "wrapped handler binding is mutable or escapes", At: parse.Span(m.file, n)})
 		}
-		if shadowed(n, strings.Split(name, ".")[0], m.src) {
+		// A method of an instance of the application's own class or constructor
+		// function, handler.show where handler = new Handler(...), is resolved in
+		// the scope it is written in, so a local instance is not a shadow.
+		var instance []originRef
+		if !unwrapped && !factory {
+			instance = s.instanceMethods(m, n)
+		}
+		if len(instance) != 1 && shadowed(n, strings.Split(name, ".")[0], m.src) {
 			return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "handler binding is shadowed", At: parse.Span(m.file, n)})
 		}
 		target, n = s.resolve(m, name)
+		if n == nil && len(instance) == 1 {
+			target, n = instance[0].m, instance[0].n
+		}
 	}
 	if target == nil || n == nil || (!isFunction(n) && n.Kind() != "function_declaration" && n.Kind() != "method_definition") {
 		return nil, nil, "", append(gaps, analysis.Gap{Kind: "unresolved_handler", Detail: "handler is not a directly resolved function", At: parse.Span(m.file, m.tree.RootNode())})
@@ -347,6 +359,9 @@ func parameterReceiver(m *sourceModule, call *sitter.Node, receiver string) bool
 		params := p.ChildByFieldName("parameters")
 		if params == nil {
 			continue
+		}
+		if m.passedReceivers[p.Id()][receiver] {
+			return true
 		}
 		name := p.ChildByFieldName("name")
 		if p.Kind() != "function_declaration" || name == nil {

@@ -223,7 +223,12 @@ type Completeness struct {
 	Evidence   map[string][]Evidence `json:"evidence"`
 	Blockers   []Gap                 `json:"blockers"`
 	Coverage   []Gap                 `json:"coverage"`
-	Scope      string                `json:"scope"`
+	// Judged lists limits of the scanner's own reading that are left to the
+	// decision model for this record: each is also in Coverage, where the model
+	// sees it. A record with one can become a finding or stay in review; it is
+	// never protected, because protection needs evidence the scanner read.
+	Judged []Gap  `json:"judged_limits,omitempty"`
+	Scope  string `json:"scope"`
 }
 
 // ControlEdge records a source-backed local successor, including both guard outcomes.

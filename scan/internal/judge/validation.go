@@ -91,6 +91,9 @@ func applyValidationPolicy(u analysis.CandidateUse, a *analysis.Assessment) {
 	}
 }
 func protocolVersion(u analysis.CandidateUse) string {
+	if documentOperation(u) {
+		return analysispacks.DocumentOperationProtocol
+	}
 	if version := analysispacks.ProtocolFor(u.Kind); version != "" {
 		return version
 	}

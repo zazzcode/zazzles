@@ -35,7 +35,21 @@ func (f *phpFlow) call(n *sitter.Node) phpValue {
 		all = phpCombine(all, values[i])
 	}
 	f.massAssignmentCall(n, nodes, values)
-	v := f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.accountCall(n, nodes, values, f.callValues(n, nodes, values, all))))
+	recorded, expansions := 0, 0
+	if f.report != nil {
+		recorded = len(f.report.Uses)
+	}
+	if f.work != nil {
+		expansions = *f.work
+	}
+	result := f.callValues(n, nodes, values, all)
+	// A call no contract recorded may still pass SQL statement text. A call that
+	// expanded a helper of the repository passes it on: the operation, if there
+	// is one, is inside, where the hook sees it.
+	if f.work == nil || *f.work == expansions {
+		f.sqlTextCall(n, nodes, values, result, recorded)
+	}
+	v := f.keyGuardCall(n, nodes, f.diagnosticCall(n, nodes, f.accountCall(n, nodes, values, result)))
 	// A call result is not the string its argument was built as.
 	v.pieces = nil
 	return v

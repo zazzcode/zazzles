@@ -52,6 +52,14 @@ func TestDoctrineSQL(t *testing.T) {
 			}) {
 				t.Fatalf("missing unresolved receiver gap: %+v", entry.Gaps)
 			}
+			if tc.unresolved {
+				// No contract resolves the receiver; the statement text carries a
+				// request value, so the SQL text record holds it for the judge.
+				if len(uses) != 1 || uses[0].APIModel == nil || uses[0].APIModel.ID != analysispacks.SQLTextContract || uses[0].Sink.Span.StartLine != tc.sinkLine {
+					t.Fatalf("want one sql-text-v1 record at line %d: %v", tc.sinkLine, uses)
+				}
+				return
+			}
 			if tc.contract == "" {
 				if len(uses) != 0 {
 					t.Fatalf("unexpected SQL candidates: %v", uses)

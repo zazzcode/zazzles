@@ -267,8 +267,9 @@ func TestSQLTextOperationPolicy(t *testing.T) {
 		{"not a database operation with only stored values", "not_database_operation", "statement_text", 0, nil, nil, true, "not_applicable", "not_applicable"},
 		{"only stored values, statement text", "runs_sql", "statement_text", 0, nil, nil, true, "needs_evidence", "unknown"},
 		{"only stored values, data only", "runs_sql", "data_only", 0.99, nil, nil, true, "needs_evidence", "unknown"},
-		{"blocker, statement text", "runs_sql", "statement_text", 0, nil, []analysis.Gap{{Kind: "unresolved_wrapper"}}, false, "needs_evidence", "unknown"},
-		{"blocker, not a database operation", "not_database_operation", "statement_text", 0, nil, []analysis.Gap{{Kind: "unresolved_wrapper"}}, false, "needs_evidence", "unknown"},
+		{"blocker, statement text", "runs_sql", "statement_text", 0, nil, []analysis.Gap{{Kind: "unresolved_wrapper"}}, false, "confirmed_vulnerability", "vulnerable"},
+		{"blocker, not a database operation", "not_database_operation", "statement_text", 0, nil, []analysis.Gap{{Kind: "unresolved_wrapper"}}, false, "not_applicable", "not_applicable"},
+		{"blocker, data only", "runs_sql", "data_only", 0.99, nil, []analysis.Gap{{Kind: "unresolved_wrapper"}}, false, "needs_evidence", "unknown"},
 	} {
 		use := sqlTextUse(false)
 		use.Completeness.Judged, use.Completeness.Blockers = tt.judged, tt.blockers
@@ -281,7 +282,7 @@ func TestSQLTextOperationPolicy(t *testing.T) {
 		if a.FindingStatus != tt.want || a.Answers["injection_protection"] != tt.injection {
 			t.Errorf("%s: %s, injection %s; want %s, %s", tt.name, a.FindingStatus, a.Answers["injection_protection"], tt.want, tt.injection)
 		}
-		if len(tt.blockers) > 0 && len(a.BlockingGaps) != len(tt.blockers) {
+		if len(tt.blockers) > 0 && tt.control == "data_only" && len(a.BlockingGaps) != len(tt.blockers) {
 			t.Errorf("%s: blocking gaps %v", tt.name, a.BlockingGaps)
 		}
 	}

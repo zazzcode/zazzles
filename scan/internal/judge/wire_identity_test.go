@@ -232,9 +232,16 @@ func hashOutsideSource(t *testing.T, payload []byte) string {
 	if err := json.Unmarshal([]byte(envelope["input"].(string)), &input); err != nil {
 		t.Fatal(err)
 	}
-	use := input["use"].(map[string]any)
-	delete(use, "source_excerpts")
-	delete(use, "evidence")
+	if use, ok := input["use"].(map[string]any); ok {
+		delete(use, "source_excerpts")
+		delete(use, "evidence")
+	} else {
+		// A query-language request (document operation, SQL text) holds the call
+		// and source as text and no use bundle.
+		for _, k := range []string{"source", "call", "receiver_path"} {
+			delete(input, k)
+		}
+	}
 	envelope["input"] = input
 	raw, _ := json.Marshal(envelope)
 	if m := hex64.FindIndex(raw); m != nil {

@@ -160,6 +160,11 @@ func fixingBlockers(u analysis.CandidateUse) []analysis.Gap {
 	if u.Completeness == nil {
 		return nil
 	}
+	if sqlTextOperation(u) {
+		// A SQL text record's limits bar Protected and fix nothing else: the
+		// request shows the code, so the record is sent.
+		return nil
+	}
 	switch familyOf(u) {
 	case "sql", "nosql", "xss":
 		return u.Completeness.Blockers

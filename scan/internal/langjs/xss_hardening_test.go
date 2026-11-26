@@ -128,7 +128,10 @@ func TestSQLJSInjectionCandidates(t *testing.T) {
 		{"destructured fields are the source", "app.post('/l',(req,res)=>{const {email,password}=req.body;res.json(queryAll(`SELECT * FROM users WHERE email = '${email}' AND password = '${password}'`))});", 1},
 		{"route parameter in run", "app.delete('/u/:id',(req,res)=>{db.run(`DELETE FROM users WHERE id = ${req.params.id}`);res.json({})});", 1},
 		{"try does not guard its query", "app.get('/s',(req,res)=>{try{const r=queryAll(`SELECT * FROM notes WHERE t = '${req.query.q}'`);res.json(r)}catch(err){res.status(500).json({})}});", 1},
-		{"bound values are not a claim", "app.post('/n',(req,res)=>{db.run('INSERT INTO notes (body) VALUES (?)',[req.body.b]);res.json({})});", 0},
+		// Bound values: the sql.js contract records no claim; the SQL text hook records
+		// the call with the value in the parameter slot (specification 21), which the
+		// judge answers data_only.
+		{"bound values are recorded by the text hook only", "app.post('/n',(req,res)=>{db.run('INSERT INTO notes (body) VALUES (?)',[req.body.b]);res.json({})});", 1},
 		{"literal SQL is not a claim", "app.get('/n',(_req,res)=>{res.json(queryAll('SELECT body FROM notes'))});", 0},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -139,7 +142,11 @@ func TestSQLJSInjectionCandidates(t *testing.T) {
 					continue
 				}
 				count++
-				if u.APIModel == nil || u.APIModel.ID != "sqljs-statement-v1" || len(u.Completeness.Evidence["sink_binding"]) == 0 {
+				want := "sqljs-statement-v1"
+				if strings.HasPrefix(tt.name, "bound values") {
+					want = "sql-text-v1"
+				}
+				if u.APIModel == nil || u.APIModel.ID != want || len(u.Completeness.Evidence["sink_binding"]) == 0 {
 					t.Fatalf("sql.js contract or binding missing: %+v", u)
 				}
 				if len(u.Completeness.Blockers) != 0 {
@@ -165,9 +172,12 @@ func TestSQLJSInjectionCandidates(t *testing.T) {
 	t.Run("an unverified receiver is not a sink", func(t *testing.T) {
 		source := strings.ReplaceAll(sqlJSPrelude, "require('sql.js')", "require('./fake')")
 		r := analyzeFiles(t, map[string]string{"app.js": source + "app.delete('/u/:id',(req,res)=>{db.run(`DELETE FROM users WHERE id = ${req.params.id}`);res.json({})});", "fake.js": "module.exports=()=>({})"})
+		// The SQL text hook records any call that passes SQL statement text with a
+		// request value (specification 21), whatever the receiver; the receiver is not
+		// verified as sql.js, so it never gets the sql.js contract.
 		for _, u := range r.Uses {
-			if u.Kind == "sql_query_candidate" {
-				t.Fatalf("fake database became a SQL sink: %+v", u)
+			if u.Kind == "sql_query_candidate" && (u.APIModel == nil || u.APIModel.ID != "sql-text-v1") {
+				t.Fatalf("fake database became a sql.js sink: %+v", u.APIModel)
 			}
 		}
 	})

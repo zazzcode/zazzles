@@ -56,6 +56,8 @@ type sourceModule struct {
 }
 
 type moduleSet struct {
+	// sqlText holds the SQL statement text records' state (sql_text_record.go).
+	sqlText sqlTextState
 	// credentialAttrs names the model attributes a set accessor fills from a
 	// fast digest (decision D-6); account enumeration reads it to exclude logins.
 	credentialAttrs map[string]bool

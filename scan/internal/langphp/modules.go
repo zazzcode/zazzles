@@ -65,6 +65,8 @@ type phpSet struct {
 	// storedOnly lists, per SQL use ID, the storage keys of a claim whose only
 	// content is stored; session writers from later entries resolve it.
 	storedOnly map[string][]string
+	// sqlText is the SQL text record hook's state (sql_text_record.go).
+	sqlText *sqlTextState
 	// classes indexes class-like declarations by fully qualified name (W3).
 	classes *phpClassIndex
 	// objects numbers created objects.

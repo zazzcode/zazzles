@@ -189,9 +189,10 @@ func (c *Client) sqlTextPayload(use analysis.CandidateUse) ([]byte, error) {
 	return json.Marshal(map[string]any{"model": c.model, field: string(evidence), "questions": qs})
 }
 
-// applySQLTextPolicy turns the two answers into an outcome. A scanner blocker
-// keeps the record in Review. Judged limits are the model's to weigh for a
-// finding; they bar Protected. Protected needs the data_only answer at
+// applySQLTextPolicy turns the two answers into an outcome. A limit of the
+// scanner's own reading, on the text and its values (Blockers) or elsewhere in
+// the entry flow (Judged), is the model's to weigh for a finding: the request
+// shows the code. Either bars Protected, which rests on what the scanner read. Protected needs the data_only answer at
 // documentProtectedFloor or above and at least one request value (not only
 // stored values): a bound value is read by the scanner as a separate argument.
 func applySQLTextPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
@@ -199,11 +200,6 @@ func applySQLTextPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 	review := func(reason string) {
 		a.FindingStatus, a.Protection, a.Reason = "needs_evidence", "uncertain", reason
 		a.Answers["injection_protection"] = "unknown"
-	}
-	if len(c.Blockers) > 0 {
-		a.BlockingGaps = append([]analysis.Gap{}, c.Blockers...)
-		review("claim-relevant evidence is incomplete; model answers and unrelated coverage gaps are retained")
-		return
 	}
 	operation, control := a.Answers["operation"], a.Answers["request_control"]
 	requestValue := false
@@ -223,7 +219,8 @@ func applySQLTextPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
 		a.Answers["injection_protection"] = "vulnerable"
 		a.Reason = "Source-backed injection claim: request data reaches the statement text of a database call (" + control + "); this is a static judgment, not runtime confirmation."
-	case control == "data_only" && len(c.Judged) > 0:
+	case control == "data_only" && len(c.Judged)+len(c.Blockers) > 0:
+		a.BlockingGaps = append([]analysis.Gap{}, c.Blockers...)
 		review("Protection would rest on code the scanner did not follow itself; protection needs scanner evidence, so the record stays Review.")
 	case control == "data_only" && documentProbability(a, "request_control", "data_only") < documentProtectedFloor:
 		review("The answer that every request value stays data is not strong enough to mark the operation protected.")

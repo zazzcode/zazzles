@@ -64,6 +64,10 @@ func TestWireStructureRoundTrip(t *testing.T) {
 		if !AssessableUse(fu.use) {
 			continue
 		}
+		if documentOperation(fu.use) || sqlTextOperation(fu.use) {
+			// A query-language request has its own shape and no factored bundle.
+			continue
+		}
 		v7 := unfactoredWire(t, fu.use)
 		sent := factorStructure(cloneWire(t, v7))
 		back := expandStructure(cloneWire(t, sent))

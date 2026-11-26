@@ -76,6 +76,8 @@ type pythonFlow struct {
 	imports         map[string]pythonImport
 	inputs          map[string]pythonValue
 	guards          map[string][]analysis.Gap
+	// sqlAssign caches the assignments of a name in a scope for SQL text records.
+	sqlAssign map[sqlAssignKey][]sqlAssignStep
 }
 
 func pyBody(n *sitter.Node) *sitter.Node {

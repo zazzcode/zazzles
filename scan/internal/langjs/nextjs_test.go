@@ -225,9 +225,18 @@ export async function POST(request: NextRequest) {
 }`,
 	})
 	r := analyzeNext(t, root)
-	sql := usesOf(r, "sql_query_candidate", "app/api/q/route.ts")
-	if len(sql) != 1 {
-		t.Fatalf("only the interpolated GET query is SQL text: %d uses %+v", len(sql), sql)
+	all := usesOf(r, "sql_query_candidate", "app/api/q/route.ts")
+	// The interpolated GET query is the Prisma contract's record. The bound POST
+	// query ($1 and a separate value) has no contract record; the SQL text hook
+	// (specification 21) records it with the value in the parameter slot only. The
+	// tagged template and the DELETE with a value that is not a request value are
+	// not recorded.
+	if len(all) != 2 {
+		t.Fatalf("want the GET contract record and the bound POST record: %d uses %+v", len(all), all)
+	}
+	sql := all[:1]
+	if bound := all[1]; bound.APIModel == nil || bound.APIModel.ID != "sql-text-v1" || len(bound.Dependencies) != 1 || bound.Dependencies[0].SinkSlot != "sql_parameters" {
+		t.Fatalf("bound POST record %+v", bound.APIModel)
 	}
 	got := strings.Join(origins(sql[0]), ",")
 	if got != "http.query,http.headers" {

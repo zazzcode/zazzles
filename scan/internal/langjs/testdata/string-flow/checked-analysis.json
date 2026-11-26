@@ -294,23 +294,79 @@
               }
             ]
           }
-        ],
-        "gaps": [
-          {
-            "kind": "sink_binding_unverified",
-            "detail": "candidate API shape; library binding/argument roles require review",
-            "at": {
-              "file": "handler.ts",
-              "start_line": 5,
-              "end_line": 5,
-              "start_byte": 172,
-              "end_byte": 193
-            }
-          }
         ]
       },
       "analysis_components": {
-        "failure": "SQL component selection needs verified API binding"
+        "pack": {
+          "id": "pack.sql",
+          "version": "1",
+          "digest": "ee533c53ed669ad9cc0ae19e732784e9c6992d8dcc9107237f0f02e71dce4048"
+        },
+        "components": [
+          {
+            "id": "api.sql-text-v1",
+            "version": "1",
+            "digest": "cf84a626cb44a509bb407bab5b4f6c4543a81a0f7e4f7be298042cf616d3cbb9"
+          },
+          {
+            "id": "claim.sql",
+            "version": "1",
+            "digest": "fd51866e668d7ff8035fb2f884a70e2d9110f1fb20551bed084d5665b526f570"
+          },
+          {
+            "id": "entry.http",
+            "version": "1",
+            "digest": "a183b3e75baf1e86c9fb2f9c2cc1e220eaa0486131344e42ddeaf45ce669feb2"
+          },
+          {
+            "id": "evidence.sql",
+            "version": "1",
+            "digest": "01bd2c0a5ecf255c59d245ee18febf72777708b3a579742c44454d0fe1ee2a6e"
+          },
+          {
+            "id": "flow.local",
+            "version": "1",
+            "digest": "258967dec85bb0c4459c0cb9996d7ab1caa3855ae8c145fd0dc31fb2733a3968"
+          },
+          {
+            "id": "language.javascript",
+            "version": "5",
+            "digest": "3dcbd1c1de9bac2b8b54d76284fe1fda2202a6dac124ed4c1f115b848d4e29d8"
+          },
+          {
+            "id": "pack.sql",
+            "version": "1",
+            "digest": "ee533c53ed669ad9cc0ae19e732784e9c6992d8dcc9107237f0f02e71dce4048"
+          },
+          {
+            "id": "source.node-input-v2",
+            "version": "1",
+            "digest": "b27c13f4e5b1c9dbdba32bcaa3df3316c979366712da32fb4f5c65bd975ecc59"
+          }
+        ],
+        "digest": "6fb34da42637ec9c39517d2846feab07dbe915bcc85b62fe73473f9aa173799f",
+        "required": [
+          "control_flow",
+          "dispatch_binding",
+          "entry_registration",
+          "input_source",
+          "invocation_binding",
+          "invoked_callable",
+          "sink_binding",
+          "sql_query_candidate"
+        ],
+        "limits": [
+          "bounded existing adapters only; no additional discovery or safety guarantees",
+          "library version not inferred; only existing verified operation/operand contract applies",
+          "transport-neutral source facts including URL/upload origins; bounded Node acquisition adapters; missing hooks and dynamic dispatch remain gaps",
+          "verified registration/dispatch/invocation only; context-specific effects"
+        ]
+      },
+      "api_model": {
+        "id": "sql-text-v1",
+        "library": "sql-text",
+        "semantics": "SQL statement text recognized in an argument; no driver contract.",
+        "reference": ""
       },
       "control_edges": [
         {
@@ -518,6 +574,20 @@
               "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
             }
           ],
+          "query_text": [
+            {
+              "kind": "query_text",
+              "text": "query",
+              "span": {
+                "file": "handler.ts",
+                "start_line": 5,
+                "end_line": 5,
+                "start_byte": 187,
+                "end_byte": 192
+              },
+              "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+            }
+          ],
           "registration": [
             {
               "kind": "registration",
@@ -546,6 +616,20 @@
               "sha256": "7fc7eba69407c02911fec45c7110a35c520babcdea6f788890b08e9c991fec5d"
             }
           ],
+          "sink_binding": [
+            {
+              "kind": "sink_binding",
+              "text": "database.query",
+              "span": {
+                "file": "handler.ts",
+                "start_line": 5,
+                "end_line": 5,
+                "start_byte": 172,
+                "end_byte": 186
+              },
+              "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+            }
+          ],
           "sql_query_candidate": [
             {
               "kind": "sql_query_candidate",
@@ -561,19 +645,7 @@
             }
           ]
         },
-        "blockers": [
-          {
-            "kind": "sink_binding_unverified",
-            "detail": "candidate API shape; library binding/argument roles require review",
-            "at": {
-              "file": "handler.ts",
-              "start_line": 5,
-              "end_line": 5,
-              "start_byte": 172,
-              "end_byte": 193
-            }
-          }
-        ],
+        "blockers": [],
         "coverage": [
           {
             "kind": "query_text_interpolated",
@@ -600,7 +672,7 @@
         ],
         "scope": "injection claim over the supplied route, relevant request values, verified operation contract and guard/transfer context"
       },
-      "id": "candidate:v1:384baedf8e8fb61d72daaccd1133184a6e0e57365a002f2cb18876c51c60c59e",
+      "id": "candidate:v1:462b5857d935f50d3fac3db7385bf3bfaa80bcef711bc97bf2b122877ab3ba33",
       "entry_id": "entry:v1:a0a8a4f6787db87f0f4b65e7698f7ee9efe745cc909d2eb38463b469369b9b21",
       "invocation_context_id": "invocation:v1:9df29f853aaae156284a56d6d2a2cd7603bb763569688f5bf872c6dfbd5e7ec8",
       "kind": "sql_query_candidate",
@@ -731,6 +803,30 @@
             "end_byte": 197
           },
           "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+        },
+        {
+          "kind": "sink_binding",
+          "text": "database.query",
+          "span": {
+            "file": "handler.ts",
+            "start_line": 5,
+            "end_line": 5,
+            "start_byte": 172,
+            "end_byte": 186
+          },
+          "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
+        },
+        {
+          "kind": "source_excerpt",
+          "text": "export function login() {\n  return (req: Request, res: Response) =\u003e {\n    const email = req.body.email\n    const query = `SELECT * FROM users WHERE email = '${email}'`\n    database.query(query)\n  }\n}\n",
+          "span": {
+            "file": "handler.ts",
+            "start_line": 1,
+            "end_line": 8,
+            "start_byte": 0,
+            "end_byte": 200
+          },
+          "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
         }
       ],
       "gaps": [
@@ -759,17 +855,6 @@
         {
           "kind": "input_validation_absent",
           "detail": "req.body.email reaches a sensitive use with no validator call in the handler or applicable middleware",
-          "at": {
-            "file": "handler.ts",
-            "start_line": 5,
-            "end_line": 5,
-            "start_byte": 172,
-            "end_byte": 193
-          }
-        },
-        {
-          "kind": "sink_binding_unverified",
-          "detail": "candidate API shape; library binding/argument roles require review",
           "at": {
             "file": "handler.ts",
             "start_line": 5,

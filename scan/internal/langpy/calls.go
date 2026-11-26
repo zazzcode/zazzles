@@ -20,7 +20,8 @@ func (f *pythonFlow) call(n *sitter.Node) pythonValue {
 		f.renderTemplate(n)
 		return pythonValue{rendered: true}
 	}
-	nodes, values, all := f.callArguments(n)
+	nodes, values, all, kwNodes, kwValues := f.callArgumentsKW(n)
+	defer f.sqlTextRecord(n, fn, nodes, values, kwNodes, kwValues)
 	f.interpreterOperation(n, fn, nodes, values)
 	f.deserializationOperation(n, fn, nodes, values)
 	if v, ok := f.regexMatch(n, q, nodes, values); ok {
@@ -371,6 +372,13 @@ func (f *pythonFlow) log(n *sitter.Node, v pythonValue) {
 }
 
 func (f *pythonFlow) callArguments(n *sitter.Node) ([]*sitter.Node, []pythonValue, pythonValue) {
+	nodes, values, all, _, _ := f.callArgumentsKW(n)
+	return nodes, values, all
+}
+
+// callArgumentsKW is callArguments that also returns keyword argument value
+// nodes and their values (same evaluation order, each evaluated once).
+func (f *pythonFlow) callArgumentsKW(n *sitter.Node) ([]*sitter.Node, []pythonValue, pythonValue, []*sitter.Node, []pythonValue) {
 	nodes := pyArgs(n)
 	values := make([]pythonValue, len(nodes))
 	var all pythonValue
@@ -378,16 +386,21 @@ func (f *pythonFlow) callArguments(n *sitter.Node) ([]*sitter.Node, []pythonValu
 		values[i] = f.eval(a)
 		all = pyCombine(all, values[i])
 	}
+	var kwNodes []*sitter.Node
+	var kwValues []pythonValue
 	args := n.ChildByFieldName("arguments")
 	if args != nil {
 		for i := uint(0); i < args.NamedChildCount(); i++ {
 			a := args.NamedChild(i)
 			if a.Kind() == "keyword_argument" {
-				all = pyCombine(all, f.eval(a.ChildByFieldName("value")))
+				v := f.eval(a.ChildByFieldName("value"))
+				all = pyCombine(all, v)
+				kwNodes = append(kwNodes, a.ChildByFieldName("value"))
+				kwValues = append(kwValues, v)
 			}
 		}
 	}
-	return nodes, values, all
+	return nodes, values, all, kwNodes, kwValues
 }
 
 // pythonRegexFlags maps re flag names to the classifier's flag letters.

@@ -1,6 +1,6 @@
 # Learnings: database package operations
 
-2026-11-25, worktree `generalized-nosql-detection`. [Specification](../../specifications/detection-generalization/19-database-package-operations.md) ·
+2026-11-25 and 2026-11-26, branch `generalized-nosql-detection`. The verdict on each strategy is in the [index](README.md#where-things-stand-what-was-accepted-2026-11-26). [Specification](../../specifications/detection-generalization/19-database-package-operations.md) ·
 [Results](../../evaluation/detection-generalization-results/19.md). Models: openai gpt-6-luna unless Gemini is named; one answer per request.
 All numbers are from the `vuln-nextjs` lab at `aeae20a` (57 vulnerable routes, 71 controls) unless NodeGoat is named. The lab has been
 read by the sessions that built on it, so nothing here is held-out evidence except the NodeGoat lines that say so.
@@ -103,10 +103,8 @@ the right question reach the judge. The evidence supports the second half strong
 | Use both models and treat disagreement as Review | They disagree on 22 routes; where both confirm, 5 controls remain | An owner decision: two providers per record doubles cost |
 | Route entries and class methods for every family, not only these records | NodeGoat went from 1 entry to 20 and showed three `eval` calls no family had seen | Its own specification and evidence per family |
 
-**Is it what is sent, or the model?** (check 9) The two adapters sent identical evidence and questions but ordered the answer
-choices differently. With the order made the same, gpt-6-luna gives 43 of 57 and 10 controls (81%) where Gemini gives 52 and 4
-(93%). Choice order moves gpt-6-luna by about three routes; the rest of the gap is the model. Check what each adapter really
-puts on the wire before comparing models: a map is written alphabetically.
+**Is it what is sent, or the model?** Both. With the answer choices in the same order the two models still differ by nine
+findings and six false positives. See [judge model comparison](judge-model-comparison.md).
 
 **Does not work** (measured, dropped)
 
@@ -126,35 +124,15 @@ evidence it moved precision from 73% to 88%, and it decides whether a better que
 cost gpt-6-luna five findings and cost Gemini none). The way to work is to fix the request and question first, then compare
 models on identical bytes.
 
-## The iteration loop on Gemini (2026-11-25)
+## The iteration loop and the agreement check
 
-A bench of the lab, NodeGoat, Juice Shop and nodejs-goof (68 true records or routes, 80 safe) behind a caching proxy, so that
-only request texts not seen before are paid. Baseline, committed scanner on Gemini: **62 of 68 found, none Protected, 5 of 80
-safe Confirmed (92.5%)**. Three general tweaks were tried, each with its rule written first, and all three were reverted.
-
-| Iteration | Change | Result | Kept |
-|---|---|---|---|
-| 1 | Mongoose and MarsDB records on the focused request, with a library note | Juice Shop 6 of 7 found to 4 of 7; two nodejs-goof `findById` records fall from Protected to Review | No |
-| 2 | Proven value facts in the request | One false positive leaves, three controls become Protected; two safe records become Confirmed. False 5 to 6 | No |
-| 3 | The scanner's paths and stopping tests in the request | Its two targets (`partner`, `entry`) are found; two other findings are lost; lab false positives 4 to 9 | No |
-
-What the loop established:
-
-- **Gemini is deterministic on these requests.** 128 requests sent twice gave 128 identical answers and probabilities. So a
-  difference between variants is an effect of the text.
-- **It is text-sensitive.** Across four Gemini variants, 48 of 57 vulnerable lab routes are Confirmed by all and 59 of 71
-  controls by none. The other 7 vulnerable routes and 10 controls flip with the wording, and any edit reshuffles them. One
-  run's 93% is one draw; the stable core is 48 found and 2 false.
-- **Facts added as request text hit their target and disturb everything else**, on both models: three attempts.
-- **A library that already has a contract with its own facts does not gain from the focused request.** The general NoSQL
-  protocol on Gemini finds 7 of 8 Mongoose and MarsDB records with no false positive. Generalize the record and the
-  language notes; keep the evidence a specific contract computes.
-- **What would shrink the borderline set is not more text**: agreement of two wordings (v2 and v2 with paths agree on 50
-  found and 3 false, 94%, for twice the requests of these records), or a policy that checks an answer against a proven fact.
+Four further variants were tested on Gemini and none was kept. The tables and the reading are in
+[request wording and agreement](request-wording-and-agreement.md). In short: Gemini repeats its answers exactly, about 13% of
+lab routes change with any wording, added facts disturb unrelated answers, and agreement of two wordings gives 93.5%.
 
 ## How firm each finding is
 
-No request in this work was sent twice, and every lab number comes from an application read during development. Read the
+Only the lab requests on Gemini were sent twice, and every lab number comes from an application read during development. Read the
 findings by how many independent measurements stand behind them.
 
 | Firm: seen in several runs, on both models or on two applications | Evidence |
@@ -185,9 +163,8 @@ own contracts than on the focused request.
 3. What is left. Controls still Confirmed: `topic` (a complete literal in `$where`), `load` (a reviver that drops `$` keys),
    `export` (a character filter) and `finder` (disputable). Vulnerable routes in Review: `partner` (a check with no return),
    `portal`, `terminal` (a string in `$expr`), `entry` (a `catch` that keeps the raw value), `teams`.
-4. Next experiments, in order: value facts on Gemini, since a better reader may use what gpt-6-luna ignored and two of the four
-   remaining controls have one (15 requests); protocol v2 through the scanner on gpt-6-luna, to see whether the 0.98 wrong clear
-   becomes a Protected vulnerable route there (128 requests).
+4. Since tested and not kept: value facts on Gemini, paths and stopping tests, Mongoose and MarsDB on the focused request,
+   agreement of two wordings. Not run: protocol v2 through the scanner on gpt-6-luna in the written choice order.
    The false positive that both models still make is one form: an update or `$set` whose written keys the code fixes, answered
    `written_fields`. That choice needs the same treatment rule 14 gave `name`: say what is not an input.
 5. A second database is one table entry, one query-language note and one set of answer choices.
@@ -195,5 +172,5 @@ own contracts than on the focused request.
 ## What is not shown
 
 No held-out MongoDB application with a key written before scanning. NodeGoat has only three true NoSQL records. NodeGoat's seven records were labelled by the implementing
-session after the run. No repeat of any request. Python and PHP are not covered. Mongoose and MarsDB keep their
+session after the run. One repeat, on Gemini only. Python and PHP are not covered. Mongoose and MarsDB keep their
 contracts and the general protocol.

@@ -8,12 +8,56 @@ evidence, and says when the evidence is weak.
 little as possible, and improving should be easy. Other scanners have rule packs; Code Scan has the decision model as the
 judge. It may differ by language.
 
+## Where things stand: what was accepted (2026-11-26)
+
+The verdict on every strategy tried for native MongoDB driver detection
+([specification 19](../../specifications/detection-generalization/19-database-package-operations.md), draft
+[PR #54](https://github.com/zazzcode/zazzles/pull/54)). Read this first.
+
+| Strategy | Accept | Why | Detail |
+|---|---|---|---|
+| Recording by package origin: follow the call's receiver back to the package import | **Yes** | 0 to 57 of 57 vulnerable lab routes recorded; held on NodeGoat; no record changed in nine other samples | [Database package operations](database-package-operations.md#recording-what-worked) |
+| Entry connectors: an Express app passed to a module, method handlers, Next.js wrappers | **Yes** | NodeGoat went from 1 entry to 20. This helps every family | [Database package operations](database-package-operations.md#recording-what-did-not-work-or-cost-more-than-expected) |
+| A request built for the one question, with the reworded question (protocol v2) | **Yes** | The best judged result on both models against what existed before: 16 Confirmed to 43 on gpt-6-luna, 52 on Gemini | [Database package operations](database-package-operations.md#strategies-what-works-what-shows-promise-what-does-not) |
+| Scanner reading limits shown to the model; such a record is never Protected | **Yes** | No true finding was marked Protected in any scanner run | [Database package operations](database-package-operations.md#recording-what-worked) |
+| Proven value facts, flow facts, paths or stopping tests added to the request | **No** | Each fixed its target and changed unrelated answers, on both models | [Request wording and agreement](request-wording-and-agreement.md) |
+| Mongoose and MarsDB records moved to the generic request | **No** | Juice Shop 6 of 7 found became 4 of 7. Keep the evidence an existing contract computes | [Request wording and agreement](request-wording-and-agreement.md) |
+| Confirm only when two wordings agree | **No** | 93.5% against 92.5%, four true findings lost, twice the requests | [Request wording and agreement](request-wording-and-agreement.md#why-agreement-failed) |
+| More questions, a confidence cut-off, a list of driver forms | **No** | Each was worse or found nothing on code it was not written against | [Database package operations](database-package-operations.md#strategies-what-works-what-shows-promise-what-does-not) |
+
+**Where the accuracy is.** Gemini `gemini-decision-1`: 52 of 57 vulnerable lab routes Confirmed, 4 of 71 controls (93%).
+gpt-6-luna: 43 and 10 (81%), with the answer choices in Gemini's order. The series bar is 95%; on a lab of near twins that is
+a difference of one route.
+
+**Caveat for the standing judge.** Protocol v2 has not been run through the scanner on gpt-6-luna in the choice order the
+OpenAI adapter sends. In a direct probe one vulnerable route was answered safe at 0.98, which the policy would mark Protected.
+The 93% holds only for a scan judged by Gemini. See [judge model comparison](judge-model-comparison.md).
+
+**What is left**, in order, is in [open leads](open-leads.md#native-mongodb-driver-what-is-left).
+
+## Index
+
+A finding gets its own page when a later decision will turn on it and it is longer than a table row. The page states the
+finding first, then the evidence, then what is not measured. Narrative pages link to it and do not repeat its tables.
+
+| Page | Read it for |
+|---|---|
+| This page | The verdicts above, the working rules for any judge request, naming and boundaries |
+| [Judge requests](judge-requests.md) | What to send, what not to trim, certainty and stability |
+| [Package and library knowledge](package-knowledge.md) | Drivers, ORMs, versions, validators, NoSQL: what generalizes and what is specific |
+| [Experiment method](experiment-method.md) | How to test a change so that the result can be believed, and the mistakes made |
+| [Open leads](open-leads.md) | What could become a change, in order, and what a pull request needs |
+| [Judge model comparison](judge-model-comparison.md) | Gemini and gpt-6-luna on identical requests: what differs, what makes the comparison fair, what is not measured (2026-11-26) |
+| [Request wording and agreement](request-wording-and-agreement.md) | Why text changes reshuffle answers, why added facts and two-wording agreement were not kept (2026-11-26) |
+| [Database package operations](database-package-operations.md) | Recording MongoDB operations by package origin; the judge-request experiments in order; strategies that work, show promise, or do not (2026-11-25) |
+
 ## The working rules: what to send the judge, and what to ask
 
 Use this section when designing any request. It is the summary of every experiment in these pages. The owner's reading
 (2026-11-25): generalized identification is mostly a matter of sending correctly crafted information and asking the correct
 question. The measurements agree: request and question took MongoDB detection from 0 of 57 to 52 of 57 with 4 false positives.
-One addition: on identical evidence the model still moved precision from 73% to 88%, so compare models once the request is right.
+One addition: on identical evidence the model still moved precision from 73% to 88%, so compare models once the request is right
+([judge model comparison](judge-model-comparison.md)).
 
 **The division of work**
 
@@ -69,6 +113,9 @@ One addition: on identical evidence the model still moved precision from 73% to 
 18. A judge can be deterministic and still text-sensitive. Gemini returned identical answers for 128 repeated requests, and
     about 13% of the routes changed outcome with every change of wording. Count the routes every variant agrees on, not one
     run's score. On gpt-6-luna about 6 of 128 weak answers move with any neutral change.
+18a. Confirming only when two wordings agree does not reach the bar: 93.5% against 92.5% for one wording, four true findings
+    lost, twice the requests. The false positives that remain are the same under every wording
+    ([request wording and agreement](request-wording-and-agreement.md)).
 19. Certainty is not correctness: wrong answers reach 0.98. No cut-off separates true from false.
 20. Test on forms someone else wrote, and on an application nobody tuned for. Forms the implementer writes pass.
 21. Compare models on identical bytes before concluding that a request is the limit, or that it is not. Read the wire
@@ -77,16 +124,6 @@ One addition: on identical evidence the model still moved precision from 73% to 
 
 **Open** (what these rules do not yet settle): a wording that keeps rule 14's gain on gpt-6-luna too; whether proven
 value facts help a stronger reader; the same method for SQL drivers without a contract.
-
-## Index
-
-| Page | Read it for |
-|---|---|
-| [Judge requests](judge-requests.md) | What to send, what not to trim, certainty and stability |
-| [Package and library knowledge](package-knowledge.md) | Drivers, ORMs, versions, validators, NoSQL: what generalizes and what is specific |
-| [Experiment method](experiment-method.md) | How to test a change so that the result can be believed, and the mistakes made |
-| [Open leads](open-leads.md) | What could become a change, in order, and what a pull request needs |
-| [Database package operations](database-package-operations.md) | Recording MongoDB operations by package origin; nine judge-request experiments; strategies that work, show promise, or do not (2026-11-25) |
 
 ## Boundary (owner, 2026-11-25)
 

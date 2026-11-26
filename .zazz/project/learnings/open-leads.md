@@ -11,6 +11,19 @@ Ordered by expected value for accuracy. A lead is not a plan; each needs the own
 | 5 | Validation libraries with computed facts | 14 of 15 right, under the bar | New forms with the facts the scanner holds |
 | 6 | Reporting certainty | 44 of 257 true findings rest on a weak answer | Additive report field; verdicts unchanged |
 
+## Native MongoDB driver: what is left
+
+Specification 19 is in draft [PR #54](https://github.com/zazzcode/zazzles/pull/54). Tuning the request text has stopped paying
+([request wording and agreement](request-wording-and-agreement.md)). In order:
+
+| # | Lead | Why | Cost |
+|---:|---|---|---|
+| 1 | Run protocol v2 through the scanner on gpt-6-luna, in the order its adapter sends | The standing judge is unmeasured on the committed protocol, with one known risk of a vulnerable route marked Protected | 128 requests |
+| 2 | Say in the `written_fields` choice that keys the code fixes are not an input | The one false-positive form seen on a real application, on both models | About 130 requests; a wording change may reshuffle other answers |
+| 3 | Read the four stable false positives again | `people/finder` (`findOne(req.query)`) is arguably a true finding; then the lab is at 94.6% | None |
+| 4 | Let the policy check an answer against a fact the scanner proved | The stable false positives are not uncertainty, so asking again does not help | A change to the series contract: the owner's decision, a new proposal |
+| 5 | A second database or an SQL driver in the origin table | The real test of "general" | A new proposal |
+
 **A pull request is possible when** a change is on its own branch from `stage`, and:
 
 1. Its replay gate passes: no true finding lost, none Protected that was not, false findings not up, per family.
@@ -20,4 +33,4 @@ Ordered by expected value for accuracy. A lead is not a plan; each needs the own
 5. It reverts alone.
 6. **Its design is written in `.zazz/architecture/`, with the tested benefit** (owner, 2026-11-25): what changed, why, the measured result per family and the limits, in the document that owns the topic. Write it with the change that passes, not before.
 
-Today **nothing meets this in full**. Lead 1 is the closest: no regressions measured, and it needs the owner's decision on the bar, then a Go change, its text, the gates and held-out PHP. The rest need new evidence first.
+Specification 19 is a draft pull request with rule A5 open. Of the leads in the first table **nothing meets this in full**. Lead 1 is the closest: no regressions measured, and it needs the owner's decision on the bar, then a Go change, its text, the gates and held-out PHP. The rest need new evidence first.

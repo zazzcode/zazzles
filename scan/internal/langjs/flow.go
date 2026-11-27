@@ -1170,6 +1170,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 				use.Outbound = outbound
 			}
 			f.uses = append(f.uses, use)
+			if kind == "sql_query_candidate" {
+				f.sqlTextTwin(n, fn, args, values, use.ID)
+			}
 		}
 		// Response values are new external sources, never aliases of request arguments.
 		if modelCall {
@@ -1197,6 +1200,9 @@ func (f *flow) evalCall(n *sitter.Node) value {
 		return value{} // a verified database client; its setup is not request flow
 	}
 	ret, entered, precise := f.enterHelper(n, name, values)
+	if !entered {
+		f.sqlTextRecord(n, fn, args, values)
+	}
 	if v, ok := f.ownAPIHelperCall(n, values, ret, entered && precise); ok {
 		return v
 	}

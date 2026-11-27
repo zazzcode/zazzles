@@ -65,6 +65,10 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 					use.Completeness.Evidence["control_flow"] = []analysis.Evidence{e}
 				}
 				binding := s.queryBinding(use)
+				textInfo := s.sqlTextInfoFor(old.ID)
+				if check.Kind == "nosql_query" {
+					textInfo = nil
+				}
 				sqlContract := "sequelize-raw-query-v1"
 				prismaFilter := false
 				storeContract := ""
@@ -78,12 +82,24 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 					if len(binding) == 0 {
 						binding, storeContract = s.storeBinding(use)
 					}
+				} else if textInfo != nil && textInfo.twin == nil {
+					binding = s.sqlTextBinding(use)
 				} else if sqlJS := s.sqlJSBinding(use); len(sqlJS) > 0 {
 					binding, sqlContract = sqlJS, "sqljs-statement-v1"
 				} else if lib, contract := s.sqlLibraryBinding(use); len(lib) > 0 {
 					binding, sqlContract = lib, contract
 				} else if finder := s.sequelizeFinderBinding(use); len(binding) == 0 && len(finder) > 0 {
 					binding, sqlContract = finder, "sequelize-model-finder-v1"
+				}
+				if textInfo != nil && textInfo.twin != nil {
+					// A contract-less record of a call with SQL statement text becomes a
+					// text record; a call a contract binds keeps its record.
+					if len(binding) > 0 {
+						textInfo = nil
+					} else {
+						sqlTextAdopt(&use, textInfo)
+						binding = s.sqlTextBinding(use)
+					}
 				}
 				if len(binding) > 0 {
 					if prismaFilter {
@@ -104,7 +120,7 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 								}
 							}
 						}
-					} else {
+					} else if textInfo == nil {
 						use.APIModel = analysispacks.SQLContract(sqlContract)
 					}
 					use.Context = append(use.Context, binding...)
@@ -162,7 +178,13 @@ func (s *moduleSet) buildEntryChecks(report *analysis.AnalysisReport, checks []a
 					}
 				}
 				use.Completeness.Blockers = append(use.Completeness.Blockers, s.contextLimits...)
+				if textInfo != nil {
+					sqlTextPrepare(&use)
+				}
 				s.refineQueryEvidence(&use)
+				if textInfo != nil {
+					s.sqlTextFinish(&use, textInfo)
+				}
 				if storeContract != "" {
 					judgeStoreLimits(use.Completeness)
 					use.Context = append(use.Context, s.referencedDefinitions(use)...)

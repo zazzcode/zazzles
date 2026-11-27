@@ -50,6 +50,7 @@ When a finding gets its own page is stated in the [learnings root](../README.md#
 | [Open leads](open-leads.md) | What could become a change, in order, and what a pull request needs |
 | [Judge model comparison](judge-model-comparison.md) | Gemini and gpt-6-luna on identical requests: what differs, what makes the comparison fair, what is not measured (2026-11-26) |
 | [Request wording and agreement](request-wording-and-agreement.md) | Why text changes reshuffle answers, why added facts and two-wording agreement were not kept (2026-11-26) |
+| [SQL driver independence](sql-driver-independence.md) | Which SQL drivers each language recognizes today; package origin and SQL-text recognition against the contract records; a driver-free judge request against the contract request, and records made with no contract across 27 driver forms, on Gemini (2026-11-26) |
 | [Database package operations](database-package-operations.md) | Recording MongoDB operations by package origin; the judge-request experiments in order; strategies that work, show promise, or do not (2026-11-25) |
 
 ## The working rules: what to send the judge, and what to ask

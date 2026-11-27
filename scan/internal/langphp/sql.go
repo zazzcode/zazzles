@@ -114,10 +114,34 @@ func (f *phpFlow) sqlClaim(n *sitter.Node, queryNode *sitter.Node, params []phpV
 		c.Evidence["query_text"] = append([]analysis.Evidence{}, preparedText...)
 		u.Context = append(u.Context, preparedText...)
 	}
-	for _, g := range append(append([]analysis.Gap{}, f.gaps...), append(text.gaps, all.gaps...)...) {
-		switch g.Kind {
+	// Blockers are limits on the SQL text and the operand values. A limit
+	// elsewhere in the entry flow is left to the decision model as a judged
+	// limit: the record is sent, and is never answered protected on it.
+	blocking := func(kind string) bool {
+		switch kind {
 		case "php_parameter_unresolved", "php_value_unresolved", "php_call_unresolved", "php_loop_unresolved", "php_expression_unresolved", "php_global_unresolved", "work_limit", "dependency_limit", "transfer_limit":
+			return true
+		}
+		return false
+	}
+	for _, g := range append(append([]analysis.Gap{}, text.gaps...), all.gaps...) {
+		if blocking(g.Kind) {
 			c.Blockers = append(c.Blockers, g)
+		}
+	}
+	for _, g := range f.gaps {
+		if !blocking(g.Kind) {
+			continue
+		}
+		among := false
+		for _, b := range c.Blockers {
+			if b.Kind == g.Kind && b.At == g.At {
+				among = true
+				break
+			}
+		}
+		if !among {
+			c.Judged = append(c.Judged, g)
 		}
 	}
 	if text.built && len(text.deps) == 0 {

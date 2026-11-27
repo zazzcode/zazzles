@@ -9,6 +9,9 @@ func questionsFor(use analysis.CandidateUse) []question {
 	if documentOperation(use) {
 		return documentQuestions()
 	}
+	if sqlTextOperation(use) {
+		return sqlTextQuestions()
+	}
 	if analysispacks.FamFamily(use.Kind) != nil {
 		// Registered families own their question protocol through the embedded
 		// claim components; material assembly validates the same names.

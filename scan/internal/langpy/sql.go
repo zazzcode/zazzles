@@ -66,10 +66,34 @@ func (f *pythonFlow) sql(n, object *sitter.Node, values []pythonValue, receiver 
 	if len(pyArgs(n)) > 1 {
 		c.Evidence["bound_parameters"] = []analysis.Evidence{f.module.evidence("bound_parameters", pyArgs(n)[1])}
 	}
-	for _, g := range append(append([]analysis.Gap{}, f.gaps...), append(text.gaps, f.guardGaps(text)...)...) {
-		switch g.Kind {
+	// Blockers are limits on the SQL text and the operand values. A limit
+	// elsewhere in the entry flow is left to the decision model as a judged
+	// limit: the record is sent, and is never answered protected on it.
+	blocking := func(kind string) bool {
+		switch kind {
 		case "python_parameter_unresolved", "python_value_unresolved", "python_call_unresolved", "python_loop_unresolved", "python_comprehension_unresolved", "python_decorator_unresolved", "work_limit", "dependency_limit", "transfer_limit", "input_helper_unresolved", "python_finally_unresolved":
+			return true
+		}
+		return false
+	}
+	for _, g := range append(append([]analysis.Gap{}, text.gaps...), f.guardGaps(text)...) {
+		if blocking(g.Kind) {
 			c.Blockers = append(c.Blockers, g)
+		}
+	}
+	for _, g := range f.gaps {
+		if !blocking(g.Kind) {
+			continue
+		}
+		among := false
+		for _, b := range c.Blockers {
+			if b.Kind == g.Kind && b.At == g.At {
+				among = true
+				break
+			}
+		}
+		if !among {
+			c.Judged = append(c.Judged, g)
 		}
 	}
 	if text.built && len(text.deps) == 0 {

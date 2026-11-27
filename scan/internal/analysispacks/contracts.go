@@ -2,7 +2,7 @@ package analysispacks
 
 import "github.com/zazzcode/zazzles/scan/internal/analysis"
 
-var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", PHPDoctrineDBALContract, PHPDoctrineORMContract, SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract}
+var sqlContractIDs = []string{"sequelize-raw-query-v1", "sqljs-statement-v1", "python-sqlite3-dbapi-v1", "python-psycopg-dbapi-v1", "python-psycopg2-dbapi-v1", "python-pymysql-dbapi-v1", "python-mysql.connector-dbapi-v1", "php-mysqli-v1", "php-pdo-v1", "php-sqlite3-v1", PHPDoctrineDBALContract, PHPDoctrineORMContract, SequelizeFinderContract, PrismaRawContract, BetterSQLite3Contract, PGliteContract, SQLTextContract}
 
 const (
 	PHPDoctrineDBALContract = "php-doctrine-dbal-v1"
@@ -23,6 +23,9 @@ const SequelizeFinderContract = "sequelize-model-finder-v1"
 
 // SQLContract returns a copy of the supported operation contract by verified model ID.
 func SQLContract(id string) *analysis.APIModel {
+	if id == SQLTextContract {
+		return &analysis.APIModel{ID: SQLTextContract, Library: SQLTextLibrary, Semantics: SQLTextSemantics}
+	}
 	if id == "sequelize-raw-query-v1" {
 		return &analysis.APIModel{ID: "sequelize-raw-query-v1", Library: "sequelize", Semantics: "Sequelize query takes executable SQL text as its first argument. bind and replacements supply separated data values according to their API. model, plain and result-format options do not parameterize an already-interpolated SQL string.", Reference: "https://sequelize.org/docs/v6/core-concepts/raw-queries/"}
 	}

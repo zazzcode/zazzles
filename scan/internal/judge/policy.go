@@ -20,6 +20,10 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		applyDocumentPolicy(use, a)
 		return
 	}
+	if sqlTextOperation(use) {
+		applySQLTextPolicy(use, a)
+		return
+	}
 	if use.Kind == analysis.PollutionKind {
 		applyPollutionPolicy(use, a)
 		return
@@ -214,6 +218,22 @@ func applyPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 				a.FindingStatus = "needs_evidence"
 				a.Protection = "uncertain"
 				a.Reason = "Protection would rest on a model-resolved flow fact; protection needs scanner proof, so the record stays Review."
+				return
+			}
+			if use.Kind == "sql_query_candidate" && len(c.Judged) > 0 {
+				kinds := []string{}
+				for _, g := range c.Judged {
+					seen := false
+					for _, k := range kinds {
+						seen = seen || k == g.Kind
+					}
+					if !seen {
+						kinds = append(kinds, g.Kind)
+					}
+				}
+				a.FindingStatus = "needs_evidence"
+				a.Protection = "uncertain"
+				a.Reason = "Protection would rest on code the scanner did not follow (" + strings.Join(kinds, ", ") + "); the record stays Review."
 				return
 			}
 			if use.Kind == "nosql_query_candidate" && a.Answers["all_paths_protected"] != "yes" {

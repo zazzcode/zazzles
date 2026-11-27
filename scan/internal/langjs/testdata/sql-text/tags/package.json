@@ -1,0 +1,1 @@
+{"dependencies":{"express":"4.19.0","pg":"^8.11.0","postgres":"^3.4.0","mysql2":"^3.9.0","@prisma/client":"^5.0.0","sql-template-strings":"^2.2.2"}}

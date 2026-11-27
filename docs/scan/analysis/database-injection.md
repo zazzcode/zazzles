@@ -102,6 +102,94 @@ Draft [PR #54](https://github.com/zazzcode/zazzles/pull/54), not merged.
   `gemini-decision-1` and 75% with `gpt-6-luna`; neither marked a vulnerable route Protected. The series bar is 95%.
   About 13% of lab routes change answer when the request wording changes.
 
+## SQL calls with no driver contract
+
+[Specification](../../../.zazz/specifications/detection-generalization/21-sql-text-records.md) owns the detail and the
+measurements.
+
+- **Recording.** A call that no driver contract records becomes a SQL record when one argument is SQL statement text
+  and a request, stored or session value reaches the call. The scanner names no driver, package or method. One shared
+  test decides what statement text is: `SELECT … FROM`, `INSERT INTO`, `UPDATE … SET`, `DELETE FROM`, `WITH … AS (`,
+  table DDL, `EXEC` and `CALL`, and the clauses `WHERE` with a comparison, `ORDER BY` and `VALUES (`. Ordinary prose
+  that begins with such a word does not match.
+- **Slots.** A value that reaches the text argument has slot `sql_text`. A value in another argument of the call, or in
+  a bind call on a statement prepared from the text, has slot `sql_parameters`. A call with SQL text and no such value
+  is not recorded.
+- **Contracts keep their records.** A call a contract records is unchanged and gains no second record. In JavaScript a
+  record made only because the method is named `query`, with no contract, takes this contract when its argument is SQL
+  statement text; otherwise it stays as it was.
+- **Contract and protocol.** The record carries contract `sql-text-v1`, and only that contract selects protocol
+  `sql-text-operation-v1`.
+- **What is sent.** Notes on SQL as a query language, an entry note, the call, the request values, stored values under
+  their own name, and source: the handler, the functions the values pass through, and the file of the call (whole up
+  to 16 KB, else 60 lines on each side). The judge reads no file; the record carries the excerpts.
+- **What is asked.** Two closed questions. `operation`: does the call run SQL, or is it not a database operation (a log
+  or print call that takes SQL text is recorded, and answered here). `request_control`: is there an input an attacker
+  can send that changes the statement beyond the choices the code lists. The finding answers are `statement_text` and
+  `name`; `data_only` is the safe one.
+- **Scanner reading limits** are shown as code and bar only Protected, whether they are on the text and its values
+  or elsewhere in the entry flow.
+- **Protected** needs `data_only` at 0.95 or more, no reading limit and at least one request value.
+- **Review by scanner evidence.** A finding answer for a record whose request values are all in slot `sql_parameters`,
+  beside a statement text the scanner resolved whole, is Review (`bound_parameters_only`), as for a contract record. A
+  record with only stored values is Review.
+- **Where the text comes from.** The hook reads the text through concatenation, interpolation and formatting, a
+  `join` or `implode` of a list, the returns of one helper defined in the scanned source, and a constant or helper of
+  another scanned file. Definitions it read through travel with the record as source.
+- **Where a value lands.** When the text has parts that are not literal, the record carries the scanner's reading of
+  the literal text: each such part numbered, and whether it sits inside a quoted literal or outside quotes
+  (`statement_shape`). The request sends it as `statement`. It states nothing about the value itself. It is not given
+  when a backslash sits inside a quoted literal, because databases disagree on what that does.
+- **A value bound in another call (JavaScript).** A method call on a name that was assigned from a call whose argument
+  is SQL statement text with no request value is one record per statement object, slot `sql_parameters`.
+- **Tagged templates (JavaScript).** A tagged template whose literal text is SQL statement text and whose substitution
+  carries a request value is recorded with the mark `template_tag`; the scanner does not decide what the tag does and
+  the request says it is a tagged template. A finding needs the tag function in the scanned source
+  (`template_tag_definition`); without it a finding answer is Review (`template_tag_unresolved`).
+- **Not followed.** A helper called by a helper; a list built by a comprehension, `map` or `filter`; a statement
+  prepared and run in one chained expression; a variable assigned in an included PHP file; statements outside the
+  list above.
+- **Calibration is open.** On the lab, 93% of Confirmed routes were vulnerable with Gemini
+  `gemini-decision-1` and 75% with `gpt-6-luna`; neither marked a vulnerable route Protected. The series bar is 95%.
+  About 13% of lab routes change answer when the request wording changes.
+
+## SQL calls with no driver contract
+
+[Specification](../../../.zazz/specifications/detection-generalization/21-sql-text-records.md) owns the detail and the
+measurements.
+
+- **Recording.** A call that no driver contract records becomes a SQL record when one argument is SQL statement text
+  and a request, stored or session value reaches the call. The scanner names no driver, package or method. One shared
+  test decides what statement text is: `SELECT … FROM`, `INSERT INTO`, `UPDATE … SET`, `DELETE FROM`, `WITH … AS (`,
+  table DDL, `EXEC` and `CALL`, and the clauses `WHERE` with a comparison, `ORDER BY` and `VALUES (`. Ordinary prose
+  that begins with such a word does not match.
+- **Slots.** A value that reaches the text argument has slot `sql_text`. A value in another argument of the call, or in
+  a bind call on a statement prepared from the text, has slot `sql_parameters`. A call with SQL text and no such value
+  is not recorded.
+- **Contracts keep their records.** A call a contract records is unchanged and gains no second record. In JavaScript a
+  record made only because the method is named `query`, with no contract, takes this contract when its argument is SQL
+  statement text; otherwise it stays as it was.
+- **Contract and protocol.** The record carries contract `sql-text-v1`, and only that contract selects protocol
+  `sql-text-operation-v1`.
+- **What is sent.** Notes on SQL as a query language, an entry note, the call, the request values, stored values under
+  their own name, and source: the handler, the functions the values pass through, and the file of the call (whole up
+  to 16 KB, else 60 lines on each side). The judge reads no file; the record carries the excerpts.
+- **What is asked.** Two closed questions. `operation`: does the call run SQL, or is it not a database operation (a log
+  or print call that takes SQL text is recorded, and answered here). `request_control`: is there an input an attacker
+  can send that changes the statement beyond the choices the code lists. The finding answers are `statement_text` and
+  `name`; `data_only` is the safe one.
+- **Scanner reading limits** are shown as code and bar only Protected, whether they are on the text and its values
+  or elsewhere in the entry flow.
+- **Protected** needs `data_only` at 0.95 or more, no reading limit and at least one request value.
+- **Review by scanner evidence.** A finding answer for a record whose request values are all in slot `sql_parameters`,
+  beside a statement text the scanner resolved whole, is Review (`bound_parameters_only`), as for a contract record. A
+  record with only stored values is Review.
+- **Not followed.** Text built by `join`, a helper or another module; a JavaScript value bound in a different call from
+  the text; a tagged template; statements outside the list above.
+- **Calibration is open.** On 18 injectable driver forms written for the specification, both Gemini
+  `gemini-decision-1` and `gpt-6-luna` Confirmed 18. Of 19 bound twins neither Confirmed one; Gemini marked 16
+  Protected and `gpt-6-luna` 5. No application the implementers did not write has been measured beyond one file.
+
 <a id="bounded-express-and-mongoose-context"></a>
 
 ## Node acquisition and Mongoose context

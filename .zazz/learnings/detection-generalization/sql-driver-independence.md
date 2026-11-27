@@ -341,7 +341,12 @@ drivers with no contract, which no run here tested: every record was made by a c
   built-in functions, which have no import.
 - The origin-only calls are the kind a judge has to sort: a bound value, an ORM write. They are few here (2 in six samples).
 
+**The held-out control (2026-11-26).** `oss-oopssec-store`, opened only through a counts script under the reserved-control
+rule, scans byte-identical before and after specification 21: 128 uses, 5 SQL contract records, no text record. Its
+database packages (Prisma, better-sqlite3) both have contracts, so it shows no harm and nothing false added, not that a
+new driver is found. A held-out control is only useful for A4 if its driver list is checked first.
+
 ## Not measured
 
-A held-out application with an uncontracted driver. The same comparisons on gpt-6-luna, the standing judge.
+A held-out application with an uncontracted driver (`oss-oopssec-store` has none). gpt-6-luna is measured on fixtures only.
 Origin for Python or PHP. The scan-time cost of the text probe. Scan time side by side. An application nobody tuned for that uses an uncontracted SQL driver.

@@ -96,7 +96,7 @@ pass rule written first (`_test-findings/detgen-21/PASS-RULE.md`; reports and tr
 | A1 | Twelve samples: no existing record missing or changed in content. Added: 43 on DVWA, 1 on vuln-demo-app, 0 elsewhere. Ids of other records change in entries that gain one (D-4) |
 | A2 | Gemini: 18 of 18 injectable forms with a text record Confirmed; 0 of 19 bound twins Confirmed (16 Protected, 3 Review). gpt-6-luna: 18 of 18 Confirmed; 0 of 19 twins Confirmed (5 Protected, 12 Review, 2 not a database operation) |
 | A3 | `log.info` and `print` taking SQL text with request data: recorded, answered not a database operation by both judges |
-| A4 | Not part of this work. One file nobody here wrote (`sast-testbench/js-samples/sql_injection.js`), missed before, is Confirmed by both judges |
+| A4 | Not measured. One file nobody here wrote (`sast-testbench/js-samples/sql_injection.js`), missed before, is Confirmed by both judges. The held-out control `oss-oopssec-store` is unchanged and holds no uncontracted driver (last section) |
 | A5 | Juice Shop within noise (28.7 s both), DVWA about 3%, vulnpy about 4% |
 | Gates | `go build`, `go vet`, `go test ./scan/...` pass. Goldens updated for the converted `string-flow` record and the new fixtures |
 
@@ -171,6 +171,10 @@ Gemini `gemini-decision-1` requests; gpt-6-luna not run.
 | New forms, bound twins: 6 records | Not recorded | 3 Protected, 3 Review, 0 Confirmed |
 | Tagged templates, 6 forms | Not recorded | Local tag that concatenates: 2 of 2 Confirmed. Library tag called directly: Protected. Local tag that binds, and a Prisma raw tag: Review. A library tag passed as an argument was Confirmed at 0.56, which is false; D-8 makes it Review (unit-tested, not re-sent) |
 
+The escaped-value and tagged-template probe fixtures are in the repository (`testdata/sql-text/escaped/` in each language,
+`langjs/testdata/sql-text/tags/`); offline tests hold their record counts, placements, tag marks and attached tag
+definitions, so the paid sets can be rebuilt from the repository.
+
 No existing record on the twelve samples changed apart from the added `statement_shape` key; none of the samples holds
 one of the new forms, so no record was added on them. Scan time unchanged on Juice Shop, DVWA and vulnpy.
 
@@ -183,7 +187,7 @@ one of the new forms, so no record was added on them. Scan time unchanged on Jui
 - Not followed: a helper called by a helper; a list built by a comprehension, `map` or `filter`; a chained
   `prepare(...).get(x)`; a variable assigned in an included PHP file; a JavaScript list pushed in two-argument calls.
 - A SQL fragment appended to a list in Python is recorded at the `append` call as well as at the executing call.
-- No held-out application (A4).
+- No held-out application with an uncontracted driver (A4); the held-out control is in the last section.
 
 ### gpt-6-luna on the follow-up (2026-11-26)
 
@@ -207,3 +211,22 @@ Owner: "Yes, run luna". 97 requests, commit fd75c80, pass rule written first. No
 - Not tried: a floor on the finding answer. On these 97 answers a floor of 0.65 for `statement_text` would remove both
   false findings and one true one (JavaScript escaped value outside quotes, 0.57). That is a threshold read off the same
   answers it would be judged on, so it is recorded here and not applied.
+
+### Held-out control: oss-oopssec-store (2026-11-26)
+
+The owner chose `oss-oopssec-store` (`2d530ef`) for A4. Under [§3.1 of the contract](contract.md#31-the-reserved-control)
+its source and per-record results were not opened: a script compared the offline reports of `stage` (`a5fe8c9`) and this
+branch (`7852403`) and printed counts, and the dependency names of its package files were listed. Script and reports:
+`_test-findings/detgen-21/a4-oopssec/`. No paid request.
+
+| | `stage` | This branch |
+|---|---:|---:|
+| Report | byte-identical | byte-identical |
+| Uses | 128 | 128 |
+| SQL records, driver contract | 5 | 5 |
+| SQL records, `sql-text-v1` | 0 | 0 |
+
+Its database packages are `@prisma/client` and `better-sqlite3`; both have contracts here. So this run shows that the
+hooks add nothing false and change nothing on an application nobody here tuned for. It does **not** measure A4: there
+is no uncontracted driver in it, and SQL is not held out on it (§3.1). A4 stays unmeasured until an application with an
+uncontracted driver (for example one on `oracledb`, `mssql`, `pyodbc` or `sqlsrv`) is keyed per §3.

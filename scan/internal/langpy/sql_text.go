@@ -48,20 +48,39 @@ func (f *pythonFlow) sqlTextArgument(nodes []*sitter.Node, values []pythonValue,
 	return -1, nil, parse.SQLTextMatch{}, false
 }
 
-// sqlWrapperNames are the names of calls that only wrap statement text for
-// another call: conn.execute(text("...")).
-var sqlWrapperNames = map[string]bool{"text": true, "sql": true, "textclause": true, "literal_column": true, "raw": true, "query": true, "composed": true, "literal": true}
+// sqlTextWrapped reports a call that only wraps statement text for another
+// call, as text("...") does in conn.execute(text("...")), and returns the wrapped
+// expression. The rule is the shape alone, with no name: a call with exactly one
+// argument that is a string expression. A ".format" call builds the text and is
+// not a wrapper, and a wrapper is followed one level only: its argument is not
+// another wrapper call.
+func (f *pythonFlow) sqlTextWrapped(n *sitter.Node) *sitter.Node {
+	if n == nil || n.Kind() != "call" || f.sqlFormatCall(n) {
+		return nil
+	}
+	list := n.ChildByFieldName("arguments")
+	if list == nil || list.Kind() != "argument_list" || list.NamedChildCount() != 1 {
+		return nil
+	}
+	arg := sqlTextUnwrap(list.NamedChild(0))
+	if arg == nil {
+		return nil
+	}
+	switch arg.Kind() {
+	case "string", "concatenated_string", "binary_operator", "identifier":
+		return arg
+	case "call":
+		if f.sqlFormatCall(arg) {
+			return arg
+		}
+	}
+	return nil
+}
 
-// sqlTextWrapperName reports a call whose callee name is one that wraps SQL text.
-func (f *pythonFlow) sqlTextWrapperName(fn *sitter.Node) bool {
-	if fn == nil {
-		return false
-	}
-	name := strings.ToLower(pyText(f.module, fn))
-	if i := strings.LastIndex(name, "."); i >= 0 {
-		name = name[i+1:]
-	}
-	return sqlWrapperNames[name]
+// sqlFormatCall reports a call of a method named format.
+func (f *pythonFlow) sqlFormatCall(n *sitter.Node) bool {
+	fn := n.ChildByFieldName("function")
+	return fn != nil && fn.Kind() == "attribute" && pyText(f.module, fn.ChildByFieldName("attribute")) == "format"
 }
 
 // sqlTextUnwrap strips parentheses and a keyword-argument name from an argument node.
@@ -100,10 +119,10 @@ func sqlTextWrappedBy(n *sitter.Node) *sitter.Node {
 // the wrapper is not recorded; a plain function call that takes a wrapper call
 // (str(db.sql(q))) leaves the record to the wrapper.
 func (f *pythonFlow) sqlTextOperationElsewhere(n, fn, textArg *sitter.Node) bool {
-	if inner := sqlTextUnwrap(textArg); inner != nil && inner.Kind() == "call" && f.sqlTextWrapperName(inner.ChildByFieldName("function")) && fn.Kind() != "attribute" {
+	if f.sqlTextWrapped(sqlTextUnwrap(textArg)) != nil && fn.Kind() != "attribute" {
 		return true
 	}
-	if f.sqlTextWrapperName(fn) {
+	if f.sqlTextWrapped(n) != nil {
 		if outer := sqlTextWrappedBy(n); outer != nil {
 			if of := outer.ChildByFieldName("function"); of != nil && of.Kind() == "attribute" {
 				return true
@@ -349,7 +368,6 @@ func (f *pythonFlow) sqlPieces(n *sitter.Node, hops int) (pieces []parse.SQLText
 		}
 	case "call":
 		fnn := n.ChildByFieldName("function")
-		args := pyArgs(n)
 		if fnn != nil && fnn.Kind() == "attribute" && pyText(m, fnn.ChildByFieldName("attribute")) == "format" {
 			obj := fnn.ChildByFieldName("object")
 			if obj != nil && (obj.Kind() == "string" || obj.Kind() == "concatenated_string" || obj.Kind() == "identifier" || obj.Kind() == "parenthesized_expression" || obj.Kind() == "binary_operator") {
@@ -369,13 +387,9 @@ func (f *pythonFlow) sqlPieces(n *sitter.Node, hops int) (pieces []parse.SQLText
 				return p, d || dyn
 			}
 		}
-		if f.sqlTextWrapperName(fnn) && len(args) == 1 && n.ChildByFieldName("arguments") != nil && n.ChildByFieldName("arguments").NamedChildCount() == 1 {
-			k := args[0].Kind()
-			if k == "string" || k == "concatenated_string" || k == "binary_operator" || k == "identifier" || k == "call" || k == "parenthesized_expression" {
-				p, d := f.sqlPieces(args[0], hops)
-				if !(len(p) == 1 && p[0].Hole) {
-					return p, d
-				}
+		if inner := f.sqlTextWrapped(n); inner != nil {
+			if p, d := f.sqlPieces(inner, hops); !(len(p) == 1 && p[0].Hole) {
+				return p, d
 			}
 		}
 	case "identifier":

@@ -130,12 +130,15 @@ out of scope.
 - **The shared statement test is stricter than the prototypes'** ("Select a file from the list" does not match). It
   gained and lost no record on any sample.
 
+- **The Python wrapper rule is a shape, not a list of names.** The hook first knew a call that only wraps the text
+  (`conn.execute(text("..."))`) by eight names. It now knows it by shape: a call with exactly one argument that is a
+  string expression, followed one level. The call that takes the wrapper is the record. No record changed on the four
+  Python samples or the fixtures. A database call whose result is passed straight to a method
+  (`rows.append(db.execute(q))`) is recorded at the outer call, which holds the inner one.
+
 **Known gaps**
 
 - gpt-6-luna keeps few bound twins Protected (5 of 19); they are Review, not findings.
-- The Python hook treats a call named `text`, `sql`, `query`, `raw`, `literal`, `literal_column`, `TextClause` or
-  `composed` with one argument as a wrapper around the text. That is a list of names in scanner code; a rule on shape
-  alone ("a call whose only argument is SQL statement text") should replace it.
 - In DVWA the 36 bound records are for files requested directly, where the database handle is not defined. They are
   safe and not findings, and they add requests.
 - The escaped, unquoted value (D-6) is not addressed: with no contract, such a record can be Review where a contract

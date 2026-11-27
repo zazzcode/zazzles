@@ -226,3 +226,29 @@ func TestPythonSQLTextEvidence(t *testing.T) {
 		}
 	}
 }
+
+// TestPythonSQLTextWrapperShape: a call that only wraps the statement text is
+// known by its shape, a single string argument, and by no name. The call that
+// takes the wrapper is the record, once; a wrapper passed to a plain function
+// keeps the record itself.
+func TestPythonSQLTextWrapperShape(t *testing.T) {
+	const q = "\"SELECT * FROM users WHERE name = '\" + request.args.get('n') + \"'\""
+	for name, c := range map[string]struct{ body, sink string }{
+		"wrapper with a name no list holds": {"    return str(db.execute(statement_of(" + q + ")).fetchall())\n", "db.execute(statement_of("},
+		"wrapper reached by attribute":      {"    return str(db.execute(duckdb.anything(" + q + ")).fetchall())\n", "db.execute(duckdb.anything("},
+		"wrapper around a variable":         {"    q = " + q + "\n    return str(db.execute(wrap(q)).fetchall())\n", "db.execute(wrap(q))"},
+		"wrapper with bound values":         {"    return str(db.execute(wrap(\"SELECT * FROM users WHERE name = ?\"), [request.args.get('n')]).fetchall())\n", "db.execute(wrap("},
+		"plain function around the call":    {"    return str(db.sql(" + q + "))\n", "db.sql("},
+		"result passed to a method":         {"    rows = []\n    rows.append(db.execute(" + q + "))\n    return 'ok'\n", "rows.append(db.execute("},
+	} {
+		t.Run(name, func(t *testing.T) {
+			u := sqlTextSingle(t, map[string]string{"main.py": sqlTextHead + c.body})
+			if sqlTextModelID(u) != analysispacks.SQLTextContract {
+				t.Fatalf("contract %q", sqlTextModelID(u))
+			}
+			if len(u.Sink.Text) < len(c.sink) || u.Sink.Text[:len(c.sink)] != c.sink {
+				t.Fatalf("record at %q, want the call starting %q", u.Sink.Text, c.sink)
+			}
+		})
+	}
+}

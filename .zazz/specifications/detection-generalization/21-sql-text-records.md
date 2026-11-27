@@ -165,7 +165,7 @@ Gemini `gemini-decision-1` requests; gpt-6-luna not run.
 |---|---|---|
 | Escaped value outside quotes, 7 text records and 1 contract record | 8 Confirmed, one at 0.49 against 0.49 | 8 Confirmed, the lowest text record at 0.93 |
 | Escaped value inside a quoted literal, 7 text records | 1 Confirmed (false), 6 Review | 0 Confirmed, 7 Review |
-| Driver forms and extra forms, 42 records | 31 Confirmed, 2 Protected, 2 not a database call | The same outcomes, each `statement_text` at or above its earlier value |
+| Driver forms and extra forms, 42 records, contract records included | 36 Confirmed, 2 Protected, 2 not a database call, 1 Review, 1 not sent | The same outcome for every record |
 | DVWA `sqli`, `sqli_blind` and set-up script, 7 text records | 7 Confirmed | 7 Confirmed |
 | New forms, injectable: join, helper, other file, constant, class attribute; 13 records in three languages | Not recorded | 13 Confirmed |
 | New forms, bound twins: 6 records | Not recorded | 3 Protected, 3 Review, 0 Confirmed |

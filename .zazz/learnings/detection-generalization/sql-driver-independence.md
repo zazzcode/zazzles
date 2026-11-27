@@ -306,7 +306,7 @@ inside a quoted literal or outside quotes.
 |---|---|---|
 | Escaped value outside quotes | Target stayed `data_only`; two near twins fell to Review | 8 of 8 Confirmed; the coin flip (0.49) went to 0.95 |
 | Escaped value inside quotes | Not measured | The one false Confirmed (0.77) went to Review |
-| Records that were already right | Two moved | 49 re-sent, none moved; every `statement_text` at or above its earlier value |
+| Records that were already right | Two moved | 49 re-sent, none changed outcome |
 
 - **A fact the scanner can read from the literal is worth more than a sentence about the general case.** The fact is
   about quotes in the text only; the model still works out what was done to the value.

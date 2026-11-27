@@ -643,6 +643,21 @@
               },
               "sha256": "598706290a8d051e5ac73ace1d64ffa0d5f097ca44103d0194cc9109b19c73cd"
             }
+          ],
+          "statement_shape": [
+            {
+              "model_text": "{1}: inside a single-quoted literal",
+              "kind": "statement_shape",
+              "text": "SELECT * FROM users WHERE email = '{1}'",
+              "span": {
+                "file": "handler.ts",
+                "start_line": 5,
+                "end_line": 5,
+                "start_byte": 187,
+                "end_byte": 192
+              },
+              "sha256": ""
+            }
           ]
         },
         "blockers": [],

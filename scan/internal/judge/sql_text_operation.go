@@ -8,6 +8,7 @@ import (
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
 	"github.com/zazzcode/zazzles/scan/internal/analysispacks"
+	"github.com/zazzcode/zazzles/scan/internal/parse"
 )
 
 // A SQL statement text recorded with no driver contract (contract
@@ -23,6 +24,22 @@ const sqlTextTask = "Decide what one call does with request data in SQL. Source 
 // sqlTextStoredTask is added when a value the scanner read from a session or a
 // database reaches the call. It is not a request value.
 const sqlTextStoredTask = " stored_values are values the application reads back from its session or its database; they also reach the call, and they are not sent with this request."
+
+// sqlTextStatementTask is added when the recorder attached its reading of the
+// statement text (parse.SQLTextPlacementKind): where each part that is not
+// literal text sits. It is the scanner's reading of quotes in the literal text
+// and says nothing about the value.
+const sqlTextStatementTask = " statement is the statement text as the scanner read it from source, with {1}, {2} and so on where a part is not literal text; statement.parts says for each whether it sits inside a quoted literal or outside quotes. It does not say which value fills a part or what was done to that value before; read that from source."
+
+// sqlTextTemplateTask is added for a tagged template (evidence template_tag): the
+// scanner does not know what the tag does with the substitutions.
+const sqlTextTemplateTask = " The call is a tagged template: the tag function receives the literal parts and the substituted values apart, and what reaches the database depends on that function. Decide from its definition in source when it is supplied, otherwise from what the source shows the tag to be."
+
+// sqlTextStatement is the scanner's reading of the statement text.
+type sqlTextStatement struct {
+	Text  string   `json:"text"`
+	Parts []string `json:"parts"`
+}
 
 // sqlTextOperation reports a record made by SQL text recognition: it is judged
 // with the SQL text request and policy, whatever language recorded it.
@@ -150,19 +167,30 @@ func (c *Client) sqlTextPayload(use analysis.CandidateUse) ([]byte, error) {
 			task += documentDefinitionsTask
 		}
 	}
+	var statement *sqlTextStatement
+	if use.Completeness != nil {
+		if shape := use.Completeness.Evidence[parse.SQLTextPlacementKind]; len(shape) == 1 && shape[0].Text != "" && shape[0].ModelText != "" {
+			statement = &sqlTextStatement{shape[0].Text, strings.Split(shape[0].ModelText, "\n")}
+			task += sqlTextStatementTask
+		}
+		if len(use.Completeness.Evidence["template_tag"]) > 0 {
+			task += sqlTextTemplateTask
+		}
+	}
 	entry := ""
 	if use.InputFacts != nil {
 		entry = documentEntryNotes[use.InputFacts.Framework]
 	}
 	evidence, err := json.Marshal(struct {
-		Task     string           `json:"task"`
-		Language string           `json:"query_language"`
-		Entry    string           `json:"entry,omitempty"`
-		Call     documentSpan     `json:"call"`
-		Values   []string         `json:"request_values"`
-		Stored   []string         `json:"stored_values,omitempty"`
-		Source   []sqlTextExcerpt `json:"source"`
-	}{task, analysispacks.SQLTextLanguage, entry, documentRef(use.Sink), values, stored, excerpts})
+		Task      string            `json:"task"`
+		Language  string            `json:"query_language"`
+		Entry     string            `json:"entry,omitempty"`
+		Call      documentSpan      `json:"call"`
+		Values    []string          `json:"request_values"`
+		Stored    []string          `json:"stored_values,omitempty"`
+		Statement *sqlTextStatement `json:"statement,omitempty"`
+		Source    []sqlTextExcerpt  `json:"source"`
+	}{task, analysispacks.SQLTextLanguage, entry, documentRef(use.Sink), values, stored, statement, excerpts})
 	if err != nil {
 		return nil, errors.New("could not encode evidence")
 	}
@@ -221,6 +249,13 @@ func applySQLTextPolicy(use analysis.CandidateUse, a *analysis.Assessment) {
 		// whole, so an answer that the request changes the text has no witness.
 		a.BlockingGaps = []analysis.Gap{{Kind: "bound_parameters_only", Detail: "A vulnerable answer needs request-derived data in the SQL text; every request-derived value of this call is in another argument and the scanner found no interpolated statement text", At: use.Sink.Span}}
 		review("The answer that the request changes the statement has no request value in the statement text; the record stays Review.")
+	case analysispacks.SQLTextOperationControls[control] && len(c.Evidence["template_tag"]) > 0 && len(c.Evidence["template_tag_definition"]) == 0:
+		// A tagged template whose tag function is not in the scanned source: the
+		// request shows the substitutions but not what the tag does with them, so
+		// an answer that they reach the statement text rests on the model's
+		// knowledge of a library. That is not enough for a finding.
+		a.BlockingGaps = []analysis.Gap{{Kind: "template_tag_unresolved", Detail: "The tag function of this tagged template is not in the scanned source; whether it binds its substitutions or builds them into the statement text is not shown", At: use.Sink.Span}}
+		review("The tag function is not in the scanned source, so what it does with the substituted values is not shown; the record stays Review.")
 	case analysispacks.SQLTextOperationControls[control]:
 		a.FindingStatus, a.Protection = "confirmed_vulnerability", "insufficient"
 		a.Answers["injection_protection"] = "vulnerable"

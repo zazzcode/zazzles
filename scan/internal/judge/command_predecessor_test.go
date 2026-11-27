@@ -26,7 +26,7 @@ func TestCommandPredecessorRequests(t *testing.T) {
 		digest string
 	}
 	want := map[string]baseline{
-		"string-flow":                 {1, "02ea16647e71c17779cc3db4ad3ca461df53f4c267751cb37917b3fee62e588b"},
+		"string-flow":                 {1, "2465b601335c88974774fff743e937e8ddb8fa965c60a478f382a89a0c4943b8"},
 		"javascript/grpc":             {7, "e64335dd05c1dc3e1096c9abb4cdb503adc78228ae07eb8e82e3d81de3ca6fbf"},
 		"typescript/grpc":             {7, "5c9521a5235e04a2550e8d678f8437910421ad11530ba5d6d3152e1fa37b735e"},
 		"javascript/graphql":          {7, "7445b5e70d2f6fa6a8d8c0f4b458b6a375864aafad68c370da898cb26865da8a"},

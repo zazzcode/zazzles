@@ -82,9 +82,9 @@ Out of scope: replacing a contract; ORM finders and builders with no SQL text; o
 
 ## What is known not to work yet
 
-Text built by `join`, a helper or another module; statements outside a short list; a JavaScript value bound in a
-different call from the text; a tagged template whose driver binds its substitutions. Each is listed with its overlay in
-the learnings page.
+At the first results below: text built by `join`, a helper or another module; statements outside a short list; a
+JavaScript value bound in a different call from the text; a tagged template. The follow-up section at the end covers
+these.
 
 ## Results (2026-11-26)
 
@@ -141,7 +141,47 @@ out of scope.
 - gpt-6-luna keeps few bound twins Protected (5 of 19); they are Review, not findings.
 - In DVWA the 36 bound records are for files requested directly, where the database handle is not defined. They are
   safe and not findings, and they add requests.
-- The escaped, unquoted value (D-6) is not addressed: with no contract, such a record can be Review where a contract
-  record is Confirmed.
 - No held-out application (A4).
 
+## Follow-up (2026-11-26): text not followed, and where a value lands
+
+Asked by the owner on the gaps above. Pass rules written first (`_test-findings/detgen-21/PASS-RULE.md`). Paid: 16 + 97
+Gemini `gemini-decision-1` requests; gpt-6-luna not run.
+
+**Added**
+
+| Part | What |
+|---|---|
+| All three hooks | Text built by `join`/`implode`, by the returns of one helper in the scanned source, and from a constant or helper of another scanned file; PHP also `sprintf`/`vsprintf` conversions, heredoc and class constants. Definitions read through are attached as source |
+| All three hooks | `statement_shape`: the literal text with each non-literal part numbered and placed inside a quoted literal or outside quotes (`parse.SQLTextPlacement`). The request sends it as `statement` |
+| JavaScript | One record per statement object for a value bound in a call apart from the text |
+| JavaScript | Tagged templates, marked `template_tag`; the request says so |
+| Judge policy | **D-8.** A finding on a tagged template needs the tag function in the scanned source; otherwise Review (`template_tag_unresolved`). Protected for a tagged template rests on the judge's reading of the tag, an exception to invariant 3 taken on the owner's standing preference that the judge recognizes libraries |
+| PHP | `sprintf`, `vsprintf`, `implode` and `join` are no longer recorded as the call themselves |
+
+**Results (Gemini)**
+
+| Set | Before | After |
+|---|---|---|
+| Escaped value outside quotes, 7 text records and 1 contract record | 8 Confirmed, one at 0.49 against 0.49 | 8 Confirmed, the lowest text record at 0.93 |
+| Escaped value inside a quoted literal, 7 text records | 1 Confirmed (false), 6 Review | 0 Confirmed, 7 Review |
+| Driver forms and extra forms, 42 records | 31 Confirmed, 2 Protected, 2 not a database call | The same outcomes, each `statement_text` at or above its earlier value |
+| DVWA `sqli`, `sqli_blind` and set-up script, 7 text records | 7 Confirmed | 7 Confirmed |
+| New forms, injectable: join, helper, other file, constant, class attribute; 13 records in three languages | Not recorded | 13 Confirmed |
+| New forms, bound twins: 6 records | Not recorded | 3 Protected, 3 Review, 0 Confirmed |
+| Tagged templates, 6 forms | Not recorded | Local tag that concatenates: 2 of 2 Confirmed. Library tag called directly: Protected. Local tag that binds, and a Prisma raw tag: Review. A library tag passed as an argument was Confirmed at 0.56, which is false; D-8 makes it Review (unit-tested, not re-sent) |
+
+No existing record on the twelve samples changed apart from the added `statement_shape` key; none of the samples holds
+one of the new forms, so no record was added on them. Scan time unchanged on Juice Shop, DVWA and vulnpy.
+
+**Still open**
+
+- Every new form is in fixtures the implementers wrote. No sample application holds one, so this proves the path only.
+- The escaped value inside a quoted literal is Review, not Protected: the judge's `data_only` stays below 0.95, and two
+  of these records have a reading limit. The existing `php-sqlite3-v1` contract request Confirms that safe form; contract
+  records are out of scope here.
+- Not followed: a helper called by a helper; a list built by a comprehension, `map` or `filter`; a chained
+  `prepare(...).get(x)`; a variable assigned in an included PHP file; a JavaScript list pushed in two-argument calls.
+- A SQL fragment appended to a list in Python is recorded at the `append` call as well as at the executing call.
+- gpt-6-luna has not seen the `statement` field or a tagged template.
+- No held-out application (A4).

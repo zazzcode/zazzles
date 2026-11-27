@@ -190,3 +190,36 @@ func TestSQLTextExcerpt(t *testing.T) {
 		t.Errorf("over the limit: window starts at line %d", l)
 	}
 }
+
+func TestSQLTextPlacement(t *testing.T) {
+	h := SQLTextPiece{Hole: true}
+	lit := func(s string) SQLTextPiece { return SQLTextPiece{Text: s} }
+	for name, c := range map[string]struct {
+		pieces []SQLTextPiece
+		text   string
+		parts  []string
+	}{
+		"outside quotes":  {[]SQLTextPiece{lit("SELECT a FROM t WHERE id = "), h}, "SELECT a FROM t WHERE id = {1}", []string{"{1}: outside quotes"}},
+		"inside a quote":  {[]SQLTextPiece{lit("SELECT a FROM t WHERE n = '"), h, lit("' AND id = "), h}, "SELECT a FROM t WHERE n = '{1}' AND id = {2}", []string{"{1}: inside a single-quoted literal", "{2}: outside quotes"}},
+		"doubled quote":   {[]SQLTextPiece{lit("SELECT a FROM t WHERE n = 'it''s' AND m = "), h}, "SELECT a FROM t WHERE n = 'it''s' AND m = {1}", []string{"{1}: outside quotes"}},
+		"other quotes":    {[]SQLTextPiece{lit("SELECT a FROM `"), h, lit("` WHERE \""), h, lit("\" = 1")}, "SELECT a FROM `{1}` WHERE \"{2}\" = 1", []string{"{1}: inside backquotes", "{2}: inside double quotes"}},
+		"quote in quotes": {[]SQLTextPiece{lit("SELECT a FROM t WHERE n = \"o'\" AND m = "), h}, "SELECT a FROM t WHERE n = \"o'\" AND m = {1}", []string{"{1}: outside quotes"}},
+	} {
+		text, parts, ok := SQLTextPlacement(c.pieces)
+		if !ok || text != c.text || strings.Join(parts, "|") != strings.Join(c.parts, "|") {
+			t.Errorf("%s: %q %v %v", name, text, parts, ok)
+		}
+	}
+	for name, pieces := range map[string][]SQLTextPiece{
+		"no hole":             {lit("SELECT a FROM t")},
+		"backslash in quotes": {lit("SELECT a FROM t WHERE n = 'a\\' AND m = "), h},
+	} {
+		if _, _, ok := SQLTextPlacement(pieces); ok {
+			t.Errorf("%s: placement given", name)
+		}
+	}
+	e, ok := SQLTextPlacementEvidence([]SQLTextPiece{lit("SELECT a FROM t WHERE id = "), h}, analysis.Span{File: "a", StartByte: 1, EndByte: 9})
+	if !ok || e.Kind != SQLTextPlacementKind || e.ModelText != "{1}: outside quotes" || e.Span.File != "a" {
+		t.Errorf("evidence %+v", e)
+	}
+}

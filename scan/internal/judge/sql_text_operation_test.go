@@ -380,3 +380,54 @@ func TestSQLTextOperationEquivalence(t *testing.T) {
 		t.Error("ids or unrelated context moved the signature")
 	}
 }
+
+// TestSQLTextOperationStatementAndTag: the recorder's reading of the statement
+// text and the tagged template mark each add one field or sentence, and a record
+// with neither keeps its request as it was.
+func TestSQLTextOperationStatementAndTag(t *testing.T) {
+	plain := sqlTextUse(false)
+	_, _, base := sqlTextBuild(t, "openai", plain)
+	if _, ok := base["statement"]; ok || strings.Contains(string(base["task"]), "tagged template") || strings.Contains(string(base["task"]), "statement is") {
+		t.Fatalf("a plain record carries the additions: %s", base["task"])
+	}
+	shaped := sqlTextUse(false)
+	shaped.Completeness.Evidence["statement_shape"] = []analysis.Evidence{{Kind: "statement_shape", Text: "SELECT * FROM t WHERE id = {1}", ModelText: "{1}: outside quotes"}}
+	_, _, in := sqlTextBuild(t, "openai", shaped)
+	var st struct {
+		Text  string   `json:"text"`
+		Parts []string `json:"parts"`
+	}
+	if err := json.Unmarshal(in["statement"], &st); err != nil || st.Text != "SELECT * FROM t WHERE id = {1}" || len(st.Parts) != 1 || st.Parts[0] != "{1}: outside quotes" {
+		t.Fatalf("statement %s %v", in["statement"], err)
+	}
+	if !strings.Contains(string(in["task"]), "statement is the statement text as the scanner read it") {
+		t.Fatalf("task %s", in["task"])
+	}
+	tagged := sqlTextUse(false)
+	tagged.Completeness.Evidence["template_tag"] = []analysis.Evidence{{Kind: "template_tag", Text: "sql"}}
+	_, _, in = sqlTextBuild(t, "openai", tagged)
+	if !strings.Contains(string(in["task"]), "The call is a tagged template") {
+		t.Fatalf("task %s", in["task"])
+	}
+}
+
+// TestSQLTextTemplateTagFinding: a finding on a tagged template needs the tag
+// function in the scanned source. Without it the answer rests on the model's
+// knowledge of a library and the record is Review.
+func TestSQLTextTemplateTagFinding(t *testing.T) {
+	answer := func(use analysis.CandidateUse) analysis.Assessment {
+		a := analysis.Assessment{Status: "completed", Answers: map[string]string{"operation": "runs_sql", "request_control": "statement_text"},
+			AnswerDetails: map[string]analysis.AnswerDetail{}}
+		applyPolicy(use, &a)
+		return a
+	}
+	tagged := sqlTextUse(false)
+	tagged.Completeness.Evidence["template_tag"] = []analysis.Evidence{{Kind: "template_tag", Text: "SQL"}}
+	if a := answer(tagged); a.FindingStatus != "needs_evidence" || len(a.BlockingGaps) != 1 || a.BlockingGaps[0].Kind != "template_tag_unresolved" {
+		t.Fatalf("tag not in source: %s %v", a.FindingStatus, a.BlockingGaps)
+	}
+	tagged.Completeness.Evidence["template_tag_definition"] = []analysis.Evidence{{Kind: "template_tag_definition"}}
+	if a := answer(tagged); a.FindingStatus != "confirmed_vulnerability" {
+		t.Fatalf("tag in source: %s", a.FindingStatus)
+	}
+}

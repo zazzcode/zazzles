@@ -317,3 +317,80 @@ func SQLTextExcerptEvidence(src []byte, sp analysis.Span) (analysis.Evidence, bo
 	return analysis.Evidence{Kind: SQLTextSourceExcerptKind, Text: text, SHA256: fmt.Sprintf("%x", sha256.Sum256(src)),
 		Span: analysis.Span{File: sp.File, StartLine: startLine, EndLine: startLine + strings.Count(text, "\n"), StartByte: startByte, EndByte: endByte}}, true
 }
+
+// Where a hole sits in statement text. A hook attaches it to a SQL text record
+// as Completeness.Evidence[SQLTextPlacementKind]; the judge sends it as the
+// scanner's reading of the literal text. It is a fact about quotes in the text
+// the scanner read, not about the value that fills the hole.
+const (
+	// SQLTextPlacementKind is the evidence kind and the Completeness.Evidence key.
+	SQLTextPlacementKind = "statement_shape"
+	// SQLTextPlacementMaxHoles and SQLTextPlacementMaxBytes bound the evidence.
+	SQLTextPlacementMaxHoles = 12
+	SQLTextPlacementMaxBytes = 4000
+)
+
+// SQLTextPlacement renders the pieces as statement text with {1}, {2}, ... for
+// the holes, and says for each hole whether it sits inside a quoted literal or
+// outside quotes. Quotes are read the way every SQL dialect agrees on: a quote
+// opens a literal, the same quote closes it, and a doubled quote inside is one
+// character. ok is false when the pieces have no hole, exceed the bounds, or
+// hold a backslash inside a quoted literal: dialects disagree on whether it
+// escapes the quote, so the scanner does not say.
+func SQLTextPlacement(pieces []SQLTextPiece) (text string, parts []string, ok bool) {
+	var b strings.Builder
+	var quote byte
+	holes := 0
+	for _, p := range pieces {
+		if p.Hole {
+			holes++
+			if holes > SQLTextPlacementMaxHoles {
+				return "", nil, false
+			}
+			where := "outside quotes"
+			switch quote {
+			case '\'':
+				where = "inside a single-quoted literal"
+			case '"':
+				where = "inside double quotes"
+			case '`':
+				where = "inside backquotes"
+			}
+			fmt.Fprintf(&b, "{%d}", holes)
+			parts = append(parts, fmt.Sprintf("{%d}: %s", holes, where))
+			continue
+		}
+		t := p.Text
+		for i := 0; i < len(t); i++ {
+			ch := t[i]
+			switch {
+			case quote == 0 && (ch == '\'' || ch == '"' || ch == '`'):
+				quote = ch
+			case quote != 0 && ch == '\\':
+				return "", nil, false
+			case quote != 0 && ch == quote:
+				if i+1 < len(t) && t[i+1] == quote {
+					i++
+				} else {
+					quote = 0
+				}
+			}
+		}
+		b.WriteString(t)
+	}
+	if holes == 0 || b.Len() > SQLTextPlacementMaxBytes {
+		return "", nil, false
+	}
+	return b.String(), parts, true
+}
+
+// SQLTextPlacementEvidence builds the SQLTextPlacementKind evidence of a text
+// argument at span sp: Text is the statement text with numbered holes and
+// ModelText one line per hole.
+func SQLTextPlacementEvidence(pieces []SQLTextPiece, sp analysis.Span) (analysis.Evidence, bool) {
+	text, parts, ok := SQLTextPlacement(pieces)
+	if !ok {
+		return analysis.Evidence{}, false
+	}
+	return analysis.Evidence{Kind: SQLTextPlacementKind, Text: text, ModelText: strings.Join(parts, "\n"), Span: sp}, true
+}

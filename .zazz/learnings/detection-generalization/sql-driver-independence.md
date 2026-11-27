@@ -296,6 +296,26 @@ gpt-6-luna, no bound twin Confirmed on either. Three things the overlays did not
 - **Holding a record at Review for a limit on its own text lost a true form** (SQLAlchemy `text()`). Rule 10 applies to
   the text's own limits too: show the code, bar only Protected.
 
+### Where the value lands: evidence worked where wording did not
+
+Round 2 tried to fix the escaped, unquoted value with a sentence and made things worse. The follow-up of specification
+21 sent the scanner's own reading instead: the literal statement text with each non-literal part numbered and placed
+inside a quoted literal or outside quotes.
+
+| | Wording (round 2) | Placement evidence |
+|---|---|---|
+| Escaped value outside quotes | Target stayed `data_only`; two near twins fell to Review | 8 of 8 Confirmed; the coin flip (0.49) went to 0.95 |
+| Escaped value inside quotes | Not measured | The one false Confirmed (0.77) went to Review |
+| Records that were already right | Two moved | 49 re-sent, none moved; every `statement_text` at or above its earlier value |
+
+- **A fact the scanner can read from the literal is worth more than a sentence about the general case.** The fact is
+  about quotes in the text only; the model still works out what was done to the value.
+- **Tagged templates: the model's knowledge of a library is good enough to clear, not to accuse.** It marked the
+  postgres.js tag Protected at 0.98 and confirmed two local concatenating tags, but it also called
+  `sql-template-strings` injectable at 0.56. A finding now needs the tag function in the scanned source.
+- **Hooks reading more text added nothing on the twelve samples.** None of them builds SQL by join, helper or another
+  module in a call no contract records. The forms are proven on fixtures only.
+
 ### Earlier next steps, still open
 
 (1) The escaped-unquoted case needs evidence, not wording: whether the value sits inside quotes in the

@@ -229,12 +229,17 @@ export async function POST(request: NextRequest) {
 	// The interpolated GET query is the Prisma contract's record. The bound POST
 	// query ($1 and a separate value) has no contract record; the SQL text hook
 	// (specification 21) records it with the value in the parameter slot only. The
-	// tagged template and the DELETE with a value that is not a request value are
-	// not recorded.
-	if len(all) != 2 {
-		t.Fatalf("want the GET contract record and the bound POST record: %d uses %+v", len(all), all)
+	// tagged template has no contract either: the hook records it with the value in
+	// the text slot and the template_tag mark (the judge is told it is a tagged
+	// template). The DELETE with a value that is not a request value is not recorded.
+	if len(all) != 3 {
+		t.Fatalf("want the GET contract record, the bound POST record and the tagged template: %d uses %+v", len(all), all)
 	}
 	sql := all[:1]
+	if tagged := all[2]; tagged.APIModel == nil || tagged.APIModel.ID != "sql-text-v1" || tagged.Completeness == nil || len(tagged.Completeness.Evidence["template_tag"]) != 1 ||
+		len(tagged.Dependencies) != 1 || tagged.Dependencies[0].SinkSlot != "sql_text" {
+		t.Fatalf("tagged template record %+v", tagged)
+	}
 	if bound := all[1]; bound.APIModel == nil || bound.APIModel.ID != "sql-text-v1" || len(bound.Dependencies) != 1 || bound.Dependencies[0].SinkSlot != "sql_parameters" {
 		t.Fatalf("bound POST record %+v", bound.APIModel)
 	}

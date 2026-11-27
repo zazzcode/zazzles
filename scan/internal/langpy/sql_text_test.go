@@ -3,6 +3,7 @@ package langpy
 import (
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/zazzcode/zazzles/scan/internal/analysis"
@@ -248,6 +249,174 @@ func TestPythonSQLTextWrapperShape(t *testing.T) {
 			}
 			if len(u.Sink.Text) < len(c.sink) || u.Sink.Text[:len(c.sink)] != c.sink {
 				t.Fatalf("record at %q, want the call starting %q", u.Sink.Text, c.sink)
+			}
+		})
+	}
+}
+
+// sqlTextFollowCases are the forms the text hook follows beyond one expression:
+// a join, a list built by append, a helper, a constant of another module. Each is
+// a body that goes after sqlTextHead; text is the injectable form and bound its
+// twin with the request value passed apart from the statement.
+var sqlTextFollowCases = map[string]struct {
+	files        map[string]string
+	text, bound  string
+	sink         string
+	definitionIn string
+}{
+	"join of a list": {
+		text:  "    return str(db.execute(\" \".join([\"SELECT * FROM users WHERE name = '\", request.args.get('n'), \"'\"])).fetchall())\n",
+		bound: "    return str(db.execute(\" \".join([\"SELECT * FROM users\", \"WHERE name = ?\"]), [request.args.get('n')]).fetchall())\n",
+	},
+	"join of a tuple with a separator variable": {
+		text:  "    sep = ' '\n    return str(db.execute(sep.join((\"SELECT * FROM users WHERE\", \"name = '\" + request.args.get('n') + \"'\"))).fetchall())\n",
+		bound: "    sep = ' '\n    return str(db.execute(sep.join((\"SELECT * FROM users WHERE\", \"name = ?\")), [request.args.get('n')]).fetchall())\n",
+	},
+	"join of a list built by append": {
+		text:  "    parts = ['SELECT * FROM users WHERE name =']\n    parts.append(\"'\" + request.args.get('n') + \"'\")\n    return str(db.execute(' '.join(parts)).fetchall())\n",
+		bound: "    parts = ['SELECT * FROM users']\n    parts.append('WHERE name = ?')\n    return str(db.execute(' '.join(parts), [request.args.get('n')]).fetchall())\n",
+	},
+	"helper of the same file": {
+		text:  "    def build(n):\n        return \"SELECT * FROM users WHERE name = '\" + n + \"'\"\n    return str(db.execute(build(request.args.get('n'))).fetchall())\n",
+		bound: "    def build():\n        return \"SELECT * FROM users WHERE name = ?\"\n    return str(db.execute(build(), [request.args.get('n')]).fetchall())\n",
+	},
+	"helper with two returns, one SQL": {
+		text:  "    def build(n):\n        if not n:\n            return 'Select a name from the list'\n        return \"SELECT * FROM users WHERE name = '\" + n + \"'\"\n    return str(db.execute(build(request.args.get('n'))).fetchall())\n",
+		bound: "    def build(n):\n        if not n:\n            return 'Select a name from the list'\n        return 'SELECT * FROM users WHERE name = ?'\n    return str(db.execute(build(1), [request.args.get('n')]).fetchall())\n",
+	},
+	"helper of another file": {
+		files: map[string]string{"helper.py": "def build(n):\n    return \"SELECT * FROM users WHERE name = '\" + n + \"'\"\n\n\ndef bound():\n    return 'SELECT * FROM users WHERE name = ?'\n"},
+		text:  "    return str(db.execute(build(request.args.get('n'))).fetchall())\n",
+		bound: "    return str(db.execute(bound(), [request.args.get('n')]).fetchall())\n", definitionIn: "helper.py",
+	},
+	"constant of another file": {
+		files: map[string]string{"q.py": "SQL = \"SELECT * FROM users WHERE name = '{}'\"\nBOUND = 'SELECT * FROM users WHERE name = ?'\n"},
+		text:  "    return str(db.execute(SQL.format(request.args.get('n'))).fetchall())\n",
+		bound: "    return str(db.execute(BOUND, [request.args.get('n')]).fetchall())\n", definitionIn: "q.py",
+	},
+	"constant of a module reached by attribute": {
+		files: map[string]string{"q.py": "SQL = \"SELECT * FROM users WHERE name = '\"\nBOUND = 'SELECT * FROM users WHERE name = ?'\n"},
+		text:  "    return str(db.execute(q.SQL + request.args.get('n') + \"'\").fetchall())\n",
+		bound: "    return str(db.execute(q.BOUND, [request.args.get('n')]).fetchall())\n", definitionIn: "q.py",
+	},
+	"class attribute of another file": {
+		files: map[string]string{"q.py": "class Queries:\n    BY_NAME = \"SELECT * FROM users WHERE name = '{}'\"\n    BOUND = 'SELECT * FROM users WHERE name = ?'\n"},
+		text:  "    return str(db.execute(Queries.BY_NAME.format(request.args.get('n'))).fetchall())\n",
+		bound: "    return str(db.execute(Queries.BOUND, [request.args.get('n')]).fetchall())\n", definitionIn: "q.py",
+	},
+	"method of a class of the same file": {
+		files: map[string]string{"main.py": "from flask import Flask, request\nimport duckdb\napp = Flask(__name__)\n\n\nclass Repo:\n    @staticmethod\n    def build(n):\n        return \"SELECT * FROM users WHERE name = '\" + n + \"'\"\n\n\n@app.get('/')\ndef entry():\n    db = duckdb.connect()\n    return str(db.execute(Repo.build(request.args.get('n'))).fetchall())\n"},
+	},
+}
+
+func sqlTextFollowFiles(c struct {
+	files        map[string]string
+	text, bound  string
+	sink         string
+	definitionIn string
+}, body string) map[string]string {
+	files := map[string]string{}
+	for k, v := range c.files {
+		files[k] = v
+	}
+	if _, own := files["main.py"]; !own {
+		head := sqlTextHead
+		switch {
+		case c.definitionIn == "helper.py":
+			head = "from helper import build, bound\n" + head
+		case c.definitionIn == "q.py" && strings.Contains(c.files["q.py"], "class "):
+			head = "from q import Queries\n" + head
+		case c.definitionIn == "q.py" && strings.Contains(body, "q."):
+			head = "import q\n" + head
+		case c.definitionIn == "q.py":
+			head = "from q import SQL, BOUND\n" + head
+		}
+		files["main.py"] = head + body
+	}
+	return files
+}
+
+// TestPythonSQLTextFollow: a join, a helper and a constant of another module each
+// give exactly one record, text in slot sql_text and its bound twin in slot
+// sql_parameters. The statement text a helper or a constant holds reaches the
+// judge as context evidence of the definition.
+func TestPythonSQLTextFollow(t *testing.T) {
+	for name, c := range sqlTextFollowCases {
+		t.Run(name, func(t *testing.T) {
+			if c.text == "" {
+				u := sqlTextSingle(t, c.files)
+				if sqlTextModelID(u) != analysispacks.SQLTextContract || sqlTextSlots(u)[0] != "sql_text" {
+					t.Fatalf("contract %q slots %v", sqlTextModelID(u), sqlTextSlots(u))
+				}
+				return
+			}
+			u := sqlTextSingle(t, sqlTextFollowFiles(c, c.text))
+			if sqlTextModelID(u) != analysispacks.SQLTextContract || len(sqlTextSlots(u)) != 1 || sqlTextSlots(u)[0] != "sql_text" {
+				t.Fatalf("text: contract %q slots %v", sqlTextModelID(u), sqlTextSlots(u))
+			}
+			if c.definitionIn != "" {
+				held := false
+				for _, e := range u.Context {
+					switch e.Kind {
+					case "helper_definition", "referenced_definition", parse.SQLTextSourceExcerptKind:
+						held = held || (e.Span.File == c.definitionIn && strings.Contains(e.Text, "SELECT"))
+					}
+				}
+				if !held {
+					t.Errorf("no context evidence holds the definition in %s", c.definitionIn)
+				}
+			}
+			b := sqlTextSingle(t, sqlTextFollowFiles(c, c.bound))
+			if sqlTextModelID(b) != analysispacks.SQLTextContract || len(sqlTextSlots(b)) != 1 || sqlTextSlots(b)[0] != "sql_parameters" {
+				t.Fatalf("bound: contract %q slots %v", sqlTextModelID(b), sqlTextSlots(b))
+			}
+		})
+	}
+}
+
+// TestPythonSQLTextFollowNoRecord: the followed forms give nothing without request
+// data, for prose, and past the helper depth.
+func TestPythonSQLTextFollowNoRecord(t *testing.T) {
+	for name, body := range map[string]string{
+		"join, no request data":   "    return str(db.execute(' '.join(['SELECT * FROM users', \"WHERE name = 'a'\"])).fetchall())\n",
+		"join of prose":           "    print(' '.join(['Select a file from the list', request.args.get('n')]))\n    return 'ok'\n",
+		"helper, no request data": "    def build():\n        return \"SELECT * FROM users WHERE name = 'a'\"\n    return str(db.execute(build()).fetchall())\n",
+		"helper of prose":         "    def build(n):\n        return 'Select a file from the list ' + n\n    print(build(request.args.get('n')))\n    return 'ok'\n",
+		"two helper levels":       "    def inner(n):\n        return \"SELECT * FROM users WHERE name = '\" + n + \"'\"\n\n    def outer(n):\n        return inner(n, 1)\n    return str(db.execute(outer(request.args.get('n'))).fetchall())\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got := sqlTextAnalyze(t, pythonFixture(t, map[string]string{"main.py": sqlTextHead + body})); len(got) != 0 {
+				t.Fatalf("recorded: %v", got)
+			}
+		})
+	}
+}
+
+// TestPythonSQLTextPlacement: the statement_shape evidence says where each hole
+// sits in the text; a text with no hole has none.
+func TestPythonSQLTextPlacement(t *testing.T) {
+	for name, c := range map[string]struct{ body, model string }{
+		"outside quotes":   {"    return str(db.execute(\"SELECT * FROM users WHERE id = \" + request.args.get('n')).fetchall())\n", "{1}: outside quotes"},
+		"inside quotes":    {"    return str(db.execute(\"SELECT * FROM users WHERE name = '\" + request.args.get('n') + \"'\").fetchall())\n", "{1}: inside a single-quoted literal"},
+		"through a join":   {"    return str(db.execute(' '.join(['SELECT * FROM users WHERE id =', request.args.get('n')])).fetchall())\n", "{1}: outside quotes"},
+		"through a helper": {"    def b(n):\n        return \"SELECT * FROM users WHERE name = '\" + n + \"'\"\n    return str(db.execute(b(request.args.get('n'))).fetchall())\n", "{1}: inside a single-quoted literal"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			u := sqlTextSingle(t, map[string]string{"main.py": sqlTextHead + c.body})
+			e := u.Completeness.Evidence[parse.SQLTextPlacementKind]
+			if len(e) != 1 || e[0].ModelText != c.model {
+				t.Fatalf("placement %v, want %q", e, c.model)
+			}
+		})
+	}
+	for name, body := range map[string]string{
+		"bound twin with a placeholder": "    return str(db.execute('SELECT * FROM users WHERE name = ?', [request.args.get('n')]).fetchall())\n",
+		"percent formatting":            "    return str(db.execute(\"SELECT * FROM users WHERE name = '%s'\" % request.args.get('n')).fetchall())\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			u := sqlTextSingle(t, map[string]string{"main.py": sqlTextHead + body})
+			if e := u.Completeness.Evidence[parse.SQLTextPlacementKind]; len(e) != 0 {
+				t.Fatalf("placement %v", e)
 			}
 		})
 	}

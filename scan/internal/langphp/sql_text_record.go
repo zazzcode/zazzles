@@ -32,6 +32,10 @@ type sqlTextState struct {
 	assigns    map[string][]sqlTextAssign
 	statements map[string]*sqlTextStatement
 	absorbed   map[string]bool
+	// read is the state of the syntax read in progress; consts indexes the
+	// top-level const declarations of the scanned files.
+	read   *sqlTextRead
+	consts map[string][]sqlTextConstRef
 }
 
 // sqlTextStatement is one statement's record under construction.
@@ -47,6 +51,10 @@ type sqlTextStatement struct {
 	// query is the query_text evidence; prepared is extra context evidence.
 	query    []analysis.Evidence
 	prepared []analysis.Evidence
+	// pieces are the pieces of the text argument as read (holes in place); defs
+	// are the definitions they were read from.
+	pieces []parse.SQLTextPiece
+	defs   []sqlTextDef
 }
 
 type sqlTextAssign struct {
@@ -179,30 +187,35 @@ func (f *phpFlow) sqlTextSyntax(m *phpModule, n *sitter.Node, before uint, depth
 	if n == nil || depth > 8 {
 		return hole
 	}
+	if st := f.set.sqlTextStateInit(); st.read != nil {
+		if st.read.work++; st.read.work > sqlTextSyntaxWork {
+			return hole
+		}
+	}
 	switch n.Kind() {
+	case "heredoc":
+		if body := sqlTextHeredocBody(n); body != nil {
+			return f.sqlTextInterpolated(m, body, before, depth)
+		}
+		return hole
+	case "nowdoc":
+		if body := sqlTextHeredocBody(n); body != nil {
+			return parse.SQLTextLiteral(phpText(m, body))
+		}
+		return hole
+	case "name":
+		return f.sqlTextConstant(m, n, depth)
+	case "class_constant_access_expression":
+		return f.sqlTextClassConstant(m, n, depth)
+	case "member_call_expression", "scoped_call_expression":
+		return f.sqlTextHelper(m, n, depth)
 	case "string":
 		if t, ok := phpStringLiteral(m, n); ok {
 			return parse.SQLTextLiteral(t)
 		}
 		return hole
 	case "encapsed_string":
-		var out []parse.SQLTextPiece
-		for i := uint(0); i < n.ChildCount(); i++ {
-			c := n.Child(i)
-			if c == nil {
-				continue
-			}
-			if c.Kind() == "string_content" {
-				out = append(out, parse.SQLTextPiece{Text: c.Utf8Text(m.src)})
-			} else if c.IsNamed() {
-				if c.Kind() == "variable_name" {
-					out = append(out, f.sqlTextSyntax(m, c, before, depth+1)...)
-				} else {
-					out = append(out, parse.SQLTextPiece{Hole: true})
-				}
-			}
-		}
-		return out
+		return f.sqlTextInterpolated(m, n, before, depth)
 	case "parenthesized_expression":
 		return f.sqlTextSyntax(m, n.NamedChild(0), before, depth+1)
 	case "binary_expression":
@@ -217,27 +230,16 @@ func (f *phpFlow) sqlTextSyntax(m *phpModule, n *sitter.Node, before uint, depth
 		}
 		return hole
 	case "function_call_expression":
-		name := strings.ToLower(strings.TrimPrefix(phpText(m, phpField(n, "function")), "\\"))
-		if name == "sprintf" || name == "vsprintf" {
+		switch sqlTextBuiltinName(m, n) {
+		case "sprintf", "vsprintf":
 			if args := phpArgs(n); len(args) > 0 {
-				var res []parse.SQLTextPiece
-				for _, p := range f.sqlTextSyntax(m, args[0], before, depth+1) {
-					if p.Hole {
-						res = append(res, p)
-						continue
-					}
-					text := strings.NewReplacer("%s", "\x00", "%d", "\x00").Replace(p.Text)
-					for i, s := range strings.Split(text, "\x00") {
-						if i > 0 {
-							res = append(res, parse.SQLTextPiece{Hole: true})
-						}
-						if s != "" {
-							res = append(res, parse.SQLTextPiece{Text: s})
-						}
-					}
-				}
-				return res
+				return sqlTextFormatPieces(f.sqlTextSyntax(m, args[0], before, depth+1))
 			}
+			return hole
+		case "implode", "join":
+			return f.sqlTextJoin(m, n, before, depth)
+		case "":
+			return f.sqlTextHelper(m, n, depth)
 		}
 		return hole
 	case "variable_name":
@@ -269,12 +271,20 @@ func (f *phpFlow) sqlTextSyntax(m *phpModule, n *sitter.Node, before uint, depth
 }
 
 // sqlTextArgument reports whether argument i is SQL statement text, from the
-// flow value first and from syntax when the value kept no text.
-func (f *phpFlow) sqlTextArgument(node *sitter.Node, v phpValue, before uint) bool {
-	if sqlTextValueMatches(v) {
-		return true
+// flow value first and from syntax when the value kept no text. It returns the
+// pieces that matched (the syntax reading when it matches) and the definitions
+// the syntax reading used.
+func (f *phpFlow) sqlTextArgument(node *sitter.Node, v phpValue, before uint) (bool, []parse.SQLTextPiece, []sqlTextDef) {
+	pieces, defs := f.sqlTextRootRead(f.module, node, before)
+	if sqlTextPiecesMatch(pieces) {
+		return true, pieces, defs
 	}
-	return sqlTextPiecesMatch(f.sqlTextSyntax(f.module, node, before, 0))
+	for _, p := range sqlTextFromValue(v) {
+		if sqlTextPiecesMatch(p) {
+			return true, p, defs
+		}
+	}
+	return false, nil, nil
 }
 
 func sqlTextPos(b uint) string { return strconv.FormatUint(uint64(b), 10) }
@@ -324,6 +334,14 @@ func (f *phpFlow) sqlTextCall(n *sitter.Node, nodes []*sitter.Node, values []php
 	if n == nil || f.module == nil || f.report == nil || len(nodes) == 0 || len(values) < len(nodes) {
 		return
 	}
+	if n.Kind() == "function_call_expression" {
+		// A formatting or joining call builds the text; the call that takes the
+		// text is the operation.
+		switch sqlTextBuiltinName(f.module, n) {
+		case "sprintf", "vsprintf", "implode", "join":
+			return
+		}
+	}
 	anyDeps := false
 	for _, v := range values {
 		if len(v.deps) > 0 {
@@ -353,9 +371,11 @@ func (f *phpFlow) sqlTextCall(n *sitter.Node, nodes []*sitter.Node, values []php
 	}
 
 	textIdx := -1
+	var textPieces []parse.SQLTextPiece
+	var textDefs []sqlTextDef
 	for i, node := range nodes {
-		if f.sqlTextArgument(node, values[i], n.StartByte()) {
-			textIdx = i
+		if ok, p, d := f.sqlTextArgument(node, values[i], n.StartByte()); ok {
+			textIdx, textPieces, textDefs = i, p, d
 			break
 		}
 	}
@@ -373,7 +393,7 @@ func (f *phpFlow) sqlTextCall(n *sitter.Node, nodes []*sitter.Node, values []php
 		if len(values[textIdx].deps) == 0 && len(params.deps) == 0 {
 			return
 		}
-		s := &sqlTextStatement{module: m, sink: n, text: values[textIdx], textInSlot: true, params: params, query: []analysis.Evidence{m.evidence("query_text", nodes[textIdx])}}
+		s := &sqlTextStatement{module: m, sink: n, text: values[textIdx], textInSlot: true, params: params, query: []analysis.Evidence{m.evidence("query_text", nodes[textIdx])}, pieces: textPieces, defs: textDefs}
 		st.absorbed[callKey] = true
 		f.sqlTextEmit(s)
 		if assignment := sqlTextAssignedTo(n); assignment != nil {
@@ -473,6 +493,7 @@ func (f *phpFlow) sqlTextResolveStatement(node *sitter.Node, before uint, rv php
 		key := f.sqlTextStatementKey(m, name, assign.end)
 		if tracked && sqlTextValueMatches(*rv.sqlText) {
 			s := &sqlTextStatement{module: m, text: *rv.sqlText, query: append([]analysis.Evidence{}, rv.sqlTextEvidence...), prepared: append([]analysis.Evidence{}, rv.sqlTextEvidence...)}
+			s.pieces, s.defs = f.sqlTextTrackedPieces(m, assign.right, assign.end, *rv.sqlText)
 			if len(s.query) == 0 {
 				s.query = []analysis.Evidence{m.evidence("query_text", node)}
 			}
@@ -482,8 +503,8 @@ func (f *phpFlow) sqlTextResolveStatement(node *sitter.Node, before uint, rv php
 		switch right.Kind() {
 		case "member_call_expression", "scoped_call_expression", "function_call_expression":
 			for _, a := range phpArgs(right) {
-				if sqlTextPiecesMatch(f.sqlTextSyntax(m, a, assign.end, 0)) {
-					return &sqlTextStatement{module: m, query: []analysis.Evidence{m.evidence("query_text", a)}}, key
+				if pieces, defs := f.sqlTextRootRead(m, a, assign.end); sqlTextPiecesMatch(pieces) {
+					return &sqlTextStatement{module: m, query: []analysis.Evidence{m.evidence("query_text", a)}, pieces: pieces, defs: defs}, key
 				}
 			}
 		}
@@ -495,6 +516,7 @@ func (f *phpFlow) sqlTextResolveStatement(node *sitter.Node, before uint, rv php
 			scopeStart = scope.StartByte()
 		}
 		s := &sqlTextStatement{module: m, text: *rv.sqlText, query: append([]analysis.Evidence{}, rv.sqlTextEvidence...), prepared: append([]analysis.Evidence{}, rv.sqlTextEvidence...)}
+		s.pieces = sqlTextMatchingPieces(*rv.sqlText)
 		if len(s.query) == 0 {
 			s.query = []analysis.Evidence{m.evidence("query_text", node)}
 		}
@@ -550,6 +572,11 @@ func (f *phpFlow) sqlTextEmit(s *sqlTextStatement) {
 		}
 	}
 	c.Evidence["query_text"] = append([]analysis.Evidence{}, s.query...)
+	if len(s.pieces) > 0 && len(s.query) > 0 {
+		if e, ok := parse.SQLTextPlacementEvidence(s.pieces, s.query[0].Span); ok {
+			c.Evidence[parse.SQLTextPlacementKind] = []analysis.Evidence{e}
+		}
+	}
 	u.Context = append(u.Context, s.prepared...)
 	// Blockers are limits on the SQL text and on the values reaching the call; a
 	// limit elsewhere in the flow is a judged limit (specification 20).
@@ -605,7 +632,7 @@ func (f *phpFlow) sqlTextEmit(s *sqlTextStatement) {
 		f.set.storedOnly[u.ID] = phpStoredKeys(constructed)
 	}
 	u.Completeness = c
-	f.sqlTextExcerpts(u, m, all)
+	f.sqlTextExcerpts(u, m, all, s)
 	if idx != len(f.report.Uses)-1 {
 		f.report.Uses[idx] = *u
 		f.report.Uses = f.report.Uses[:len(f.report.Uses)-1]
@@ -615,7 +642,7 @@ func (f *phpFlow) sqlTextEmit(s *sqlTextStatement) {
 // sqlTextExcerpts attaches the source the judge reads: an excerpt of the sink's
 // file and, for a file that holds a value's source or the statement text and no
 // context evidence covers, an excerpt of that file.
-func (f *phpFlow) sqlTextExcerpts(u *analysis.CandidateUse, m *phpModule, all phpValue) {
+func (f *phpFlow) sqlTextExcerpts(u *analysis.CandidateUse, m *phpModule, all phpValue, s *sqlTextStatement) {
 	attach := func(file string, at analysis.Span, force bool) {
 		if !force {
 			for _, e := range u.Context {
@@ -637,6 +664,7 @@ func (f *phpFlow) sqlTextExcerpts(u *analysis.CandidateUse, m *phpModule, all ph
 		}
 	}
 	attach(u.Sink.Span.File, u.Sink.Span, true)
+	f.sqlTextDefinitionEvidence(u, s.defs)
 	for _, d := range all.deps {
 		if sp := d.dep.Source.Span; sp.File != "" && sp.File != u.Sink.Span.File {
 			attach(sp.File, sp, false)
@@ -657,4 +685,32 @@ func sqlTextJudgeKind(kind string) bool {
 		return true
 	}
 	return false
+}
+
+// sqlTextMatchingPieces returns the first reading of a flow value that is SQL
+// statement text.
+func sqlTextMatchingPieces(v phpValue) []parse.SQLTextPiece {
+	for _, p := range sqlTextFromValue(v) {
+		if sqlTextPiecesMatch(p) {
+			return p
+		}
+	}
+	return nil
+}
+
+// sqlTextTrackedPieces reads the text of a statement a flow value tracks: from
+// the syntax of the call that prepared it when that is SQL text, else from the
+// flow value.
+func (f *phpFlow) sqlTextTrackedPieces(m *phpModule, right *sitter.Node, end uint, v phpValue) ([]parse.SQLTextPiece, []sqlTextDef) {
+	if right != nil {
+		switch right.Kind() {
+		case "member_call_expression", "scoped_call_expression", "function_call_expression":
+			for _, a := range phpArgs(right) {
+				if pieces, defs := f.sqlTextRootRead(m, a, end); sqlTextPiecesMatch(pieces) {
+					return pieces, defs
+				}
+			}
+		}
+	}
+	return sqlTextMatchingPieces(v), nil
 }

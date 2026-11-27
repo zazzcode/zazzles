@@ -78,6 +78,11 @@ type pythonFlow struct {
 	guards          map[string][]analysis.Gap
 	// sqlAssign caches the assignments of a name in a scope for SQL text records.
 	sqlAssign map[sqlAssignKey][]sqlAssignStep
+	// sqlWork bounds and records one SQL text argument's reading; sqlDepth is the
+	// helper level the reading is in; sqlReturns caches the returns of helpers.
+	sqlWork    *sqlTextWork
+	sqlDepth   int
+	sqlReturns map[uintptr][]*sitter.Node
 }
 
 func pyBody(n *sitter.Node) *sitter.Node {

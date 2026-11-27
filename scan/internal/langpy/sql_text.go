@@ -18,7 +18,10 @@ import (
 // sqlTextArgument finds the first argument (positional, then keyword) whose
 // string is SQL statement text. It returns the argument index, its node, the
 // match and whether the text holds a part the scanner cannot read as literal.
-func (f *pythonFlow) sqlTextArgument(nodes []*sitter.Node, values []pythonValue, kwNodes []*sitter.Node, kwValues []pythonValue) (int, *sitter.Node, parse.SQLTextMatch, bool) {
+func (f *pythonFlow) sqlTextArgument(nodes []*sitter.Node, values []pythonValue, kwNodes []*sitter.Node, kwValues []pythonValue) (int, *sitter.Node, []parse.SQLTextPiece, bool) {
+	if f.sqlAssign == nil {
+		f.sqlAssign = map[sqlAssignKey][]sqlAssignStep{}
+	}
 	total := len(nodes) + len(kwNodes)
 	for i := 0; i < total; i++ {
 		var node *sitter.Node
@@ -31,6 +34,7 @@ func (f *pythonFlow) sqlTextArgument(nodes []*sitter.Node, values []pythonValue,
 		if node == nil {
 			continue
 		}
+		f.sqlWork = &sqlTextWork{budget: 400}
 		pieces, dynamic := f.sqlPieces(node, 0)
 		if len(pieces) == 0 && v.constant {
 			pieces = parse.SQLTextLiteral(v.literal)
@@ -39,13 +43,15 @@ func (f *pythonFlow) sqlTextArgument(nodes []*sitter.Node, values []pythonValue,
 		if !match.Matched && v.constant && v.literal != "" {
 			if m := parse.SQLStatementText(parse.SQLTextLiteral(v.literal)); m.Matched {
 				match, dynamic = m, false
+				pieces = parse.SQLTextLiteral(v.literal)
 			}
 		}
 		if match.Matched {
-			return i, node, match, dynamic || match.Holes > 0
+			return i, node, pieces, dynamic || match.Holes > 0
 		}
 	}
-	return -1, nil, parse.SQLTextMatch{}, false
+	f.sqlWork = nil
+	return -1, nil, nil, false
 }
 
 // sqlTextWrapped reports a call that only wraps statement text for another
@@ -55,7 +61,7 @@ func (f *pythonFlow) sqlTextArgument(nodes []*sitter.Node, values []pythonValue,
 // not a wrapper, and a wrapper is followed one level only: its argument is not
 // another wrapper call.
 func (f *pythonFlow) sqlTextWrapped(n *sitter.Node) *sitter.Node {
-	if n == nil || n.Kind() != "call" || f.sqlFormatCall(n) {
+	if n == nil || n.Kind() != "call" || f.sqlBuilderCall(n) {
 		return nil
 	}
 	list := n.ChildByFieldName("arguments")
@@ -70,17 +76,25 @@ func (f *pythonFlow) sqlTextWrapped(n *sitter.Node) *sitter.Node {
 	case "string", "concatenated_string", "binary_operator", "identifier":
 		return arg
 	case "call":
-		if f.sqlFormatCall(arg) {
+		if f.sqlBuilderCall(arg) {
 			return arg
 		}
 	}
 	return nil
 }
 
-// sqlFormatCall reports a call of a method named format.
-func (f *pythonFlow) sqlFormatCall(n *sitter.Node) bool {
+// sqlBuilderCall reports a call of a str method that builds text from parts:
+// format and join.
+func (f *pythonFlow) sqlBuilderCall(n *sitter.Node) bool {
 	fn := n.ChildByFieldName("function")
-	return fn != nil && fn.Kind() == "attribute" && pyText(f.module, fn.ChildByFieldName("attribute")) == "format"
+	if fn == nil || fn.Kind() != "attribute" {
+		return false
+	}
+	switch pyText(f.module, fn.ChildByFieldName("attribute")) {
+	case "format", "join":
+		return true
+	}
+	return false
 }
 
 // sqlTextUnwrap strips parentheses and a keyword-argument name from an argument node.
@@ -161,7 +175,7 @@ func (f *pythonFlow) sqlTextRecord(n, fn *sitter.Node, nodes []*sitter.Node, val
 	if !reaches {
 		return
 	}
-	idx, node, _, hole := f.sqlTextArgument(nodes, values, kwNodes, kwValues)
+	idx, node, textPieces, hole := f.sqlTextArgument(nodes, values, kwNodes, kwValues)
 	if idx < 0 || f.sqlTextOperationElsewhere(n, fn, node) {
 		return
 	}
@@ -202,6 +216,7 @@ func (f *pythonFlow) sqlTextRecord(n, fn *sitter.Node, nodes []*sitter.Node, val
 		u.Context = append(u.Context, excerpt)
 	}
 	u.Context = append(u.Context, f.sqlTextSourceExcerpts(u, all)...)
+	u.Context = append(u.Context, f.sqlTextDefinitions(u)...)
 	if built && hasText {
 		u.Gaps = append(u.Gaps, f.gap("query_text_interpolated", "Python expression constructs executable SQL text; parameter tuple protects only separate value slots", n))
 	}
@@ -219,6 +234,9 @@ func (f *pythonFlow) sqlTextRecord(n, fn *sitter.Node, nodes []*sitter.Node, val
 		}
 	}
 	c.Evidence["query_text"] = []analysis.Evidence{f.module.evidence("query_text", node)}
+	if e, ok := parse.SQLTextPlacementEvidence(textPieces, parse.Span(f.module.file, node)); ok {
+		c.Evidence[parse.SQLTextPlacementKind] = []analysis.Evidence{e}
+	}
 	for i := 0; i < total; i++ {
 		if i != idx {
 			c.Evidence["bound_parameters"] = append(c.Evidence["bound_parameters"], f.module.evidence("bound_parameters", argNode(i)))
@@ -321,6 +339,11 @@ func (f *pythonFlow) sqlPieces(n *sitter.Node, hops int) (pieces []parse.SQLText
 	if n == nil {
 		return hole, true
 	}
+	if w := f.sqlWork; w != nil {
+		if w.budget--; w.budget < 0 {
+			return hole, true
+		}
+	}
 	switch n.Kind() {
 	case "string":
 		var sb strings.Builder
@@ -370,7 +393,7 @@ func (f *pythonFlow) sqlPieces(n *sitter.Node, hops int) (pieces []parse.SQLText
 		fnn := n.ChildByFieldName("function")
 		if fnn != nil && fnn.Kind() == "attribute" && pyText(m, fnn.ChildByFieldName("attribute")) == "format" {
 			obj := fnn.ChildByFieldName("object")
-			if obj != nil && (obj.Kind() == "string" || obj.Kind() == "concatenated_string" || obj.Kind() == "identifier" || obj.Kind() == "parenthesized_expression" || obj.Kind() == "binary_operator") {
+			if obj != nil && (obj.Kind() == "string" || obj.Kind() == "concatenated_string" || obj.Kind() == "identifier" || obj.Kind() == "attribute" || obj.Kind() == "parenthesized_expression" || obj.Kind() == "binary_operator") {
 				p, d := f.sqlPieces(obj, hops)
 				dyn := false
 				if a := n.ChildByFieldName("arguments"); a != nil {
@@ -387,11 +410,24 @@ func (f *pythonFlow) sqlPieces(n *sitter.Node, hops int) (pieces []parse.SQLText
 				return p, d || dyn
 			}
 		}
+		if p, d, ok := f.sqlJoinPieces(n, fnn, hops); ok {
+			return p, d
+		}
+		// A helper defined in the scanned source is followed into its returns
+		// before it is taken for an opaque wrapper.
+		if p, d, ok := f.sqlHelperPieces(n, hops); ok {
+			return p, d
+		}
 		if inner := f.sqlTextWrapped(n); inner != nil {
-			if p, d := f.sqlPieces(inner, hops); !(len(p) == 1 && p[0].Hole) {
+			if p, d := f.sqlPieces(inner, hops); parse.SQLStatementText(p).Matched {
 				return p, d
 			}
 		}
+	case "attribute":
+		if hops >= 2 {
+			return hole, true
+		}
+		return f.sqlAttributePieces(n, hops)
 	case "identifier":
 		if hops >= 2 {
 			return hole, true
@@ -417,6 +453,12 @@ func (f *pythonFlow) sqlIdentifierPieces(id *sitter.Node, hops int) ([]parse.SQL
 		if p, d, ok := f.sqlAssigned(id, name, scope, hops); ok {
 			return p, d
 		}
+		if scope.Kind() == "function_definition" && sqlParamNamed(f.module, scope, name) {
+			return []parse.SQLTextPiece{{Hole: true}}, true
+		}
+	}
+	if p, d, ok := f.sqlImportedPieces(name, hops); ok {
+		return p, d
 	}
 	return []parse.SQLTextPiece{{Hole: true}}, true
 }
@@ -471,6 +513,8 @@ type sqlAssignStep struct {
 	value *sitter.Node
 	aug   bool
 	end   uint
+	// op is set for the steps of a list variable: set, add, append, extend, insert.
+	op string
 }
 
 // sqlCollectAssignments lists, in source order, the assignments of name directly
@@ -494,14 +538,14 @@ func (f *pythonFlow) sqlCollectAssignments(scope *sitter.Node, name string) []sq
 			l := x.ChildByFieldName("left")
 			if l != nil && l.Kind() == "identifier" && pyText(m, l) == name {
 				if r := x.ChildByFieldName("right"); r != nil {
-					steps = append(steps, sqlAssignStep{r, false, x.EndByte()})
+					steps = append(steps, sqlAssignStep{value: r, end: x.EndByte()})
 				}
 			}
 		case "augmented_assignment":
 			l := x.ChildByFieldName("left")
 			if l != nil && l.Kind() == "identifier" && pyText(m, l) == name && pyText(m, x.ChildByFieldName("operator")) == "+=" {
 				if r := x.ChildByFieldName("right"); r != nil {
-					steps = append(steps, sqlAssignStep{r, true, x.EndByte()})
+					steps = append(steps, sqlAssignStep{value: r, aug: true, end: x.EndByte()})
 				}
 			}
 		}

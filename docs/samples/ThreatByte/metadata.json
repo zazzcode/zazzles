@@ -1,26 +1,27 @@
 {
-  "date": "2026-11-19",
+  "date": "2026-11-27",
   "target_revision": "ede28f27e7e5061866a67b19b6088df4dd11c569",
-  "source_run": "run-1522805296",
-  "source_json_sha256": "db653f1899e966485d75b75ae62d2146e70bc4db75f066368219a9aa37708d78",
-  "scanner_revision": "model-evidence-resolution 50d4a8f",
-  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
-  "provider": "openai",
-  "model": "gpt-6-luna",
-  "provider_requests": 59,
-  "assessment_requests": 58,
-  "follow_ups_sent": 1,
-  "completed_assessments": 58,
-  "derived_assessments": 0,
-  "input_tokens": 298903,
+  "source_run": "Gemini run 2026-11-27 (canonical stdout, no bundle)",
+  "source_json_sha256": "1953bad1eed91fa2ab6835a8e2eb68860d6ff94135c3e7900a7d3cf0c28cf1f9",
+  "scanner_revision": "docs-cleanup 85f39fd plus the uncommitted detection generalization 22 change",
+  "evaluation_mode": "full gemini-decision-1 scan: all analyzers, default judge limit",
+  "provider": "gemini",
+  "model": "gemini-decision-1",
+  "completed_assessments": 60,
+  "input_tokens": 290573,
   "entries": 24,
-  "published_records": 62,
-  "records_not_sent_blocker_unresolvable": 1,
+  "published_records": 64,
   "outcomes": {
-    "confirmed_vulnerability": 5,
-    "poor_practice": 1,
-    "protected_for_claim": 34,
-    "needs_evidence": 19
+    "confirmed_vulnerability": 6,
+    "needs_evidence": 10,
+    "protected_for_claim": 44
+  },
+  "report_statuses": {
+    "confirmed_vulnerability": 6,
+    "needs_evidence": 8,
+    "needs_review": 3,
+    "poor_practice": 3,
+    "protected_for_claim": 44
   },
   "not_run": 4,
   "failed": 0,
@@ -32,18 +33,27 @@
   },
   "runtime_confirmation": "none; static source judgments only",
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-  "results": "../../../.zazz/evaluation/model-resolution-results.md",
+  "results": "../../../.zazz/evaluation/gemini-sample-runs-20261127.md#threatbyte",
   "previous": {
-    "date": "2026-11-15",
-    "scanner_revision": "python-input-refactor (shared Python acquisition; see owning PR and verification contract)",
-    "provider_requests": 62,
-    "input_tokens": 302537,
+    "date": "2026-11-19",
+    "scanner_revision": "model-evidence-resolution 50d4a8f",
+    "source_run": "run-1522805296",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "provider_requests": 59,
+    "input_tokens": 298903,
     "published_records": 62,
     "outcomes": {
-      "protected_for_claim": 33,
-      "needs_evidence": 22,
-      "confirmed_vulnerability": 6,
-      "poor_practice": 1
+      "confirmed_vulnerability": 5,
+      "poor_practice": 1,
+      "protected_for_claim": 34,
+      "needs_evidence": 19
+    },
+    "answer_key": {
+      "expected": 5,
+      "found": 5,
+      "review": 0,
+      "control_false_positives": 0
     }
   }
 }

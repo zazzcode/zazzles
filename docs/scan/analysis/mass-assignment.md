@@ -77,3 +77,19 @@ See [coverage and remediation](../detection-capabilities/mass-assignment.md).
 ## JavaScript and TypeScript
 
 The ORM writes each key of a whole request bag to the attribute of the same name, so the shape is `dynamic_property_write`. A `fields` option with a literal array is the fix. A library option that only hides attributes from reads (`excludeAttributes`) is not.
+
+The JavaScript census has three roles. `credential` marks an attribute a set accessor fills from a
+fast digest, and `name_hint` an attribute whose name is on the hint list. `owner_reference` marks the
+foreign key of a declared association to the account model, which is the model with a `credential`
+attribute. That role covers a Sequelize `belongsTo`, with a literal `foreignKey` or the documented
+default (camel-cased `as` or model name plus `Id`), and a Mongoose `ref` path. It is one
+association step, taken from the association, never from a name. A record with an
+`owner_reference` field uses question version `mass-assignment-components-v2`, whose
+`field_impact` says that choosing the field chooses whose record is written. Every other record
+keeps v1.
+
+Before the census, an attribute assigned as `req.body.<name> = …` is left out of the written
+attributes. That covers a middleware registered for the entry, an earlier matching stage, or a
+top-level statement of the handler before the write. The assignment is cited as `chain_overwrite`
+evidence, and the scanner does not judge where its value comes from.
+[Specification 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)

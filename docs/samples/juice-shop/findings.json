@@ -35947,7 +35947,7 @@
       "record_type": "finding",
       "status": "confirmed_vulnerability",
       "title": "Mass assignment supported by source analysis",
-      "summary": "The request chooses property names written on User, which has a field the request should not choose (CWE-915). This row stands for 2 records from 2 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: input source in 2.",
+      "summary": "The request chooses property names written on User, which has a field the request should not choose (CWE-915). This row stands for 6 records from 6 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 5; each keeps its own evidence and judgment in JSON). Origins across them: input source in 6.",
       "input_validation": "Not established from the supplied evidence.",
       "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies.",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
@@ -35963,7 +35963,11 @@
       },
       "assessment_state": "completed",
       "grouped_use_ids": [
-        "candidate:v1:a5531149a4a7581a024711ec5faf992ded0cef0e963e2b76d1a770564cd4bc21"
+        "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
+        "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
+        "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
+        "candidate:v1:a5531149a4a7581a024711ec5faf992ded0cef0e963e2b76d1a770564cd4bc21",
+        "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7"
       ]
     },
     {
@@ -35977,7 +35981,7 @@
       "record_type": "analysis",
       "status": "needs_evidence",
       "title": "Request-chosen property names need review",
-      "summary": "The request chooses which properties of Product are written (dynamic_property_write). This row stands for 13 records from 13 entries that reach this sink with status needs_evidence (grouped_use_ids lists the other 12; each keeps its own evidence and judgment in JSON). Origins across them: input source in 13.",
+      "summary": "The request chooses which properties of Product are written (dynamic_property_write). This row stands for 9 records from 9 entries that reach this sink with status needs_evidence (grouped_use_ids lists the other 8; each keeps its own evidence and judgment in JSON). Origins across them: input source in 9.",
       "input_validation": "Not established from the supplied evidence.",
       "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect.",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
@@ -35992,14 +35996,10 @@
       "assessment_state": "completed",
       "grouped_use_ids": [
         "candidate:v1:6a733d23b4262240669c32d5a70073a94b577665f547a98538f320218e0b37ba",
-        "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
         "candidate:v1:a64745b144e271d6f15a2d656f8a74b51819144ed03883e5c32ef65b0a9b82b5",
         "candidate:v1:b92f9c5e40d9609e46825413efb88887883e94bdac24aec33fcee3a6bd7ee797",
-        "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
-        "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
         "candidate:v1:8c47c9877d8e06a93be24f6ae5ffe3ae06d513843e72d6c4738e7554925a55f0",
         "candidate:v1:d6543ffeaa4b8ea2b46cb5d2d0d2188064e6df25e07b4d0410783031dc870a36",
-        "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7",
         "candidate:v1:f887273e35b8b1b4253fd3c546f6c4b80376096935e5ad4d80dbebb71be4ef1b",
         "candidate:v1:043a9032efe73e46d048d55e291f1700897dc691108f117a10ee314b0a47ba18",
         "candidate:v1:f96d4213281cfdd0f5f5b166ef85b9b69757c0bb64d2a7dadb9931fb9fdcbf2b"
@@ -36073,23 +36073,25 @@
       "use_id": "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
       "entry_id": "entry:v1:1022e8bde047f54e3d6fadf5527fd438425741ad6986059f1018b71998876f33",
       "invocation_context_id": "invocation:v1:7bc3511335e631a8200be00064d06fd290f514ce8a4252da23cab50862650489",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "Request-chosen property names need review",
-      "summary": "The request chooses which properties of Feedback are written (dynamic_property_write).",
+      "record_type": "finding",
+      "status": "confirmed_vulnerability",
+      "title": "Mass assignment supported by source analysis",
+      "summary": "The request chooses property names written on Feedback, which has a field the request should not choose (CWE-915).",
       "input_validation": "Not established from the supplied evidence.",
-      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect.",
+      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies.",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Let the code, not the request, choose written fields",
         "actions": [
-          "Investigate the operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    }). Its current Review status does not establish a code defect.",
-          "Reconcile the semantic assessment with this exact source claim: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+          "Change the observed operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    })",
+          "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+          "Write each permitted field through a named setter from a named request field.",
+          "If a generic copy is required, intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields; property_exists restricts nothing."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": ""
       },
       "assessment_state": "completed",
-      "grouped_into": "finding:candidate:v1:df5b06296cce12c8b4d6c4822e75d6f70ef01214c688cdd35f773064df7ccfef"
+      "grouped_into": "finding:candidate:v1:09a8b3e63e9a3d0675fad9fce173d8f5d1c6bda7b1eabe3ab0a8d555964125a4"
     },
     {
       "type_ids": [
@@ -36235,23 +36237,25 @@
       "use_id": "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
       "entry_id": "entry:v1:6868690f6f2c4099089bad85026d3f76f9b4a011a9df045512742353fb0b90ee",
       "invocation_context_id": "invocation:v1:04ef888b775dbdde35906903b43b67709ec7ee386646d138eef811a8d436f135",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "Request-chosen property names need review",
-      "summary": "The request chooses which properties of Complaint are written (dynamic_property_write).",
+      "record_type": "finding",
+      "status": "confirmed_vulnerability",
+      "title": "Mass assignment supported by source analysis",
+      "summary": "The request chooses property names written on Complaint, which has a field the request should not choose (CWE-915).",
       "input_validation": "Not established from the supplied evidence.",
-      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect.",
+      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies.",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Let the code, not the request, choose written fields",
         "actions": [
-          "Investigate the operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    }). Its current Review status does not establish a code defect.",
-          "Reconcile the semantic assessment with this exact source claim: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+          "Change the observed operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    })",
+          "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+          "Write each permitted field through a named setter from a named request field.",
+          "If a generic copy is required, intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields; property_exists restricts nothing."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": ""
       },
       "assessment_state": "completed",
-      "grouped_into": "finding:candidate:v1:df5b06296cce12c8b4d6c4822e75d6f70ef01214c688cdd35f773064df7ccfef"
+      "grouped_into": "finding:candidate:v1:09a8b3e63e9a3d0675fad9fce173d8f5d1c6bda7b1eabe3ab0a8d555964125a4"
     },
     {
       "type_ids": [
@@ -36261,23 +36265,25 @@
       "use_id": "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
       "entry_id": "entry:v1:8abd590ffc910a1e1838e54ba52fd2937dfaa8361b50858aeabc1f3cfce0a783",
       "invocation_context_id": "invocation:v1:c44b5073f7c75974faad75605a3541b1adcec153ad629bc7df90e6763f57a1d9",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "Request-chosen property names need review",
-      "summary": "The request chooses which properties of Recycle are written (dynamic_property_write).",
+      "record_type": "finding",
+      "status": "confirmed_vulnerability",
+      "title": "Mass assignment supported by source analysis",
+      "summary": "The request chooses property names written on Recycle, which has a field the request should not choose (CWE-915).",
       "input_validation": "Not established from the supplied evidence.",
-      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect.",
+      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies.",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Let the code, not the request, choose written fields",
         "actions": [
-          "Investigate the operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    }). Its current Review status does not establish a code defect.",
-          "Reconcile the semantic assessment with this exact source claim: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+          "Change the observed operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    })",
+          "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+          "Write each permitted field through a named setter from a named request field.",
+          "If a generic copy is required, intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields; property_exists restricts nothing."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": ""
       },
       "assessment_state": "completed",
-      "grouped_into": "finding:candidate:v1:df5b06296cce12c8b4d6c4822e75d6f70ef01214c688cdd35f773064df7ccfef"
+      "grouped_into": "finding:candidate:v1:09a8b3e63e9a3d0675fad9fce173d8f5d1c6bda7b1eabe3ab0a8d555964125a4"
     },
     {
       "type_ids": [
@@ -36395,23 +36401,25 @@
       "use_id": "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7",
       "entry_id": "entry:v1:a0642b14ed60a01ee34e44a853b3b5c3e0563c562fdc7518f0940cdb70b58763",
       "invocation_context_id": "invocation:v1:ce0928b69c78fc611ec794aa266cc525da2c3251651f7a98092c6afaabbe3e2e",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "Request-chosen property names need review",
-      "summary": "The request chooses which properties of PrivacyRequestModel are written (dynamic_property_write).",
+      "record_type": "finding",
+      "status": "confirmed_vulnerability",
+      "title": "Mass assignment supported by source analysis",
+      "summary": "The request chooses property names written on PrivacyRequestModel, which has a field the request should not choose (CWE-915).",
       "input_validation": "Not established from the supplied evidence.",
-      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect.",
+      "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies.",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Let the code, not the request, choose written fields",
         "actions": [
-          "Investigate the operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    }). Its current Review status does not establish a code defect.",
-          "Reconcile the semantic assessment with this exact source claim: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+          "Change the observed operation at server.ts:529: finale.resource({\n      model,\n      endpoints: [`/api/${name}s`, `/api/${name}s/:id`],\n      excludeAttributes: exclude,\n      pagination: false,\n      include\n    })",
+          "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+          "Write each permitted field through a named setter from a named request field.",
+          "If a generic copy is required, intersect the request keys with a literal allow-list that excludes privilege, credential and identity fields; property_exists restricts nothing."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": ""
       },
       "assessment_state": "completed",
-      "grouped_into": "finding:candidate:v1:df5b06296cce12c8b4d6c4822e75d6f70ef01214c688cdd35f773064df7ccfef"
+      "grouped_into": "finding:candidate:v1:09a8b3e63e9a3d0675fad9fce173d8f5d1c6bda7b1eabe3ab0a8d555964125a4"
     },
     {
       "type_ids": [
@@ -315339,7 +315347,8 @@
           {
             "storage_key": "js-attribute:Feedback.UserId",
             "roles": [
-              "name_hint"
+              "name_hint",
+              "owner_reference"
             ],
             "evidence": [
               {
@@ -315353,6 +315362,18 @@
                   "end_byte": 808
                 },
                 "sha256": "24ef867d9854df2889c9286a688b6cee8668a08a5e1d987f867c9268dbeb4750"
+              },
+              {
+                "kind": "owner_association",
+                "text": "FeedbackModel.belongsTo(UserModel, {\n    foreignKey: {\n      name: 'UserId'\n    }\n  })",
+                "span": {
+                  "file": "models/relations.ts",
+                  "start_line": 65,
+                  "end_line": 69,
+                  "start_byte": 1777,
+                  "end_byte": 1863
+                },
+                "sha256": "3333271e3d7527941e083059e913d5d6c9c0e0aa7175d2ac80fec6613a91f245"
               }
             ]
           }
@@ -315533,84 +315554,84 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "2d4c2db110b758cbef628edcfde7d750760861ebd39d07acd7481450b4639807",
+        "request_digest": "5031c4bf134cbf68b6a6fed9f955ef3d4e894bbd91fbe110c857779b43f2b109",
         "answer_details": {
           "field_impact": {
-            "choice": "no_sensitive_field",
-            "confidence": 0.5187056139391101,
+            "choice": "privileged_field",
+            "confidence": 0.9588287926737793,
             "probabilities": [
               {
                 "value": "no_sensitive_field",
-                "probability": 0.5187056139391101
+                "probability": 0.028828812628671135
               },
               {
                 "value": "privileged_field",
-                "probability": 0.38860001282445683
+                "probability": 0.9588287926737793
               },
               {
                 "value": "unknown",
-                "probability": 0.092694373236433
+                "probability": 0.01234239469754939
               }
             ]
           },
           "key_control": {
             "choice": "request_chosen",
-            "confidence": 0.9903106661309119,
+            "confidence": 0.9912739598030332,
             "probabilities": [
               {
                 "value": "fixed",
-                "probability": 0.0033649017112516396
+                "probability": 0.0022866579621575855
               },
               {
                 "value": "request_chosen",
-                "probability": 0.9903106661309119
+                "probability": 0.9912739598030332
               },
               {
                 "value": "unknown",
-                "probability": 0.006324432157836429
+                "probability": 0.006439382234809312
               }
             ]
           },
           "key_restriction": {
             "choice": "none",
-            "confidence": 0.9744586844517259,
+            "confidence": 0.9766547251857877,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.0038804380377350806
+                "probability": 0.0041734313481016985
               },
               {
                 "value": "inadequate",
-                "probability": 0.009718017564874743
+                "probability": 0.007479215037144961
               },
               {
                 "value": "none",
-                "probability": 0.9744586844517259
+                "probability": 0.9766547251857877
               },
               {
                 "value": "unknown",
-                "probability": 0.01194285994566442
+                "probability": 0.011692628428965592
               }
             ]
           }
         },
-        "finding_status": "needs_evidence",
+        "finding_status": "confirmed_vulnerability",
         "answers": {
-          "field_impact": "no_sensitive_field",
+          "field_impact": "privileged_field",
           "key_control": "request_chosen",
           "key_restriction": "none"
         },
         "usage": {
-          "input_tokens": 2286,
+          "input_tokens": 2391,
           "output_tokens": 0,
-          "total_tokens": 2286
+          "total_tokens": 2391
         },
         "status": "completed",
         "provider": "gemini",
         "model": "gemini-decision-1",
-        "question_version": "mass-assignment-components-v1",
-        "protection": "uncertain",
-        "reason": "The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+        "question_version": "mass-assignment-components-v2",
+        "protection": "insufficient",
+        "reason": "The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
       }
     },
     {
@@ -317412,7 +317433,8 @@
           {
             "storage_key": "js-attribute:Complaint.UserId",
             "roles": [
-              "name_hint"
+              "name_hint",
+              "owner_reference"
             ],
             "evidence": [
               {
@@ -317426,6 +317448,18 @@
                   "end_byte": 636
                 },
                 "sha256": "936ce5aad5143019dfedc14a9a52ddba86286bd8e6e9750ce515cd0a0a9b964e"
+              },
+              {
+                "kind": "owner_association",
+                "text": "ComplaintModel.belongsTo(UserModel, {\n    constraints: true,\n    foreignKeyConstraint: true,\n    foreignKey: {\n      name: 'UserId'\n    }\n  })",
+                "span": {
+                  "file": "models/relations.ts",
+                  "start_line": 57,
+                  "end_line": 63,
+                  "start_byte": 1631,
+                  "end_byte": 1773
+                },
+                "sha256": "3333271e3d7527941e083059e913d5d6c9c0e0aa7175d2ac80fec6613a91f245"
               }
             ]
           }
@@ -317606,84 +317640,84 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "c7395e111e8c5096b2fa2e2fc8af20366ce3daaf7e1b8edeee670422eaec2b70",
+        "request_digest": "40f1eba2edc4c6d0262377bdf93f84dcedc1629036026cf72d4ffe769f722cbb",
         "answer_details": {
           "field_impact": {
-            "choice": "no_sensitive_field",
-            "confidence": 0.6415804409493099,
+            "choice": "privileged_field",
+            "confidence": 0.962219498386511,
             "probabilities": [
               {
                 "value": "no_sensitive_field",
-                "probability": 0.6415804409493099
+                "probability": 0.02125973992438769
               },
               {
                 "value": "privileged_field",
-                "probability": 0.27182032626205216
+                "probability": 0.962219498386511
               },
               {
                 "value": "unknown",
-                "probability": 0.08659923278863785
+                "probability": 0.01652076168910121
               }
             ]
           },
           "key_control": {
             "choice": "request_chosen",
-            "confidence": 0.9864778683762703,
+            "confidence": 0.9887124254997756,
             "probabilities": [
               {
                 "value": "fixed",
-                "probability": 0.004528020971020764
+                "probability": 0.0023690140267260762
               },
               {
                 "value": "request_chosen",
-                "probability": 0.9864778683762703
+                "probability": 0.9887124254997756
               },
               {
                 "value": "unknown",
-                "probability": 0.00899411065270891
+                "probability": 0.008918560473498195
               }
             ]
           },
           "key_restriction": {
             "choice": "none",
-            "confidence": 0.9784298979430374,
+            "confidence": 0.9801551488543168,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.004415057463463904
+                "probability": 0.003825570979865422
               },
               {
                 "value": "inadequate",
-                "probability": 0.008128808636519052
+                "probability": 0.004806355775680143
               },
               {
                 "value": "none",
-                "probability": 0.9784298979430374
+                "probability": 0.9801551488543168
               },
               {
                 "value": "unknown",
-                "probability": 0.009026235956979663
+                "probability": 0.011212924390137748
               }
             ]
           }
         },
-        "finding_status": "needs_evidence",
+        "finding_status": "confirmed_vulnerability",
         "answers": {
-          "field_impact": "no_sensitive_field",
+          "field_impact": "privileged_field",
           "key_control": "request_chosen",
           "key_restriction": "none"
         },
         "usage": {
-          "input_tokens": 2298,
+          "input_tokens": 2417,
           "output_tokens": 0,
-          "total_tokens": 2298
+          "total_tokens": 2417
         },
         "status": "completed",
         "provider": "gemini",
         "model": "gemini-decision-1",
-        "question_version": "mass-assignment-components-v1",
-        "protection": "uncertain",
-        "reason": "The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+        "question_version": "mass-assignment-components-v2",
+        "protection": "insufficient",
+        "reason": "The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
       }
     },
     {
@@ -317749,7 +317783,8 @@
           {
             "storage_key": "js-attribute:Recycle.UserId",
             "roles": [
-              "name_hint"
+              "name_hint",
+              "owner_reference"
             ],
             "evidence": [
               {
@@ -317763,6 +317798,18 @@
                   "end_byte": 665
                 },
                 "sha256": "62c592fca80882ceaeef4c834e29280df6a2b677c5635010f53d3b1ede8469e9"
+              },
+              {
+                "kind": "owner_association",
+                "text": "RecycleModel.belongsTo(UserModel, {\n    constraints: true,\n    foreignKeyConstraint: true,\n    foreignKey: {\n      name: 'UserId'\n    }\n  })",
+                "span": {
+                  "file": "models/relations.ts",
+                  "start_line": 109,
+                  "end_line": 115,
+                  "start_byte": 2640,
+                  "end_byte": 2780
+                },
+                "sha256": "3333271e3d7527941e083059e913d5d6c9c0e0aa7175d2ac80fec6613a91f245"
               }
             ]
           }
@@ -317945,84 +317992,84 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "0f57ec6dd83e0b0000c2e930070bd3153d682ba3de2a4b0e7a4745a4874d9072",
+        "request_digest": "aa313a79526e5e37c6231642c7add5da676d56e7a2b22b672b48652e6798543e",
         "answer_details": {
           "field_impact": {
-            "choice": "no_sensitive_field",
-            "confidence": 0.6001101107999155,
+            "choice": "privileged_field",
+            "confidence": 0.9641488793162427,
             "probabilities": [
               {
                 "value": "no_sensitive_field",
-                "probability": 0.6001101107999155
+                "probability": 0.015203132985568198
               },
               {
                 "value": "privileged_field",
-                "probability": 0.2554447627976099
+                "probability": 0.9641488793162427
               },
               {
                 "value": "unknown",
-                "probability": 0.14444512640247456
+                "probability": 0.020647987698189107
               }
             ]
           },
           "key_control": {
             "choice": "request_chosen",
-            "confidence": 0.9792885296826372,
+            "confidence": 0.9825519588282803,
             "probabilities": [
               {
                 "value": "fixed",
-                "probability": 0.005654304598798922
+                "probability": 0.005904035083665497
               },
               {
                 "value": "request_chosen",
-                "probability": 0.9792885296826372
+                "probability": 0.9825519588282803
               },
               {
                 "value": "unknown",
-                "probability": 0.015057165718564048
+                "probability": 0.011544006088054164
               }
             ]
           },
           "key_restriction": {
             "choice": "none",
-            "confidence": 0.9674139075765331,
+            "confidence": 0.9787294485786338,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.005551740230311061
+                "probability": 0.0047049297146480274
               },
               {
                 "value": "inadequate",
-                "probability": 0.011391300949772053
+                "probability": 0.007357891882186043
               },
               {
                 "value": "none",
-                "probability": 0.9674139075765331
+                "probability": 0.9787294485786338
               },
               {
                 "value": "unknown",
-                "probability": 0.01564305124338379
+                "probability": 0.009207729824532305
               }
             ]
           }
         },
-        "finding_status": "needs_evidence",
+        "finding_status": "confirmed_vulnerability",
         "answers": {
-          "field_impact": "no_sensitive_field",
+          "field_impact": "privileged_field",
           "key_control": "request_chosen",
           "key_restriction": "none"
         },
         "usage": {
-          "input_tokens": 2310,
+          "input_tokens": 2434,
           "output_tokens": 0,
-          "total_tokens": 2310
+          "total_tokens": 2434
         },
         "status": "completed",
         "provider": "gemini",
         "model": "gemini-decision-1",
-        "question_version": "mass-assignment-components-v1",
-        "protection": "uncertain",
-        "reason": "The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+        "question_version": "mass-assignment-components-v2",
+        "protection": "insufficient",
+        "reason": "The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
       }
     },
     {
@@ -318088,7 +318135,8 @@
           {
             "storage_key": "js-attribute:SecurityAnswer.UserId",
             "roles": [
-              "name_hint"
+              "name_hint",
+              "owner_reference"
             ],
             "evidence": [
               {
@@ -318102,6 +318150,18 @@
                   "end_byte": 724
                 },
                 "sha256": "a9be1444233e6db3fb0838166f038487fca2236b1e0e511e99e98e316fffeee4"
+              },
+              {
+                "kind": "owner_association",
+                "text": "SecurityAnswerModel.belongsTo(UserModel, {\n    foreignKey: {\n      name: 'UserId'\n    }\n  })",
+                "span": {
+                  "file": "models/relations.ts",
+                  "start_line": 124,
+                  "end_line": 128,
+                  "start_byte": 2933,
+                  "end_byte": 3025
+                },
+                "sha256": "3333271e3d7527941e083059e913d5d6c9c0e0aa7175d2ac80fec6613a91f245"
               }
             ]
           },
@@ -318302,63 +318362,63 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "ac1c15ede6e3a97d98b5d4f8490febbda18c8e2f6fb024876c8dbdfb4ed179e5",
+        "request_digest": "a118ed5f2657047de5ad879b1b5c7cf151f04fd7db89df5e01392b217fa87146",
         "answer_details": {
           "field_impact": {
             "choice": "privileged_field",
-            "confidence": 0.9146452322094787,
+            "confidence": 0.9485827817742333,
             "probabilities": [
               {
                 "value": "no_sensitive_field",
-                "probability": 0.05943256455324541
+                "probability": 0.029679971578721664
               },
               {
                 "value": "privileged_field",
-                "probability": 0.9146452322094787
+                "probability": 0.9485827817742333
               },
               {
                 "value": "unknown",
-                "probability": 0.02592220323727588
+                "probability": 0.0217372466470452
               }
             ]
           },
           "key_control": {
             "choice": "request_chosen",
-            "confidence": 0.9820760333591032,
+            "confidence": 0.9842395967610347,
             "probabilities": [
               {
                 "value": "fixed",
-                "probability": 0.006794492763923855
+                "probability": 0.004002295755994944
               },
               {
                 "value": "request_chosen",
-                "probability": 0.9820760333591032
+                "probability": 0.9842395967610347
               },
               {
                 "value": "unknown",
-                "probability": 0.011129473876972861
+                "probability": 0.011758107482970428
               }
             ]
           },
           "key_restriction": {
             "choice": "none",
-            "confidence": 0.9747630585961429,
+            "confidence": 0.9803951159288101,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.0052818586429032015
+                "probability": 0.0036601820401985868
               },
               {
                 "value": "inadequate",
-                "probability": 0.007780439869474621
+                "probability": 0.006257550080595092
               },
               {
                 "value": "none",
-                "probability": 0.9747630585961429
+                "probability": 0.9803951159288101
               },
               {
                 "value": "unknown",
-                "probability": 0.012174642891479263
+                "probability": 0.00968715195039638
               }
             ]
           }
@@ -318370,14 +318430,14 @@
           "key_restriction": "none"
         },
         "usage": {
-          "input_tokens": 2393,
+          "input_tokens": 2504,
           "output_tokens": 0,
-          "total_tokens": 2393
+          "total_tokens": 2504
         },
         "status": "completed",
         "provider": "gemini",
         "model": "gemini-decision-1",
-        "question_version": "mass-assignment-components-v1",
+        "question_version": "mass-assignment-components-v2",
         "protection": "insufficient",
         "reason": "The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
       }
@@ -319431,7 +319491,8 @@
           {
             "storage_key": "js-attribute:PrivacyRequestModel.UserId",
             "roles": [
-              "name_hint"
+              "name_hint",
+              "owner_reference"
             ],
             "evidence": [
               {
@@ -319445,6 +319506,18 @@
                   "end_byte": 758
                 },
                 "sha256": "3f8257781ec720a8031acffcc54e242ff373b17db7d7e7177d89248b24853293"
+              },
+              {
+                "kind": "owner_association",
+                "text": "PrivacyRequestModel.belongsTo(UserModel, {\n    constraints: true,\n    foreignKeyConstraint: true,\n    foreignKey: {\n      name: 'UserId'\n    }\n  })",
+                "span": {
+                  "file": "models/relations.ts",
+                  "start_line": 85,
+                  "end_line": 91,
+                  "start_byte": 2158,
+                  "end_byte": 2305
+                },
+                "sha256": "3333271e3d7527941e083059e913d5d6c9c0e0aa7175d2ac80fec6613a91f245"
               }
             ]
           }
@@ -319624,84 +319697,84 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "89a3251bd8d02243156f17e4e78a7940e86af3f45b822c94d247c41c6b7dfd0a",
+        "request_digest": "7e6bdd1d478071d09e9f2cf26dcfe4fa23647936232ff3c0d29932a4d19973cc",
         "answer_details": {
           "field_impact": {
-            "choice": "no_sensitive_field",
-            "confidence": 0.7359802085362938,
+            "choice": "privileged_field",
+            "confidence": 0.9433578835650253,
             "probabilities": [
               {
                 "value": "no_sensitive_field",
-                "probability": 0.7359802085362938
+                "probability": 0.043503894267024806
               },
               {
                 "value": "privileged_field",
-                "probability": 0.13423788996686947
+                "probability": 0.9433578835650253
               },
               {
                 "value": "unknown",
-                "probability": 0.12978190149683683
+                "probability": 0.013138222167949963
               }
             ]
           },
           "key_control": {
             "choice": "request_chosen",
-            "confidence": 0.9745878599035475,
+            "confidence": 0.9915356082064498,
             "probabilities": [
               {
                 "value": "fixed",
-                "probability": 0.006718202669757691
+                "probability": 0.0026557051678332715
               },
               {
                 "value": "request_chosen",
-                "probability": 0.9745878599035475
+                "probability": 0.9915356082064498
               },
               {
                 "value": "unknown",
-                "probability": 0.018693937426695017
+                "probability": 0.0058086866257169335
               }
             ]
           },
           "key_restriction": {
             "choice": "none",
-            "confidence": 0.9758035643511661,
+            "confidence": 0.971450613112106,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.004974130759261355
+                "probability": 0.006526521797194712
               },
               {
                 "value": "inadequate",
-                "probability": 0.006015313020794978
+                "probability": 0.005839778642757303
               },
               {
                 "value": "none",
-                "probability": 0.9758035643511661
+                "probability": 0.971450613112106
               },
               {
                 "value": "unknown",
-                "probability": 0.013206991868777556
+                "probability": 0.01618308644794207
               }
             ]
           }
         },
-        "finding_status": "needs_evidence",
+        "finding_status": "confirmed_vulnerability",
         "answers": {
-          "field_impact": "no_sensitive_field",
+          "field_impact": "privileged_field",
           "key_control": "request_chosen",
           "key_restriction": "none"
         },
         "usage": {
-          "input_tokens": 2288,
+          "input_tokens": 2408,
           "output_tokens": 0,
-          "total_tokens": 2288
+          "total_tokens": 2408
         },
         "status": "completed",
         "provider": "gemini",
         "model": "gemini-decision-1",
-        "question_version": "mass-assignment-components-v1",
-        "protection": "uncertain",
-        "reason": "The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+        "question_version": "mass-assignment-components-v2",
+        "protection": "insufficient",
+        "reason": "The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
       }
     },
     {

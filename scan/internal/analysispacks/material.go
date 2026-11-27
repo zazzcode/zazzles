@@ -45,6 +45,11 @@ func ForUse(use analysis.CandidateUse) (*Material, error) {
 	if names := family.KindQuestions[use.Kind]; family.KindQuestions != nil {
 		m.Questions, m.Choices = kindSubset(m.Questions, m.Choices, names)
 	}
+	if family.Name == "mass-assignment" && MassAssignmentOwnerReference(use) {
+		// Protocol v2: the same components and choices, with the owner_reference
+		// sentence in field_impact. Selection refs stay those of v1.
+		m.Questions = MassAssignmentQuestionsV2()
+	}
 	if family.RequiresAPI || family.Name == "pollution" || family.Name == accountFamilyName {
 		if !reflect.DeepEqual(m.Contract, use.APIModel) {
 			return nil, fmt.Errorf("selected %s contract conflicts with verified operation model", family.Label)

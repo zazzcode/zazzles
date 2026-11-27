@@ -33,6 +33,10 @@ const (
 	RoleLoginIdentifier = "login_identifier"
 	RoleSource          = "role_source"
 	RoleNameHint        = "name_hint"
+	// RoleOwnerReference marks the foreign key of a declared association to an
+	// account model (detection generalization 22). It comes from the
+	// association contract, never from a field name.
+	RoleOwnerReference = "owner_reference"
 )
 
 // Gaps of the framework shapes this version records but does not judge, and
@@ -42,6 +46,9 @@ const (
 	MassAssignmentSerializerUnmodeled = "mass_assignment_serializer_unmodeled"
 	MassAssignmentPayloadUnmodeled    = "mass_assignment_payload_unmodeled"
 	SecurityFieldsUnresolved          = "security_fields_unresolved"
+	// OwnerReferenceUnresolved records an association to an account model whose
+	// options are not literal, so its foreign key is not known.
+	OwnerReferenceUnresolved = "owner_reference_unresolved"
 )
 
 // SecurityField is one stored field and the roles source evidence establishes
@@ -95,7 +102,7 @@ func (f *MassAssignmentFacts) Validate() error {
 		}
 		for _, role := range field.Roles {
 			switch role {
-			case RoleCredential, RoleLoginIdentifier, RoleSource, RoleNameHint:
+			case RoleCredential, RoleLoginIdentifier, RoleSource, RoleNameHint, RoleOwnerReference:
 			default:
 				return fmt.Errorf("invalid security field role")
 			}

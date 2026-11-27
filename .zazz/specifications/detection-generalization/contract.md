@@ -54,6 +54,13 @@ vulnerable-typescript-app, vuln-nextjs, DVWA, vuln-symfony, VulnPy and ThreatByt
 
 ## 3. Held-out protocol
 
+**Owner decision, 2026-11-27: held-out application runs are no longer required** ("remove the need for held out app
+runs... we only have what we have"). The pool has no application beyond the reserved control. A specification is
+accepted on its fixtures, the regression gates of §2, the reserved control's counts (§3.1, unchanged-control role) and
+its acceptance runs on the development samples. Its results say plainly that accuracy on applications not used in
+development is not measured. A held-out criterion in a specification of this series is replaced by the reserved-control
+counts. The rest of this section stays as the protocol to use if the owner adds applications.
+
 - A **pool** of applications no session has used for development. The owner is finding them. Needed: five
   that contain vulnerabilities and three ordinary ones, not all Express. Between them: Sequelize and
   Mongoose in CommonJS; checks inside handlers; the application's own access middleware; a SQL driver with
@@ -117,7 +124,7 @@ record every request, token count, miss and disagreement.
   decision, it is not run.
 - Offline first: facts, request previews and stubbed answers pass before any paid request.
 - Send only records whose request changed, plus the named controls. Replay saved answers for the rest.
-- Fixtures before samples, samples before held-out applications. A failed step ends the sequence.
+- Fixtures before samples. A failed step ends the sequence. (Held-out applications: §3, not required.)
 - No rerun in search of a better answer. A repeat is planned before the first answer is seen.
 - Full sample scans only at the end of a specification, at most two.
 
@@ -127,11 +134,12 @@ Each specification has a stop rule with numbers. When it fires:
 
 1. Stop. Do not tune the rule, the wording, a list or a threshold until the sample passes.
 2. Record the result and the first stage at which the capability failed.
-3. Propose to the owner: drop, or redesign with a new specification and **unused** held-out applications.
+3. Propose to the owner: drop, or redesign with a new specification and fixtures not used before.
    One redesign at most.
 4. Revert the code unless an intermediate part passes every gate alone and the owner keeps it.
 
-A result that passes only on an application seen during development counts as a failure.
+A result that passes only on an application seen during development counted as a failure until the owner's decision of
+2026-11-27 (§3). Development-sample results now count, labelled as such.
 
 **A stop rule that fires only on false positives** blocks the merge and starts §7's fix first. Dropping
 comes after that fix fails, or when it would cost a true finding.
@@ -160,7 +168,7 @@ file outside scope is needed; a held-out key needs a change; a paid run is due; 
 same test fails three times for one cause.
 
 **Definition of done.** Open questions answered and logged; gates G1 to G7 and every criterion verified with
-evidence in the results; held-out results reported with counts, misses included; documents updated; verifier
+evidence in the results; reserved-control counts reported, misses included; documents updated; verifier
 PASS; draft PR to `stage` with the invariants and the stop-rule result in its body.
 
 **Run log.** Append-only: standards lookup, answers, phase results, deviations, evidence locations,

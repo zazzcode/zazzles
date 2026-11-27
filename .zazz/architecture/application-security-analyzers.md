@@ -60,6 +60,17 @@ contract (plain PHP, non-user entities) and is passed to the model labeled as a 
 The census keys fields by the storage key `doctrine_storage.go` builds (`php-sql:<table>.<column>`).
 A plain-PHP target has no table; its hints are keyed `php-object:<class>.<property>`.
 
+**JavaScript census** (`langjs/mass_assignment.go` `securityFields`, keyed `js-attribute:<class>.<attribute>`):
+`credential` (a set accessor storing a fast digest), `name_hint`, and `owner_reference`
+(`langjs/owner_reference.go`, specification 22). The owner role is the foreign key of a Sequelize
+`belongsTo` or a Mongoose `ref` to a model holding a credential attribute. Its search, `ownerKeys`,
+follows the owned-model search of `authorization_reads.go` without changing it. It reads one step,
+and non-literal options record `owner_reference_unresolved`. Specification 06 is to reuse it as its
+identity-field basis. Before the census, `handwrittenOverwrites` drops attributes that registered
+stages or the handler assign as `req.body.<name>`. It reuses `overwrittenFields`, the rule
+generated finale-rest endpoints already apply in `resources.go`. Only a record with an
+`owner_reference` field selects `mass-assignment-components-v2`.
+
 ## Key origin versus value origin
 
 The PHP flow model tracks value origin as dependency paths. A foreach over a request bag binds

@@ -252668,7 +252668,7 @@
             }
           ],
           "message": {
-            "text": "POST /api/Users: Mass assignment supported by source analysis [confirmed_vulnerability]. The request chooses property names written on User, which has a field the request should not choose (CWE-915). This row stands for 2 records from 2 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: input source in 2. Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
+            "text": "POST /api/Users: Mass assignment supported by source analysis [confirmed_vulnerability]. The request chooses property names written on User, which has a field the request should not choose (CWE-915). This row stands for 6 records from 6 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 5; each keeps its own evidence and judgment in JSON). Origins across them: input source in 6. Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies."
           },
           "partialFingerprints": {
             "zazzlesSinkGroup/v1": "9a0f325d147ac3b89097f28181659bfb"
@@ -252846,7 +252846,7 @@
               "record_type": "finding",
               "status": "confirmed_vulnerability",
               "title": "Mass assignment supported by source analysis",
-              "summary": "The request chooses property names written on User, which has a field the request should not choose (CWE-915). This row stands for 2 records from 2 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: input source in 2.",
+              "summary": "The request chooses property names written on User, which has a field the request should not choose (CWE-915). This row stands for 6 records from 6 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 5; each keeps its own evidence and judgment in JSON). Origins across them: input source in 6.",
               "input_validation": "Not established from the supplied evidence.",
               "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact privileged_field. Scanner policy: The request chooses property names on an object with a field it should not choose, and no adequate key restriction applies.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
@@ -252862,11 +252862,19 @@
               },
               "assessment_state": "completed",
               "grouped_use_ids": [
-                "candidate:v1:a5531149a4a7581a024711ec5faf992ded0cef0e963e2b76d1a770564cd4bc21"
+                "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
+                "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
+                "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
+                "candidate:v1:a5531149a4a7581a024711ec5faf992ded0cef0e963e2b76d1a770564cd4bc21",
+                "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7"
               ]
             },
             "scan.groupedUseIds": [
-              "candidate:v1:a5531149a4a7581a024711ec5faf992ded0cef0e963e2b76d1a770564cd4bc21"
+              "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
+              "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
+              "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
+              "candidate:v1:a5531149a4a7581a024711ec5faf992ded0cef0e963e2b76d1a770564cd4bc21",
+              "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7"
             ],
             "scan.invocationContext": {
               "id": "invocation:v1:76fa1c66544e912f6823c73547224f784128edafcdf1b6cfc7ffb4d9e02fac43",
@@ -252919,7 +252927,67 @@
             {
               "id": 1,
               "message": {
+                "text": "grouped entry POST /api/Feedbacks"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "server.ts"
+                },
+                "region": {
+                  "endLine": 535,
+                  "startLine": 529
+                }
+              }
+            },
+            {
+              "id": 2,
+              "message": {
+                "text": "grouped entry POST /api/Complaints"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "server.ts"
+                },
+                "region": {
+                  "endLine": 535,
+                  "startLine": 529
+                }
+              }
+            },
+            {
+              "id": 3,
+              "message": {
+                "text": "grouped entry POST /api/Recycles"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "server.ts"
+                },
+                "region": {
+                  "endLine": 535,
+                  "startLine": 529
+                }
+              }
+            },
+            {
+              "id": 4,
+              "message": {
                 "text": "grouped entry POST /api/SecurityAnswers"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "server.ts"
+                },
+                "region": {
+                  "endLine": 535,
+                  "startLine": 529
+                }
+              }
+            },
+            {
+              "id": 5,
+              "message": {
+                "text": "grouped entry POST /api/PrivacyRequests"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -252995,7 +253063,7 @@
             }
           ],
           "message": {
-            "text": "POST /api/Products: Request-chosen property names need review [needs_evidence]. The request chooses which properties of Product are written (dynamic_property_write). This row stands for 13 records from 13 entries that reach this sink with status needs_evidence (grouped_use_ids lists the other 12; each keeps its own evidence and judgment in JSON). Origins across them: input source in 13. Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
+            "text": "POST /api/Products: Request-chosen property names need review [needs_evidence]. The request chooses which properties of Product are written (dynamic_property_write). This row stands for 9 records from 9 entries that reach this sink with status needs_evidence (grouped_use_ids lists the other 8; each keeps its own evidence and judgment in JSON). Origins across them: input source in 9. Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect."
           },
           "partialFingerprints": {
             "zazzlesSinkGroup/v1": "9a0f325d147ac3b89097f28181659bfb"
@@ -253172,7 +253240,7 @@
               "record_type": "analysis",
               "status": "needs_evidence",
               "title": "Request-chosen property names need review",
-              "summary": "The request chooses which properties of Product are written (dynamic_property_write). This row stands for 13 records from 13 entries that reach this sink with status needs_evidence (grouped_use_ids lists the other 12; each keeps its own evidence and judgment in JSON). Origins across them: input source in 13.",
+              "summary": "The request chooses which properties of Product are written (dynamic_property_write). This row stands for 9 records from 9 entries that reach this sink with status needs_evidence (grouped_use_ids lists the other 8; each keeps its own evidence and judgment in JSON). Origins across them: input source in 9.",
               "input_validation": "Not established from the supplied evidence.",
               "use_protection": "Mass-assignment assessment: key control request_chosen, restriction none, field impact no_sensitive_field. Scanner policy: The request chooses property names, but no field it should not choose is established: poor practice, not a confirmed privilege defect.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
@@ -253187,14 +253255,10 @@
               "assessment_state": "completed",
               "grouped_use_ids": [
                 "candidate:v1:6a733d23b4262240669c32d5a70073a94b577665f547a98538f320218e0b37ba",
-                "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
                 "candidate:v1:a64745b144e271d6f15a2d656f8a74b51819144ed03883e5c32ef65b0a9b82b5",
                 "candidate:v1:b92f9c5e40d9609e46825413efb88887883e94bdac24aec33fcee3a6bd7ee797",
-                "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
-                "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
                 "candidate:v1:8c47c9877d8e06a93be24f6ae5ffe3ae06d513843e72d6c4738e7554925a55f0",
                 "candidate:v1:d6543ffeaa4b8ea2b46cb5d2d0d2188064e6df25e07b4d0410783031dc870a36",
-                "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7",
                 "candidate:v1:f887273e35b8b1b4253fd3c546f6c4b80376096935e5ad4d80dbebb71be4ef1b",
                 "candidate:v1:043a9032efe73e46d048d55e291f1700897dc691108f117a10ee314b0a47ba18",
                 "candidate:v1:f96d4213281cfdd0f5f5b166ef85b9b69757c0bb64d2a7dadb9931fb9fdcbf2b"
@@ -253202,14 +253266,10 @@
             },
             "scan.groupedUseIds": [
               "candidate:v1:6a733d23b4262240669c32d5a70073a94b577665f547a98538f320218e0b37ba",
-              "candidate:v1:7eb161263fb7bcfc33935d87c37074561fc33cd338c91159a2db47e620c3aa37",
               "candidate:v1:a64745b144e271d6f15a2d656f8a74b51819144ed03883e5c32ef65b0a9b82b5",
               "candidate:v1:b92f9c5e40d9609e46825413efb88887883e94bdac24aec33fcee3a6bd7ee797",
-              "candidate:v1:2b4640023650c4969cce40cd7adf57099b1d0cd5ca7d2bb79e214ece81935964",
-              "candidate:v1:75f25766da2abf14ce12986aca4faefd7b9a4f63146f56149e57435b798fcbac",
               "candidate:v1:8c47c9877d8e06a93be24f6ae5ffe3ae06d513843e72d6c4738e7554925a55f0",
               "candidate:v1:d6543ffeaa4b8ea2b46cb5d2d0d2188064e6df25e07b4d0410783031dc870a36",
-              "candidate:v1:e4b9f7d47cfc01c62a25dcf599e2d354fea995c8a7a2db2819d5a187613ec5b7",
               "candidate:v1:f887273e35b8b1b4253fd3c546f6c4b80376096935e5ad4d80dbebb71be4ef1b",
               "candidate:v1:043a9032efe73e46d048d55e291f1700897dc691108f117a10ee314b0a47ba18",
               "candidate:v1:f96d4213281cfdd0f5f5b166ef85b9b69757c0bb64d2a7dadb9931fb9fdcbf2b"
@@ -253278,7 +253338,7 @@
             {
               "id": 2,
               "message": {
-                "text": "grouped entry POST /api/Feedbacks"
+                "text": "grouped entry POST /api/BasketItems"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -253293,7 +253353,7 @@
             {
               "id": 3,
               "message": {
-                "text": "grouped entry POST /api/BasketItems"
+                "text": "grouped entry PUT /api/BasketItems/:id"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -253308,7 +253368,7 @@
             {
               "id": 4,
               "message": {
-                "text": "grouped entry PUT /api/BasketItems/:id"
+                "text": "grouped entry POST /api/Addresss"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -253323,7 +253383,7 @@
             {
               "id": 5,
               "message": {
-                "text": "grouped entry POST /api/Complaints"
+                "text": "grouped entry PUT /api/Addresss/:id"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -253338,7 +253398,7 @@
             {
               "id": 6,
               "message": {
-                "text": "grouped entry POST /api/Recycles"
+                "text": "grouped entry POST /api/Cards"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -253353,66 +253413,6 @@
             {
               "id": 7,
               "message": {
-                "text": "grouped entry POST /api/Addresss"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "server.ts"
-                },
-                "region": {
-                  "endLine": 535,
-                  "startLine": 529
-                }
-              }
-            },
-            {
-              "id": 8,
-              "message": {
-                "text": "grouped entry PUT /api/Addresss/:id"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "server.ts"
-                },
-                "region": {
-                  "endLine": 535,
-                  "startLine": 529
-                }
-              }
-            },
-            {
-              "id": 9,
-              "message": {
-                "text": "grouped entry POST /api/PrivacyRequests"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "server.ts"
-                },
-                "region": {
-                  "endLine": 535,
-                  "startLine": 529
-                }
-              }
-            },
-            {
-              "id": 10,
-              "message": {
-                "text": "grouped entry POST /api/Cards"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "server.ts"
-                },
-                "region": {
-                  "endLine": 535,
-                  "startLine": 529
-                }
-              }
-            },
-            {
-              "id": 11,
-              "message": {
                 "text": "grouped entry PUT /api/Quantitys/:id"
               },
               "physicalLocation": {
@@ -253426,7 +253426,7 @@
               }
             },
             {
-              "id": 12,
+              "id": 8,
               "message": {
                 "text": "grouped entry PUT /api/Hints/:id"
               },

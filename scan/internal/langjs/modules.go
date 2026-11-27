@@ -62,7 +62,9 @@ type moduleSet struct {
 	// fast digest (decision D-6); account enumeration reads it to exclude logins.
 	credentialAttrs map[string]bool
 	// owned is the lazily built index of owned models (authorization_reads.go).
-	owned           map[string]analysis.Evidence
+	owned map[string]analysis.Evidence
+	// owner is the lazily built index of owner-reference keys (owner_reference.go).
+	owner           map[string][]ownerRef
 	pollutionWrites map[uintptr][]pollutionWrite
 	pollutionInline map[uintptr]map[uintptr][]pollutionWrite
 	witnessPlans    map[string]*jsWitnessPlan

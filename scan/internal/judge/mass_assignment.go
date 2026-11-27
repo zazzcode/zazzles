@@ -15,7 +15,7 @@ func applyMassAssignmentPolicy(use analysis.CandidateUse, a *analysis.Assessment
 		a.Reason = detail
 		a.BlockingGaps = append(a.BlockingGaps, analysis.Gap{Kind: "mass_assignment_" + kind, Detail: detail, At: use.Sink.Span})
 	}
-	if a.QuestionVersion != analysispacks.MassAssignmentProtocol {
+	if a.QuestionVersion != analysispacks.MassAssignmentProtocol && a.QuestionVersion != analysispacks.MassAssignmentProtocolV2 {
 		gap("protocol_missing", "Versioned mass-assignment answers are required.")
 		return
 	}

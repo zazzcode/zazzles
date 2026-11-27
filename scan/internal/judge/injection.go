@@ -49,7 +49,11 @@ func questionsFor(use analysis.CandidateUse) []question {
 			}
 			return items
 		case analysis.MassAssignmentKind:
-			items := componentQuestions(analysispacks.MassAssignmentQuestions())
+			questions := analysispacks.MassAssignmentQuestions()
+			if analysispacks.MassAssignmentOwnerReference(use) {
+				questions = analysispacks.MassAssignmentQuestionsV2()
+			}
+			items := componentQuestions(questions)
 			for i := range items {
 				items[i].choices = analysispacks.MassAssignmentChoices(items[i].name)
 			}

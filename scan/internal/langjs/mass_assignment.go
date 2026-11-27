@@ -39,6 +39,7 @@ type modelInfo struct {
 	module     *sourceModule
 	definition analysis.Evidence
 	kind       string // sequelize | mongoose
+	id         string // model identity, as modelIdentity returns it
 }
 
 // modelAttributes resolves a model identifier to its class, attribute list and
@@ -56,7 +57,7 @@ func (s *moduleSet) modelAttributes(m *sourceModule, name string) (modelInfo, bo
 		if mod == nil {
 			return modelInfo{}, false
 		}
-		info := modelInfo{class: class, module: mod, kind: "sequelize"}
+		info := modelInfo{class: class, module: mod, kind: "sequelize", id: id}
 		if ev := s.modelEvidence[id]; len(ev) > 0 {
 			info.definition = ev[0]
 			info.definition.Kind = "target_class"
@@ -75,7 +76,7 @@ func (s *moduleSet) modelAttributes(m *sourceModule, name string) (modelInfo, bo
 		})
 		return info, true
 	case strings.HasPrefix(id, "mongoose:"):
-		info := modelInfo{class: strings.TrimPrefix(id, "mongoose:"), module: m, kind: "mongoose"}
+		info := modelInfo{class: strings.TrimPrefix(id, "mongoose:"), module: m, kind: "mongoose", id: id}
 		if ev := s.modelEvidence[id]; len(ev) > 0 {
 			info.definition = ev[0]
 			info.definition.Kind = "target_class"
@@ -119,7 +120,9 @@ func objectAttributes(m *sourceModule, o *sitter.Node) []modelAttribute {
 
 // securityFields is the census of a model's attributes: credential where a
 // set accessor stored a digest (D-6), name_hint where the name is on the hint
-// list. Roles are listed in this order; each has one evidence item.
+// list, owner_reference where the name is the foreign key of a declared
+// association to an account model (owner_reference.go). Roles are listed in
+// this order; each has one evidence item.
 func (s *moduleSet) securityFields(info modelInfo) ([]analysis.SecurityField, []string) {
 	var fields []analysis.SecurityField
 	var mapped []string
@@ -133,6 +136,12 @@ func (s *moduleSet) securityFields(info modelInfo) ([]analysis.SecurityField, []
 		}
 		if securityNameHints[strings.ToLower(strings.NewReplacer("_", "", "-", "").Replace(a.name))] {
 			roles, evidence = append(roles, analysis.RoleNameHint), append(evidence, ev)
+		}
+		for _, ref := range s.ownerKeys()[info.id] {
+			if !ref.unresolved && ref.field == a.name {
+				roles, evidence = append(roles, analysis.RoleOwnerReference), append(evidence, ref.evidence)
+				break
+			}
 		}
 		if len(roles) > 0 {
 			fields = append(fields, analysis.SecurityField{StorageKey: "js-attribute:" + info.class + "." + a.name, Roles: roles, Evidence: evidence})
@@ -203,7 +212,8 @@ func (s *moduleSet) massNew(out *analysis.AnalysisReport, e analysis.EntryPoint,
 		return
 	}
 	if bag := s.wholeBag(m, firstArg(args), p, info); bag != nil {
-		s.recordMass(out, e, m, n, bag, info, nil, "")
+		writable, extra, note := s.handwrittenOverwrites(e, m, fn, p, n, info)
+		s.recordMassFor(out, e, m, n, bag, writable, extra, note, false)
 	}
 }
 
@@ -277,7 +287,8 @@ func (s *moduleSet) massCall(out *analysis.AnalysisReport, e analysis.EntryPoint
 		return
 	}
 	if bag := s.wholeBag(m, bagArg, p, info); bag != nil {
-		s.recordMass(out, e, m, call, bag, info, nil, "")
+		writable, extra, note := s.handwrittenOverwrites(e, m, fn, p, call, info)
+		s.recordMassFor(out, e, m, call, bag, writable, extra, note, false)
 	}
 }
 
@@ -379,6 +390,12 @@ func (s *moduleSet) wholeBag(m *sourceModule, x *sitter.Node, p handlerParams, i
 }
 
 func (s *moduleSet) recordMass(out *analysis.AnalysisReport, e analysis.EntryPoint, m *sourceModule, write, bag *sitter.Node, info modelInfo, extra []analysis.Evidence, note string) {
+	s.recordMassFor(out, e, m, write, bag, info, extra, note, note != "")
+}
+
+// recordMassFor records the write; generated is true for a finale-rest endpoint,
+// which has no handler callable.
+func (s *moduleSet) recordMassFor(out *analysis.AnalysisReport, e analysis.EntryPoint, m *sourceModule, write, bag *sitter.Node, info modelInfo, extra []analysis.Evidence, note string, generated bool) {
 	sink := m.evidence(analysis.MassAssignmentKind, write)
 	source := m.evidence("input_source", bag)
 	keyOrigin := m.evidence("key_origin", bag)
@@ -403,7 +420,7 @@ func (s *moduleSet) recordMass(out *analysis.AnalysisReport, e analysis.EntryPoi
 		"input_source": {source}, "key_origin": {keyOrigin}, "property_write": {operation}, "target_class": {target},
 		"control_flow": flow, "sink_binding": {asEvidenceKind(sink, "sink_binding")},
 	}
-	if note != "" {
+	if generated {
 		// A generated endpoint has no handler callable; its registration is the
 		// dispatch the claim rests on.
 		evidence["dispatch_binding"] = []analysis.Evidence{e.Location}
@@ -411,7 +428,7 @@ func (s *moduleSet) recordMass(out *analysis.AnalysisReport, e analysis.EntryPoi
 	out.Uses = append(out.Uses, analysis.CandidateUse{
 		EntryID: e.ID, Kind: analysis.MassAssignmentKind, Sink: sink, MassAssignment: facts,
 		Dependencies: []analysis.Dependency{{Source: source}},
-		Gaps:         []analysis.Gap{}, Assessment: analysis.Assessment{Status: "not_run"},
+		Gaps:         s.ownerReferenceGaps(info), Assessment: analysis.Assessment{Status: "not_run"},
 		Completeness: &analysis.Completeness{
 			ClaimKind: "mass_assignment", Required: []string{"input_source", "key_origin", "property_write", "target_class", "control_flow"},
 			Scope:    "One write of a whole request bag to a stored model, its target and the census roles of the target's fields.",

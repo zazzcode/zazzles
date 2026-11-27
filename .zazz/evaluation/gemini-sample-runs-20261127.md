@@ -76,6 +76,43 @@ False positives at reviewed or newly read locations:
 | `routes/likeProductReviews.ts:35`, `:50` | Not an authorization finding | — |
 | `routes/orderHistory.ts:36` | Not a finding | — |
 
+<a id="juice-shop-model-or-scanner"></a>
+
+### Model or scanner? A gpt-6-luna rerun on the same scanner
+
+To separate the model from the scanner changes since the published report, Juice Shop was
+scanned again with OpenAI `gpt-6-luna` on the same build (`81d4731`, run `run-1854418043`,
+`JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, default judge limit; the checkout stayed clean).
+
+- **The scanner did not change Juice Shop.** All 84 request digests equal those of the
+  published `gpt-6-luna` run on `3318e27`, and the input tokens are the same (381,728). The
+  outcome is the same: 51 Confirmed, 3 practice findings, 41 of 41 keyed positives found.
+- **So every difference above is the model.** The requests Gemini receives differ only in
+  provider wire format.
+- **Mass assignment (`JS-MASS-02` to `05`).** Both models agree that the request chooses the
+  property names and that no key restriction applies. They differ on `field_impact`. The
+  scanner's census gives `Feedback.UserId` and its siblings only the role `name_hint`.
+  `gpt-6-luna` called these `privileged_field` with low confidence (Feedbacks 0.64,
+  PrivacyRequests 0.61, Recycles 0.40, Complaints 0.07). Gemini called them `no_sensitive_field`
+  (0.52 to 0.74). The key rows rest on the owner reference: `UserId` is the foreign key of a
+  `belongsTo(UserModel)` association (`models/relations.ts`), and the application sets it from the
+  token on other routes (`security.appendUserId()`, `lib/insecurity.ts:175`). Neither fact is in
+  the request.
+- **`/support/logs` (`JS-CONF-03`).** Both models answer the setting in effect with no
+  mitigation; Gemini leaves `weakness` unknown (0.57) where `gpt-6-luna` said `weakens` (0.52).
+  The request does not say what the listed directory holds.
+- **The two new false positives.** For `routes/fileServer.ts:32`, `gpt-6-luna`'s answers
+  contradicted the source facts and stayed in Review; Gemini resolved the flow gap and answered
+  `vulnerable` at 0.54. For `server.ts:307` Gemini answered `internal_state` at 0.86, where
+  `gpt-6-luna` said `unknown` at 0.69.
+
+`gpt-6-luna`'s extra Juice Shop findings are partly low-confidence answers on evidence that
+leaves the question open. The lasting fix is source evidence, not a model choice: an owner-reference
+census role from the association contract, and the content of a listed directory. That is scanner
+work for a feature worktree; this session changed no code. Planned in specifications
+[22](../specifications/detection-generalization/22-owner-reference-fields.md) and
+[23](../specifications/detection-generalization/23-listed-directory-references.md), both drafts.
+
 <a id="oss-oopssec-store"></a>
 
 ## OSS OopsSec Store
@@ -113,6 +150,25 @@ records the PHP SQL operand facts (PR #52) and contract-free SQL records (PR #56
 - **New Confirmed location:** `dvwa/includes/DBMS/PGSQL.php:66`, the setup insert, builds
   `$_SERVER['PHP_SELF']` into the statement. `PHP_SELF` carries request-chosen path text, so it
   is real. Read in this session; not independently reviewed.
+
+<a id="threatbyte"></a>
+
+## ThreatByte
+
+Added the same day as the Python example in place of VulnPy, which needs about 650 requests (owner: "We can use
+ThreatByte as our Python example instead of VulnPy"). Pin `ede28f2`, scanner `docs-cleanup` with the owner-reference
+change (which does not touch Python), 60 completed assessments, 290,573 input tokens, zero failures; the checkout stayed
+clean. 5 of 5 keyed positives Confirmed (the published `gpt-6-luna` report: 4 Confirmed and `TB-XSS-04` as practice),
+no keyed control a finding; the escaped-output control moved from Review to Protected and one validation practice
+finding to Review. Two new upload findings: `server/routes.py:264` is real (client file name, no type check, served
+back); `server/routes.py:217` stores any bytes as `<id>.png` and is undecided. Read in this session.
+
+<a id="juice-shop-with-owner-references"></a>
+
+## Juice Shop with owner references
+
+After specification 22, Juice Shop was scanned again on both judges; Gemini Confirms `JS-MASS-02` to `05` and finds 40
+of 41 and 44 of 75, and is published. [Results](detection-generalization-results/22.md#ac7-juice-shop-acceptance).
 
 <a id="vulnpy"></a>
 

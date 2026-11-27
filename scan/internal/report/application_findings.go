@@ -62,7 +62,7 @@ func describeMassAssignment(u analysis.CandidateUse, f *analysis.Finding) {
 		f.Title = "Request-chosen property names need review"
 		f.Summary = "The request chooses which properties of " + x.TargetClass + " are written (" + displayLabel(x.Shape) + ")."
 	}
-	if a.Status == "completed" && a.QuestionVersion == analysispacks.MassAssignmentProtocol && len(a.BlockingGaps) == 0 && a.FindingStatus == "confirmed_vulnerability" {
+	if a.Status == "completed" && (a.QuestionVersion == analysispacks.MassAssignmentProtocol || a.QuestionVersion == analysispacks.MassAssignmentProtocolV2) && len(a.BlockingGaps) == 0 && a.FindingStatus == "confirmed_vulnerability" {
 		f.RecordType, f.Status = "finding", "confirmed_vulnerability"
 		f.Title = "Mass assignment supported by source analysis"
 		f.Summary = "The request chooses property names written on " + x.TargetClass + ", which has a field the request should not choose (CWE-915)."

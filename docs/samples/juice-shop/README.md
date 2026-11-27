@@ -5,7 +5,25 @@
 [Results](../../../.zazz/evaluation/juiceshop-hardening-results.md#final-full-run) ·
 [Scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)
 
-## Current report (2026-11-27, Google Gemini)
+## Current report (2026-11-27, Google Gemini, owner references)
+
+A full scan of revision `f189f52` with scanner `docs-cleanup` (`85f39fd` plus the
+[detection generalization 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)
+change) and Google Gemini `gemini-decision-1` produced 305 records across 194 entries. The report presents
+**53 Confirmed, 1 practice finding, 6 Protected and 245 Review**. [Results](../../../.zazz/evaluation/detection-generalization-results/22.md#ac7-juice-shop-acceptance)
+
+- **What changed:** the census now marks `UserId` as the foreign key of a `belongsTo(UserModel)` association
+  (`owner_reference`). The four mass-assignment rows the previous Gemini report left in Review (`JS-MASS-02` to `05`)
+  are Confirmed at 0.94 to 0.96. The three routes whose middleware sets `UserId` from the token stay non-findings. No
+  other record changed outcome.
+- **Answer key:** 40 of the 41 positives of Code Scan's own key are found: 39 Confirmed and `JS-CODE-02` as a practice
+  finding. Only the `/support/logs` listing (`JS-CONF-03`) stays in Review. Of the comparison's extended 75 rows this
+  report finds 44, against 45 for `gpt-6-luna`.
+- **False positives:** the same three locations as the previous Gemini report (`server.ts:294`,
+  `routes/fileServer.ts:32`, `server.ts:307`).
+- **Usage:** 84 completed assessments, 407,054 input tokens, zero failures.
+
+## Previous report (2026-11-27, Google Gemini, before owner references)
 
 A full scan of revision `f189f52` with scanner `81d4731` (`stage` through PR #56) and Google
 Gemini `gemini-decision-1` produced 305 records across 194 entries. The report presents

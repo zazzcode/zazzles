@@ -19,6 +19,10 @@ applications or other families. OpenAI `gpt-6-luna` remains the project's standi
 
 The percentage is the share of Confirmed routes that are vulnerable.
 
+## Juice Shop, all families (2026-11-27)
+
+On one full Juice Shop scan each, with identical evidence, Gemini found 36 of 41 keyed positives and `gpt-6-luna` 41 ([run record](../../evaluation/gemini-sample-runs-20261127.md#juice-shop-model-or-scanner)). A `gpt-6-luna` rerun on the same scanner reproduced the published report byte for byte, so the gap is the model. Four of the five rows are mass-assignment writes of an owner foreign key (`UserId`) that the request carries only as a name hint; `gpt-6-luna` called them privileged at 0.07 to 0.64, Gemini not sensitive at 0.52 to 0.74. Where the evidence leaves a question open, the two models fall on different sides of it; adding the source fact is the fix, not choosing the model.
+
 ## What makes the comparison fair, and what does not
 
 | Point | Detail |

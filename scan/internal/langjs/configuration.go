@@ -3,6 +3,7 @@ package langjs
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -84,6 +85,7 @@ func (s *moduleSet) directoryListing(out *analysis.AnalysisReport, m *sourceModu
 		if contents, ok := s.directoryContents(m, dir.NamedChild(0)); ok {
 			joined = append(joined, contents)
 		}
+		joined = append(joined, s.directoryReferences(m, dir.NamedChild(0))...)
 	}
 	access := s.expressAccessFor(m, use, rel, nil, first, index)
 	mount := m.evidence("mount_access", use)
@@ -225,12 +227,8 @@ const maxListedEntries = 8
 // be a literal relative path inside the scan root, which is read as the
 // directory the application starts in.
 func (s *moduleSet) directoryContents(m *sourceModule, arg *sitter.Node) (analysis.Evidence, bool) {
-	dir, ok := stringLiteral(arg, m.src)
-	if !ok || dir == "" || filepath.IsAbs(dir) {
-		return analysis.Evidence{}, false
-	}
-	clean := filepath.Clean(filepath.FromSlash(dir))
-	if clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+	dir, clean, ok := listedRelativeDirectory(m, arg)
+	if !ok {
 		return analysis.Evidence{}, false
 	}
 	e := m.evidence("directory_contents", arg)
@@ -264,4 +262,275 @@ func (s *moduleSet) directoryContents(m *sourceModule, arg *sitter.Node) (analys
 	}
 	e.ModelText = fmt.Sprintf("The directory %s holds %d %s in the scanned tree; %s%s.", dir, len(entries), noun, shown, strings.Join(names, ", "))
 	return e, true
+}
+
+// listedRelativeDirectory accepts the directory argument of a listing when it
+// is a literal relative path that stays inside the scan root, and returns the
+// literal and its cleaned OS-specific form.
+func listedRelativeDirectory(m *sourceModule, arg *sitter.Node) (dir, clean string, ok bool) {
+	dir, ok = stringLiteral(arg, m.src)
+	if !ok || dir == "" || filepath.IsAbs(dir) {
+		return "", "", false
+	}
+	clean = filepath.Clean(filepath.FromSlash(dir))
+	if clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+		return "", "", false
+	}
+	return dir, clean, true
+}
+
+// directoryReferences is specification 23 S-1: every place in the selected
+// modules whose path literal is the listed directory or lies under it. A place
+// is a string literal (or a template string without substitutions), or a
+// path.join or path.resolve call whose arguments are all string literals
+// (Node core module path, https://nodejs.org/api/path.html), evaluated as a
+// relative path. The evidence is the nearest enclosing object property or
+// call. The listing's own directory literal and the serve-index or
+// express.static registrations of the same directory are left out (D-2). No
+// reference means no evidence, so the record is unchanged.
+func (s *moduleSet) directoryReferences(listed *sourceModule, arg *sitter.Node) []analysis.Evidence {
+	_, osClean, ok := listedRelativeDirectory(listed, arg)
+	if !ok {
+		return nil
+	}
+	dir := filepath.ToSlash(osClean)
+	if dir == "." {
+		return nil
+	}
+	type found struct {
+		m     *sourceModule
+		ctx   *sitter.Node
+		value string
+	}
+	var refs []found
+	seen := map[string]bool{}
+	for _, m := range s.reachableModules(listed) {
+		file := m.file
+		var walk func(n *sitter.Node)
+		walk = func(n *sitter.Node) {
+			var value string
+			isRef := false
+			switch n.Kind() {
+			case "string", "template_string":
+				if m == listed && sameNode(n, arg) {
+					return
+				}
+				if v, ok := plainLiteral(m, n); ok && !pathPosition(n, m.src) {
+					value, isRef = v, true
+				}
+			case "call_expression":
+				if v, ok := literalPathCall(m, n); ok {
+					value, isRef = v, true
+				} else if isPathCall(m, n) {
+					return // a lone literal inside a call that is not a reference is not read on its own
+				}
+			}
+			if isRef {
+				if !withinDirectory(value, dir) || ownRegistration(m, n, value, dir) {
+					return
+				}
+				ctx := enclosingContext(n)
+				key := fmt.Sprintf("%s:%d:%d", file, ctx.StartByte(), ctx.EndByte())
+				if !seen[key] {
+					seen[key] = true
+					refs = append(refs, found{m, ctx, value})
+				}
+				return
+			}
+			for i := uint(0); i < n.NamedChildCount(); i++ {
+				walk(n.NamedChild(i))
+			}
+		}
+		walk(m.tree.RootNode())
+	}
+	if len(refs) == 0 {
+		return nil
+	}
+	sort.SliceStable(refs, func(i, j int) bool {
+		if refs[i].m.file != refs[j].m.file {
+			return refs[i].m.file < refs[j].m.file
+		}
+		return refs[i].ctx.StartByte() < refs[j].ctx.StartByte()
+	})
+	total := len(refs)
+	if total > maxListedEntries {
+		refs = refs[:maxListedEntries]
+	}
+	out := make([]analysis.Evidence, 0, len(refs))
+	for i, r := range refs {
+		e := r.m.evidence("directory_reference", r.ctx)
+		e.ModelText = fmt.Sprintf("The source refers to paths inside the listed directory %s at %d places; this is %d of %d, the path %s:\n%s", dir, total, i+1, total, r.value, e.ModelText)
+		out = append(out, e)
+	}
+	return out
+}
+
+// plainLiteral is the text of a string or of a template string without
+// substitutions.
+func plainLiteral(m *sourceModule, n *sitter.Node) (string, bool) {
+	if n.Kind() == "string" {
+		return stringLiteral(n, m.src)
+	}
+	for i := uint(0); i < n.NamedChildCount(); i++ {
+		if n.NamedChild(i).Kind() == "template_substitution" {
+			return "", false
+		}
+	}
+	text := n.Utf8Text(m.src)
+	if len(text) < 2 {
+		return "", false
+	}
+	return text[1 : len(text)-1], true
+}
+
+// pathPosition reports a string that is not a path value: a module source
+// (import or require argument) or an object key.
+func pathPosition(n *sitter.Node, src []byte) bool {
+	p := n.Parent()
+	if p == nil {
+		return false
+	}
+	switch p.Kind() {
+	case "import_statement", "export_statement":
+		return true
+	case "pair":
+		k := p.ChildByFieldName("key")
+		return k != nil && sameNode(k, n)
+	case "arguments":
+		if c := p.Parent(); c != nil && c.Kind() == "call_expression" {
+			if fn := c.ChildByFieldName("function"); fn != nil && fn.Kind() == "identifier" {
+				return fn.Utf8Text(src) == "require" || fn.Kind() == "import"
+			}
+		}
+	}
+	return false
+}
+
+// isPathCall reports a call of path.join or path.resolve of the Node core
+// module, imported as path or node:path.
+func isPathCall(m *sourceModule, n *sitter.Node) bool {
+	for _, mod := range []string{"path", "node:path"} {
+		for _, member := range []string{"join", "resolve"} {
+			if libraryCall(m, n, mod, member) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// literalPathCall evaluates path.join or path.resolve as a relative path from
+// the literal arguments at its start, up to the first argument that is not a
+// string literal (D-5). The first argument must be a literal, and an absolute
+// result is not a reference. The value is that literal prefix.
+func literalPathCall(m *sourceModule, n *sitter.Node) (string, bool) {
+	if !isPathCall(m, n) {
+		return "", false
+	}
+	args := n.ChildByFieldName("arguments")
+	if args == nil || args.NamedChildCount() == 0 {
+		return "", false
+	}
+	resolve := n.ChildByFieldName("function").ChildByFieldName("property").Utf8Text(m.src) == "resolve"
+	var parts []string
+	for i := uint(0); i < args.NamedChildCount(); i++ {
+		v, ok := plainLiteral(m, args.NamedChild(i))
+		if !ok {
+			if i == 0 {
+				return "", false
+			}
+			break
+		}
+		if v == "" {
+			continue
+		}
+		// join keeps a later absolute part relative; resolve restarts at it.
+		if strings.HasPrefix(v, "/") && (resolve || len(parts) == 0) {
+			return "", false
+		}
+		parts = append(parts, v)
+	}
+	if len(parts) == 0 {
+		return "", false
+	}
+	return path.Clean(strings.Join(parts, "/")), true
+}
+
+// reachableModules is the listing's module and every module it reaches by
+// static import, export-from or require of a literal specifier that resolves
+// to a scanned module (D-4), in a deterministic order, each once.
+func (s *moduleSet) reachableModules(root *sourceModule) []*sourceModule {
+	seen := map[string]bool{root.file: true}
+	order := []*sourceModule{}
+	queue := []*sourceModule{root}
+	for len(queue) > 0 {
+		m := queue[0]
+		queue = queue[1:]
+		if m.tree.RootNode().HasError() {
+			continue
+		}
+		order = append(order, m)
+		var specs []string
+		var walk func(n *sitter.Node)
+		walk = func(n *sitter.Node) {
+			switch n.Kind() {
+			case "import_statement", "export_statement":
+				if spec, ok := stringLiteral(n.ChildByFieldName("source"), m.src); ok {
+					specs = append(specs, spec)
+				}
+			case "call_expression":
+				if fn, args := n.ChildByFieldName("function"), n.ChildByFieldName("arguments"); fn != nil && args != nil && args.NamedChildCount() == 1 && fn.Kind() == "identifier" && fn.Utf8Text(m.src) == "require" {
+					if spec, ok := stringLiteral(args.NamedChild(0), m.src); ok {
+						specs = append(specs, spec)
+					}
+				}
+			}
+			for i := uint(0); i < n.NamedChildCount(); i++ {
+				walk(n.NamedChild(i))
+			}
+		}
+		walk(m.tree.RootNode())
+		for _, spec := range specs {
+			if t := s.importModule(m, spec); t != nil && !seen[t.file] {
+				seen[t.file] = true
+				queue = append(queue, t)
+			}
+		}
+	}
+	return order
+}
+
+// withinDirectory reports a cleaned relative literal that is dir or under it;
+// logs-public is not under logs.
+func withinDirectory(value, dir string) bool {
+	if value == "" || strings.HasPrefix(value, "/") || filepath.IsAbs(value) {
+		return false
+	}
+	v := path.Clean(strings.TrimSuffix(value, "/"))
+	return v == dir || strings.HasPrefix(v, dir+"/")
+}
+
+// ownRegistration reports a literal (or literal path call) that is the first
+// argument of a serve-index or express.static call: another registration of
+// the directory, which says nothing the record does not hold (D-2).
+func ownRegistration(m *sourceModule, n *sitter.Node, value, dir string) bool {
+	if path.Clean(strings.TrimSuffix(value, "/")) != dir {
+		return false
+	}
+	args := n.Parent()
+	if args == nil || args.Kind() != "arguments" || args.NamedChildCount() == 0 || !sameNode(args.NamedChild(0), n) {
+		return false
+	}
+	call := args.Parent()
+	return call != nil && (libraryCall(m, call, "serve-index", "") || libraryCall(m, call, "express", "static"))
+}
+
+// enclosingContext is the nearest object property or call around a reference.
+func enclosingContext(n *sitter.Node) *sitter.Node {
+	for p := n.Parent(); p != nil; p = p.Parent() {
+		if p.Kind() == "pair" || p.Kind() == "call_expression" {
+			return p
+		}
+	}
+	return n
 }

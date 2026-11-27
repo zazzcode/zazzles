@@ -5,7 +5,7 @@
 ## Current report (2026-11-27, Google Gemini)
 
 A full scan of [anotherik/ThreatByte](https://github.com/anotherik/ThreatByte) at `ede28f2` with scanner
-`docs-cleanup` (`85f39fd` plus the detection generalization 22 change, which does not touch Python) and Google Gemini
+`docs-cleanup` at `d1099f8` (detection generalization 22, which does not touch Python) and Google Gemini
 `gemini-decision-1`. The reference checkout stayed clean. These are static source judgments, not runtime exploit
 confirmation. [Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#threatbyte)
 

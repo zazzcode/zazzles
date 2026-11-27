@@ -3,7 +3,7 @@
   "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
   "source_run": "detgen-22 AC7 Gemini run (canonical stdout, no bundle)",
   "source_json_sha256": "6a3bfee5db9b76100417f8e573ce1ea9b92928539347438a493bc0a6405a34e7",
-  "scanner_revision": "docs-cleanup 85f39fd plus the uncommitted detection generalization 22 change",
+  "scanner_revision": "docs-cleanup d1099f8 (detection generalization 22); the scanned code equals that commit",
   "evaluation_mode": "full gemini-decision-1 scan: all analyzers, default judge limit",
   "provider": "gemini",
   "model": "gemini-decision-1",

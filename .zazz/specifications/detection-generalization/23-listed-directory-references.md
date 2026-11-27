@@ -24,8 +24,9 @@ file route reading `logs/` (`routes/logfileServer.ts:14`).
 ## Semantics
 
 **S-1. Directory references.** For a listing record whose directory argument is a literal relative path (the existing
-`directoryContents` rule), collect in the selected modules every string literal, and every `path.join` or
-`path.resolve` of literals, whose cleaned value is the directory or lies under it. Leave out the listing call itself
+`directoryContents` rule), collect, in the listing's module and the modules it reaches by static `import` or `require`
+(D-4), every string literal, and every `path.join` or `path.resolve` whose first argument is a literal and whose
+literal arguments up to the first non-literal one evaluate to the directory or a path under it (D-5). Leave out the listing call itself
 and the other serve-index or `express.static` registrations of the same directory. Each reference is one evidence item
 `directory_reference` with the enclosing call or property as text, at most eight per record, sorted by file and line,
 with the total.
@@ -58,6 +59,14 @@ reference is a literal); reading files outside the scan root.
 - **D-2. Leave out the directory's own serve registrations.** *Why:* they say nothing the record does not already hold,
   and they would add a reference to every listing, so invariant 2 would never apply.
 - **D-3. At most eight.** *Why:* as `directory_contents`; the total is kept.
+- **D-4. Only modules the application reaches.** *Why:* measured on the first offline run, the selected modules of
+  Juice Shop include challenge code-fix snippets and tests that repeat the listing lines; they took six of the eight
+  places on `/support/logs` and pushed out the access-log stream's audit file. Modules the listing's module imports,
+  directly or through others, are the application; snippets and tests are not imported by it. *Rejected:* recognizing
+  snippet calls by callee name.
+- **D-5. A path call rooted in the directory counts.** *Why:* `path.resolve('logs/', file)` locates a file inside the
+  directory whatever `file` is; the route that serves each log file is what the model needs. The value shown is the
+  literal prefix.
 
 ## Fixtures
 
@@ -113,3 +122,9 @@ checkpoint.
 ### 2026-11-27 — Approved
 
 Approved as drafted. Built on `docs-cleanup` after specification 22; its base is that working tree.
+
+### 2026-11-27 — First offline run, D-4 and D-5
+
+The first build counted challenge code-fix snippets and a test file in Juice Shop, and filled the cap with them. D-4
+limits references to modules the listing's module reaches by import; D-5 admits a path call whose first argument is a
+literal inside the directory. Recorded before any paid request.

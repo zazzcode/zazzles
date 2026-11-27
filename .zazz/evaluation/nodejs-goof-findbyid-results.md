@@ -1,7 +1,7 @@
 # Goof URL-ID lookup: scoped NoSQL follow-up
 
 [Contract](../specifications/command-injection.md#accepted-follow-up-express-path-ids-and-mongoose-findbyid) ·
-[Analysis rules](../../docs/analysis/database-injection.md#bounded-express-and-mongoose-context) ·
+[Analysis rules](../../docs/scan/analysis/database-injection.md#bounded-express-and-mongoose-context) ·
 [Sample](../../docs/samples/nodejs-goof/README.md) · [Metadata](../../docs/samples/nodejs-goof/metadata.json)
 
 The user requested resolving Goof's `POST /update/:id` NoSQL Review from source semantics rather than

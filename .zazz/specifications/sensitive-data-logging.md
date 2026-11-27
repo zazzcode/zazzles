@@ -4,7 +4,7 @@
 
 On 2026-11-01 the user requested logger-leak analysis refinement and reporting of findings in the
 `logger-leak` worktree, ahead of the remaining SQL/NoSQL acceptance items. Product rules live in
-[sensitive-data logging analysis](../../docs/analysis/sensitive-data-logging.md); internal data flow
+[sensitive-data logging analysis](../../docs/scan/analysis/sensitive-data-logging.md); internal data flow
 lives in the [logging design](../architecture/sensitive-data-logging.md). Known target answers remain
 evaluation evidence only.
 

@@ -19,7 +19,43 @@ do not use them commercially, and share adaptations under the same terms. The fu
 [UPSTREAM-LICENSE.txt](UPSTREAM-LICENSE.txt). The excerpts are unchanged apart from the
 scanner's selection of lines. Secureaks does not endorse this project or this report.
 
-## Current report (2026-11-23)
+## Current report (2026-11-27, Google Gemini)
+
+A full scan of revision `086f81f` with scanner `81d4731` (`stage` through PR #56) and Google
+Gemini `gemini-decision-1` produced 84 records across 34 entries. The report presents
+**55 Confirmed, 1 practice finding, 25 Protected and 3 Review**. [Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#vulnerablesymfony)
+
+- **Answer key:** all 30 required positives are found: 29 Confirmed and one stored XSS in
+  `templates/blog/post.html.twig:37` (`SYM-XSS-03`) as a practice finding. No control is a finding.
+- **New finding:** `config/packages/security.yaml:5` selects the MD5 password hasher. It is real
+  and the same weakness as the keyed `SYM-HASH-01`, reported at its configuration.
+- **Review:** three records, one stored XSS, one path traversal and one deserialization record
+  that lack evidence the claim needs. The previous report had seven.
+- **Usage:** 84 completed assessments, 355,480 input tokens, zero failures.
+
+| Finding type | Confirmed | Protected | Review |
+|---|---:|---:|---:|
+| SQL injection | 2 | 1 | 0 |
+| Cross-site scripting (reflected, stored, DOM) | 5, and 1 practice | 15 | 1 |
+| Command injection | 3 | 0 | 0 |
+| Path traversal | 4 | 0 | 1 |
+| Template injection | 1 | 0 | 0 |
+| Unrestricted upload | 1 | 0 | 0 |
+| Server-side request forgery | 3 | 0 | 0 |
+| Unsafe deserialization | 11 | 0 | 1 |
+| Input validation | 2 | 1 | 0 |
+| Information exposure | 1 | 0 | 0 |
+| Mass assignment | 1 | 0 | 0 |
+| Missing authorization | 6 | 9 | 0 |
+| Address-based access | 3 | 0 | 0 |
+| Account enumeration | 3 | 0 | 0 |
+| Weak password recovery | 1 | 0 | 0 |
+| Weak password hash | 6 | 0 | 0 |
+| Insecure configuration | 4 | 0 | 0 |
+
+A record can carry more than one type, so the columns add up to more than the record counts.
+
+## Previous report (2026-11-23, gpt-6-luna)
 
 A full scan of revision `086f81f` with scanner `8d97b93` and OpenAI `gpt-6-luna` produced 84
 records across 34 entries. The report presents **55 Confirmed, 22 Protected and 7 Review**.

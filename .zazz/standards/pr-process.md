@@ -146,7 +146,7 @@ breaks all three.
 
 This applies to zazzles's own code, dependencies, and build tooling. Maintaining zazzles's dependencies is
 distinct from the excluded product capability of scanning target repositories for vulnerable dependencies
-(see [scope exclusions](../project/02-project-scope.md#exclusions-and-limits)).
+(see [scope exclusions](../project/02-project-scope.md#current-delivery-exclusions-and-limits)).
 
 ### Desired ✅
 

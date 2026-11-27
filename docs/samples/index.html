@@ -37,40 +37,41 @@ dd{margin:0}
 <p class="note">Each report is standalone, and viewing one makes no model call. Outcomes are static source judgments, not runtime exploit confirmation. <a href="https://github.com/zazzcode/zazzles">Project on GitHub</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/detection-capabilities.md">Detection capabilities</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/interpreting-results.md">How to read a report</a></p>
 
 <h2>Compared with other scanners</h2>
-<p>Rows of each application’s source-reviewed answer key that each scanner found. Code Scan and Bearer ran on 2026-11-24, Semgrep CE on 2026-11-25.</p>
+<p>Rows of each application’s source-reviewed answer key that each scanner found. Code Scan ran with Google Gemini on 2026-11-27 and with OpenAI <code>gpt-6-luna</code> on 2026-11-19 to 2026-11-24. Bearer ran on 2026-11-24, Semgrep CE on 2026-11-25.</p>
 <div class="scroll">
 <table>
-<thead><tr><th scope="col">Application</th><th scope="col" class="n">In answer key</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
+<thead><tr><th scope="col">Application</th><th scope="col" class="n">In answer key</th><th scope="col" class="n">Code Scan, Gemini</th><th scope="col" class="n">Code Scan, gpt-6-luna</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">75</td><td class="n">45</td><td class="n">19</td><td class="n">15</td></tr>
-<tr><th scope="row"><a href="https://github.com/zazzcode/vuln-nextjs">vuln-nextjs</a></th><td class="n">13</td><td class="n">13</td><td class="n">7</td><td class="n">7</td></tr>
-<tr><th scope="row"><a href="https://github.com/digininja/DVWA">DVWA</a></th><td class="n">11</td><td class="n">11</td><td class="n">6</td><td class="n">6</td></tr>
-<tr><th scope="row"><a href="https://github.com/Secureaks/VulnerableSymfony">VulnerableSymfony</a></th><td class="n">30</td><td class="n">30</td><td class="n">8</td><td class="n">5</td></tr>
-<tr><th scope="row">Total</th><td class="n">129</td><td class="n">99</td><td class="n">40</td><td class="n">33</td></tr>
+<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">75</td><td class="n">40</td><td class="n">45</td><td class="n">19</td><td class="n">15</td></tr>
+<tr><th scope="row"><a href="https://github.com/kOaDT/oss-oopssec-store">OSS OopsSec Store</a></th><td class="n">13</td><td class="n">13</td><td class="n">13</td><td class="n">Not scored</td><td class="n">Not scored</td></tr>
+<tr><th scope="row"><a href="https://github.com/zazzcode/vuln-nextjs">vuln-nextjs</a></th><td class="n">13</td><td class="n">Not rerun</td><td class="n">13</td><td class="n">7</td><td class="n">7</td></tr>
+<tr><th scope="row"><a href="https://github.com/digininja/DVWA">DVWA</a></th><td class="n">11</td><td class="n">11</td><td class="n">11</td><td class="n">6</td><td class="n">6</td></tr>
+<tr><th scope="row"><a href="https://github.com/Secureaks/VulnerableSymfony">VulnerableSymfony</a></th><td class="n">30</td><td class="n">30</td><td class="n">30</td><td class="n">8</td><td class="n">5</td></tr>
+<tr><th scope="row"><a href="https://github.com/Contrast-Security-OSS/vulnpy">VulnPy</a></th><td class="n">10</td><td class="n">10</td><td class="n">6</td><td class="n">Not scored</td><td class="n">Not scored</td></tr>
 </tbody>
 </table>
 </div>
-<p class="note">An answer key is not a complete list of an application’s vulnerabilities. Juice Shop’s was extended to 75 rows from its own documented challenges and markers and from results of any scanner. The other three were not extended and still favor the classes Code Scan analyzes.</p>
+<p class="note">An answer key is not a complete list of an application’s vulnerabilities. Juice Shop’s was extended to 75 rows from its own documented challenges and markers and from results of any scanner. The others were not extended and still favor the classes Code Scan analyzes. The two Code Scan columns differ in scanner revision as well as model; the <code>gpt-6-luna</code> VulnPy report predates the deserialization analyzer.</p>
 <p class="note">Semgrep CE 1.183.0 ran with 23 registry packs (1,379 rules). Its cross-function and cross-file engine is a paid product and was not run. Bearer CLI ran <code>bearer-rules</code>; Bearer Pro was not run.</p>
-<p class="note"><strong>These are different kinds of tool.</strong> Semgrep CE and Bearer run free and offline. A judged Code Scan calls a paid model provider. Code Scan was developed against these applications, so this is not a general accuracy claim. Its found count includes three Juice Shop cases reported as practice findings.</p>
+<p class="note"><strong>These are different kinds of tool.</strong> Semgrep CE and Bearer run free and offline. A judged Code Scan calls a paid model provider. Code Scan was developed against these applications, so this is not a general accuracy claim. Its <code>gpt-6-luna</code> found count includes three Juice Shop cases reported as practice findings; the Gemini count includes one Juice Shop and one VulnerableSymfony case.</p>
 
 <h3>False positives</h3>
 <p>Results on code that a source review shows to be safe, counted by location. Undecided results are not counted, so every count is a lower bound. Bearer’s review is the least complete. A result outside the answer key is not a false positive by itself.</p>
 <div class="scroll">
 <table>
-<thead><tr><th scope="col">Application</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
+<thead><tr><th scope="col">Application</th><th scope="col" class="n">Code Scan, Gemini</th><th scope="col" class="n">Code Scan, gpt-6-luna</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
 <tbody>
-<tr><th scope="row">OWASP Juice Shop</th><td class="n">4</td><td class="n">50</td><td class="n">36 and two grouped rules</td></tr>
-<tr><th scope="row">vuln-nextjs</th><td class="n">0</td><td class="n">3</td><td class="n">4</td></tr>
-<tr><th scope="row">DVWA</th><td class="n">9</td><td class="n">17</td><td class="n">31</td></tr>
-<tr><th scope="row">vuln-symfony</th><td class="n">0</td><td class="n">23</td><td class="n">2</td></tr>
-<tr><th scope="row">Total</th><td class="n">13</td><td class="n">93</td><td class="n">73 and two grouped rules</td></tr>
+<tr><th scope="row">OWASP Juice Shop</th><td class="n">3</td><td class="n">4</td><td class="n">50</td><td class="n">36 and two grouped rules</td></tr>
+<tr><th scope="row">vuln-nextjs</th><td class="n">Not rerun</td><td class="n">0</td><td class="n">3</td><td class="n">4</td></tr>
+<tr><th scope="row">DVWA</th><td class="n">4</td><td class="n">9</td><td class="n">17</td><td class="n">31</td></tr>
+<tr><th scope="row">vuln-symfony</th><td class="n">0</td><td class="n">0</td><td class="n">23</td><td class="n">2</td></tr>
+<tr><th scope="row">Total</th><td class="n">7 of three applications</td><td class="n">13</td><td class="n">93</td><td class="n">73 and two grouped rules</td></tr>
 </tbody>
 </table>
 </div>
 
 <h3>By weakness class</h3>
-<p>Rows of the answer keys found, across the four applications.</p>
+<p>Rows of the answer keys found by Code Scan with <code>gpt-6-luna</code>, across the four applications.</p>
 <div class="scroll">
 <table>
 <thead><tr><th scope="col">Weakness class</th><th scope="col" class="n">In answer key</th><th scope="col" class="n">Code Scan</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
@@ -108,7 +109,7 @@ dd{margin:0}
 </tbody>
 </table>
 </div>
-<p class="note">Code Scan misses 30 rows, all in Juice Shop: 18 in classes it has no analyzer for, and 12 where an existing analyzer falls short. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md#what-code-scan-misses">What Code Scan misses</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison</a></p>
+<p class="note">With <code>gpt-6-luna</code>, Code Scan misses 30 rows, all in Juice Shop, and the Gemini run leaves five more in Review: 18 in classes it has no analyzer for, and 12 where an existing analyzer falls short. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md#what-code-scan-misses">What Code Scan misses</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison</a></p>
 
 <h2>Reports</h2>
 <p>Counts are records in the report, and one defect can appear in several. Review means the evidence or the judgment is incomplete. It does not mean safe.</p>
@@ -116,18 +117,18 @@ dd{margin:0}
 <table>
 <thead><tr><th scope="col">Report</th><th scope="col">What it shows</th><th scope="col" class="n">Confirmed</th><th scope="col" class="n">Practice</th><th scope="col" class="n">Protected</th><th scope="col" class="n">Review</th><th scope="col">Scanned</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. All 41 rows of Code Scan’s own key found, and 45 of 76 in the extended key.</td><td class="n">51</td><td class="n">3</td><td class="n">3</td><td class="n">248</td><td>2026-11-24</td></tr>
+<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. 36 of the 41 rows of Code Scan’s own key found, and 40 of 75 in the extended key, with Google Gemini.</td><td class="n">49</td><td class="n">1</td><td class="n">6</td><td class="n">249</td><td>2026-11-27</td></tr>
 <tr><th scope="row"><a href="vuln-nextjs/findings.html">vuln-nextjs</a></th><td>Next.js Pages Router. All 13 expected cases Confirmed, including PGlite SQL injection, cross-tier XSS and code injection.</td><td class="n">13</td><td class="n">1</td><td class="n">9</td><td class="n">31</td><td>2026-11-24</td></tr>
 <tr><th scope="row"><a href="vuln-nextjs/reports/prototype-pollution/findings.html">vuln-nextjs prototype pollution fixtures</a></th><td>Lodash by version and source-visible prototype writes. 14 of 15 in-scope cases Confirmed, one in Review. Two dependency-only cases have no record.</td><td class="n">14</td><td class="n">0</td><td class="n">2</td><td class="n">47</td><td>2026-11-21</td></tr>
-<tr><th scope="row"><a href="dvwa/findings.html">DVWA</a></th><td>Plain PHP. All 11 keyed positives Confirmed. Adds weak password hashing and session cookie settings.</td><td class="n">159</td><td class="n">39</td><td class="n">18</td><td class="n">49</td><td>2026-11-23</td></tr>
-<tr><th scope="row"><a href="vuln-symfony/findings.html">VulnerableSymfony</a></th><td>Symfony, Doctrine and Twig. All 30 keyed positives Confirmed and no control reported. Source excerpts are by Secureaks under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> (<a href="vuln-symfony/UPSTREAM-LICENSE.txt">license</a>).</td><td class="n">55</td><td class="n">0</td><td class="n">22</td><td class="n">7</td><td>2026-11-23</td></tr>
+<tr><th scope="row"><a href="dvwa/findings.html">DVWA</a></th><td>Plain PHP. All 11 keyed positives Confirmed with Google Gemini. Adds weak password hashing, session cookie settings, <code>allow_url_include</code> and a missing authorization check.</td><td class="n">166</td><td class="n">42</td><td class="n">42</td><td class="n">50</td><td>2026-11-27</td></tr>
+<tr><th scope="row"><a href="vuln-symfony/findings.html">VulnerableSymfony</a></th><td>Symfony, Doctrine and Twig. All 30 keyed positives found with Google Gemini, one as a practice finding, and no control reported. Source excerpts are by Secureaks under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> (<a href="vuln-symfony/UPSTREAM-LICENSE.txt">license</a>).</td><td class="n">55</td><td class="n">1</td><td class="n">25</td><td class="n">3</td><td>2026-11-27</td></tr>
 <tr><th scope="row"><a href="nodejs-goof/findings.html">Node.js Goof</a></th><td>Express. Command injection, XSS, NoSQL injection and Lodash prototype pollution. All 8 keyed positives found.</td><td class="n">7</td><td class="n">0</td><td class="n">2</td><td class="n">27</td><td>2026-11-21</td></tr>
 <tr><th scope="row"><a href="vulnerable-typescript-app/findings.html">Vulnerable TypeScript app</a></th><td>Command and code injection, reflected XSS, open redirect and prototype pollution. All 7 keyed positives found.</td><td class="n">8</td><td class="n">0</td><td class="n">0</td><td class="n">19</td><td>2026-11-21</td></tr>
-<tr><th scope="row"><a href="oss-oopssec-store/findings.html">OSS OopsSec Store</a></th><td>Next.js App Router. SQL injection, path traversal, SSRF, logging and client XSS. All 13 keyed positives found.</td><td class="n">23</td><td class="n">2</td><td class="n">0</td><td class="n">103</td><td>2026-11-19</td></tr>
+<tr><th scope="row"><a href="oss-oopssec-store/findings.html">OSS OopsSec Store</a></th><td>Next.js App Router. SQL injection, path traversal, SSRF, logging and client XSS. All 13 keyed positives Confirmed with Google Gemini.</td><td class="n">25</td><td class="n">0</td><td class="n">0</td><td class="n">103</td><td>2026-11-27</td></tr>
 <tr><th scope="row"><a href="ThreatByte/findings.html">ThreatByte</a></th><td>Flask and RESTX. SQL injection and reflected, stored and DOM XSS, with protected controls. All 5 keyed positives found.</td><td class="n">5</td><td class="n">3</td><td class="n">34</td><td class="n">20</td><td>2026-11-19</td></tr>
 <tr><th scope="row"><a href="vulnerable-flask-app/findings.html">Vulnerable Flask App (Erlik 2)</a></th><td>Flask. SQL injection and raw responses. All 4 keyed positives found.</td><td class="n">8</td><td class="n">0</td><td class="n">0</td><td class="n">22</td><td>2026-11-19</td></tr>
 <tr><th scope="row"><a href="python-insecure-app/findings.html">Python insecure app</a></th><td>FastAPI HTML construction. One of 2 keyed positives found, the other in Review.</td><td class="n">1</td><td class="n">0</td><td class="n">0</td><td class="n">1</td><td>2026-11-19</td></tr>
-<tr><th scope="row"><a href="vulnpy/findings.html">VulnPy</a></th><td>Several Python frameworks, with repeated entry contexts. Path traversal, code, SQL and command injection, and XSS. All 6 source-reviewed positives found.</td><td class="n">455</td><td class="n">0</td><td class="n">0</td><td class="n">2,895</td><td>2026-11-19</td></tr>
+<tr><th scope="row"><a href="vulnpy/findings.html">VulnPy</a></th><td>Several Python frameworks, with repeated entry contexts. Path traversal, unsafe deserialization, code, SQL and command injection, and XSS. All 10 source-reviewed positives Confirmed with Google Gemini.</td><td class="n">576</td><td class="n">0</td><td class="n">0</td><td class="n">2,894</td><td>2026-11-27</td></tr>
 </tbody>
 </table>
 </div>

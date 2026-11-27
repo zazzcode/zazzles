@@ -5,7 +5,34 @@
 [Results](../../../.zazz/evaluation/juiceshop-hardening-results.md#final-full-run) ·
 [Scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)
 
-## Current report (2026-11-24)
+## Current report (2026-11-27, Google Gemini)
+
+A full scan of revision `f189f52` with scanner `81d4731` (`stage` through PR #56) and Google
+Gemini `gemini-decision-1` produced 305 records across 194 entries. The report presents
+**49 Confirmed, 1 practice finding, 6 Protected and 249 Review**. These are static source
+judgments, not runtime exploit confirmation. [Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#owasp-juice-shop)
+
+- **Answer key:** 36 of the 41 positives of Code Scan's own key are found: 35 Confirmed and the
+  `b2bOrder` code execution (`JS-CODE-02`) as a practice finding. Sensitive logging (`JS-LOG-01`)
+  and the profile-image SSRF (`JS-SSRF-01`), practice findings in the previous report, are now
+  Confirmed. Five rows stay in Review: the `/support/logs` directory listing (`JS-CONF-03`,
+  `server.ts:302`, weakness left unknown) and the four mass-assignment rows of the generated
+  `server.ts:529` routes (`JS-MASS-02` to `05`). Of the comparison's extended 75-row key this
+  report finds 40 ([scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)).
+- **False positives:** three locations. The `.well-known` listing (`server.ts:294`) is still
+  Confirmed. The null-byte file read (`routes/fileServer.ts:32`) is now a Confirmed path
+  traversal, although the owner's decision of 2026-11-24 is that it cannot leave its directory.
+  The Swagger UI at `server.ts:307` is reported as information exposure; it serves the published
+  B2B API description. Liking another user's review (`routes/likeProductReviews.ts:35`, `:50`) is
+  no longer a finding, and the `orderHistory.ts:36` NoSQL record is in Review.
+- **Not covered:** the committed signing key (`lib/insecurity.ts:21`). No analyzer covers secrets.
+- **Usage:** 84 completed assessments, 406,475 input tokens, zero failures. 221 records were not
+  sent to the model; they stay in Review or carry a model-free result.
+
+The report is the canonical JSON the scanner wrote to standard output in that run, with the root
+replaced by the public sample label.
+
+## Previous report (2026-11-24, gpt-6-luna)
 
 A full scan of revision `f189f52` with scanner `3318e27` (PR #50) and OpenAI `gpt-6-luna` produced
 305 records across 194 entries. The report presents **51 Confirmed, 3 practice findings,

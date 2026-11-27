@@ -27,12 +27,14 @@ answers against scanner evidence before classifying them.
 - [Finding categories and terminology](glossary.md) defines labels used in reports.
 - [Next.js](nextjs-support.md), [Python](python-support.md), [PHP](php-support.md), and
   [Symfony](symfony-support.md) describe their entry and language boundaries.
-- [Scanner comparison](scanner-comparison.md) scores Code Scan, Semgrep CE and Bearer against the
-  known vulnerabilities of four sample applications.
+- [Scanner comparison](scanner-comparison.md) scores Code Scan (with Gemini and gpt-6-luna), Semgrep CE
+  and Bearer against the known vulnerabilities of four sample applications, and Code Scan alone on
+  two more.
 - [Semgrep CE comparison](semgrep-ce-cheat-sheet.md) explains how to run a local comparison.
 
 ## Shared project guides
 
-- [Technical approach](../technical-approach.md) explains source-backed analysis and decision validation.
+- [Technical approach](../technical-approach.md) explains source-backed analysis, decision validation and
+  [why detection is generalized](../technical-approach.md#generalize-detection) rather than listed per driver or framework.
 - [Remediation philosophy](../philosophy.md) explains how to preserve behavior and existing protections.
 - [Contributing](../contributing.md) covers repository layout, verification, and pull requests.

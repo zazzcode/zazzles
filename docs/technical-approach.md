@@ -33,6 +33,35 @@ transfers and library argument roles still need explicit engineering. Discovery 
 the judge; unresolved claim-relevant facts remain blockers. Reduced false findings and improved
 coverage remain hypotheses to measure alongside false protection, abstention, latency and cost.
 
+<a id="generalize-detection"></a>
+
+## Generalize detection instead of listing every library
+
+Rule-based scanners grow by adding a rule or contract for each driver, ORM, framework and
+library version, and they miss code written with anything not on the list. Zazzles aims for
+the opposite. A new driver version, ORM or validation library should need no scanner change, or
+as little as possible. The decision model does the work a rule pack does elsewhere.
+
+The scanner records an operation by what it does and where its data comes from, without naming
+the library. The decision model then answers a small number of closed questions about that
+evidence. Two merged examples:
+
+- **SQL with any driver.** A call that passes SQL statement text built from request data is
+  recorded in JavaScript, Python and PHP, whatever the driver or database. The model decides
+  whether the call runs SQL and whether a request can change the statement beyond the choices the
+  code lists. [SQL calls with no driver contract](scan/analysis/database-injection.md#sql-calls-with-no-driver-contract)
+- **MongoDB without a method list.** A call whose receiver traces back to the `mongodb` package
+  import is recorded however the application creates, caches or passes the client. The model
+  decides what the operation is and whether an input changes it.
+  [Native MongoDB driver operations](scan/analysis/database-injection.md#native-mongodb-driver-operations)
+
+The evidence rules stay the same. A general recorder only adds records: a record an explicit
+contract already makes is unchanged. Code the scanner could not read is shown to the model and
+bars a Protected result. No scanner rule decides a verdict. Each new question is measured on paid
+runs before it is relied on, and accuracy on applications it was not developed against is still
+to be shown. Explicit contracts remain where they add evidence a general recorder cannot read,
+such as bound-parameter slots or a framework's routing.
+
 ## Shared analysis across distinct product goals
 
 [Scan](../README.md#modules) analyzes application source and reports security claims and

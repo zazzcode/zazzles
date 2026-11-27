@@ -2,7 +2,26 @@
 
 [Samples](../README.md) · [Full HTML](https://zazzcode.github.io/zazzles/vulnpy/findings.html) · [JSON, gzip](findings.json.gz) · [SARIF, gzip](findings.sarif.gz) · [Provenance](metadata.json)
 
-## Current report (rebuilt 2026-11-19)
+## Current report (2026-11-27, Google Gemini)
+
+Fresh all-family scan of [Contrast-Security-OSS/vulnpy](https://github.com/Contrast-Security-OSS/vulnpy)
+at `b81885e` with scanner `81d4731` (`stage` through PR #56) and Google Gemini
+`gemini-decision-1`. The reference checkout stayed clean. These are static source judgments,
+not executed exploits. [Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#vulnpy)
+
+- 2,214 entries, 3,470 analysis records: **576 Confirmed, 2,894 Review, 0 Protected**.
+- Confirmed by family: 196 path, 120 unsafe deserialization, 90 code execution, 78 SQL,
+  61 command and 31 XSS.
+- **Answer key:** all 10 source-reviewed positives are Confirmed, including the four Pickle and
+  PyYAML deserialization sinks in `src/vulnpy/trigger/deserialization.py`. The previous report
+  predates the deserialization analyzer and found 6 of them. Confirmed records outside the key are
+  unreviewed; repeated contexts share sinks across adapters and are not distinct defects.
+- 64 path records with flow-gap questions were sent without their resolution questions and stay
+  in Review, as before. The 2,830 input-validation records are undecidable and are not sent.
+- **Usage:** 640 completed assessments from 656 attempts (16 transient retries), 4,176,758
+  input tokens, zero failures.
+
+## Previous report (rebuilt 2026-11-19, gpt-6-luna)
 
 Fresh all-family scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence
 resolution scanner (`57c29dc`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are

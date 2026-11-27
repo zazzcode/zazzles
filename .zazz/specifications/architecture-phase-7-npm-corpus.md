@@ -27,8 +27,8 @@ Phase 8's library mode must beat that baseline on recall and unsupported claims.
 
 - The proposal sections named in the header.
 - [Orientation: samples](../docs/zazzles-agent-orientation.md#available-vulnerable-sample-apps), [sample reference policy](../../docs/samples/reference-policy.md).
-- [Decision models: scope a live run](../../docs/decision-models.md#scope-a-live-run), [AGENTS credentials](../../AGENTS.md#credentials-and-live-model-calls).
-- [Code injection analysis rules](../../docs/analysis/README.md), and the command analysis guide, for the vector vocabulary.
+- [Decision models: scope a live run](../../docs/scan/decision-models.md#scope-a-live-run), [AGENTS credentials](../../AGENTS.md#credentials-and-live-model-calls).
+- [Code injection analysis rules](../../docs/scan/analysis/README.md), and the command analysis guide, for the vector vocabulary.
 
 ## 3. Invariants
 

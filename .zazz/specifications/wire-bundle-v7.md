@@ -14,7 +14,7 @@ The lead implements serially; independent verification follows the repository sk
   principles, W1–W12, S3, ablation protocol, and evidence ledger.
 - [Assessment coverage](analyzer-assessment-coverage.md): retained evidence and claim gates.
 - [Hardening milestone](analyzer-engine-hardening.md): E3 boundary.
-- [Analysis calibration](../../docs/analysis/calibration.md): source semantics and paired controls.
+- [Analysis calibration](../../docs/scan/analysis/calibration.md): source semantics and paired controls.
 - Standards: [code structure](../standards/code-structure.md),
   [testing](../standards/testing.md), [spec hygiene](../standards/spec-hygiene.md),
   [docs hygiene](../standards/docs-hygiene.md). Verify the standards index before edits.

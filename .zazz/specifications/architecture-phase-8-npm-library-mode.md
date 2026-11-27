@@ -36,7 +36,7 @@ question contract exists.
   [acquisition and value facts](../architecture/README.md#acquisition-and-value-facts).
 - Code: `internal/langjs/modules.go` and `commonjs.go` (current import and export resolution and
   its stated re-export limits), `command_claims.go`, `code_*`, `internal/report` classification.
-- [Reporting design](../architecture/reporting-and-sarif.md), [interpreting results](../../docs/interpreting-results.md).
+- [Reporting design](../architecture/reporting-and-sarif.md), [interpreting results](../../docs/scan/interpreting-results.md).
 
 ## 3. Invariants
 

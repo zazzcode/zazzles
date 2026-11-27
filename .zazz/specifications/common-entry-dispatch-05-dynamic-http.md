@@ -18,14 +18,14 @@ Resolve finite Express registrations/factories and the bounded generated Flask/F
 
 - [AGENTS](../../AGENTS.md#authorization-and-delivery) and
   [orientation](../docs/zazzles-agent-orientation.md#documentation-map).
-- [Milestone index](common-entry-dispatch.md#delivery-order) and [Design §§2–5](../architecture/common-entry-dispatch.md#2-semantic-records-and-cardinality) and [§8](../architecture/common-entry-dispatch.md#8-bounded-framework-proposals).
+- [Milestone index](common-entry-dispatch.md#delivery-order) and [Design §§2–5](../architecture/common-entry-dispatch.md#2-semantic-records-and-cardinality) and [§8](../architecture/common-entry-dispatch.md#8-implemented-bounded-framework-subsets).
 - Dependency: 03-reporting-selectors; execute after 04-browser-events to keep one ordered lane. [Previous deliverable](common-entry-dispatch-04-browser-events.md)
 - [VulnPy sample](../../docs/samples/vulnpy/README.md), [source reference](../../docs/samples/vulnpy/reference.md),
   [pinned hashes](../../docs/samples/vulnpy/source-hashes.json), [case inventory](../../docs/samples/vulnpy/cases.json)
   and [detection guide](../evaluation/vulnpy-detection-guide.md). Read the actual generation,
   trigger selection, SQL callback and response code identified in §7 before editing.
-- [Database injection](../../docs/analysis/database-injection.md) and
-  [XSS semantics](../../docs/analysis/xss.md); registration/trace recovery does not change claim policy.
+- [Database injection](../../docs/scan/analysis/database-injection.md) and
+  [XSS semantics](../../docs/scan/analysis/xss.md); registration/trace recovery does not change claim policy.
 - [Execution discipline](../docs/agent-execution-discipline.md#verification-discipline)
   and repository `.agents/skills/spec-driven/SKILL.md` for implementation.
 - [Code structure §§1–6](../standards/code-structure.md#1-package-layout),
@@ -35,7 +35,7 @@ Resolve finite Express registrations/factories and the bounded generated Flask/F
   [PR process](../standards/pr-process.md) at publication.
   Recheck [standards index](../standards/index.yaml) against actual changed paths.
 - Read the source files in §3 and adjacent existing tests before editing.
-  Preserve current [analysis semantics](../../docs/analysis/README.md).
+  Preserve current [analysis semantics](../../docs/scan/analysis/README.md).
 
 ## 2. Invariants
 

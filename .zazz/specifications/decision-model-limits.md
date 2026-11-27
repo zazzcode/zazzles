@@ -12,7 +12,7 @@ This contract supersedes the earlier currency-reservation design. Implement in t
 ## Required reading
 
 [Agent rules](../../AGENTS.md#authorization-and-delivery),
-[decision-model guide](../../docs/decision-models.md),
+[decision-model guide](../../docs/scan/decision-models.md),
 [contributor checks](../../docs/contributing.md#verification),
 [testing](../standards/testing.md), [code structure](../standards/code-structure.md), and
 [engine hardening contract](analyzer-engine-hardening.md).

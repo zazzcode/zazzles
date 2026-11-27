@@ -208,7 +208,7 @@ six regression sets: JS/TS dynamic dispatch (four entries/four uses each), Pytho
 raw answer, golden or target source changed. Saved GraphQL exports preserve input hashes and retain
 JSON/SARIF statuses, invocation identities, actual sink locations and related schema locations.
 
-The [public subset and limits](../../docs/running-scans.md#bounded-apollo-graphql-analysis) describe
+The [public subset and limits](../../docs/scan/running-scans.md#bounded-apollo-graphql-analysis) describe
 literal named Apollo wiring, supported SDL syntax, independent unknown parent/context/info roles,
 and explicit unsupported composition/default/custom-scalar/wrapper/parent-result behavior. The
 adapter assumes Apollo Server 4 compatibility; installed versions and transport exposure are not
@@ -448,7 +448,7 @@ independent conservative gate retains contradictory vulnerable answers as explic
 fabricating Protected. Final real controls: hex-only SQL Protected; raw-email sibling confirmed;
 scalar NoSQL Review; unknown helper Review. Earlier wrong answers remain saved. Scalar protection
 recognition is still incomplete; whole-program plugin/type/guard analysis is not claimed. The
-[database rules](../../docs/analysis/database-injection.md) describe actual bounds and false-negative risks.
+[database rules](../../docs/scan/analysis/database-injection.md) describe actual bounds and false-negative risks.
 
 Actual localhost inspection passed for five report types, including typed labels, declaration versus
 sink location, resolver/request metadata, source transfers, sorting/filtering, zero-use gap disclosure,

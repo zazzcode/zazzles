@@ -55,8 +55,8 @@ difference is one added report limitation that counts reused and newly sent deci
   pattern in `cmd/scan/schedule_cli_test.go` (`newJudgeClient` replacement).
 - **Standards:** [Testing](../standards/testing.md) §6 concurrency and §7 semantic adapter stubbing;
   [spec hygiene](../standards/spec-hygiene.md).
-- **User docs:** [running scans](../../docs/running-scans.md) (trace and rate controls);
-  [decision models](../../docs/decision-models.md), the equivalence paragraph that says there is no
+- **User docs:** [running scans](../../docs/scan/running-scans.md) (trace and rate controls);
+  [decision models](../../docs/scan/decision-models.md), the equivalence paragraph that says there is no
   persistent answer cache.
 - **Rules:** [AGENTS.md](../../AGENTS.md), credentials and live model calls.
 

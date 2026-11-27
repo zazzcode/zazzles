@@ -25,8 +25,8 @@ Load these in order, then only their task-relevant references:
   [common entry/dispatch brief](../project/common-entry-dispatch.md). Read the
   [pack proposal](../project/analysis-pack-mvp.md) and its updated plan section in this worktree.
 - [Technical approach](../../docs/technical-approach.md#source-backed-analysis-with-constrained-semantic-judgment),
-  [database injection](../../docs/analysis/database-injection.md#three-independent-questions) and
-  [input validation](../../docs/analysis/input-validation.md#establish-the-field-policy).
+  [database injection](../../docs/scan/analysis/database-injection.md#three-independent-questions) and
+  [input validation](../../docs/scan/analysis/input-validation.md#establish-the-field-policy).
 - [Query judgment](../architecture/query-judgment.md#data-flow),
   [trace contract](../architecture/trace-judgment.md#implemented-evidence-contract),
   [evidence roles](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) and

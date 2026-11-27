@@ -63,7 +63,7 @@ is an authorization effect, not code execution, and stage 1 does not claim it (O
 - Code: the `code` family registration in `internal/analysispacks/families.go`, its policy in
   `internal/judge/code_redirect.go`, lockfile resolution in `internal/langjs/package_manifest.go`
   and `package_lock.go`, and input facts in `internal/analysis/input_facts.go`.
-- [Analysis guides](../../docs/analysis/README.md) for the shared status vocabulary.
+- [Analysis guides](../../docs/scan/analysis/README.md) for the shared status vocabulary.
 
 ## 3. Invariants
 

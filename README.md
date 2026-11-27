@@ -10,6 +10,13 @@ records the controls on each path. A decision LLM then judges that evidence as v
 protected, poor practice, weak input validation, or inconclusive. Zazzles checks the answers
 against its source facts before assigning an outcome.
 
+**Detection is generalized rather than listed library by library.** Rule-based scanners need a
+new rule for each driver, ORM, framework and library version. Code Scan aims to need no scanner
+change for a new one, or as little as possible. It records an operation by what it does and where
+its data comes from, and leaves the decision to the judge. For example, SQL statement text that
+reaches a call is recorded and judged whatever the database driver.
+[Why and how](docs/technical-approach.md#generalize-detection)
+
 [Current coverage](#current-coverage) · [Scanner comparison](#scanner-comparison) · [Run Scan](#quick-start) · [Sample reports](docs/samples/README.md) · [Modules](#modules) · [Documentation](docs/README.md)
 
 <a id="what-exists-today"></a>
@@ -48,25 +55,34 @@ Coverage varies by language, framework, and library. [Full detection coverage](d
 
 ## Scanner comparison
 
-Code Scan, Semgrep CE and Bearer were run on four intentionally vulnerable applications and
-scored against an answer key for each application, with false positives counted.
+Code Scan, Semgrep CE and Bearer were scored against an answer key for each intentionally
+vulnerable application, with false positives counted. Code Scan was run with both supported
+decision models: Google Gemini on 2026-11-27 and OpenAI `gpt-6-luna` in the earlier published runs.
 
-| Application | In answer key | Code Scan found | Semgrep CE found | Bearer found |
-|---|---:|---:|---:|---:|
-| OWASP Juice Shop | 75 | 45 | 19 | 15 |
-| vuln-nextjs | 13 | 13 | 7 | 7 |
-| DVWA | 11 | 11 | 6 | 6 |
-| vuln-symfony | 30 | 30 | 8 | 5 |
-| **Total** | **129** | **99** | **40** | **33** |
+| Application | In answer key | Code Scan, Gemini | Code Scan, gpt-6-luna | Semgrep CE | Bearer |
+|---|---:|---:|---:|---:|---:|
+| [OWASP Juice Shop](https://github.com/juice-shop/juice-shop) | 75 | 40 | 45 | 19 | 15 |
+| [OSS OopsSec Store](https://github.com/kOaDT/oss-oopssec-store) | 13 | 13 | 13 | Not scored | Not scored |
+| [vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) | 13 | Not rerun | 13 | 7 | 7 |
+| [DVWA](https://github.com/digininja/DVWA) | 11 | 11 | 11 | 6 | 6 |
+| [VulnerableSymfony](https://github.com/Secureaks/VulnerableSymfony) | 30 | 30 | 30 | 8 | 5 |
+| [VulnPy](https://github.com/Contrast-Security-OSS/vulnpy) | 10 | 10 | 6 | Not scored | Not scored |
 
-Reviewed false positives: Code Scan 13, Semgrep CE 93, Bearer 73 and two grouped rules. Each is a
-lower bound. An answer key is not a complete list of an application's vulnerabilities. Juice Shop's
-was extended from its own documented challenges; the other three were not and still favor the
-classes Code Scan analyzes. Code Scan misses 30 rows: 18 in classes it has no analyzer for and 12
-where an existing analyzer falls short. Semgrep CE and Bearer run free and offline, and a judged
-Code Scan calls a paid model provider. Code Scan was developed against these applications, so this
-is not a general accuracy claim.
-[Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md)
+Reviewed false positives on the four applications all three scanners were scored on: Code Scan
+with `gpt-6-luna` 13, Semgrep CE 93, Bearer 73 and two grouped rules. Code Scan with Gemini has 7
+on the three of them it was run on (Juice Shop 3, DVWA 4, VulnerableSymfony 0). Each count is a
+lower bound, and findings outside the OopsSec and VulnPy keys are not reviewed.
+
+An answer key is not a complete list of an application's vulnerabilities. Juice Shop's was
+extended from its own documented challenges; the others were not and still favor the classes
+Code Scan analyzes. On Juice Shop, Code Scan misses 30 rows with `gpt-6-luna`: 18 in classes it
+has no analyzer for and 12 where an existing analyzer falls short. Gemini leaves five more in
+Review. The `gpt-6-luna` VulnPy report predates the deserialization analyzer. The two Code Scan
+columns also differ in scanner revision. Semgrep CE and Bearer run free and offline, and a judged
+Code Scan calls a paid model provider. Code Scan was developed against these applications, so
+this is not a general accuracy claim.
+[Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md) ·
+[Sample reports](docs/samples/README.md)
 
 ## Modules
 

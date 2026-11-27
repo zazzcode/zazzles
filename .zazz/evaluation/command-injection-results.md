@@ -2,7 +2,7 @@
 
 [Contract](../specifications/command-injection.md) · [Independent matrix](command-injection/matrix.json) ·
 [Evaluator](command-injection/evaluate.py) · [Expected versus actual](command-injection/final-evaluation.json) ·
-[Sample delivery gate](command-injection-sample-delivery.md) · [Public guide](../../docs/analysis/command-injection.md)
+[Sample delivery gate](command-injection-sample-delivery.md) · [Public guide](../../docs/scan/analysis/command-injection.md)
 
 Recorded 2026-11-07 for the `command-injection` branch. Final scans used scanner revision
 `6f5cb711fe06c6d538f636aaea9aad9b5500cbc9` (binary SHA-256

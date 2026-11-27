@@ -28,7 +28,7 @@ they add functionality rather than refactor existing acquisition.
 - [Capability checklist](../project/implementation-plan.md#supported-capability-checklist).
 - [Node acquisition contract: bounded scope](node-http-input-refactor.md#bounded-scope).
 - [Evidence and claims](../architecture/evidence-and-claims.md): transport-neutral input/value evidence.
-- [Input validation: enforcement](../../docs/analysis/input-validation.md#establish-enforcement).
+- [Input validation: enforcement](../../docs/scan/analysis/input-validation.md#establish-enforcement).
 - [Execution discipline: verification](../docs/agent-execution-discipline.md#verification-discipline).
 - [Contributor verification](../../docs/contributing.md#verification).
 - Standards selected through [index](../standards/index.yaml):

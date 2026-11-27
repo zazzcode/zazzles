@@ -23,7 +23,7 @@ logging remains a separate migration.
   [session 02](components-02-xss.md#4-decisions-and-explicit-parity-exception).
 - [Repository graph boundary](../architecture/repository-graph.md#objective-and-analysis-boundary),
   [technical approach](../../docs/technical-approach.md#analysis-knowledge-and-components),
-  [result interpretation](../../docs/interpreting-results.md) and [Python scope](../../docs/python-support.md).
+  [result interpretation](../../docs/scan/interpreting-results.md) and [Python scope](../../docs/scan/python-support.md).
 - [spec-driven](../../.agents/skills/spec-driven/SKILL.md), [execution discipline](../docs/agent-execution-discipline.md),
   [standards index](../standards/index.yaml), [structure](../standards/code-structure.md),
   [testing](../standards/testing.md), [spec hygiene](../standards/spec-hygiene.md),

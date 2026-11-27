@@ -16,7 +16,7 @@ Analyze bounded Apollo Node.js Query/Mutation and explicit object-field resolver
 
 - [AGENTS](../../AGENTS.md#authorization-and-delivery) and
   [orientation](../docs/zazzles-agent-orientation.md#documentation-map).
-- [Milestone index](common-entry-dispatch.md#delivery-order) and [Design §§4–8](../architecture/common-entry-dispatch.md#4-adapter-to-flow-boundary), [database analysis](../../docs/analysis/database-injection.md), [validation](../../docs/analysis/input-validation.md).
+- [Milestone index](common-entry-dispatch.md#delivery-order) and [Design §§4–8](../architecture/common-entry-dispatch.md#4-adapter-to-flow-boundary), [database analysis](../../docs/scan/analysis/database-injection.md), [validation](../../docs/scan/analysis/input-validation.md).
 - Dependency: 01–03 foundations; execute after 05-dynamic-http in this lane. [Previous deliverable](common-entry-dispatch-05-dynamic-http.md)
 - [Execution discipline](../docs/agent-execution-discipline.md#verification-discipline)
   and repository `.agents/skills/spec-driven/SKILL.md` for implementation.
@@ -27,7 +27,7 @@ Analyze bounded Apollo Node.js Query/Mutation and explicit object-field resolver
   [PR process](../standards/pr-process.md) at publication.
   Recheck [standards index](../standards/index.yaml) against actual changed paths.
 - Read the source files in §3 and adjacent existing tests before editing.
-  Preserve current [analysis semantics](../../docs/analysis/README.md).
+  Preserve current [analysis semantics](../../docs/scan/analysis/README.md).
 
 ## 2. Invariants
 

@@ -32,8 +32,8 @@ latency dominates and the run is under its RPM/TPM caps. Token cost does not cha
   on any failure reason); `equivalence.go`; `trace.go` (`Preview`, `AssessTrace`, `Replay`).
 - `cmd/scan/judge_limits.go`, `judge_config.go`, `analysis.go`.
 - [Testing: concurrency](../standards/testing.md#6-concurrency), [semantic adapter stubbing](../standards/testing.md#7-semantic-adapter-stubbing).
-- User docs: [decision models](../../docs/decision-models.md) (judge limits section),
-  [running scans](../../docs/running-scans.md).
+- User docs: [decision models](../../docs/scan/decision-models.md) (judge limits section),
+  [running scans](../../docs/scan/running-scans.md).
 
 ## 3. Invariants
 

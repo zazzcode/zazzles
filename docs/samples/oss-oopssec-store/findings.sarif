@@ -16848,11 +16848,9 @@
           "Verified Express receiver construction and direct registrations required; chained routes, mount composition and effective middleware are not resolved",
           "Supported helpers bind identifier parameters and direct returns; finite literal tables and local literal-argument factories retain closure contexts. Unsupported branches/captures, wrappers, unknown calls, recursion and asynchronous continuations remain gaps",
           "SQL text, NoSQL $where strings, query documents, and request-field validation are candidate findings, not confirmed vulnerabilities",
-          "Evidence follow-ups: 0 sent beside 27 assessment requests (cap 25%, 6); 1 named items the snapshot did not resolve exactly; 0 over the cap (follow_up_cap_reached).",
           "87 validation records were not sent to the judge: their field-policy gate lacks required evidence, so no answer could change their Review outcome (validation_evidence_missing).",
           "3 records were not sent to the judge: a scanner blocker fixes their Review outcome and has no resolution question, so no answer could change it (blocker_unresolvable).",
-          "Judged 27 distinct candidate signatures across 29 total entry contexts (2 derived across equivalent entry contexts).",
-          "Decision-model limits (one scan; discovery and assessment share state): RPM 4500, estimated input TPM 1800000; up to 4 assessment requests in flight. Attempts 27; reported input tokens 184464; unknown-usage attempts 0. "
+          "Judged 27 distinct candidate signatures across 29 total entry contexts (2 derived across equivalent entry contexts)."
         ],
         "scan.practiceObservations": [
           {
@@ -20036,76 +20034,76 @@
             }
           ],
           "message": {
-            "text": "POST /api/admin/products/:id/image: File path needs review [needs_evidence]. Scan identified a request-derived value reaching the path operand of fs/promises.writeFile (write) under the declared posix assumption. Traversal, containment control and coverage are assessed as separate facets; write content and options are not path sources. Path assessment: traversal vulnerable, containment none, coverage incomplete. Scanner policy: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
+            "text": "POST /api/admin/products/:id/image: File path needs review [needs_evidence]. Scan identified a request-derived value reaching the path operand of fs/promises.writeFile (write) under the declared posix assumption. Traversal, containment control and coverage are assessed as separate facets; write content and options are not path sources. Path assessment: traversal vulnerable, containment lexical_boundary, coverage incomplete. Scanner policy: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "70e8a3c473fb60f96598aa98ea5fb5794cd568fee98b2613e398f8fb75fed5f0",
+              "request_digest": "8d8060d5c158d5bdc391524b7ff0e5941695a78a0ab6660647f71e65335fde1f",
               "answer_details": {
                 "containment_control": {
-                  "choice": "none",
-                  "confidence": 0.85,
+                  "choice": "lexical_boundary",
+                  "confidence": 0.5716500259292141,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
-                      "probability": 0.01
+                      "probability": 0.016209350566060862
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "resolved_boundary",
-                      "probability": 0.01
+                      "probability": 0.5716500259292141
                     },
                     {
                       "value": "none",
-                      "probability": 0.88
+                      "probability": 0.3156590010821855
+                    },
+                    {
+                      "value": "resolved_boundary",
+                      "probability": 0.0045316170534042315
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.08
+                      "probability": 0.09195000536913528
                     }
                   ]
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.81,
+                  "confidence": 0.6927097906722761,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.86
+                      "value": "not_applicable",
+                      "probability": 0.00371886682645798
                     },
                     {
                       "value": "protected",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0.09468125410249738
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.11
+                      "probability": 0.20889008839876852
+                    },
+                    {
+                      "value": "vulnerable",
+                      "probability": 0.6927097906722761
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.72,
+                  "confidence": 0.40613810861058774,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.02
+                      "probability": 0.3057685049187314
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.81
+                      "probability": 0.40613810861058774
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.17
+                      "probability": 0.2880933864706808
                     }
                   ]
                 }
@@ -20114,7 +20112,7 @@
               "blocking_gaps": [
                 {
                   "kind": "path_answers_inconsistent",
-                  "detail": "traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)",
+                  "detail": "traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path",
                   "at": {
                     "file": "app/api/admin/products/[id]/image/route.ts",
                     "start_line": 85,
@@ -20125,17 +20123,18 @@
                 }
               ],
               "answers": {
-                "containment_control": "none",
+                "containment_control": "lexical_boundary",
                 "path_traversal": "vulnerable",
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 9091,
-                "output_tokens": 0
+                "input_tokens": 9344,
+                "output_tokens": 0,
+                "total_tokens": 9344
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "path-components-v3",
               "protection": "uncertain",
               "reason": "Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them.",
@@ -20144,10 +20143,78 @@
                   "question": "resolve_witness",
                   "question_version": "witness-citation-v2",
                   "answer": "vulnerable",
-                  "verified": false,
-                  "rejection": "no citation",
-                  "provider": "openai",
-                  "model": "gpt-6-luna"
+                  "citation": [
+                    "e65",
+                    "e59",
+                    "e60",
+                    "e61",
+                    "e62",
+                    "e63",
+                    "e64",
+                    "e39"
+                  ],
+                  "cited_spans": [
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 34,
+                      "end_line": 34,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 34,
+                      "end_line": 34,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 81,
+                      "end_line": 81,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 81,
+                      "end_line": 81,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 81,
+                      "end_line": 81,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 84,
+                      "end_line": 84,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 84,
+                      "end_line": 84,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    },
+                    {
+                      "file": "app/api/admin/products/[id]/image/route.ts",
+                      "start_line": 85,
+                      "end_line": 85,
+                      "start_byte": 0,
+                      "end_byte": 0
+                    }
+                  ],
+                  "dependency": 0,
+                  "verified": true,
+                  "provider": "gemini",
+                  "model": "gemini-decision-1"
                 }
               ]
             },
@@ -20155,7 +20222,7 @@
             "scan.blockingEvidence": [
               {
                 "kind": "path_answers_inconsistent",
-                "detail": "traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)",
+                "detail": "traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path",
                 "source": "policy",
                 "at": {
                   "file": "app/api/admin/products/[id]/image/route.ts",
@@ -21317,13 +21384,13 @@
               "title": "File path needs review",
               "summary": "Scan identified a request-derived value reaching the path operand of fs/promises.writeFile (write) under the declared posix assumption. Traversal, containment control and coverage are assessed as separate facets; write content and options are not path sources.",
               "input_validation": "Not established from the supplied evidence.",
-              "use_protection": "Path assessment: traversal vulnerable, containment none, coverage incomplete. Scanner policy: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them.",
+              "use_protection": "Path assessment: traversal vulnerable, containment lexical_boundary, coverage incomplete. Scanner policy: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
                 "actions": [
                   "Investigate the operation at app/api/admin/products/[id]/image/route.ts:85: writeFile(filepath, buffer). Its current Review status does not establish a code defect.",
-                  "Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)",
+                  "Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path",
                   "Reconcile the semantic assessment with this exact source claim: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
@@ -21332,7 +21399,7 @@
               "blocking_evidence": [
                 {
                   "kind": "path_answers_inconsistent",
-                  "detail": "traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)",
+                  "detail": "traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path",
                   "source": "policy",
                   "at": {
                     "file": "app/api/admin/products/[id]/image/route.ts",
@@ -21687,7 +21754,7 @@
               "title": "Resolve the specific claim blockers",
               "actions": [
                 "Investigate the operation at app/api/admin/products/[id]/image/route.ts:85: writeFile(filepath, buffer). Its current Review status does not establish a code defect.",
-                "Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)",
+                "Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path",
                 "Reconcile the semantic assessment with this exact source claim: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
@@ -24953,71 +25020,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "9b831d3354ea3c0c75bc82524398269466f14328fa58acaaec70956d12de1e32",
+              "request_digest": "8cc3b7342206653d30b1e31ad1abadea5f362324acd5882f411e4c38739e96ce",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.95,
+                  "confidence": 0.9635359656408896,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.96
+                      "value": "not_applicable",
+                      "probability": 0.0009436103799978067
                     },
                     {
                       "value": "protected",
-                      "probability": 0.03
+                      "probability": 0.017508538211267816
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.018011885767844744
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.9635359656408896
                     }
                   ]
                 },
                 "protection": {
                   "choice": "insufficient",
-                  "confidence": 0.99,
+                  "confidence": 0.9366268123214965,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.01
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.99
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0
+                      "probability": 0.9366268123214965
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.0068414003241054205
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02574811235068082
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.030783675003717214
                     }
                   ]
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.27,
+                  "confidence": 0.7689094898166441,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.24
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.45
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.25
+                      "probability": 0.7689094898166441
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.06
+                      "probability": 0.019833547619148944
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.13639479916361225
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.07486216340059475
                     }
                   ]
                 }
@@ -25029,12 +25096,13 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 8334,
-                "output_tokens": 0
+                "input_tokens": 8620,
+                "output_tokens": 0,
+                "total_tokens": 8620
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "sql-components-v4",
               "protection": "insufficient",
               "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
@@ -27519,71 +27587,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "ca7b44590d3f545e06f2b3fcee0927bb4ce18ad9094e0fecef8b63a356bd1295",
+              "request_digest": "acd9f85e5aab38968890b48b5265db84be20587e65ca43a84958d702e66009fc",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.95,
+                  "confidence": 0.9425187173604979,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.96
+                      "value": "not_applicable",
+                      "probability": 0.0013835319118965116
                     },
                     {
                       "value": "protected",
-                      "probability": 0.02
+                      "probability": 0.027444911703244115
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.028652839024361394
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.9425187173604979
                     }
                   ]
                 },
                 "protection": {
                   "choice": "insufficient",
-                  "confidence": 1,
+                  "confidence": 0.9478917569042167,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 1
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0
+                      "probability": 0.9478917569042167
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.004095954512953962
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.021472363161796626
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.02653992542103276
                     }
                   ]
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.36,
+                  "confidence": 0.7579430948277117,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.18
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.52
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.3
+                      "probability": 0.7579430948277117
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.020772284085520645
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.160651231643569
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.060633389443198654
                     }
                   ]
                 }
@@ -27595,12 +27663,13 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 8337,
-                "output_tokens": 0
+                "input_tokens": 8624,
+                "output_tokens": 0,
+                "total_tokens": 8624
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "sql-components-v4",
               "protection": "insufficient",
               "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
@@ -31800,75 +31869,75 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "392fbd55b0d72907cc10ac2dcc7bd51623782ef225b0ef73066f72cff07c6c99",
+              "request_digest": "02f1b21a23d20892d8fcd1625910d1b42501e611e4efd687992dfb85e39673c7",
               "answer_details": {
                 "destination_control": {
                   "choice": "full_url",
-                  "confidence": 0.8,
+                  "confidence": 0.8146842364057313,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.84
+                      "probability": 0.8146842364057313
                     },
                     {
                       "value": "host",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "path_or_query",
-                      "probability": 0.02
+                      "probability": 0.03761637293249645
                     },
                     {
                       "value": "none",
-                      "probability": 0.03
+                      "probability": 0.03453545137398438
+                    },
+                    {
+                      "value": "path_or_query",
+                      "probability": 0.0076927702898867975
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.09
+                      "probability": 0.10547116899790111
                     }
                   ]
                 },
                 "destination_restriction": {
                   "choice": "none",
-                  "confidence": 0.96,
+                  "confidence": 0.9129891675543053,
                   "probabilities": [
                     {
                       "value": "host_allowlist",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "scheme_and_host_check",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "prefix_only",
-                      "probability": 0.01
+                      "probability": 0.011362689452566042
                     },
                     {
                       "value": "none",
-                      "probability": 0.97
+                      "probability": 0.9129891675543053
+                    },
+                    {
+                      "value": "prefix_only",
+                      "probability": 0.016677067130606425
+                    },
+                    {
+                      "value": "scheme_and_host_check",
+                      "probability": 0.02002198717083167
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.03894908869169075
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.72,
+                  "confidence": 0.8336342798766538,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.06
+                      "probability": 0.018697852599539547
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.81
+                      "probability": 0.8336342798766538
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.13
+                      "probability": 0.14766786752380656
                     }
                   ]
                 }
@@ -31880,12 +31949,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 7790,
-                "output_tokens": 0
+                "input_tokens": 8146,
+                "output_tokens": 0,
+                "total_tokens": 8146
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "ssrf-components-v2",
               "protection": "insufficient",
               "reason": "A consistent SSRF answer is supported by an independent request-to-destination path through a verified fetch binding with no enforced destination restriction. Unresolved sibling paths remain visible. This is a static judgment, not runtime network reachability, DNS or redirect analysis, or independent Findings Review."
@@ -37021,89 +37091,89 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "2c467c9f075ea79cb84ee5610b4c0c75c85c14e0c22b092e06075f7b73fa807a",
+              "request_digest": "08596dfff6b80d88ea70e35b8085aa6e4a32f28981770f5907fa9ed4af92864d",
               "answer_details": {
                 "content_exposure": {
                   "choice": "yes",
-                  "confidence": 0.93,
+                  "confidence": 0.9211201554798452,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0.95
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.04
+                      "probability": 0.014912220093389656
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.06396762442676512
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.9211201554798452
                     }
                   ]
                 },
                 "data_class": {
                   "choice": "credential",
-                  "confidence": 0.49,
+                  "confidence": 0.4848190000443644,
                   "probabilities": [
                     {
                       "value": "credential",
-                      "probability": 0.62
-                    },
-                    {
-                      "value": "personal_data",
-                      "probability": 0.25
+                      "probability": 0.4848190000443644
                     },
                     {
                       "value": "other",
-                      "probability": 0.01
+                      "probability": 0.04324751783296695
+                    },
+                    {
+                      "value": "personal_data",
+                      "probability": 0.28924586194683855
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.12
+                      "probability": 0.18268762017583004
                     }
                   ]
                 },
                 "log_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.88,
+                  "confidence": 0.9530931365465174,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.91
+                      "value": "not_applicable",
+                      "probability": 0.001611920825444057
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.008241405600133872
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.08
+                      "probability": 0.03705353702790459
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.9530931365465174
                     }
                   ]
                 },
                 "redaction": {
                   "choice": "no",
-                  "confidence": 0.96,
+                  "confidence": 0.9250006712206009,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.97
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.9250006712206009
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0.008315337472420725
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 0.05566356669885478
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.011020424608123594
                     }
                   ]
                 }
@@ -37116,12 +37186,13 @@
                 "redaction": "no"
               },
               "usage": {
-                "input_tokens": 4656,
-                "output_tokens": 0
+                "input_tokens": 4499,
+                "output_tokens": 0,
+                "total_tokens": 4499
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "log-components-v2",
               "protection": "insufficient",
               "reason": "Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
@@ -41530,71 +41601,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "2ed7c4794f6027cce1792076c2e4b2828443188e9a13b0ecd0872989f89509ad",
+              "request_digest": "19bdc2fb5330c1a0f206d60473dc818c70703d8c8e35f5b6b7b313a8df0e478c",
               "answer_details": {
                 "containment_control": {
                   "choice": "none",
-                  "confidence": 0.9,
+                  "confidence": 0.9471534423727619,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
-                      "probability": 0.01
+                      "probability": 0.005750921185780658
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0.05
-                    },
-                    {
-                      "value": "resolved_boundary",
-                      "probability": 0.01
+                      "probability": 0.009876330830165075
                     },
                     {
                       "value": "none",
-                      "probability": 0.92
+                      "probability": 0.9471534423727619
+                    },
+                    {
+                      "value": "resolved_boundary",
+                      "probability": 0.005167338659349665
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.03205196695194292
                     }
                   ]
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.73,
+                  "confidence": 0.9039262408350364,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.8
+                      "value": "not_applicable",
+                      "probability": 0.0016929010981298466
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.02
+                      "probability": 0.006949312290784516
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.17
+                      "probability": 0.08743154577604925
+                    },
+                    {
+                      "value": "vulnerable",
+                      "probability": 0.9039262408350364
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.96,
+                  "confidence": 0.8200092638675959,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.01
+                      "probability": 0.032005915375676194
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.97
+                      "probability": 0.8200092638675959
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.14798482075672806
                     }
                   ]
                 }
@@ -41606,12 +41677,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 6996,
-                "output_tokens": 0
+                "input_tokens": 6940,
+                "output_tokens": 0,
+                "total_tokens": 6940
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "path-components-v3",
               "protection": "insufficient",
               "reason": "A consistent traversal answer is supported by an independent source-to-operand path with a verified fs/promises.readdir binding under the declared posix assumption; no enforced containment is established. Unresolved sibling paths remain visible. This is a static judgment, not runtime exploitation, symbolic-link or filesystem-state analysis, or independent Findings Review."
@@ -43105,71 +43177,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "52d9af0ceb1ef868f31004737d122169833aa311922a9878a956db420fa9fff2",
+              "request_digest": "2a3fa09536284fe6b1de053e7da142e90e362da7226d8565f45fd426f03dd9fe",
               "answer_details": {
                 "containment_control": {
                   "choice": "none",
-                  "confidence": 0.99,
+                  "confidence": 0.9546419692474304,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
-                      "probability": 0
+                      "probability": 0.004868719078710739
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "resolved_boundary",
-                      "probability": 0
+                      "probability": 0.009197973123338305
                     },
                     {
                       "value": "none",
-                      "probability": 0.99
+                      "probability": 0.9546419692474304
+                    },
+                    {
+                      "value": "resolved_boundary",
+                      "probability": 0.0038162205646910226
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.027475117985829408
                     }
                   ]
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.6,
+                  "confidence": 0.8945878709001559,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.7
+                      "value": "not_applicable",
+                      "probability": 0.0043510388865809525
                     },
                     {
                       "value": "protected",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.06
+                      "probability": 0.011969300819399734
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.22
+                      "probability": 0.0890917893938635
+                    },
+                    {
+                      "value": "vulnerable",
+                      "probability": 0.8945878709001559
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.79,
+                  "confidence": 0.8333247835028484,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.03
+                      "probability": 0.048521601769544724
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.86
+                      "probability": 0.8333247835028484
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.11
+                      "probability": 0.11815361472760674
                     }
                   ]
                 }
@@ -43181,12 +43253,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 6995,
-                "output_tokens": 0
+                "input_tokens": 6950,
+                "output_tokens": 0,
+                "total_tokens": 6950
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "path-components-v3",
               "protection": "insufficient",
               "reason": "A consistent traversal answer is supported by an independent source-to-operand path with a verified fs/promises.readFile binding under the declared posix assumption; no enforced containment is established. Unresolved sibling paths remain visible. This is a static judgment, not runtime exploitation, symbolic-link or filesystem-state analysis, or independent Findings Review."
@@ -44695,71 +44768,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "cafaf5c175b3e8a292a318bf6e1510d593eb525d3595912b24d9f1487aa2b5d7",
+              "request_digest": "7bfcafb4c9c8069e7b71c6d9d6de64434a9c96b1f142a8a53cb6e93e21d1e1e2",
               "answer_details": {
                 "containment_control": {
                   "choice": "none",
-                  "confidence": 0.95,
+                  "confidence": 0.9468473723860964,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
-                      "probability": 0.01
+                      "probability": 0.005989239203801127
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "resolved_boundary",
-                      "probability": 0
+                      "probability": 0.01184909637258791
                     },
                     {
                       "value": "none",
-                      "probability": 0.96
+                      "probability": 0.9468473723860964
+                    },
+                    {
+                      "value": "resolved_boundary",
+                      "probability": 0.004749015527399541
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.03056527651011491
                     }
                   ]
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.84,
+                  "confidence": 0.8856483134018844,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.88
+                      "value": "not_applicable",
+                      "probability": 0.004786803161855138
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "probability": 0.012868752364474219
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1
+                      "probability": 0.09669613107178625
+                    },
+                    {
+                      "value": "vulnerable",
+                      "probability": 0.8856483134018844
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.86,
+                  "confidence": 0.8088792248715689,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.01
+                      "probability": 0.0612278785714466
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.91
+                      "probability": 0.8088792248715689
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.08
+                      "probability": 0.12989289655698438
                     }
                   ]
                 }
@@ -44771,12 +44844,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 7031,
-                "output_tokens": 0
+                "input_tokens": 6993,
+                "output_tokens": 0,
+                "total_tokens": 6993
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "path-components-v3",
               "protection": "insufficient",
               "reason": "A consistent traversal answer is supported by an independent source-to-operand path with a verified fs/promises.readFile binding under the declared posix assumption; no enforced containment is established. Unresolved sibling paths remain visible. This is a static judgment, not runtime exploitation, symbolic-link or filesystem-state analysis, or independent Findings Review."
@@ -49003,89 +49077,89 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "7fce929ead3e32d80ba6770db417bc638fde00c24416552d975bdb57abb1a1cf",
+              "request_digest": "7d03e702bc2d5a67c2262087d8469657d60f738351995d56866beb6612b4e4b8",
               "answer_details": {
                 "content_exposure": {
                   "choice": "yes",
-                  "confidence": 0.91,
+                  "confidence": 0.7413584548549927,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0.94
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.03
+                      "probability": 0.031363070483434785
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.22727847466157247
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.7413584548549927
                     }
                   ]
                 },
                 "data_class": {
                   "choice": "personal_data",
-                  "confidence": 0.85,
+                  "confidence": 0.7874062605651345,
                   "probabilities": [
                     {
                       "value": "credential",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "personal_data",
-                      "probability": 0.89
+                      "probability": 0.011108221470100418
                     },
                     {
                       "value": "other",
-                      "probability": 0
+                      "probability": 0.022261925536017326
+                    },
+                    {
+                      "value": "personal_data",
+                      "probability": 0.7874062605651345
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1
+                      "probability": 0.17922359242874772
                     }
                   ]
                 },
                 "log_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.69,
+                  "confidence": 0.7075324115680867,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.77
+                      "value": "not_applicable",
+                      "probability": 0.004715703229277101
                     },
                     {
                       "value": "protected",
-                      "probability": 0.03
+                      "probability": 0.06074231392268679
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.2
+                      "probability": 0.2270095712799495
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.7075324115680867
                     }
                   ]
                 },
                 "redaction": {
                   "choice": "no",
-                  "confidence": 0.93,
+                  "confidence": 0.6765230041676533,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.95
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.05
+                      "probability": 0.6765230041676533
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.03797003962046982
+                    },
+                    {
+                      "value": "unknown",
+                      "probability": 0.2702431072166286
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.015263848995248377
                     }
                   ]
                 }
@@ -49098,12 +49172,13 @@
                 "redaction": "no"
               },
               "usage": {
-                "input_tokens": 5590,
-                "output_tokens": 0
+                "input_tokens": 5579,
+                "output_tokens": 0,
+                "total_tokens": 5579
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "log-components-v2",
               "protection": "insufficient",
               "reason": "Verified logger binding and source evidence, with consistent answers that sensitive content reaches the log without redaction; this is a static judgment, not runtime confirmation."
@@ -61563,71 +61638,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "9d47035b439cf227b53c0ec7b9b6a0bb35bf2a1fc1936fc75282826cf3511d97",
+              "request_digest": "3d04991586280a9426bc82cd4ab0b2ffb2916d8ee77b78444e433b9a58ba1549",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.85,
+                  "confidence": 0.9481742346692352,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.89
+                      "value": "not_applicable",
+                      "probability": 0.00046990809062565244
                     },
                     {
                       "value": "protected",
-                      "probability": 0.06
+                      "probability": 0.026947032604424263
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.02440882463571478
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "value": "vulnerable",
+                      "probability": 0.9481742346692352
                     }
                   ]
                 },
                 "protection": {
                   "choice": "insufficient",
-                  "confidence": 0.97,
+                  "confidence": 0.9551618247762133,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.02
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.98
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0
+                      "probability": 0.9551618247762133
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.006950461329489328
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02173387873719874
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.016153835157098475
                     }
                   ]
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.76,
+                  "confidence": 0.867577578972828,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.12
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.82
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.06
+                      "probability": 0.867577578972828
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.007646561100720691
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.08222582307681921
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.04255003684963217
                     }
                   ]
                 }
@@ -61639,12 +61714,13 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 10142,
-                "output_tokens": 0
+                "input_tokens": 10483,
+                "output_tokens": 0,
+                "total_tokens": 10483
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "sql-components-v4",
               "protection": "insufficient",
               "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
@@ -65965,71 +66041,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "42adcf945ec3f9bace56218345f2c422d1dc69098dce3f9fcfa84d09cbf18d1c",
+              "request_digest": "c7e693a1e1ee6742427385c67e1a1d535f776454108ccb0d9c7dbef3c9af193b",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.96,
+                  "confidence": 0.9634602425474318,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.97
+                      "value": "not_applicable",
+                      "probability": 0.0010433161608265262
                     },
                     {
                       "value": "protected",
-                      "probability": 0.02
+                      "probability": 0.019350884301771003
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.01614555698997063
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.9634602425474318
                     }
                   ]
                 },
                 "protection": {
                   "choice": "insufficient",
-                  "confidence": 1,
+                  "confidence": 0.9123481080783831,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 1
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0
+                      "probability": 0.9123481080783831
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.012277206553912673
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.036056440312868906
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.039318245054835416
                     }
                   ]
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.76,
+                  "confidence": 0.7397748807981865,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.15
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.82
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.03
+                      "probability": 0.7397748807981865
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.015565098796422129
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.15837264003347418
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.08628738037191716
                     }
                   ]
                 }
@@ -66041,12 +66117,13 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 9369,
-                "output_tokens": 0
+                "input_tokens": 9596,
+                "output_tokens": 0,
+                "total_tokens": 9596
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "sql-components-v4",
               "protection": "insufficient",
               "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
@@ -68319,75 +68396,75 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "a7f3a911cd05617ab692fb4636138092a320b80cc317881c6b9fe18523f5ad59",
+              "request_digest": "d35580d689cf4fd096c8aedc540e8e064c173922ecf045fd12181ca69ce66fa2",
               "answer_details": {
                 "destination_control": {
                   "choice": "full_url",
-                  "confidence": 0.66,
+                  "confidence": 0.9701507987612071,
                   "probabilities": [
                     {
                       "value": "full_url",
-                      "probability": 0.73
+                      "probability": 0.9701507987612071
                     },
                     {
                       "value": "host",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "path_or_query",
-                      "probability": 0.04
+                      "probability": 0.0062788174302878
                     },
                     {
                       "value": "none",
-                      "probability": 0.03
+                      "probability": 0.0048542822397244145
+                    },
+                    {
+                      "value": "path_or_query",
+                      "probability": 0.0032286386473370336
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.19
+                      "probability": 0.015487462921443668
                     }
                   ]
                 },
                 "destination_restriction": {
                   "choice": "none",
-                  "confidence": 1,
+                  "confidence": 0.9646304657619729,
                   "probabilities": [
                     {
                       "value": "host_allowlist",
-                      "probability": 0
-                    },
-                    {
-                      "value": "scheme_and_host_check",
-                      "probability": 0
-                    },
-                    {
-                      "value": "prefix_only",
-                      "probability": 0
+                      "probability": 0.004571089208158484
                     },
                     {
                       "value": "none",
-                      "probability": 1
+                      "probability": 0.9646304657619729
+                    },
+                    {
+                      "value": "prefix_only",
+                      "probability": 0.004076279610695051
+                    },
+                    {
+                      "value": "scheme_and_host_check",
+                      "probability": 0.008756421994793886
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.017965743424379756
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.77,
+                  "confidence": 0.858188116891045,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0.11
+                      "probability": 0.03196108780763345
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.85
+                      "probability": 0.858188116891045
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.1098507953013215
                     }
                   ]
                 }
@@ -68399,12 +68476,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 5386,
-                "output_tokens": 0
+                "input_tokens": 5273,
+                "output_tokens": 0,
+                "total_tokens": 5273
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "ssrf-components-v2",
               "protection": "insufficient",
               "reason": "A consistent SSRF answer is supported by an independent request-to-destination path through a verified fetch binding with no enforced destination restriction. Unresolved sibling paths remain visible. This is a static judgment, not runtime network reachability, DNS or redirect analysis, or independent Findings Review."
@@ -69876,71 +69954,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "4ef2f5a386e7d09538c29e1790e897b4d7190e4b83ce3931eccb585454a1ef20",
+              "request_digest": "b373d2583f0685dfa84b1847aeb3400de09ce6f348b82f61afc669caf2bf433d",
               "answer_details": {
                 "injection_protection": {
                   "choice": "vulnerable",
-                  "confidence": 0.76,
+                  "confidence": 0.8557610737695555,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.82
+                      "value": "not_applicable",
+                      "probability": 0.0020411399431073205
                     },
                     {
                       "value": "protected",
-                      "probability": 0.06
+                      "probability": 0.06157819088861298
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.12
+                      "probability": 0.08061959539872433
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.8557610737695555
                     }
                   ]
                 },
                 "protection": {
                   "choice": "insufficient",
-                  "confidence": 0.89,
+                  "confidence": 0.9229343008901738,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.03
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.92
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.05
+                      "probability": 0.9229343008901738
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.006278321002683716
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.02863607033240896
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.042151307774733686
                     }
                   ]
                 },
                 "validation": {
                   "choice": "insufficient",
-                  "confidence": 0.71,
+                  "confidence": 0.8402745689878525,
                   "probabilities": [
                     {
-                      "value": "sufficient",
-                      "probability": 0.07
-                    },
-                    {
                       "value": "insufficient",
-                      "probability": 0.78
-                    },
-                    {
-                      "value": "uncertain",
-                      "probability": 0.15
+                      "probability": 0.8402745689878525
                     },
                     {
                       "value": "not_applicable",
-                      "probability": 0
+                      "probability": 0.01358431502452554
+                    },
+                    {
+                      "value": "sufficient",
+                      "probability": 0.07262443687355759
+                    },
+                    {
+                      "value": "uncertain",
+                      "probability": 0.07351667911406463
                     }
                   ]
                 }
@@ -69952,21 +70030,16 @@
                 "validation": "insufficient"
               },
               "usage": {
-                "input_tokens": 11870,
-                "output_tokens": 0
+                "input_tokens": 12402,
+                "output_tokens": 0,
+                "total_tokens": 12402
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "sql-components-v4",
               "protection": "insufficient",
-              "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation.",
-              "follow_up": {
-                "kind": "value_definition",
-                "symbol": "crypto",
-                "status": "not_sent",
-                "reason": "the record is not an assessed Review record"
-              }
+              "reason": "Source-backed injection claim has required source, binding and path evidence, no declared blockers, and an independent injection-specific insufficient-protection assessment; this is a static judgment, not runtime confirmation."
             },
             "scan.assessmentState": "completed",
             "scan.blockingGaps": [],
@@ -72507,71 +72580,71 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "407a18ec311380f739d9bd3e1cdcc80d91dbdbaed72242a132e205f42cb6bb66",
+              "request_digest": "32424c1d45babc7ef3571c1b6dd95c28c6417530101baac20570a841757c1ce4",
               "answer_details": {
                 "containment_control": {
                   "choice": "none",
-                  "confidence": 1,
+                  "confidence": 0.9406937246972379,
                   "probabilities": [
                     {
                       "value": "finite_allowlist",
-                      "probability": 0
+                      "probability": 0.0029800978000611563
                     },
                     {
                       "value": "lexical_boundary",
-                      "probability": 0
-                    },
-                    {
-                      "value": "resolved_boundary",
-                      "probability": 0
+                      "probability": 0.007464792391193504
                     },
                     {
                       "value": "none",
-                      "probability": 1
+                      "probability": 0.9406937246972379
+                    },
+                    {
+                      "value": "resolved_boundary",
+                      "probability": 0.005267677707281511
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.0435937074042258
                     }
                   ]
                 },
                 "path_traversal": {
                   "choice": "vulnerable",
-                  "confidence": 0.44,
+                  "confidence": 0.8547358947445148,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.58
+                      "value": "not_applicable",
+                      "probability": 0.0010251672353738116
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.08
+                      "probability": 0.007374083894125803
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.33
+                      "probability": 0.13686485412598567
+                    },
+                    {
+                      "value": "vulnerable",
+                      "probability": 0.8547358947445148
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.45,
+                  "confidence": 0.6862378712927952,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0
+                      "probability": 0.04616813003293576
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.63
+                      "probability": 0.6862378712927952
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.37
+                      "probability": 0.26759399867426903
                     }
                   ]
                 }
@@ -72596,12 +72669,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 6593,
-                "output_tokens": 0
+                "input_tokens": 6434,
+                "output_tokens": 0,
+                "total_tokens": 6434
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "path-components-v3",
               "protection": "uncertain",
               "reason": "Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them.",
@@ -72672,16 +72746,10 @@
                   ],
                   "dependency": 0,
                   "verified": true,
-                  "provider": "openai",
-                  "model": "gpt-6-luna"
+                  "provider": "gemini",
+                  "model": "gemini-decision-1"
                 }
-              ],
-              "follow_up": {
-                "kind": "helper_body",
-                "symbol": "path.join",
-                "status": "unresolved",
-                "reason": "the scanned snapshot has no single exact definition of path.join"
-              }
+              ]
             },
             "scan.assessmentState": "completed",
             "scan.blockingEvidence": [
@@ -77042,135 +77110,135 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "9bb974c2273d07096e400d837ba32760d1388550251333f23ff03b0481ec8217",
+              "request_digest": "329ae57ee3c56e4acb870e3862142a03c097b1d8cde339d9f56d3b48ac2f6ba4",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.69,
+                  "confidence": 0.5289457463903535,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.02
+                      "probability": 0.003512844816359994
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.19
+                      "probability": 0.28365124503622974
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.77
+                      "probability": 0.5289457463903535
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.18389016375705666
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.5,
+                  "confidence": 0.8650526348387477,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.55
+                      "value": "active_attribute",
+                      "probability": 0.010391535277815537
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.03
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.21
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.03667523988831473
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0.02
+                      "probability": 0.005336803559276188
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.8650526348387477
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.001158792490840774
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.0007506769958890855
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.01
+                      "probability": 0.002984576202119737
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.15
+                      "probability": 0.061579114727515094
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.01097317866379877
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.005097447355682827
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.85,
+                  "confidence": 0.7826117260363029,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.7826117260363029
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0.01
+                      "probability": 0.011013367165322115
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.09
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.89
+                      "probability": 0.02860646720864729
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.1777684395897276
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.93,
+                  "confidence": 0.884063858486086,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0.01
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.95
+                      "probability": 0.884063858486086
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.1145985059870441
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.0013376355268698188
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.87,
+                  "confidence": 0.9085452287995762,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.9
+                      "value": "not_applicable",
+                      "probability": 0.002416036683557939
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.033087442803744656
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.08
+                      "probability": 0.05595129171312106
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "value": "vulnerable",
+                      "probability": 0.9085452287995762
                     }
                   ]
                 }
@@ -77184,13 +77252,14 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 7003,
-                "output_tokens": 0
+                "input_tokens": 6811,
+                "output_tokens": 0,
+                "total_tokens": 6811
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -84507,83 +84576,83 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "3343cf0d803d398eef089e4ad8b91f3ab989b9dde9617658a7c8f40150b4fbb1",
+              "request_digest": "bf2b033f1f7051d2a30f5d35b6810cd40cb794865df6a08a885758ca30486060",
               "answer_details": {
                 "destination_control": {
                   "choice": "full_url",
-                  "confidence": 0.89,
+                  "confidence": 0.7664971708283967,
                   "probabilities": [
                     {
+                      "value": "fixed_origin",
+                      "probability": 0.009059983627597391
+                    },
+                    {
                       "value": "full_url",
-                      "probability": 0.91
+                      "probability": 0.7664971708283967
                     },
                     {
                       "value": "host",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "path_only",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "fixed_origin",
-                      "probability": 0.01
+                      "probability": 0.009046756393339853
                     },
                     {
                       "value": "none",
-                      "probability": 0.01
+                      "probability": 0.0556603825266761
+                    },
+                    {
+                      "value": "path_only",
+                      "probability": 0.021241209265256935
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.13849449735873293
                     }
                   ]
                 },
                 "destination_restriction": {
                   "choice": "none",
-                  "confidence": 0.74,
+                  "confidence": 0.7728774232418043,
                   "probabilities": [
                     {
-                      "value": "same_site_relative",
-                      "probability": 0.04
-                    },
-                    {
-                      "value": "parsed_origin_check",
-                      "probability": 0.01
-                    },
-                    {
                       "value": "host_allowlist",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "prefix_or_substring",
-                      "probability": 0.02
+                      "probability": 0.006842165142698689
                     },
                     {
                       "value": "none",
-                      "probability": 0.78
+                      "probability": 0.7728774232418043
+                    },
+                    {
+                      "value": "parsed_origin_check",
+                      "probability": 0.002465720056002216
+                    },
+                    {
+                      "value": "prefix_or_substring",
+                      "probability": 0.009662959745209953
+                    },
+                    {
+                      "value": "same_site_relative",
+                      "probability": 0.01861518322474674
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.14
+                      "probability": 0.18953654858953806
                     }
                   ]
                 },
                 "protection_coverage": {
                   "choice": "incomplete",
-                  "confidence": 0.97,
+                  "confidence": 0.8246794744404451,
                   "probabilities": [
                     {
                       "value": "complete",
-                      "probability": 0
+                      "probability": 0.03361258672701605
                     },
                     {
                       "value": "incomplete",
-                      "probability": 0.98
+                      "probability": 0.8246794744404451
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.14170793883253888
                     }
                   ]
                 }
@@ -84595,12 +84664,13 @@
                 "protection_coverage": "incomplete"
               },
               "usage": {
-                "input_tokens": 5673,
-                "output_tokens": 0
+                "input_tokens": 6138,
+                "output_tokens": 0,
+                "total_tokens": 6138
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
               "question_version": "redirect-components-v1",
               "protection": "insufficient",
               "reason": "A request-derived operand reaches a verified redirect operation on a complete raw path without an effective restriction."
@@ -85551,8 +85621,7 @@
               },
               "assessment_state": "completed",
               "linked_use_ids": [
-                "candidate:v1:77a039da2787540f96ab377e907a7f79571d73d7c7ace11b607687387823eb45",
-                "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c"
+                "candidate:v1:77a039da2787540f96ab377e907a7f79571d73d7c7ace11b607687387823eb45"
               ],
               "grouped_use_ids": [
                 "candidate:v1:c929ce67f8895672972844fbd180ea856cc6f2aad4faba27292f76bec756752d",
@@ -85586,8 +85655,7 @@
             "scan.invocationContextId": "invocation:v1:94f619730faa648c6b5e07e992a33871918ff5b2166630ceedeb06f12d1267d8",
             "scan.kind": "open_redirect_candidate",
             "scan.linkedUseIds": [
-              "candidate:v1:77a039da2787540f96ab377e907a7f79571d73d7c7ace11b607687387823eb45",
-              "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c"
+              "candidate:v1:77a039da2787540f96ab377e907a7f79571d73d7c7ace11b607687387823eb45"
             ],
             "scan.recommendations": {
               "title": "Resolve the specific claim blockers",
@@ -85892,7 +85960,7 @@
             }
           ],
           "message": {
-            "text": "app/login/LoginForm.tsx: Untrusted data reaches raw HTML output [poor_practice]. A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate. This row stands for 2 records from 2 entries that reach this sink with status poor_practice (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: browser source in 2. Decision XSS exposure: Inconclusive. Scanner policy: XSS assessment is inconclusive; absence of a positive answer is not protection."
+            "text": "app/login/LoginForm.tsx: Cross-site scripting supported by source analysis [confirmed_vulnerability]. A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. This row stands for 4 records from 2 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 3; each keeps its own evidence and judgment in JSON). Origins across them: browser source in 4. Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
           },
           "partialFingerprints": {
             "zazzlesSinkGroup/v1": "998e5b5d79b64be5758034fe209e5c2f"
@@ -85900,157 +85968,158 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "2e99a6b459d19248235b34898792cdfdc8cf637a8e28acbcd6b8bb67836e5501",
+              "request_digest": "74c03112d30f7bf4e4f44a1080ffb5be18b2b755227b67b17ccfdd0c491731da",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.95,
+                  "confidence": 0.8678315553431007,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.01
+                      "probability": 0.011536253950216605
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.02
+                      "probability": 0.0594731091196332
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.96
+                      "probability": 0.8678315553431007
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.06115908158704962
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "url",
-                  "confidence": 0.98,
+                  "confidence": 0.9934194802818892,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0
+                      "value": "active_attribute",
+                      "probability": 0.0002649089036427927
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.98
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.00034493858810374304
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0
+                      "probability": 0.000041934346421952615
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.00011721610261763907
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.00037939193322505987
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.00006042889485401945
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.01
+                      "probability": 0.00006656630829468119
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.004391232041456828
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.0009139025994939268
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.9934194802818892
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.76,
+                  "confidence": 0.9098401669094206,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.9098401669094206
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0.03
+                      "probability": 0.005701790667765727
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.08
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.82
+                      "probability": 0.055259989105704545
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.07
+                      "probability": 0.029198053317109018
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.83,
+                  "confidence": 0.9565320094742611,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0.01
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.89
+                      "probability": 0.9565320094742611
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1
+                      "probability": 0.0409063502123802
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.0025616403133586676
                     }
                   ]
                 },
                 "xss_exposure": {
-                  "choice": "unknown",
-                  "confidence": 0.41,
+                  "choice": "vulnerable",
+                  "confidence": 0.948908614580933,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.19
+                      "value": "not_applicable",
+                      "probability": 0.0011893860459297717
                     },
                     {
                       "value": "protected",
-                      "probability": 0.08
+                      "probability": 0.023903678015762438
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.56
+                      "probability": 0.025998321357374676
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0.17
+                      "value": "vulnerable",
+                      "probability": 0.948908614580933
                     }
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "confirmed_vulnerability",
               "answers": {
                 "encoding_adequacy": "not_present",
                 "output_context": "url",
                 "sanitizer_effectiveness": "absent",
                 "xss_all_paths_protected": "no",
-                "xss_exposure": "unknown"
+                "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 5640,
-                "output_tokens": 0
+                "input_tokens": 5628,
+                "output_tokens": 0,
+                "total_tokens": 5628
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
-              "protection": "uncertain",
-              "reason": "XSS assessment is inconclusive; absence of a positive answer is not protection."
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
+              "protection": "insufficient",
+              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
             "scan.assessmentState": "completed",
             "scan.blockingGaps": [],
@@ -86143,12 +86212,12 @@
               "entry_id": "entry:v1:0c621592d0b97f4a555364acf43be3ad60e988d5536cb0303dd3504f441222cb",
               "invocation_context_id": "invocation:v1:94f619730faa648c6b5e07e992a33871918ff5b2166630ceedeb06f12d1267d8",
               "record_type": "finding",
-              "status": "poor_practice",
-              "title": "Untrusted data reaches raw HTML output",
-              "summary": "A source-backed input flow reaches a verified rendering sink without established context-appropriate encoding or effective sanitization. Correct the output construction; runtime exploit confirmation is separate. This row stands for 2 records from 2 entries that reach this sink with status poor_practice (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: browser source in 2.",
+              "status": "confirmed_vulnerability",
+              "title": "Cross-site scripting supported by source analysis",
+              "summary": "A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. This row stands for 4 records from 2 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 3; each keeps its own evidence and judgment in JSON). Origins across them: browser source in 4.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: Inconclusive. Scanner policy: XSS assessment is inconclusive; absence of a positive answer is not protection.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed. Exploitability is separate from the established construction practice; a missing or inconclusive semantic assessment does not remove this remediation task.",
+              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
+              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Repair this HTML output",
                 "actions": [
@@ -86163,11 +86232,15 @@
                 "candidate:v1:88d9712c47241b47d49cce51ed78b41ee108eb9ee5af396e3efabdb48788ba3f"
               ],
               "grouped_use_ids": [
-                "candidate:v1:5a46b77550e2efa51ada72a31874d37e34e6d0e6eea37eb11acdddb34180bf0b"
+                "candidate:v1:5a46b77550e2efa51ada72a31874d37e34e6d0e6eea37eb11acdddb34180bf0b",
+                "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c",
+                "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c:1"
               ]
             },
             "scan.groupedUseIds": [
-              "candidate:v1:5a46b77550e2efa51ada72a31874d37e34e6d0e6eea37eb11acdddb34180bf0b"
+              "candidate:v1:5a46b77550e2efa51ada72a31874d37e34e6d0e6eea37eb11acdddb34180bf0b",
+              "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c",
+              "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c:1"
             ],
             "scan.invocationContext": {
               "id": "invocation:v1:94f619730faa648c6b5e07e992a33871918ff5b2166630ceedeb06f12d1267d8",
@@ -86884,140 +86957,140 @@
             }
           ],
           "message": {
-            "text": "app/products/[id]/ProductDetailClient.tsx: Stored value reaches HTML output; write origin needs review [needs_evidence]. A verified storage read reaches rendering, but no matching request-to-storage write is established. Resolve that origin and storage protections before judging stored XSS. Decision XSS exposure: Inconclusive. Scanner policy: The XSS claim has missing or unresolved source-backed evidence."
+            "text": "app/products/[id]/ProductDetailClient.tsx: Stored value reaches HTML output; write origin needs review [needs_evidence]. A verified storage read reaches rendering, but no matching request-to-storage write is established. Resolve that origin and storage protections before judging stored XSS. Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "34c6cdde3d3a11887ef3bbeecc9159e6bccb978c4f7d395d7b6b6ee9f13c3e58",
+              "request_digest": "aff356fb41020c77316ad899a512ec19e8b5a71e2a9207abaf18de80bd54d93a",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.83,
+                  "confidence": 0.5324834773870722,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.02
+                      "probability": 0.014902893819841875
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.07
+                      "probability": 0.34188705834347727
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.87
+                      "probability": 0.5324834773870722
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.11072657044960867
                     }
                   ]
                 },
                 "output_context": {
-                  "choice": "html_text",
-                  "confidence": 0.39,
+                  "choice": "url",
+                  "confidence": 0.5209659593519796,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.45
+                      "value": "active_attribute",
+                      "probability": 0.04296239858843454
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.27
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.05573560898822762
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0
+                      "probability": 0.013592687546369067
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.13343629268758686
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.024530369494248486
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.007044104066529008
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.019382961738678522
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.26
+                      "probability": 0.16783812862680894
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.014511488911137294
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.5209659593519796
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.93,
+                  "confidence": 0.6041461313317411,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.6041461313317411
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.03896004466171876
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.95
+                      "probability": 0.28604653786411377
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.0708472861424262
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.55,
+                  "confidence": 0.8865941308256966,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0.02
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.7
+                      "probability": 0.8865941308256966
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.28
+                      "probability": 0.11149025706175864
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.001915612112544582
                     }
                   ]
                 },
                 "xss_exposure": {
-                  "choice": "unknown",
-                  "confidence": 0.52,
+                  "choice": "vulnerable",
+                  "confidence": 0.7895704199675501,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.35
+                      "value": "not_applicable",
+                      "probability": 0.008392637185569988
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.045033153823846664
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.64
+                      "probability": 0.15700378902303333
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.7895704199675501
                     }
                   ]
                 }
@@ -87045,34 +87118,24 @@
                     "start_byte": 0,
                     "end_byte": 0
                   }
-                },
-                {
-                  "kind": "xss_context_unresolved",
-                  "detail": "Answers must agree with the established rendering context and protection facts.",
-                  "at": {
-                    "file": "",
-                    "start_line": 0,
-                    "end_line": 0,
-                    "start_byte": 0,
-                    "end_byte": 0
-                  }
                 }
               ],
               "answers": {
                 "encoding_adequacy": "not_present",
-                "output_context": "html_text",
+                "output_context": "url",
                 "sanitizer_effectiveness": "absent",
                 "xss_all_paths_protected": "no",
-                "xss_exposure": "unknown"
+                "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 10085,
-                "output_tokens": 0
+                "input_tokens": 10878,
+                "output_tokens": 0,
+                "total_tokens": 10878
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "uncertain",
               "reason": "The XSS claim has missing or unresolved source-backed evidence.",
               "resolutions": [
@@ -87090,11 +87153,11 @@
                       "end_byte": 5259
                     }
                   },
-                  "answer": "request_write_cited",
+                  "answer": "cannot_tell",
                   "verified": false,
                   "rejection": "no citation",
-                  "provider": "openai",
-                  "model": "gpt-6-luna"
+                  "provider": "gemini",
+                  "model": "gemini-decision-1"
                 }
               ]
             },
@@ -87115,11 +87178,6 @@
               {
                 "kind": "storage_origin_unresolved",
                 "detail": "Stored rendering origin is unresolved.",
-                "source": "policy"
-              },
-              {
-                "kind": "xss_context_unresolved",
-                "detail": "Answers must agree with the established rendering context and protection facts.",
                 "source": "policy"
               }
             ],
@@ -87195,7 +87253,7 @@
               "title": "Stored value reaches HTML output; write origin needs review",
               "summary": "A verified storage read reaches rendering, but no matching request-to-storage write is established. Resolve that origin and storage protections before judging stored XSS.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: Inconclusive. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
+              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
@@ -87203,8 +87261,7 @@
                   "Investigate the operation at app/products/[id]/ProductDetailClient.tsx:173: data={product.imageUrl}. Its current Review status does not establish a code defect.",
                   "Resolve storage_origin_unresolved at app/products/[id]/ProductDetailClient.tsx:173: No complete source-to-storage write link is established.",
                   "Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.",
-                  "Resolve xss_context_unresolved at :0: Answers must agree with the established rendering context and protection facts.",
-                  "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=html_text; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
+                  "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=url; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=vulnerable. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               },
@@ -87225,11 +87282,6 @@
                 {
                   "kind": "storage_origin_unresolved",
                   "detail": "Stored rendering origin is unresolved.",
-                  "source": "policy"
-                },
-                {
-                  "kind": "xss_context_unresolved",
-                  "detail": "Answers must agree with the established rendering context and protection facts.",
                   "source": "policy"
                 }
               ]
@@ -87260,8 +87312,7 @@
                 "Investigate the operation at app/products/[id]/ProductDetailClient.tsx:173: data={product.imageUrl}. Its current Review status does not establish a code defect.",
                 "Resolve storage_origin_unresolved at app/products/[id]/ProductDetailClient.tsx:173: No complete source-to-storage write link is established.",
                 "Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.",
-                "Resolve xss_context_unresolved at :0: Answers must agree with the established rendering context and protection facts.",
-                "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=html_text; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
+                "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=url; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=vulnerable. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -87633,140 +87684,140 @@
             }
           ],
           "message": {
-            "text": "app/products/[id]/ProductDetailClient.tsx: Stored value reaches HTML output; write origin needs review [needs_evidence]. A verified storage read reaches rendering, but no matching request-to-storage write is established. Resolve that origin and storage protections before judging stored XSS. Decision XSS exposure: Inconclusive. Scanner policy: The XSS claim has missing or unresolved source-backed evidence."
+            "text": "app/products/[id]/ProductDetailClient.tsx: Stored value reaches HTML output; write origin needs review [needs_evidence]. A verified storage read reaches rendering, but no matching request-to-storage write is established. Resolve that origin and storage protections before judging stored XSS. Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence."
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "7dedb1c84e5da059e4db17a02945d5d4944b26aa52749b11e02636cf70fe193d",
+              "request_digest": "64315f24f1e4b365571bafeaadf984e0c58f64e000bc881677e0d853fce6c814",
               "answer_details": {
                 "encoding_adequacy": {
-                  "choice": "not_present",
-                  "confidence": 0.8,
+                  "choice": "inadequate",
+                  "confidence": 0.47003190632329406,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.04
+                      "probability": 0.010531804713821388
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.07
+                      "probability": 0.47003190632329406
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.85
+                      "probability": 0.3504471927643137
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.16898909619857092
                     }
                   ]
                 },
                 "output_context": {
-                  "choice": "html_text",
-                  "confidence": 0.24,
+                  "choice": "url",
+                  "confidence": 0.36426660989520643,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.32
+                      "value": "active_attribute",
+                      "probability": 0.05089475466658506
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.03
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.24
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0.03
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0.02
+                      "probability": 0.034081447269955836
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0.02
+                      "probability": 0.007499920836747326
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.21690699905638666
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.04555133419774708
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.00449970999338292
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.02
+                      "probability": 0.025483891161257106
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.29
+                      "probability": 0.23925849885278935
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.011556834069942184
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.36426660989520643
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.84,
+                  "confidence": 0.6803975006730092,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.6803975006730092
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.027787639871108445
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.06
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.88
+                      "probability": 0.1916405928407248
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.06
+                      "probability": 0.10017426661515756
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.49,
+                  "confidence": 0.7863109802655653,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0.02
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.66
+                      "probability": 0.7863109802655653
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.32
+                      "probability": 0.20861450520275396
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.005074514531680733
                     }
                   ]
                 },
                 "xss_exposure": {
-                  "choice": "unknown",
-                  "confidence": 0.51,
+                  "choice": "vulnerable",
+                  "confidence": 0.7379738888900512,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.35
+                      "value": "not_applicable",
+                      "probability": 0.004356670862181711
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.023569196439445484
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.63
+                      "probability": 0.23410024380832167
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "value": "vulnerable",
+                      "probability": 0.7379738888900512
                     }
                   ]
                 }
@@ -87794,34 +87845,24 @@
                     "start_byte": 0,
                     "end_byte": 0
                   }
-                },
-                {
-                  "kind": "xss_context_unresolved",
-                  "detail": "Answers must agree with the established rendering context and protection facts.",
-                  "at": {
-                    "file": "",
-                    "start_line": 0,
-                    "end_line": 0,
-                    "start_byte": 0,
-                    "end_byte": 0
-                  }
                 }
               ],
               "answers": {
-                "encoding_adequacy": "not_present",
-                "output_context": "html_text",
+                "encoding_adequacy": "inadequate",
+                "output_context": "url",
                 "sanitizer_effectiveness": "absent",
                 "xss_all_paths_protected": "no",
-                "xss_exposure": "unknown"
+                "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 10081,
-                "output_tokens": 0
+                "input_tokens": 10878,
+                "output_tokens": 0,
+                "total_tokens": 10878
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "uncertain",
               "reason": "The XSS claim has missing or unresolved source-backed evidence.",
               "resolutions": [
@@ -87839,11 +87880,11 @@
                       "end_byte": 5439
                     }
                   },
-                  "answer": "request_write_cited",
+                  "answer": "cannot_tell",
                   "verified": false,
                   "rejection": "no citation",
-                  "provider": "openai",
-                  "model": "gpt-6-luna"
+                  "provider": "gemini",
+                  "model": "gemini-decision-1"
                 }
               ]
             },
@@ -87864,11 +87905,6 @@
               {
                 "kind": "storage_origin_unresolved",
                 "detail": "Stored rendering origin is unresolved.",
-                "source": "policy"
-              },
-              {
-                "kind": "xss_context_unresolved",
-                "detail": "Answers must agree with the established rendering context and protection facts.",
                 "source": "policy"
               }
             ],
@@ -87944,7 +87980,7 @@
               "title": "Stored value reaches HTML output; write origin needs review",
               "summary": "A verified storage read reaches rendering, but no matching request-to-storage write is established. Resolve that origin and storage protections before judging stored XSS.",
               "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: Inconclusive. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
+              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: The XSS claim has missing or unresolved source-backed evidence.",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
                 "title": "Resolve the specific claim blockers",
@@ -87952,8 +87988,7 @@
                   "Investigate the operation at app/products/[id]/ProductDetailClient.tsx:178: src={product.imageUrl}. Its current Review status does not establish a code defect.",
                   "Resolve storage_origin_unresolved at app/products/[id]/ProductDetailClient.tsx:178: No complete source-to-storage write link is established.",
                   "Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.",
-                  "Resolve xss_context_unresolved at :0: Answers must agree with the established rendering context and protection facts.",
-                  "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=html_text; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
+                  "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=url; encoding=inadequate; sanitizer=absent; all paths protected=no; exposure=vulnerable. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
                 ],
                 "example_status": "no patch proposed while the claim is inconclusive"
               },
@@ -87974,11 +88009,6 @@
                 {
                   "kind": "storage_origin_unresolved",
                   "detail": "Stored rendering origin is unresolved.",
-                  "source": "policy"
-                },
-                {
-                  "kind": "xss_context_unresolved",
-                  "detail": "Answers must agree with the established rendering context and protection facts.",
                   "source": "policy"
                 }
               ]
@@ -88009,8 +88039,7 @@
                 "Investigate the operation at app/products/[id]/ProductDetailClient.tsx:178: src={product.imageUrl}. Its current Review status does not establish a code defect.",
                 "Resolve storage_origin_unresolved at app/products/[id]/ProductDetailClient.tsx:178: No complete source-to-storage write link is established.",
                 "Resolve storage_origin_unresolved at :0: Stored rendering origin is unresolved.",
-                "Resolve xss_context_unresolved at :0: Answers must agree with the established rendering context and protection facts.",
-                "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=html_text; encoding=not_present; sanitizer=absent; all paths protected=no; exposure=unknown. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
+                "Reconcile the semantic assessment with this exact source claim: The XSS claim has missing or unresolved source-backed evidence. Answers: context=url; encoding=inadequate; sanitizer=absent; all paths protected=no; exposure=vulnerable. Static context=url, protection=raw. Do not infer a code repair from contradictory answers."
               ],
               "example_status": "no patch proposed while the claim is inconclusive"
             },
@@ -93833,135 +93862,135 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "9ddc17aa557beff208acc6766e6db3e23b57e629419f93b735612f15f5341ddd",
+              "request_digest": "076ba8abddcd94f8311c782a26700bc445b866e9dfd87ce479f88026c79936fb",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.75,
+                  "confidence": 0.6004298730727184,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.02
+                      "probability": 0.006837214898176036
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.13
+                      "probability": 0.33338482891728066
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.81
+                      "probability": 0.6004298730727184
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.04
+                      "probability": 0.05934808311182483
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.8,
+                  "confidence": 0.9466894512123084,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.82
+                      "value": "active_attribute",
+                      "probability": 0.003456887956620383
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.0066571012962409
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0
+                      "probability": 0.003852408444768931
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.9466894512123084
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.0006181790419087714
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.00019698697486928476
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.01
+                      "probability": 0.0005231738050997363
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.15
+                      "probability": 0.036895675924644204
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.0008292259295554279
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.00028090941398435047
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.99,
+                  "confidence": 0.8717422753274081,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.8717422753274081
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.00747026295163821
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.99
+                      "probability": 0.07566677379697326
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.04512068792398043
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.97,
+                  "confidence": 0.9195830484515343,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.98
+                      "probability": 0.9195830484515343
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.0779240687274448
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.0024928828210208915
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.72,
+                  "confidence": 0.9248914304600394,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.79
+                      "value": "not_applicable",
+                      "probability": 0.0023764520986820762
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.01402729406414872
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.2
+                      "probability": 0.058704823377129844
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.9248914304600394
                     }
                   ]
                 }
@@ -93975,13 +94004,14 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 5121,
-                "output_tokens": 0
+                "input_tokens": 4854,
+                "output_tokens": 0,
+                "total_tokens": 4854
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -94238,548 +94268,6 @@
                 "region": {
                   "endLine": 358,
                   "startLine": 1
-                }
-              }
-            }
-          ],
-          "ruleId": "scan/xss-output-protection",
-          "ruleIndex": 6
-        },
-        {
-          "codeFlows": [
-            {
-              "message": {
-                "text": "Possible local source-to-use dependency path; not a runtime trace or a complete execution path."
-              },
-              "threadFlows": [
-                {
-                  "locations": [
-                    {
-                      "executionOrder": 0,
-                      "location": {
-                        "message": {
-                          "text": "browser_source"
-                        },
-                        "physicalLocation": {
-                          "artifactLocation": {
-                            "uri": "app/login/LoginForm.tsx"
-                          },
-                          "region": {
-                            "endLine": 15,
-                            "startLine": 15
-                          }
-                        }
-                      },
-                      "properties": {
-                        "scan.sha256": "7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c"
-                      }
-                    },
-                    {
-                      "executionOrder": 1,
-                      "location": {
-                        "message": {
-                          "text": "assignment"
-                        },
-                        "physicalLocation": {
-                          "artifactLocation": {
-                            "uri": "app/login/LoginForm.tsx"
-                          },
-                          "region": {
-                            "endLine": 15,
-                            "startLine": 15
-                          }
-                        }
-                      },
-                      "properties": {
-                        "scan.sha256": "7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c"
-                      }
-                    },
-                    {
-                      "executionOrder": 2,
-                      "location": {
-                        "message": {
-                          "text": "browser_parameter"
-                        },
-                        "physicalLocation": {
-                          "artifactLocation": {
-                            "uri": "app/login/LoginForm.tsx"
-                          },
-                          "region": {
-                            "endLine": 16,
-                            "startLine": 16
-                          }
-                        }
-                      },
-                      "properties": {
-                        "scan.sha256": "7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c"
-                      }
-                    },
-                    {
-                      "executionOrder": 3,
-                      "location": {
-                        "message": {
-                          "text": "assignment"
-                        },
-                        "physicalLocation": {
-                          "artifactLocation": {
-                            "uri": "app/login/LoginForm.tsx"
-                          },
-                          "region": {
-                            "endLine": 16,
-                            "startLine": 16
-                          }
-                        }
-                      },
-                      "properties": {
-                        "scan.sha256": "7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c"
-                      }
-                    },
-                    {
-                      "executionOrder": 4,
-                      "location": {
-                        "message": {
-                          "text": "assignment"
-                        },
-                        "physicalLocation": {
-                          "artifactLocation": {
-                            "uri": "app/login/LoginForm.tsx"
-                          },
-                          "region": {
-                            "endLine": 37,
-                            "startLine": 37
-                          }
-                        }
-                      },
-                      "properties": {
-                        "scan.sha256": "7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ],
-          "kind": "fail",
-          "level": "warning",
-          "locations": [
-            {
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "app/login/LoginForm.tsx",
-                  "kind": "function",
-                  "name": "app/login/LoginForm.tsx"
-                }
-              ],
-              "message": {
-                "text": "Repair this HTML output"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "app/login/LoginForm.tsx"
-                },
-                "region": {
-                  "endLine": 37,
-                  "startLine": 37
-                }
-              }
-            }
-          ],
-          "message": {
-            "text": "app/login/LoginForm.tsx: Cross-site scripting supported by source analysis [confirmed_vulnerability]. A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. This row stands for 2 records from 1 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: browser source in 2. Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
-          },
-          "partialFingerprints": {
-            "zazzlesSinkGroup/v1": "998e5b5d79b64be5758034fe209e5c2f"
-          },
-          "properties": {
-            "assessmentState": "completed",
-            "scan.assessment": {
-              "request_digest": "ee01f2f7225f35b77debfb01e556c59d21ade60d2d946f2911b149aca4564e63",
-              "answer_details": {
-                "encoding_adequacy": {
-                  "choice": "not_present",
-                  "confidence": 0.92,
-                  "probabilities": [
-                    {
-                      "value": "adequate",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "inadequate",
-                      "probability": 0.04
-                    },
-                    {
-                      "value": "not_present",
-                      "probability": 0.94
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.01
-                    }
-                  ]
-                },
-                "output_context": {
-                  "choice": "url",
-                  "confidence": 0.99,
-                  "probabilities": [
-                    {
-                      "value": "html_text",
-                      "probability": 0
-                    },
-                    {
-                      "value": "html_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.99
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "html_tag",
-                      "probability": 0
-                    },
-                    {
-                      "value": "template_code",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.01
-                    }
-                  ]
-                },
-                "sanitizer_effectiveness": {
-                  "choice": "absent",
-                  "confidence": 0.59,
-                  "probabilities": [
-                    {
-                      "value": "effective",
-                      "probability": 0.04
-                    },
-                    {
-                      "value": "ineffective",
-                      "probability": 0.17
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.69
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.1
-                    }
-                  ]
-                },
-                "xss_all_paths_protected": {
-                  "choice": "no",
-                  "confidence": 0.77,
-                  "probabilities": [
-                    {
-                      "value": "yes",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "no",
-                      "probability": 0.85
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.13
-                    }
-                  ]
-                },
-                "xss_exposure": {
-                  "choice": "vulnerable",
-                  "confidence": 0.25,
-                  "probabilities": [
-                    {
-                      "value": "vulnerable",
-                      "probability": 0.44
-                    },
-                    {
-                      "value": "protected",
-                      "probability": 0.04
-                    },
-                    {
-                      "value": "unknown",
-                      "probability": 0.43
-                    },
-                    {
-                      "value": "not_applicable",
-                      "probability": 0.09
-                    }
-                  ]
-                }
-              },
-              "finding_status": "confirmed_vulnerability",
-              "answers": {
-                "encoding_adequacy": "not_present",
-                "output_context": "url",
-                "sanitizer_effectiveness": "absent",
-                "xss_all_paths_protected": "no",
-                "xss_exposure": "vulnerable"
-              },
-              "usage": {
-                "input_tokens": 5122,
-                "output_tokens": 0
-              },
-              "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
-              "protection": "insufficient",
-              "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
-            },
-            "scan.assessmentState": "completed",
-            "scan.blockingGaps": [],
-            "scan.coverageGaps": [
-              {
-                "kind": "unsupported_control_flow",
-                "detail": "statement not traversed: if_statement",
-                "at": {
-                  "file": "app/login/LoginForm.tsx",
-                  "start_line": 32,
-                  "end_line": 34,
-                  "start_byte": 1029,
-                  "end_byte": 1109
-                }
-              },
-              {
-                "kind": "unsupported_control_flow",
-                "detail": "statement not traversed: if_statement",
-                "at": {
-                  "file": "app/login/LoginForm.tsx",
-                  "start_line": 36,
-                  "end_line": 42,
-                  "start_byte": 1117,
-                  "end_byte": 1301
-                }
-              },
-              {
-                "kind": "unknown_control_effect",
-                "detail": "value may change across unsupported control flow",
-                "at": {
-                  "file": "app/login/LoginForm.tsx",
-                  "start_line": 32,
-                  "end_line": 34,
-                  "start_byte": 1029,
-                  "end_byte": 1109
-                }
-              }
-            ],
-            "scan.dispatchBinding": {
-              "id": "dispatch:v1:c0d4bc52937157379960c249502764667b64bfa602103fb2b49b75a6da4b762a",
-              "entry_id": "entry:v1:0c621592d0b97f4a555364acf43be3ad60e988d5536cb0303dd3504f441222cb",
-              "registration_id": "registration:v1:cfc88f962bbea1c206667d20f62788207bcc755a98528fa299468b4066d303b6",
-              "callable_id": "callable:v1:2916ae49bfca6ce1f0395019345e96fa42947baa8076cd2aabbf77a2c06eb2c5",
-              "mechanism": "browser_source_slice",
-              "resolution": "partial",
-              "stage": 0,
-              "gaps": [
-                {
-                  "kind": "browser_exposure_unresolved",
-                  "detail": "Source slice analysis does not establish runtime event/component exposure",
-                  "at": {
-                    "file": "app/login/LoginForm.tsx",
-                    "start_line": 9,
-                    "end_line": 126,
-                    "start_byte": 250,
-                    "end_byte": 4570
-                  }
-                }
-              ]
-            },
-            "scan.entry": {
-              "id": "entry:v1:0c621592d0b97f4a555364acf43be3ad60e988d5536cb0303dd3504f441222cb",
-              "kind": "browser",
-              "name": "app/login/LoginForm.tsx",
-              "instance_id": "browser:app/login/LoginForm.tsx:7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c",
-              "location": {
-                "kind": "browser_source_slice",
-                "text": "",
-                "span": {
-                  "file": "app/login/LoginForm.tsx",
-                  "start_line": 9,
-                  "end_line": 126,
-                  "start_byte": 250,
-                  "end_byte": 4570
-                },
-                "sha256": "7022074504626d0ab055fb7921bfd3f1ec8d175af66e2f4cf7a45701d0833e2c"
-              },
-              "browser": {
-                "category": "component"
-              }
-            },
-            "scan.entryId": "entry:v1:0c621592d0b97f4a555364acf43be3ad60e988d5536cb0303dd3504f441222cb",
-            "scan.entryKind": "browser",
-            "scan.finding": {
-              "type_ids": [
-                "dom-xss"
-              ],
-              "id": "finding:candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c",
-              "use_id": "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c",
-              "entry_id": "entry:v1:0c621592d0b97f4a555364acf43be3ad60e988d5536cb0303dd3504f441222cb",
-              "invocation_context_id": "invocation:v1:94f619730faa648c6b5e07e992a33871918ff5b2166630ceedeb06f12d1267d8",
-              "record_type": "finding",
-              "status": "confirmed_vulnerability",
-              "title": "Cross-site scripting supported by source analysis",
-              "summary": "A complete rendering claim and consistent XSS-specific assessment establish an unsafe source-to-sink path. This is a static judgment; independent runtime confirmation remains separate. This row stands for 2 records from 1 entries that reach this sink with status confirmed_vulnerability (grouped_use_ids lists the other 1; each keeps its own evidence and judgment in JSON). Origins across them: browser source in 2.",
-              "input_validation": "Input validation is separate from context-appropriate output encoding and sanitization.",
-              "use_protection": "Decision XSS exposure: vulnerable. Scanner policy: Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation.",
-              "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
-              "recommendations": {
-                "title": "Repair this HTML output",
-                "actions": [
-                  "At app/login/LoginForm.tsx:37, encode the untrusted value for the established url HTML output context before passing it to window.location.href = redirect.",
-                  "Use a constant autoescaping template with data passed separately when appropriate. If markup is intentionally allowed, use a verified context-appropriate sanitizer after rendering or transformation.",
-                  "Test the final rendered output with HTML-significant input and preserve separate tests for URL, script and attribute contexts; HTML text escaping is not a universal protection."
-                ],
-                "example_status": "source-derived candidate; review intended output semantics and test before applying"
-              },
-              "assessment_state": "completed",
-              "linked_use_ids": [
-                "candidate:v1:88d9712c47241b47d49cce51ed78b41ee108eb9ee5af396e3efabdb48788ba3f"
-              ],
-              "grouped_use_ids": [
-                "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c:1"
-              ]
-            },
-            "scan.groupedUseIds": [
-              "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c:1"
-            ],
-            "scan.invocationContext": {
-              "id": "invocation:v1:94f619730faa648c6b5e07e992a33871918ff5b2166630ceedeb06f12d1267d8",
-              "entry_id": "entry:v1:0c621592d0b97f4a555364acf43be3ad60e988d5536cb0303dd3504f441222cb",
-              "dispatch_binding_id": "dispatch:v1:c0d4bc52937157379960c249502764667b64bfa602103fb2b49b75a6da4b762a",
-              "gaps": [
-                {
-                  "kind": "browser_exposure_unresolved",
-                  "detail": "Source slice analysis does not establish runtime event/component exposure",
-                  "at": {
-                    "file": "app/login/LoginForm.tsx",
-                    "start_line": 9,
-                    "end_line": 126,
-                    "start_byte": 250,
-                    "end_byte": 4570
-                  }
-                }
-              ]
-            },
-            "scan.invocationContextId": "invocation:v1:94f619730faa648c6b5e07e992a33871918ff5b2166630ceedeb06f12d1267d8",
-            "scan.kind": "xss_candidate",
-            "scan.linkedUseIds": [
-              "candidate:v1:88d9712c47241b47d49cce51ed78b41ee108eb9ee5af396e3efabdb48788ba3f"
-            ],
-            "scan.recommendations": {
-              "title": "Repair this HTML output",
-              "actions": [
-                "At app/login/LoginForm.tsx:37, encode the untrusted value for the established url HTML output context before passing it to window.location.href = redirect.",
-                "Use a constant autoescaping template with data passed separately when appropriate. If markup is intentionally allowed, use a verified context-appropriate sanitizer after rendering or transformation.",
-                "Test the final rendered output with HTML-significant input and preserve separate tests for URL, script and attribute contexts; HTML text escaping is not a universal protection."
-              ],
-              "example_status": "source-derived candidate; review intended output semantics and test before applying"
-            },
-            "scan.requiredEvidence": [
-              "render_source",
-              "render_binding",
-              "render_context",
-              "entry_registration",
-              "dispatch_binding"
-            ],
-            "scan.reviewStatus": "not_run",
-            "scan.runtimeConfirmation": "not_run",
-            "scan.scope": "Bounded source-to-rendering flow; output context and protections are scoped to this sink.",
-            "scan.sourceKind": "client",
-            "scan.useId": "candidate:v1:961f4ff9c3e3fd1207832fa2845ffcb726b7c2a0c484989e595d22348276831c"
-          },
-          "relatedLocations": [
-            {
-              "id": 0,
-              "message": {
-                "text": "handler"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "app/login/LoginForm.tsx"
-                },
-                "region": {
-                  "endLine": 126,
-                  "startLine": 9
-                }
-              }
-            },
-            {
-              "id": 1,
-              "message": {
-                "text": "control_statement"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "app/login/LoginForm.tsx"
-                },
-                "region": {
-                  "endLine": 34,
-                  "startLine": 32
-                }
-              }
-            },
-            {
-              "id": 2,
-              "message": {
-                "text": "control_statement"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "app/login/LoginForm.tsx"
-                },
-                "region": {
-                  "endLine": 42,
-                  "startLine": 36
-                }
-              }
-            },
-            {
-              "id": 3,
-              "message": {
-                "text": "render_binding"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "app/login/LoginForm.tsx"
-                },
-                "region": {
-                  "endLine": 37,
-                  "startLine": 37
-                }
-              }
-            },
-            {
-              "id": 4,
-              "message": {
-                "text": "browser_source_slice"
-              },
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "app/login/LoginForm.tsx"
-                },
-                "region": {
-                  "endLine": 126,
-                  "startLine": 9
                 }
               }
             }
@@ -95172,135 +94660,135 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "b9172c17dd72ab6a8900613f4a6fe8d94a6fc7637c1478d1d573f32d4b5eb759",
+              "request_digest": "c06c661ffc0356446ade6da5cf1206a7eddd5a928bdc658535323ff7df1cf2eb",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.85,
+                  "confidence": 0.7654043127493915,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.02
+                      "probability": 0.00549798776498001
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.08
+                      "probability": 0.18300948208209392
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.89
+                      "probability": 0.7654043127493915
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.04608821740353463
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.77,
+                  "confidence": 0.9211786490687056,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.79
+                      "value": "active_attribute",
+                      "probability": 0.007990013547539353
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0.09
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.002598369865466417
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0
+                      "probability": 0.001745764462110129
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.9211786490687056
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.03900164269138521
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.000511542025961155
                     },
                     {
                       "value": "template_code",
-                      "probability": 0
+                      "probability": 0.003510073275063818
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.12
+                      "probability": 0.022025276493699876
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.0009656651754481788
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.0004730033946203416
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.97,
+                  "confidence": 0.9092163934934029,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.9092163934934029
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.017967353508152064
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.98
+                      "probability": 0.046040627600821143
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.02677562539762377
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.93,
+                  "confidence": 0.9725357715706011,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.95
+                      "probability": 0.9725357715706011
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.05
+                      "probability": 0.024043713724448607
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.0034205147049503042
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.91,
+                  "confidence": 0.9743284816435268,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.93
+                      "value": "not_applicable",
+                      "probability": 0.0011175485065970478
                     },
                     {
                       "value": "protected",
-                      "probability": 0
+                      "probability": 0.010150665581455904
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.07
+                      "probability": 0.014403304268420312
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0
+                      "value": "vulnerable",
+                      "probability": 0.9743284816435268
                     }
                   ]
                 }
@@ -95314,13 +94802,14 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 4667,
-                "output_tokens": 0
+                "input_tokens": 4110,
+                "output_tokens": 0,
+                "total_tokens": 4110
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -96254,135 +95743,135 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "da42c5610e9e0426f27cfd202cf6cbaa017569f0d24564c5c96e872b8a43590c",
+              "request_digest": "22d4769859717913ec0d3bd207244db8e484127af0cf0640fe01fdc36a9979aa",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.93,
+                  "confidence": 0.7801521793350973,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.01
+                      "probability": 0.00885583464051303
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.03
+                      "probability": 0.11342548412100283
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.95
+                      "probability": 0.7801521793350973
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.01
+                      "probability": 0.09756650190338692
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.83,
+                  "confidence": 0.9483823800221332,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.85
+                      "value": "active_attribute",
+                      "probability": 0.003097976624381418
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0
+                      "probability": 0.007485262491224292
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0
+                      "probability": 0.0025633063776547087
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.9483823800221332
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.0005957521603739364
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.00026609112217834024
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.01
+                      "probability": 0.0014467813701211445
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1
+                      "probability": 0.034525788342717925
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.001031873758773072
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.0006047877304420437
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 0.96,
+                  "confidence": 0.8506659682676561,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.8506659682676561
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.01604608628021421
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 0.97
+                      "probability": 0.05515751892380374
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.03
+                      "probability": 0.07813042652832611
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.91,
+                  "confidence": 0.8730438318974093,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.94
+                      "probability": 0.8730438318974093
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.06
+                      "probability": 0.12263650831425206
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.004319659788338637
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.61,
+                  "confidence": 0.8534122421183414,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.71
+                      "value": "not_applicable",
+                      "probability": 0.004271883523044028
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.03712115784084804
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.27
+                      "probability": 0.10519471651776663
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "value": "vulnerable",
+                      "probability": 0.8534122421183414
                     }
                   ]
                 }
@@ -96396,13 +95885,14 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 5004,
-                "output_tokens": 0
+                "input_tokens": 4635,
+                "output_tokens": 0,
+                "total_tokens": 4635
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -97026,135 +96516,135 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "993524a0c09a23d549c46f0af96f31151251f307ee9137eee4470b018631df75",
+              "request_digest": "804eac967f6526bf9814cfde24dba204891e7193c6d79fc3bb0f739cdb9da8fe",
               "answer_details": {
                 "encoding_adequacy": {
                   "choice": "not_present",
-                  "confidence": 0.99,
+                  "confidence": 0.9165642922876884,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0
+                      "probability": 0.00689868461625053
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.01
+                      "probability": 0.03808169156131354
                     },
                     {
                       "value": "not_present",
-                      "probability": 0.99
+                      "probability": 0.9165642922876884
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.03845533153474741
                     }
                   ]
                 },
                 "output_context": {
                   "choice": "html_text",
-                  "confidence": 0.48,
+                  "confidence": 0.9679866636230458,
                   "probabilities": [
                     {
-                      "value": "html_text",
-                      "probability": 0.53
+                      "value": "active_attribute",
+                      "probability": 0.0020195870883249305
                     },
                     {
                       "value": "html_attribute",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "url",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "script",
-                      "probability": 0.02
-                    },
-                    {
-                      "value": "style",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "unquoted_attribute",
-                      "probability": 0.01
-                    },
-                    {
-                      "value": "active_attribute",
-                      "probability": 0.1
+                      "probability": 0.006417022668187715
                     },
                     {
                       "value": "html_tag",
-                      "probability": 0.07
+                      "probability": 0.006116874052937636
+                    },
+                    {
+                      "value": "html_text",
+                      "probability": 0.9679866636230458
+                    },
+                    {
+                      "value": "script",
+                      "probability": 0.00035525720120802565
+                    },
+                    {
+                      "value": "style",
+                      "probability": 0.00025912283111989066
                     },
                     {
                       "value": "template_code",
-                      "probability": 0.02
+                      "probability": 0.0007761380906099884
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.2
+                      "probability": 0.01536480228437079
+                    },
+                    {
+                      "value": "unquoted_attribute",
+                      "probability": 0.00044999434339097505
+                    },
+                    {
+                      "value": "url",
+                      "probability": 0.00025453781680425454
                     }
                   ]
                 },
                 "sanitizer_effectiveness": {
                   "choice": "absent",
-                  "confidence": 1,
+                  "confidence": 0.9283096650230848,
                   "probabilities": [
                     {
+                      "value": "absent",
+                      "probability": 0.9283096650230848
+                    },
+                    {
                       "value": "effective",
-                      "probability": 0
+                      "probability": 0.009462587016355696
                     },
                     {
                       "value": "ineffective",
-                      "probability": 0
-                    },
-                    {
-                      "value": "absent",
-                      "probability": 1
+                      "probability": 0.031795134753208804
                     },
                     {
                       "value": "unknown",
-                      "probability": 0
+                      "probability": 0.03043261320735076
                     }
                   ]
                 },
                 "xss_all_paths_protected": {
                   "choice": "no",
-                  "confidence": 0.97,
+                  "confidence": 0.9747452968055509,
                   "probabilities": [
                     {
-                      "value": "yes",
-                      "probability": 0
-                    },
-                    {
                       "value": "no",
-                      "probability": 0.98
+                      "probability": 0.9747452968055509
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.02
+                      "probability": 0.024163882797261463
+                    },
+                    {
+                      "value": "yes",
+                      "probability": 0.0010908203971877963
                     }
                   ]
                 },
                 "xss_exposure": {
                   "choice": "vulnerable",
-                  "confidence": 0.71,
+                  "confidence": 0.9667231501688984,
                   "probabilities": [
                     {
-                      "value": "vulnerable",
-                      "probability": 0.78
+                      "value": "not_applicable",
+                      "probability": 0.0015836000268899496
                     },
                     {
                       "value": "protected",
-                      "probability": 0.01
+                      "probability": 0.014602483444908772
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.2
+                      "probability": 0.017090766359302907
                     },
                     {
-                      "value": "not_applicable",
-                      "probability": 0.01
+                      "value": "vulnerable",
+                      "probability": 0.9667231501688984
                     }
                   ]
                 }
@@ -97168,13 +96658,14 @@
                 "xss_exposure": "vulnerable"
               },
               "usage": {
-                "input_tokens": 5223,
-                "output_tokens": 0
+                "input_tokens": 4978,
+                "output_tokens": 0,
+                "total_tokens": 4978
               },
               "status": "completed",
-              "provider": "openai",
-              "model": "gpt-6-luna",
-              "question_version": "xss-components-v3",
+              "provider": "gemini",
+              "model": "gemini-decision-1",
+              "question_version": "xss-components-v4",
               "protection": "insufficient",
               "reason": "Complete source-backed rendering claim and consistent XSS-specific answers establish an unsafe supported path; this is static analysis, not runtime confirmation."
             },
@@ -97381,8 +96872,8 @@
             },
             {
               "help": {
-                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/api/admin/products/[id]/image/route.ts:85: writeFile(filepath, buffer). Its current Review status does not establish a code defect.\n- Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment)\n- Reconcile the semantic assessment with this exact source claim: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them.\n",
-                "text": "Resolve the specific claim blockers. Investigate the operation at app/api/admin/products/[id]/image/route.ts:85: writeFile(filepath, buffer). Its current Review status does not establish a code defect. Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment) Reconcile the semantic assessment with this exact source claim: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
+                "markdown": "Resolve the specific claim blockers\n\n- Investigate the operation at app/api/admin/products/[id]/image/route.ts:85: writeFile(filepath, buffer). Its current Review status does not establish a code defect.\n- Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path\n- Reconcile the semantic assessment with this exact source claim: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them.\n",
+                "text": "Resolve the specific claim blockers. Investigate the operation at app/api/admin/products/[id]/image/route.ts:85: writeFile(filepath, buffer). Its current Review status does not establish a code defect. Resolve path_answers_inconsistent at app/api/admin/products/[id]/image/route.ts:85: traversal claimed but no request-derived flow is an independent unsafe witness (raw, or guarded only by controls that cannot establish containment); boundary containment claimed without a separator-bounded prefix, relative or commonpath control on every request-derived path Reconcile the semantic assessment with this exact source claim: Path answers contradict the source-backed facts; raw answers are retained and no status is claimed from them."
               },
               "id": "scan/path-traversal",
               "properties": {

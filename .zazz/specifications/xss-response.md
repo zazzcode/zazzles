@@ -120,6 +120,6 @@ JSON producer fields, browser response-field paths and a single-producer linker.
 as allow-list, neutral or unknown. Paired fixtures cover linked raw, neutral, allow-list and partial-escape
 paths, a different field, a constant response and ambiguous routes. Juice Shop `JS-XSS-02` is now a
 supported finding. Also added Semgrep CE as a second local comparator
-([cheat sheet](../../docs/semgrep-ce-cheat-sheet.md)) and refreshed the README capability summary.
+([cheat sheet](../../docs/scan/semgrep-ce-cheat-sheet.md)) and refreshed the README capability summary.
 Results: [evaluation](../evaluation/xss-implementation-results.md#hardening-10-cross-tier-response-field-links).
 

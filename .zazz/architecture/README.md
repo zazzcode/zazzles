@@ -88,12 +88,18 @@ evidence, semantic judgment, separate claims, explicit blockers and preservation
 It compares documented SAST capabilities, distinguishes product differentiation from established
 prior art and links measured case evidence and known misses. Better recall, precision, cost and
 novel-repository generalization remain hypotheses until matched independent evaluation.
+The [detection generalization direction](../project/implementation-plan.md#detection-generalization-direction)
+records operations by effect and data origin rather than by a list of drivers or frameworks, and leaves the
+judgment to the decision model under the same evidence gates.
 
 ## Detailed analysis designs
 
 - [Repository graph](repository-graph.md): target-repository graph direction and bounded implemented subsets.
 - [Evidence and claims](evidence-and-claims.md): source slices, requirements and completeness.
 - [Trace judgment](trace-judgment.md): implemented evidence bundles, gates and exact-request replay.
+- [SQL/NoSQL judgment](query-judgment.md): query evidence, PHP SQL operand facts, and the generalized recorders that
+  need no per-driver contract: [native MongoDB operations by package origin](query-judgment.md#database-package-operations-native-mongodb-driver)
+  and [SQL statement text records](query-judgment.md#sql-statement-text-records).
 - [Reporting and SARIF](reporting-and-sarif.md): report records and implemented bounded SARIF export.
 - [Standalone HTML](html-reporting.md): human-facing report and disclosure rows.
 - [SCA follow-on](sca-design.md): planned dependency auditing.

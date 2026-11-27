@@ -55,7 +55,7 @@ After this contract each probe yields one candidate. [Results](../evaluation/pol
 
 - [Prototype pollution analyzer](prototype-pollution.md), D-4 to D-9 and AC2 to AC5. This contract
   extends D-4 and changes no other decision there.
-- [Analysis guide](../../docs/analysis/prototype-pollution.md), the bounded shapes and guard limits.
+- [Analysis guide](../../docs/scan/analysis/prototype-pollution.md), the bounded shapes and guard limits.
 - Code: `pollutionKeyLoop`, `pollutionObjectKeyLoop` and `pollutionMergeLoop` in
   `internal/langjs/pollution_writes.go`; `pollutionPathLoop`, `pollutionPathParts` and
   `pollutionSplitSource` in `internal/langjs/pollution_path_walk.go`; the key-guard reading in
@@ -319,7 +319,7 @@ contract.
 The owner reviews D-9 to D-11 one choice at a time. Each accepted choice is listed with the
 limit it leaves, so the limit is known and can be taken up as a later capability. The
 identifiers refer to the user-facing list of every gap,
-[prototype pollution coverage](../../docs/detection-capabilities/prototype-pollution.md).
+[prototype pollution coverage](../../docs/scan/detection-capabilities/prototype-pollution.md).
 
 | Choice | Owner decision | Limit accepted | To explore later |
 |---|---|---|---|

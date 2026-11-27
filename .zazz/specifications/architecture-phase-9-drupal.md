@@ -31,7 +31,7 @@ Symfony and plain-PHP results are unchanged.
 - [Phase 6 spec](architecture-phase-6-symfony.md) D-2 to D-6 and its delivered code (the resolver
   pattern to reuse, not import).
 - [Phase 3 spec](architecture-phase-3-php-package.md) (core API), phase 1 D-7 (mechanism table).
-- [Database injection rules](../../docs/analysis/database-injection.md), [XSS rules](../../docs/analysis/xss.md).
+- [Database injection rules](../../docs/scan/analysis/database-injection.md), [XSS rules](../../docs/scan/analysis/xss.md).
 - `internal/lang/lang.go` (extension registry) and its tests.
 
 ## 3. Invariants

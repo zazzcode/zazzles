@@ -36,7 +36,7 @@ Read this specification end to end first, after confirming no concurrent agent i
 
 - [.zazz/project/analyzer-hardening-and-wire-efficiency-proposal.md §3 Master Ranked Improvement Matrix](../project/analyzer-hardening-and-wire-efficiency-proposal.md#3-master-ranked-improvement-matrix-separated-by-effort-vs-impact--analyzer-scope) — Tier 1 vs. Tier 2/3 boundary.
 - [.zazz/architecture/analysis-packs.md §Descriptor and selection contract](../architecture/analysis-packs.md#descriptor-and-selection-contract) and [§Bounds and compatibility](../architecture/analysis-packs.md#bounds-and-compatibility) — digest and replay rules.
-- [docs/analysis/path-traversal.md](../../docs/analysis/path-traversal.md) — public product rules that MUST match behavior.
+- [docs/analysis/path-traversal.md](../../docs/scan/analysis/path-traversal.md) — public product rules that MUST match behavior.
 
 ### 1.c Prior Specifications In This Delivery Effort
 

@@ -112,5 +112,5 @@ The skill should produce:
 - The methodology requires worktrees even when a repo does not use Zazz Board.
 - The methodology does not require Worktrunk, but this skill does.
 - In the Worktrunk-based workflow used by this skill, ignored local files needed to run the program in the worktree are carried over as part of the worktree setup flow.
-- For day-to-day Worktrunk commands, see [docs/wt-cheat-sheet.md](../../../docs/wt-cheat-sheet.md).
-- For the full worktree operating model, see [docs/worktree-setup.md](../../../docs/worktree-setup.md).
+- For day-to-day Worktrunk commands, see [docs/wt-cheat-sheet.md](../../../.zazz/docs/wt-cheat-sheet.md).
+- For the full worktree operating model, see [docs/worktree-setup.md](../../../.zazz/docs/worktree-setup.md).

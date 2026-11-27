@@ -27,7 +27,7 @@ Define the shared entry, registration, dispatch, callable, invocation and input 
   [PR process](../standards/pr-process.md) at publication.
   Recheck [standards index](../standards/index.yaml) against actual changed paths.
 - Read the source files in §3 and adjacent existing tests before editing.
-  Preserve current [analysis semantics](../../docs/analysis/README.md).
+  Preserve current [analysis semantics](../../docs/scan/analysis/README.md).
 
 ## 2. Invariants
 

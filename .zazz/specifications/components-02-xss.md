@@ -21,7 +21,7 @@ Existing browser string-code sinks retain their current XSS semantics.
 - [Component architecture](../architecture/analysis-packs.md#descriptor-and-selection-contract),
   [first migration](components-01-nosql-validation.md#4-decisions-and-extension-risks-to-resolve),
   [original XSS contract](xss-response.md) and [scope](../project/xss-detection-scope.md).
-- [XSS analysis](../../docs/analysis/xss.md#stored-and-browser-analysis),
+- [XSS analysis](../../docs/scan/analysis/xss.md#stored-and-browser-analysis),
   [trace](../architecture/trace-judgment.md#implemented-evidence-contract),
   [reporting](../architecture/reporting-and-sarif.md#canonical-report).
 - [spec-driven](../../.agents/skills/spec-driven/SKILL.md), [execution discipline](../docs/agent-execution-discipline.md),

@@ -183,5 +183,27 @@ one of the new forms, so no record was added on them. Scan time unchanged on Jui
 - Not followed: a helper called by a helper; a list built by a comprehension, `map` or `filter`; a chained
   `prepare(...).get(x)`; a variable assigned in an included PHP file; a JavaScript list pushed in two-argument calls.
 - A SQL fragment appended to a list in Python is recorded at the `append` call as well as at the executing call.
-- gpt-6-luna has not seen the `statement` field or a tagged template.
 - No held-out application (A4).
+
+### gpt-6-luna on the follow-up (2026-11-26)
+
+Owner: "Yes, run luna". 97 requests, commit fd75c80, pass rule written first. Nothing was changed after the run.
+
+| Set | Gemini | gpt-6-luna |
+|---|---|---|
+| New forms, injectable, 13 | 13 Confirmed | 13 Confirmed |
+| New forms, bound twins, 6 | 3 Protected, 3 Review | 6 Review. Two were answered `statement_text` (0.81, 0.63) and held by `bound_parameters_only` |
+| Driver and extra forms, 42 | Same outcomes as its first run | Same as its first run, except the two bound forms it had Confirmed, now Review by `bound_parameters_only` |
+| Escaped value outside quotes, 8 | 8 Confirmed | 7 Confirmed; `pg_query` with `pg_escape_string` is Review (`data_only` 0.49) |
+| Escaped value inside quotes, 7 text records | 0 Confirmed | **1 Confirmed, false** (JavaScript, quote doubling, `statement_text` 0.60); 6 Review |
+| Tagged templates, 6 | 2 local concatenating tags Confirmed, none wrong after D-8 | The 2 concatenating tags Confirmed; **the local tag that binds is Confirmed at 0.46, false**; the library tag passed as an argument answered `statement_text` (0.58) and is Review by D-8; the others Review |
+| DVWA text records, 7 (first time on this judge) | 7 Confirmed | 6 Confirmed; the set-up script `pg_query` is Review |
+
+- **The pass rule failed on gpt-6-luna** in two places: one safe escaped value and one binding tag are Confirmed. Both are
+  weak answers (0.60 and 0.46) that win because the rest of the weight is split.
+- **The two scanner guards held live.** `bound_parameters_only` and D-8 turned four wrong `statement_text` answers into
+  Review.
+- gpt-6-luna gives no Protected on any of these sets; its `data_only` never reaches 0.95.
+- Not tried: a floor on the finding answer. On these 97 answers a floor of 0.65 for `statement_text` would remove both
+  false findings and one true one (JavaScript escaped value outside quotes, 0.57). That is a threshold read off the same
+  answers it would be judged on, so it is recorded here and not applied.

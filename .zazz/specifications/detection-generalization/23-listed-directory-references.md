@@ -123,6 +123,11 @@ checkpoint.
 
 Approved as drafted. Built on `docs-cleanup` after specification 22; its base is that working tree.
 
+### 2026-11-27 — Causal baseline
+
+Gemini with the pre-change binary left all eight positive fixture listings in Review; with the change seven are
+Confirmed, so the change caused them ([results](../../evaluation/detection-generalization-results/23.md#causal-baseline-2026-11-27)).
+
 ### 2026-11-27 — Paid checks: stop rule fired on records this change does not touch
 
 [Results](../../evaluation/detection-generalization-results/23.md). Gemini: 7 of 8 positives and 0 of 6 negatives

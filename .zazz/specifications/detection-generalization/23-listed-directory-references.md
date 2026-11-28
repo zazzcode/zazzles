@@ -123,6 +123,13 @@ checkpoint.
 
 Approved as drafted. Built on `docs-cleanup` after specification 22; its base is that working tree.
 
+### 2026-11-27 — Paid checks: stop rule fired on records this change does not touch
+
+[Results](../../evaluation/detection-generalization-results/23.md). Gemini: 7 of 8 positives and 0 of 6 negatives
+Confirmed, `JS-CONF-03` Confirmed. `gpt-6-luna`: 8 of 8 positives and 6 of 6 negatives Confirmed; the negatives' requests
+are byte-identical to those before this change. The stop rule fired on `gpt-6-luna`. Nothing tuned; kept, not reverted,
+pending the owner's decision.
+
 ### 2026-11-27 — First offline run, D-4 and D-5
 
 The first build counted challenge code-fix snippets and a test file in Juice Shop, and filled the cap with them. D-4

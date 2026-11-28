@@ -177,8 +177,9 @@ below. If implementation surfaces a need to modify anything else, stop and surfa
 
 ### Out Of Scope
 
-- `pip-audit` (specification 02) and `composer audit` (specification 03).
-- OSV or NVD lookups and any network request made by `audit` itself (specification 04).
+- `pip-audit` (specification 03) and `composer audit` (specification 04).
+- Advisory lookups (OSV, NVD, KEV, EPSS) and any network request made by `audit` itself
+  (specification 02).
 - Yarn, Bun, Poetry and uv; a project with only `yarn.lock` is recorded as `unsupported`.
 - SARIF output.
 - Parsing `pnpm-lock.yaml`; pnpm's audit output already carries versions and paths.
@@ -205,7 +206,7 @@ and its report model is built around source entries.
 appears in the first result and not the second. pnpm's per-finding `dev` field is compared with
 that label; a disagreement is listed under `limits` and the difference result is kept.
 **Why.** npm's report has no development marker, so the difference is the one rule that works for
-both tools and for specification 02. pnpm's flag catches a wrong difference.
+both tools and for Python and PHP (specifications 03 and 04). pnpm's flag catches a wrong difference.
 
 ### D-3 — `--out` is required
 
@@ -276,7 +277,7 @@ table in `audit/internal/run/tools.go`, chosen by operating system, for the user
 | `npm` | `brew install node` | the distribution's `nodejs` package | install Node.js from nodejs.org |
 | `pnpm` | `corepack enable pnpm` | `corepack enable pnpm` | `npm install -g pnpm` |
 
-Specifications 02 and 03 add rows for `pip-audit` and `composer`. No hint pipes a download into a
+Specifications 03 and 04 add rows for `pip-audit` and `composer`. No hint pipes a download into a
 shell.
 **Why.** Installing software on someone's machine is their decision, and an agent running `audit`
 must not do it silently. A fixed table keeps the hints reviewable.
@@ -669,7 +670,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 Each has a recommended answer; confirm or change before code is written.
 
 - **OQ-1** — Binary name in the repository: `./bin/audit`, as `scan` is `./bin/scan`? The installed
-  release name (`zazzles-audit`) is decided in specification 04. Recommended: yes.
+  release name (`zazzles-audit`) is decided in the first-release specification. Recommended: yes.
 - **OQ-2** — `--out` required (D-3), rather than a default under the target? Recommended: required.
 - **OQ-3** — Default `--scope all`, with each library labelled? Recommended: yes.
 

@@ -7,11 +7,21 @@ software composition analysis (SCA) tool. Its command, `audit`, runs the package
 tool already installed for the project and turns the result into one findings file and a
 standalone HTML report in the Code Scan style.
 
-Planned coverage, in order: npm and pnpm, then `pip-audit` and `composer audit`, then advisory detail
-from the OSV database (CVE aliases, CWE, CVSS vector and the commit that fixed the flaw). Each
-vulnerable library is reported with its installed version, its advisories, the dependency path to
+What it adds over the audit tools alone is detail on every advisory, from four public sources:
+
+- **OSV**: the CVE and other identifiers, the description, the affected and fixed versions, and the
+  commit that fixed the flaw;
+- **NIST's National Vulnerability Database**: NIST's CVSS scores with the vector explained in plain
+  terms, and references tagged as patches or exploits;
+- **CISA's Known Exploited Vulnerabilities catalog**: whether attackers are using the flaw now, and
+  CISA's remediation due date;
+- **FIRST's EPSS**: the estimated chance the flaw is exploited in the next 30 days.
+
+The report puts known-exploited flaws first, then the most likely to be exploited, then the most
+severe. Each vulnerable library is also reported with its installed version, the dependency path to
 it, whether it ships in production or is used only in development, and the fix version with its
-patch, minor or major size.
+patch, minor or major size. Planned ecosystems, in order: npm and pnpm, then `pip-audit` and
+`composer audit`.
 
 The command reads and reports. It never installs, upgrades or fixes a dependency, and a missing
 lockfile or a failed audit is reported as such, never as a clean result. It is a pure-Go program,

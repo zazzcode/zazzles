@@ -1,22 +1,25 @@
 # Dependency Audit specifications
 
 Dependency Audit is the `audit` command under `audit/`: a pure-Go program beside Code Scan that
-runs the target's own package-manager audit, normalizes the output into one findings file, adds
-advisory detail, and writes an HTML report. Zazzles Agent reads the findings file to plan and carry
+runs the target's own package-manager audit, normalizes the output into one findings file, and
+writes an HTML report. Its main value over running the audit tools alone is the advisory detail it
+adds: each advisory looked up in OSV, NIST's National Vulnerability Database, CISA's Known Exploited
+Vulnerabilities catalog and FIRST's EPSS scores, so the report shows how severe each flaw is by every
+source, whether attackers are using it now, and how likely they are to soon. Zazzles Agent reads the findings file to plan and carry
 out remediation. The [implementation plan](../../project/implementation-plan.md#next-up) owns the
 roadmap position (next up, order 2) and the [SCA design](../../architecture/sca-design.md) owns the
 architecture direction.
 
 The series is five specifications. Each is one draft PR into `stage`, built in the `audit-mvp`
-worktree. 02 and 03 each need only 01, and 04 needs only 01, so 02, 03 and 04 can be built in any order
-after 01.
+worktree. Advisory enrichment comes straight after 01 because it is the module's main value. 02, 03
+and 04 each need only 01, so they can also be built side by side.
 
 | Order | Specification | Delivers | Depends on | State |
 |---:|---|---|---|---|
 | 01 | [npm and pnpm](01-node.md) | `audit run`, `audit ingest`, `audit report`, `audit tools`; npm and pnpm readers; the `zazzles.audit/v1` findings file; the HTML report | none | Drafted 2026-11-28 |
-| 02 | [Python](02-python.md) | `pip-audit` on pinned requirements files only, with no resolving or building; development scope from file names and includes | 01 | Drafted 2026-11-28. Needs `pip-audit` installed |
-| 03 | [PHP](03-php.md) | `composer audit` on `composer.lock` with plugins off; development split from the lockfile; abandoned packages | 01 | Drafted 2026-11-28. Needs `composer` installed |
-| 04 | Advisory enrichment | `audit enrich`: OSV lookup by advisory ID, optional NVD by CVE, a cache in the run directory, the added report fields | 01 | Not written |
+| 02 | [Advisory enrichment](02-enrichment.md) | OSV, NIST NVD, CISA KEV and FIRST EPSS for every advisory; severities by source, plain-language CVSS, known-exploited flags, exploitation likelihood, fix commits; risk-ordered report; `audit enrich`, `--offline`, a cache | 01 | Drafted 2026-11-28 |
+| 03 | [Python](03-python.md) | `pip-audit` on pinned requirements files only, with no resolving or building; development scope from file names and includes | 01 | Drafted 2026-11-28. Needs `pip-audit` installed |
+| 04 | [PHP](04-php.md) | `composer audit` on `composer.lock` with plugins off; development split from the lockfile; abandoned packages | 01 | Drafted 2026-11-28. Needs `composer` installed |
 | 05 | Documentation and sample report | The rest of `docs/audit/`, including a CI guide with a tested GitHub Actions workflow, and a published sample report of `vuln-nextjs` | 02, 03, 04 | Not written |
 
 ## Running locally and in CI
@@ -29,7 +32,7 @@ be audited, so a broken audit is never a green build.
 
 The four audit tools all run in CI. `audit` never installs them; when one is missing, `audit tools`
 and `audit run` print the install command for the user, as [01 D-11](01-node.md#d-11--install-hints-are-printed-never-run)
-and specifications 02 and 03 list. On GitHub Actions the usual setup is:
+and specifications 03 and 04 list. On GitHub Actions the usual setup is:
 
 | Tool | How a CI job gets it |
 | --- | --- |
@@ -73,7 +76,7 @@ Shared rules for every specification in the series:
 - The command works without a terminal or credentials, so the same run works locally and in CI.
 - A tool failure, a missing lockfile or an unrecognized output format is reported as such. It is
   never shown as a clean result.
-- Every advisory fact comes from the audit tool or, from 04 on, from a named advisory database. The
+- Every advisory fact comes from the audit tool or, from 02 on, from a named advisory source. The
   command adds only labels it can compute exactly (scope, version-change size, hashes).
 - `audit/` is pure Go with the standard library only, builds with `CGO_ENABLED=0`, and imports
   nothing from `scan/` or `agent/`.

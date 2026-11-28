@@ -1,9 +1,9 @@
-# Dependency Audit 02: Python (`pip-audit`) — Deliverable Specification
+# Dependency Audit 03: Python (`pip-audit`) — Deliverable Specification
 
-**Worktree / branch:** `audit-mvp`, branch `audit-02-python`, cut from `stage` after 01 merges (or
+**Worktree / branch:** `audit-mvp`, branch `audit-03-python`, cut from `stage` after 01 merges (or
 stacked on 01's branch with `gh-stack` if 01 is still in review)
 **Feature:** Dependency Audit (`audit/`)
-**Milestone:** [Dependency Audit series](README.md), specification 02 of 5
+**Milestone:** [Dependency Audit series](README.md), specification 03 of 5
 **Deliverable:** `pip-audit` support in `audit run`, `audit ingest` and `audit tools`
 **Project Owner:** zazzles owner
 **Deliverable Owner:** zazzles owner
@@ -12,11 +12,11 @@ stacked on 01's branch with `gh-stack` if 01 is still in review)
 **Approved review shape:** one PR
 **Decomposition rationale:** Python is its own specification because its inputs are unlike any
 lockfile: requirements files that may not be pinned, scope that only file names reveal, and a
-resolver that can run package build code. PHP is simpler and is [specification 03](03-php.md).
+resolver that can run package build code. PHP is simpler and is [specification 04](04-php.md).
 **Integration branch:** `stage`
 **Merge policy:** PR review required — agents commit/push feature branches only
 **Drafted:** 2026-11-28
-**Shared run log:** `.zazz/ephemeral/dependency-audit-run-log.md` (section `02 Python`)
+**Shared run log:** `.zazz/ephemeral/dependency-audit-run-log.md` (section `03 Python`)
 **Execution tracking:** local run log only
 **Implementation coordination:** Lead Agent, with one Sonnet Contributor Agent allowed for the reader
 **Companion skills for implementation:** `spec-driven`, `doc-check`
@@ -119,7 +119,7 @@ Code changes live under `audit/`. Documentation changes are limited to the files
 - Auditing an installed environment (`pip-audit` with no requirements file).
 - Poetry, Pipenv and uv lockfiles, and exporting them to requirements files. A project with only
   those is recorded `unsupported` with the export command in the reason.
-- Composer (specification 03), OSV enrichment (04), SARIF, anything under `agent/`.
+- Composer (specification 04), SARIF, anything under `agent/`.
 
 ---
 
@@ -163,7 +163,8 @@ they are unpinned, so D-2 would reject them anyway.
 ### D-4 — Severity is `unknown` unless the tool gives one
 
 **Decision.** `pip-audit`'s JSON gives vulnerability IDs, aliases and fix versions but usually no
-severity. Record `unknown`; specification 04 fills it from OSV.
+severity. Record `unknown`; advisory enrichment ([specification 02](02-enrichment.md)) fills it
+from NVD and OSV.
 **Why.** INVARIANT 3: no guessing.
 
 ### D-5 — No requirements file
@@ -195,7 +196,7 @@ environment wants.
 
 As [01 §5](01-node.md#5-agent-implementation-rules), with these changes:
 
-- Branch `audit-02-python` in the `audit-mvp` worktree. Scope verification:
+- Branch `audit-03-python` in the `audit-mvp` worktree. Scope verification:
   `git diff stage --stat` lists exactly the files in §3.
 - Contributor Agent: one Sonnet agent may write `audit/internal/parse/pipaudit/` after phase 1.
 - Additional halt conditions:
@@ -327,7 +328,7 @@ check recorded.
 
 ## 11. Run Log Protocol
 
-As [01 §11](01-node.md#11-run-log-protocol), section `02 Python`.
+As [01 §11](01-node.md#11-run-log-protocol), section `03 Python`.
 
 ---
 
@@ -335,11 +336,11 @@ As [01 §11](01-node.md#11-run-log-protocol), section `02 Python`.
 
 ```text
 You are starting in the zazzles worktree `audit-mvp`. Verify pwd, branch and status per AGENTS.md.
-Create branch audit-02-python from stage (01 merged) or stack it on 01's branch with gh-stack.
-Implement Dependency Audit 02: pip-audit support.
+Create branch audit-03-python from stage (01 merged) or stack it on 01's branch with gh-stack.
+Implement Dependency Audit 03: pip-audit support.
 
-Specification: .zazz/specifications/audit/02-python.md (read 01-node.md first; this builds on it)
-Run log: .zazz/ephemeral/dependency-audit-run-log.md, section "02 Python"
+Specification: .zazz/specifications/audit/03-python.md (read 01-node.md first; this builds on it)
+Run log: .zazz/ephemeral/dependency-audit-run-log.md, section "03 Python"
 Coordination: Lead Agent; one Sonnet Contributor Agent may write the reader after phase 1.
 Companion skills: spec-driven, doc-check.
 
@@ -347,7 +348,7 @@ Resolve OQ-1 and OQ-2 with the owner first. Never let pip-audit resolve, downloa
 a package: every run uses --no-deps and --disable-pip on a pinned file, or does not run. Samples
 are read-only; use copies. Follow §5 halt conditions. Finish with the DoD and a verifier:
 
-"Verify Dependency Audit 02 in audit-mvp. Read 02-python.md, 01-node.md and the run log. Run each
+"Verify Dependency Audit 03 in audit-mvp. Read 03-python.md, 01-node.md and the run log. Run each
 AC's test or command. Check every exec call against INVARIANT 1, and that no code path can reach
 pip-audit without --no-deps and --disable-pip. Check git diff stage --stat against §3. Do not modify
 anything. Return PASS or FAIL per AC with evidence."

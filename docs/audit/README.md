@@ -18,8 +18,12 @@ other tools read, and `report.html`, a standalone report you open in a browser.
 - **For each vulnerable library:** installed version, advisories with their identifiers and
   severity, direct or through another package with the path to it, and the fix version with its
   patch, minor or major size.
-- **Advisory detail** from the OSV database, which the audit tools leave out: CVE aliases, CWE,
-  the CVSS vector and the commit that fixed the flaw.
+- **Advisory detail the audit tools leave out**, from four public sources: CVE identifiers, the
+  description and the fixing commit from OSV; NIST's CVSS scores, explained in plain terms, from
+  the National Vulnerability Database; whether attackers are using the flaw now, from CISA's Known
+  Exploited Vulnerabilities catalog; and the chance it is exploited soon, from FIRST's EPSS. The
+  report puts known-exploited flaws first. Only advisory identifiers are sent, and `--offline`
+  turns lookups off.
 - **Local and CI use:** the same command runs on your machine and in a CI job, with no prompts
   and no credentials. A non-zero exit when advisories at or above a chosen severity are found, a
   distinct exit when a project could not be audited, and a short `summary.md` for the job summary

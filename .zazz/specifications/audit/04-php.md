@@ -1,9 +1,9 @@
-# Dependency Audit 03: PHP (`composer audit`) — Deliverable Specification
+# Dependency Audit 04: PHP (`composer audit`) — Deliverable Specification
 
-**Worktree / branch:** `audit-mvp`, branch `audit-03-php`, cut from `stage` after 01 merges (it does
-not depend on 02, and may be built before or beside it)
+**Worktree / branch:** `audit-mvp`, branch `audit-04-php`, cut from `stage` after 01 merges (it depends
+only on 01, and may be built before or beside 02 and 03)
 **Feature:** Dependency Audit (`audit/`)
-**Milestone:** [Dependency Audit series](README.md), specification 03 of 5
+**Milestone:** [Dependency Audit series](README.md), specification 04 of 5
 **Deliverable:** `composer audit` support in `audit run`, `audit ingest` and `audit tools`
 **Project Owner:** zazzles owner
 **Deliverable Owner:** zazzles owner
@@ -15,7 +15,7 @@ lockfile marks development packages, so this is a small, separate review from Py
 **Integration branch:** `stage`
 **Merge policy:** PR review required — agents commit/push feature branches only
 **Drafted:** 2026-11-28
-**Shared run log:** `.zazz/ephemeral/dependency-audit-run-log.md` (section `03 PHP`)
+**Shared run log:** `.zazz/ephemeral/dependency-audit-run-log.md` (section `04 PHP`)
 **Execution tracking:** local run log only
 **Implementation coordination:** Lead Agent working alone
 **Companion skills for implementation:** `spec-driven`, `doc-check`
@@ -109,7 +109,7 @@ Code changes live under `audit/`. Documentation changes are limited to the files
 
 - Projects with no `composer.lock`; they are recorded `no_lockfile`, never resolved.
 - Composer's own ignore settings beyond what `composer audit` already applies.
-- Python (specification 02), OSV enrichment (04), SARIF, anything under `agent/`.
+- Python (specification 03), SARIF, anything under `agent/`.
 
 ---
 
@@ -145,13 +145,14 @@ an upgrade and a replacement; counting it as a vulnerability would be wrong.
 **Decision.** Copy each advisory's `advisoryId`, `cve` and every `sources[].remoteId` (such as a
 GHSA) into `ids`, `title`, `link` as `url`, `affectedVersions` as `affected`, and `severity` when
 present, else `unknown`.
-**Why.** INVARIANT 3; 04 fills missing severity from OSV.
+**Why.** INVARIANT 3; advisory enrichment ([specification 02](02-enrichment.md)) fills missing
+severity from NVD and OSV.
 
 ### D-5 — Fix target is not stated by Composer
 
 **Decision.** `composer audit` does not name a fixed version. Record `fix: {available: false,
 change: "unknown"}` unless `affectedVersions` is a single `<X` or `<=X` upper bound, in which case the
-fix target is left empty and `limits` notes that 04 will supply it.
+fix target is left empty and `limits` notes that advisory enrichment supplies it from OSV's fixed versions.
 **Why.** Guessing the next release from a range would be wrong as often as right.
 
 ### D-6 — Install hint for `composer`
@@ -170,7 +171,7 @@ to pipe into a shell.
 
 As [01 §5](01-node.md#5-agent-implementation-rules), with these changes:
 
-- Branch `audit-03-php` in the `audit-mvp` worktree. Scope verification: `git diff stage --stat`
+- Branch `audit-04-php` in the `audit-mvp` worktree. Scope verification: `git diff stage --stat`
   lists exactly the files in §3.
 - Lead Agent works alone.
 - Additional halt conditions:
@@ -281,7 +282,7 @@ check recorded.
 
 ## 11. Run Log Protocol
 
-As [01 §11](01-node.md#11-run-log-protocol), section `03 PHP`.
+As [01 §11](01-node.md#11-run-log-protocol), section `04 PHP`.
 
 ---
 
@@ -289,17 +290,17 @@ As [01 §11](01-node.md#11-run-log-protocol), section `03 PHP`.
 
 ```text
 You are starting in the zazzles worktree `audit-mvp`. Verify pwd, branch and status per AGENTS.md.
-Create branch audit-03-php from stage after 01 merges. Implement Dependency Audit 03: composer audit.
+Create branch audit-04-php from stage after 01 merges. Implement Dependency Audit 04: composer audit.
 
-Specification: .zazz/specifications/audit/03-php.md (read 01-node.md first; this builds on it)
-Run log: .zazz/ephemeral/dependency-audit-run-log.md, section "03 PHP"
+Specification: .zazz/specifications/audit/04-php.md (read 01-node.md first; this builds on it)
+Run log: .zazz/ephemeral/dependency-audit-run-log.md, section "04 PHP"
 Coordination: Lead Agent working alone. Companion skills: spec-driven, doc-check.
 
 Resolve OQ-1 with the owner first. Every composer run uses --locked and --no-plugins; nothing is
 installed or updated. Samples are read-only; use copies. Follow §5 halt conditions. Finish with the
 DoD and a verifier:
 
-"Verify Dependency Audit 03 in audit-mvp. Read 03-php.md, 01-node.md and the run log. Run each AC's
+"Verify Dependency Audit 04 in audit-mvp. Read 04-php.md, 01-node.md and the run log. Run each AC's
 test or command. Check every exec call against INVARIANT 1. Check git diff stage --stat against §3.
 Do not modify anything. Return PASS or FAIL per AC with evidence."
 

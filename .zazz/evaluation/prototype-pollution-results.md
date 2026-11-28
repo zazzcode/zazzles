@@ -1,6 +1,6 @@
 # Prototype pollution stage 1 results
 
-[Implementation contract](../specifications/prototype-pollution.md) · [Analysis guide](../../docs/analysis/prototype-pollution.md)
+[Implementation contract](../specifications/prototype-pollution.md) · [Analysis guide](../../docs/scan/analysis/prototype-pollution.md)
 
 Verified on 2026-11-20 in `prototype-polution-analyzer` against the `ec29e49` integration
 baseline. The sample checkouts matched their pins and stayed clean. Scans read source and package

@@ -4,7 +4,23 @@
 [SARIF](findings.sarif) · [Provenance](metadata.json) ·
 [Detection guide](../../../.zazz/evaluation/oss-oopssec-store-detection-guide.md)
 
-## Current report (rebuilt 2026-11-19)
+## Current report (2026-11-27, Google Gemini)
+
+A full scan of [kOaDT/oss-oopssec-store](https://github.com/kOaDT/oss-oopssec-store) at
+`2d530ef` with scanner `81d4731` (`stage` through PR #56) and Google Gemini `gemini-decision-1`.
+The reference checkout stayed clean. These are static source judgments, not runtime exploit
+confirmation. [Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#oss-oopssec-store)
+
+- 131 entries, 128 analysis records: **25 Confirmed, 103 Review, 0 Protected**.
+- **Answer key:** 13 of 13 expected positives Confirmed; no keyed control is a finding.
+- The findings sit at the same 19 locations as the previous report. Its two practice findings
+  are now Confirmed. The Confirmed open-redirect, SSRF, SQL and client-XSS records outside the
+  key were not source-reviewed for this report.
+- **Usage:** 29 completed assessments, 185,844 input tokens, zero failures. 99 records were not
+  sent: 87 validation records whose policy gate lacks evidence, 9 outbound observations and 3
+  records whose blocker has no question the model could answer.
+
+## Previous report (rebuilt 2026-11-19, gpt-6-luna)
 
 Fresh full scan at the same pin with OpenAI `gpt-6-luna` on the model-assisted evidence resolution
 scanner (`50d4a8f`, [results](../../../.zazz/evaluation/model-resolution-results.md)). The reference checkout stayed clean. These are static
@@ -48,7 +64,7 @@ XXE, authentication/authorization, cryptography, CSRF, races, prompt injection a
 vulnerabilities are outside the implemented analyzers. Raw-SQL-to-Prisma stored links, broader
 React context/props and the remaining Next.js practice checks are deferred. These source judgments
 do not establish runtime exploitation or exhaustive coverage. See the
-[Next.js support limits](../../nextjs-support.md) and [reference policy](../reference-policy.md).
+[Next.js support limits](../../scan/nextjs-support.md) and [reference policy](../reference-policy.md).
 
 Source excerpts belong to the upstream authors. The upstream MIT license is preserved in
 [UPSTREAM-LICENSE.txt](UPSTREAM-LICENSE.txt).

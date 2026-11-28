@@ -27,7 +27,7 @@ reported as not covered, never special-cased or faked.
 - [Component ownership](../architecture/analysis-packs.md#boundary-and-ownership),
   [selection contract](../architecture/analysis-packs.md#descriptor-and-selection-contract),
   [bounds](../architecture/analysis-packs.md#bounds-and-compatibility).
-- [Calibration pairs](../../docs/analysis/calibration.md#regression-pairs),
+- [Calibration pairs](../../docs/scan/analysis/calibration.md#regression-pairs),
   [sample policy](../../docs/samples/reference-policy.md),
   [TypeScript source guide](../evaluation/vulnerable-typescript-app-detection-guide.md).
 - Standards: [code structure](../standards/code-structure.md), [testing](../standards/testing.md),

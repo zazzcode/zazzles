@@ -1,6 +1,6 @@
 # Prototype pollution walk start results
 
-[Contract](../specifications/pollution-walk-start.md) · [Coverage and known gaps](../../docs/detection-capabilities/prototype-pollution.md)
+[Contract](../specifications/pollution-walk-start.md) · [Coverage and known gaps](../../docs/scan/detection-capabilities/prototype-pollution.md)
 
 ## Probe and policy outcomes
 
@@ -80,7 +80,7 @@ checks covered changed relative links and anchors, JSON syntax and `git diff --c
 - The `set-in` 2.0.3 advisory reading still rests on source and the earlier transcription.
   The downloaded package's runtime reproduction remains unverified. [Prior library evaluation](pollution-write-shapes-results.md#real-advisory-libraries)
 - The prototype-pollution coverage page is present on the starting revision. The owner assigned
-  the remaining [class coverage pages](../../docs/detection-capabilities.md) to this branch as a
+  the remaining [class coverage pages](../../docs/scan/detection-capabilities.md) to this branch as a
   documentation follow-up.
 - Independent verification used static probes and offline judgment stubs. The sample
   applications and Node payload checks were not executed.

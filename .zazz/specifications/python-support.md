@@ -17,7 +17,7 @@ Evaluate and iterate against all three pinned Python targets and independent sou
 - [Orientation](../docs/zazzles-agent-orientation.md), [execution discipline](../docs/agent-execution-discipline.md).
 - [Plan, Python adapter](../project/implementation-plan.md#phase-11--python-adapter).
 - [Graph](../architecture/repository-graph.md), [evidence](../architecture/evidence-and-claims.md).
-- [Analysis guides](../../docs/analysis/README.md): input validation, database injection, logging, XSS, calibration.
+- [Analysis guides](../../docs/scan/analysis/README.md): input validation, database injection, logging, XSS, calibration.
 - [Sample reference policy](../../docs/samples/reference-policy.md).
 - Standards: [structure](../standards/code-structure.md), [testing](../standards/testing.md),
   [spec hygiene](../standards/spec-hygiene.md), [docs hygiene](../standards/docs-hygiene.md).

@@ -50,8 +50,8 @@ Offline, at the baseline:
 
 - [Request size reduction results](../evaluation/judge-request-size-reduction-results.md): the
   sections "Investigation of the AC8 changes" and "Attribution runs".
-- [XSS analysis rules](../../docs/analysis/xss.md#output-context-and-protection).
-- [Calibration pairs](../../docs/analysis/calibration.md#regression-pairs).
+- [XSS analysis rules](../../docs/scan/analysis/xss.md#output-context-and-protection).
+- [Calibration pairs](../../docs/scan/analysis/calibration.md#regression-pairs).
 - Code:
   - `sqlPrepare` and `sqlExecPrepared` (`internal/langphp/sql.go`)
   - `render` and `binaryValues` (`internal/langphp/flow.go`)

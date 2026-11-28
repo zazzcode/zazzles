@@ -43,7 +43,7 @@ The scanned source is `src/server.ts`.
 
 The following counts describe the earlier observation-based presentation, not version-3 Findings.
 Version 3 reclassifies established construction practice versus unresolved checks according to the
-[root results guide](../../docs/interpreting-results.md). Raw evidence is unchanged.
+[root results guide](../../docs/scan/interpreting-results.md). Raw evidence is unchanged.
 
 The 2026-11-01 rerun used the same target revisions and entry selections. Raw `entries`, `uses`,
 `gaps`, `files`, and `limitations` match the pre-presentation baseline exactly. The JS/TS practice

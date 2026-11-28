@@ -30,7 +30,7 @@ sentence, documenting any current regression separately if one is observed.
 - [Plan and shared rules](architecture-update-plan.md#shared-rules-for-every-phase), [implementation plan](../project/implementation-plan.md), and [architecture baseline](../evaluation/architecture-baseline.md#guard-test).
 - [Sample catalog](../project/vulnerable-sample-apps.md#applications) and [sample handling](../docs/zazzles-agent-orientation.md#available-vulnerable-sample-apps).
 - [Source index](../architecture/repository-graph.md#implementation-direction-source-index-not-a-graph-store-2026-11-17), [D5 results](../evaluation/common-entry-dispatch-results.md#d5--bounded-dynamic-http-registration-2026-11-04), and [summary witness completion](architecture-phase-1-summary-completion.md#1-capability).
-- [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes), [calibration controls](../../docs/analysis/calibration.md#regression-pairs), the selected family's [analysis guide](../../docs/analysis/README.md), and [testing standards](../standards/testing.md).
+- [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes), [calibration controls](../../docs/scan/analysis/calibration.md#regression-pairs), the selected family's [analysis guide](../../docs/scan/analysis/README.md), and [testing standards](../standards/testing.md).
 - [Python evaluator and keys](../../docs/samples/evaluate-python.py), [DVWA structural checks](../evaluation/dvwa-detection-guide.md#coverage-boundaries-and-acceptance), and the source keys in §5.
 
 ## 3. Invariants
@@ -282,7 +282,7 @@ delivery. Rank them with this inventory's data when they become contracts.
 | False positive | Test, training and fixture scope reported separately from production counts | Juice Shop scope split: 278 test and 64 training findings |
 | False positive | Root-sink grouping, so mounted instances don't inflate defect counts | VulnPy D5 fan-out, and the fan-out count above |
 | False positive | Deterministic numeric and regex guard facts, so a judge can't override a bounded operand | [PHP sample analysis](../evaluation/php-sample-analysis.md) judge false positive |
-| Measurement | A held-out, source-reviewed protected-control corpus for the security families, like `practice-accuracy/protected-controls.json` | [Calibration](../../docs/analysis/calibration.md#evaluation-and-audit) |
+| Measurement | A held-out, source-reviewed protected-control corpus for the security families, like `practice-accuracy/protected-controls.json` | [Calibration](../../docs/scan/analysis/calibration.md#evaluation-and-audit) |
 
 ## 12. Run log protocol
 

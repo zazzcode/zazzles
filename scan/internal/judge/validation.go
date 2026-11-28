@@ -97,6 +97,9 @@ func protocolVersion(u analysis.CandidateUse) string {
 	if sqlTextOperation(u) {
 		return analysispacks.SQLTextOperationProtocol
 	}
+	if u.Kind == analysis.MassAssignmentKind && analysispacks.MassAssignmentOwnerReference(u) {
+		return analysispacks.MassAssignmentProtocolV2
+	}
 	if version := analysispacks.ProtocolFor(u.Kind); version != "" {
 		return version
 	}

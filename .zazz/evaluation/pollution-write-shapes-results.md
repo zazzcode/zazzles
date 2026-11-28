@@ -1,6 +1,6 @@
 # Prototype pollution write shapes results
 
-[Implementation contract](../specifications/pollution-write-shapes.md) · [Stage 1 results](prototype-pollution-results.md) · [Analysis guide](../../docs/analysis/prototype-pollution.md)
+[Implementation contract](../specifications/pollution-write-shapes.md) · [Stage 1 results](prototype-pollution-results.md) · [Analysis guide](../../docs/scan/analysis/prototype-pollution.md)
 
 Verified on 2026-11-20 in `prototype-polution-analyzer`, on top of the stage 1 tip `31380d5`. Every scan read source and package files. The assessment tests used fixed
 responses through an in-memory transport. No provider request was made.
@@ -320,5 +320,5 @@ All three reports are published under `docs/samples/`.
   helper blocker under stage 1. The pollution claim now treats a call that encloses the write
   as a consumer of its result. This applies to every pollution shape, including stage 1's.
 - The owner asked for the gaps in the user documentation. They are listed in
-  [detection capabilities](../../docs/detection-capabilities.md#prototype-pollution-known-gaps)
-  and in the guide's [limits](../../docs/analysis/prototype-pollution.md#limits).
+  [detection capabilities](../../docs/scan/detection-capabilities.md#prototype-pollution-known-gaps)
+  and in the guide's [limits](../../docs/scan/analysis/prototype-pollution.md#limits).

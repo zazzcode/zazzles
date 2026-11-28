@@ -22,6 +22,10 @@ file and open it locally.
 | [DVWA (PHP)](dvwa/README.md) | [findings.html](https://zazzcode.github.io/zazzles/dvwa/findings.html) | [JSON, gzip](dvwa/findings.json.gz) | [SARIF, gzip](dvwa/findings.sarif.gz) |
 | [VulnerableSymfony (PHP, Symfony)](vuln-symfony/README.md) | [findings.html](https://zazzcode.github.io/zazzles/vuln-symfony/findings.html) | [findings.json](vuln-symfony/findings.json) | [findings.sarif](vuln-symfony/findings.sarif) |
 
+The Juice Shop, OopsSec, ThreatByte, VulnPy, DVWA and VulnerableSymfony reports are full Google Gemini
+`gemini-decision-1` scans of 2026-11-27; Juice Shop's includes the detection generalization 22 change ([run record](../../.zazz/evaluation/gemini-sample-runs-20261127.md));
+the other reports were judged with OpenAI `gpt-6-luna`.
+
 Each sample represents one application. An application’s notes list its published scans with
 the target revision, scanner revision, assessment scope and observed outcomes. Use those notes when comparing a report with its
 [source-reviewed expectations](../../.zazz/project/vulnerable-sample-apps.md).

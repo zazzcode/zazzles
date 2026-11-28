@@ -39,11 +39,11 @@ whose outcome was fixed are already no longer sent; what remains is below.
 ## 2a. Required reading
 
 - [Judgment gates](../architecture/trace-judgment.md#separate-judgments-and-gates), which state the rule this contract revises: model confidence cannot close a static blocker.
-- [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) and [calibration](../../docs/analysis/calibration.md#evaluation-and-audit).
+- [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) and [calibration](../../docs/scan/analysis/calibration.md#evaluation-and-audit).
 - [False positives and Review noise](accuracy-false-positive-noise.md) §3, D-3b and D-7, the invariant, the write-set evidence and the pattern this contract generalizes, and its [implementation change log](accuracy-false-positive-noise.md#2026-11-19--implementation-all-seven-workstreams).
 - [Precision and noise baseline](../evaluation/precision-noise-baseline.md#method), the measures W6 reports against.
-- [Decision-model user guide](../../docs/decision-models.md) and [AGENTS.md](../../AGENTS.md#credentials-and-live-model-calls) for request and retry limits.
-- [Path traversal analysis](../../docs/analysis/path-traversal.md) and [XSS analysis](../../docs/analysis/xss.md).
+- [Decision-model user guide](../../docs/scan/decision-models.md) and [AGENTS.md](../../AGENTS.md#credentials-and-live-model-calls) for request and retry limits.
+- [Path traversal analysis](../../docs/scan/analysis/path-traversal.md) and [XSS analysis](../../docs/scan/analysis/xss.md).
 - [Testing standards](../standards/testing.md) and the plan's [shared rules](architecture-update-plan.md#shared-rules-for-every-phase).
 
 ## 3. Invariants

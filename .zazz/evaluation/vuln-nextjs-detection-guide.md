@@ -8,7 +8,7 @@ Local reference: `<DEV_ROOT>/zazzcode/vuln-nextjs`. Its own agent instructions a
 
 [Published sample and revision](../../docs/samples/vuln-nextjs/README.md) ·
 [Report provenance](../../docs/samples/vuln-nextjs/metadata.json) ·
-[Next.js contract](../specifications/nextjs-support.md) · [Support limits](../../docs/nextjs-support.md)
+[Next.js contract](../specifications/nextjs-support.md) · [Support limits](../../docs/scan/nextjs-support.md)
 
 ## Required supported positives
 

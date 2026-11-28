@@ -13,7 +13,7 @@ Session A is complete. Prototype pollution, PHP, SCA and XXE remain outside this
 
 - [Orientation](../docs/zazzles-agent-orientation.md#code-structure) and
   [execution discipline](../docs/agent-execution-discipline.md#verification-discipline).
-- [Next.js base contract](nextjs-support.md), [analysis rules](../../docs/analysis/nextjs.md).
+- [Next.js base contract](nextjs-support.md), [analysis rules](../../docs/scan/analysis/nextjs.md).
 - [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes),
   [graph flow](../architecture/repository-graph.md#value-flow-guards-and-taint).
 - [Standards index](../standards/index.yaml): code structure, testing, spec and documentation hygiene.

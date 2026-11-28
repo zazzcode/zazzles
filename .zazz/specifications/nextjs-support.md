@@ -6,7 +6,7 @@
 **Delivery topology:** One feature branch and one draft PR (owner decision, 2026-11-15)
 **Source proposal:** `.zazz/ephemeral/NEXTJS-SUPPORT-PROPOSAL.md` (gitignored, in the `nextjs-support-mvp` checkout)
 **Drafted:** 2026-11-16
-**User docs:** [Next.js support](../../docs/nextjs-support.md), [Next.js analysis rules](../../docs/analysis/nextjs.md)
+**User docs:** [Next.js support](../../docs/scan/nextjs-support.md), [Next.js analysis rules](../../docs/scan/analysis/nextjs.md)
 
 ## 1. Capability
 

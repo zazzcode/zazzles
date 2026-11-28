@@ -53,11 +53,11 @@ Not in scope. Each needs its own contract, and a clean row there is not a pass.
 - [Request size and evidence relevance](../architecture/request-size-and-evidence-relevance.md),
   the [relevance-tier decision](evidence-relevance-tier.md#decision) and the
   [slicing deferral](data-path-slicing.md#measurement-and-decision). W4 meets their re-open condition.
-- [PHP support contract](php-support.md) D-2 to D-7 and [PHP analysis](../../docs/php-support.md).
-- Analysis rules: [command injection](../../docs/analysis/command-injection.md),
-  [path traversal](../../docs/analysis/path-traversal.md),
-  [code injection](../../docs/analysis/code-injection.md), [XSS](../../docs/analysis/xss.md),
-  [calibration pairs](../../docs/analysis/calibration.md#regression-pairs).
+- [PHP support contract](php-support.md) D-2 to D-7 and [PHP analysis](../../docs/scan/php-support.md).
+- Analysis rules: [command injection](../../docs/scan/analysis/command-injection.md),
+  [path traversal](../../docs/scan/analysis/path-traversal.md),
+  [code injection](../../docs/scan/analysis/code-injection.md), [XSS](../../docs/scan/analysis/xss.md),
+  [calibration pairs](../../docs/scan/analysis/calibration.md#regression-pairs).
 - [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes)
   and [trace gates](../architecture/trace-judgment.md#separate-judgments-and-gates).
 - [Recall inventory](../evaluation/recall-gap-inventory.md), `cases.json`, `check.py` and `accuracy.py`

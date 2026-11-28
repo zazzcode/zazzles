@@ -11,6 +11,12 @@ Each record concerns one declared claim at a supported operation or input. Prote
 to that claim and its analyzed paths. Offline scans build evidence, and judged scans can use
 that evidence to classify a supported security claim. [How to read a report](interpreting-results.md)
 
+Coverage is moving away from per-library lists. SQL statement text reaching a call is recorded
+whatever the driver, and native MongoDB calls are recorded by tracing the receiver to the package
+import; the decision model judges the operation. The class pages still list the explicit
+contracts, which add evidence such as bound-parameter slots.
+[Generalize detection](../technical-approach.md#generalize-detection)
+
 <a id="vulnerability-families"></a>
 
 ## Vulnerability classes

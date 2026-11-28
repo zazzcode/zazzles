@@ -104,6 +104,38 @@ changed. Measured on a lab used for development; no held-out keyed application.
 **Limits.** JavaScript and TypeScript only. One package. A sanitizer the model misreads is still reported. A wording is
 measured per model.
 
+<a id="sql-statement-text-records"></a>
+
+### SQL statement text records (no driver contract)
+
+A call that no SQL driver contract records is recorded when one of its arguments is SQL statement text and a request,
+stored or session value reaches the call ([specification 21](../specifications/detection-generalization/21-sql-text-records.md)).
+No driver, package or method is named in scanner code or in the request, so a new driver needs no change.
+
+- **One shared test.** `parse.SQLStatementText` decides whether the pieces an argument evaluates to are statement text
+  (`parse/sql_text.go`); it also produces the `statement_shape` reading of where each non-literal part lands. The
+  language hooks only read their own syntax into `parse.SQLTextPiece` values: `langjs/sql_text_record.go` and
+  `sql_text_pieces.go`, `langpy/sql_text.go` and `sql_text_follow.go`, `langphp/sql_text_record.go` and
+  `sql_text_follow.go`. They run after the contract paths.
+- **Additive.** A record a contract makes keeps its record and request byte for byte and gains no second record. The
+  JavaScript records made only because a method is named `query` take the new contract when their argument is
+  statement text.
+- **Record.** Kind `sql_query_candidate`, contract `sql-text-v1` (`analysispacks/sql_text.go`), slots `sql_text` and
+  `sql_parameters`. The recorder attaches the source excerpts; the judge reads no file.
+- **Its own request** (`judge/sql_text_operation.go`, protocol `sql-text-operation-v1`, selected only by that contract):
+  SQL notes, an entry note, the call, the values, the statement reading and the source. Two closed questions,
+  `operation` and `request_control`. Protected needs a value in `sql_parameters`, `data_only` at 0.95 or above and no
+  judged limit (specification 20); `bound_parameters_only` and stored-only records stay in Review.
+
+**Tested benefit** (2026-11-26; [learnings](../learnings/detection-generalization/sql-driver-independence.md)): 18 of 18
+injectable driver forms written for the specification Confirmed on Gemini `gemini-decision-1` and `gpt-6-luna`, no bound
+twin Confirmed. The development samples change by at most one record. The held-out control `oss-oopssec-store` has no
+uncontracted driver, so accuracy on code in the wild is not measured.
+
+**Limits.** A helper called by a helper, comprehension or `map`-built lists, a statement prepared and run in one chained
+expression and a variable assigned in an included PHP file are not followed. A JavaScript tagged template needs its tag
+function in the scanned source for a finding.
+
 ## Semantic questions and policy
 
 Protocol `candidate-use-v9` retains validation and construction-practice questions, plus a distinct

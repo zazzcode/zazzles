@@ -24,7 +24,8 @@ Contract: [hardening lane, branch 2](../specifications/juiceshop-nextjs-hardenin
 | DVWA | `a1978a2` | `cases.json` (11 positives), [guide](dvwa-detection-guide.md) | `run-4266343441`, scanner `d368a68`, 205 requests ([published copy](../../docs/samples/dvwa/README.md)) |
 | vuln-symfony | `086f81f` | `cases.json` (30 positives), [guide](vuln-symfony-detection-guide.md) | `run-1810616125`, scanner `8d97b93`, 84 requests ([published copy](../../docs/samples/vuln-symfony/README.md)) |
 
-Every Code Scan report is a judged run with OpenAI `gpt-6-luna`. The Juice Shop and vuln-nextjs
+The Gemini column added on 2026-11-27, and the OopsSec and VulnPy rows, are recorded in the
+[Gemini sample runs](gemini-sample-runs-20261127.md). In the table above, every Code Scan report is a judged run with OpenAI `gpt-6-luna`. The Juice Shop and vuln-nextjs
 runs are the acceptance runs of hardening 3, recorded in the
 [hardening results](juiceshop-hardening-results.md#hardening-3). The four upload candidates of
 Juice Shop were judged in that run and are in Review; they are in no table.

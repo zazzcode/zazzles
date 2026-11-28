@@ -25,7 +25,7 @@ editing the merged `nextjs-support-phase-2` worktree, and paid model calls (see 
   [results](../evaluation/nextjs-phase-2-results.md) — the baseline this work improves.
 - [Claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes),
   [graph flow](../architecture/repository-graph.md#value-flow-guards-and-taint).
-- Matching analysis guides in [docs/analysis](../../docs/analysis/README.md): `code-injection`,
+- Matching analysis guides in [docs/analysis](../../docs/scan/analysis/README.md): `code-injection`,
   `open-redirect`, `ssrf`, `path-traversal`, `nextjs`, `xss` (stored paths), `calibration`.
 - [Testing conventions](../standards/testing.md) and [contributor checks](../../docs/contributing.md).
 
@@ -164,5 +164,5 @@ Owner authorized a paid run; 10 OpenAI `gpt-6-luna` requests, no fallback. O-SSR
 the VulnPy Django path/SQL cases are Confirmed; the lab zod control is Protected; the lab redirect
 control stays Review. Fixes: missing fact notes (with a producer-scan test), stored-code operand
 path remapping, and a general stored-origin blocker for every family. A user-facing
-[detection capabilities](../../docs/detection-capabilities.md) page was added. Cross-request store
+[detection capabilities](../../docs/scan/detection-capabilities.md) page was added. Cross-request store
 writer tracking is handed to proposal 2.

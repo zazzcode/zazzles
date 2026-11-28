@@ -32,11 +32,11 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 
 ## Shared project guides
 
-- [Technical approach](technical-approach.md) explains source-backed analysis and decision validation.
+- [Technical approach](technical-approach.md) explains source-backed analysis, decision validation and [generalized detection](technical-approach.md#generalize-detection).
 - [Remediation philosophy](philosophy.md) explains how to preserve behavior and existing protection when fixing a finding.
 - [CI/CD reports](scan/ci.md) covers report artifacts in build pipelines.
 - [Contributing](contributing.md) covers repository layout, verification, pull requests and documentation ownership.
-- [Scanner comparison](scan/scanner-comparison.md) scores Code Scan, Semgrep CE and Bearer against the known vulnerabilities of four sample applications.
+- [Scanner comparison](scan/scanner-comparison.md) scores Code Scan (with Gemini and gpt-6-luna), Semgrep CE and Bearer against the known vulnerabilities of four sample applications, and Code Scan alone on two more.
 - [Semgrep CE comparison](scan/semgrep-ce-cheat-sheet.md) explains how to run a local comparison.
 
 ## First steps

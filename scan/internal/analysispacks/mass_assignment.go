@@ -1,7 +1,45 @@
 package analysispacks
 
+import "github.com/zazzcode/zazzles/scan/internal/analysis"
+
 // MassAssignmentProtocol versions the mass-assignment claim questions.
 const MassAssignmentProtocol = "mass-assignment-components-v1"
+
+// MassAssignmentProtocolV2 is the protocol of a record whose census carries an
+// owner_reference field (detection generalization 22). Only the field_impact
+// text differs from v1; every other record keeps v1.
+const MassAssignmentProtocolV2 = "mass-assignment-components-v2"
+
+// ownerReferenceText is appended to the field_impact question of v2.
+const ownerReferenceText = " An owner_reference field is the foreign key of a declared association to the account model, from the association contract; a request that chooses it chooses whose record is written."
+
+// MassAssignmentOwnerReference reports a mass-assignment use whose census holds
+// a field with the owner_reference role.
+func MassAssignmentOwnerReference(u analysis.CandidateUse) bool {
+	if u.MassAssignment == nil {
+		return false
+	}
+	for _, f := range u.MassAssignment.SecurityFields {
+		for _, r := range f.Roles {
+			if r == analysis.RoleOwnerReference {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// MassAssignmentQuestionsV2 returns the v1 questions with the v2 field_impact
+// text. The names and choices equal v1.
+func MassAssignmentQuestionsV2() []Question {
+	items := MassAssignmentQuestions()
+	for i := range items {
+		if items[i].Name == "field_impact" {
+			items[i].Instructions += ownerReferenceText
+		}
+	}
+	return items
+}
 
 // MassAssignmentRoles are the evidence obligations of the key-controlled write
 // claim (D-13).

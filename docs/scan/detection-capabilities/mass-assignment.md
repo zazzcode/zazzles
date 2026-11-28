@@ -80,5 +80,15 @@ override every model attribute) that reaches a model write records a candidate w
 
 A `fields` option with a literal array, or a bag built as an object literal of named properties,
 records nothing. Attributes whose names are on the hint list are carried as `name_hint`; an
-attribute that a set accessor fills from a fast digest is a `credential`. A resource whose model
-or endpoints cannot be resolved records gap `generated_resource_unresolved`.
+attribute that a set accessor fills from a fast digest is a `credential`. An attribute that is the
+foreign key of a declared association to the account model is an `owner_reference`: a Sequelize
+`belongsTo` whose `foreignKey` is literal or follows the documented default, or a Mongoose `ref`
+path. The account model is the one with a `credential` attribute. Choosing that field chooses whose
+record is written. An association whose options are not literal records gap
+`owner_reference_unresolved` and no role. A resource whose model or endpoints cannot be resolved
+records gap `generated_resource_unresolved`.
+
+An attribute that a middleware registered for the entry, or the handler before the write, assigns
+as `req.body.<name> = …` is left out of the written attributes, with the assignment as evidence.
+This applies to generated endpoints and handwritten writes alike. A conditional assignment, an
+alias of the body and a computed key are not followed, so the attribute stays in.

@@ -7,7 +7,35 @@
 [Command bypass results](../../../.zazz/evaluation/command-bypass-support-results.md) ·
 [PHP evaluation](../../../.zazz/evaluation/php-support-results.md)
 
-## Current report (2026-11-23, plain-PHP recall, configuration v6)
+## Current report (2026-11-27, Google Gemini)
+
+A full static scan of DVWA revision `a1978a2` with scanner `81d4731` (`stage` through PR #56)
+and Google Gemini `gemini-decision-1` produced 308 records across 174 entries. The report
+presents 166 Confirmed, 42 practice findings, 50 Review (34 needs-review and 16 needs-evidence),
+42 Protected and 8 not applicable. The scanner now also records the PHP SQL operand facts of
+PR #52 and the contract-free SQL records of PR #56, so the record count grew from 265.
+[Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#dvwa)
+
+- **Answer key:** all 11 keyed positives Confirmed; no protected control is a finding.
+- **Three real defects left in Review by the previous report are now Confirmed:** the session
+  cookie without `Secure` (`dvwa/includes/dvwaPage.inc.php:72`), `allow_url_include` in the
+  root `php.ini:5`, and the unguarded user update at
+  `vulnerabilities/authbypass/change_user_details.php:48` (missing authorization).
+- **False positives:** four of the nine SQL locations the
+  [source review](../../../.zazz/evaluation/scanner-false-positives.json) of 2026-11-25 marked
+  safe are still Confirmed SQL injection: `login.php:47`, `bac/source/medium.php:29`, and
+  `xss_s/source/medium.php:19` and `high.php:19`. The other five now carry only the
+  construction-practice finding.
+- **New outside the key:** the setup insert at `dvwa/includes/DBMS/PGSQL.php:66` is Confirmed.
+  It builds `$_SERVER['PHP_SELF']`, which carries request-chosen path text, into the statement,
+  so it is a real injection. It was read in this session and not independently reviewed.
+- **Still not recorded:** reads of other users' records (`authbypass/get_user_data.php`, the
+  `bac` module), the API module's defects, CSRF, weak session identifiers, brute force, CAPTCHA
+  bypass, CSP bypass and cryptography.
+- **Usage:** 257 completed assessments from 266 attempts (12 transient retries), 2,251,990 input
+  tokens, zero failures. 51 records stay in Review without a request.
+
+## Previous report (2026-11-23, gpt-6-luna, plain-PHP recall, configuration v6)
 
 A full static scan of DVWA revision `a1978a2` with scanner `d368a68` and OpenAI `gpt-6-luna`
 produced 265 records across 174 entries. The report presents 159 Confirmed, 39 practice findings,
@@ -178,4 +206,4 @@ before publishing new results. Limits recorded in the 2026-11-17 run: cross-entr
 origin-unresolved (Review); the four wire-limited stored-XSS render records; captcha's UPDATE
 interpolates `md5`-hashed and session-sourced operands (candidate, not a raw request→SQL path);
 upload's destination is basename-guarded at every level (Protected/Review, not Confirmed).
-See [PHP support](../../php-support.md) for the adapter's full bounds.
+See [PHP support](../../scan/php-support.md) for the adapter's full bounds.

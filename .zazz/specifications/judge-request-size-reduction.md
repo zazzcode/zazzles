@@ -72,10 +72,10 @@ it shows the saving on ordinary requests and that answers do not move.
   baseline.
 - [Model-assisted evidence resolution](model-assisted-evidence-resolution.md): resolution
   questions and citation chains, which B must not disturb.
-- [Decision models](../../docs/decision-models.md) and
-  [interpreting results](../../docs/interpreting-results.md): exact-replay and limit wording.
-- [XSS analysis rules](../../docs/analysis/xss.md) and
-  [calibration pairs](../../docs/analysis/calibration.md#regression-pairs).
+- [Decision models](../../docs/scan/decision-models.md) and
+  [interpreting results](../../docs/scan/interpreting-results.md): exact-replay and limit wording.
+- [XSS analysis rules](../../docs/scan/analysis/xss.md) and
+  [calibration pairs](../../docs/scan/analysis/calibration.md#regression-pairs).
 - [Recall inventory](../evaluation/recall-gap-inventory.md), with `check.py`, `accuracy.py` and
   `cases.json` under `.zazz/evaluation/recall-gap-inventory/`.
 - Code: `wireBundle` (`internal/judge/bundle.go`), `wireInvocation`

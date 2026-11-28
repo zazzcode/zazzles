@@ -170,7 +170,7 @@ func (s *moduleSet) generatedResource(out *analysis.AnalysisReport, m *sourceMod
 						}
 						writable.attrs = append(writable.attrs, a)
 					}
-					note += " A middleware registered for this endpoint overwrites some request fields before the write; those attributes are not request-chosen and are left out."
+					note += overwriteNote
 				}
 				s.recordMass(out, entry, m, call, call, writable, extra, note)
 			}

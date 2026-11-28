@@ -35,12 +35,12 @@ Read this contract, then only the relevant referenced sections:
 - [Predecessor inventory: source-backed corrections](../evaluation/analyzer-protection-and-flow-inventory.md#source-backed-answer-key-corrections)
   and [results: handed to proposal 2](../evaluation/analyzer-protection-and-flow-results.md#not-delivered-and-handed-to-proposal-2).
 - [Phase 2 Commerce measurement](../evaluation/nextjs-phase-2-results.md#non-intentionally-vulnerable-reference-d).
-- [Next.js rules](../../docs/analysis/nextjs.md),
-  [calibration pairs](../../docs/analysis/calibration.md#regression-pairs),
+- [Next.js rules](../../docs/scan/analysis/nextjs.md),
+  [calibration pairs](../../docs/scan/analysis/calibration.md#regression-pairs),
   [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes),
   [judgment and gates](../architecture/trace-judgment.md#separate-judgments-and-gates).
 - [Contributor verification](../../docs/contributing.md#verification) and
-  [live-run scope](../../docs/decision-models.md#scope-a-live-run), only before paid evaluation.
+  [live-run scope](../../docs/scan/decision-models.md#scope-a-live-run), only before paid evaluation.
 
 | Applicable standard | Application and verification |
 |---|---|

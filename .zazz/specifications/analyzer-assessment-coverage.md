@@ -36,7 +36,7 @@ existing compaction (119,336 uncompacted). The full table is in the run log.
 - [E2 contract](shared-guard-and-manifest-engine.md) — the guard and manifest engine this builds on.
 - [Outbound contract](components-03-outbound.md) — the observation boundary S3 narrows.
 - [Path traversal contract](path-traversal.md) — the three-facet question and gate pattern S3 reuses.
-- [Database injection rules](../../docs/analysis/database-injection.md) — SQL/NoSQL scope that S1 and S4 extend.
+- [Database injection rules](../../docs/scan/analysis/database-injection.md) — SQL/NoSQL scope that S1 and S4 extend.
 - Standards: [code structure](../standards/code-structure.md), [testing](../standards/testing.md),
   [docs hygiene](../standards/docs-hygiene.md), [spec hygiene](../standards/spec-hygiene.md).
 

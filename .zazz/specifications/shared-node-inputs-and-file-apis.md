@@ -32,13 +32,13 @@ Node.js GitHub sample presentations from a capped `gpt-6-luna` rebuild.
 - [Evidence and claims](../architecture/evidence-and-claims.md#transport-neutral-input-and-value-evidence),
   [analysis packs](../architecture/analysis-packs.md#node-input-interpretation-and-generic-sink-contracts),
   [request size](../architecture/request-size-and-evidence-relevance.md).
-- Product rules: [node inputs](../../docs/analysis/node-inputs.md),
-  [path traversal](../../docs/analysis/path-traversal.md),
-  [SSRF](../../docs/analysis/ssrf.md),
-  [command injection](../../docs/analysis/command-injection.md),
-  [XSS](../../docs/analysis/xss.md),
-  [sensitive logging](../../docs/analysis/sensitive-data-logging.md),
-  [calibration](../../docs/analysis/calibration.md).
+- Product rules: [node inputs](../../docs/scan/analysis/node-inputs.md),
+  [path traversal](../../docs/scan/analysis/path-traversal.md),
+  [SSRF](../../docs/scan/analysis/ssrf.md),
+  [command injection](../../docs/scan/analysis/command-injection.md),
+  [XSS](../../docs/scan/analysis/xss.md),
+  [sensitive logging](../../docs/scan/analysis/sensitive-data-logging.md),
+  [calibration](../../docs/scan/analysis/calibration.md).
 - Prior contracts: [wire v7](wire-bundle-v7.md), [JavaScript conditional flow](javascript-if-flow.md),
   [path traversal](path-traversal.md), [assessment coverage](analyzer-assessment-coverage.md).
 - [Vulnerable samples](../project/vulnerable-sample-apps.md),

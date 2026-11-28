@@ -7,7 +7,7 @@
 - **Results** [Offline acceptance record](../evaluation/pollution-walk-start-results.md).
 - **Prerequisite** [Prototype pollution write shapes](pollution-write-shapes.md), merged.
 - **Closes** `PP-N01` and `PP-N02` of
-  [prototype pollution coverage](../../docs/detection-capabilities/prototype-pollution.md).
+  [prototype pollution coverage](../../docs/scan/detection-capabilities/prototype-pollution.md).
 - **Delivery** One draft PR into `stage`.
 - **Run log** `.zazz/ephemeral/pollution-walk-start-run-log.md`
 - **Source** Owner review of write shapes D-9, the choice "a non-parameter start is read only
@@ -46,7 +46,7 @@ work, each as its own small commit with a failing-first test where code changes.
 Items 1 and 2 passed their six-sample rescans. The owner selected Map guard recognition
 for item 4. The two verdict paths now carry Map membership evidence and remain in Review
 with a runtime key set. The two fixes paths use an object cache and remain in Review.
-Item 3 remains unverified at runtime. The [coverage index](../../docs/detection-capabilities.md)
+Item 3 remains unverified at runtime. The [coverage index](../../docs/scan/detection-capabilities.md)
 links the pages delivered for item 5. See the
 [carryover closeout](../evaluation/pollution-walk-start-results.md#carryover-closeout).
 
@@ -97,8 +97,8 @@ through its first lookup and must not become a raw candidate.
   section 11.1. This contract changes the second choice of D-9 and nothing else there.
 - [Prototype pollution analyzer](prototype-pollution.md): D-5 to D-9 and AC4, the rule for a
   null-prototype root.
-- [Analysis guide](../../docs/analysis/prototype-pollution.md), how each shape and guard is read.
-- [Coverage and known gaps](../../docs/detection-capabilities/prototype-pollution.md), the page
+- [Analysis guide](../../docs/scan/analysis/prototype-pollution.md), how each shape and guard is read.
+- [Coverage and known gaps](../../docs/scan/detection-capabilities/prototype-pollution.md), the page
   this contract updates. Every gap there has an identifier.
 - Code in `internal/langjs`:
   - `pollution_path_walk.go`: `pollutionPathWrite`, `pollutionCursorStart`, `pollutionRootGuard`

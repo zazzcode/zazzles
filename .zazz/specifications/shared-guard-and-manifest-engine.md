@@ -36,7 +36,7 @@ nearest-ancestor, workspace-lockfile-aware resolver used by Path, XSS and NoSQL.
 
 - [Milestone index §0–§4](analyzer-engine-hardening.md#0-capability--milestone-roadmap) and the [proposal §4.2 and T2-4](../project/analyzer-hardening-and-wire-efficiency-proposal.md#42-shared-ast-guard-polarity--terminator-engine-t2-3--command--path--validation).
 - [Path hardening contract](path-traversal-hardening.md) — the polarity, conjunction and helper-caller rules this slice extracts without changing path outcomes.
-- [Command injection contract](command-injection.md) and [command analysis rules](../../docs/analysis/command-injection.md) — guard and protection semantics.
+- [Command injection contract](command-injection.md) and [command analysis rules](../../docs/scan/analysis/command-injection.md) — guard and protection semantics.
 - Standards: [code structure](../standards/code-structure.md), [testing](../standards/testing.md), [docs hygiene](../standards/docs-hygiene.md), [spec hygiene](../standards/spec-hygiene.md).
 - Code: `internal/parse/path_guards.go`, `path_guard_classify.go`, `python_path_guards.go`, `command_claims.go`, `python_command.go`, `xss_versions.go`.
 

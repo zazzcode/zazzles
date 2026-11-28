@@ -40,14 +40,14 @@ because it adds a new language without changing JS/TS/Python behavior.
 - Language-adapter precedent: [Python support](python-support.md); shared input pattern:
   [Python input refactor](python-input-refactor.md) §5 decisions.
 - Product analysis guides for the bound families:
-  [database injection](../../docs/analysis/database-injection.md),
-  [command injection](../../docs/analysis/command-injection.md),
-  [XSS](../../docs/analysis/xss.md),
-  [path traversal](../../docs/analysis/path-traversal.md),
-  [code injection](../../docs/analysis/code-injection.md),
-  [open redirect](../../docs/analysis/open-redirect.md),
-  [input validation](../../docs/analysis/input-validation.md),
-  [calibration](../../docs/analysis/calibration.md).
+  [database injection](../../docs/scan/analysis/database-injection.md),
+  [command injection](../../docs/scan/analysis/command-injection.md),
+  [XSS](../../docs/scan/analysis/xss.md),
+  [path traversal](../../docs/scan/analysis/path-traversal.md),
+  [code injection](../../docs/scan/analysis/code-injection.md),
+  [open redirect](../../docs/scan/analysis/open-redirect.md),
+  [input validation](../../docs/scan/analysis/input-validation.md),
+  [calibration](../../docs/scan/analysis/calibration.md).
 - [Sample reference policy](../../docs/samples/reference-policy.md).
 - Standards via the [index](../standards/index.yaml): [code structure](../standards/code-structure.md),
   [testing](../standards/testing.md), [spec hygiene](../standards/spec-hygiene.md),

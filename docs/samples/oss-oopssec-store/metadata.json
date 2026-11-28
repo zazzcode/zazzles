@@ -1,25 +1,25 @@
 {
-  "date": "2026-11-19",
+  "date": "2026-11-27",
   "target_revision": "2d530ef3c0e668022c93fd2c03b52eef4691a6c3",
   "upstream": "https://github.com/kOaDT/oss-oopssec-store",
-  "source_run": "run-796729664",
-  "source_json_sha256": "5e1afa60db127e79489931e8b482ab922f358a54d4261f51f01979ce6fb7508b",
-  "scanner_revision": "model-evidence-resolution 50d4a8f",
-  "evaluation_mode": "fresh gpt-6-luna scan: all analyzers, default judge limit",
-  "provider": "openai",
-  "model": "gpt-6-luna",
-  "provider_requests": 27,
-  "assessment_requests": 27,
-  "follow_ups_sent": 0,
+  "source_run": "run-1482068464",
+  "source_json_sha256": "71a8ea960fa41259d03217a9d0e55df992eeb98ba537dcbd8e7e8c8ace7c1a8b",
+  "scanner_revision": "stage 81d4731 (through PR #56)",
+  "evaluation_mode": "full gemini-decision-1 scan: all analyzers, default judge limit",
+  "provider": "gemini",
+  "model": "gemini-decision-1",
   "completed_assessments": 29,
-  "derived_assessments": 2,
-  "input_tokens": 184464,
+  "input_tokens": 185844,
   "entries": 131,
   "published_records": 128,
-  "records_not_sent_blocker_unresolvable": 3,
   "outcomes": {
-    "confirmed_vulnerability": 23,
-    "needs_evidence": 6
+    "confirmed_vulnerability": 25,
+    "needs_evidence": 4
+  },
+  "report_statuses": {
+    "confirmed_vulnerability": 25,
+    "needs_evidence": 4,
+    "needs_review": 99
   },
   "not_run": 99,
   "failed": 0,
@@ -31,18 +31,25 @@
   },
   "runtime_confirmation": "none; static source judgments only",
   "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
-  "results": "../../../.zazz/evaluation/model-resolution-results.md",
+  "results": "../../../.zazz/evaluation/gemini-sample-runs-20261127.md#oss-oopssec-store",
   "previous": {
-    "date": "2026-11-16",
-    "scanner_revision": "e1e254ea06096be6a39a0a1e679d1cb2d229d06c",
-    "source_run": "run-2413679240",
-    "provider_requests": 107,
-    "input_tokens": 466404,
-    "published_records": 116,
+    "date": "2026-11-19",
+    "scanner_revision": "model-evidence-resolution 50d4a8f",
+    "source_run": "run-796729664",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "provider_requests": 27,
+    "input_tokens": 184464,
+    "published_records": 128,
     "outcomes": {
-      "needs_evidence": 92,
-      "confirmed_vulnerability": 15,
-      "needs_review": 9
+      "confirmed_vulnerability": 23,
+      "needs_evidence": 6
+    },
+    "answer_key": {
+      "expected": 13,
+      "found": 13,
+      "review": 0,
+      "control_false_positives": 0
     }
   }
 }

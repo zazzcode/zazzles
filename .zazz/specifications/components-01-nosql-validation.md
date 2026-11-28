@@ -18,8 +18,8 @@ separate future migration. Command injection remains the next new vulnerability 
 - [SQL contract](analysis-pack-mvp.md#2-invariants),
   [component architecture](../architecture/analysis-packs.md#boundary-and-ownership), and
   [plan](../project/implementation-plan.md#analysis-pack-mvp-initiative).
-- [Database injection](../../docs/analysis/database-injection.md#nosql-rules),
-  [validation](../../docs/analysis/input-validation.md#establish-the-field-policy),
+- [Database injection](../../docs/scan/analysis/database-injection.md#nosql-rules),
+  [validation](../../docs/scan/analysis/input-validation.md#establish-the-field-policy),
   [trace](../architecture/trace-judgment.md#implemented-evidence-contract).
 - [spec-driven](../../.agents/skills/spec-driven/SKILL.md),
   [execution discipline](../docs/agent-execution-discipline.md), [standards index](../standards/index.yaml),

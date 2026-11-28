@@ -16,7 +16,7 @@ Recognize bounded DOM/window event registration and callback binding as browser 
 
 - [AGENTS](../../AGENTS.md#authorization-and-delivery) and
   [orientation](../docs/zazzles-agent-orientation.md#documentation-map).
-- [Milestone index](common-entry-dispatch.md#delivery-order) and [Design §4](../architecture/common-entry-dispatch.md#4-adapter-to-flow-boundary), [§8](../architecture/common-entry-dispatch.md#8-bounded-framework-proposals), [XSS guide](../../docs/analysis/xss.md).
+- [Milestone index](common-entry-dispatch.md#delivery-order) and [Design §4](../architecture/common-entry-dispatch.md#4-adapter-to-flow-boundary), [§8](../architecture/common-entry-dispatch.md#8-implemented-bounded-framework-subsets), [XSS guide](../../docs/scan/analysis/xss.md).
 - Dependency: 03-reporting-selectors. [Previous deliverable](common-entry-dispatch-03-reporting-selectors.md)
 - [Execution discipline](../docs/agent-execution-discipline.md#verification-discipline)
   and repository `.agents/skills/spec-driven/SKILL.md` for implementation.
@@ -27,7 +27,7 @@ Recognize bounded DOM/window event registration and callback binding as browser 
   [PR process](../standards/pr-process.md) at publication.
   Recheck [standards index](../standards/index.yaml) against actual changed paths.
 - Read the source files in §3 and adjacent existing tests before editing.
-  Preserve current [analysis semantics](../../docs/analysis/README.md).
+  Preserve current [analysis semantics](../../docs/scan/analysis/README.md).
 
 ## 2. Invariants
 
@@ -266,4 +266,4 @@ zero-use and unresolved callbacks. Scoped package/race checks and local provider
 pass. Offline discovery and synthetic local-stub reports retain status/provenance parity and were
 visually inspected for identity, disclosure, sorting, keyboard focus, gaps and narrow layout.
 Exact commands, final artifact paths/hashes and publication identity belong to the separate ignored
-D4 run log. Implemented limits are documented in the [XSS guide](../../docs/analysis/xss.md).
+D4 run log. Implemented limits are documented in the [XSS guide](../../docs/scan/analysis/xss.md).

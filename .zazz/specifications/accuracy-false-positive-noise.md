@@ -63,9 +63,9 @@ the rest as Review or Protected.
 ## 2a. Required reading
 
 - [Phase 5 inventory](../evaluation/recall-gap-inventory.md) and its [checker](../evaluation/recall-gap-inventory/check.py), which give the recall floor and the method.
-- [Calibration](../../docs/analysis/calibration.md#evaluation-and-audit), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) and the [reporting design](../architecture/reporting-and-sarif.md).
-- [Outbound grouping](../../docs/interpreting-results.md#outbound-observations-and-ssrf), the mechanism W2 generalizes.
-- [Input validation analysis](../../docs/analysis/input-validation.md), [XSS analysis](../../docs/analysis/xss.md) and [path traversal analysis](../../docs/analysis/path-traversal.md).
+- [Calibration](../../docs/scan/analysis/calibration.md#evaluation-and-audit), [claim completeness](../architecture/evidence-and-claims.md#claim-specific-completeness-and-outcomes) and the [reporting design](../architecture/reporting-and-sarif.md).
+- [Outbound grouping](../../docs/scan/interpreting-results.md#outbound-observations-and-ssrf), the mechanism W2 generalizes.
+- [Input validation analysis](../../docs/scan/analysis/input-validation.md), [XSS analysis](../../docs/scan/analysis/xss.md) and [path traversal analysis](../../docs/scan/analysis/path-traversal.md).
 - [Practice accuracy results](../evaluation/practice-accuracy/results.md), the precedent for precision denominators and protected controls.
 - [Testing standards](../standards/testing.md) and the plan's [shared rules](architecture-update-plan.md#shared-rules-for-every-phase).
 

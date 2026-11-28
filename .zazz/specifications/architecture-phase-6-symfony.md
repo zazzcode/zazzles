@@ -39,7 +39,7 @@ unresolvable controller. Neither is dropped. Plain-PHP behavior (DVWA) is unchan
 - [Phase 3 spec](architecture-phase-3-php-package.md) §9 and `internal/parse/core_api.go` (language core API).
 - [PHP support contract](php-support.md) D-2 to D-7 (server-mapped entries, input facts, SQL, XSS models), [PHP results](../evaluation/php-support-results.md).
 - [Architecture: shared, language and framework layers](../architecture/README.md#shared-language-and-framework-layers), [entry/dispatch](../architecture/README.md#multiple-entry-and-dispatch-mechanisms).
-- Analysis rules: [database injection](../../docs/analysis/database-injection.md), [XSS](../../docs/analysis/xss.md), [input validation](../../docs/analysis/input-validation.md).
+- Analysis rules: [database injection](../../docs/scan/analysis/database-injection.md), [XSS](../../docs/scan/analysis/xss.md), [input validation](../../docs/scan/analysis/input-validation.md).
 - Python Jinja precedent for lexical template output: `internal/langpy/templates.go` (`safe` filter handling).
 - Container-root `repository-code-organization-review-proposal.md`, "Per planned extension", the Symfony row (requirements only).
 

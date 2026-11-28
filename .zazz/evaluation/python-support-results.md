@@ -1,6 +1,6 @@
 # Python adapter implementation and evaluation
 
-[Contract](../specifications/python-support.md) · [User guide](../../docs/python-support.md) ·
+[Contract](../specifications/python-support.md) · [User guide](../../docs/scan/python-support.md) ·
 [Sample reports](../../docs/samples/README.md) ·
 [ThreatByte detection checklist](threatbyte-detection-guide.md) ·
 [FastAPI answer guide](python-insecure-app-detection-guide.md)

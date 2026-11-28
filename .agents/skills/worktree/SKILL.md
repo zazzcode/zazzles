@@ -24,10 +24,10 @@ Before doing any work:
 
 1. Read `AGENTS.md` if it exists and use it as the source of truth for repo-specific worktree, branch, docs-root, and tracking rules.
 2. Read the methodology guidance that applies to worktree setup and usage.
-   - In the methodology source repo, that guidance is [zazz-methodology.md](../../../zazz-methodology.md) and [docs/worktree-setup.md](../../../docs/worktree-setup.md).
+   - In the methodology source repo, that guidance is [zazz-methodology.md](../../../.zazz/docs/zazz-methodology.md) and [docs/worktree-setup.md](../../../.zazz/docs/worktree-setup.md).
    - In consuming repos, use the repo's declared docs root and any equivalent worktree guidance there.
 3. Read the supporting Worktrunk docs selectively when they matter.
-   - Read [docs/wt-cheat-sheet.md](../../../docs/wt-cheat-sheet.md) when the user needs day-to-day Worktrunk commands or quick command selection.
+   - Read [docs/wt-cheat-sheet.md](../../../.zazz/docs/wt-cheat-sheet.md) when the user needs day-to-day Worktrunk commands or quick command selection.
 4. Determine whether the user wants:
    - a new opinionated worktree setup
    - management of an existing worktree layout

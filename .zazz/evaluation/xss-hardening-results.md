@@ -2,7 +2,7 @@
 
 [Contract](../specifications/xss-hardening.md) · [Matrix](xss-hardening/matrix.json) · [Evaluator](xss-hardening/evaluate.py) ·
 [Expected versus actual](xss-hardening/final-evaluation.json) · [vuln-demo-app reference](vuln-demo-app-detection-guide.md) ·
-[Public guide](../../docs/analysis/xss.md)
+[Public guide](../../docs/scan/analysis/xss.md)
 
 Recorded 2026-11-07 on `xss-hardening` from base `3315cf0` with uncommitted changes. Final scans used binary SHA-256
 `24132434bbf38cbe4d47ab711e08a3e95078e098b9564638d312510058d0c83e`, OpenAI Decisions `gpt-6-luna`,

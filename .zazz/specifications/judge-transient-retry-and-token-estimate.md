@@ -2,7 +2,7 @@
 
 > **Current contract note (2026-11-18):** the §14 entry "judged scans run to the end" supersedes
 > the halt rules in §3, §5 D-1/D-4 and §7 AC2–AC3. The owner-facing summary is in
-> [judged-scan reliability](../../docs/decision-models.md#judged-scan-reliability).
+> [judged-scan reliability](../../docs/scan/decision-models.md#judged-scan-reliability).
 
 **Worktree / branch:** `parallel-judge` (the phase 4 worktree; the owner chose to build here)
 **Depends on:** architecture phase 4, parallel judge requests, on the same branch
@@ -44,8 +44,8 @@ Request bytes, request digests, report order, slot assignment and the phase 4 go
   sections "Live owner-capped check" and the full judged scans.
 - **Standards:** [Testing](../standards/testing.md) §6 concurrency and §7 semantic adapter stubbing.
   [Spec hygiene](../standards/spec-hygiene.md).
-- **User docs:** [decision models](../../docs/decision-models.md) (rate and spending configuration);
-  [running scans](../../docs/running-scans.md) (scan speed, and judge rate and spending controls);
+- **User docs:** [decision models](../../docs/scan/decision-models.md) (rate and spending configuration);
+  [running scans](../../docs/scan/running-scans.md) (scan speed, and judge rate and spending controls);
   `.env.sample`.
 - **Rules:** [AGENTS.md](../../AGENTS.md), credentials and live model calls.
 

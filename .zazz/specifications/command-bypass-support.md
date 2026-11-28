@@ -35,7 +35,7 @@ while asking for a named value that a choice answer cannot give.
 
 ## 2. Required reading
 
-- [Command injection analysis](../../docs/analysis/command-injection.md), guard adequacy and
+- [Command injection analysis](../../docs/scan/analysis/command-injection.md), guard adequacy and
   bypass citation.
 - [Close findings gaps](close-findings-gaps.md) D-1 and AC1 (single-path binding), which this
   contract narrows.

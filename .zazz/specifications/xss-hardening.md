@@ -52,4 +52,4 @@ judgments of vuln-demo-app and Juice Shop for it.
 - Each slice has an offline test that fails without it. `go test ./...`, `go vet ./...` and changed-file
   formatting pass. Target checkouts stay clean at their pins.
 - Results go to [xss-hardening-results.md](../evaluation/xss-hardening-results.md), and the public
-  [XSS guide](../../docs/analysis/xss.md) matches implemented behavior.
+  [XSS guide](../../docs/scan/analysis/xss.md) matches implemented behavior.

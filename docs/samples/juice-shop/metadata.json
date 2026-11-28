@@ -1,52 +1,68 @@
 {
-  "date": "2026-11-24",
+  "date": "2026-11-27",
   "target_revision": "f189f521266f42c6bd05884468292000cee852ed",
-  "source_run": "a3-acceptance-juice-shop (canonical JSON from stdout)",
-  "source_json_sha256": "fde4293634d742b3587cc709290e580e1b3f0613cd242bc36ecfe906f1ec12dc",
-  "scanner_revision": "juiceshop-nextjs-hardening-3 3318e27 (PR #50; scan/ and cmd/ trees identical to 277f640)",
-  "evaluation_mode": "full gpt-6-luna scan: all analyzers, default judge limit",
-  "provider": "openai",
-  "model": "gpt-6-luna",
-  "provider_requests": 84,
+  "source_run": "detgen-23 full Gemini run (canonical stdout, no bundle)",
+  "source_json_sha256": "b0d6db75138315b16a6f7bab170b0037917c605a4ecb87d522f35c620b99c36f",
+  "scanner_revision": "docs-cleanup fdde6a7 (detection generalization 22 and 23); the scanned code equals that commit",
+  "evaluation_mode": "full gemini-decision-1 scan: all analyzers, default judge limit",
+  "provider": "gemini",
+  "model": "gemini-decision-1",
   "completed_assessments": 84,
-  "input_tokens": 381728,
+  "input_tokens": 409018,
   "entries": 194,
   "published_records": 305,
   "outcomes": {
-    "needs_evidence": 28,
-    "confirmed_vulnerability": 51,
-    "poor_practice": 2,
-    "protected_for_claim": 3
+    "confirmed_vulnerability": 54,
+    "needs_evidence": 23,
+    "poor_practice": 1,
+    "protected_for_claim": 6
   },
   "report_statuses": {
+    "confirmed_vulnerability": 54,
+    "needs_evidence": 23,
     "needs_review": 221,
-    "needs_evidence": 27,
-    "confirmed_vulnerability": 51,
-    "poor_practice": 3,
-    "protected_for_claim": 3
+    "poor_practice": 1,
+    "protected_for_claim": 6
   },
   "not_run": 221,
   "failed": 0,
   "answer_key": {
     "expected": 41,
     "found": 41,
-    "found_as_practice": 3,
+    "found_as_practice": 1,
     "review": 0,
-    "control_false_positives": 2
+    "control_false_positives": 1
   },
   "runtime_confirmation": "none; static source judgments only",
-  "results": "../../../.zazz/evaluation/juiceshop-hardening-results.md",
+  "target_status_before_and_after": "clean (git status --porcelain --ignored empty; HEAD at pin)",
+  "results": "../../../.zazz/evaluation/gemini-sample-runs-20261127.md#owasp-juice-shop",
   "previous": {
-    "date": "2026-11-19",
-    "scanner_revision": "model-evidence-resolution 50d4a8f",
-    "source_run": "run-3093352752",
-    "provider_requests": 28,
-    "input_tokens": 211937,
-    "published_records": 251,
+    "date": "2026-11-27",
+    "scanner_revision": "docs-cleanup d1099f8 (detection generalization 22); the scanned code equals that commit",
+    "source_run": "detgen-22 AC7 Gemini run (canonical stdout, no bundle)",
+    "provider": "gemini",
+    "model": "gemini-decision-1",
+    "input_tokens": 407054,
+    "published_records": 305,
     "outcomes": {
-      "confirmed_vulnerability": 23,
+      "confirmed_vulnerability": 53,
+      "needs_evidence": 24,
       "poor_practice": 1,
-      "needs_evidence": 4
+      "protected_for_claim": 6
+    },
+    "report_statuses": {
+      "confirmed_vulnerability": 53,
+      "needs_evidence": 24,
+      "needs_review": 221,
+      "poor_practice": 1,
+      "protected_for_claim": 6
+    },
+    "answer_key": {
+      "expected": 41,
+      "found": 40,
+      "found_as_practice": 1,
+      "review": 1,
+      "control_false_positives": 1
     }
   }
 }

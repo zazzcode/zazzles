@@ -5,7 +5,67 @@
 [Results](../../../.zazz/evaluation/juiceshop-hardening-results.md#final-full-run) ·
 [Scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)
 
-## Current report (2026-11-24)
+## Current report (2026-11-27, Google Gemini, owner references and listed-directory references)
+
+A full scan of revision `f189f52` with scanner `docs-cleanup` at `fdde6a7`
+([detection generalization 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md) and
+[23](../../../.zazz/specifications/detection-generalization/23-listed-directory-references.md)) and Google Gemini
+`gemini-decision-1` produced 305 records across 194 entries. The report presents **54 Confirmed, 1 practice finding,
+6 Protected and 244 Review**. [Results](../../../.zazz/evaluation/detection-generalization-results/23.md#juice-shop-full-scan)
+
+- **What changed:** the `/support/logs` listing (`JS-CONF-03`) now carries the places the source writes or serves files
+  in `logs` (the access-log stream, its audit file and the log-file route) and is Confirmed. No other record changed
+  outcome against the previous report.
+- **Answer key:** all 41 positives of Code Scan's own key are found: 40 Confirmed and `JS-CODE-02` as a practice
+  finding. Of the comparison's extended 75 rows this report finds 45, as `gpt-6-luna` does.
+- **False positives:** the same three locations (`server.ts:294`, `routes/fileServer.ts:32`, `server.ts:307`).
+- **Usage:** 84 completed assessments, 409,018 input tokens, zero failures.
+
+## Previous report (2026-11-27, Google Gemini, owner references)
+
+A full scan of revision `f189f52` with scanner `docs-cleanup` at `d1099f8`
+([detection generalization 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)) and Google Gemini `gemini-decision-1` produced 305 records across 194 entries. The report presents
+**53 Confirmed, 1 practice finding, 6 Protected and 245 Review**. [Results](../../../.zazz/evaluation/detection-generalization-results/22.md#ac7-juice-shop-acceptance)
+
+- **What changed:** the census now marks `UserId` as the foreign key of a `belongsTo(UserModel)` association
+  (`owner_reference`). The four mass-assignment rows the previous Gemini report left in Review (`JS-MASS-02` to `05`)
+  are Confirmed at 0.94 to 0.96. The three routes whose middleware sets `UserId` from the token stay non-findings. No
+  other record changed outcome.
+- **Answer key:** 40 of the 41 positives of Code Scan's own key are found: 39 Confirmed and `JS-CODE-02` as a practice
+  finding. Only the `/support/logs` listing (`JS-CONF-03`) stays in Review. Of the comparison's extended 75 rows this
+  report finds 44, against 45 for `gpt-6-luna`.
+- **False positives:** the same three locations as the previous Gemini report (`server.ts:294`,
+  `routes/fileServer.ts:32`, `server.ts:307`).
+- **Usage:** 84 completed assessments, 407,054 input tokens, zero failures.
+
+## Previous report (2026-11-27, Google Gemini, before owner references)
+
+A full scan of revision `f189f52` with scanner `81d4731` (`stage` through PR #56) and Google
+Gemini `gemini-decision-1` produced 305 records across 194 entries. The report presents
+**49 Confirmed, 1 practice finding, 6 Protected and 249 Review**. These are static source
+judgments, not runtime exploit confirmation. [Run record](../../../.zazz/evaluation/gemini-sample-runs-20261127.md#owasp-juice-shop)
+
+- **Answer key:** 36 of the 41 positives of Code Scan's own key are found: 35 Confirmed and the
+  `b2bOrder` code execution (`JS-CODE-02`) as a practice finding. Sensitive logging (`JS-LOG-01`)
+  and the profile-image SSRF (`JS-SSRF-01`), practice findings in the previous report, are now
+  Confirmed. Five rows stay in Review: the `/support/logs` directory listing (`JS-CONF-03`,
+  `server.ts:302`, weakness left unknown) and the four mass-assignment rows of the generated
+  `server.ts:529` routes (`JS-MASS-02` to `05`). Of the comparison's extended 75-row key this
+  report finds 40 ([scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)).
+- **False positives:** three locations. The `.well-known` listing (`server.ts:294`) is still
+  Confirmed. The null-byte file read (`routes/fileServer.ts:32`) is now a Confirmed path
+  traversal, although the owner's decision of 2026-11-24 is that it cannot leave its directory.
+  The Swagger UI at `server.ts:307` is reported as information exposure; it serves the published
+  B2B API description. Liking another user's review (`routes/likeProductReviews.ts:35`, `:50`) is
+  no longer a finding, and the `orderHistory.ts:36` NoSQL record is in Review.
+- **Not covered:** the committed signing key (`lib/insecurity.ts:21`). No analyzer covers secrets.
+- **Usage:** 84 completed assessments, 406,475 input tokens, zero failures. 221 records were not
+  sent to the model; they stay in Review or carry a model-free result.
+
+The report is the canonical JSON the scanner wrote to standard output in that run, with the root
+replaced by the public sample label.
+
+## Previous report (2026-11-24, gpt-6-luna)
 
 A full scan of revision `f189f52` with scanner `3318e27` (PR #50) and OpenAI `gpt-6-luna` produced
 305 records across 194 entries. The report presents **51 Confirmed, 3 practice findings,

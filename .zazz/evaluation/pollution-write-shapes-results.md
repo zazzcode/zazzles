@@ -1,6 +1,6 @@
 # Prototype pollution write shapes results
 
-[Implementation contract](../specifications/pollution-write-shapes.md) · [Stage 1 results](prototype-pollution-results.md) · [Analysis guide](../../docs/scan/analysis/prototype-pollution.md)
+[Implementation contract](../specifications/scan/pollution-write-shapes.md) · [Stage 1 results](prototype-pollution-results.md) · [Analysis guide](../../docs/scan/analysis/prototype-pollution.md)
 
 Verified on 2026-11-20 in `prototype-polution-analyzer`, on top of the stage 1 tip `31380d5`. Every scan read source and package files. The assessment tests used fixed
 responses through an in-memory transport. No provider request was made.

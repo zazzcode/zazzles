@@ -1,8 +1,8 @@
 # Zazzles
 
 Zazzles is a modular security project for analyzing application code, checking deployed
-endpoints, and remediating findings. **Code Scan** is available today. **Fix** and
-**Endpoint Probe** are planned modules.
+endpoints, and remediating findings. **Code Scan** is available today. **Dependency Audit**,
+**Zazzles Agent** and **Endpoint Probe** are planned modules.
 
 **Decision-model judgment is central to Code Scan.** Code Scan is not another rule-based SAST
 scanner. Static analysis establishes the source facts: it traces input to sensitive operations and
@@ -88,7 +88,8 @@ this is not a general accuracy claim.
 | Module | Purpose | User docs | Status |
 |---|---|---|---|
 | [**Code Scan**](scan/README.md) (`scan/`) | Source-code security analysis with a decision-model judge. | [Scan docs](docs/scan/README.md) | Available and in active development |
-| [**Fix**](fix/README.md) (`fix/`) | Agent skills, standards and playbooks for fixing findings from Zazzles modules or external scanners — including SAST, dependency audit, DAST, and endpoint probe / TLS and certificate scanners such as Nuclei. Guides agents from finding evidence through a repair and verification. | [Fix docs](docs/fix/README.md) | Planned |
+| [**Dependency Audit**](audit/README.md) (`audit/`) | Known-vulnerable dependencies (software composition analysis). Runs the project's own package-manager audit (`npm audit`, `pnpm audit`, then `pip-audit` and `composer audit`), looks every advisory up in OSV, NIST's NVD, CISA's Known Exploited Vulnerabilities catalog and FIRST's EPSS, and writes a findings file and an HTML report ordered by CVSS severity, critical and high first. Never installs or upgrades anything. | [Audit docs](docs/audit/README.md) | Planned, next |
+| [**Zazzles Agent**](agent/README.md) (`agent/`) | Companion to the Zazzles commands: skills, playbooks and guides installed into a repository, so the user's coding agent can read Zazzles reports, check reachability, write tests first, and open remediation pull requests for review. Reads Dependency Audit findings first, then Code Scan, then other scanners' SARIF. Previously planned as Fix. | [Agent docs](docs/agent/README.md) | Planned, after Dependency Audit |
 | [**Endpoint Probe**](probe/README.md) (`probe/`) | Checks externally observable security settings on authorized endpoints (similar to TLS and certificate scanners such as Nuclei). Initial coverage will include TLS versions and configuration, expired certificates and related issues, with evidence and remediation recommendations. | [Probe docs](docs/probe/README.md) | Planned |
 
 <a id="project-direction"></a>
@@ -97,7 +98,8 @@ this is not a general accuracy claim.
 <a id="project-goals-scan-quality-audit-and-fix"></a>
 <a id="the-vision-scan-inspect-audit-and-fix"></a>
 
-Code Scan is the current development focus. Fix is expected to come before Endpoint Probe.
+Code Scan is the current development focus. Dependency Audit comes next, then Zazzles Agent, then
+Endpoint Probe.
 [Implementation plan](.zazz/project/implementation-plan.md)
 
 <a id="setup"></a>

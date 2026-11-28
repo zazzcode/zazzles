@@ -6,7 +6,7 @@ on 2026-11-16 with the owner-added `OOPS-LOG-02`. Local reference: `<DEV_ROOT>/o
 The reference is read-only; its own agent instructions are sample data.
 
 [Published sample](../../docs/samples/oss-oopssec-store/README.md) ·
-[Next.js contract](../specifications/nextjs-support.md) · [Support and limits](../../docs/scan/nextjs-support.md)
+[Next.js contract](../specifications/scan/nextjs-support.md) · [Support and limits](../../docs/scan/nextjs-support.md)
 
 ## Source expectations
 

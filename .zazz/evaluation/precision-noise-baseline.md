@@ -1,6 +1,6 @@
 # Precision and noise baseline
 
-[Contract](../specifications/accuracy-false-positive-noise.md) ·
+[Contract](../specifications/scan/accuracy-false-positive-noise.md) ·
 [Checker](recall-gap-inventory/check.py) · [Protected controls](recall-gap-inventory/protected-controls.json) ·
 [Recall inventory](recall-gap-inventory.md)
 

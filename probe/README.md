@@ -12,4 +12,4 @@ problems. Later checks can cover other externally visible endpoint settings, suc
 security configuration. The goal is to independently verify issues of the kind reported by
 services such as SecurityScorecard. [Example TLS issue types](https://support.securityscorecard.com/hc/en-us/articles/26542438988827-Why-IPs-not-attributed-to-the-digital-footprint-appear-under-observations)
 
-Endpoint Probe is planned after [Fix](../fix/README.md).
+Endpoint Probe is planned after [Zazzles Agent](../agent/README.md).

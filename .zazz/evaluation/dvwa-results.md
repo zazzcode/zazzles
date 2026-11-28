@@ -1,6 +1,6 @@
 # DVWA evaluation results
 
-Evaluation record of the [Symfony application-security lane](../specifications/symfony-more-analyzers.md)
+Evaluation record of the [Symfony application-security lane](../specifications/scan/symfony-more-analyzers.md)
 on the PHP sample DVWA. The [detection guide](dvwa-detection-guide.md) defines the expected
 outcomes at `a1978a2fed195acd093010af6395f86a281537ca`. Scanner hashes that changed in a rebase
 are mapped in the [Symfony results](symfony-results.md#scanner-commit-hashes-after-the-rebases).
@@ -54,7 +54,7 @@ work and are not fixed in PR #46. This run was the published sample report until
 
 ## Offline run after branch 5
 
-[Branch 5](../specifications/symfony-more-analyzers-5.md) closes the first three rows above.
+[Branch 5](../specifications/scan/symfony-more-analyzers-5.md) closes the first three rows above.
 Offline scan (no model call) of DVWA at `a1978a2fed195acd093010af6395f86a281537ca`, clean
 before and after, 2026-11-22, run `run-1467553345`, scanner branch `symfony-more-analyzers-5`.
 
@@ -156,7 +156,7 @@ configuration gaps were closed in the scanner, with facts only:
 Offline scan with those facts, scanner `c04c677`: `b5-review-before` (`run-30307840`), DVWA clean
 before and after. All 265 record ids are kept. The authorization record is unchanged: what a
 plain-PHP entry's access is, is an open question of the
-[branch 5 contract](../specifications/symfony-more-analyzers-5.md#6-open-question).
+[branch 5 contract](../specifications/scan/symfony-more-analyzers-5.md#6-open-question).
 
 ## Offline runs after the PR #47 review
 

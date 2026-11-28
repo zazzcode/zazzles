@@ -286,7 +286,7 @@ that pass text to an interpreter (commands, templates, LDAP, XPath) is untested.
 ### In the repository (specification 21)
 
 The recorder and the request are now code, not overlays:
-[specification 21](../../specifications/detection-generalization/21-sql-text-records.md) holds the results. On the same
+[specification 21](../../specifications/scan/detection-generalization/21-sql-text-records.md) holds the results. On the same
 fixtures, with no overlay and no switch: 18 of 18 injectable forms with a text record Confirmed on Gemini and on
 gpt-6-luna, no bound twin Confirmed on either. Three things the overlays did not show:
 
@@ -322,7 +322,7 @@ inside a quoted literal or outside quotes.
 statement text is something a recorder can read from the literal. Record it and try it as the scanner's statement of where
 the value lands, replacing the model's reading of it, on the six `sqli` medium records only. (2) Set the Protected floor
 from the answers collected (the weight below 0.95 goes to `statement_text` on plain bound values). (3) Done for the loop gap in
-[specification 20](../../specifications/detection-generalization/20-sql-flow-wide-limits.md): the two real findings are Confirmed by the contract request, with one new false finding. (4) Then build the recorder for
+[specification 20](../../specifications/scan/detection-generalization/20-sql-flow-wide-limits.md): the two real findings are Confirmed by the contract request, with one new false finding. (4) Then build the recorder for
 drivers with no contract, which no run here tested: every record was made by a contract.
 
 ## What this means

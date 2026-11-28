@@ -1,6 +1,6 @@
 # Command Injection Analyzer: acceptance results
 
-[Contract](../specifications/command-injection.md) · [Independent matrix](command-injection/matrix.json) ·
+[Contract](../specifications/scan/command-injection.md) · [Independent matrix](command-injection/matrix.json) ·
 [Evaluator](command-injection/evaluate.py) · [Expected versus actual](command-injection/final-evaluation.json) ·
 [Sample delivery gate](command-injection-sample-delivery.md) · [Public guide](../../docs/scan/analysis/command-injection.md)
 

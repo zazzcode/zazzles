@@ -6,7 +6,7 @@ application has been tested**, and no local sample holds an uncontracted SQL cal
 
 | Area | What we know | Status |
 |---|---|---|
-| SQL drivers, raw ORM calls | Unseen JavaScript 10 of 12 at 0.70, Python 9 of 9, no lookalike or made-up package claimed | Draft [16](../../specifications/detection-generalization/16-package-question.md) |
+| SQL drivers, raw ORM calls | Unseen JavaScript 10 of 12 at 0.70, Python 9 of 9, no lookalike or made-up package claimed | Draft [16](../../specifications/scan/detection-generalization/16-package-question.md) |
 | Version | The declared version raised both misses and moved no control above 0.35 | Include it |
 | Constructors as callee, nested calls | Recorded in JavaScript; not asked about | Open |
 | ORM builders, identifiers (`orderBy`) | Not tested. Needs a third answer beside value and SQL text: identifier | Open |

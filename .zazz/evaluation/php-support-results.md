@@ -1,6 +1,6 @@
 # PHP adapter implementation and evaluation
 
-[Contract](../specifications/php-support.md) · [User guide](../../docs/scan/php-support.md) ·
+[Contract](../specifications/scan/php-support.md) · [User guide](../../docs/scan/php-support.md) ·
 [DVWA detection guide](dvwa-detection-guide.md) · [Published sample](../../docs/samples/dvwa/README.md)
 
 All fourteen acceptance criteria are complete on branch `php-dvwa` (milestone `b825f5b`, gap

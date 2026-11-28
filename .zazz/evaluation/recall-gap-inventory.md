@@ -1,6 +1,6 @@
 # Recall gap inventory (architecture phase 5)
 
-[Contract](../specifications/architecture-phase-5-accuracy-gaps.md) ·
+[Contract](../specifications/scan/architecture-phase-5-accuracy-gaps.md) ·
 [Frozen cases](recall-gap-inventory/cases.json) · [Checker](recall-gap-inventory/check.py) ·
 [Sample catalog](../project/vulnerable-sample-apps.md#applications)
 

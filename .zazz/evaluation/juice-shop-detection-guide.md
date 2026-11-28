@@ -5,7 +5,7 @@ Source reviewed at `f189f521266f42c6bd05884468292000cee852ed` in the local check
 root. The existing Juice Shop rows (cross-site scripting, SQL and NoSQL injection, logging) live
 in the [sample catalog](../project/vulnerable-sample-apps.md#owasp-juice-shop) and in
 [`recall-gap-inventory/cases.json`](recall-gap-inventory/cases.json). This guide holds the rows the
-[Juice Shop and Next.js hardening lane](../specifications/juiceshop-nextjs-hardening-1.md) adds.
+[Juice Shop and Next.js hardening lane](../specifications/scan/juiceshop-nextjs-hardening-1.md) adds.
 A challenge's existence is not a label: every row below was read in source.
 
 ## Required positives
@@ -45,7 +45,7 @@ evidence for each is in the
 
 ### Added for hardening 3 (2026-11-24)
 
-Rows of [hardening 3 §3](../specifications/juiceshop-nextjs-hardening-3.md#3-key-rows). The first
+Rows of [hardening 3 §3](../specifications/scan/juiceshop-nextjs-hardening-3.md#3-key-rows). The first
 seven are the documented vulnerabilities the [scanner comparison](../../docs/scan/scanner-comparison.md)
 listed outside the key; each was read against the source at the pin.
 

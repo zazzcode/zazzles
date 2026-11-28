@@ -1,6 +1,6 @@
 # Prototype pollution stage 1 results
 
-[Implementation contract](../specifications/prototype-pollution.md) · [Analysis guide](../../docs/scan/analysis/prototype-pollution.md)
+[Implementation contract](../specifications/scan/prototype-pollution.md) · [Analysis guide](../../docs/scan/analysis/prototype-pollution.md)
 
 Verified on 2026-11-20 in `prototype-polution-analyzer` against the `ec29e49` integration
 baseline. The sample checkouts matched their pins and stayed clean. Scans read source and package
@@ -58,4 +58,4 @@ the imported module. The architecture baseline is unchanged.
 AC8 was verified on 2026-11-21: both positives are Confirmed, no control is a finding, and every
 saved trace replays exactly. [Live judgment](pollution-write-shapes-results.md#ac8-live-judgment). AC9 follows phase 7 corpus keys and phase 8
 library entries. The newer Lodash deletion advisories and additional npm packages are documented
-for source-only corpus follow-up. [Version and corpus cases](../specifications/prototype-pollution.md#5-decisions).
+for source-only corpus follow-up. [Version and corpus cases](../specifications/scan/prototype-pollution.md#5-decisions).

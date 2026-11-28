@@ -1,7 +1,7 @@
 # Application-security analyzers
 
 This document owns the design of the application-security families added by the
-[Symfony application-security lane](../specifications/symfony-more-analyzers.md): how they record
+[Symfony application-security lane](../specifications/scan/symfony-more-analyzers.md): how they record
 evidence, what they leave to the decision model, and the shared facts later families read. The
 [analysis rules](../../docs/scan/analysis/README.md) own the user-facing rule tables. Branch
 specifications own the decisions and their acceptance evidence.
@@ -153,7 +153,7 @@ configuration, no command-execution claim. A role name is a string.
 
 ## Account security (branch 3)
 
-[Branch 3](../specifications/symfony-more-analyzers-3.md) adds family `account` with three
+[Branch 3](../specifications/scan/symfony-more-analyzers-3.md) adds family `account` with three
 kinds and protocol `account-components-v2`. The registration gains `KindQuestions`, set by
 this family only, so each kind is asked its own questions from one claim component. The
 operation contract is optional per kind, as for `pollution`: enumeration has none.
@@ -218,5 +218,5 @@ Recovery has no specific gap; an unmodeled mail client makes no record.
 
 ## Configuration (branch 4)
 
-Filled by [branch 4](../specifications/symfony-more-analyzers-4.md): framework and deployment
+Filled by [branch 4](../specifications/scan/symfony-more-analyzers-4.md): framework and deployment
 configuration checks and SSRF through a shell URL client.

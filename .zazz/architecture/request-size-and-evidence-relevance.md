@@ -132,7 +132,7 @@ Status values: `implemented`, `planned`, `proposed`, `rejected`.
 
 - **Where:** `planPathGroups`, `packPathGroups`, `groupUse` in `scan/internal/judge/budget.go`;
   `groupAssessment` in `scan/internal/judge/client.go`; `combinePathGroups` in `scan/internal/judge/xss.go`;
-  slot costs in `scan/internal/judge/schedule.go`. Contract: [close-findings-gaps](../specifications/close-findings-gaps.md) W4.
+  slot costs in `scan/internal/judge/schedule.go`. Contract: [close-findings-gaps](../specifications/scan/close-findings-gaps.md) W4.
 - **Behavior:** an XSS record still over the limit after shedding is sent as ordinary requests for
   the same claim, one per path group. A group is the dependencies whose source sits in one file (the
   dispatch alternative), split by storage key only when that file alone is over the limit; whole
@@ -213,7 +213,7 @@ interpretation.
   (`scan/internal/parse/guard_climb.go`), so that dominating controls are known.
 - **Acceptance shape:** saved-answer stability on calibration pairs, guarded and unguarded variants per
   family, and a digest delta list.
-- **Status:** deferred after measurement; see the [S1 contract](../specifications/data-path-slicing.md).
+- **Status:** deferred after measurement; see the [S1 contract](../specifications/scan/data-path-slicing.md).
 
 ### S2: Relevance filter for helpers and models — not adopted (soft tier)
 
@@ -254,7 +254,7 @@ source and gaps; serving files is not summarized by this implementation.
 - **Why:** this is both noise (it repeats in coverage and entry gaps) and an accuracy problem (see
   "Why size matters").
 - **Risk:** changes flow evidence for every JavaScript analyzer; the owner sequenced it after core E3 validation in the same worktree and branch.
-- **Delivered:** [JavaScript conditional flow](../specifications/javascript-if-flow.md). Modeled `if`
+- **Delivered:** [JavaScript conditional flow](../specifications/scan/javascript-if-flow.md). Modeled `if`
   statements record arm preconditions instead of these gaps. Loops, `switch`, `try`/`finally` and
   request rebinding keep the fallback.
 
@@ -329,7 +329,7 @@ or claim cache savings from JSON key order. Record actual cached-token usage fro
 
 ### W13: Request-local identity — implemented
 
-Extends W8 to identifiers ([judge request size reduction](../specifications/judge-request-size-reduction.md)
+Extends W8 to identifiers ([judge request size reduction](../specifications/scan/judge-request-size-reduction.md)
 D-2). A `<kind>:v1:<64 hex>` value, the entry `instance_id` and `candidate_id` tell the model only
 whether two of them are equal. An identifier that occurs twice or more becomes one alias (`i0`, `i1`,
 … in first-occurrence order over sorted keys); one that occurs once leaves with its key; a list of
@@ -425,9 +425,9 @@ Append one row per implemented or measured strategy. Do not rewrite earlier rows
 
 | 2026-11-15 | S4 | Implemented and independently reviewed | Precise JS `if` modeling removed 161 `unsupported_control_flow` and 111 `branch_exit` gaps from Juice Shop requests; 4,405 candidates unchanged; no Python request changed. Juice Shop bytes −1.1%; `order.ts:164` 61,735 → about 59,100. Paid calibration recorded in the verification record. |
 | 2026-11-15 | W6 (query/middleware) | Implemented as guidance-owned fact codes | Byte-neutral on affected JS SQL/NoSQL/command/SSRF requests; single interpretation owner; unknown codes fail. |
-| 2026-11-15 | S1, S2, S5 after S4 | Measured; not adopted | 1 of 3,934 assessed sample requests over 55,000 bytes, 0 over the limit. Decisions: [relevance tier](../specifications/evidence-relevance-tier.md), [data-path slicing](../specifications/data-path-slicing.md). |
+| 2026-11-15 | S1, S2, S5 after S4 | Measured; not adopted | 1 of 3,934 assessed sample requests over 55,000 bytes, 0 over the limit. Decisions: [relevance tier](../specifications/scan/evidence-relevance-tier.md), [data-path slicing](../specifications/scan/data-path-slicing.md). |
 | 2026-11-20 | W13–W16 | Implemented, one bump (`evidence_version` 8, `xss-components-v4`) | DVWA 9,388,206 → 7,529,573 bytes (80.2%), Juice Shop 94.5%; group requests 24 → 2; provider input tokens −26.9% / −7.1%. Close-call answers move under any lossless change (attribution runs). [Results](../evaluation/judge-request-size-reduction-results.md). |
-| 2026-11-20 | Evidence quality (P, O, T, K, V) | Implemented | DVWA XSS verdict median 0.62 → 0.88; PDO-bound SQL 7/7 correct; offline accuracy unchanged. [Contract](../specifications/judge-evidence-quality.md). |
+| 2026-11-20 | Evidence quality (P, O, T, K, V) | Implemented | DVWA XSS verdict median 0.62 → 0.88; PDO-bound SQL 7/7 correct; offline accuracy unchanged. [Contract](../specifications/scan/judge-evidence-quality.md). |
 
 Measured distributions and validation limits are in the [v7 verification record](../evaluation/wire-bundle-v7-results.md).
 

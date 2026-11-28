@@ -1,6 +1,6 @@
 # Judge request size reduction — results
 
-Contract: [judge request size reduction](../specifications/judge-request-size-reduction.md). Branch
+Contract: [judge request size reduction](../specifications/scan/judge-request-size-reduction.md). Branch
 `judge-request-size-reduction`. The baseline scanner is `9f65f5a`, which is `stage` `8dd0460` with the
 inventory test added. The candidate is `695ce11` (W13–W16, `evidence_version` 8,
 `xss-components-v4`). Samples: DVWA `a1978a2` and Juice Shop `f189f52`. Both had an empty
@@ -291,7 +291,7 @@ close-call answers.
 
 ## Evidence quality follow-on
 
-Contract: [judge evidence quality](../specifications/judge-evidence-quality.md). Code commits
+Contract: [judge evidence quality](../specifications/scan/judge-evidence-quality.md). Code commits
 `603365c` (P, O, T, K) and `e3c66e6` (V). The owner asked for unattended iteration, so the live
 checks used the AGENTS.md terms with explicit caps:
 - Round 1, DVWA `eq-dvwa` `run-763513282`: 187 attempts.

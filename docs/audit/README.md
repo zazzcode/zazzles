@@ -1,0 +1,66 @@
+# Dependency Audit user documentation
+
+[Zazzles documentation](../README.md) · [Dependency Audit module](../../audit/README.md) · [Project introduction](../../README.md)
+
+**Status:** Planned, next after the current Code Scan work.
+
+Dependency Audit finds known-vulnerable dependencies in your project, a software composition
+analysis (SCA) tool. Its `audit` command runs the audit tool your package manager already provides
+and writes two files: `findings.json`, a stable format that [Zazzles Agent](../agent/README.md) and
+other tools read, and `report.html`, a standalone report you open in a browser.
+
+## Planned scope
+
+- **Ecosystems:** npm (`npm audit`) and pnpm (`pnpm audit`) first, then Python (`pip-audit`) and
+  PHP (`composer audit`).
+- **Scope:** all dependencies by default, each library labelled production or development-only, or
+  production only, or development only.
+- **For each vulnerable library:** installed version, advisories with their identifiers and
+  severity, direct or through another package with the path to it, and the fix version with its
+  patch, minor or major size.
+- **Advisory detail the audit tools leave out**, from four public sources: CVE identifiers, the
+  description and the fixing commit from OSV; NIST's CVSS scores, explained in plain terms, from
+  the National Vulnerability Database; whether attackers are using the flaw now, from CISA's Known
+  Exploited Vulnerabilities catalog; and the chance it is exploited soon, from FIRST's EPSS. Findings
+  are ordered by CVSS severity, critical and high first, and Zazzles Agent fixes them in the same
+  order. Only advisory identifiers are sent, and `--offline`
+  turns lookups off.
+- **Local and CI use:** the same command runs on your machine and in a CI job, with no prompts
+  and no credentials. A non-zero exit when advisories at or above a chosen severity are found, a
+  distinct exit when a project could not be audited, and a short `summary.md` for the job summary
+  or a pull-request comment. Upload the run folder as a build artifact to keep the HTML report.
+- **Missing tools:** `audit tools` shows which audit tools are installed, and when one is missing
+  prints the command to install it. You run that command; `audit` never installs anything.
+
+The command never installs, upgrades or fixes a dependency, and never changes your files.
+
+## Setup: NVD API key
+
+Dependency Audit looks up each CVE in NIST's National Vulnerability Database (NVD). NVD works
+without a key but allows only about 5 requests every 30 seconds, so a project with 70 CVEs takes
+about 7 minutes. With a free key it allows about 50, and the same project takes under a minute.
+
+1. Request a key at [nvd.nist.gov/developers/request-an-api-key](https://nvd.nist.gov/developers/request-an-api-key).
+   NVD emails it to you.
+2. Put it in your Git-ignored `.env`, the same file Code Scan uses. The tracked
+   [.env.sample](../../.env.sample) lists the setting with an empty value:
+
+   ```text
+   NVD_API_KEY=your-key
+   ```
+
+3. Load `.env` into your shell before running `audit`, as for `scan`: `set -a; . ./.env; set +a`,
+   or use [direnv](https://direnv.net) with the tracked `.envrc`. `audit` reads the environment
+   variable and does not open `.env` itself.
+4. In CI, store the key as a secret (on GitHub, a repository or organization secret) and pass it to
+   the job as the `NVD_API_KEY` environment variable.
+
+`audit` sends the key only to NVD, in the request header, and never prints it or writes it to a
+report, cache or log. Never commit `.env`.
+
+## Related documentation
+
+- [Dependency Audit module landing page](../../audit/README.md)
+- [Zazzles Agent user documentation](../agent/README.md)
+- [Code Scan user documentation](../scan/README.md)
+- [Implementation plan](../../.zazz/project/implementation-plan.md#product-goals-and-capability-boundaries)

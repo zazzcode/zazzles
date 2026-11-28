@@ -1,7 +1,7 @@
 # Shared Python input acquisition: verification
 
-[Implementation contract](../specifications/python-input-refactor.md) ·
-[Node acquisition design](../specifications/node-http-input-refactor.md)
+[Implementation contract](../specifications/scan/python-input-refactor.md) ·
+[Node acquisition design](../specifications/scan/node-http-input-refactor.md)
 
 The existing Python HTTP adapters now supply optional `InputFacts` version 1, using the
 same acquisition/value schema as Node. Parameter and ambient-context binding live in

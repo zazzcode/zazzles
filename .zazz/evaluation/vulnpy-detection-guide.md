@@ -178,7 +178,7 @@ are supporting evidence, not additional production sinks.
 No new Zazzles, Semgrep or Bearer scan was run for this source-review addition. Existing comparator
 results remain historical. Direct import/call/configuration evidence establishes the two core shell
 APIs independently of comparator agreement. Future detection/paid-evaluation evidence is governed by the
-[command analyzer acceptance contract](../specifications/command-injection.md#8-test-strategy-and-independent-references),
+[command analyzer acceptance contract](../specifications/scan/command-injection.md#8-test-strategy-and-independent-references),
 with implementation results to be recorded separately; no such results are claimed by this review.
 
 ## Validation and logger-leak controls

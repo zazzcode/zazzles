@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Reconciled: 2026-11-27.** This document owns the functionality roadmap. **Implemented** means
+**Reconciled: 2026-11-28.** This document owns the functionality roadmap. **Implemented** means
 bounded code and verification exist on `stage` (through PR #56) or in the named draft PR; it does
 not mean complete ecosystem coverage or a released version. Contracts and evaluation records own
 detailed acceptance evidence. This roadmap does not authorize implementation or live model calls.
@@ -10,15 +10,18 @@ detailed acceptance evidence. This roadmap does not authorize implementation or 
 | Module | Function | State |
 |---|---|---|
 | [**Code Scan**](../../scan/README.md) (`scan/`) | Assess source-code vulnerabilities, controls, evidence gaps, and code smells or poor coding practices that can impact security or performance | Implemented for bounded JavaScript, TypeScript, Python, and PHP cases |
-| [**Fix**](../../fix/README.md) (`fix/`) | Agent skills, remediation standards, and playbooks for findings from Zazzles modules and external scanners (SAST, dependency audit, DAST, and endpoint probe / TLS & certificate scanners such as Nuclei) | Planned, expected before Endpoint Probe |
+| [**Dependency Audit**](../../audit/README.md) (`audit/`) | Run the target's own package-manager audit (`npm audit`, `pnpm audit`, `pip-audit`, `composer audit`), add advisory detail from OSV, NIST's NVD, CISA's Known Exploited Vulnerabilities catalog and FIRST's EPSS, label production and development-only dependencies, and write a findings file and an HTML report. A second pure-Go command beside `scan` | Planned, next up order 2. [SCA design](../architecture/sca-design.md) |
+| [**Zazzles Agent**](../../agent/README.md) (`agent/`, previously Fix) | Skills, playbooks, guides and agent definitions installed into a target repository. The user's coding agent reads Zazzles reports, checks reachability, writes tests before changing code, and opens reviewable PRs for remediation | Planned, next up order 3; reads Dependency Audit reports first, then Code Scan |
 | [**Endpoint Probe**](../../probe/README.md) (`probe/`) | Check authorized endpoints for externally observable issues, starting with TLS and certificates, with evidence and remediation guidance | Planned |
 
-These modules can work independently or in combination. Fix accepts finding details even when
+These modules can work independently or in combination. Code Scan, Dependency Audit and Endpoint
+Probe produce findings; Zazzles Agent consumes them, and later accepts other scanners' SARIF when
 another tool performed the assessment. [Project overview](../../README.md#modules)
 
 The [repository layout contract](../specifications/scan-fix-probe-repository-layout.md) moved
-Code Scan under `scan/` and organized user docs under `docs/scan/`, `docs/fix/`, and `docs/probe/`
-([PR #37](https://github.com/zazzcode/zazzles/pull/37), merged into `stage`).
+Code Scan under `scan/` and organized user docs by module
+([PR #37](https://github.com/zazzcode/zazzles/pull/37), merged into `stage`). The planned Fix
+directories have since become `agent/` and `docs/agent/`, and `audit/` and `docs/audit/` were added.
 
 <a id="detection-generalization-direction"></a>
 
@@ -40,18 +43,20 @@ add evidence a general recorder cannot read.
 
 Merged so far: SQL text records with no driver contract (spec 21, PR #56), native MongoDB driver
 operations by package origin (spec 19, PR #54) and computed facts for PHP SQL operands (spec 17,
-PR #52). [Series index](../specifications/detection-generalization/README.md) ·
+PR #52). [Series index](../specifications/scan/detection-generalization/README.md) ·
 [Strategy](../evaluation/detection-generalization-strategy.md) ·
 [Learnings](../learnings/detection-generalization/README.md)
 
 ## Delivery priorities
 
 1. Continue work on Code Scan and its evidence, coverage, and reporting.
-2. Build Fix with remediation skills, standards, playbooks, verification, and reviewable changes.
-3. Build Endpoint Probe, starting with TLS and certificate findings on authorized endpoints.
+2. Build Dependency Audit: the `audit` command, its findings file and its report (owner, 2026-11-28).
+3. Build Zazzles Agent to remediate from Dependency Audit reports, with tests before changes and
+   reviewable PRs; Code Scan reports follow.
+4. Build Endpoint Probe, starting with TLS and certificate findings on authorized endpoints.
 
-The detailed roadmap below also tracks longer-term proposals (Inspect, dependency audit, etc.).
-Proposed features need bounded contracts before implementation.
+The detailed roadmap below also tracks longer-term proposals (Inspect, etc.). Proposed features
+need bounded contracts before implementation.
 
 <a id="supported-capability-checklist"></a>
 <a id="complete-delivery-list"></a>
@@ -67,7 +72,7 @@ language or framework is not a claim that all its syntax, APIs, or vulnerable pa
 | **SQL injection** | JS/TS, Python, and PHP query construction, verified API operand/binding models, and separate injection judgments. A call no driver contract covers is recorded when an argument is SQL statement text and judged with the driver-free `sql-text-operation-v1` request ([PR #56](https://github.com/zazzcode/zazzles/pull/56)); PHP operands carry computed escape, hash, integer and digit facts ([PR #52](https://github.com/zazzcode/zazzles/pull/52)) | [Database rules](../../docs/scan/analysis/database-injection.md#sql-rules) |
 | **NoSQL injection** | JS/TS MongoDB/Mongoose, MarsDB, and Prisma filter-object selectors and executable expressions; native `mongodb` driver calls recorded by package origin with no list of driver methods ([PR #54](https://github.com/zazzcode/zazzles/pull/54)); Python and other engines remain planned | [Database-specific scope](../../docs/scan/analysis/database-injection.md#database-specific-nosql-scope) |
 | **Input validation** | JS/TS, Python, and PHP source-established field requirements and enforcing controls, separate from destination protection; missing business policy stays unresolved | [Validation rules](../../docs/scan/analysis/input-validation.md) |
-| **Sensitive-data logging** | JS/TS and Python supported logger calls and access-log credential exposure; data class, content, and redaction assessed separately | [Logging contract](../specifications/sensitive-data-logging.md) |
+| **Sensitive-data logging** | JS/TS and Python supported logger calls and access-log credential exposure; data class, content, and redaction assessed separately | [Logging contract](../specifications/scan/sensitive-data-logging.md) |
 | **Cross-site scripting** | Supported server/template and stored-value claims (JS/TS, Python, PHP), browser/DOM/framework sinks, and selected JS/TS API-to-browser links; general Python-to-browser linkage remains planned | [XSS rules](../../docs/scan/analysis/xss.md), [hardening results](../evaluation/xss-hardening-results.md) |
 | **Command injection and bypass support** | Node `child_process`, Python `os`/`subprocess`, and PHP process-execution contracts; shell syntax, executable selection, arguments, regex capture facts, and guard-reach bypass validation (`command-components-v5`, [PR #34](https://github.com/zazzcode/zazzles/pull/34)) | [Command rules](../../docs/scan/analysis/command-injection.md), [bypass results](../evaluation/command-bypass-support-results.md) |
 | **Path traversal** | Supported Node, Python, and PHP file operands, file serving, archive opens/extraction, Zip Slip, and render-layout paths; dual-path independence; containment, branch polarity, mutation, and ordering checks | [Path rules](../../docs/scan/analysis/path-traversal.md), [results](../evaluation/path-traversal-results.md) |
@@ -76,7 +81,7 @@ language or framework is not a claim that all its syntax, APIs, or vulnerable pa
 | **Unsafe deserialization (CWE-502)** | Verified deserializers in Python, JS/TS and PHP ([PR #38](https://github.com/zazzcode/zazzles/pull/38)). Offline fixtures and pinned samples verified. Lab scenarios and live evaluation are open | [Rules](../../docs/scan/analysis/deserialization.md), [verification](../evaluation/deserialization-results.md) |
 | **Open redirect (CWE-601)** | Verified JS/TS, Python, and PHP redirect destinations and effective origin restrictions ([PR #19](https://github.com/zazzcode/zazzles/pull/19), [PR #23](https://github.com/zazzcode/zazzles/pull/23)) | [Redirect rules](../../docs/scan/analysis/open-redirect.md), [phase 2 results](../evaluation/nextjs-phase-2-results.md) |
 | **Prototype pollution (CWE-1321)** | JS/TS application writes through affected Lodash versions and bounded source-visible recursive, split-path, nested, and walk-start writes ([PR #35](https://github.com/zazzcode/zazzles/pull/35), [PR #36](https://github.com/zazzcode/zazzles/pull/36)); library-export mode remains planned at W3/W4 | [Pollution rules](../../docs/scan/analysis/prototype-pollution.md), [write shapes](../evaluation/pollution-write-shapes-results.md), [walk start](../evaluation/pollution-walk-start-results.md) |
-| **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Node `http`/`https`, Python `requests`/`httpx`/`urllib`, PHP URL-open and Symfony HttpClient calls, plus `curl` and `wget` shell URL arguments (`api.php-shell-url-client-v1`) | [SSRF rules](../../docs/scan/analysis/ssrf.md), [E4 contract](../specifications/shared-node-inputs-and-file-apis.md) |
+| **Outbound observations and SSRF** | Destination-origin classification and grouped observations; SSRF claims for verified `fetch`/`axios`/Node `http`/`https`, Python `requests`/`httpx`/`urllib`, PHP URL-open and Symfony HttpClient calls, plus `curl` and `wget` shell URL arguments (`api.php-shell-url-client-v1`) | [SSRF rules](../../docs/scan/analysis/ssrf.md), [E4 contract](../specifications/scan/shared-node-inputs-and-file-apis.md) |
 | **Insecure configuration** | Allow-listed framework and deployment files. Directory listing, disabled CSRF, session-cookie flags, debug settings and a privileged schedule of a writable file, each joined to application facts (`configuration-components-v4`) | [Configuration rules](../../docs/scan/analysis/configuration.md), [design](../architecture/configuration-analysis.md) |
 | **Next.js acquisition and practice checks** | App Router & Pages Router entries, Server Actions, middleware matchers, Web Request API origins, zod evidence, `"use client"` React flow, Prisma/better-sqlite3/PGlite contracts, and model-free NX-BP practice observations ([PR #18](https://github.com/zazzcode/zazzles/pull/18), [PR #19](https://github.com/zazzcode/zazzles/pull/19), [PR #20](https://github.com/zazzcode/zazzles/pull/20), [PR #21](https://github.com/zazzcode/zazzles/pull/21)) | [Next.js support](../../docs/scan/nextjs-support.md), [rules](../../docs/scan/analysis/nextjs.md) |
 | **PHP support (DVWA MVP)** | Plain-PHP adapter with server-mapped entries, include dispatch, superglobal input facts, class/method binding, and SQL/command/XSS/path/upload/code/redirect/validation families ([PR #23](https://github.com/zazzcode/zazzles/pull/23), [PR #31](https://github.com/zazzcode/zazzles/pull/31)); Drupal remains planned | [PHP support](../../docs/scan/php-support.md), [results](../evaluation/php-support-results.md) |
@@ -96,16 +101,17 @@ Prototype pollution walk start PR #36) are merged into `stage`.
 | Order | Planned functionality | Notes |
 |---|---|---|
 | Done | **Scan / Fix / Endpoint Probe repository layout** | Merged into `stage` ([PR #37](https://github.com/zazzcode/zazzles/pull/37)). [Contract](../specifications/scan-fix-probe-repository-layout.md). Code Scan lives under `scan/` and user docs are organized by module |
-| Done | **PHP Symfony support** | Merged into `stage` ([PR #39](https://github.com/zazzcode/zazzles/pull/39)). [Contract](../specifications/php-symfony-support.md) (supersedes architecture phase 6). Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF. The `vuln-symfony` key at `086f81f` has 14 required positives, all Confirmed ([results](../evaluation/symfony-results.md)) |
-| Done | **Close Symfony website support: application-security analyzers** | Merged into `stage`: branches 1 to 4 (PRs #42, #43, #45, #46) and the DVWA follow-up ([PR #47](https://github.com/zazzcode/zazzles/pull/47)). Branch 4 added configuration, the shell URL client and the lane acceptance run. [Lane contract](../specifications/symfony-more-analyzers.md). See [the lane table below](#symfony-application-security-lane). Every analyzer is a general PHP capability; `vuln-symfony` is the measuring sample only |
-| Done | **Juice Shop and Next.js hardening: existing analyzers on JavaScript** | Merged into `stage` ([PR #48](https://github.com/zazzcode/zazzles/pull/48), [PR #49](https://github.com/zazzcode/zazzles/pull/49), [PR #50](https://github.com/zazzcode/zazzles/pull/50)). The `exposure`, `mass-assignment`, `authorization`, `account` and `configuration` families read Express applications with Sequelize, Mongoose or a Mongo-style collection; every Express entry records its middleware-chain access. No new analyzer, kind, finding type or question. The Juice Shop key has ten required positives, all Confirmed, and the guarded controls Protected ([results](../evaluation/juiceshop-hardening-results.md)). The `upload` family records `multer` middleware on Express routes; that family has not had a judged run. [Specification](../specifications/juiceshop-nextjs-hardening-1.md) |
-| 1 | **Detection generalization** | The [generalization direction](#detection-generalization-direction). Merged: spec 17 ([PR #52](https://github.com/zazzcode/zazzles/pull/52)), spec 19 ([PR #54](https://github.com/zazzcode/zazzles/pull/54)) and spec 21 ([PR #56](https://github.com/zazzcode/zazzles/pull/56)); spec 20 ([PR #55](https://github.com/zazzcode/zazzles/pull/55)) was closed unmerged. Specs 22 (owner references in the mass-assignment census) and 23 (source references into a listed directory) are implemented and measured on `docs-cleanup`, unmerged: Gemini now finds all 41 rows of Code Scan's Juice Shop key and 45 of 75 in the comparison, as `gpt-6-luna` does. Held-out runs are no longer required (owner, 2026-11-27). Next: a held-out application with an uncontracted driver, then the remaining specs in the [series order](../specifications/detection-generalization/README.md). |
-| Done | **Detection generalization 19: database package operations** | Merged ([PR #54](https://github.com/zazzcode/zazzles/pull/54)). A native MongoDB driver call (npm `mongodb`) that receives request data becomes a NoSQL record, found by following its receiver back to the package import, with no list of driver methods or client forms. Recording is met: 57 of 57 vulnerable lab routes; NodeGoat goes from 1 entry to 20. Judged precision on the lab is 93% with Gemini and 75% with gpt-6-luna against the series bar of 95%. [Specification](../specifications/detection-generalization/19-database-package-operations.md), [results](../evaluation/detection-generalization-results/19.md), [learnings](../learnings/detection-generalization/README.md) |
-| Done | **Unsafe deserialization analyzer (CWE-502)** | **Merged into `stage` ([PR #38](https://github.com/zazzcode/zazzles/pull/38)).** [Contract](../specifications/unsafe-deserialization.md) and [verification status](../evaluation/deserialization-results.md). The `deserialization` family for Python `pickle`, PyYAML and `jsonpickle`, PHP `unserialize` and Symfony `Yaml::parse`, Node `node-serialize`, `funcster` and `js-yaml`. No prerequisite; the `vuln-symfony` row stays blocked on order 1 and is not part of the deliverable |
-| 3 | **npm library RCE scanning** | Architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on existing command and code analyzers), then compile-to-JS sinks and library prototype pollution per the [waypoints below](#before-library-scanning) |
-| 4 | **Fix module (agent skills, standards, playbooks & external findings import)** | Remediation skills, standards, and playbooks for findings from Zazzles modules and external SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
+| Done | **PHP Symfony support** | Merged into `stage` ([PR #39](https://github.com/zazzcode/zazzles/pull/39)). [Contract](../specifications/scan/php-symfony-support.md) (supersedes architecture phase 6). Routes, argument binding, `Request` sources, Doctrine, Twig, services, URL-open SSRF. The `vuln-symfony` key at `086f81f` has 14 required positives, all Confirmed ([results](../evaluation/symfony-results.md)) |
+| Done | **Close Symfony website support: application-security analyzers** | Merged into `stage`: branches 1 to 4 (PRs #42, #43, #45, #46) and the DVWA follow-up ([PR #47](https://github.com/zazzcode/zazzles/pull/47)). Branch 4 added configuration, the shell URL client and the lane acceptance run. [Lane contract](../specifications/scan/symfony-more-analyzers.md). See [the lane table below](#symfony-application-security-lane). Every analyzer is a general PHP capability; `vuln-symfony` is the measuring sample only |
+| Done | **Juice Shop and Next.js hardening: existing analyzers on JavaScript** | Merged into `stage` ([PR #48](https://github.com/zazzcode/zazzles/pull/48), [PR #49](https://github.com/zazzcode/zazzles/pull/49), [PR #50](https://github.com/zazzcode/zazzles/pull/50)). The `exposure`, `mass-assignment`, `authorization`, `account` and `configuration` families read Express applications with Sequelize, Mongoose or a Mongo-style collection; every Express entry records its middleware-chain access. No new analyzer, kind, finding type or question. The Juice Shop key has ten required positives, all Confirmed, and the guarded controls Protected ([results](../evaluation/juiceshop-hardening-results.md)). The `upload` family records `multer` middleware on Express routes; that family has not had a judged run. [Specification](../specifications/scan/juiceshop-nextjs-hardening-1.md) |
+| 1 | **Detection generalization** | The [generalization direction](#detection-generalization-direction). Merged: spec 17 ([PR #52](https://github.com/zazzcode/zazzles/pull/52)), spec 19 ([PR #54](https://github.com/zazzcode/zazzles/pull/54)) and spec 21 ([PR #56](https://github.com/zazzcode/zazzles/pull/56)); spec 20 ([PR #55](https://github.com/zazzcode/zazzles/pull/55)) was closed unmerged. Specs 22 (owner references in the mass-assignment census) and 23 (source references into a listed directory) are merged ([PR #57](https://github.com/zazzcode/zazzles/pull/57)): Gemini now finds all 41 rows of Code Scan's Juice Shop key and 45 of 75 in the comparison, as `gpt-6-luna` does. Held-out runs are no longer required (owner, 2026-11-27). Next: a held-out application with an uncontracted driver, then the remaining specs in the [series order](../specifications/scan/detection-generalization/README.md). |
+| Done | **Detection generalization 19: database package operations** | Merged ([PR #54](https://github.com/zazzcode/zazzles/pull/54)). A native MongoDB driver call (npm `mongodb`) that receives request data becomes a NoSQL record, found by following its receiver back to the package import, with no list of driver methods or client forms. Recording is met: 57 of 57 vulnerable lab routes; NodeGoat goes from 1 entry to 20. Judged precision on the lab is 93% with Gemini and 75% with gpt-6-luna against the series bar of 95%. [Specification](../specifications/scan/detection-generalization/19-database-package-operations.md), [results](../evaluation/detection-generalization-results/19.md), [learnings](../learnings/detection-generalization/README.md) |
+| Done | **Unsafe deserialization analyzer (CWE-502)** | **Merged into `stage` ([PR #38](https://github.com/zazzcode/zazzles/pull/38)).** [Contract](../specifications/scan/unsafe-deserialization.md) and [verification status](../evaluation/deserialization-results.md). The `deserialization` family for Python `pickle`, PyYAML and `jsonpickle`, PHP `unserialize` and Symfony `Yaml::parse`, Node `node-serialize`, `funcster` and `js-yaml`. No prerequisite; the `vuln-symfony` row stays blocked on order 1 and is not part of the deliverable |
+| 2 | **Dependency Audit module** | Owner un-deferred and placed first among new modules, 2026-11-28. A pure-Go `audit` command under `audit/`: runs the target's installed audit tool for all and production dependencies, never installs or upgrades, normalizes the output into one findings file, adds advisory detail from OSV, NIST's NVD, CISA's KEV catalog and FIRST's EPSS scores (CVE aliases, CVSS scores by source, CWE, known exploitation, exploitation likelihood, fix commits), and writes an HTML report in the Code Scan style. Five contracts: npm and pnpm first; then advisory enrichment, the module's main value, which looks every advisory up in OSV, NIST's NVD, CISA's Known Exploited Vulnerabilities catalog and FIRST's EPSS and orders the report by CVSS severity, critical and high first, with known exploitation and exploitation likelihood as details; then pip-audit (pinned requirements only, never resolving or building packages) and Composer; then documentation. Each checks that its audit tool is installed and accepts the flags it needs before running it. `vuln-nextjs`'s committed audit snapshot is the first answer key. Then a separate first-release contract in its own worktree: macOS and Linux binaries of `scan` and `audit`, a GitHub Action for CI use, and the promotion PR to `main`, which the owner merges and tags. [Series](../specifications/audit/README.md), [SCA design](../architecture/sca-design.md) |
+| 3 | **Zazzles Agent (replaces Fix)** | Starts once the first Dependency Audit contract has merged and its findings schema is fixed. Reads Audit findings JSON (Code Scan JSON next; other scanners' SARIF later), labels reachability of the affected functions, plans PRs in Audit's order, critical and high first, as batched small bumps, one bump per PR, or a bump with the refactoring it forces, and writes tests on the current version before changing code. Asks the committer at fixed checkpoints and records the answers in the plan. Installs under `.zazzles/` in the target, with entry files for the agent tools it detects. Its shipped Markdown is linted in full for prompt injection. [Workflow direction](user-agent-skills.md) |
+| 4 | **npm library RCE scanning** | Architecture [phase 7](../specifications/scan/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline) and [phase 8](../specifications/scan/architecture-phase-8-npm-library-mode.md) (library mode on existing command and code analyzers), then compile-to-JS sinks and library prototype pollution per the [waypoints below](#before-library-scanning) |
 | 5 | **Endpoint Probe module** | Authorized read-only endpoint checks starting with TLS versions, certificates, and trust chains, with remediation guidance |
-| Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
+| Deferred | **XXE** | Owner deferred, 2026-11-16. Dependency Audit, deferred on the same date, is now order 2 |
 
 <a id="symfony-application-security-lane"></a>
 
@@ -119,10 +125,10 @@ extended where a claim fits them; a new family is added only for a new question.
 
 | Order | Branch and contract | Delivers | README entries closed | State |
 |---:|---|---|---|---|
-| 1.1 | [`symfony-more-analyzers-1`](../specifications/symfony-more-analyzers-1.md) | `exposure` (CWE-200, CWE-215) and `mass-assignment` (CWE-915) families; the security-field census (credential, login identifier and role-source fields from framework contracts) | 17, 19 | Merged ([PR #42](https://github.com/zazzcode/zazzles/pull/42)) |
-| 1.2 | [`symfony-more-analyzers-2`](../specifications/symfony-more-analyzers-2.md) | Entry access from `access_control`, firewalls and `#[IsGranted]`; `authorization` family (CWE-862, CWE-639, CWE-285) with ownership, role and address-based guard kinds (CWE-291); state changes per entry | 7, 9, 10, 13, 16. Entry 8 recorded as not present in source | Merged ([PR #43](https://github.com/zazzcode/zazzles/pull/43)) |
-| 1.3 | [`symfony-more-analyzers-3`](../specifications/symfony-more-analyzers-3.md) | `account` family: enumeration (CWE-204), recovery-secret delivery (CWE-640) with the mail sink, weak password hashing (CWE-916) | 6, 20 | Merged ([PR #45](https://github.com/zazzcode/zazzles/pull/45)) |
-| 1.4 | [`symfony-more-analyzers-4`](../specifications/symfony-more-analyzers-4.md) | `configuration` family over allow-listed framework and deployment files (directory listing, disabled CSRF, session cookie flags, debug, privileged scheduled commands); SSRF through `curl` and `wget` as a new `ssrf` contract; whole-sample judged acceptance and closing documentation | 18, 21, and the SSRF half of 1 | Merged ([PR #46](https://github.com/zazzcode/zazzles/pull/46)). Acceptance run recorded in [symfony-results.md](../evaluation/symfony-results.md) |
+| 1.1 | [`symfony-more-analyzers-1`](../specifications/scan/symfony-more-analyzers-1.md) | `exposure` (CWE-200, CWE-215) and `mass-assignment` (CWE-915) families; the security-field census (credential, login identifier and role-source fields from framework contracts) | 17, 19 | Merged ([PR #42](https://github.com/zazzcode/zazzles/pull/42)) |
+| 1.2 | [`symfony-more-analyzers-2`](../specifications/scan/symfony-more-analyzers-2.md) | Entry access from `access_control`, firewalls and `#[IsGranted]`; `authorization` family (CWE-862, CWE-639, CWE-285) with ownership, role and address-based guard kinds (CWE-291); state changes per entry | 7, 9, 10, 13, 16. Entry 8 recorded as not present in source | Merged ([PR #43](https://github.com/zazzcode/zazzles/pull/43)) |
+| 1.3 | [`symfony-more-analyzers-3`](../specifications/scan/symfony-more-analyzers-3.md) | `account` family: enumeration (CWE-204), recovery-secret delivery (CWE-640) with the mail sink, weak password hashing (CWE-916) | 6, 20 | Merged ([PR #45](https://github.com/zazzcode/zazzles/pull/45)) |
+| 1.4 | [`symfony-more-analyzers-4`](../specifications/scan/symfony-more-analyzers-4.md) | `configuration` family over allow-listed framework and deployment files (directory listing, disabled CSRF, session cookie flags, debug, privileged scheduled commands); SSRF through `curl` and `wget` as a new `ssrf` contract; whole-sample judged acceptance and closing documentation | 18, 21, and the SSRF half of 1 | Merged ([PR #46](https://github.com/zazzcode/zazzles/pull/46)). Acceptance run recorded in [symfony-results.md](../evaluation/symfony-results.md) |
 
 After 1.4 the sample's closing state is 20 of 21 README entries detected, entry 8 recorded as not
 reproducible at the pin, and committed secrets left to the planned secret-scanning work.
@@ -133,18 +139,18 @@ reproducible at the pin, and committed secrets left to the planned secret-scanni
 
 | Waypoint | Work | Spec | State | Needed before |
 |---|---|---|---|---|
-| W0 | **Command bypass support** | [Contract](../specifications/command-bypass-support.md) | Merged into `stage` ([PR #34](https://github.com/zazzcode/zazzles/pull/34)) | W4 |
+| W0 | **Command bypass support** | [Contract](../specifications/scan/command-bypass-support.md) | Merged into `stage` ([PR #34](https://github.com/zazzcode/zazzles/pull/34)) | W4 |
 | W1 | **Re-judge the JS command samples** under `command-components-v5` (Node.js Goof, vuln-nextjs) | None needed: a live check | Owner's call | W4, so library mode starts from a measured JS command baseline |
-| W2 | **npm corpus, answer keys and direct-model baseline** | [Phase 7](../specifications/architecture-phase-7-npm-corpus.md) | Ready to assign. Offline steps need no cap; baseline needs a model and numeric cap | W3 (stage 2), W4, and W5 |
-| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/prototype-pollution.md), [write shapes](../specifications/pollution-write-shapes.md) | Stage 1 application writes + write shapes merged into `stage` ([PR #35](https://github.com/zazzcode/zazzles/pull/35)). Stage 2 library writes follow W2 and W4; access and gadget claims follow corpus keys | The six pollution corpus rows |
-| W3.1 | **Prototype pollution walk start** | [Contract](../specifications/pollution-walk-start.md) | Merged into `stage` ([PR #36](https://github.com/zazzcode/zazzles/pull/36)) | Completed |
-| W4 | **Library mode on the existing analyzers** | [Phase 8](../specifications/architecture-phase-8-npm-library-mode.md) | Starts after W2 merges (W0 is merged) | Every library result |
+| W2 | **npm corpus, answer keys and direct-model baseline** | [Phase 7](../specifications/scan/architecture-phase-7-npm-corpus.md) | Ready to assign. Offline steps need no cap; baseline needs a model and numeric cap | W3 (stage 2), W4, and W5 |
+| W3 | **Prototype pollution analyzer (CWE-1321)** | [Contract](../specifications/scan/prototype-pollution.md), [write shapes](../specifications/scan/pollution-write-shapes.md) | Stage 1 application writes + write shapes merged into `stage` ([PR #35](https://github.com/zazzcode/zazzles/pull/35)). Stage 2 library writes follow W2 and W4; access and gadget claims follow corpus keys | The six pollution corpus rows |
+| W3.1 | **Prototype pollution walk start** | [Contract](../specifications/scan/pollution-walk-start.md) | Merged into `stage` ([PR #36](https://github.com/zazzcode/zazzles/pull/36)) | Completed |
+| W4 | **Library mode on the existing analyzers** | [Phase 8](../specifications/scan/architecture-phase-8-npm-library-mode.md) | Starts after W2 merges (W0 is merged) | Every library result |
 | W5 | **Utility option contracts for argument arrays**, `git` first | **Not written** | Decide after W2: write only if `simple-git` is outside W4's reach | `simple-git` row |
 | W6 | **Library judge contract**: parameter-trust question, caller-argument protocol, feasibility consumer | **Not written** | After W4 reports candidates per library | Paid library judgment |
-| W7 | **Code-execution sinks for libraries**: compile-to-JS, deserialization-to-code, dynamic `require` | **Not written** | After W4; reuse Node contracts of [unsafe deserialization](../specifications/unsafe-deserialization.md) | `ejs`, `pug`, `lodash`, `ajv`, `node-serialize` |
+| W7 | **Code-execution sinks for libraries**: compile-to-JS, deserialization-to-code, dynamic `require` | **Not written** | After W4; reuse Node contracts of [unsafe deserialization](../specifications/scan/unsafe-deserialization.md) | `ejs`, `pug`, `lodash`, `ajv`, `node-serialize` |
 
-Orders 1 and 2 (Symfony, unsafe deserialization) are not prerequisites for W2–W4 and may run
-beside them.
+The Symfony lane and unsafe deserialization (both merged) were not prerequisites for W2–W4.
+Dependency Audit and Zazzles Agent (orders 2 and 3) are not prerequisites either.
 
 <a id="future-capability-branches"></a>
 <a id="ordered-specification-backlog"></a>
@@ -156,9 +162,9 @@ approved implementation assignments.
 
 | Planned functionality | Intended outcome / remaining boundary |
 |---|---|
-| **PHP Symfony & Drupal** | Symfony injection-family support is merged (PR #39; [contract](../specifications/php-symfony-support.md), [results](../evaluation/symfony-results.md)). Authorization, mass assignment, information exposure, account-flow and configuration analyzers are merged as the [Symfony application-security lane](#symfony-application-security-lane). Drupal routing and render arrays remain planned ([phase 9](../specifications/architecture-phase-9-drupal.md)) |
+| **PHP Symfony & Drupal** | Symfony injection-family support is merged (PR #39; [contract](../specifications/scan/php-symfony-support.md), [results](../evaluation/symfony-results.md)). Authorization, mass assignment, information exposure, account-flow and configuration analyzers are merged as the [Symfony application-security lane](#symfony-application-security-lane). Drupal routing and render arrays remain planned ([phase 9](../specifications/scan/architecture-phase-9-drupal.md)) |
 | **Authorization, mass assignment, information exposure, account security, configuration** | General PHP analyzers delivered by the [Symfony application-security lane](#symfony-application-security-lane). Voters and custom authenticators, Symfony Form and serializer mass assignment, plain-PHP object-level authorization, and infrastructure files outside the allow-lists stay explicit gaps |
-| **Unsafe deserialization (CWE-502)** | Merged ([PR #38](https://github.com/zazzcode/zazzles/pull/38); [contract](../specifications/unsafe-deserialization.md), [verification](../evaluation/deserialization-results.md)). Lab scenarios and live evaluation remain |
+| **Unsafe deserialization (CWE-502)** | Merged ([PR #38](https://github.com/zazzcode/zazzles/pull/38); [contract](../specifications/scan/unsafe-deserialization.md), [verification](../evaluation/deserialization-results.md)). Lab scenarios and live evaluation remain |
 | **Unrestricted upload adapter expansion** | PHP and Werkzeug uploads are merged (PR #31); Express `multer` is merged (PR #48); `express-fileupload` and Starlette upload adapters remain |
 | **Prototype pollution in libraries** | Application writes and walk starts are merged (PR #35, PR #36); library export coverage follows W2/W4 |
 | **Python coverage completion** | Python NoSQL models and general API-to-browser XSS linkage; expanded dependency/lifecycle/discovery coverage beyond shared Python input facts |
@@ -167,13 +173,14 @@ approved implementation assignments.
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data. The Symfony lane leaves committed `.env` secrets to this item |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |
-| **Fix & external finding imports** | Next up order 4: agent remediation skills, standards, playbooks, and provenance-preserving import from SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
+| **Dependency Audit** | Next up order 2. Yarn, Poetry and uv as first-class inputs, other ecosystems, and SARIF output stay later; [SCA design](../architecture/sca-design.md) |
+| **Zazzles Agent & external finding imports** | Next up order 3 for Dependency Audit findings. Code Scan findings, other scanners' SARIF (SAST, DAST, endpoint probes), a test-setup skill for projects with no tests, and a skill for deprecated APIs with no advisory stay later; [workflow direction](user-agent-skills.md) |
 | **Endpoint Probe** | Next up order 5: authorized read-only endpoint checks starting with TLS and certificates, with remediation recommendations |
 | **Inspect workflow** | Select applicable engineering standards and present broader quality/maintainability findings separately from vulnerability claims |
 | **Baselines and incremental analysis** | Stable finding identity, invalidation, comparison, and explicit severity gates |
 | **Public analysis packs and standards** | Public pack loading and user-selected standards; embedded components do not imply an executable plugin system |
 | **Additional acquisition and languages** | Queue inputs and further source-language/framework adapters under separate contracts |
-| **XXE; Dependency Audit (SCA)** | Deferred by the owner (2026-11-16); [SCA design](../architecture/sca-design.md) |
+| **XXE** | Deferred by the owner (2026-11-16) |
 | **External generalization evaluation** | Bounded checks on fresh applications against source-reviewed expectations |
 
 ### Deferred analysis boundaries
@@ -222,15 +229,15 @@ These anchors preserve older links; the completed and planned tables above own c
 <a id="delivered-foundation-optional-gemini-adapter-and-path-traversal"></a>
 **Provider/path foundation:** [Gemini verification](../evaluation/gemini-decisions-results.md),
 [path results](../evaluation/path-traversal-results.md), and
-[Tier-1 hardening](../specifications/path-traversal-hardening.md).
+[Tier-1 hardening](../specifications/scan/path-traversal-hardening.md).
 
 <a id="first-build"></a>
 <a id="phase-0--foundation-audit-and-tooling-decision"></a>
 <a id="route-string-validation-delivery-sequence"></a>
-**Parser and route/string foundations:** [route MVP](../specifications/tree-sitter-route-identification-mvp.md),
-[assessment contract](../specifications/route-string-validation.md), and
+**Parser and route/string foundations:** [route MVP](../specifications/scan/tree-sitter-route-identification-mvp.md),
+[assessment contract](../specifications/scan/route-string-validation.md), and
 [historical verification](06-route-validation-assessment.md#route-verification).
 
 <a id="phase-11--python-adapter"></a>
-**Python foundation:** [contract](../specifications/python-support.md) and
+**Python foundation:** [contract](../specifications/scan/python-support.md) and
 [results/limits](../evaluation/python-support-results.md).

@@ -2,7 +2,7 @@
 
 **Branch:** `accuracy-false-positive-eval`, based on merged PR #20 at `cb40f3705949`.
 **Date:** 2026-11-16. **Contract:**
-[practice accuracy and false-positive evaluation](../../specifications/practice-accuracy-and-false-positive-evaluation.md).
+[practice accuracy and false-positive evaluation](../../specifications/scan/practice-accuracy-and-false-positive-evaluation.md).
 
 ## Delivered corrections
 

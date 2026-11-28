@@ -6,12 +6,16 @@ to the detailed documents and defines their responsibilities.
 
 ## Purpose
 
-Zazzles supports application and endpoint security through the Scan, Fix and Probe modules.
-Scan analyzes application source and is the current development focus. Fix will provide agent
-skills, remediation standards and playbooks for findings from Zazzles or other tools. Probe
-will assess externally observable issues on authorized endpoints and recommend repairs.
+Zazzles supports application and endpoint security through the Code Scan, Dependency Audit,
+Zazzles Agent and Endpoint Probe modules. Scan analyzes application source and is the current
+development focus. Dependency Audit (`audit/`) comes next: it runs the project's own package-manager
+audit and reports known-vulnerable dependencies. Zazzles Agent (`agent/`, previously planned as Fix)
+will provide agent skills, playbooks and guides for remediating findings from Zazzles reports or
+other tools. Probe will assess externally observable issues on authorized endpoints and recommend
+repairs.
 
-Fix is expected to come before Probe. Users can apply Fix to an existing finding with enough
+Zazzles Agent is expected after Dependency Audit and before Probe. Users can apply it to an existing
+finding with enough
 evidence to identify and verify a repair. Findings retain their provenance for human review.
 [Module overview](../README.md#modules) · [Delivery priorities](project/implementation-plan.md#delivery-priorities)
 
@@ -26,15 +30,15 @@ provider cost.
 
 OpenAI Decisions (`gpt-6-luna`) and Google Gemini Decisions (`gemini-decision-1`) can assess every
 implemented analyzer through the same source/evidence gates. [User setup](../docs/scan/decision-models.md#credentials-and-local-environment)
-owns configuration; the [provider contract](specifications/gemini-decisions.md#capability-and-boundary)
+owns configuration; the [provider contract](specifications/scan/gemini-decisions.md#capability-and-boundary)
 owns this delivery. A two-request Gemini scan of the pinned TypeScript sample's `/api/ping` confirmed
 command injection and preserved Review for unknown field policy. See [verification evidence](evaluation/gemini-decisions-results.md).
 This bounded result does not establish equal provider accuracy. No live Jev calls were made.
 
 The [roadmap checklist](project/implementation-plan.md#active-delivery-shared-gemini-then-path-traversal)
-tracks both completed provider setup and the delivered [Path Traversal Analyzer](specifications/path-traversal.md#1-capability-and-prerequisite)
-(including [Tier-1 soundness/determinism hardening](specifications/path-traversal-hardening.md) and
-[shared rate/spend controls](specifications/decision-model-limits.md); see [results](evaluation/path-traversal-results.md)).
+tracks both completed provider setup and the delivered [Path Traversal Analyzer](specifications/scan/path-traversal.md#1-capability-and-prerequisite)
+(including [Tier-1 soundness/determinism hardening](specifications/scan/path-traversal-hardening.md) and
+[shared rate/spend controls](specifications/scan/decision-model-limits.md); see [results](evaluation/path-traversal-results.md)).
 Higher-difficulty cross-analyzer improvements are ranked in the
 [hardening and wire-efficiency proposal](project/analyzer-hardening-and-wire-efficiency-proposal.md).
 NoSQL remains an extensible analyzer category with bounded MongoDB/Mongoose and MarsDB-compatible
@@ -52,8 +56,8 @@ in the [project overview](../README.md#modules).
 | --- | --- | --- |
 | Scan | Source-code security vulnerabilities and controls | Bounded JS/TS/Python support, also emitting existing validation and construction-practice findings |
 | Inspect | Correctness, maintainability, hygiene and defined engineering standards | Planned capability with existing quality-related checks as its foundation |
-| Audit | Dependency vulnerabilities and advisory evidence | Planned ecosystem-tool integration |
-| Fix | Evidence-backed repairs from Scan, Inspect and Audit, followed by verification | Planned agent workflow and orchestration |
+| Audit | Dependency vulnerabilities and advisory evidence | Planned as the Dependency Audit module (`audit/`), next up |
+| Fix | Evidence-backed repairs from Scan, Inspect and Audit, followed by verification | Planned as the Zazzles Agent module (`agent/`), after Dependency Audit |
 
 These are product boundaries, not a commitment to four CLI commands or separate engines. Inspect
 will use shared analysis models, evidence, judgment and reporting infrastructure. Current findings
@@ -184,7 +188,7 @@ adequate protection and whether the reviewer corroborates or challenges its iden
 remains useful, with omitted assessment/review stages explicitly marked.
 
 **Direction update, 2026-10-24.** The first slice is greenlit and implemented:
-[route identification](specifications/tree-sitter-route-identification-mvp.md). `scan --routes`
+[route identification](specifications/scan/tree-sitter-route-identification-mvp.md). `scan --routes`
 writes a JSON route index of Express-style JS/TS registrations and the handler names at the call.
 It does not follow imports or decide whether a string is validated. The OpenAI Decisions API
 (`gpt-6-luna`) is the later assessor of validation and sanitization. It is not called in this slice.
@@ -213,18 +217,18 @@ evidence and the evaluation needed to measure the chosen assessment-and-review p
 
 The module is `github.com/zazzcode/zazzles`, declaring Go `1.27.2`. `scan --list` walks a tree.
 `scan --routes` parses JS/TS with Tree-sitter and emits the route index from the
-[route-identification spec](specifications/tree-sitter-route-identification-mvp.md). There is no
+[route-identification spec](specifications/scan/tree-sitter-route-identification-mvp.md). There is no
 complete CFG/interprocedural analysis, independent Findings Reviewer, or reviewed findings report yet.
 
 **Implemented 2026-10-31:** `--analyze` adds bounded route/handler resolution and request-value
 use witnesses with source hashes, candidate SQL/outbound HTTP call models, and explicit gaps.
 `--judge openai|gemini|jev` selects the decision model that assesses bounded source evidence through provider-specific typed adapters.
 The [Luna integration results](evaluation/juice-shop/results.md) record scoped control evaluations.
-See the [assessment contract](specifications/route-string-validation.md) and the
+See the [assessment contract](specifications/scan/route-string-validation.md) and the
 [provider setup guide](../docs/scan/decision-models.md).
 
 Phase 0's walker, language registry, and CI remain. Their historical record is the
-[Phase 0 specification](specifications/phase0-skeleton/README.md). Recognizing a language extension
+[Phase 0 specification](specifications/scan/phase0-skeleton/README.md). Recognizing a language extension
 does not establish security-analysis support for that language.
 
 Workspace conventions and the `stage` rules live in the
@@ -263,7 +267,7 @@ sample corpus. XSS includes reflected, stored and client-side/DOM capabilities r
 engines. The [architecture terminology](architecture/README.md#analyzer-terminology) distinguishes analyzer
 capabilities, analysis-pack knowledge and the shared analysis engine.
 
-The catalog also supports [outbound observations](specifications/components-03-outbound.md), without
+The catalog also supports [outbound observations](specifications/scan/components-03-outbound.md), without
 implementing the planned SSRF Analyzer's security assessment. This implements the
 SQL-first MVP and migration sessions 01–03 from the [analysis-pack design](project/analysis-pack-mvp.md).
 

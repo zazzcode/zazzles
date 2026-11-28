@@ -5,7 +5,7 @@ Source-reviewed 2026-11-07 at pinned Juice Shop revision
 no target, test, exploit or scanner execution was performed for this review.
 
 [Challenge inventory](README.md) · [Registry](expected-challenges.jsonl) ·
-[Command analyzer contract](../../specifications/command-injection.md)
+[Command analyzer contract](../../specifications/scan/command-injection.md)
 
 ## Source-reviewed cases
 

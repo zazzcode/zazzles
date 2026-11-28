@@ -1,6 +1,6 @@
 # Command bypass support — PC-CMD-02 audit and results
 
-Contract: [command bypass support](../specifications/command-bypass-support.md). Branch
+Contract: [command bypass support](../specifications/scan/command-bypass-support.md). Branch
 `precise-claim-to-judge`, from `stage` at `6e7fa1c`. Sample: DVWA `a1978a2`, clean before and after.
 The audit and both offline comparisons made no provider call; the
 [paid run](#paid-dvwa-run) is the one live check. The saved run is `run-729503128`
@@ -83,7 +83,7 @@ constraint".
 
 On a fully guarded shell facet, a `bypass_identified` answer now also needs the bound path's value
 to be able to carry it, wherever the scanner can list every character that value can hold. Details
-are in the [contract's decisions](../specifications/command-bypass-support.md#4-decisions).
+are in the [contract's decisions](../specifications/scan/command-bypass-support.md#4-decisions).
 
 ### Frozen expectations
 
@@ -198,7 +198,7 @@ moved. `TestDVWASourceKey` passes on the pinned checkout.
 
 - **Only DVWA was re-judged.** The reworded question goes with every command record in every
   language. The other published samples keep their `command-components-v4` reports until they are
-  scanned again ([open question 2](../specifications/command-bypass-support.md#7-open-questions)).
+  scanned again ([open question 2](../specifications/scan/command-bypass-support.md#7-open-questions)).
 
 ## Follow-on candidates
 

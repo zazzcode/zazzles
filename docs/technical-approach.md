@@ -68,8 +68,8 @@ such as bound-parameter slots or a framework's routing.
 supported practice findings. Each claim keeps its own evidence, policy and outcome. Related
 claims can share evidence while remaining separate for review.
 
-[Fix](../fix/README.md) will apply remediation skills and playbooks to findings from Zazzles or
-other tools. 
+[Zazzles Agent](../agent/README.md) will apply remediation skills and playbooks to findings from
+Zazzles or other tools. 
 
 [Probe](../probe/README.md) will assess externally observable endpoint
 configuration, starting with TLS and certificates. Each module has its own inputs and evidence.
@@ -347,7 +347,7 @@ fixtures; real-application evaluation remains deferred. Dynamic schema compositi
 generated gRPC stubs, interceptors and streaming flow remain unsupported.
 The [coverage index](scan/detection-capabilities.md#languages-and-entry-points) lists supported entry
 points. The [common-entry design](../.zazz/architecture/common-entry-dispatch.md) and
-[delivery contract](../.zazz/specifications/common-entry-dispatch.md) describe the detailed boundaries.
+[delivery contract](../.zazz/specifications/scan/common-entry-dispatch.md) describe the detailed boundaries.
 
 The architectural benefit is a common evidence and invocation contract rather than a separate
 security interpretation for every framework. It does not automatically yield deeper analysis,

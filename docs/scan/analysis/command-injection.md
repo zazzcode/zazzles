@@ -152,7 +152,7 @@ a fix. Reports never export a verified patch.
 
 Static, bounded analysis: dynamic dispatch beyond the modeled registries, unmodeled middleware or
 wrappers, mutation through unmodeled calls, whole-program flow and runtime/platform differences stay
-Review. See the [command contract](../../../.zazz/specifications/command-injection.md) and the
+Review. See the [command contract](../../../.zazz/specifications/scan/command-injection.md) and the
 [acceptance results](../../../.zazz/evaluation/command-injection-results.md) for tested coverage.
 
 ## Symfony

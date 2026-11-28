@@ -13,7 +13,7 @@ judge. It may differ by language.
 ## Where things stand: what was accepted (2026-11-26)
 
 The verdict on every strategy tried for native MongoDB driver detection
-([specification 19](../../specifications/detection-generalization/19-database-package-operations.md),
+([specification 19](../../specifications/scan/detection-generalization/19-database-package-operations.md),
 [PR #54](https://github.com/zazzcode/zazzles/pull/54)). Read this first.
 
 | Strategy | Accept | Why | Detail |
@@ -158,8 +158,8 @@ specifications 14, 15 and 16 and to results 14 and 15 point at files that exist 
 
 ## Sources
 
-[Specification 15](../../specifications/detection-generalization/15-judge-certainty.md) and its
+[Specification 15](../../specifications/scan/detection-generalization/15-judge-certainty.md) and its
 [results](../../evaluation/detection-generalization-results/15.md); [specification
-14](../../specifications/detection-generalization/14-sql-calls-redesign.md) and
+14](../../specifications/scan/detection-generalization/14-sql-calls-redesign.md) and
 [results](../../evaluation/detection-generalization-results/14.md); [specification
-16](../../specifications/detection-generalization/16-package-question.md), draft.
+16](../../specifications/scan/detection-generalization/16-package-question.md), draft.

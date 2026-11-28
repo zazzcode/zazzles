@@ -92,4 +92,4 @@ Before the census, an attribute assigned as `req.body.<name> = …` is left out 
 attributes. That covers a middleware registered for the entry, an earlier matching stage, or a
 top-level statement of the handler before the write. The assignment is cited as `chain_overwrite`
 evidence, and the scanner does not judge where its value comes from.
-[Specification 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)
+[Specification 22](../../../.zazz/specifications/scan/detection-generalization/22-owner-reference-fields.md)

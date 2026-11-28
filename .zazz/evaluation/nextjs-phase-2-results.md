@@ -1,7 +1,7 @@
 # Next.js phase 2 and code/redirect results
 
 **Worktree/branch:** `nextjs-support-phase-2`, based on `3dec124`.
-**Contract:** [combined implementation](../specifications/nextjs-phase-2-and-code-redirect.md).
+**Contract:** [combined implementation](../specifications/scan/nextjs-phase-2-and-code-redirect.md).
 **Date:** 2026-11-16. Session A's published reports remain unchanged.
 
 ## Delivered scope

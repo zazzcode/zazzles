@@ -4,13 +4,13 @@
 repository**: the application source under analysis, distinct from zazzles's own repository. It is a
 proposed semantic design; the current route-v1 artifact is only a syntax inventory. The
 [architecture](README.md) owns pipeline/provider contracts and the
-[implementation contract](../specifications/route-string-validation.md) declares the implemented subset.
+[implementation contract](../specifications/scan/route-string-validation.md) declares the implemented subset.
 
 ## Implementation direction: source index, not a graph store (2026-11-17)
 
 The semantic model below still holds: canonical records, provenance, value and guard facts, and
 bounded traversal. Its storage is now the layered
-[source index](../specifications/architecture-phase-1-source-index.md), not a general graph store.
+[source index](../specifications/scan/architecture-phase-1-source-index.md), not a general graph store.
 
 ### Graph data model: attempted and abandoned
 

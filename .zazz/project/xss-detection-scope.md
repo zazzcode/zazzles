@@ -4,7 +4,7 @@
 delivered in one worktree from `stage` (created after `logger-leak` merged and the project was
 renamed to Zazzles), in the order of [delivery increments](#delivery-increments): backend/API first,
 browser last. This document records scope, targets and rules; the user authorized implementation on 2026-11-01
-under the [implementation contract](../specifications/xss-response.md). When implemented, the product rules move to a root `docs/analysis/` guide, as for
+under the [implementation contract](../specifications/scan/xss-response.md). When implemented, the product rules move to a root `docs/analysis/` guide, as for
 [logging](../../docs/scan/analysis/sensitive-data-logging.md).
 
 ## What the claim means

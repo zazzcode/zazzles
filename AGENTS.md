@@ -19,7 +19,7 @@ in this file apply regardless of which reference sections are loaded.
 
 The [README](README.md) introduces the project; root [user documentation](docs/README.md) owns
 shared guides (`contributing.md`, `technical-approach.md`, `philosophy.md`, `samples/`) and module
-user guides (`docs/scan/`, `docs/fix/`, `docs/probe/`). Product analysis rules and guidelines belong
+user guides (`docs/scan/`, `docs/audit/`, `docs/agent/`, `docs/probe/`). Product analysis rules and guidelines belong
 in [docs/scan/analysis](docs/scan/analysis/README.md), not `.zazz/`. Agents MUST load the matching
 analysis guide when changing scanner evidence or judgment.
 Current assignments, progress, evaluation results, and session restrictions belong in the project

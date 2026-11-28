@@ -16,7 +16,7 @@ Run and curate the comparator using the [Bearer runbook](../../docs/samples/node
 The initial documentation increment added target provenance, case inventory, a reproducible runbook
 and curated result storage. The user subsequently authorized Bearer/current-zazzles comparison,
 a scanner-independent answer key, and sequential XSS implementation with reports after each type.
-The [XSS implementation contract](../specifications/xss-response.md) now owns implementation scope;
+The [XSS implementation contract](../specifications/scan/xss-response.md) now owns implementation scope;
 the [initial results](nodejs-goof-results.md) preserve pre-change observations. Documentation checks
 and the 22-file snapshot verification passed; the valid Bearer run and current scanner outputs are
 saved under `docs/samples/nodejs-goof`. Expected labels and hashes are in the

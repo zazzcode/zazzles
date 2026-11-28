@@ -5,7 +5,7 @@ names are documented in the [implemented architecture](../architecture/README.md
 
 **Reviewed 2026-10-31 on `route-string-validation`, scanner commit `5836908`.** This records initial verification
 and planning. The user subsequently authorized implementation in this worktree; see the
-[current contract](../specifications/route-string-validation.md). The [implementation plan](implementation-plan.md#route-string-validation-delivery-sequence)
+[current contract](../specifications/scan/route-string-validation.md). The [implementation plan](implementation-plan.md#route-string-validation-delivery-sequence)
 owns the next delivery sequence; the [architecture](../architecture/README.md) owns technical contracts.
 
 ## Route verification

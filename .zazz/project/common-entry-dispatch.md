@@ -14,7 +14,7 @@ Language adapters supply their own binding and flow evidence; adding gRPC or the
 does not itself implement support for another source language.
 
 The [architecture proposal](../architecture/common-entry-dispatch.md) and
-[eight-deliverable specification set](../specifications/common-entry-dispatch.md) refine this
+[eight-deliverable specification set](../specifications/scan/common-entry-dispatch.md) refine this
 brief as of 2026-11-03. They retain HTTP/sample compatibility, make browser events explicit,
 and prioritize Node.js GraphQL before gRPC. The user-built GraphQL application is a later
 evaluation; source-only fixtures support initial adapter acceptance. Deliverables1–7 have implementation evidence in their contracts; deliverable8 remains incomplete until mandatory visual acceptance passes.

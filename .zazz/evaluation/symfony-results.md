@@ -211,7 +211,7 @@ carries the loop gap of that action.
 
 ## Application-security lane, branch 1
 
-[Branch 1](../specifications/symfony-more-analyzers-1.md) adds the `exposure` and
+[Branch 1](../specifications/scan/symfony-more-analyzers-1.md) adds the `exposure` and
 `mass-assignment` families and the security-field census. The sample was at its pin and clean,
 including ignored files, before and after every scan.
 
@@ -312,7 +312,7 @@ or a required control.
 
 ## Branch 3 judged runs
 
-[Branch 3](../specifications/symfony-more-analyzers-3.md) adds the `account` family and
+[Branch 3](../specifications/scan/symfony-more-analyzers-3.md) adds the `account` family and
 carries the branch 2 authorization residual (§11.1). Provider OpenAI `gpt-6-luna`, default
 candidate limit, `JUDGE_RPM=4500`, `JUDGE_TPM=1800000`, only the provider key passed. The
 sample stayed at `086f81f941501bd1170b249e01107ba99beb2962` and `git status --porcelain --ignored`

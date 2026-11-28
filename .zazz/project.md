@@ -6,12 +6,16 @@ to the detailed documents and defines their responsibilities.
 
 ## Purpose
 
-Zazzles supports application and endpoint security through the Scan, Fix and Probe modules.
-Scan analyzes application source and is the current development focus. Fix will provide agent
-skills, remediation standards and playbooks for findings from Zazzles or other tools. Probe
-will assess externally observable issues on authorized endpoints and recommend repairs.
+Zazzles supports application and endpoint security through the Code Scan, Dependency Audit,
+Zazzles Agent and Endpoint Probe modules. Scan analyzes application source and is the current
+development focus. Dependency Audit (`audit/`) comes next: it runs the project's own package-manager
+audit and reports known-vulnerable dependencies. Zazzles Agent (`agent/`, previously planned as Fix)
+will provide agent skills, playbooks and guides for remediating findings from Zazzles reports or
+other tools. Probe will assess externally observable issues on authorized endpoints and recommend
+repairs.
 
-Fix is expected to come before Probe. Users can apply Fix to an existing finding with enough
+Zazzles Agent is expected after Dependency Audit and before Probe. Users can apply it to an existing
+finding with enough
 evidence to identify and verify a repair. Findings retain their provenance for human review.
 [Module overview](../README.md#modules) · [Delivery priorities](project/implementation-plan.md#delivery-priorities)
 
@@ -52,8 +56,8 @@ in the [project overview](../README.md#modules).
 | --- | --- | --- |
 | Scan | Source-code security vulnerabilities and controls | Bounded JS/TS/Python support, also emitting existing validation and construction-practice findings |
 | Inspect | Correctness, maintainability, hygiene and defined engineering standards | Planned capability with existing quality-related checks as its foundation |
-| Audit | Dependency vulnerabilities and advisory evidence | Planned ecosystem-tool integration |
-| Fix | Evidence-backed repairs from Scan, Inspect and Audit, followed by verification | Planned agent workflow and orchestration |
+| Audit | Dependency vulnerabilities and advisory evidence | Planned as the Dependency Audit module (`audit/`), next up |
+| Fix | Evidence-backed repairs from Scan, Inspect and Audit, followed by verification | Planned as the Zazzles Agent module (`agent/`), after Dependency Audit |
 
 These are product boundaries, not a commitment to four CLI commands or separate engines. Inspect
 will use shared analysis models, evidence, judgment and reporting infrastructure. Current findings

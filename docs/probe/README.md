@@ -2,7 +2,7 @@
 
 [Zazzles documentation](../README.md) · [Endpoint Probe module](../../probe/README.md) · [Project introduction](../../README.md)
 
-**Status:** Planned (expected after [Fix](../fix/README.md)).
+**Status:** Planned (expected after [Zazzles Agent](../agent/README.md)).
 
 **Endpoint Probe** (`probe/`) is the planned Zazzles module for checking externally observable
 security settings on authorized endpoints (similar to TLS and certificate scanners such as Nuclei)
@@ -22,5 +22,6 @@ and pairing each observation with evidence and remediation guidance.
 
 - [Endpoint Probe module landing page](../../probe/README.md)
 - [Code Scan user documentation](../scan/README.md)
-- [Fix user documentation](../fix/README.md)
+- [Dependency Audit user documentation](../audit/README.md)
+- [Zazzles Agent user documentation](../agent/README.md)
 - [Implementation plan](../../.zazz/project/implementation-plan.md#product-goals-and-capability-boundaries)

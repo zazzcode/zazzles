@@ -112,11 +112,20 @@ judgment to the decision model under the same evidence gates.
 
 The [project goals](../project.md#four-product-capabilities) and
 [module boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries)
-organize Zazzles into three top-level modules under one Go module: **Scan** (`scan/`), **Fix**
-(`fix/`), and **Probe** (`probe/`). The architecture below describes the current bounded Scan engine.
-Scan analyzes source for vulnerabilities, evidence gaps, and code smells or poor coding practices
-that can impact security or performance. Fix and Probe are planned modules with landing directories
-and user docs under `docs/fix/` and `docs/probe/`.
+organize Zazzles into four top-level modules under one Go module: **Scan** (`scan/`), **Dependency
+Audit** (`audit/`), **Zazzles Agent** (`agent/`) and **Probe** (`probe/`). The architecture below
+describes the current bounded Scan engine. Scan analyzes source for vulnerabilities, evidence gaps,
+and code smells or poor coding practices that can impact security or performance. Audit, Agent and
+Probe are planned modules with landing directories and user docs under `docs/audit/`, `docs/agent/`
+and `docs/probe/`.
+
+Scan, Audit and Probe produce findings; Agent consumes them. Audit is a separate pure-Go program
+(`audit/cmd/audit`, built with `CGO_ENABLED=0`) that runs the target's own package-manager audit and
+writes a versioned findings file (`zazzles.audit/v1`) and an HTML report; it imports nothing from
+`scan/` ([SCA design](sca-design.md), [specifications](../specifications/audit/README.md)).
+Agent is mostly Markdown installed into a target repository, plus a small pure-Go installer, and
+reads the producers' JSON files rather than their code. Each module's findings JSON is its contract
+with Agent.
 
 Scan and future Inspect can share static models, source evidence, semantic judgment and completeness
 policy while retaining claim-specific requirements. Audit retains independent dependency/advisory

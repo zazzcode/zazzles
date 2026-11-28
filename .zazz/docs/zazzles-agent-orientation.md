@@ -12,7 +12,7 @@ capabilities live in the [implementation plan](../project/implementation-plan.md
 
 | Section | Consult for |
 | --- | --- |
-| [Code structure](#code-structure) | Top-level module layout (`scan/`, `fix/`, `probe/`) and links to package maps |
+| [Code structure](#code-structure) | Top-level module layout (`scan/`, `audit/`, `agent/`, `probe/`) and links to package maps |
 | [Portable workspace and DEV_ROOT](#portable-workspace-and-dev_root) | Resolving local checkout and sample paths |
 | [Branches and worktrees](#branches-and-worktrees) | Worktree operational guides and `_test-findings/` output location |
 | [Working protocol](#working-protocol) | Pointers to execution, verification, and PR guides |
@@ -22,13 +22,14 @@ capabilities live in the [implementation plan](../project/implementation-plan.md
 
 ## Code structure
 
-Zazzles is organized into three top-level module directories — **Code Scan** (`scan/`), **Fix**
-(`fix/`), and **Endpoint Probe** (`probe/`) — under one root Go module (`go.mod` / `go.sum`). This
+Zazzles is organized into four top-level module directories — **Code Scan** (`scan/`),
+**Dependency Audit** (`audit/`, planned), **Zazzles Agent** (`agent/`, planned), and **Endpoint
+Probe** (`probe/`) — under one root Go module (`go.mod` / `go.sum`). This
 keeps dependency management, root builds, CI, and shared docs unified while giving each module its
 own top-level home and enforcing the Code Scan package boundary with Go's `scan/internal/` rule.
 The canonical CLI builds from `scan/cmd/scan/`, root `cmd/scan/` remains a thin compatibility
 entry point, and both delegate to `scan/cli.Run`. User docs mirror the modules under `docs/scan/`,
-`docs/fix/`, and `docs/probe/`, with shared guides and sample reports in root `docs/`.
+`docs/audit/`, `docs/agent/`, and `docs/probe/`, with shared guides and sample reports in root `docs/`.
 
 Package-level responsibilities and rules live in their owning docs:
 
@@ -112,7 +113,7 @@ For general startup, worktree, spec, and PR tasks, see the
 | Architecture & package map | [Architecture README](../architecture/README.md), [request size and relevance](../architecture/request-size-and-evidence-relevance.md) |
 | Product analysis rules | [Analysis rules index](../../docs/scan/analysis/README.md) |
 | Symfony analysis | [User guide](../../docs/scan/symfony-support.md), [implementation contract](../specifications/php-symfony-support.md), [application-security lane](../specifications/symfony-more-analyzers.md), [configuration design](../architecture/configuration-analysis.md), [evaluation results](../evaluation/symfony-results.md) |
-| User docs by module | [User docs index](../../docs/README.md): [Code Scan](../../docs/scan/README.md), [Fix](../../docs/fix/README.md), [Endpoint Probe](../../docs/probe/README.md) |
+| User docs by module | [User docs index](../../docs/README.md): [Code Scan](../../docs/scan/README.md), [Dependency Audit](../../docs/audit/README.md), [Zazzles Agent](../../docs/agent/README.md), [Endpoint Probe](../../docs/probe/README.md) |
 | Contracts, standards, and process | [Spec index](../specifications/README.md#specification-index), [standards index](../standards/index.yaml), [execution discipline](agent-execution-discipline.md) |
 | Learnings from research and experiments | [Learnings index](../learnings/README.md), by topic; start with a topic's `README.md` |
 | Go language-server tooling for agents | [gopls setup](gopls-setup.md) |

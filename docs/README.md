@@ -1,7 +1,8 @@
 # Zazzles user documentation
 
-Zazzles is organized into three modules under one repository: **Code Scan** (`scan/`, available
-today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
+Zazzles is organized into four modules under one repository: **Code Scan** (`scan/`, available
+today), **Dependency Audit** (`audit/`, planned), **Zazzles Agent** (`agent/`, planned), and
+**Endpoint Probe** (`probe/`, planned).
 
 <a id="table-of-contents"></a>
 
@@ -10,7 +11,8 @@ today), **Fix** (`fix/`, planned), and **Endpoint Probe** (`probe/`, planned).
 | Module | Documentation | What it covers |
 |---|---|---|
 | **Code Scan** | [Code Scan user documentation](scan/README.md) | Setup, decision-model judgment, result interpretation, coverage, and analysis rules |
-| **Fix** | [Fix user documentation](fix/README.md) | Planned agent skills, standards, and playbooks for remediating findings from Zazzles modules and external SAST, dependency audit, DAST, and endpoint probe / TLS & certificate scanners (such as Nuclei) |
+| **Dependency Audit** | [Dependency Audit user documentation](audit/README.md) | Planned known-vulnerable dependency findings from npm, pnpm, pip-audit and Composer audits, with a findings file and an HTML report |
+| **Zazzles Agent** | [Zazzles Agent user documentation](agent/README.md) | Planned skills and playbooks for your coding agent to remediate findings from Zazzles reports and, later, other scanners' SARIF, through reviewed pull requests |
 | **Endpoint Probe** | [Endpoint Probe user documentation](probe/README.md) | Planned authorized endpoint checks starting with TLS and certificates (similar to TLS & certificate scanners such as Nuclei), with remediation guidance |
 
 ## Run and read a scan

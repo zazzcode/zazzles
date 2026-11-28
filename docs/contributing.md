@@ -58,8 +58,8 @@ enforces the Scan package boundary under `scan/internal/`.
 | `scan/internal/report/` | Findings, HTML, JSON, SARIF, and output bundles |
 | `scan/internal/walk/`, `scan/internal/lang/` | Target file inventory and file-extension language registry |
 | `scan/internal/lang*/testdata/`, `scan/internal/pipeline/testdata/` | Small source fixtures and regression repositories (multi-language fixtures in `pipeline`) |
-| `fix/`, `probe/` | Landing directories for planned Fix and Probe modules |
-| `docs/` | Shared user guides (`README.md`, `contributing.md`, `technical-approach.md`, `philosophy.md`), module docs (`docs/scan/`, `docs/fix/`, `docs/probe/`), and curated sample reports (`docs/samples/`) |
+| `audit/`, `agent/`, `probe/` | Landing directories for the planned Dependency Audit, Zazzles Agent and Endpoint Probe modules |
+| `docs/` | Shared user guides (`README.md`, `contributing.md`, `technical-approach.md`, `philosophy.md`), module docs (`docs/scan/`, `docs/audit/`, `docs/agent/`, `docs/probe/`), and curated sample reports (`docs/samples/`) |
 | `.zazz/` | Internal architecture, plans, implementation contracts, and evaluation evidence |
 
 Read the [technical approach](technical-approach.md) for architecture. Load the relevant
@@ -131,9 +131,9 @@ profile; verify that profile before publishing from it.
 
 ## Documentation ownership
 
-The root README introduces the project, modules, and quick start. `scan/`, `fix/`, and `probe/`
-hold module landing READMEs. `docs/` owns shared user guides (`README.md`, `contributing.md`,
-`technical-approach.md`, `philosophy.md`), module user guides (`docs/scan/`, `docs/fix/`,
-`docs/probe/`), and curated sample reports (`docs/samples/`). `.zazz/` owns internal architecture,
+The root README introduces the project, modules, and quick start. `scan/`, `audit/`, `agent/`, and
+`probe/` hold module landing READMEs. `docs/` owns shared user guides (`README.md`, `contributing.md`,
+`technical-approach.md`, `philosophy.md`), module user guides (`docs/scan/`, `docs/audit/`,
+`docs/agent/`, `docs/probe/`), and curated sample reports (`docs/samples/`). `.zazz/` owns internal architecture,
 project plans, specifications, evaluation records, and process standards. Keep each topic in its
 owning guide and link to it rather than repeating a detailed implementation ledger in the README.

@@ -112,7 +112,9 @@ summary; it does not change a project's status or the exit code.
 
 An NVD API key is read only from the `NVD_API_KEY` environment variable, sent only in the request's
 `apiKey` header, and never printed, logged, cached or written to any output file. There is no flag
-for it.
+for it, and `audit` does not open `.env` itself. Locally the key lives in the Git-ignored `.env`,
+which the user loads into the shell as for Code Scan; the tracked `.env.sample` lists `NVD_API_KEY=`
+with an empty value, and an empty value means no key. In CI it comes from a secret.
 
 ### INVARIANT 6 — Third-party text is data
 
@@ -140,7 +142,7 @@ Code changes live under `audit/`. Documentation changes are limited to the files
 | `audit/internal/report/` | Modified | Enriched advisory rows, the risk ordering, the summary's known-exploited and EPSS lines |
 | `audit/cli/` (`enrich.go`, `run.go`, `ingest.go`, tests) | New / Modified | `audit enrich`; `--offline`, `--sources`, `--max-age` on `run`, `ingest` and `enrich` |
 | `audit/testdata/enrich/` | New | Captured responses from each source and golden files |
-| `docs/audit/advisory-sources.md` | New | What each source adds, what is sent, rate limits, the NVD key, offline use |
+| `docs/audit/advisory-sources.md` | New | What each source adds, what is sent, rate limits, offline use; links to the NVD key setup in `docs/audit/README.md` |
 | `docs/audit/README.md`, `docs/audit/findings-schema.md` | Modified | The enrichment fields and the risk ordering |
 | `.zazz/project/implementation-plan.md`, `.zazz/specifications/spec-index.md`, `.zazz/specifications/audit/README.md` | Modified | State |
 
@@ -281,7 +283,8 @@ As [01 §5](01-node.md#5-agent-implementation-rules), with these changes:
   are not retried; a fourth transient failure gives `failed`. Verified by `TestNVDPacing` and
   `TestRetryRule`.
 - **AC8 — Key handling.** With `NVD_API_KEY` set, the key reaches the stub only in the `apiKey`
-  header and appears in no output file, cache file, log line or error. Verified by `TestNVDKeyNeverWritten`.
+  header and appears in no output file, cache file, log line or error; with it set to an empty
+  string, no `apiKey` header is sent and the no-key pacing applies. Verified by `TestNVDKeyNeverWritten`.
 - **AC9 — Cache.** A second run within `--max-age` makes no request; `--max-age 0` refetches;
   `audit enrich` on an existing run rewrites the three output files from the cache with no request
   when the cache is fresh. Verified by `TestEnrichCache`.
@@ -414,9 +417,11 @@ check recorded.
 - **OQ-1** — Resolved 2026-11-28: include KEV and EPSS as advisory details when available; CVSS
   severity is the primary measure (D-2, D-3).
 - **OQ-2** — Enrichment on by default (D-4)? Recommended: yes, with `--offline` for air-gapped use.
-- **OQ-3** — Resolved 2026-11-28: the owner registers a free NVD API key and sets `NVD_API_KEY` in
-  their shell and as a CI secret. The owner requests the key from NVD; an agent never creates the
-  account, handles the key's value, or reads it from `.env` (INVARIANT 5).
+- **OQ-3** — Resolved 2026-11-28: the owner requests a free key at
+  `https://nvd.nist.gov/developers/request-an-api-key` and sets `NVD_API_KEY` in the Git-ignored
+  `.env` (listed empty in `.env.sample`) and as a CI secret. The setup steps are in
+  `docs/audit/README.md`. An agent never requests the key, handles its value, or prints `.env`
+  (INVARIANT 5).
 
 ---
 

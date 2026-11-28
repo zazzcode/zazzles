@@ -34,6 +34,30 @@ other tools read, and `report.html`, a standalone report you open in a browser.
 
 The command never installs, upgrades or fixes a dependency, and never changes your files.
 
+## Setup: NVD API key
+
+Dependency Audit looks up each CVE in NIST's National Vulnerability Database (NVD). NVD works
+without a key but allows only about 5 requests every 30 seconds, so a project with 70 CVEs takes
+about 7 minutes. With a free key it allows about 50, and the same project takes under a minute.
+
+1. Request a key at [nvd.nist.gov/developers/request-an-api-key](https://nvd.nist.gov/developers/request-an-api-key).
+   NVD emails it to you.
+2. Put it in your Git-ignored `.env`, the same file Code Scan uses. The tracked
+   [.env.sample](../../.env.sample) lists the setting with an empty value:
+
+   ```text
+   NVD_API_KEY=your-key
+   ```
+
+3. Load `.env` into your shell before running `audit`, as for `scan`: `set -a; . ./.env; set +a`,
+   or use [direnv](https://direnv.net) with the tracked `.envrc`. `audit` reads the environment
+   variable and does not open `.env` itself.
+4. In CI, store the key as a secret (on GitHub, a repository or organization secret) and pass it to
+   the job as the `NVD_API_KEY` environment variable.
+
+`audit` sends the key only to NVD, in the request header, and never prints it or writes it to a
+report, cache or log. Never commit `.env`.
+
 ## Related documentation
 
 - [Dependency Audit module landing page](../../audit/README.md)

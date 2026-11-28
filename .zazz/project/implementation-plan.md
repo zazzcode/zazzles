@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Reconciled: 2026-11-27.** This document owns the functionality roadmap. **Implemented** means
+**Reconciled: 2026-11-28.** This document owns the functionality roadmap. **Implemented** means
 bounded code and verification exist on `stage` (through PR #56) or in the named draft PR; it does
 not mean complete ecosystem coverage or a released version. Contracts and evaluation records own
 detailed acceptance evidence. This roadmap does not authorize implementation or live model calls.
@@ -10,10 +10,12 @@ detailed acceptance evidence. This roadmap does not authorize implementation or 
 | Module | Function | State |
 |---|---|---|
 | [**Code Scan**](../../scan/README.md) (`scan/`) | Assess source-code vulnerabilities, controls, evidence gaps, and code smells or poor coding practices that can impact security or performance | Implemented for bounded JavaScript, TypeScript, Python, and PHP cases |
-| [**Fix**](../../fix/README.md) (`fix/`) | Agent skills, remediation standards, and playbooks for findings from Zazzles modules and external scanners (SAST, dependency audit, DAST, and endpoint probe / TLS & certificate scanners such as Nuclei) | Planned, expected before Endpoint Probe |
+| **Dependency Audit** (`audit/`, planned) | Run the target's own package-manager audit (`npm audit`, `pnpm audit`, `pip-audit`, `composer audit`), add advisory detail from OSV, label production and development-only dependencies, and write a findings file and an HTML report. A second pure-Go command beside `scan` | Planned, next up order 2. [SCA design](../architecture/sca-design.md) |
+| **Zazzles Agent** ([`fix/`](../../fix/README.md) today, to become `agent/`) | Skills, playbooks, guides and agent definitions installed into a target repository. The user's coding agent reads Zazzles reports, checks reachability, writes tests before changing code, and opens reviewable PRs for remediation | Planned, next up order 3; reads Dependency Audit reports first, then Code Scan |
 | [**Endpoint Probe**](../../probe/README.md) (`probe/`) | Check authorized endpoints for externally observable issues, starting with TLS and certificates, with evidence and remediation guidance | Planned |
 
-These modules can work independently or in combination. Fix accepts finding details even when
+These modules can work independently or in combination. Code Scan, Dependency Audit and Endpoint
+Probe produce findings; Zazzles Agent consumes them, and later accepts other scanners' SARIF when
 another tool performed the assessment. [Project overview](../../README.md#modules)
 
 The [repository layout contract](../specifications/scan-fix-probe-repository-layout.md) moved
@@ -47,11 +49,13 @@ PR #52). [Series index](../specifications/detection-generalization/README.md) ·
 ## Delivery priorities
 
 1. Continue work on Code Scan and its evidence, coverage, and reporting.
-2. Build Fix with remediation skills, standards, playbooks, verification, and reviewable changes.
-3. Build Endpoint Probe, starting with TLS and certificate findings on authorized endpoints.
+2. Build Dependency Audit: the `audit` command, its findings file and its report (owner, 2026-11-28).
+3. Build Zazzles Agent to remediate from Dependency Audit reports, with tests before changes and
+   reviewable PRs; Code Scan reports follow.
+4. Build Endpoint Probe, starting with TLS and certificate findings on authorized endpoints.
 
-The detailed roadmap below also tracks longer-term proposals (Inspect, dependency audit, etc.).
-Proposed features need bounded contracts before implementation.
+The detailed roadmap below also tracks longer-term proposals (Inspect, etc.). Proposed features
+need bounded contracts before implementation.
 
 <a id="supported-capability-checklist"></a>
 <a id="complete-delivery-list"></a>
@@ -102,10 +106,11 @@ Prototype pollution walk start PR #36) are merged into `stage`.
 | 1 | **Detection generalization** | The [generalization direction](#detection-generalization-direction). Merged: spec 17 ([PR #52](https://github.com/zazzcode/zazzles/pull/52)), spec 19 ([PR #54](https://github.com/zazzcode/zazzles/pull/54)) and spec 21 ([PR #56](https://github.com/zazzcode/zazzles/pull/56)); spec 20 ([PR #55](https://github.com/zazzcode/zazzles/pull/55)) was closed unmerged. Specs 22 (owner references in the mass-assignment census) and 23 (source references into a listed directory) are implemented and measured on `docs-cleanup`, unmerged: Gemini now finds all 41 rows of Code Scan's Juice Shop key and 45 of 75 in the comparison, as `gpt-6-luna` does. Held-out runs are no longer required (owner, 2026-11-27). Next: a held-out application with an uncontracted driver, then the remaining specs in the [series order](../specifications/detection-generalization/README.md). |
 | Done | **Detection generalization 19: database package operations** | Merged ([PR #54](https://github.com/zazzcode/zazzles/pull/54)). A native MongoDB driver call (npm `mongodb`) that receives request data becomes a NoSQL record, found by following its receiver back to the package import, with no list of driver methods or client forms. Recording is met: 57 of 57 vulnerable lab routes; NodeGoat goes from 1 entry to 20. Judged precision on the lab is 93% with Gemini and 75% with gpt-6-luna against the series bar of 95%. [Specification](../specifications/detection-generalization/19-database-package-operations.md), [results](../evaluation/detection-generalization-results/19.md), [learnings](../learnings/detection-generalization/README.md) |
 | Done | **Unsafe deserialization analyzer (CWE-502)** | **Merged into `stage` ([PR #38](https://github.com/zazzcode/zazzles/pull/38)).** [Contract](../specifications/unsafe-deserialization.md) and [verification status](../evaluation/deserialization-results.md). The `deserialization` family for Python `pickle`, PyYAML and `jsonpickle`, PHP `unserialize` and Symfony `Yaml::parse`, Node `node-serialize`, `funcster` and `js-yaml`. No prerequisite; the `vuln-symfony` row stays blocked on order 1 and is not part of the deliverable |
-| 3 | **npm library RCE scanning** | Architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on existing command and code analyzers), then compile-to-JS sinks and library prototype pollution per the [waypoints below](#before-library-scanning) |
-| 4 | **Fix module (agent skills, standards, playbooks & external findings import)** | Remediation skills, standards, and playbooks for findings from Zazzles modules and external SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
+| 2 | **Dependency Audit module** | Owner un-deferred and placed first among new modules, 2026-11-28. A pure-Go `audit` command under `audit/`: runs the target's installed audit tool for all and production dependencies, never installs or upgrades, normalizes the output into one findings file, adds advisory detail (CVE aliases, CWE, CVSS vector, fix commit) from OSV with NVD optional, and writes an HTML report in the Code Scan style. Four contracts in order: npm and pnpm first (also adds the module pages), then pip-audit and Composer, then advisory enrichment, then docs and release. `vuln-nextjs`'s committed audit snapshot is the first answer key. [SCA design](../architecture/sca-design.md) |
+| 3 | **Zazzles Agent (replaces Fix)** | Starts once the first Dependency Audit contract has merged and its findings schema is fixed. Reads Audit findings JSON (Code Scan JSON next; other scanners' SARIF later), labels reachability of the affected functions, plans PRs as batched small bumps, one bump per PR, or a bump with the refactoring it forces, and writes tests on the current version before changing code. Asks the committer at fixed checkpoints and records the answers in the plan. Installs under `.zazzles/` in the target, with entry files for the agent tools it detects. Its shipped Markdown is linted in full for prompt injection. [Workflow direction](user-agent-skills.md) |
+| 4 | **npm library RCE scanning** | Architecture [phase 7](../specifications/architecture-phase-7-npm-corpus.md) (corpus and direct-model baseline) and [phase 8](../specifications/architecture-phase-8-npm-library-mode.md) (library mode on existing command and code analyzers), then compile-to-JS sinks and library prototype pollution per the [waypoints below](#before-library-scanning) |
 | 5 | **Endpoint Probe module** | Authorized read-only endpoint checks starting with TLS versions, certificates, and trust chains, with remediation guidance |
-| Deferred | **XXE; SCA / dependency Audit** | Owner deferred, 2026-11-16 |
+| Deferred | **XXE** | Owner deferred, 2026-11-16. Dependency Audit, deferred on the same date, is now order 2 |
 
 <a id="symfony-application-security-lane"></a>
 
@@ -143,8 +148,8 @@ reproducible at the pin, and committed secrets left to the planned secret-scanni
 | W6 | **Library judge contract**: parameter-trust question, caller-argument protocol, feasibility consumer | **Not written** | After W4 reports candidates per library | Paid library judgment |
 | W7 | **Code-execution sinks for libraries**: compile-to-JS, deserialization-to-code, dynamic `require` | **Not written** | After W4; reuse Node contracts of [unsafe deserialization](../specifications/unsafe-deserialization.md) | `ejs`, `pug`, `lodash`, `ajv`, `node-serialize` |
 
-Orders 1 and 2 (Symfony, unsafe deserialization) are not prerequisites for W2–W4 and may run
-beside them.
+The Symfony lane and unsafe deserialization (both merged) were not prerequisites for W2–W4.
+Dependency Audit and Zazzles Agent (orders 2 and 3) are not prerequisites either.
 
 <a id="future-capability-branches"></a>
 <a id="ordered-specification-backlog"></a>
@@ -167,13 +172,14 @@ approved implementation assignments.
 | **Secret scanning** | Distinguish private material from public keys, placeholders, and test data. The Symfony lane leaves committed `.env` secrets to this item |
 | **Stronger claim evidence** | Improve remaining unresolved helper, guard, dispatch, and API cases within explicit analysis bounds; [targeted direction](analysis-certainty-improvements.md) |
 | **Independent Findings Review** | Separate review conclusions, disagreements, evidence, and completion state; distinct from the current Review category |
-| **Fix & external finding imports** | Next up order 4: agent remediation skills, standards, playbooks, and provenance-preserving import from SAST, dependency audit, DAST, and endpoint probe scanners; [workflow proposal](user-agent-skills.md) |
+| **Dependency Audit** | Next up order 2. Yarn, Poetry and uv as first-class inputs, other ecosystems, and SARIF output stay later; [SCA design](../architecture/sca-design.md) |
+| **Zazzles Agent & external finding imports** | Next up order 3 for Dependency Audit findings. Code Scan findings, other scanners' SARIF (SAST, DAST, endpoint probes), a test-setup skill for projects with no tests, and a skill for deprecated APIs with no advisory stay later; [workflow direction](user-agent-skills.md) |
 | **Endpoint Probe** | Next up order 5: authorized read-only endpoint checks starting with TLS and certificates, with remediation recommendations |
 | **Inspect workflow** | Select applicable engineering standards and present broader quality/maintainability findings separately from vulnerability claims |
 | **Baselines and incremental analysis** | Stable finding identity, invalidation, comparison, and explicit severity gates |
 | **Public analysis packs and standards** | Public pack loading and user-selected standards; embedded components do not imply an executable plugin system |
 | **Additional acquisition and languages** | Queue inputs and further source-language/framework adapters under separate contracts |
-| **XXE; Dependency Audit (SCA)** | Deferred by the owner (2026-11-16); [SCA design](../architecture/sca-design.md) |
+| **XXE** | Deferred by the owner (2026-11-16) |
 | **External generalization evaluation** | Bounded checks on fresh applications against source-reviewed expectations |
 
 ### Deferred analysis boundaries

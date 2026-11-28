@@ -1,6 +1,6 @@
 # vuln-demo-app: source-reviewed XSS and SQL reference
 
-[XSS hardening contract](../specifications/xss-hardening.md) · [Matrix](xss-hardening/matrix.json)
+[XSS hardening contract](../specifications/scan/xss-hardening.md) · [Matrix](xss-hardening/matrix.json)
 
 Reviewed 2026-11-07 at `d27b35bdd2d599f1f79dace71d5272215df04423`; `server.js` SHA-256 `ff4f61acd1037140c697af68ceb223c70f432583e4d2c23d79f852f066a11a31`.
 Labels come from reading `server.js` and the README, before any hardening scan result. The application

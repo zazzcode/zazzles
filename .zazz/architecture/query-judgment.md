@@ -2,7 +2,7 @@
 
 Product-facing [analysis rules](../../docs/scan/analysis/README.md) own the interpretation and refinement
 guidelines. This internal document owns data flow and implementation boundaries. The implementation
-contract is [SQL/NoSQL judgment](../specifications/sql-nosql-judgment.md).
+contract is [SQL/NoSQL judgment](../specifications/scan/sql-nosql-judgment.md).
 
 ## Data flow
 
@@ -109,7 +109,7 @@ measured per model.
 ### SQL statement text records (no driver contract)
 
 A call that no SQL driver contract records is recorded when one of its arguments is SQL statement text and a request,
-stored or session value reaches the call ([specification 21](../specifications/detection-generalization/21-sql-text-records.md)).
+stored or session value reaches the call ([specification 21](../specifications/scan/detection-generalization/21-sql-text-records.md)).
 No driver, package or method is named in scanner code or in the request, so a new driver needs no change.
 
 - **One shared test.** `parse.SQLStatementText` decides whether the pieces an argument evaluates to are statement text

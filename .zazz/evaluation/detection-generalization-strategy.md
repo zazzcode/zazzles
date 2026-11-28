@@ -1,7 +1,7 @@
 # Detection generalization: strategy and architecture options
 
 [Research note](detection-generalization-research.md) · [Series contract and
-index](../specifications/detection-generalization/README.md) · [Architecture](../architecture/README.md)
+index](../specifications/scan/detection-generalization/README.md) · [Architecture](../architecture/README.md)
 
 2026-11-25. Offline only: no scanner change and no paid model call. Scanner source `021bad2`.
 
@@ -65,7 +65,7 @@ Risks. The owner's earlier review proposal rules out "send the file to the model
 missing evidence stays unknown and no requirement is invented. Open questions are less repeatable than
 closed ones: `DELETE /api/BasketItems/:id` moved between Confirmed and Review with no change of evidence. A
 similar idea, one request per entry for validation, is already listed as a later contract in [model-assisted
-resolution](../specifications/model-assisted-evidence-resolution.md#4-scope-and-review-shape).
+resolution](../specifications/scan/model-assisted-evidence-resolution.md#4-scope-and-review-shape).
 
 If tried, its output must be *proposals*: closed choices from the effect table, each citing a source span,
 verified by the scanner, never a finding by itself. `discovery_proposals` is the pattern. That makes H2 a

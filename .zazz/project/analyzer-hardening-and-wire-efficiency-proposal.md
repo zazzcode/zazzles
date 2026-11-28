@@ -1,7 +1,7 @@
 # Analyzer Hardening, Shared Engine Architecture, and Wire-Efficiency Proposal
 
 **Date:** 2026-11-14  
-**Context:** Independent review of the Path Traversal Analyzer ([contract](../specifications/path-traversal.md#1-capability-and-prerequisite), [checkpoint results](../evaluation/path-traversal-results.md#scope-and-outcome)) and cross-cutting audit of the shared parse/catalog/judge/CLI architecture across **Command Injection**, **XSS**, **SQL**, **NoSQL**, **Input Validation**, **Sensitive Data Logging**, and **Outbound Observations**.
+**Context:** Independent review of the Path Traversal Analyzer ([contract](../specifications/scan/path-traversal.md#1-capability-and-prerequisite), [checkpoint results](../evaluation/path-traversal-results.md#scope-and-outcome)) and cross-cutting audit of the shared parse/catalog/judge/CLI architecture across **Command Injection**, **XSS**, **SQL**, **NoSQL**, **Input Validation**, **Sensitive Data Logging**, and **Outbound Observations**.
 
 See [AGENTS.md](../../AGENTS.md#authorization-and-delivery), [architecture](../architecture/README.md#2-pipeline), [agent orientation](../docs/zazzles-agent-orientation.md#documentation-map), [analysis-pack bounds](../architecture/analysis-packs.md#bounds-and-compatibility), and [certainty roadmap](analysis-certainty-improvements.md#prioritized-increments).
 
@@ -11,9 +11,9 @@ See [AGENTS.md](../../AGENTS.md#authorization-and-delivery), [architecture](../a
 
 Confirmed with the Project / Deliverable Owner (2026-11-14):
 
-1. **Implemented & Live-Verified via Bounded Deliverable Specification ([path-traversal-hardening.md](../specifications/path-traversal-hardening.md)):**
+1. **Implemented & Live-Verified via Bounded Deliverable Specification ([path-traversal-hardening.md](../specifications/scan/path-traversal-hardening.md)):**
    Covers **Tier 1 (Straightforward, High-Impact, `[Path-Only]` + shared Python monkey-patch detection)**: soundness, branch-polarity (`PathGuardInverted`), normalization-sensitive substring policy, 5 false-protection closures, guarded `ROOT`/`ALLOWED` excerpt injection, determinism, and file-size splits. Implemented and verified across all 8 sample apps, 78 portable controls, 11 live adversarial controls, and 360 exact replays (`0` non-path use changes).
-2. **Drive Cross-Analyzer Engine & Wire Evolution via This Proposal + Milestone Spec ([analyzer-engine-hardening.md](../specifications/analyzer-engine-hardening.md)):**
+2. **Drive Cross-Analyzer Engine & Wire Evolution via This Proposal + Milestone Spec ([analyzer-engine-hardening.md](../specifications/scan/analyzer-engine-hardening.md)):**
    Covers **Tier 2 (`[All Analyzers]`, `[Command + Path + Validation]`, `[XSS + SQL + NoSQL]`)** architectural improvements. Slice `E1` (`scan-scheduling-and-context-dedupe`) now has a full executable deliverable specification ready to launch after `path-traversal` merges to `stage`, with explicit baseline-compatibility rules for frozen tests (`components-03-outbound.md` O4, `TestOutboundPredecessorRequests`, `TestCommandPredecessorRequests`).
 3. **Explicitly Park Tier 3 (High-Effort, Low/Narrow Impact) as Future Work:**
    Recorded below and in the spec's Out-of-Scope section so contributor agents do not spend engineering time or model budget on low-ROI surface area.
@@ -89,7 +89,7 @@ Auditing `cmd/scan/` and `internal/{parse,analysispacks,judge}/` shows that Comm
 framework contexts whose payloads have different inputs, transfers and invocation facts. The owner
 approved conservative matching with measured results: 260 VulnPy path contexts currently partition
 into 260 signatures. Keep distinct sources and controls separate; no compression ratio justifies
-merging different evidence. The executable [E1 contract](../specifications/analyzer-engine-hardening.md)
+merging different evidence. The executable [E1 contract](../specifications/scan/analyzer-engine-hardening.md)
 owns the normalized provider-payload key. OpenAI Luna is primary; optional RPM/TPM pacing remains local; spending is managed in the model console.
 
 1. **Eligibility & Priority Fix (`cmd/scan/analysis.go`):**
@@ -122,8 +122,8 @@ Batch all prompt-byte changes into **one** coordinated protocol bump (`evidence_
 
 ## 5. Recommended Delivery Sequence
 
-1. **[x] Completed `path-traversal` coverage + `decision-model-limits` + [path-traversal-hardening.md](../specifications/path-traversal-hardening.md) (Tier 1)** — all 8 sample apps (including Juice Shop `unzipper` Zip Slip and both `hbs` layout call sites), shared rate/spend limits, `PathGuardSubstring` normalization policy, `PathGuardInverted` polarity, 5 false-protection closures, `commandTampered` generalization, Python `/p/prefix-boundary` `ROOT` excerpt (`16/16` protected controls), and `python_path*.go` / `path_guard*.go` splits are implemented and live-verified.
-2. **Slice E1 ([analyzer-engine-hardening.md](../specifications/analyzer-engine-hardening.md), Tier 2 `T2-1` — Spec Authored & Ready)** — CLI `--only-family`/`--skip-family`, `--judge-limit` slot fix for XSS/Logging (superseding `components-03-outbound.md` O4's conservative candidate-index counting while preserving `exit 1` incompleteness), and default-on normalized-wire-bundle Context Deduplication (`deduplicated_from` provenance, `Usage == 0` on derived siblings, measured context reuse, zero `request_digest` byte changes).
+1. **[x] Completed `path-traversal` coverage + `decision-model-limits` + [path-traversal-hardening.md](../specifications/scan/path-traversal-hardening.md) (Tier 1)** — all 8 sample apps (including Juice Shop `unzipper` Zip Slip and both `hbs` layout call sites), shared rate/spend limits, `PathGuardSubstring` normalization policy, `PathGuardInverted` polarity, 5 false-protection closures, `commandTampered` generalization, Python `/p/prefix-boundary` `ROOT` excerpt (`16/16` protected controls), and `python_path*.go` / `path_guard*.go` splits are implemented and live-verified.
+2. **Slice E1 ([analyzer-engine-hardening.md](../specifications/scan/analyzer-engine-hardening.md), Tier 2 `T2-1` — Spec Authored & Ready)** — CLI `--only-family`/`--skip-family`, `--judge-limit` slot fix for XSS/Logging (superseding `components-03-outbound.md` O4's conservative candidate-index counting while preserving `exit 1` incompleteness), and default-on normalized-wire-bundle Context Deduplication (`deduplicated_from` provenance, `Usage == 0` on derived siblings, measured context reuse, zero `request_digest` byte changes).
 3. **Slice E2 (`shared-guard-engine`, Tier 2 `T2-3` + `T2-4`)** — unify JS/Python guard polarity + `abort()` termination across Command, Path, and Validation, plus workspace `packageVersion` lookup for Path, XSS, and NoSQL.
 4. **Slice E3 (`wire-bundle-v7`, Tier 2 `T2-2` + `T2-7`)** — single batched wire compaction + `eN` ref fix + `NodeFSContract`/`path_*.md` prose sync + `log-use-v1` catalog migration across all families (updating `TestOutboundPredecessorRequests` and `TestCommandPredecessorRequests` once).
 5. **Slice E4 (`node-middleware-and-url-inputs` / `path-traversal-phase2`, Tier 2 `T2-5`, `T2-6`)** — promote Express chain handlers & `req.path` to XSS/Command/SQL/NoSQL and add FastAPI `FileResponse`/`UploadFile` + `shutil`/`tarfile.extractall`.

@@ -1,6 +1,6 @@
 # Node acquisition and value-fact refactor: verification
 
-[Contract](../specifications/node-http-input-refactor.md) ·
+[Contract](../specifications/scan/node-http-input-refactor.md) ·
 [Public guidance](../../docs/scan/analysis/node-inputs.md)
 
 Implemented in the existing `command-injection` worktree after baseline `63cb126`.

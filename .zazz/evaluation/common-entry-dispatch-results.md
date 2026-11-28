@@ -181,7 +181,7 @@ does not establish universal accuracy, runtime exploitability or independent Fin
 ## D6 — bounded Apollo GraphQL resolvers, 2026-11-04
 
 Implemented against D5 `7fa55e4d8e4055532993eac4073f9d2c25d59b80` in the existing feature
-worktree. The [D6 contract](../specifications/common-entry-dispatch-06-graphql.md) owns acceptance;
+worktree. The [D6 contract](../specifications/scan/common-entry-dispatch-06-graphql.md) owns acceptance;
 D7 has not started. No paid calls, target application execution/modification, new worktree or PR.
 The future GraphQL application remains deferred evaluation.
 
@@ -286,7 +286,7 @@ paths remain limits rather than protection claims. D7 has not started.
 ## D5 — bounded dynamic HTTP registration, 2026-11-04
 
 Implemented in `common-entry-and-dispatch` against predecessor `fe11151bcb0a11102592a805e7d160fa57c303a9`.
-The [D5 contract](../specifications/common-entry-dispatch-05-dynamic-http.md) owns scope and acceptance.
+The [D5 contract](../specifications/scan/common-entry-dispatch-05-dynamic-http.md) owns scope and acceptance.
 At the D5 checkpoint, D6 and additional framework/vulnerability families had not started.
 
 Finite Express literal tables/for-of loops and direct local literal-argument factories now produce

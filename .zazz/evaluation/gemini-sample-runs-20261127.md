@@ -110,8 +110,8 @@ scanned again with OpenAI `gpt-6-luna` on the same build (`81d4731`, run `run-18
 leaves the question open. The lasting fix is source evidence, not a model choice: an owner-reference
 census role from the association contract, and the content of a listed directory. That is scanner
 work for a feature worktree; this session changed no code. Planned in specifications
-[22](../specifications/detection-generalization/22-owner-reference-fields.md) and
-[23](../specifications/detection-generalization/23-listed-directory-references.md), both drafts.
+[22](../specifications/scan/detection-generalization/22-owner-reference-fields.md) and
+[23](../specifications/scan/detection-generalization/23-listed-directory-references.md), both drafts.
 
 <a id="oss-oopssec-store"></a>
 

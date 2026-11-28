@@ -1,6 +1,6 @@
 # XSS hardening: acceptance results
 
-[Contract](../specifications/xss-hardening.md) · [Matrix](xss-hardening/matrix.json) · [Evaluator](xss-hardening/evaluate.py) ·
+[Contract](../specifications/scan/xss-hardening.md) · [Matrix](xss-hardening/matrix.json) · [Evaluator](xss-hardening/evaluate.py) ·
 [Expected versus actual](xss-hardening/final-evaluation.json) · [vuln-demo-app reference](vuln-demo-app-detection-guide.md) ·
 [Public guide](../../docs/scan/analysis/xss.md)
 

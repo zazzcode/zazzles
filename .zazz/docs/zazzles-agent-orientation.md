@@ -112,7 +112,7 @@ For general startup, worktree, spec, and PR tasks, see the
 | Product goals, status, and roadmap | [Implementation plan](../project/implementation-plan.md), [detection capabilities](../../docs/scan/detection-capabilities.md) |
 | Architecture & package map | [Architecture README](../architecture/README.md), [request size and relevance](../architecture/request-size-and-evidence-relevance.md) |
 | Product analysis rules | [Analysis rules index](../../docs/scan/analysis/README.md) |
-| Symfony analysis | [User guide](../../docs/scan/symfony-support.md), [implementation contract](../specifications/php-symfony-support.md), [application-security lane](../specifications/symfony-more-analyzers.md), [configuration design](../architecture/configuration-analysis.md), [evaluation results](../evaluation/symfony-results.md) |
+| Symfony analysis | [User guide](../../docs/scan/symfony-support.md), [implementation contract](../specifications/scan/php-symfony-support.md), [application-security lane](../specifications/scan/symfony-more-analyzers.md), [configuration design](../architecture/configuration-analysis.md), [evaluation results](../evaluation/symfony-results.md) |
 | User docs by module | [User docs index](../../docs/README.md): [Code Scan](../../docs/scan/README.md), [Dependency Audit](../../docs/audit/README.md), [Zazzles Agent](../../docs/agent/README.md), [Endpoint Probe](../../docs/probe/README.md) |
 | Contracts, standards, and process | [Spec index](../specifications/README.md#specification-index), [standards index](../standards/index.yaml), [execution discipline](agent-execution-discipline.md) |
 | Learnings from research and experiments | [Learnings index](../learnings/README.md), by topic; start with a topic's `README.md` |

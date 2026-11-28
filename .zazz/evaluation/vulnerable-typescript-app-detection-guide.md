@@ -8,7 +8,7 @@ The checkout remains unchanged; no target execution, installs or live scanner ca
 
 [Published sample](../../docs/samples/vulnerable-typescript-app/README.md) ·
 [Existing XSS/reference controls](../../docs/samples/vulnerable-typescript-app/xss-answer-key.md) ·
-[Command analyzer contract](../specifications/command-injection.md)
+[Command analyzer contract](../specifications/scan/command-injection.md)
 
 ## Source-backed expected defects and exposure paths
 

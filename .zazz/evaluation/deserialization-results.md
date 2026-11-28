@@ -1,7 +1,7 @@
 # Unsafe deserialization analyzer verification
 
 The scanner implementation was verified at `47513617e694c36e41144ecfc0a324daa997effe` and, after
-the pull request review fixes, at `9e252c2`. The pre-implementation baseline was `04399c6`. The [contract](../specifications/unsafe-deserialization.md)
+the pull request review fixes, at `9e252c2`. The pre-implementation baseline was `04399c6`. The [contract](../specifications/scan/unsafe-deserialization.md)
 defines the acceptance cases.
 
 | Criterion | Evidence |
@@ -20,7 +20,7 @@ defines the acceptance cases.
 ## Review fixes
 
 The two-axis review of the pull request led to the fixes listed in the contract's
-[change log](../specifications/unsafe-deserialization.md#14-implementation-and-review-change-log).
+[change log](../specifications/scan/unsafe-deserialization.md#14-implementation-and-review-change-log).
 At `9e252c2`:
 
 - `gofmt -l cmd scan`, `go build ./...`, `go vet ./...`, `go test ./... -count=1` and

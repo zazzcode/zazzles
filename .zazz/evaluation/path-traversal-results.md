@@ -78,7 +78,7 @@ Recorded cumulative ledger (`_test-findings/path-traversal-ledger.jsonl`):
 - **464 live attempts** (**461 successful**, **3 earlier free-tier HTTP 429 failures**; **0 failures across all paid batches**), plus **at most 1 separately reserved interrupted request** (staying strictly below the 499/500 session ceiling).
 - **6,272,774 recorded input tokens**, **0 output tokens**.
 - Priced entirely at Google's published `$0.10 / 1M` input tokens, all recorded tokens equal **$0.6273** (plus at most `$0.0262` max-context reservation for the 1 interrupted call = **~$0.6535**), well inside both the local `$1.00` evaluation harness guard and the owner's `$10.00` authorization.
-- Product-level per-scan rate and spend controls (`--judge-budget-usd`, `--judge-input-usd-per-million`, `--judge-rpm`, `--judge-tpm`) are implemented in `internal/judge/limits.go` and `cmd/scan/judge_limits.go` under [decision-model-limits.md](../specifications/decision-model-limits.md).
+- Product-level per-scan rate and spend controls (`--judge-budget-usd`, `--judge-input-usd-per-million`, `--judge-rpm`, `--judge-tpm`) are implemented in `internal/judge/limits.go` and `cmd/scan/judge_limits.go` under [decision-model-limits.md](../specifications/scan/decision-model-limits.md).
 
 ## Verification and provenance
 

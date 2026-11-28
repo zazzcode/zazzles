@@ -72,7 +72,7 @@ does not meet this database-identification requirement for future report improve
 ## Native MongoDB driver operations
 
 Draft [PR #54](https://github.com/zazzcode/zazzles/pull/54), not merged.
-[Specification](../../../.zazz/specifications/detection-generalization/19-database-package-operations.md) and
+[Specification](../../../.zazz/specifications/scan/detection-generalization/19-database-package-operations.md) and
 [results](../../../.zazz/evaluation/detection-generalization-results/19.md) own the detail.
 
 - **Recording.** A call is a NoSQL record when a request value reaches it and its receiver or callee
@@ -104,7 +104,7 @@ Draft [PR #54](https://github.com/zazzcode/zazzles/pull/54), not merged.
 
 ## SQL calls with no driver contract
 
-[Specification](../../../.zazz/specifications/detection-generalization/21-sql-text-records.md) owns the detail and the
+[Specification](../../../.zazz/specifications/scan/detection-generalization/21-sql-text-records.md) owns the detail and the
 measurements.
 
 - **Recording.** A call that no driver contract records becomes a SQL record when one argument is SQL statement text

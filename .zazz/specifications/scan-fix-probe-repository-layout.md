@@ -21,7 +21,7 @@ Fix and Probe landing pages for their planned capabilities.
   and documentation. Use the matched `spec-driven` and `doc-check` skills.
 - Read the [implementation plan's module boundaries](../project/implementation-plan.md#product-goals-and-capability-boundaries),
   the [implemented package boundaries](../architecture/README.md#11-implemented-package-boundaries),
-  and the [architecture compatibility baseline](architecture-phase-0-compatibility-baseline.md).
+  and the [architecture compatibility baseline](scan/architecture-phase-0-compatibility-baseline.md).
 - Check [the standards index](../standards/index.yaml) against the final paths. Apply the
   [testing standard](../standards/testing.md#9-evidence-expected-on-a-pr) and
   [draft PR process](../standards/pr-process.md#draft-first-human-merge).

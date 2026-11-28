@@ -1,6 +1,6 @@
 # Prototype pollution walk start results
 
-[Contract](../specifications/pollution-walk-start.md) · [Coverage and known gaps](../../docs/scan/detection-capabilities/prototype-pollution.md)
+[Contract](../specifications/scan/pollution-walk-start.md) · [Coverage and known gaps](../../docs/scan/detection-capabilities/prototype-pollution.md)
 
 ## Probe and policy outcomes
 

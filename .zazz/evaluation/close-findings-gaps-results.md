@@ -1,6 +1,6 @@
 # Close findings gaps — results
 
-Contract: [close-findings-gaps](../specifications/close-findings-gaps.md). Branch
+Contract: [close-findings-gaps](../specifications/scan/close-findings-gaps.md). Branch
 `close-findings-gaps-dvwa`, scanner commits `237596f`..`fdc1148` on `stage` `58e94e7`. Offline runs use no provider key;
 the live check (AC11) is reported at the end.
 

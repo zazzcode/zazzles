@@ -5,7 +5,7 @@ selectors/presenters, explicit browser events, finite dynamic HTTP, Apollo Graph
 gRPC subsets are implemented. [Acceptance evidence and remaining visual review](../evaluation/common-entry-dispatch-results.md#cross-entry-acceptance-2026-11-05)
 distinguish implementation from final milestone completion.
 The [delivery brief](../project/common-entry-dispatch.md#outcome) owns scope;
-the [deliverable contracts](../specifications/common-entry-dispatch.md) own execution.
+the [deliverable contracts](../specifications/scan/common-entry-dispatch.md) own execution.
 
 ## 1. Original problem and migration boundaries
 
@@ -251,7 +251,7 @@ source-reviewed fixtures supply initial acceptance, with application evaluation 
 - Python dynamic HTTP: bounded existing Flask/Blueprint `add_url_rule` and generated
   FastAPI/APIRouter decorators, verified local factory arguments and captured values, and
   finite local-source registry/member selection. The mandatory target is the pinned
-  [VulnPy trace acceptance](../specifications/common-entry-dispatch-05-dynamic-http.md#vulnpy-acceptance-target-and-required-traces),
+  [VulnPy trace acceptance](../specifications/scan/common-entry-dispatch-05-dynamic-http.md#vulnpy-acceptance-target-and-required-traces),
   including imported trigger selection and nested callback/cursor propagation to actual SQL
   sinks and generated raw HTML responses. Derive finite alternatives from parsed local
   declarations and evidenced naming/lookup operations; never execute imports/reflection or
@@ -292,7 +292,7 @@ a generation limit does not discard unrelated supported registrations.
 
 Eight deliverables share the assigned worktree/branch and proposed milestone draft PR
 into `stage`. Each has its own executable specification and green recovery boundary.
-The [delivery index](../specifications/common-entry-dispatch.md#delivery-order)
+The [delivery index](../specifications/scan/common-entry-dispatch.md#delivery-order)
 owns sequencing and usage-window checkpoints; it is not another execution contract.
 
 Capture pre-change source-reviewed HTTP/browser baselines. New adapter fixtures require

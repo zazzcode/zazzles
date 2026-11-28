@@ -1,6 +1,6 @@
 # Analyzer protection and flow inventory (P0)
 
-**Contract:** [analyzer protection and flow coverage](../specifications/analyzer-protection-and-flow-coverage.md).
+**Contract:** [analyzer protection and flow coverage](../specifications/scan/analyzer-protection-and-flow-coverage.md).
 **Baseline:** `stage` at `8d4013d`; offline scans with an unmodified build, no `--judge`, no keys.
 **Date:** 2026-11-16. Two read-only inventory passes (group a: Next.js lab, OopsSec, Commerce;
 group b: vulnerable-typescript-app, nodejs-goof, Juice Shop, vuln-demo-app, VulnPy) were checked

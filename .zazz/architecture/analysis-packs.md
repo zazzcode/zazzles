@@ -31,7 +31,7 @@ about supplied application logic; Go requires complete witnesses and consistent 
 separate `node-route-discovery-v1` protocol selects source-backed binding proposals under an explicit
 additional cap. It is not a security pack or an alternate vulnerability pipeline. The engine checks
 source snapshots and dispatch; unknown suggestions remain provisional coverage. See the
-[Node input contract](../specifications/node-http-input-refactor.md) and
+[Node input contract](../specifications/scan/node-http-input-refactor.md) and
 [public guidance](../../docs/scan/analysis/node-inputs.md).
 
 ## Current implementation status
@@ -44,7 +44,7 @@ and consistency. Outbound observations remain a separate zero-call capability.
 Logging selects only its language Logging and Do not claim sections and retains its
 independent sensitive-content, emission and redaction gates.
 
-The [wire v7 contract](../specifications/wire-bundle-v7.md) coordinates the protocol
+The [wire v7 contract](../specifications/scan/wire-bundle-v7.md) coordinates the protocol
 upgrade and [request-size design](request-size-and-evidence-relevance.md) records
 representation strategies and evidence. General Inspect, public pack loading and
 executable plugins remain future capabilities.
@@ -146,7 +146,7 @@ The small cleanup removes an unreachable XSS protocol fallback, a test-only prod
 and SQL-specific wording in the shared replay error. Full race, vet, build, formatting and docs
 checks passed after cleanup; no source facts, protocols or successful judgments changed.
 
-This records the historical session02 checkpoint. [Session03](../specifications/components-03-outbound.md)
+This records the historical session02 checkpoint. [Session03](../specifications/scan/components-03-outbound.md)
 subsequently implemented observation-only `not_run`, zero model calls and Preview rejection from
 clean `dc309cd`. The [outbound verification](#outbound-observation-verification-2026-11-06) separates
 that eligibility correction from source/report parity and records the changed requested-scan exit.
@@ -280,9 +280,9 @@ issue counts and status semantics, including a construction-practice concern bes
 | Outbound observations (supporting future SSRF Analyzer) | Migrated / offline verification passed | Scoped observation components, unchanged source/report projections and Python operand contract; explicit zero-call not_run and incomplete requested scan; no SSRF verdict |
 
 The user revised session grouping on 2026-11-05. Implementation order is
-[01 NoSQL plus standalone validation](../specifications/components-01-nosql-validation.md),
-[02 all XSS types including browser](../specifications/components-02-xss.md), then
-[03 outbound observations](../specifications/components-03-outbound.md). Logging remains separate.
+[01 NoSQL plus standalone validation](../specifications/scan/components-01-nosql-validation.md),
+[02 all XSS types including browser](../specifications/scan/components-02-xss.md), then
+[03 outbound observations](../specifications/scan/components-03-outbound.md). Logging remains separate.
 Sessions 01–03 are implemented and offline-verified; human review remains pending.
 XSS uses coordinated server/template, stored and browser/cross-tier checkpoints. The plan tracks
 actual future sequencing; the Command Injection Analyzer is delivered and Harden XSS analyzers is the next unfinished analyzer task.
@@ -382,7 +382,7 @@ The user-requested local branch synchronization was a fast-forward to the alread
 
 ### NoSQL and standalone validation migration verification, 2026-11-05
 
-Second/third consumer migration under the [combined contract](../specifications/components-01-nosql-validation.md),
+Second/third consumer migration under the [combined contract](../specifications/scan/components-01-nosql-validation.md),
 implemented on the accepted (uncommitted) SQL tree recorded in the session run log. On native Go
 1.27.3 darwin/arm64, uncached scoped tests and the full race/vet/build suite pass. Evidence:
 
@@ -604,7 +604,7 @@ namespaced so invocation identity, and therefore every existing candidate ID, is
 bounded transfers, adapter-specific entry models (see the [public guide](../../docs/scan/analysis/command-injection.md)).
 
 **Guard reach (2026-11-20, `command-components-v5`).** A model answer about a guarded path is
-checked against that path's own facts ([contract](../specifications/command-bypass-support.md)):
+checked against that path's own facts ([contract](../specifications/scan/command-bypass-support.md)):
 
 - **One listing, two readers.** `scan/internal/analysispacks/guard_reach.go` holds every character a
   guarded value can hold where the scanner knows it exactly: a PHP `is_numeric`, `ctype_digit` or
@@ -642,4 +642,4 @@ Their Node/Python input components and browser-entry capabilities have family-sp
 so adding these families preserves previously selected component bytes. The decoder retains the
 selected protocol's choices even where question names overlap with SSRF. Operand paths preserve
 control indices through budgeting and wire projection; final decisions require source-established
-binding, origins and claim completeness. See the [implementation contract](../specifications/nextjs-phase-2-and-code-redirect.md).
+binding, origins and claim completeness. See the [implementation contract](../specifications/scan/nextjs-phase-2-and-code-redirect.md).

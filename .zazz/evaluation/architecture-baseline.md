@@ -1,7 +1,7 @@
 # Architecture compatibility baseline: before measurements
 
-[Contract](../specifications/architecture-phase-0-compatibility-baseline.md) ·
-[Plan](../specifications/architecture-update-plan.md)
+[Contract](../specifications/scan/architecture-phase-0-compatibility-baseline.md) ·
+[Plan](../specifications/scan/architecture-update-plan.md)
 
 This record holds the offline "before" cost of a full scan on three pinned samples. Architecture
 phases 1–3 rerun the same command and report their change against these numbers. The byte-level
@@ -207,7 +207,7 @@ Each sample was at its pin with an empty `git status --porcelain --ignored` befo
 
 Summaries apply only at inline-expansion refusals and at the in-repository `unknown_call_result`
 fallthrough, when the callee's summary is closed and every argument it reads is inert
-([spec §8b](../specifications/architecture-phase-1-source-index.md#8b-step-1e-contract-jsts-callable-summaries), D-14).
+([spec §8b](../specifications/scan/architecture-phase-1-source-index.md#8b-step-1e-contract-jsts-callable-summaries), D-14).
 Inline expansion is unchanged wherever it expands.
 
 **Shadow parity (AC2).** `TestSummaryShadowParity` checks every inline expansion against the callee's
@@ -268,7 +268,7 @@ The final juice-shop binary adds the verifier's scope fixes. Its output is byte-
 
 ## Phase 1 step 1F — Python/PHP summaries and PHP resolution inputs (2026-11-18)
 
-Contract: [source index §8c](../specifications/architecture-phase-1-source-index.md#8c-step-1f-contract-pythonphp-summaries-and-php-resolution-inputs).
+Contract: [source index §8c](../specifications/scan/architecture-phase-1-source-index.md#8c-step-1f-contract-pythonphp-summaries-and-php-resolution-inputs).
 Starting HEAD `22f6adc`; contract `dfec39b`. Evaluation was offline with no model calls or
 credentials, new dependencies or sample edits. Samples were clean before/after at the original
 pins: juice-shop `f189f521266f42c6bd05884468292000cee852ed`, vulnpy
@@ -365,7 +365,7 @@ adapters remain outside the supported subset.
 
 ## Phase 1 completion — Finite imports and concrete witnesses (2026-11-18)
 
-Contract [summary completion](../specifications/architecture-phase-1-summary-completion.md),
+Contract [summary completion](../specifications/scan/architecture-phase-1-summary-completion.md),
 committed first as `7119b51`. Implementation `4b01e42`; typed TypeScript end-to-end regression
 `912446a`. The owner rejected deferring the 64 import-related limits and authorized finishing
 phase 1 here. Symfony/Drupal route adapters remain phases 6/9.
@@ -470,7 +470,7 @@ The owner merged PR #24 at `6bf2ca1`; phase 2 has a separate assigned `arch-pipe
 
 ## Phase 2 — pipeline and concurrent language runners (2026-11-18)
 
-[Contract](../specifications/architecture-phase-2-pipeline-runners.md). `internal/pipeline` walks the
+[Contract](../specifications/scan/architecture-phase-2-pipeline-runners.md). `internal/pipeline` walks the
 target once, skips languages with no files, runs the JS/TS, Python and PHP runners concurrently and
 merges them through `parse.Assemble` in the fixed order. There are no listed output deltas:
 `TestArchitectureBaseline` passes against the phase 1 golden with no update.
@@ -588,7 +588,7 @@ no retries, one transient 503 ends the scan. A single retry of 503 responses is 
 
 ### Judge retry and token-based TPM estimate
 
-The follow-up deliverable ([spec](../specifications/judge-transient-retry-and-token-estimate.md))
+The follow-up deliverable ([spec](../specifications/scan/judge-transient-retry-and-token-estimate.md))
 retries HTTP 429, 502, 503 and 504 up to 3 times and a dropped connection once. It also reserves
 `ceil(bytes / 3) + 512` input tokens per request instead of bytes plus 4,096. The estimator was
 checked offline against the 157 live Juice Shop traces of the full N=4 scan above, recorded as

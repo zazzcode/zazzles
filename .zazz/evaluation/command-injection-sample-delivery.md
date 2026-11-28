@@ -1,7 +1,7 @@
 # Command Injection Analyzer: final samples and documentation delivery
 
 This is the artifact-delivery requirement linked by the
-[implementation contract](../specifications/command-injection.md), not a claim of completed scans.
+[implementation contract](../specifications/scan/command-injection.md), not a claim of completed scans.
 
 ## Four full evaluated apps
 

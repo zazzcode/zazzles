@@ -33,8 +33,8 @@ these scanner versions. They are not a general accuracy claim.
 The Gemini column is one full judged scan per application with scanner `81d4731` (`stage`
 through PR #56). The `gpt-6-luna` column is the published run named in each application's
 section, on an earlier scanner, so the two columns differ in model and scanner revision. The Gemini
-Juice Shop run includes the [owner-reference](../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)
-and [listed-directory](../../.zazz/specifications/detection-generalization/23-listed-directory-references.md) changes;
+Juice Shop run includes the [owner-reference](../../.zazz/specifications/scan/detection-generalization/22-owner-reference-fields.md)
+and [listed-directory](../../.zazz/specifications/scan/detection-generalization/23-listed-directory-references.md) changes;
 the same judge found 40 before them. OopsSec and ThreatByte are scored on Code Scan's own key only;
 the `gpt-6-luna` ThreatByte count includes one practice finding.
 

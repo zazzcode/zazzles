@@ -347,7 +347,7 @@ fixtures; real-application evaluation remains deferred. Dynamic schema compositi
 generated gRPC stubs, interceptors and streaming flow remain unsupported.
 The [coverage index](scan/detection-capabilities.md#languages-and-entry-points) lists supported entry
 points. The [common-entry design](../.zazz/architecture/common-entry-dispatch.md) and
-[delivery contract](../.zazz/specifications/common-entry-dispatch.md) describe the detailed boundaries.
+[delivery contract](../.zazz/specifications/scan/common-entry-dispatch.md) describe the detailed boundaries.
 
 The architectural benefit is a common evidence and invocation contract rather than a separate
 security interpretation for every framework. It does not automatically yield deeper analysis,

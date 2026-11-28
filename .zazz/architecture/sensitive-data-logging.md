@@ -2,7 +2,7 @@
 
 Product [analysis rules](../../docs/scan/analysis/sensitive-data-logging.md) own interpretation. This
 internal document owns data flow and boundaries. The contract is
-[sensitive-data logging](../specifications/sensitive-data-logging.md).
+[sensitive-data logging](../specifications/scan/sensitive-data-logging.md).
 
 ## Data flow
 

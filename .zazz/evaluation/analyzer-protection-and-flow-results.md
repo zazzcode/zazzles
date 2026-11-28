@@ -1,7 +1,7 @@
 # Analyzer protection and flow coverage results
 
 **Worktree/branch:** `nextjs-analyzer-protection-flow`, based on `8d4013d` (PR #19).
-**Contract:** [analyzer protection and flow coverage](../specifications/analyzer-protection-and-flow-coverage.md).
+**Contract:** [analyzer protection and flow coverage](../specifications/scan/analyzer-protection-and-flow-coverage.md).
 **Inventory:** [P0 inventory and selection](analyzer-protection-and-flow-inventory.md).
 **Date:** 2026-11-16. Offline measurement plus a capped paid run of 10 requests (see *Paid evaluation*).
 

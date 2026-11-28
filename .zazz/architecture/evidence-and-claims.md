@@ -2,7 +2,7 @@
 
 **Design and bounded implementation, 2026-10-31.** This owns how target source becomes judge evidence
 and claim-scoped results. [Repository graph design](repository-graph.md) owns the full graph; the
-[current contract](../specifications/route-string-validation.md) owns implemented scope and acceptance.
+[current contract](../specifications/scan/route-string-validation.md) owns implemented scope and acceptance.
 
 ## Transport-neutral input and value evidence
 

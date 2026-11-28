@@ -1,6 +1,6 @@
 # Juice Shop and Next.js hardening 1 — results
 
-Branch `juiceshop-nextjs-hardening-1` of the [lane](../specifications/juiceshop-nextjs-hardening-1.md),
+Branch `juiceshop-nextjs-hardening-1` of the [lane](../specifications/scan/juiceshop-nextjs-hardening-1.md),
 draft [PR #48](https://github.com/zazzcode/zazzles/pull/48). Scanner commit of the acceptance
 runs: `97709ad` (the code of the branch; later commits change documents only). Samples: OWASP Juice
 Shop at `f189f521266f42c6bd05884468292000cee852ed`, vuln-nextjs at
@@ -199,7 +199,7 @@ storage engine, `express-fileupload`, and a middleware on a mount with no route 
 ## Hardening 3
 
 Branch `juiceshop-nextjs-hardening-3` of the
-[specification](../specifications/juiceshop-nextjs-hardening-3.md), draft
+[specification](../specifications/scan/juiceshop-nextjs-hardening-3.md), draft
 [PR #50](https://github.com/zazzcode/zazzles/pull/50). Scanner commit of the acceptance runs 5
 and 6: `ee777f4`. Two later commits changed scanner code (the lead review and the code policy),
 and the final Juice Shop run 8 is on `3318e27`. These hashes predate the rebase of the branch

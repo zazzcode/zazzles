@@ -1,6 +1,6 @@
 # Wire bundle v7 verification
 
-[Implementation contract](../specifications/wire-bundle-v7.md) · [Size design](../architecture/request-size-and-evidence-relevance.md)
+[Implementation contract](../specifications/scan/wire-bundle-v7.md) · [Size design](../architecture/request-size-and-evidence-relevance.md)
 
 Offline measurements cover the eight pinned standard apps and each parser fixture as a root.
 Preview includes observation/data-only candidates; the byte tables below count assessed-family requests only.
@@ -140,9 +140,9 @@ prototype. The owner deferred all further paid calibration until the next sessio
 ## S4 and broader W6
 
 E3 continuation, 2026-11-15. Scanner commits `fcd3b0e` (S4 + W6) and `dec3b30` (else-if guard
-links). Contracts: [JavaScript conditional flow](../specifications/javascript-if-flow.md),
-[relevance tier](../specifications/evidence-relevance-tier.md),
-[data-path slicing](../specifications/data-path-slicing.md).
+links). Contracts: [JavaScript conditional flow](../specifications/scan/javascript-if-flow.md),
+[relevance tier](../specifications/scan/evidence-relevance-tier.md),
+[data-path slicing](../specifications/scan/data-path-slicing.md).
 
 ### Offline request deltas (core v7 audit → final)
 

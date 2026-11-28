@@ -15,7 +15,7 @@ documents in this directory (for example the [repository graph](repository-graph
 > index steps cut offline scans from 64.16 s to 9.89 s (OWASP Juice Shop), 7.98 s to 3.49 s (VulnPy)
 > and 1.01 s to 0.61 s (DVWA), with byte-identical findings, reports and model requests. The call
 > index and summaries target the measured call-resolution gaps. See [§3 Source index](#source-index),
-> the [spec](../specifications/architecture-phase-1-source-index.md) and the
+> the [spec](../specifications/scan/architecture-phase-1-source-index.md) and the
 > [measurements](../evaluation/architecture-baseline.md).
 
 ## Analyzer terminology
@@ -252,7 +252,7 @@ Model-assisted discovery is a separate opt-in acquisition phase with its own pro
 The model selects snapshot-bound alternatives; source and dispatch validation belongs to the engine.
 Only independently established bindings are trusted. Unverified proposals remain provisional coverage,
 never synthetic entry/flow edges or vulnerability findings. See [Node input guidance](../../docs/scan/analysis/node-inputs.md)
-and the [implementation contract](../specifications/node-http-input-refactor.md).
+and the [implementation contract](../specifications/scan/node-http-input-refactor.md).
 
 ## 3. Parsing and language adapters
 
@@ -289,7 +289,7 @@ Adapter-specific limits and current case evidence belong in their contracts and 
 ### Source index
 
 Repeated whole-module syntax walks are replaced by per-file indexes that are built once and
-immutable afterwards ([source index spec](../specifications/architecture-phase-1-source-index.md)).
+immutable afterwards ([source index spec](../specifications/scan/architecture-phase-1-source-index.md)).
 
 - **Implemented (JS/TS):** `binding_index.go` is a module's binding write index. It records
   identifier assignment targets, written member paths, aliasing declarations and escaping uses.
@@ -435,7 +435,7 @@ fingerprints. Candidate identities remain independent of model answers and repor
 ### Graph storage decision
 
 **Decided (2026-11-17):** no general graph store. Repository structure is held in the layered
-[source index](../specifications/architecture-phase-1-source-index.md): per-file syntax and binding
+[source index](../specifications/scan/architecture-phase-1-source-index.md): per-file syntax and binding
 indexes, a repository call index with explicit resolution kinds, and per-callable summaries. A typed
 in-memory graph over the entry catalog was implemented and abandoned. It indexed data that was never
 on the hot path and could not change recall; see

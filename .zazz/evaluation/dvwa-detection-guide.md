@@ -1,7 +1,7 @@
 # DVWA: expected source vulnerabilities
 
 [DVWA](https://github.com/digininja/DVWA) is an intentionally vulnerable PHP application and the
-acceptance target of the [PHP support contract](../specifications/php-support.md). Expectations
+acceptance target of the [PHP support contract](../specifications/scan/php-support.md). Expectations
 below derive from source review of the acceptance pin `a1978a2fed195acd093010af6395f86a281537ca`
 and are structural: a required candidate kind with source-attributed evidence at the named sink.
 A candidate is not a verdict; protection on impossible-level controls is decided by assessment.

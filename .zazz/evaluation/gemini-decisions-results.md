@@ -56,6 +56,6 @@ HTTP-stub tests required loopback access outside the execution sandbox.
 
 ## Remaining scope
 
-The separate [path analyzer specification](../specifications/path-traversal.md#1-capability-and-prerequisite)
+The separate [path analyzer specification](../specifications/scan/path-traversal.md#1-capability-and-prerequisite)
 is prepared for a later user-launched implementation session. This provider verification does not
 implement path traversal or authorize broader live sample evaluation.

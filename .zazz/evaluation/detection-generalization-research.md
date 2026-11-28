@@ -1,7 +1,7 @@
 # Detection generalization: where Code Scan's known misses start
 
 [Strategy options](detection-generalization-strategy.md) · [Series of
-specifications](../specifications/detection-generalization/README.md) · [Scanner
+specifications](../specifications/scan/detection-generalization/README.md) · [Scanner
 comparison](../../docs/scan/scanner-comparison.md#what-code-scan-misses) · [Comparison
 rows](juice-shop-comparison-rows.json)
 
@@ -24,7 +24,7 @@ rows](juice-shop-comparison-rows.json)
 4. **Seven rows should be corrected before anyone builds on them** (§2).
 5. **The largest limit is recognition of what is already modelled.** Most ordinary model definitions and SQL
    drivers are not recognized ([strategy §2](detection-generalization-strategy.md#2-evidence)). The
-   [series](../specifications/detection-generalization/README.md) starts there, not with the 13 rows.
+   [series](../specifications/scan/detection-generalization/README.md) starts there, not with the 13 rows.
 
 The 13 rows are not held out any more: the capabilities below were derived after reading them. They are an
 acceptance check. A real held-out test is in §7.
@@ -176,7 +176,7 @@ cookie, origin and digest defaults are *contract* (C).
 ## 6. Effort and ranking
 
 The ranked order, with probability, gain, evidence and risk, is in the [series
-index](../specifications/detection-generalization/README.md#2-ranking). How the capabilities above map to
+index](../specifications/scan/detection-generalization/README.md#2-ranking). How the capabilities above map to
 it:
 
 | Capability | Specification |
@@ -188,7 +188,7 @@ it:
 | E model-resolved calls | 03, for SQL |
 | F credential-change proof | 10 |
 | G response projection | 07 |
-| H client rule, I upload bytes, J file link | None ([reasons](../specifications/detection-generalization/README.md#3-no-specification)) |
+| H client rule, I upload bytes, J file link | None ([reasons](../specifications/scan/detection-generalization/README.md#3-no-specification)) |
 | Not in the first list | 00 operation inventory experiment, 01 storage identity |
 
 Two changes came from measurement after the first draft. Storage identity was added and ranks first. A check
@@ -197,7 +197,7 @@ other Node samples.
 
 ## 7. Evaluation
 
-The [series protocol](../specifications/detection-generalization/contract.md#3-held-out-protocol) is the one
+The [series protocol](../specifications/scan/detection-generalization/contract.md#3-held-out-protocol) is the one
 to follow. Its reasons:
 
 **Held-out applications.** None may be used during development, and no repository document refers to them

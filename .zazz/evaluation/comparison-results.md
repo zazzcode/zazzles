@@ -3,7 +3,7 @@
 **2026-11-24.** How the [scanner comparison](../../docs/scan/scanner-comparison.md) was produced.
 The numbers live in that page and are not repeated here. This record gives the tools, the
 inputs, the counting rules and the commands, so the tables can be reproduced.
-Contract: [hardening lane, branch 2](../specifications/juiceshop-nextjs-hardening-2.md).
+Contract: [hardening lane, branch 2](../specifications/scan/juiceshop-nextjs-hardening-2.md).
 
 ## Documents
 

@@ -1,6 +1,6 @@
 # Learnings: database package operations
 
-2026-11-25 and 2026-11-26, branch `generalized-nosql-detection`. The verdict on each strategy is in the [index](README.md#where-things-stand-what-was-accepted-2026-11-26). [Specification](../../specifications/detection-generalization/19-database-package-operations.md) ·
+2026-11-25 and 2026-11-26, branch `generalized-nosql-detection`. The verdict on each strategy is in the [index](README.md#where-things-stand-what-was-accepted-2026-11-26). [Specification](../../specifications/scan/detection-generalization/19-database-package-operations.md) ·
 [Results](../../evaluation/detection-generalization-results/19.md). Models: openai gpt-6-luna unless Gemini is named; one answer per request.
 All numbers are from the `vuln-nextjs` lab at `aeae20a` (57 vulnerable routes, 71 controls) unless NodeGoat is named. The lab has been
 read by the sessions that built on it, so nothing here is held-out evidence except the NodeGoat lines that say so.

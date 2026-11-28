@@ -2,7 +2,7 @@
 
 **Replay the saved answers through the scanner's own policy, offline.** Serve saved answers from a local stub keyed by the request
 digest. On the four README applications it reproduces 387 of 403 ledger outcomes, and the other 16 are explained. So any arm is
-scored by its policy outcome, free, after one paid answer per record. The [baseline ledger](../../specifications/detection-generalization/contract.md#7-detection-and-false-positive-accuracy-must-not-fall)
+scored by its policy outcome, free, after one paid answer per record. The [baseline ledger](../../specifications/scan/detection-generalization/contract.md#7-detection-and-false-positive-accuracy-must-not-fall)
 is the judge of true and false.
 
 **Rules**
@@ -26,4 +26,4 @@ is the judge of true and false.
 - The key was passed as a process argument in an early probe script; it is now in the environment.
 
 Never use as evidence: forms the implementer wrote, or Juice Shop, vuln-nextjs, vuln-symfony and DVWA, whose records have all been
-used. Held-out applications come from a separate key session ([contract §3](../../specifications/detection-generalization/contract.md#3-held-out-protocol)).
+used. Held-out applications come from a separate key session ([contract §3](../../specifications/scan/detection-generalization/contract.md#3-held-out-protocol)).

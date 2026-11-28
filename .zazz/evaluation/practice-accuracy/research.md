@@ -2,7 +2,7 @@
 
 Research performed 2026-11-16 in `accuracy-false-positive-eval`, baseline
 `cb40f370594948181594b2dbc1b5576157b1ba95` (merged PR #20). This record supports the
-[implementation contract](../../specifications/practice-accuracy-and-false-positive-evaluation.md).
+[implementation contract](../../specifications/scan/practice-accuracy-and-false-positive-evaluation.md).
 It is a measured starting point, not a claim that the proposed corrections have shipped.
 The [implementation results](results.md) record the completed corrections and final verification.
 

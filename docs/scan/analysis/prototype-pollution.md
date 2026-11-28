@@ -132,6 +132,6 @@ example.
 
 A finding states that `Object.prototype` can be written. It makes no statement about what reads
 the polluted property.
-[Implementation contract](../../../.zazz/specifications/prototype-pollution.md),
-[write shapes contract](../../../.zazz/specifications/pollution-write-shapes.md),
-[walk start contract](../../../.zazz/specifications/pollution-walk-start.md).
+[Implementation contract](../../../.zazz/specifications/scan/prototype-pollution.md),
+[write shapes contract](../../../.zazz/specifications/scan/pollution-write-shapes.md),
+[walk start contract](../../../.zazz/specifications/scan/pollution-walk-start.md).

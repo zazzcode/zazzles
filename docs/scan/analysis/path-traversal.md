@@ -143,8 +143,8 @@ operation, rejecting on failure, and decide deliberately how symbolic links are 
 join or resolve call, normalization, a `..` blacklist or a prefix check without a separator. Reports never
 export a verified patch.
 
-See the [path contract](../../../.zazz/specifications/path-traversal.md),
-[Tier-1 hardening contract](../../../.zazz/specifications/path-traversal-hardening.md), and the
+See the [path contract](../../../.zazz/specifications/scan/path-traversal.md),
+[Tier-1 hardening contract](../../../.zazz/specifications/scan/path-traversal-hardening.md), and the
 [acceptance results](../../../.zazz/evaluation/path-traversal-results.md) for the verified matrix and limits.
 
 ## Symfony

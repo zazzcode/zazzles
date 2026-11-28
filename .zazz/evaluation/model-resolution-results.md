@@ -1,6 +1,6 @@
 # Model-assisted evidence resolution: results
 
-[Contract](../specifications/model-assisted-evidence-resolution.md) ·
+[Contract](../specifications/scan/model-assisted-evidence-resolution.md) ·
 [Checker](recall-gap-inventory/check.py) · [Precision baseline](precision-noise-baseline.md)
 
 ## Method

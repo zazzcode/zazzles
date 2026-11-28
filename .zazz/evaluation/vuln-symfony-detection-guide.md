@@ -1,6 +1,6 @@
 # vuln-symfony detection guide
 
-Source reviewed at `086f81f941501bd1170b249e01107ba99beb2962` in the [pinned sample](https://github.com/zazzcode/vuln-symfony/tree/086f81f941501bd1170b249e01107ba99beb2962). Paths are relative to the sample root. See the [Symfony contract](../specifications/php-symfony-support.md) and [measured results](symfony-results.md).
+Source reviewed at `086f81f941501bd1170b249e01107ba99beb2962` in the [pinned sample](https://github.com/zazzcode/vuln-symfony/tree/086f81f941501bd1170b249e01107ba99beb2962). Paths are relative to the sample root. See the [Symfony contract](../specifications/scan/php-symfony-support.md) and [measured results](symfony-results.md).
 
 ## Expected route entries
 
@@ -96,7 +96,7 @@ a control.
 
 ## Application-security lane rows
 
-The [Symfony application-security lane](../specifications/symfony-more-analyzers.md) closes the
+The [Symfony application-security lane](../specifications/scan/symfony-more-analyzers.md) closes the
 README entries that PR #39 left outside Code Scan. Its rows are frozen here and in
 [`cases.json`](recall-gap-inventory/cases.json) by the branch that owns them, and are never
 relabeled.
@@ -120,7 +120,7 @@ relabeled.
 
 ### Branch 1 rows
 
-Owned by [branch 1](../specifications/symfony-more-analyzers-1.md#11-sample-rows-owned-by-this-branch).
+Owned by [branch 1](../specifications/scan/symfony-more-analyzers-1.md#11-sample-rows-owned-by-this-branch).
 `SYM-INFO-01` and `SYM-MASS-01` are required positives with expected status
 `confirmed_vulnerability`.
 
@@ -134,7 +134,7 @@ Owned by [branch 1](../specifications/symfony-more-analyzers-1.md#11-sample-rows
 
 ### Branch 2 rows
 
-Owned by [branch 2](../specifications/symfony-more-analyzers-2.md#11-sample-rows-owned-by-this-branch).
+Owned by [branch 2](../specifications/scan/symfony-more-analyzers-2.md#11-sample-rows-owned-by-this-branch).
 `security.yaml` requires `ROLE_ADMIN` for `^/admin` and `ROLE_USER` for `^/user`
 (`config/packages/security.yaml:35`–`36`). The five positives have expected status
 `confirmed_vulnerability`. `guarded` means a candidate at the anchor carries the stated guard,
@@ -161,7 +161,7 @@ or the entry's recorded roles.
 
 ### Branch 3 rows
 
-Owned by [branch 3](../specifications/symfony-more-analyzers-3.md#11-sample-rows-owned-by-this-branch).
+Owned by [branch 3](../specifications/scan/symfony-more-analyzers-3.md#11-sample-rows-owned-by-this-branch).
 The four positives have expected status `confirmed_vulnerability`. `SYM-ENUM-01` and
 `SYM-HASH-01` list several anchors, and every anchor must have a candidate (`each_anchor`).
 `password_hash_candidate` has no request source, so a candidate at its anchor with no
@@ -180,7 +180,7 @@ completeness blocker meets it.
 
 ### Branch 4 rows
 
-Owned by [branch 4](../specifications/symfony-more-analyzers-4.md#11-sample-rows-owned-by-this-branch).
+Owned by [branch 4](../specifications/scan/symfony-more-analyzers-4.md#11-sample-rows-owned-by-this-branch).
 The five positives have expected status `confirmed_vulnerability`. `configuration_candidate` has no
 request source, so a candidate at its anchor with no completeness blocker meets it. `SYM-CONF-02`
 lists the schedule, the script line and the ownership line in `anchors`. The sink is the schedule

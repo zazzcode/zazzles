@@ -105,7 +105,7 @@ Specifications live in [`audit/`](audit/README.md).
 
 | Order | Specification | Delivers | First committed | State |
 |---:|---|---|---|---|
-| 60 | [Dependency Audit: series index](audit/README.md): [01 npm and pnpm](audit/01-node.md), [02 advisory enrichment](audit/02-enrichment.md), [03 Python](audit/03-python.md), [04 PHP](audit/04-php.md); 05 documentation not written | The `audit` command for npm, pnpm, Python and PHP, advisory detail from OSV, NIST NVD, CISA KEV and EPSS, the `zazzles.audit/v1` findings file and a risk-ordered HTML report | 2026-11-28 | Plan order 2. 01 to 04 drafted, for owner review |
+| 60 | [Dependency Audit: series index](audit/README.md): [01 npm and pnpm](audit/01-node.md), [02 advisory enrichment](audit/02-enrichment.md), [03 Python](audit/03-python.md), [04 PHP](audit/04-php.md); 05 documentation not written | The `audit` command for npm, pnpm, Python and PHP, advisory detail from OSV, NIST NVD, CISA KEV and EPSS, the `zazzles.audit/v1` findings file and an HTML report ordered by CVSS severity, critical and high first | 2026-11-28 | Plan order 2. 01 to 04 drafted, for owner review |
 
 ## 3. Zazzles Agent (`agent/`)
 

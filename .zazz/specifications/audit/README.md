@@ -17,7 +17,7 @@ and 04 each need only 01, so they can also be built side by side.
 | Order | Specification | Delivers | Depends on | State |
 |---:|---|---|---|---|
 | 01 | [npm and pnpm](01-node.md) | `audit run`, `audit ingest`, `audit report`, `audit tools`; npm and pnpm readers; the `zazzles.audit/v1` findings file; the HTML report | none | Drafted 2026-11-28 |
-| 02 | [Advisory enrichment](02-enrichment.md) | OSV, NIST NVD, CISA KEV and FIRST EPSS for every advisory; severities by source, plain-language CVSS, known-exploited flags, exploitation likelihood, fix commits; risk-ordered report; `audit enrich`, `--offline`, a cache | 01 | Drafted 2026-11-28 |
+| 02 | [Advisory enrichment](02-enrichment.md) | OSV, NIST NVD, CISA KEV and FIRST EPSS for every advisory; severities by source, plain-language CVSS, known-exploited flags, exploitation likelihood, fix commits; report ordered by CVSS severity, critical and high first; `audit enrich`, `--offline`, a cache | 01 | Drafted 2026-11-28 |
 | 03 | [Python](03-python.md) | `pip-audit` on pinned requirements files only, with no resolving or building; development scope from file names and includes | 01 | Drafted 2026-11-28. Needs `pip-audit` installed |
 | 04 | [PHP](04-php.md) | `composer audit` on `composer.lock` with plugins off; development split from the lockfile; abandoned packages | 01 | Drafted 2026-11-28. Needs `composer` installed |
 | 05 | Documentation and sample report | The rest of `docs/audit/`, including a CI guide with a tested GitHub Actions workflow, and a published sample report of `vuln-nextjs` | 02, 03, 04 | Not written |

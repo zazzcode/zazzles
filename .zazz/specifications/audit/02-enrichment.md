@@ -38,10 +38,11 @@ the audit, `audit` now looks up every advisory in four public sources and adds w
 | CISA KEV (`www.cisa.gov`) | Whether the flaw is in the Known Exploited Vulnerabilities catalog, with the date added, the remediation due date, known ransomware use and the required action | CVE ID, matched against one downloaded catalog |
 | FIRST EPSS (`api.first.org`) | The probability of exploitation in the next 30 days and its percentile | CVE ID |
 
-Each source's answer is stored beside the audit tool's facts, never merged into them. The report
-shows every source's severity side by side, breaks the CVSS vector into plain terms, flags known
-exploited flaws, and orders findings by real-world risk: known exploited first, then EPSS, then the
-highest CVSS score, then the tool's severity. Results are cached in the run directory, `--offline`
+Each source's answer is stored beside the audit tool's facts, never merged into them. CVSS
+severity is the primary measure: the report orders findings by CVSS score, with NIST's score first,
+shows every source's severity side by side, and breaks the CVSS vector into plain terms. Each
+advisory's details add, when available, a "Known exploited" flag from KEV and the EPSS likelihood;
+these also break ties between equal scores. Results are cached in the run directory, `--offline`
 makes no request at all, and `audit enrich` refreshes an existing run.
 
 ---
@@ -146,7 +147,7 @@ Code changes live under `audit/`. Documentation changes are limited to the files
 ### Out Of Scope
 
 - Any other source (GitHub's advisory API, vendor feeds, exploit databases beyond NVD's reference
-  tags) and any source needing an account other than the optional free NVD key.
+  tags) and any source needing an account other than the free NVD key.
 - A combined risk score.
 - Reachability, which belongs to Zazzles Agent.
 - CWE names: the report shows CWE IDs linked to MITRE's pages, without a local copy of the catalog.
@@ -164,21 +165,35 @@ from OSV's aliases) up in NVD.
 OSV, keyed by the GHSA ID the tool does give, covers every advisory and supplies the CVE NVD needs.
 NVD then adds NIST's own scoring and exploit-tagged references.
 
-### D-2 — KEV and EPSS for real-world risk
+### D-2 — KEV and EPSS as advisory details, when available
 
-**Decision.** Add CISA's KEV catalog and FIRST's EPSS scores, both free and keyless.
+**Decision.** Add CISA's KEV catalog and FIRST's EPSS scores, both free and keyless, and show them
+in each advisory's details when the source has an answer for its CVE. An advisory with no CVE, or
+one neither source lists, simply shows none.
 **Why.** CVSS says how bad a flaw could be; KEV says attackers are using it now, and EPSS estimates
-how likely that is soon. These two decide what to fix first far better than severity alone, and
-CISA's due dates are what many teams' policies follow. The KEV catalog is one download matched
-locally, so it reveals nothing about the project.
+how likely that is soon. They help a reader and the Agent choose among flaws of the same severity,
+and CISA's due dates are what many teams' policies follow. The KEV catalog is one download matched
+locally, so it reveals nothing about the project. The owner chose them as details, with CVSS as the
+primary measure (§13).
 
-### D-3 — Show each source; order by a documented rule, not a score
+### D-3 — Order by CVSS severity; show each source; no combined score
 
-**Decision.** Rows are ordered: KEV listed first; then by EPSS score, highest first; then by the
-highest CVSS base score from any source; then by the tool's severity; then by name. The order is
-stated in the report.
-**Why.** A combined number hides where it came from and invites argument about weights. A stated
-order is easy to check and easy to change later.
+**Decision.** Each advisory has one ordering score, taken in this order of precedence: NVD's CVSS
+3.1 base score; else NVD's CVSS 4.0 base score; else the CVSS score from OSV or the audit tool; else
+none, using the tool's severity label (`critical` to `low`) in its place. Rows are ordered by that
+score, highest first; equal scores are then ordered KEV-listed first, then by EPSS score, highest
+first, then by name. A library row takes its highest advisory. The score gives a band by the standard CVSS ranges:
+`critical` 9.0 to 10.0, `high` 7.0 to 8.9, `medium` 4.0 to 6.9, `low` 0.1 to 3.9; with no score, the
+tool's label sets the band (`moderate` is `medium`). The report groups rows by band, critical and
+high first and open, and states the rule, showing which source each ordering score came from; every
+source's own score is still shown beside it. `findings.json` records each advisory's
+`ordering: {score, source, band}` and each library's `rank` (1 for the first row), so Zazzles Agent
+orders its pull requests the same way, critical and high first.
+**Why.** The owner set CVSS severity as the most important measure, with critical and high first in
+both the report and the order of remediation pull requests. NIST's score comes first because
+it is the reference most policies cite, and 3.1 before 4.0 because more CVEs carry a 3.1 score, so
+rows compare like with like. A stated precedence is easy to check; a combined number would hide
+where it came from.
 
 ### D-4 — On by default, with `--offline` and `--sources`
 
@@ -204,7 +219,8 @@ retries only HTTP 408, 429, 500, 502, 503 and 504, timeouts and dropped connecti
 honoring `Retry-After`. Each request has a 30-second timeout.
 **Why.** NVD's published limits are strict and a blocked key hurts every later run. The retry rule
 matches the one [AGENTS.md](../../../AGENTS.md#credentials-and-live-model-calls) sets for the judge
-transport. Without a key, about 70 CVEs take about 7 minutes; the docs recommend a free key in CI.
+transport. The owner uses a free NVD key locally and in CI: with it, about 70 CVEs take about 45
+seconds; without one, about 7 minutes. `audit` still works without a key, more slowly.
 
 ### D-7 — Readers pinned to captured responses
 
@@ -273,16 +289,22 @@ As [01 §5](01-node.md#5-agent-implementation-rules), with these changes:
   where GitHub says `high` and NVD scores 9.8 shows both; a Composer-style library with no fix gets
   `fix.target` from OSV with `fix.source: "osv"`. Verified by `TestEnrichmentKeepsToolFacts` and
   `TestFixFromOSV`.
-- **AC11 — Report and summary.** Rows are ordered by D-3; each enriched advisory shows severities by
-  source, the CVSS vector in plain terms (attack vector, attack complexity, privileges, user
-  interaction, scope, and confidentiality, integrity and availability impact), a "Known exploited"
-  badge with dates for KEV entries, EPSS score and percentile, CWE links, description, and fix,
-  advisory and exploit references; `summary.md` lists every KEV entry and the ten highest EPSS
-  scores. Golden files for `vuln-nextjs` with captured responses:
+- **AC11 — Report and summary.** Rows are ordered by D-3, and a table test covers its precedence:
+  NVD 3.1 over 4.0 over OSV or tool CVSS over the tool's label, the band boundaries (8.9 is
+  `high`, 9.0 is `critical`, 6.9 is `medium`, 7.0 is `high`), and the KEV, EPSS and name
+  tie-breaks; the report's first groups are critical then high, and `rank` in `findings.json`
+  matches the row order. Each enriched advisory shows its ordering score with its source, every source's
+  severity, the CVSS vector in plain terms (attack vector, attack complexity, privileges, user
+  interaction, scope, and confidentiality, integrity and availability impact), CWE links,
+  description, and fix, advisory and exploit references. When available, it also shows a "Known
+  exploited" badge with KEV's date added, due date and ransomware use, and the EPSS score and
+  percentile; when not, those fields are absent rather than shown as zero. `summary.md` lists counts
+  by CVSS severity, the critical and high advisories with their scores and fix versions, and every
+  KEV entry. Golden files for `vuln-nextjs` with captured responses:
   `vuln-nextjs.enriched.findings.json`, `.report.html`, `.summary.md`. Verified by
-  `TestEnrichedGolden` and `TestRiskOrder`.
-- **AC12 — Live check on a sample copy.** `./bin/audit run` on a copy of `vuln-nextjs` with all four
-  sources: every advisory has an OSV status, every advisory with a CVE has NVD, KEV and EPSS
+  `TestEnrichedGolden` and `TestSeverityOrder`.
+- **AC12 — Live check on a sample copy.** With `NVD_API_KEY` set in the owner's environment,
+  `./bin/audit run` on a copy of `vuln-nextjs` with all four sources: every advisory has an OSV status, every advisory with a CVE has NVD, KEV and EPSS
   statuses, GHSA-f82v-jwr5-mffw shows CVE-2025-29927 with an NVD CVSS score, and the owner reviews
   the report. The request counts per source are recorded. Verified by the run log's evidence entry.
 - **AC13 — Clean and in scope.** As 01 AC13 and AC14.
@@ -306,7 +328,7 @@ Every client test runs against `httptest.Server` with the base URLs injected; no
 the network. Tests: `TestOSVReader`, `TestNVDReader`, `TestKEVReader`, `TestEPSSReader`,
 `TestRequestsCarryOnlyIdentifiers`, `TestOffline`, `TestNVDPacing`, `TestRetryRule`,
 `TestNVDKeyNeverWritten`, `TestEnrichCache`, `TestEnrichmentKeepsToolFacts`, `TestFixFromOSV`,
-`TestEnrichedGolden`, `TestRiskOrder`.
+`TestEnrichedGolden`, `TestSeverityOrder`.
 
 ---
 
@@ -389,11 +411,12 @@ check recorded.
 
 ## 10. Open Questions
 
-- **OQ-1** — Include KEV and EPSS (D-2)? Recommended: yes; both are free, keyless and decide what to
-  fix first.
+- **OQ-1** — Resolved 2026-11-28: include KEV and EPSS as advisory details when available; CVSS
+  severity is the primary measure (D-2, D-3).
 - **OQ-2** — Enrichment on by default (D-4)? Recommended: yes, with `--offline` for air-gapped use.
-- **OQ-3** — Will you register a free NVD API key for local use and CI? Recommended: yes; without one,
-  `vuln-nextjs` takes about 7 minutes to enrich, with one about 45 seconds. `audit` works either way.
+- **OQ-3** — Resolved 2026-11-28: the owner registers a free NVD API key and sets `NVD_API_KEY` in
+  their shell and as a CI secret. The owner requests the key from NVD; an agent never creates the
+  account, handles the key's value, or reads it from `.env` (INVARIANT 5).
 
 ---
 
@@ -415,7 +438,7 @@ Run log: .zazz/ephemeral/dependency-audit-run-log.md, section "02 Advisory enric
 Coordination: Lead Agent; up to four Sonnet Contributor Agents may each write one source reader
 after phases 1 and 2. Companion skills: spec-driven, doc-check.
 
-Resolve OQ-1 to OQ-3 with the owner first. Requests go only to the four hosts in INVARIANT 1 and
+Resolve OQ-2 with the owner first (OQ-1 and OQ-3 are resolved). Requests go only to the four hosts in INVARIANT 1 and
 carry only identifiers. Never print, log or write NVD_API_KEY. Unit tests never reach the network.
 Follow §5 halt conditions. Finish with the DoD and a verifier:
 
@@ -430,4 +453,20 @@ Prepare a draft PR into stage. Do not merge.
 
 ## 13. Implementation And Review Change Log
 
-No changes recorded.
+### 2026-11-28 — CVSS first; KEV and EPSS as details; NVD key
+
+**Source.** Deliverable Owner steering during drafting.
+
+**Changed Sections.** §0, D-2, D-3, D-6, §3 Out Of Scope, AC11, AC12, §10, §12.
+
+**Rationale.** The owner set CVSS severity as the most important measure, asked for KEV and EPSS in
+the advisory details when available, and will set up an NVD key.
+
+**Summary.** Ordering is by CVSS score (NVD 3.1, then 4.0, then OSV or tool), with KEV, EPSS and name
+as tie-breaks, replacing a KEV-first order. Findings are grouped in CVSS bands with critical and
+high first, and `findings.json` carries each library's band and rank for the Agent's pull-request
+order. KEV and EPSS fields are shown only when a source has an
+answer. OQ-1 and OQ-3 are resolved.
+
+**Verification Impact.** `TestRiskOrder` becomes `TestSeverityOrder` with the D-3 precedence table;
+AC12 runs with `NVD_API_KEY` set.

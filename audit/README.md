@@ -17,8 +17,9 @@ What it adds over the audit tools alone is detail on every advisory, from four p
   CISA's remediation due date;
 - **FIRST's EPSS**: the estimated chance the flaw is exploited in the next 30 days.
 
-The report puts known-exploited flaws first, then the most likely to be exploited, then the most
-severe. Each vulnerable library is also reported with its installed version, the dependency path to
+The report puts critical and high findings first, ordered by CVSS score with NIST's score
+preferred, and shows known exploitation and exploitation likelihood in each finding's details when
+available. Each vulnerable library is also reported with its installed version, the dependency path to
 it, whether it ships in production or is used only in development, and the fix version with its
 patch, minor or major size. Planned ecosystems, in order: npm and pnpm, then `pip-audit` and
 `composer audit`.

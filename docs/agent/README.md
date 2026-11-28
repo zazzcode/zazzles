@@ -15,8 +15,9 @@ through pull requests you review. It was previously planned under the name Fix.
   SARIF output.
 - Check whether the application calls the functions an advisory affects, and label each finding
   with that evidence. A label changes a finding's priority, never removes it.
-- Plan the pull requests: batched small dependency bumps, one bump per pull request, or a bump
-  together with the refactoring a newer library needs.
+- Plan the pull requests in Dependency Audit's order, critical and high CVSS severity first:
+  batched small dependency bumps, one bump per pull request, or a bump together with the
+  refactoring a newer library needs.
 - Write tests on the current version first, where the code a change touches has none, so the
   change can be shown to keep behavior.
 - Ask you before the decisions that are yours: what to fix now, how to split the pull requests,

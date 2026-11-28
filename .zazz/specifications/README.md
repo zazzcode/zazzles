@@ -30,7 +30,7 @@ one-line description of what each delivers. The entries below describe each one.
 
 - [Markdown diff linting](markdown-diff-linting.md) covers agent-facing text checks in CI.
 
-- [Dependency Audit](audit/README.md) — series of four specifications for the `audit` command under `audit/`, which runs the target's own package-manager audit and writes the `zazzles.audit/v1` findings file Zazzles Agent reads and an HTML report. [01 npm and pnpm](audit/01-node.md) is drafted; 02 Python and PHP, 03 advisory enrichment and 04 documentation follow. A separate first-release specification then publishes `scan` and `audit` binaries and promotes to `main`.
+- [Dependency Audit](audit/README.md) — series of five specifications for the `audit` command under `audit/`, which runs the target's own package-manager audit and writes the `zazzles.audit/v1` findings file Zazzles Agent reads and an HTML report. [01 npm and pnpm](audit/01-node.md), [02 Python](audit/02-python.md) and [03 PHP](audit/03-php.md) are drafted; 04 advisory enrichment and 05 documentation follow. A separate first-release specification then publishes `scan` and `audit` binaries and promotes to `main`.
 
 - [Detection generalization](scan/detection-generalization/README.md) — draft series of fourteen specifications, ordered by expected general value after precision, with a shared [contract](scan/detection-generalization/contract.md) and a [delivery plan](scan/detection-generalization/delivery-plan.md). Not approved or implemented.
 

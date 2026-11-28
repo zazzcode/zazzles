@@ -1,8 +1,8 @@
 # Dependency Audit 01: npm and pnpm — Deliverable Specification
 
-**Worktree / branch:** `fix-cve-mvp`
+**Worktree / branch:** `audit-mvp` (a sibling worktree cut from `stage` after the documentation PR that adds this specification merges)
 **Feature:** Dependency Audit (`audit/`)
-**Milestone:** [Dependency Audit series](README.md), specification 01 of 4
+**Milestone:** [Dependency Audit series](README.md), specification 01 of 5
 **Deliverable:** The `audit` command for npm and pnpm projects, its findings file and its HTML report
 **Project Owner:** zazzles owner
 **Deliverable Owner:** zazzles owner
@@ -10,7 +10,7 @@
 **Review artifact:** one draft PR into `stage`
 **Approved review shape:** one PR
 **Decomposition rationale:** npm and pnpm share the run, model and report code, so splitting them
-would review the same code twice. Python and PHP are a separate specification because they need
+would review the same code twice. Python and PHP are separate specifications because they need
 tools not installed here; advisory enrichment is separate because it adds the network.
 **Integration branch:** `stage`
 **Merge policy:** PR review required — agents commit/push feature branches only
@@ -29,7 +29,9 @@ A new command, `audit`, audits the dependencies of npm and pnpm projects in a ta
 twice (all dependencies, then production only), and saves the raw JSON. `audit ingest` does the
 same from saved JSON files. Both normalize the output into one findings file, `findings.json`
 (schema `zazzles.audit/v1`), which Zazzles Agent consumes, and write `report.html`, a standalone
-report in the Code Scan visual style. Each vulnerable library is recorded with its installed
+report in the Code Scan visual style. `audit tools` reports whether each supported audit tool is
+installed, its version, and whether it is a tested version, and `run` makes the same check before
+it audits anything. Each vulnerable library is recorded with its installed
 version, its advisories, whether it is direct or arrives through another package, the dependency
 paths to it, whether it is production or development-only, and the fix version the tool names
 with its patch, minor or major size. `audit report` re-renders the HTML from a run directory. The
@@ -96,7 +98,8 @@ and testing to `audit/` as written for `scan/`, and record that reading in the r
 ### INVARIANT 1 — The target is never changed
 
 `audit` executes only `npm audit --json`, `npm audit --json --omit=dev`, `npm --version`,
-`pnpm audit --json`, `pnpm audit --json --prod` and `pnpm --version`, each with its working
+`npm audit --help`, `pnpm audit --json`, `pnpm audit --json --prod`, `pnpm --version` and
+`pnpm audit --help`, each with its working
 directory set to a project directory, with no shell, and with no other arguments. It never runs an
 install, a fix, a script or any other program. It writes only under the `--out` directory.
 
@@ -141,9 +144,8 @@ This specification is approved for one PR. If implementation surfaces a need to 
 combine it differently, stop for Deliverable Owner sign-off, update the affected sections in place,
 and record the change in §13 before continuing.
 
-**Rationale.** One reviewer can follow one command from runner to report in one PR. The earlier
-branch commits (the plan update and the module documentation) are documentation the same reviewer
-needs for context.
+**Rationale.** One reviewer can follow one command from runner to report in one PR. The roadmap,
+module pages and this specification land first in their own documentation PR.
 
 ### Strict Scope Constraint
 
@@ -155,9 +157,9 @@ below. If implementation surfaces a need to modify anything else, stop and surfa
 | Path | New / Modified | Reason |
 | --- | --- | --- |
 | `audit/cmd/audit/main.go` | New | Thin entry point |
-| `audit/cli/` (`main.go`, `run.go`, `ingest.go`, `report.go`, tests) | New | Subcommands, flags, exit codes, wiring |
+| `audit/cli/` (`main.go`, `run.go`, `ingest.go`, `report.go`, `tools.go`, tests) | New | Subcommands, flags, exit codes, wiring |
 | `audit/internal/model/` (`findings.go`, `scope.go`, `version.go`, `clean.go`, tests) | New | The `zazzles.audit/v1` types, scope labelling, version-change classification, text cleaning |
-| `audit/internal/run/` (`detect.go`, `exec.go`, tests) | New | Project detection and running the tools |
+| `audit/internal/run/` (`detect.go`, `exec.go`, `tools.go`, tests) | New | Project detection, the tool check, and running the tools |
 | `audit/internal/parse/npm/` (`npm.go`, `lockfile.go`, tests) | New | npm audit report version 2 reader; installed versions from `package-lock.json` |
 | `audit/internal/parse/pnpm/` (`pnpm.go`, tests) | New | pnpm audit JSON reader |
 | `audit/internal/report/` (`json.go`, `html.go`, `report.html`, `report-sort.js`, tests) | New | Findings writer and HTML report |
@@ -173,8 +175,8 @@ below. If implementation surfaces a need to modify anything else, stop and surfa
 
 ### Out Of Scope
 
-- `pip-audit` and `composer audit` (specification 02).
-- OSV or NVD lookups and any network request made by `audit` itself (specification 03).
+- `pip-audit` (specification 02) and `composer audit` (specification 03).
+- OSV or NVD lookups and any network request made by `audit` itself (specification 04).
 - Yarn, Bun, Poetry and uv; a project with only `yarn.lock` is recorded as `unsupported`.
 - SARIF output.
 - Parsing `pnpm-lock.yaml`; pnpm's audit output already carries versions and paths.
@@ -268,7 +270,7 @@ project not `audited`. When `1` and `3` both apply, `3` wins.
 
 ### Team Integration
 
-Commit and push only to `fix-cve-mvp`. Do not merge to `stage`; integration happens through human PR
+Commit and push only to `audit-mvp`. Do not merge to `stage`; integration happens through human PR
 review. Verify `git config user.name` is `zazzcode` before committing.
 
 ### Command Working Directory
@@ -290,8 +292,7 @@ complete or at an explicit handoff.
 
 ### Scope Verification
 
-`git diff stage --stat` lists the earlier branch commits (the plan update and module documentation)
-plus exactly the files in §3.
+`git diff stage --stat` lists exactly the files in §3.
 
 ### Autonomy Boundaries
 
@@ -390,6 +391,14 @@ One fresh-context verifier for functionality and invariants (§9).
 - **AC11 — Exit codes and flags.** Missing `--out`, an existing `findings.json` without `--replace`,
   an unknown scope and an unknown flag exit 2; `--fail-on high` exits 1 when a high or critical
   advisory is present and 0 otherwise. Verified by `TestCLIExitCodes`.
+- **AC15 — Tool check.** `audit tools` prints one row per supported tool (`npm`, `pnpm`) with: found
+  or not, its path, its version, `tested` when the version is one the fixtures were captured with
+  (npm 12.2.0, pnpm 12.23.0), `untested` otherwise, and whether `audit --help` lists every flag
+  INVARIANT 1 uses. It exits 0 when every tool is found and accepts the flags, otherwise 3. `run`
+  performs the same check for each project's tool before auditing: a missing tool or a missing flag
+  gives the project status `failed` with the reason and an install hint, and runs nothing else for
+  it; an `untested` version adds a `limits` entry and continues. Verified by `TestToolsCommand` and
+  `TestRunToolPreflight` with fake executables that report tested, untested, missing-flag and absent.
 - **AC12 — Live check on sample copies.** `./bin/audit run` on a copy of `vuln-nextjs` reports 67
   production advisories, matching the lab's `tests/expected-audit.json`, and the 4 `minimatch`
   advisories as development-only; on a copy of `nodejs-goof` it writes a report the owner reviews.
@@ -437,6 +446,7 @@ Automated tests:
 - `TestRunLeavesTargetUnchanged` — AC9.
 - `TestNoForbiddenImports` — AC10, from `go list -deps` output.
 - `TestCLIExitCodes` — AC11, table.
+- `TestToolsCommand`, `TestRunToolPreflight` — AC15, with fake executables.
 
 Intentionally not tested: npm report version 1 parsing (rejected by D-8, covered by the error
 fixture), and network failures inside the tools (they surface as tool errors, covered by AC4).
@@ -474,13 +484,14 @@ labelling, version change, text cleaning, with `TestScopeLabels`, `TestVersionCh
 **Phase 3: npm reader** and **Phase 4: pnpm reader**, in parallel. Each returns
 `[]model.Library` plus `[]string` limits, or an error for an unrecognized shape.
 
-**Phase 5: Runner.** `run.Detect(root)` and `run.Audit(ctx, project, scope)`, using
+**Phase 5: Runner.** `run.CheckTool(ctx, name)` for the tool check, then `run.Detect(root)` and
+`run.Audit(ctx, project, scope)`, using
 `exec.CommandContext` with an argument list, the project directory as `Dir`, and a timeout of 5
 minutes per command.
 
 **Phase 6: Report.** `report.WriteFindings` and `report.WriteHTML`, golden files, hostile-text tests.
 
-**Phase 7: CLI.** `run`, `ingest`, `report` subcommands; flags `--target` (run), `--npm-all`,
+**Phase 7: CLI.** `run`, `ingest`, `report` and `tools` subcommands; flags `--target` (run), `--npm-all`,
 `--npm-prod`, `--pnpm-all`, `--pnpm-prod` each as `[dir=]file` and repeatable (ingest), `--out`,
 `--replace`, `--scope all|prod|dev` (default `all`), `--fail-on <severity>`. Exit codes per D-10.
 
@@ -587,6 +598,8 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return ingestCommand(args[1:], stdout, stderr)
 	case "report":
 		return reportCommand(args[1:], stdout, stderr)
+	case "tools":
+		return toolsCommand(args[1:], stdout, stderr)
 	}
 	usage(stderr)
 	return exitUsage
@@ -604,7 +617,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 - [ ] `gofmt -l audit` prints nothing; `go vet ./...` and the Markdown lint pass.
 - [ ] `git diff stage --stat` matches §5 Scope Verification.
 - [ ] One PR, as approved in §3.
-- [ ] AC1–AC14 verified, with evidence cited.
+- [ ] AC1–AC15 verified, with evidence cited.
 - [ ] Run log section `01 npm and pnpm` up to date, including Contributor Agent outcomes.
 - [ ] Verifier sub-agent returned all-pass.
 - [ ] Draft PR body links this specification and lists each AC's verification.
@@ -637,7 +650,7 @@ Phase Completion entry, resolve open questions, then begin.
 ## 12. Agent Implementation Prompt
 
 ```text
-You are starting fresh in the zazzles worktree `fix-cve-mvp` (branch fix-cve-mvp). Verify pwd,
+You are starting fresh in the zazzles worktree `audit-mvp` (branch audit-mvp). Verify pwd,
 branch, status and `git worktree list` per AGENTS.md before editing.
 Your task is to implement Dependency Audit 01: the audit command for npm and pnpm.
 
@@ -668,7 +681,7 @@ ORDER OF WORK
 4. DoD in §9; dispatch the verifier; prepare the draft PR into stage. Do not merge.
 
 VERIFIER SUB-AGENT
-"You are verifying Dependency Audit 01 in the fix-cve-mvp worktree. Read
+"You are verifying Dependency Audit 01 in the audit-mvp worktree. Read
 .zazz/specifications/audit/01-node.md and .zazz/ephemeral/dependency-audit-run-log.md.
 For each AC, run the cited test or command and check the result yourself. Check INVARIANTs 1 to 6
 against the code, including every exec call. Check `git diff stage --stat` against §5. Do not modify

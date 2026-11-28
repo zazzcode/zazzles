@@ -105,7 +105,7 @@ Specifications live in [`audit/`](audit/README.md).
 
 | Order | Specification | Delivers | First committed | State |
 |---:|---|---|---|---|
-| 60 | [Dependency Audit: series index](audit/README.md): [01 npm and pnpm](audit/01-node.md); 02 Python and PHP, 03 advisory enrichment and 04 documentation not written | The `audit` command, the `zazzles.audit/v1` findings file and an HTML report | 2026-11-28 | Plan order 2. 01 drafted, for owner review |
+| 60 | [Dependency Audit: series index](audit/README.md): [01 npm and pnpm](audit/01-node.md), [02 Python](audit/02-python.md), [03 PHP](audit/03-php.md); 04 advisory enrichment and 05 documentation not written | The `audit` command for npm, pnpm, Python and PHP, the `zazzles.audit/v1` findings file and an HTML report | 2026-11-28 | Plan order 2. 01 to 03 drafted, for owner review |
 
 ## 3. Zazzles Agent (`agent/`)
 
@@ -131,7 +131,7 @@ Layout, tooling and release work that spans modules. These specifications stay i
 |---:|---|---|---|---|
 | 52 | [Scan, Fix and Probe repository layout](scan-fix-probe-repository-layout.md) | Top-level module directories and per-module user docs | 2026-11-21 | Merged (PR #37) |
 | 58 | [Markdown diff linting](markdown-diff-linting.md) | CI lint of added Markdown for prompt injection and hidden text | 2026-11-25 | Merged (PR #53) |
-| 61 | First release of `scan` and `audit` (`first-release.md`) | Release workflow, macOS and Linux binaries, a GitHub Action, promotion to `main` | Not written | After Dependency Audit 04. Own worktree; the owner merges to `main` and tags |
+| 61 | First release of `scan` and `audit` (`first-release.md`) | Release workflow, macOS and Linux binaries, a GitHub Action, promotion to `main` | Not written | After Dependency Audit 05. Own worktree; the owner merges to `main` and tags |
 
 ## Maintaining this index
 

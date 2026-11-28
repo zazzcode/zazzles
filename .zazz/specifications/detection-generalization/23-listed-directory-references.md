@@ -123,6 +123,14 @@ checkpoint.
 
 Approved as drafted. Built on `docs-cleanup` after specification 22; its base is that working tree.
 
+### 2026-11-27 — Kept
+
+Full Gemini Juice Shop scan: `JS-CONF-03` Confirmed, 41 of 41 and 45 of 75; published
+([results](../../evaluation/detection-generalization-results/23.md#juice-shop-full-scan)).
+
+Owner: "Keep and republish", after the causal baseline. The stop rule's trigger was on records this change does not
+touch; the change stays.
+
 ### 2026-11-27 — Causal baseline
 
 Gemini with the pre-change binary left all eight positive fixture listings in Review; with the change seven are

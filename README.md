@@ -61,7 +61,7 @@ decision models: Google Gemini on 2026-11-27 and OpenAI `gpt-6-luna` in the earl
 
 | Application | In answer key | Code Scan, Gemini | Code Scan, gpt-6-luna | Semgrep CE | Bearer |
 |---|---:|---:|---:|---:|---:|
-| [OWASP Juice Shop](https://github.com/juice-shop/juice-shop) | 75 | 44 | 45 | 19 | 15 |
+| [OWASP Juice Shop](https://github.com/juice-shop/juice-shop) | 75 | 45 | 45 | 19 | 15 |
 | [OSS OopsSec Store](https://github.com/kOaDT/oss-oopssec-store) | 13 | 13 | 13 | Not scored | Not scored |
 | [vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) | 13 | Not rerun | 13 | 7 | 7 |
 | [DVWA](https://github.com/digininja/DVWA) | 11 | 11 | 11 | 6 | 6 |
@@ -76,8 +76,8 @@ lower bound, and findings outside the OopsSec and ThreatByte keys are not review
 An answer key is not a complete list of an application's vulnerabilities. Juice Shop's was
 extended from its own documented challenges; the others were not and still favor the classes
 Code Scan analyzes. On Juice Shop, Code Scan misses 30 rows with `gpt-6-luna`: 18 in classes it
-has no analyzer for and 12 where an existing analyzer falls short. Gemini leaves one more, the
-`/support/logs` listing, in Review. The two Code Scan columns also differ in scanner revision. Semgrep CE and Bearer run free and offline, and a judged
+has no analyzer for and 12 where an existing analyzer falls short; Gemini misses the same 30. The
+two Code Scan columns also differ in scanner revision. Semgrep CE and Bearer run free and offline, and a judged
 Code Scan calls a paid model provider. Code Scan was developed against these applications, so
 this is not a general accuracy claim.
 [Full comparison, misses and false positives by application](docs/scan/scanner-comparison.md) ·

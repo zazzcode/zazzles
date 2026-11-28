@@ -42,7 +42,7 @@ dd{margin:0}
 <table>
 <thead><tr><th scope="col">Application</th><th scope="col" class="n">In answer key</th><th scope="col" class="n">Code Scan, Gemini</th><th scope="col" class="n">Code Scan, gpt-6-luna</th><th scope="col" class="n">Semgrep CE</th><th scope="col" class="n">Bearer</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">75</td><td class="n">44</td><td class="n">45</td><td class="n">19</td><td class="n">15</td></tr>
+<tr><th scope="row"><a href="https://github.com/juice-shop/juice-shop">OWASP Juice Shop</a></th><td class="n">75</td><td class="n">45</td><td class="n">45</td><td class="n">19</td><td class="n">15</td></tr>
 <tr><th scope="row"><a href="https://github.com/kOaDT/oss-oopssec-store">OSS OopsSec Store</a></th><td class="n">13</td><td class="n">13</td><td class="n">13</td><td class="n">Not scored</td><td class="n">Not scored</td></tr>
 <tr><th scope="row"><a href="https://github.com/zazzcode/vuln-nextjs">vuln-nextjs</a></th><td class="n">13</td><td class="n">Not rerun</td><td class="n">13</td><td class="n">7</td><td class="n">7</td></tr>
 <tr><th scope="row"><a href="https://github.com/digininja/DVWA">DVWA</a></th><td class="n">11</td><td class="n">11</td><td class="n">11</td><td class="n">6</td><td class="n">6</td></tr>
@@ -51,7 +51,7 @@ dd{margin:0}
 </tbody>
 </table>
 </div>
-<p class="note">An answer key is not a complete list of an application’s vulnerabilities. Juice Shop’s was extended to 75 rows from its own documented challenges and markers and from results of any scanner. The others were not extended and still favor the classes Code Scan analyzes. The two Code Scan columns differ in scanner revision as well as model; the Gemini Juice Shop run includes the owner-reference change.</p>
+<p class="note">An answer key is not a complete list of an application’s vulnerabilities. Juice Shop’s was extended to 75 rows from its own documented challenges and markers and from results of any scanner. The others were not extended and still favor the classes Code Scan analyzes. The two Code Scan columns differ in scanner revision as well as model; the Gemini Juice Shop run includes the owner-reference and listed-directory changes.</p>
 <p class="note">Semgrep CE 1.183.0 ran with 23 registry packs (1,379 rules). Its cross-function and cross-file engine is a paid product and was not run. Bearer CLI ran <code>bearer-rules</code>; Bearer Pro was not run.</p>
 <p class="note"><strong>These are different kinds of tool.</strong> Semgrep CE and Bearer run free and offline. A judged Code Scan calls a paid model provider. Code Scan was developed against these applications, so this is not a general accuracy claim. Its <code>gpt-6-luna</code> found count includes three Juice Shop cases reported as practice findings; the Gemini count includes one Juice Shop and one VulnerableSymfony case.</p>
 
@@ -109,7 +109,7 @@ dd{margin:0}
 </tbody>
 </table>
 </div>
-<p class="note">With <code>gpt-6-luna</code>, Code Scan misses 30 rows, all in Juice Shop, and the Gemini run leaves one more, the <code>/support/logs</code> listing, in Review: 18 in classes it has no analyzer for, and 12 where an existing analyzer falls short. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md#what-code-scan-misses">What Code Scan misses</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison</a></p>
+<p class="note">With <code>gpt-6-luna</code>, Code Scan misses 30 rows, all in Juice Shop, and the Gemini run misses the same rows: 18 in classes it has no analyzer for, and 12 where an existing analyzer falls short. <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md#what-code-scan-misses">What Code Scan misses</a> · <a href="https://github.com/zazzcode/zazzles/blob/stage/docs/scan/scanner-comparison.md">Full comparison</a></p>
 
 <h2>Reports</h2>
 <p>Counts are records in the report, and one defect can appear in several. Review means the evidence or the judgment is incomplete. It does not mean safe.</p>
@@ -117,7 +117,7 @@ dd{margin:0}
 <table>
 <thead><tr><th scope="col">Report</th><th scope="col">What it shows</th><th scope="col" class="n">Confirmed</th><th scope="col" class="n">Practice</th><th scope="col" class="n">Protected</th><th scope="col" class="n">Review</th><th scope="col">Scanned</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. 40 of the 41 rows of Code Scan’s own key found, and 44 of 75 in the extended key, with Google Gemini.</td><td class="n">53</td><td class="n">1</td><td class="n">6</td><td class="n">245</td><td>2026-11-27</td></tr>
+<tr><th scope="row"><a href="juice-shop/findings.html">OWASP Juice Shop</a></th><td>Express and Angular. XSS, SQL and NoSQL injection, missing authorization, mass assignment, configuration and account weaknesses. All 41 rows of Code Scan’s own key found, and 45 of 75 in the extended key, with Google Gemini.</td><td class="n">54</td><td class="n">1</td><td class="n">6</td><td class="n">244</td><td>2026-11-27</td></tr>
 <tr><th scope="row"><a href="vuln-nextjs/findings.html">vuln-nextjs</a></th><td>Next.js Pages Router. All 13 expected cases Confirmed, including PGlite SQL injection, cross-tier XSS and code injection.</td><td class="n">13</td><td class="n">1</td><td class="n">9</td><td class="n">31</td><td>2026-11-24</td></tr>
 <tr><th scope="row"><a href="vuln-nextjs/reports/prototype-pollution/findings.html">vuln-nextjs prototype pollution fixtures</a></th><td>Lodash by version and source-visible prototype writes. 14 of 15 in-scope cases Confirmed, one in Review. Two dependency-only cases have no record.</td><td class="n">14</td><td class="n">0</td><td class="n">2</td><td class="n">47</td><td>2026-11-21</td></tr>
 <tr><th scope="row"><a href="dvwa/findings.html">DVWA</a></th><td>Plain PHP. All 11 keyed positives Confirmed with Google Gemini. Adds weak password hashing, session cookie settings, <code>allow_url_include</code> and a missing authorization check.</td><td class="n">166</td><td class="n">42</td><td class="n">42</td><td class="n">50</td><td>2026-11-27</td></tr>

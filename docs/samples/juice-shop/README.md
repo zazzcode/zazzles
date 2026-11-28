@@ -5,7 +5,23 @@
 [Results](../../../.zazz/evaluation/juiceshop-hardening-results.md#final-full-run) ·
 [Scanner comparison](../../scan/scanner-comparison.md#owasp-juice-shop)
 
-## Current report (2026-11-27, Google Gemini, owner references)
+## Current report (2026-11-27, Google Gemini, owner references and listed-directory references)
+
+A full scan of revision `f189f52` with scanner `docs-cleanup` at `fdde6a7`
+([detection generalization 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md) and
+[23](../../../.zazz/specifications/detection-generalization/23-listed-directory-references.md)) and Google Gemini
+`gemini-decision-1` produced 305 records across 194 entries. The report presents **54 Confirmed, 1 practice finding,
+6 Protected and 244 Review**. [Results](../../../.zazz/evaluation/detection-generalization-results/23.md#juice-shop-full-scan)
+
+- **What changed:** the `/support/logs` listing (`JS-CONF-03`) now carries the places the source writes or serves files
+  in `logs` (the access-log stream, its audit file and the log-file route) and is Confirmed. No other record changed
+  outcome against the previous report.
+- **Answer key:** all 41 positives of Code Scan's own key are found: 40 Confirmed and `JS-CODE-02` as a practice
+  finding. Of the comparison's extended 75 rows this report finds 45, as `gpt-6-luna` does.
+- **False positives:** the same three locations (`server.ts:294`, `routes/fileServer.ts:32`, `server.ts:307`).
+- **Usage:** 84 completed assessments, 409,018 input tokens, zero failures.
+
+## Previous report (2026-11-27, Google Gemini, owner references)
 
 A full scan of revision `f189f52` with scanner `docs-cleanup` at `d1099f8`
 ([detection generalization 22](../../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)) and Google Gemini `gemini-decision-1` produced 305 records across 194 entries. The report presents

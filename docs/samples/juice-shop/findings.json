@@ -34499,20 +34499,22 @@
       "use_id": "candidate:v1:14fccdfbaa44e7e0141f98e760ca184265dde3953cc4ad71e6a92553792af696",
       "entry_id": "entry:v1:04090bd6225fc8942f2db33795f1f804757d5ea16bcf28a4f7fccd72b0bd5fb5",
       "invocation_context_id": "invocation:v1:60f50da490bc55937c00314c7271cfeb2026a4e10b3166f3f8dd9b20c5b2f7cb",
-      "record_type": "analysis",
-      "status": "needs_evidence",
-      "title": "Configuration setting needs review",
+      "record_type": "finding",
+      "status": "confirmed_vulnerability",
+      "title": "Insecure configuration supported by source analysis",
       "summary": "Setting directory_listing is recorded with the application facts it joins (CWE-548).",
       "input_validation": "Not established from the supplied evidence.",
-      "use_protection": "Configuration assessment: effect in_effect, weakness Inconclusive, mitigation none",
+      "use_protection": "Configuration assessment: effect in_effect, weakness weakens, mitigation none",
       "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
       "recommendations": {
-        "title": "Resolve the specific claim blockers",
+        "title": "Turn directory listing off where files are served",
         "actions": [
-          "Investigate the operation at server.ts:302: serveIndex('logs', { icons: true, view: 'details' }). Its current Review status does not establish a code defect.",
-          "Reconcile the semantic assessment with this exact source claim: "
+          "Change the observed operation at server.ts:302: serveIndex('logs', { icons: true, view: 'details' })",
+          "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+          "Remove Indexes from the directory that is served.",
+          "Store uploads outside any listed directory."
         ],
-        "example_status": "no patch proposed while the claim is inconclusive"
+        "example_status": ""
       },
       "assessment_state": "completed"
     },
@@ -271042,6 +271044,58 @@
             "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
           },
           {
+            "model_text": "The source refers to paths inside the listed directory infrastructure at 4 places; this is 1 of 4, the path infrastructure/docker-compose.yml:\n",
+            "kind": "directory_reference",
+            "text": "vulnerableDockerImageChallenge: ['infrastructure/docker-compose.yml']",
+            "span": {
+              "file": "lib/antiCheat.ts",
+              "start_line": 60,
+              "end_line": 60,
+              "start_byte": 3843,
+              "end_byte": 3912
+            },
+            "sha256": "34a8bf712bcb6c694cc2e4be928e15e76a065e0f36ee690b9d427a774a487a15"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory infrastructure at 4 places; this is 2 of 4, the path ./infrastructure:\n",
+            "kind": "directory_reference",
+            "text": "Object.freeze(['./server.ts', './routes', './lib', './data', './data/static/web3-snippets', './frontend/src/app', './models', './infrastructure'])",
+            "span": {
+              "file": "lib/codingChallenges.ts",
+              "start_line": 6,
+              "end_line": 6,
+              "start_byte": 192,
+              "end_byte": 338
+            },
+            "sha256": "5085488fa79c326d6c4c6d193e91bd759213c861142000006a579f9ebb6872c4"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory infrastructure at 4 places; this is 3 of 4, the path infrastructure/ath.normalize(req.path).replace(/^[\\\\/]+/, '':\n",
+            "kind": "directory_reference",
+            "text": "app.use('/infrastructure', (req: Request, res: Response, next: NextFunction) => {\n    const filePath = path.resolve('infrastructure', path.normalize(req.path).replace(/^[\\\\/]+/, ''))\n    if (!filePath.startsWith(path.resolve('infrastructure')) || filePath.endsWith('README.md')) {\n      return res.status(403).end()\n    }\n    if (filePath.endsWith('.tf') || filePath.endsWith('.yml') || filePath.endsWith('Dockerfile')) {\n      fs.readFile(filePath, 'utf8', (err, data) => {\n        if (err) return next()\n        const cleaned = data.split('\\n').filter(line => !line.trim().match(/^#\\s*vuln-code-snippet\\s/)).map(line => line.replace(/\\s*#\\s*vuln-code-snippet\\s.*$/, '')).join('\\n')\n        const content = filePath.endsWith('.tf') ? customizeTerraformContent(cleaned) : cleaned\n        res.type('text/plain').send(content)\n      })\n    } else {\n      express.static('infrastructure')(req, res, next)\n    }\n  })",
+            "span": {
+              "file": "server.ts",
+              "start_line": 271,
+              "end_line": 286,
+              "start_byte": 12361,
+              "end_byte": 13273
+            },
+            "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory infrastructure at 4 places; this is 4 of 4, the path infrastructure:\n",
+            "kind": "directory_reference",
+            "text": "filePath.startsWith(path.resolve('infrastructure'))",
+            "span": {
+              "file": "server.ts",
+              "start_line": 273,
+              "end_line": 273,
+              "start_byte": 12553,
+              "end_byte": 12604
+            },
+            "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
             "model_text": "authentication: none",
             "kind": "mount_access",
             "text": "app.use('/infrastructure', serveIndexMiddleware, serveIndex('infrastructure', { icons: true, view: 'details', filter: (filename) => filename !== 'README.md' }))",
@@ -271171,63 +271225,63 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "8dd8f085f4af240d5f6285cca5a689ad9190d12cb7550cf2fd10aeae12e92ea8",
+        "request_digest": "074aa3174919b2f059676ffbecb92601085f2bef27ef2b9c466c2d2b83fc7f9c",
         "answer_details": {
           "mitigation": {
             "choice": "none",
-            "confidence": 0.8650598187033501,
+            "confidence": 0.8611281816534003,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.023632816415286383
+                "probability": 0.021512942217033877
               },
               {
                 "value": "inadequate",
-                "probability": 0.03619942130189671
+                "probability": 0.04130372506763978
               },
               {
                 "value": "none",
-                "probability": 0.8650598187033501
+                "probability": 0.8611281816534003
               },
               {
                 "value": "unknown",
-                "probability": 0.07510794357946673
+                "probability": 0.07605515106192585
               }
             ]
           },
           "setting_effect": {
             "choice": "in_effect",
-            "confidence": 0.9683774417040226,
+            "confidence": 0.9588326791295885,
             "probabilities": [
               {
                 "value": "in_effect",
-                "probability": 0.9683774417040226
+                "probability": 0.9588326791295885
               },
               {
                 "value": "not_in_effect",
-                "probability": 0.009054161787553637
+                "probability": 0.017691001601497638
               },
               {
                 "value": "unknown",
-                "probability": 0.022568396508423794
+                "probability": 0.023476319268913956
               }
             ]
           },
           "weakness": {
             "choice": "weakens",
-            "confidence": 0.8890975561428763,
+            "confidence": 0.7727059276842183,
             "probabilities": [
               {
                 "value": "benign",
-                "probability": 0.03615993856778265
+                "probability": 0.0740476316948484
               },
               {
                 "value": "unknown",
-                "probability": 0.074742505289341
+                "probability": 0.15324644062093323
               },
               {
                 "value": "weakens",
-                "probability": 0.8890975561428763
+                "probability": 0.7727059276842183
               }
             ]
           }
@@ -271239,9 +271293,9 @@
           "weakness": "weakens"
         },
         "usage": {
-          "input_tokens": 2494,
+          "input_tokens": 3144,
           "output_tokens": 0,
-          "total_tokens": 2494
+          "total_tokens": 3144
         },
         "status": "completed",
         "provider": "gemini",
@@ -271348,6 +271402,110 @@
               "end_byte": 13525
             },
             "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 1 of 11, the path ftp/package.json.bak:\n",
+            "kind": "directory_reference",
+            "text": "knownVulnerableComponentChallenge: ['ftp/package.json.bak']",
+            "span": {
+              "file": "lib/antiCheat.ts",
+              "start_line": 56,
+              "end_line": 56,
+              "start_byte": 3619,
+              "end_byte": 3678
+            },
+            "sha256": "34a8bf712bcb6c694cc2e4be928e15e76a065e0f36ee690b9d427a774a487a15"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 2 of 11, the path ftp/package.json.bak:\n",
+            "kind": "directory_reference",
+            "text": "typosquattingNpmChallenge: ['ftp/package.json.bak']",
+            "span": {
+              "file": "lib/antiCheat.ts",
+              "start_line": 57,
+              "end_line": 57,
+              "start_byte": 3682,
+              "end_byte": 3733
+            },
+            "sha256": "34a8bf712bcb6c694cc2e4be928e15e76a065e0f36ee690b9d427a774a487a15"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 3 of 11, the path ftp/package.json.bak:\n",
+            "kind": "directory_reference",
+            "text": "supplyChainAttackChallenge: ['ftp/package.json.bak']",
+            "span": {
+              "file": "lib/antiCheat.ts",
+              "start_line": 58,
+              "end_line": 58,
+              "start_byte": 3737,
+              "end_byte": 3789
+            },
+            "sha256": "34a8bf712bcb6c694cc2e4be928e15e76a065e0f36ee690b9d427a774a487a15"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 4 of 11, the path ftp/package.json.bak:\n",
+            "kind": "directory_reference",
+            "text": "weirdCryptoChallenge: ['ftp/package.json.bak']",
+            "span": {
+              "file": "lib/antiCheat.ts",
+              "start_line": 59,
+              "end_line": 59,
+              "start_byte": 3793,
+              "end_byte": 3839
+            },
+            "sha256": "34a8bf712bcb6c694cc2e4be928e15e76a065e0f36ee690b9d427a774a487a15"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 5 of 11, the path ftp/*.pdf:\n",
+            "kind": "directory_reference",
+            "text": "glob('ftp/*.pdf', { windowsPathsNoEscape: true })",
+            "span": {
+              "file": "lib/startup/cleanupFtpFolder.ts",
+              "start_line": 13,
+              "end_line": 13,
+              "start_byte": 312,
+              "end_byte": 361
+            },
+            "sha256": "d09b8895056a0310af08763379d9a8eb9b1865b63b8af9f6ed88f88b8d98d16d"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 6 of 11, the path ftp/legal.md:\n",
+            "kind": "directory_reference",
+            "text": "copyFileSync(path.resolve('data/static/legal.md'), path.resolve('ftp/legal.md'))",
+            "span": {
+              "file": "lib/startup/restoreOverwrittenFilesWithOriginals.ts",
+              "start_line": 23,
+              "end_line": 23,
+              "start_byte": 648,
+              "end_byte": 728
+            },
+            "sha256": "e535cff2edccf8f95e6acf8f536921f7f9e8622fb145c96f6a0ec9b93431f127"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 7 of 11, the path ftp:\n",
+            "kind": "directory_reference",
+            "text": "filePath.includes('ftp')",
+            "span": {
+              "file": "routes/dataErasure.ts",
+              "start_line": 105,
+              "end_line": 105,
+              "start_byte": 3779,
+              "end_byte": 3803
+            },
+            "sha256": "11231aefa83ceec4b0c6903ecd4fb9ccddc24b49044961fcac017e3cf7c631ba"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory ftp at 11 places; this is 8 of 11, the path ftp/il:\n",
+            "kind": "directory_reference",
+            "text": "res.sendFile(path.resolve('ftp/', file))",
+            "span": {
+              "file": "routes/fileServer.ts",
+              "start_line": 32,
+              "end_line": 32,
+              "start_byte": 1091,
+              "end_byte": 1131
+            },
+            "sha256": "3291e01af092d95cfdaea506c13ff2b4ae4533cea351cde9a48134f4ed55f9f9"
           },
           {
             "model_text": "authentication: none",
@@ -271479,63 +271637,63 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "4889dca356de2e0270ccf0a4b32d254f663a27372b280d09e14d8cc55917ddfd",
+        "request_digest": "f3bad92363d68a47a1a14bed46e35851fefd0d816f31acfd99e378d8af16dca8",
         "answer_details": {
           "mitigation": {
             "choice": "none",
-            "confidence": 0.7500726088278621,
+            "confidence": 0.809249289461322,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.018058265281481974
+                "probability": 0.017975004102635195
               },
               {
                 "value": "inadequate",
-                "probability": 0.05308491284707335
+                "probability": 0.05999128219286277
               },
               {
                 "value": "none",
-                "probability": 0.7500726088278621
+                "probability": 0.809249289461322
               },
               {
                 "value": "unknown",
-                "probability": 0.1787842130435825
+                "probability": 0.11278442424318003
               }
             ]
           },
           "setting_effect": {
             "choice": "in_effect",
-            "confidence": 0.9697439307063553,
+            "confidence": 0.9731447638410883,
             "probabilities": [
               {
                 "value": "in_effect",
-                "probability": 0.9697439307063553
+                "probability": 0.9731447638410883
               },
               {
                 "value": "not_in_effect",
-                "probability": 0.010686702523202437
+                "probability": 0.006837669832900515
               },
               {
                 "value": "unknown",
-                "probability": 0.019569366770442256
+                "probability": 0.020017566326011295
               }
             ]
           },
           "weakness": {
             "choice": "weakens",
-            "confidence": 0.859646944696187,
+            "confidence": 0.8918943185320293,
             "probabilities": [
               {
                 "value": "benign",
-                "probability": 0.028022733648325297
+                "probability": 0.042554319745181236
               },
               {
                 "value": "unknown",
-                "probability": 0.11233032165548765
+                "probability": 0.06555136172278953
               },
               {
                 "value": "weakens",
-                "probability": 0.859646944696187
+                "probability": 0.8918943185320293
               }
             ]
           }
@@ -271547,9 +271705,9 @@
           "weakness": "weakens"
         },
         "usage": {
-          "input_tokens": 2437,
+          "input_tokens": 3149,
           "output_tokens": 0,
-          "total_tokens": 2437
+          "total_tokens": 3149
         },
         "status": "completed",
         "provider": "gemini",
@@ -271656,6 +271814,19 @@
               "end_byte": 13910
             },
             "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory .well-known at 1 places; this is 1 of 1, the path .well-known/csaf/provider-metadata.json:\n",
+            "kind": "directory_reference",
+            "text": "paths: ['.well-known/csaf/provider-metadata.json']",
+            "span": {
+              "file": "data/datacreator.ts",
+              "start_line": 800,
+              "end_line": 800,
+              "start_byte": 28476,
+              "end_byte": 28526
+            },
+            "sha256": "a119b02f98e67eb85c1e90690e29871704791bf88aca09701dca54effbc7a5b2"
           },
           {
             "model_text": "authentication: none",
@@ -271787,63 +271958,63 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "b114cf09260b5234aed2e2f87757afdbef718116bba49512fdfc6bd0f3be0e31",
+        "request_digest": "0e6f93cfcc56a14fa0034ee587f52e55d316e576996abf715e44c4fcc2dbc0ce",
         "answer_details": {
           "mitigation": {
             "choice": "none",
-            "confidence": 0.8710180452796422,
+            "confidence": 0.6109162641358014,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.013037962167373466
+                "probability": 0.02622439619538872
               },
               {
                 "value": "inadequate",
-                "probability": 0.027065493993059277
+                "probability": 0.17273146477578386
               },
               {
                 "value": "none",
-                "probability": 0.8710180452796422
+                "probability": 0.6109162641358014
               },
               {
                 "value": "unknown",
-                "probability": 0.08887849855992501
+                "probability": 0.19012787489302607
               }
             ]
           },
           "setting_effect": {
             "choice": "in_effect",
-            "confidence": 0.9755346518206636,
+            "confidence": 0.9519416035059418,
             "probabilities": [
               {
                 "value": "in_effect",
-                "probability": 0.9755346518206636
+                "probability": 0.9519416035059418
               },
               {
                 "value": "not_in_effect",
-                "probability": 0.005107939194566745
+                "probability": 0.01228992595187514
               },
               {
                 "value": "unknown",
-                "probability": 0.019357408984769574
+                "probability": 0.035768470542183135
               }
             ]
           },
           "weakness": {
             "choice": "weakens",
-            "confidence": 0.4314168463185795,
+            "confidence": 0.5299780688537489,
             "probabilities": [
               {
                 "value": "benign",
-                "probability": 0.40056691414488343
+                "probability": 0.17457231101334467
               },
               {
                 "value": "unknown",
-                "probability": 0.16801623953653697
+                "probability": 0.2954496201329065
               },
               {
                 "value": "weakens",
-                "probability": 0.4314168463185795
+                "probability": 0.5299780688537489
               }
             ]
           }
@@ -271855,9 +272026,9 @@
           "weakness": "weakens"
         },
         "usage": {
-          "input_tokens": 2446,
+          "input_tokens": 2547,
           "output_tokens": 0,
-          "total_tokens": 2446
+          "total_tokens": 2547
         },
         "status": "completed",
         "provider": "gemini",
@@ -271964,6 +272135,45 @@
               "end_byte": 14126
             },
             "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory encryptionkeys at 3 places; this is 1 of 3, the path encryptionkeys/jwt.pub:\n",
+            "kind": "directory_reference",
+            "text": "fs.readFileSync('encryptionkeys/jwt.pub', 'utf8')",
+            "span": {
+              "file": "lib/insecurity.ts",
+              "start_line": 20,
+              "end_line": 20,
+              "start_byte": 650,
+              "end_byte": 699
+            },
+            "sha256": "c3496760cac6a5fde403bf739a8ab5e2536d2bbc57a6e3b6a0ac50b01a6e8b8d"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory encryptionkeys at 3 places; this is 2 of 3, the path encryptionkeys:\n",
+            "kind": "directory_reference",
+            "text": "filePath.includes('encryptionkeys')",
+            "span": {
+              "file": "routes/dataErasure.ts",
+              "start_line": 105,
+              "end_line": 105,
+              "start_byte": 3839,
+              "end_byte": 3874
+            },
+            "sha256": "11231aefa83ceec4b0c6903ecd4fb9ccddc24b49044961fcac017e3cf7c631ba"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory encryptionkeys at 3 places; this is 3 of 3, the path encryptionkeys/il:\n",
+            "kind": "directory_reference",
+            "text": "res.sendFile(path.resolve('encryptionkeys/', file))",
+            "span": {
+              "file": "routes/keyServer.ts",
+              "start_line": 14,
+              "end_line": 14,
+              "start_byte": 397,
+              "end_byte": 448
+            },
+            "sha256": "b47736841886e865dbe07f6db3596b5e1e64435051c3362a18a21bac2412c712"
           },
           {
             "model_text": "authentication: none",
@@ -272095,63 +272305,63 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "e9c76053980a24aa206c2b030a1a4002c5d2a066050f73d3a69a162417bc3ee0",
+        "request_digest": "ddce1ee74ee5eb8c957564c7547a195405487f2269345a2993d884f2695c1ae8",
         "answer_details": {
           "mitigation": {
             "choice": "none",
-            "confidence": 0.9125144392158461,
+            "confidence": 0.791554487374252,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.00818547682439017
+                "probability": 0.01054432373229169
               },
               {
                 "value": "inadequate",
-                "probability": 0.018746609196901395
+                "probability": 0.04172836461312531
               },
               {
                 "value": "none",
-                "probability": 0.9125144392158461
+                "probability": 0.791554487374252
               },
               {
                 "value": "unknown",
-                "probability": 0.060553474762862484
+                "probability": 0.15617282428033094
               }
             ]
           },
           "setting_effect": {
             "choice": "in_effect",
-            "confidence": 0.9776162687390906,
+            "confidence": 0.9611319524140076,
             "probabilities": [
               {
                 "value": "in_effect",
-                "probability": 0.9776162687390906
+                "probability": 0.9611319524140076
               },
               {
                 "value": "not_in_effect",
-                "probability": 0.008462992718741439
+                "probability": 0.010557186122470861
               },
               {
                 "value": "unknown",
-                "probability": 0.013920738542167894
+                "probability": 0.02831086146352142
               }
             ]
           },
           "weakness": {
             "choice": "weakens",
-            "confidence": 0.9062787242121917,
+            "confidence": 0.8500887731234434,
             "probabilities": [
               {
                 "value": "benign",
-                "probability": 0.023166771466716207
+                "probability": 0.035092642508044454
               },
               {
                 "value": "unknown",
-                "probability": 0.07055450432109206
+                "probability": 0.11481858436851206
               },
               {
                 "value": "weakens",
-                "probability": 0.9062787242121917
+                "probability": 0.8500887731234434
               }
             ]
           }
@@ -272163,9 +272373,9 @@
           "weakness": "weakens"
         },
         "usage": {
-          "input_tokens": 2428,
+          "input_tokens": 2679,
           "output_tokens": 0,
-          "total_tokens": 2428
+          "total_tokens": 2679
         },
         "status": "completed",
         "provider": "gemini",
@@ -272270,6 +272480,45 @@
               "end_line": 302,
               "start_byte": 14372,
               "end_byte": 14378
+            },
+            "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory logs at 3 places; this is 1 of 3, the path logs/il:\n",
+            "kind": "directory_reference",
+            "text": "res.sendFile(path.resolve('logs/', file))",
+            "span": {
+              "file": "routes/logfileServer.ts",
+              "start_line": 14,
+              "end_line": 14,
+              "start_byte": 397,
+              "end_byte": 438
+            },
+            "sha256": "37fe634d42307b1197b76b7fc85a506a47f0a6a67543961e55aa496ea1ef7379"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory logs at 3 places; this is 2 of 3, the path logs/access.log.%DATE%:\n",
+            "kind": "directory_reference",
+            "text": "filename: path.resolve('logs/access.log.%DATE%')",
+            "span": {
+              "file": "server.ts",
+              "start_line": 359,
+              "end_line": 359,
+              "start_byte": 17351,
+              "end_byte": 17399
+            },
+            "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+          },
+          {
+            "model_text": "The source refers to paths inside the listed directory logs at 3 places; this is 3 of 3, the path logs/audit.json:\n",
+            "kind": "directory_reference",
+            "text": "audit_file: 'logs/audit.json'",
+            "span": {
+              "file": "server.ts",
+              "start_line": 361,
+              "end_line": 361,
+              "start_byte": 17436,
+              "end_byte": 17465
             },
             "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
           },
@@ -272403,83 +272652,83 @@
       "context": null,
       "gaps": [],
       "assessment": {
-        "request_digest": "6c0e9ed7eb203e672c8af6ca7df31256401b8495e2fa6b17831f2fa00acc8598",
+        "request_digest": "8dc9606b34c4e8a9564f12fab934fd8ef48bc6af1029f8ef76509399d3d3a2d6",
         "answer_details": {
           "mitigation": {
             "choice": "none",
-            "confidence": 0.6587787637130657,
+            "confidence": 0.7209680943642303,
             "probabilities": [
               {
                 "value": "adequate",
-                "probability": 0.023829040340712815
+                "probability": 0.013485816625707109
               },
               {
                 "value": "inadequate",
-                "probability": 0.037855438812122215
+                "probability": 0.06812419983411111
               },
               {
                 "value": "none",
-                "probability": 0.6587787637130657
+                "probability": 0.7209680943642303
               },
               {
                 "value": "unknown",
-                "probability": 0.27953675713409937
+                "probability": 0.19742188917595155
               }
             ]
           },
           "setting_effect": {
             "choice": "in_effect",
-            "confidence": 0.9539167402361459,
+            "confidence": 0.9637868371788945,
             "probabilities": [
               {
                 "value": "in_effect",
-                "probability": 0.9539167402361459
+                "probability": 0.9637868371788945
               },
               {
                 "value": "not_in_effect",
-                "probability": 0.014225453186164326
+                "probability": 0.00977974160961828
               },
               {
                 "value": "unknown",
-                "probability": 0.031857806577689655
+                "probability": 0.026433421211487305
               }
             ]
           },
           "weakness": {
-            "choice": "unknown",
-            "confidence": 0.567216798712927,
+            "choice": "weakens",
+            "confidence": 0.6207207373799236,
             "probabilities": [
               {
                 "value": "benign",
-                "probability": 0.04591444894245484
+                "probability": 0.08635998711632578
               },
               {
                 "value": "unknown",
-                "probability": 0.567216798712927
+                "probability": 0.29291927550375063
               },
               {
                 "value": "weakens",
-                "probability": 0.38686875234461815
+                "probability": 0.6207207373799236
               }
             ]
           }
         },
-        "finding_status": "needs_evidence",
+        "finding_status": "confirmed_vulnerability",
         "answers": {
           "mitigation": "none",
           "setting_effect": "in_effect",
-          "weakness": "unknown"
+          "weakness": "weakens"
         },
         "usage": {
-          "input_tokens": 2429,
+          "input_tokens": 2679,
           "output_tokens": 0,
-          "total_tokens": 2429
+          "total_tokens": 2679
         },
         "status": "completed",
         "provider": "gemini",
         "model": "gemini-decision-1",
         "question_version": "configuration-components-v7",
-        "protection": "uncertain"
+        "protection": "vulnerable"
       }
     },
     {

@@ -22,19 +22,20 @@ these scanner versions. They are not a general accuracy claim.
 
 | Application | In answer key | Code Scan, Gemini | Code Scan, gpt-6-luna | Semgrep CE found | Bearer found |
 |---|---:|---:|---:|---:|---:|
-| [OWASP Juice Shop](https://github.com/juice-shop/juice-shop) | 75 | 44 | 45 | 19 | 15 |
+| [OWASP Juice Shop](https://github.com/juice-shop/juice-shop) | 75 | 45 | 45 | 19 | 15 |
 | [vuln-nextjs](https://github.com/zazzcode/vuln-nextjs) | 13 | Not rerun | 13 | 7 | 7 |
 | [DVWA](https://github.com/digininja/DVWA) | 11 | 11 | 11 | 6 | 6 |
 | [VulnerableSymfony](https://github.com/Secureaks/VulnerableSymfony) (vuln-symfony) | 30 | 30 | 30 | 8 | 5 |
-| **Total, four applications** | **129** | **85 of 116 run** | **99** | **40** | **33** |
+| **Total, four applications** | **129** | **86 of 116 run** | **99** | **40** | **33** |
 | [OSS OopsSec Store](https://github.com/kOaDT/oss-oopssec-store) | 13 | 13 | 13 | Not scored | Not scored |
 | [ThreatByte](https://github.com/anotherik/ThreatByte) (Python) | 5 | 5 | 5 | Not scored | Not scored |
 
 The Gemini column is one full judged scan per application with scanner `81d4731` (`stage`
 through PR #56). The `gpt-6-luna` column is the published run named in each application's
 section, on an earlier scanner, so the two columns differ in model and scanner revision. The Gemini
-Juice Shop run includes the [owner-reference change](../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md);
-the same judge found 40 before it. OopsSec and ThreatByte are scored on Code Scan's own key only;
+Juice Shop run includes the [owner-reference](../../.zazz/specifications/detection-generalization/22-owner-reference-fields.md)
+and [listed-directory](../../.zazz/specifications/detection-generalization/23-listed-directory-references.md) changes;
+the same judge found 40 before them. OopsSec and ThreatByte are scored on Code Scan's own key only;
 the `gpt-6-luna` ThreatByte count includes one practice finding.
 
 **Reviewed false positives**, counted by location:
@@ -123,9 +124,8 @@ Rows of the answer keys found by Code Scan with `gpt-6-luna`, across the four ap
 ### What Code Scan misses
 
 With `gpt-6-luna`, Code Scan misses 30 rows, all in Juice Shop. The other keys were not extended,
-so this says nothing about misses there. The Gemini run misses the same 30 and one more, left in
-Review: the `/support/logs` directory listing (`JS-CONF-03`). It reports VulnerableSymfony's
-`SYM-XSS-03` as a practice finding, which counts as found.
+so this says nothing about misses there. The Gemini run misses the same 30. It reports
+VulnerableSymfony's `SYM-XSS-03` as a practice finding, which counts as found.
 
 **No analyzer, 18 rows.** Hardcoded secrets (3), business logic (4), authentication flaws (3), rate
 limits and CAPTCHA (2), and one each of cross-site request forgery, XML external entities, token
@@ -167,7 +167,7 @@ Prototype pollution and argument injection have no keyed case in these four appl
 
 | Scanner | Version | Rules |
 |---|---|---|
-| Zazzles Code Scan, Gemini | `stage` at `81d4731` (through PR #56) for DVWA, vuln-symfony and OopsSec; `docs-cleanup` with the owner-reference change for Juice Shop and ThreatByte | All analyzer families, judged with Google Gemini `gemini-decision-1`, default judge limit |
+| Zazzles Code Scan, Gemini | `stage` at `81d4731` (through PR #56) for DVWA, vuln-symfony and OopsSec; `docs-cleanup` at `d1099f8` for ThreatByte and at `fdde6a7` (specifications 22 and 23) for Juice Shop | All analyzer families, judged with Google Gemini `gemini-decision-1`, default judge limit |
 | Zazzles Code Scan, gpt-6-luna | Branch `juiceshop-nextjs-hardening-3` at `3318e27` for Juice Shop and `ee777f4` for vuln-nextjs; `d368a68` for DVWA; `8d97b93` for vuln-symfony | All analyzer families, judged with OpenAI `gpt-6-luna` |
 | Semgrep CE | 1.183.0, `--oss-only` | 23 packs, 1,379 rules, including `p/default`, `p/security-audit`, `p/nodejsscan` and `p/secrets` ([list](../../.zazz/evaluation/semgrep-results.md#broad-run)) |
 | Bearer CLI | Source build at `a7a8752` | `bearer-rules` at `82c335f`, default rules off |
@@ -179,8 +179,8 @@ Bearer Pro was not run.
 ## OWASP Juice Shop
 
 Pin `f189f52`. Code Scan `gpt-6-luna` run `a3-acceptance-juice-shop`, one full scan of 84 requests on
-the final code of the branch. Code Scan Gemini run with the owner-reference change, 84 completed assessments
-([results](../../.zazz/evaluation/detection-generalization-results/22.md#ac7-juice-shop-acceptance)).
+the final code of the branch. Code Scan Gemini run with the owner-reference and listed-directory changes, 84 completed
+assessments ([results](../../.zazz/evaluation/detection-generalization-results/23.md#juice-shop-full-scan)).
 
 | ID | Class | Location | Code Scan, gpt-6-luna | Code Scan, Gemini | Semgrep CE | Bearer |
 |---|---|---|---|---|---|---|
@@ -201,7 +201,7 @@ the final code of the branch. Code Scan Gemini run with the owner-reference chan
 | `JS-LOG-01` | logging | `server.ts:366` | Practice finding | **Confirmed** | Missed | Missed |
 | `JS-CONF-01` | configuration | `server.ts:290` | Confirmed | Confirmed | Found | Found |
 | `JS-CONF-02` | configuration | `server.ts:298` | Confirmed | Confirmed | Found | Found |
-| `JS-CONF-03` | configuration | `server.ts:302` | Confirmed | **Missed (Review)** | Found | Found |
+| `JS-CONF-03` | configuration | `server.ts:302` | Confirmed | Confirmed | Found | Found |
 | `JS-EXPO-01` | exposure | `server.ts:710` | Confirmed | Confirmed | Missed | Missed |
 | `JS-EXPO-02` | exposure | `routes/metrics.ts:92` | Confirmed | Confirmed | Missed | Missed |
 | `JS-HASH-01` | weak-hash | `lib/insecurity.ts:41` | Confirmed | Confirmed | Found | Found |

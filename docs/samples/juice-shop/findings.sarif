@@ -215592,63 +215592,63 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "8dd8f085f4af240d5f6285cca5a689ad9190d12cb7550cf2fd10aeae12e92ea8",
+              "request_digest": "074aa3174919b2f059676ffbecb92601085f2bef27ef2b9c466c2d2b83fc7f9c",
               "answer_details": {
                 "mitigation": {
                   "choice": "none",
-                  "confidence": 0.8650598187033501,
+                  "confidence": 0.8611281816534003,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.023632816415286383
+                      "probability": 0.021512942217033877
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.03619942130189671
+                      "probability": 0.04130372506763978
                     },
                     {
                       "value": "none",
-                      "probability": 0.8650598187033501
+                      "probability": 0.8611281816534003
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.07510794357946673
+                      "probability": 0.07605515106192585
                     }
                   ]
                 },
                 "setting_effect": {
                   "choice": "in_effect",
-                  "confidence": 0.9683774417040226,
+                  "confidence": 0.9588326791295885,
                   "probabilities": [
                     {
                       "value": "in_effect",
-                      "probability": 0.9683774417040226
+                      "probability": 0.9588326791295885
                     },
                     {
                       "value": "not_in_effect",
-                      "probability": 0.009054161787553637
+                      "probability": 0.017691001601497638
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.022568396508423794
+                      "probability": 0.023476319268913956
                     }
                   ]
                 },
                 "weakness": {
                   "choice": "weakens",
-                  "confidence": 0.8890975561428763,
+                  "confidence": 0.7727059276842183,
                   "probabilities": [
                     {
                       "value": "benign",
-                      "probability": 0.03615993856778265
+                      "probability": 0.0740476316948484
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.074742505289341
+                      "probability": 0.15324644062093323
                     },
                     {
                       "value": "weakens",
-                      "probability": 0.8890975561428763
+                      "probability": 0.7727059276842183
                     }
                   ]
                 }
@@ -215660,9 +215660,9 @@
                 "weakness": "weakens"
               },
               "usage": {
-                "input_tokens": 2494,
+                "input_tokens": 3144,
                 "output_tokens": 0,
-                "total_tokens": 2494
+                "total_tokens": 3144
               },
               "status": "completed",
               "provider": "gemini",
@@ -215855,63 +215855,63 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "4889dca356de2e0270ccf0a4b32d254f663a27372b280d09e14d8cc55917ddfd",
+              "request_digest": "f3bad92363d68a47a1a14bed46e35851fefd0d816f31acfd99e378d8af16dca8",
               "answer_details": {
                 "mitigation": {
                   "choice": "none",
-                  "confidence": 0.7500726088278621,
+                  "confidence": 0.809249289461322,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.018058265281481974
+                      "probability": 0.017975004102635195
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.05308491284707335
+                      "probability": 0.05999128219286277
                     },
                     {
                       "value": "none",
-                      "probability": 0.7500726088278621
+                      "probability": 0.809249289461322
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.1787842130435825
+                      "probability": 0.11278442424318003
                     }
                   ]
                 },
                 "setting_effect": {
                   "choice": "in_effect",
-                  "confidence": 0.9697439307063553,
+                  "confidence": 0.9731447638410883,
                   "probabilities": [
                     {
                       "value": "in_effect",
-                      "probability": 0.9697439307063553
+                      "probability": 0.9731447638410883
                     },
                     {
                       "value": "not_in_effect",
-                      "probability": 0.010686702523202437
+                      "probability": 0.006837669832900515
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.019569366770442256
+                      "probability": 0.020017566326011295
                     }
                   ]
                 },
                 "weakness": {
                   "choice": "weakens",
-                  "confidence": 0.859646944696187,
+                  "confidence": 0.8918943185320293,
                   "probabilities": [
                     {
                       "value": "benign",
-                      "probability": 0.028022733648325297
+                      "probability": 0.042554319745181236
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.11233032165548765
+                      "probability": 0.06555136172278953
                     },
                     {
                       "value": "weakens",
-                      "probability": 0.859646944696187
+                      "probability": 0.8918943185320293
                     }
                   ]
                 }
@@ -215923,9 +215923,9 @@
                 "weakness": "weakens"
               },
               "usage": {
-                "input_tokens": 2437,
+                "input_tokens": 3149,
                 "output_tokens": 0,
-                "total_tokens": 2437
+                "total_tokens": 3149
               },
               "status": "completed",
               "provider": "gemini",
@@ -216118,63 +216118,63 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "b114cf09260b5234aed2e2f87757afdbef718116bba49512fdfc6bd0f3be0e31",
+              "request_digest": "0e6f93cfcc56a14fa0034ee587f52e55d316e576996abf715e44c4fcc2dbc0ce",
               "answer_details": {
                 "mitigation": {
                   "choice": "none",
-                  "confidence": 0.8710180452796422,
+                  "confidence": 0.6109162641358014,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.013037962167373466
+                      "probability": 0.02622439619538872
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.027065493993059277
+                      "probability": 0.17273146477578386
                     },
                     {
                       "value": "none",
-                      "probability": 0.8710180452796422
+                      "probability": 0.6109162641358014
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.08887849855992501
+                      "probability": 0.19012787489302607
                     }
                   ]
                 },
                 "setting_effect": {
                   "choice": "in_effect",
-                  "confidence": 0.9755346518206636,
+                  "confidence": 0.9519416035059418,
                   "probabilities": [
                     {
                       "value": "in_effect",
-                      "probability": 0.9755346518206636
+                      "probability": 0.9519416035059418
                     },
                     {
                       "value": "not_in_effect",
-                      "probability": 0.005107939194566745
+                      "probability": 0.01228992595187514
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.019357408984769574
+                      "probability": 0.035768470542183135
                     }
                   ]
                 },
                 "weakness": {
                   "choice": "weakens",
-                  "confidence": 0.4314168463185795,
+                  "confidence": 0.5299780688537489,
                   "probabilities": [
                     {
                       "value": "benign",
-                      "probability": 0.40056691414488343
+                      "probability": 0.17457231101334467
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.16801623953653697
+                      "probability": 0.2954496201329065
                     },
                     {
                       "value": "weakens",
-                      "probability": 0.4314168463185795
+                      "probability": 0.5299780688537489
                     }
                   ]
                 }
@@ -216186,9 +216186,9 @@
                 "weakness": "weakens"
               },
               "usage": {
-                "input_tokens": 2446,
+                "input_tokens": 2547,
                 "output_tokens": 0,
-                "total_tokens": 2446
+                "total_tokens": 2547
               },
               "status": "completed",
               "provider": "gemini",
@@ -216381,63 +216381,63 @@
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "e9c76053980a24aa206c2b030a1a4002c5d2a066050f73d3a69a162417bc3ee0",
+              "request_digest": "ddce1ee74ee5eb8c957564c7547a195405487f2269345a2993d884f2695c1ae8",
               "answer_details": {
                 "mitigation": {
                   "choice": "none",
-                  "confidence": 0.9125144392158461,
+                  "confidence": 0.791554487374252,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.00818547682439017
+                      "probability": 0.01054432373229169
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.018746609196901395
+                      "probability": 0.04172836461312531
                     },
                     {
                       "value": "none",
-                      "probability": 0.9125144392158461
+                      "probability": 0.791554487374252
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.060553474762862484
+                      "probability": 0.15617282428033094
                     }
                   ]
                 },
                 "setting_effect": {
                   "choice": "in_effect",
-                  "confidence": 0.9776162687390906,
+                  "confidence": 0.9611319524140076,
                   "probabilities": [
                     {
                       "value": "in_effect",
-                      "probability": 0.9776162687390906
+                      "probability": 0.9611319524140076
                     },
                     {
                       "value": "not_in_effect",
-                      "probability": 0.008462992718741439
+                      "probability": 0.010557186122470861
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.013920738542167894
+                      "probability": 0.02831086146352142
                     }
                   ]
                 },
                 "weakness": {
                   "choice": "weakens",
-                  "confidence": 0.9062787242121917,
+                  "confidence": 0.8500887731234434,
                   "probabilities": [
                     {
                       "value": "benign",
-                      "probability": 0.023166771466716207
+                      "probability": 0.035092642508044454
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.07055450432109206
+                      "probability": 0.11481858436851206
                     },
                     {
                       "value": "weakens",
-                      "probability": 0.9062787242121917
+                      "probability": 0.8500887731234434
                     }
                   ]
                 }
@@ -216449,9 +216449,9 @@
                 "weakness": "weakens"
               },
               "usage": {
-                "input_tokens": 2428,
+                "input_tokens": 2679,
                 "output_tokens": 0,
-                "total_tokens": 2428
+                "total_tokens": 2679
               },
               "status": "completed",
               "provider": "gemini",
@@ -216613,8 +216613,8 @@
           "ruleIndex": 14
         },
         {
-          "kind": "review",
-          "level": "note",
+          "kind": "fail",
+          "level": "warning",
           "locations": [
             {
               "logicalLocations": [
@@ -216625,7 +216625,7 @@
                 }
               ],
               "message": {
-                "text": "Resolve the specific claim blockers"
+                "text": "Turn directory listing off where files are served"
               },
               "physicalLocation": {
                 "artifactLocation": {
@@ -216639,88 +216639,88 @@
             }
           ],
           "message": {
-            "text": "USE /support/logs: Configuration setting needs review [needs_evidence]. Setting directory_listing is recorded with the application facts it joins (CWE-548). Configuration assessment: effect in_effect, weakness Inconclusive, mitigation none"
+            "text": "USE /support/logs: Insecure configuration supported by source analysis [confirmed_vulnerability]. Setting directory_listing is recorded with the application facts it joins (CWE-548). Configuration assessment: effect in_effect, weakness weakens, mitigation none"
           },
           "properties": {
             "assessmentState": "completed",
             "scan.assessment": {
-              "request_digest": "6c0e9ed7eb203e672c8af6ca7df31256401b8495e2fa6b17831f2fa00acc8598",
+              "request_digest": "8dc9606b34c4e8a9564f12fab934fd8ef48bc6af1029f8ef76509399d3d3a2d6",
               "answer_details": {
                 "mitigation": {
                   "choice": "none",
-                  "confidence": 0.6587787637130657,
+                  "confidence": 0.7209680943642303,
                   "probabilities": [
                     {
                       "value": "adequate",
-                      "probability": 0.023829040340712815
+                      "probability": 0.013485816625707109
                     },
                     {
                       "value": "inadequate",
-                      "probability": 0.037855438812122215
+                      "probability": 0.06812419983411111
                     },
                     {
                       "value": "none",
-                      "probability": 0.6587787637130657
+                      "probability": 0.7209680943642303
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.27953675713409937
+                      "probability": 0.19742188917595155
                     }
                   ]
                 },
                 "setting_effect": {
                   "choice": "in_effect",
-                  "confidence": 0.9539167402361459,
+                  "confidence": 0.9637868371788945,
                   "probabilities": [
                     {
                       "value": "in_effect",
-                      "probability": 0.9539167402361459
+                      "probability": 0.9637868371788945
                     },
                     {
                       "value": "not_in_effect",
-                      "probability": 0.014225453186164326
+                      "probability": 0.00977974160961828
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.031857806577689655
+                      "probability": 0.026433421211487305
                     }
                   ]
                 },
                 "weakness": {
-                  "choice": "unknown",
-                  "confidence": 0.567216798712927,
+                  "choice": "weakens",
+                  "confidence": 0.6207207373799236,
                   "probabilities": [
                     {
                       "value": "benign",
-                      "probability": 0.04591444894245484
+                      "probability": 0.08635998711632578
                     },
                     {
                       "value": "unknown",
-                      "probability": 0.567216798712927
+                      "probability": 0.29291927550375063
                     },
                     {
                       "value": "weakens",
-                      "probability": 0.38686875234461815
+                      "probability": 0.6207207373799236
                     }
                   ]
                 }
               },
-              "finding_status": "needs_evidence",
+              "finding_status": "confirmed_vulnerability",
               "answers": {
                 "mitigation": "none",
                 "setting_effect": "in_effect",
-                "weakness": "unknown"
+                "weakness": "weakens"
               },
               "usage": {
-                "input_tokens": 2429,
+                "input_tokens": 2679,
                 "output_tokens": 0,
-                "total_tokens": 2429
+                "total_tokens": 2679
               },
               "status": "completed",
               "provider": "gemini",
               "model": "gemini-decision-1",
               "question_version": "configuration-components-v7",
-              "protection": "uncertain"
+              "protection": "vulnerable"
             },
             "scan.assessmentState": "completed",
             "scan.blockingGaps": [],
@@ -216794,20 +216794,22 @@
               "use_id": "candidate:v1:14fccdfbaa44e7e0141f98e760ca184265dde3953cc4ad71e6a92553792af696",
               "entry_id": "entry:v1:04090bd6225fc8942f2db33795f1f804757d5ea16bcf28a4f7fccd72b0bd5fb5",
               "invocation_context_id": "invocation:v1:60f50da490bc55937c00314c7271cfeb2026a4e10b3166f3f8dd9b20c5b2f7cb",
-              "record_type": "analysis",
-              "status": "needs_evidence",
-              "title": "Configuration setting needs review",
+              "record_type": "finding",
+              "status": "confirmed_vulnerability",
+              "title": "Insecure configuration supported by source analysis",
               "summary": "Setting directory_listing is recorded with the application facts it joins (CWE-548).",
               "input_validation": "Not established from the supplied evidence.",
-              "use_protection": "Configuration assessment: effect in_effect, weakness Inconclusive, mitigation none",
+              "use_protection": "Configuration assessment: effect in_effect, weakness weakens, mitigation none",
               "uncertainty": "Review the evidence for the named claim. Independent findings review and runtime confirmation have not been performed.",
               "recommendations": {
-                "title": "Resolve the specific claim blockers",
+                "title": "Turn directory listing off where files are served",
                 "actions": [
-                  "Investigate the operation at server.ts:302: serveIndex('logs', { icons: true, view: 'details' }). Its current Review status does not establish a code defect.",
-                  "Reconcile the semantic assessment with this exact source claim: "
+                  "Change the observed operation at server.ts:302: serveIndex('logs', { icons: true, view: 'details' })",
+                  "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+                  "Remove Indexes from the directory that is served.",
+                  "Store uploads outside any listed directory."
                 ],
-                "example_status": "no patch proposed while the claim is inconclusive"
+                "example_status": ""
               },
               "assessment_state": "completed"
             },
@@ -216832,12 +216834,14 @@
             "scan.invocationContextId": "invocation:v1:60f50da490bc55937c00314c7271cfeb2026a4e10b3166f3f8dd9b20c5b2f7cb",
             "scan.kind": "configuration_candidate",
             "scan.recommendations": {
-              "title": "Resolve the specific claim blockers",
+              "title": "Turn directory listing off where files are served",
               "actions": [
-                "Investigate the operation at server.ts:302: serveIndex('logs', { icons: true, view: 'details' }). Its current Review status does not establish a code defect.",
-                "Reconcile the semantic assessment with this exact source claim: "
+                "Change the observed operation at server.ts:302: serveIndex('logs', { icons: true, view: 'details' })",
+                "Remediate established vulnerabilities and poor practice. For Review items, resolve the named evidence before deciding whether or how behavior needs to change.",
+                "Remove Indexes from the directory that is served.",
+                "Store uploads outside any listed directory."
               ],
-              "example_status": "no patch proposed while the claim is inconclusive"
+              "example_status": ""
             },
             "scan.requiredEvidence": [
               "setting",

@@ -29,7 +29,8 @@ A new command, `audit`, audits the dependencies of npm and pnpm projects in a ta
 twice (all dependencies, then production only), and saves the raw JSON. `audit ingest` does the
 same from saved JSON files. Both normalize the output into one findings file, `findings.json`
 (schema `zazzles.audit/v1`), which Zazzles Agent consumes, and write `report.html`, a standalone
-report in the Code Scan visual style. `audit tools` reports whether each supported audit tool is
+report in the Code Scan visual style, and `summary.md`, a short Markdown summary for CI job
+summaries and pull-request comments. `audit tools` reports whether each supported audit tool is
 installed, its version, and whether it is a tested version, and `run` makes the same check before
 it audits anything. Each vulnerable library is recorded with its installed
 version, its advisories, whether it is direct or arrives through another package, the dependency
@@ -101,7 +102,8 @@ and testing to `audit/` as written for `scan/`, and record that reading in the r
 `npm audit --help`, `pnpm audit --json`, `pnpm audit --json --prod`, `pnpm --version` and
 `pnpm audit --help`, each with its working
 directory set to a project directory, with no shell, and with no other arguments. It never runs an
-install, a fix, a script or any other program. It writes only under the `--out` directory.
+install, a fix, a script or any other program, and it never installs an audit tool: when one is
+missing it prints the command for the user to run. It writes only under the `--out` directory.
 
 ### INVARIANT 2 — A failure is never a clean result
 
@@ -162,7 +164,7 @@ below. If implementation surfaces a need to modify anything else, stop and surfa
 | `audit/internal/run/` (`detect.go`, `exec.go`, `tools.go`, tests) | New | Project detection, the tool check, and running the tools |
 | `audit/internal/parse/npm/` (`npm.go`, `lockfile.go`, tests) | New | npm audit report version 2 reader; installed versions from `package-lock.json` |
 | `audit/internal/parse/pnpm/` (`pnpm.go`, tests) | New | pnpm audit JSON reader |
-| `audit/internal/report/` (`json.go`, `html.go`, `report.html`, `report-sort.js`, tests) | New | Findings writer and HTML report |
+| `audit/internal/report/` (`json.go`, `html.go`, `summary.go`, `report.html`, `report-sort.js`, tests) | New | Findings writer, HTML report, Markdown summary |
 | `audit/testdata/` (`npm/`, `pnpm/`, `golden/`, `fake-tools/`) | New | Captured outputs, lockfiles, golden files, fake tool scripts |
 | `audit/README.md` | Modified | Module page: from planned to the implemented npm and pnpm boundary |
 | `docs/audit/README.md` | Modified | User guide: running an audit, scope, exit codes, reading the report |
@@ -263,6 +265,33 @@ report-outputs standard. The copy is small and the two reports look like one pro
 **Decision.** `0` report written; `1` `--fail-on` threshold met; `2` usage error; `3` at least one
 project not `audited`. When `1` and `3` both apply, `3` wins.
 **Why.** CI needs to tell "found vulnerabilities" from "could not audit".
+
+### D-11 — Install hints are printed, never run
+
+**Decision.** For a missing tool, `audit tools` and `run` print the install commands from a fixed
+table in `audit/internal/run/tools.go`, chosen by operating system, for the user to run:
+
+| Tool | macOS | Linux | Anywhere |
+| --- | --- | --- | --- |
+| `npm` | `brew install node` | the distribution's `nodejs` package | install Node.js from nodejs.org |
+| `pnpm` | `corepack enable pnpm` | `corepack enable pnpm` | `npm install -g pnpm` |
+
+Specifications 02 and 03 add rows for `pip-audit` and `composer`. No hint pipes a download into a
+shell.
+**Why.** Installing software on someone's machine is their decision, and an agent running `audit`
+must not do it silently. A fixed table keeps the hints reviewable.
+
+### D-12 — Built for CI as well as local use
+
+**Decision.** `audit` never prompts, needs no terminal, prints no color or progress when standard
+output is not a terminal, and needs no credentials. Every run writes `summary.md` beside
+`findings.json` and `report.html`: the counts by severity and scope, project statuses, the
+critical and high libraries with their fix versions, and the note that `report.html` holds the
+detail. A CI job can append it to the job summary or post it as a pull-request comment, and upload
+the run directory as a build artifact.
+**Why.** The same binary then works on a laptop, for the Agent, and in GitHub Actions or any other CI
+with no extra mode. A standalone `report.html` cannot be shown inside a pull request, so a short
+Markdown summary is what reviewers see first.
 
 ---
 
@@ -396,9 +425,18 @@ One fresh-context verifier for functionality and invariants (§9).
   (npm 12.2.0, pnpm 12.23.0), `untested` otherwise, and whether `audit --help` lists every flag
   INVARIANT 1 uses. It exits 0 when every tool is found and accepts the flags, otherwise 3. `run`
   performs the same check for each project's tool before auditing: a missing tool or a missing flag
-  gives the project status `failed` with the reason and an install hint, and runs nothing else for
-  it; an `untested` version adds a `limits` entry and continues. Verified by `TestToolsCommand` and
-  `TestRunToolPreflight` with fake executables that report tested, untested, missing-flag and absent.
+  gives the project status `failed` with the reason and the D-11 install commands for the current
+  operating system, printed to standard error and recorded in `findings.json` and the report, and
+  runs nothing else for it; an `untested` version adds a `limits` entry and continues. No install
+  command is ever executed. Verified by `TestToolsCommand` and `TestRunToolPreflight` with fake
+  executables that report tested, untested, missing-flag and absent, and by `TestInstallHints`,
+  which checks each D-11 row for macOS and Linux and that no hint contains a pipe into a shell.
+- **AC16 — CI use.** With standard input closed, no terminal and `CI=true`, `run` completes without
+  waiting for input, prints no color or progress codes, and writes `summary.md` holding the severity
+  and scope counts, every non-`audited` project with its reason, and each critical and high library
+  with its fix version. The summary for the `vuln-nextjs` fixture equals
+  `audit/testdata/golden/vuln-nextjs.summary.md`. Verified by `TestRunNonInteractive` and
+  `TestSummaryGolden`.
 - **AC12 — Live check on sample copies.** `./bin/audit run` on a copy of `vuln-nextjs` reports 67
   production advisories, matching the lab's `tests/expected-audit.json`, and the 4 `minimatch`
   advisories as development-only; on a copy of `nodejs-goof` it writes a report the owner reviews.
@@ -446,7 +484,8 @@ Automated tests:
 - `TestRunLeavesTargetUnchanged` — AC9.
 - `TestNoForbiddenImports` — AC10, from `go list -deps` output.
 - `TestCLIExitCodes` — AC11, table.
-- `TestToolsCommand`, `TestRunToolPreflight` — AC15, with fake executables.
+- `TestToolsCommand`, `TestRunToolPreflight`, `TestInstallHints` — AC15, with fake executables.
+- `TestRunNonInteractive`, `TestSummaryGolden` — AC16.
 
 Intentionally not tested: npm report version 1 parsing (rejected by D-8, covered by the error
 fixture), and network failures inside the tools (they surface as tool errors, covered by AC4).
@@ -489,7 +528,8 @@ labelling, version change, text cleaning, with `TestScopeLabels`, `TestVersionCh
 `exec.CommandContext` with an argument list, the project directory as `Dir`, and a timeout of 5
 minutes per command.
 
-**Phase 6: Report.** `report.WriteFindings` and `report.WriteHTML`, golden files, hostile-text tests.
+**Phase 6: Report.** `report.WriteFindings`, `report.WriteHTML` and `report.WriteSummary`, golden
+files, hostile-text tests.
 
 **Phase 7: CLI.** `run`, `ingest`, `report` and `tools` subcommands; flags `--target` (run), `--npm-all`,
 `--npm-prod`, `--pnpm-all`, `--pnpm-prod` each as `[dir=]file` and repeatable (ingest), `--out`,
@@ -617,7 +657,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 - [ ] `gofmt -l audit` prints nothing; `go vet ./...` and the Markdown lint pass.
 - [ ] `git diff stage --stat` matches §5 Scope Verification.
 - [ ] One PR, as approved in §3.
-- [ ] AC1–AC15 verified, with evidence cited.
+- [ ] AC1–AC16 verified, with evidence cited.
 - [ ] Run log section `01 npm and pnpm` up to date, including Contributor Agent outcomes.
 - [ ] Verifier sub-agent returned all-pass.
 - [ ] Draft PR body links this specification and lists each AC's verification.

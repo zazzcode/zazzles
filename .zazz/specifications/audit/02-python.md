@@ -180,6 +180,15 @@ the change size follows [01 D-7](01-node.md#d-7--fix-target-and-change-size-only
 empty `fix_versions` gives `available: false`.
 **Why.** Same rule as the other ecosystems, so the Agent groups PRs the same way.
 
+### D-7 — Install hint for `pip-audit`
+
+**Decision.** Add this row to [01 D-11](01-node.md#d-11--install-hints-are-printed-never-run)'s
+table: macOS `brew install pip-audit` or `pipx install pip-audit`; Linux `pipx install pip-audit`;
+anywhere `python3 -m pip install pip-audit`. In CI the same `pip install` works after the runner's
+Python setup step. `audit` prints them and never runs them.
+**Why.** `pipx` keeps the tool out of the project's environment, which is what a user auditing that
+environment wants.
+
 ---
 
 ## 5. Agent Implementation Rules
@@ -216,7 +225,9 @@ As [01 §5](01-node.md#5-agent-implementation-rules), with these changes:
   `site-packages` and `.git` are skipped, and D-5 projects are recorded `unsupported`. Verified by
   `TestDetectPython`.
 - **AC6 — Tool check.** `audit tools` includes `pip-audit` with the AC15 fields from 01; `run`
-  refuses a `pip-audit` that lacks `--disable-pip` or `--no-deps`. Verified by `TestToolsPipAudit`.
+  refuses a `pip-audit` that lacks `--disable-pip` or `--no-deps`; a missing `pip-audit` prints the
+  D-7 commands for the current operating system and runs none of them. Verified by
+  `TestToolsPipAudit` and the `pip-audit` rows of `TestInstallHints`.
 - **AC7 — Ingest.** `--pip-all` and `--pip-prod` accept saved JSON with the `[dir=]file` form and
   give the same findings as `run`. Verified by `TestIngestPip`.
 - **AC8 — Golden.** The ThreatByte fixture produces a `findings.json` equal to

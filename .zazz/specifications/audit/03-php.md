@@ -154,6 +154,16 @@ change: "unknown"}` unless `affectedVersions` is a single `<X` or `<=X` upper bo
 fix target is left empty and `limits` notes that 04 will supply it.
 **Why.** Guessing the next release from a range would be wrong as often as right.
 
+### D-6 — Install hint for `composer`
+
+**Decision.** Add this row to [01 D-11](01-node.md#d-11--install-hints-are-printed-never-run)'s
+table: macOS `brew install composer`; Linux the distribution's `composer` package (for example
+`sudo apt install composer`); anywhere, the instructions at `https://getcomposer.org/download/`,
+linked rather than copied, because that page's installer checks a signature that changes. In CI, the
+common PHP setup actions install Composer. `audit` prints these and never runs them.
+**Why.** Composer's own installer is a download-and-run script, which the hint must not ask the user
+to pipe into a shell.
+
 ---
 
 ## 5. Agent Implementation Rules
@@ -184,8 +194,9 @@ As [01 §5](01-node.md#5-agent-implementation-rules), with these changes:
   JSON is read; invalid JSON and a missing executable give `failed`. Verified by `TestRunComposer`.
 - **AC4 — Detection.** `composer.lock` projects are found, `vendor/` and `.git` are skipped, and a
   `composer.json` with no lockfile is `no_lockfile`. Verified by `TestDetectComposer`.
-- **AC5 — Tool check.** `audit tools` includes `composer` with the 01 AC15 fields. Verified by
-  `TestToolsComposer`.
+- **AC5 — Tool check.** `audit tools` includes `composer` with the 01 AC15 fields, and a missing
+  `composer` prints the D-6 hints for the current operating system and runs none of them. Verified
+  by `TestToolsComposer` and the `composer` rows of `TestInstallHints`.
 - **AC6 — Abandoned in the report.** The HTML report lists abandoned packages in their own section
   with the replacement, and the vulnerability totals exclude abandoned packages with no advisory.
   Verified by `TestReportAbandoned`.
